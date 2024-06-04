@@ -1916,7 +1916,7 @@ async fn test_publish_non_existing_dependent_module() {
         gas_payment_object_ref,
         vec![dependent_module_bytes],
         vec![ObjectID::from(*genesis_module.address()), not_on_chain],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        10*1000_000_000,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data, &sender_key);
@@ -1924,8 +1924,10 @@ async fn test_publish_non_existing_dependent_module() {
     let response = authority
         .handle_transaction(&epoch_store, transaction)
         .await;
+
+    println!("the error is {:?}", response);
     assert!(std::string::ToString::to_string(&response.unwrap_err())
-        .contains("BFCObjectNotFound"));
+        .contains("DependentPackageNotFound"));
     // Check that gas was not charged.
     assert_eq!(
         authority
@@ -1944,7 +1946,7 @@ async fn test_package_size_limit() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_payment_object_id = ObjectID::random();
     let gas_payment_object =
-        Object::with_id_owner_gas_for_testing(gas_payment_object_id, sender, u64::MAX);
+        Object::with_id_owner_gas_for_testing(gas_payment_object_id, sender, 50*1000_000_000);
     let gas_payment_object_ref = gas_payment_object.compute_object_reference();
     let mut package = Vec::new();
     let mut modules_size = 0;
@@ -1973,7 +1975,7 @@ async fn test_package_size_limit() {
         gas_payment_object_ref,
         package,
         vec![],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        10*1000_000_000,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data, &sender_key);
@@ -1984,6 +1986,7 @@ async fn test_package_size_limit() {
     let ExecutionStatus::Failure { error, command: _ } = signed_effects.status() else {
         panic!("expected transaction to fail")
     };
+    println!("the error is: {:?}", error);
     assert!(matches!(
         error,
         ExecutionFailureStatus::MovePackageTooBig { .. }
@@ -2236,7 +2239,7 @@ async fn test_missing_package() {
         vec![],
         gas_object_ref,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        10*1000_000_000,
         rgp,
     )
     .unwrap();
@@ -2245,9 +2248,10 @@ async fn test_missing_package() {
     let result = authority_state
         .handle_transaction(&epoch_store, transaction)
         .await;
+    println!("the error is {:?}", result);
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 
@@ -2346,9 +2350,10 @@ async fn test_type_argument_dependencies() {
         .handle_transaction(&epoch_store, transaction)
         .await;
 
+    println!("the error is {:?}", result);
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 

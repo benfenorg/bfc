@@ -59,8 +59,8 @@ max_move_vector_len: 262144
 max_move_identifier_len: 128
 max_back_edges_per_function: 10000
 max_back_edges_per_module: 10000
-max_verifier_meter_ticks_per_function: 16000000
-max_meter_ticks_per_module: 16000000
+max_verifier_meter_ticks_per_function: 17000000
+max_meter_ticks_per_module: 17000000
 object_runtime_max_num_cached_objects: 1000
 object_runtime_max_num_cached_objects_system_tx: 16000
 object_runtime_max_num_store_entries: 1000
@@ -177,4 +177,3 @@ hmac_hmac_sha3_256_input_cost_per_byte: 2
 hmac_hmac_sha3_256_input_cost_per_block: 2
 scoring_decision_mad_divisor: 2.3
 scoring_decision_cutoff_value: 2.5
-

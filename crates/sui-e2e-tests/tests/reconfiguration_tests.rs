@@ -100,7 +100,7 @@ async fn basic_reconfig_end_to_end_test() {
 }
 
 #[sim_test]
-async fn test_transaction_expiration() {
+async fn sim_test_transaction_expiration() {
     let test_cluster = TestClusterBuilder::new().build().await;
     test_cluster.trigger_reconfiguration().await;
 
@@ -1800,7 +1800,7 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
 
 // Test for syncing a node to an authority that already has many txes.
 #[sim_test]
-async fn test_expired_locks() {
+async fn sim_test_expired_locks() {
     do_test_lock_table_upgrade().await
 }
 
@@ -1970,7 +1970,7 @@ async fn test_reconfig_with_failing_validator() {
 }
 
 #[sim_test]
-async fn test_validator_resign_effects() {
+async fn sim_test_validator_resign_effects() {
     // This test checks that validators are able to re-sign transaction effects that were finalized
     // in previous epochs. This allows authority aggregator to form a new effects certificate
     // in the new epoch.

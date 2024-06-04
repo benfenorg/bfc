@@ -1,64 +1,89 @@
 processed 16 tasks
 
 task 1 'publish'. lines 6-57:
-Error: error[E03002]: unbound module
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpI119Il:10:9
-   │
-10 │     use sui::sui::SUI;
-   │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpI119Il:16:50
-   │
-16 │         transfer::public_share_object(coin::zero<BFC>(ctx))
-   │                                                  ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Dus9QocTdb/.tmpI119Il:41:36
-   │
-41 │     public fun share_coin(o2: Coin<BFC>) {
-   │                                    ^^^ Unbound type 'BFC' in current scope
-
-
+created: object(1,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 918840,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 59-59:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(2,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'run'. lines 61-61:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(3,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 4 'view-object'. lines 63-63:
-Error: task 4, lines 63-63. Unbound fake id 2,0
+Owner: Shared
+Version: 3
+Contents: t2::o2::Obj2 {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+}
 
 task 5 'view-object'. lines 65-67:
-Error: task 5, lines 65-65. Unbound fake id 3,0
+Owner: Shared
+Version: 4
+Contents: t2::o2::Obj2 {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(3,0),
+        },
+    },
+}
 
 task 6 'programmable'. lines 68-72:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 7 'programmable'. lines 73-77:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 8 'programmable'. lines 78-82:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 9 'programmable'. lines 83-85:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 10 'run'. lines 87-87:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(10,0)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 11 'view-object'. lines 89-91:
-Error: task 11, lines 89-89. Unbound fake id 10,0
+Owner: Shared
+Version: 9
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(10,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 12 'programmable'. lines 92-98:
-Error: INVALID TEST. Unknown object, object(10,0)
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Debug of error: VMVerificationOrDeserializationError at command Some(0)
 
 task 13 'programmable'. lines 99-105:
-Error: INVALID TEST. Unknown object, object(10,0)
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Debug of error: VMVerificationOrDeserializationError at command Some(0)
 
 task 14 'programmable'. lines 106-112:
-Error: INVALID TEST. Unknown object, object(10,0)
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Debug of error: VMVerificationOrDeserializationError at command Some(0)
 
 task 15 'programmable'. lines 113-117:
-Error: INVALID TEST. Unknown object, object(10,0)
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Debug of error: VMVerificationOrDeserializationError at command Some(0)

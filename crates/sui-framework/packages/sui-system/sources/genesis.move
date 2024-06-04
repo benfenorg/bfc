@@ -195,6 +195,7 @@ module sui_system::genesis {
         );
     }
 
+
     fun allocate_tokens(
         mut sui_supply: Balance<BFC>,
         mut allocations: vector<TokenAllocation>,

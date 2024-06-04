@@ -4,9 +4,6 @@
 module entry_point_types::entry_point_types {
     use std::ascii;
     use std::string;
-    use sui::tx_context::TxContext;
-    use std::vector;
-    use std::option::Option;
 
 
     public entry fun ascii_arg(s: ascii::String, len: u64, _: &mut TxContext) {

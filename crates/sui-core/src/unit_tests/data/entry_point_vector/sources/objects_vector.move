@@ -2,10 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module entry_point_vector::entry_point_vector {
-    use sui::object::{Self, UID};
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
-    use std::vector;
 
     public struct Obj has key, store {
         id: UID,

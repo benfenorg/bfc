@@ -2442,7 +2442,7 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     );
 
     // Deactivate the <a href="validator.md#0x3_validator">validator</a> and its staking pool
-    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator">validator</a>.deactivate(new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BJPY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BARS&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
@@ -2460,8 +2460,6 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BTRY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BZAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;MGG&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
-
-    <a href="validator.md#0x3_validator">validator</a>.deactivate(new_epoch);
     self.inactive_validators.add(
         validator_pool_id,
         <a href="validator_wrapper.md#0x3_validator_wrapper_create_v1">validator_wrapper::create_v1</a>(<a href="validator.md#0x3_validator">validator</a>, ctx),
@@ -2619,11 +2617,9 @@ Process all active validators' pending stake deposits and withdraws.
     <b>let</b> length = validators.length();
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; length) {
-        <b>let</b> <a href="validator.md#0x3_validator">validator</a> = <a href="../move-stdlib/vector.md#0x1_vector_borrow_mut">vector::borrow_mut</a>(validators, i);
-        <a href="validator.md#0x3_validator_process_pending_stakes_and_withdraws">validator::process_pending_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
-        <a href="validator.md#0x3_validator_process_pending_all_stable_stakes_and_withdraws">validator::process_pending_all_stable_stakes_and_withdraws</a>(<a href="validator.md#0x3_validator">validator</a>, ctx);
         <b>let</b> <a href="validator.md#0x3_validator">validator</a> = &<b>mut</b> validators[i];
         <a href="validator.md#0x3_validator">validator</a>.<a href="validator_set.md#0x3_validator_set_process_pending_stakes_and_withdraws">process_pending_stakes_and_withdraws</a>(ctx);
+        <a href="validator.md#0x3_validator">validator</a>.process_pending_all_stable_stakes_and_withdraws(ctx);
         i = i + 1;
     }
 }
@@ -2654,10 +2650,8 @@ Calculate the total active validator stake.
     <b>let</b> length = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(validators);
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; length) {
-        <b>let</b> v = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(validators, i);
-        stake = stake + <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(v, stable_rate);
         <b>let</b> v = &validators[i];
-        stake = stake + v.total_stake_amount();
+        stake = stake + v.total_stake_with_all_stable(stable_rate);
         i = i + 1;
     };
     stake
