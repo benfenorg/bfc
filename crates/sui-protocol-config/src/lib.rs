@@ -1041,6 +1041,9 @@ pub struct ProtocolConfig {
     // The max accumulated txn execution cost per object in a checkpoint. Transactions
     // in a checkpoint will be deferred once their touch shared objects hit this limit.
     max_accumulated_txn_cost_per_object_in_checkpoint: Option<u64>,
+
+
+    bfc_system_state_open: Option<u64>,
 }
 
 // feature flags
@@ -1277,6 +1280,10 @@ impl ProtocolConfig {
 
     pub fn consensus_network(&self) -> ConsensusNetwork {
         self.feature_flags.consensus_network
+    }
+
+    pub fn get_bfc_system_state_open(&self) -> u64 {
+        self.bfc_system_state_open.unwrap_or(0)
     }
 }
 
@@ -1719,6 +1726,8 @@ impl ProtocolConfig {
             consensus_max_transactions_in_block_bytes: None,
 
             max_accumulated_txn_cost_per_object_in_checkpoint: None,
+
+            bfc_system_state_open:Some(0),
             // When adding a new constant, set it to None in the earliest version, like this:
             // new_constant: None,
         };
@@ -2120,6 +2129,8 @@ impl ProtocolConfig {
                     cfg.max_meter_ticks_per_package = Some(16_000_000);
                 }
                 44 => {
+                    //open bfc system state
+                    cfg.bfc_system_state_open = Some(1);
                     // Enable consensus digest in consensus commit prologue on all networks..
                     cfg.feature_flags.include_consensus_digest_in_prologue = true;
                     // Switch between Narwhal and Mysticeti per epoch in tests, devnet and testnet.

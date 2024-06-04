@@ -126,6 +126,7 @@ module sui_system::sui_system {
         transfer::share_object(self);
     }
 
+
     // ==== entry functions ====
 
     /// Can be called by anyone who wishes to become a validator candidate and starts accuring delegated
