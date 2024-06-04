@@ -689,9 +689,8 @@ mod checked {
         builder: &mut ProgrammableTransactionBuilder,
         is_safe_mode:bool,
     ) -> Result<(), ExecutionError> {
-        let mut arguments = vec![];
-
         if is_safe_mode { // if safe mode skip judge dao vote result
+            let mut arguments = vec![];
             let args = vec![
                 CallArg::BFC_SYSTEM_MUT,
                 CallArg::CLOCK_IMM,
