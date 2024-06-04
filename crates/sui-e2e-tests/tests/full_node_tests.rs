@@ -496,7 +496,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
 
 // Test for syncing a node to an authority that already has many txes.
 #[sim_test]
-async fn test_full_node_cold_sync() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_cold_sync() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
 
     let context = &mut test_cluster.wallet;
@@ -1077,7 +1077,7 @@ async fn get_past_obj_read_from_node(
 }
 
 #[sim_test]
-async fn test_get_objects_read() -> Result<(), anyhow::Error> {
+async fn sim_test_get_objects_read() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
