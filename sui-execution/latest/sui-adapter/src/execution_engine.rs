@@ -577,10 +577,15 @@ mod checked {
     }
 
     pub fn construct_advance_epoch_pt(
+        obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
         rate_map: &VecMap<String, u64>,
+        is_safe_mode: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
+        // obc
+        construct_bfc_round_pt(obc_params, &mut builder,is_safe_mode)?;
+
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
         let rate_vec: Vec<_> = convert_rate_map(rate_map);
@@ -680,41 +685,41 @@ mod checked {
     }
 
     pub fn construct_bfc_round_pt(
-        round_id: u64,
-        param: ChangeObcRoundParams,
-        reward_rate: u64,
-        storage_rebate: u64,
-        epoch_end_time: u64,
-    ) -> Result<ProgrammableTransaction, ExecutionError> {
-        let mut builder = ProgrammableTransactionBuilder::new();
-        let mut arguments = vec![];
+        param: &ChangeObcRoundParams,
+        builder: &mut ProgrammableTransactionBuilder,
+        is_safe_mode:bool,
+    ) -> Result<(), ExecutionError> {
+        if is_safe_mode { // if safe mode skip judge dao vote result
+            let mut arguments = vec![];
+            let args = vec![
+                CallArg::BFC_SYSTEM_MUT,
+                CallArg::CLOCK_IMM,
+                CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
+            ].into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
 
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&epoch_end_time).unwrap()),
-        ].into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
+            arguments.append(&mut args.unwrap());
 
-        arguments.append(&mut args.unwrap());
+            info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
-        info!("Call arguments to bfc round transaction: {:?}",round_id);
-
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_ROUND_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
-        for (type_tag, gas_cost_summary) in param.stable_gas_summarys {
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+        }
+        for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
             let charge_arg = builder
                 .input(CallArg::Pure(
                     bcs::to_bytes(&(
-                        calculate_reward_rate(gas_cost_summary.gas_by_stable.computation_cost, reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                        calculate_reward_rate(
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -729,7 +734,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -751,7 +756,9 @@ mod checked {
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
+                bcs::to_bytes(&(
+                    param.storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge,
+                                                                                                param.reward_rate))).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -771,7 +778,7 @@ mod checked {
             vec![system_obj, storage_rebate],
         );
 
-        Ok(builder.finish())
+        Ok(())
     }
 
     fn advance_epoch(
@@ -784,6 +791,8 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
         let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
+
+        let is_safe_mode = temporary_store.is_safe_mode();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
@@ -797,32 +806,16 @@ mod checked {
             storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
 
-        let params = ChangeObcRoundParams {
+        let obc_params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
             bfc_computation_charge: change_epoch.bfc_computation_charge,
+            epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
+            reward_rate,
+            storage_rebate,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate, change_epoch.epoch_start_timestamp_ms + change_epoch.epoch_duration_ms)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
-            protocol_config,
-            metrics.clone(),
-            move_vm,
-            temporary_store,
-            tx_ctx,
-            gas_charger,
-            advance_epoch_pt,
-        );
 
-        if result.is_err() {
-            tracing::error!(
-            "Failed to execute change round transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}. Tx data: {:?}",
-            result.as_ref().err(),
-            temporary_store.objects(),
-            change_epoch,
-            );
-        }
-
-        let params = AdvanceEpochParams {
+        let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
             storage_charge: change_epoch.bfc_storage_charge + storage_charge,
@@ -834,7 +827,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&params, &rate_map)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, &rate_map,is_safe_mode)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -858,6 +851,11 @@ mod checked {
             temporary_store.drop_writes();
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
+            params.storage_charge = change_epoch.bfc_storage_charge ;
+            params.computation_charge = change_epoch.bfc_computation_charge ;
+            params.storage_rebate = change_epoch.bfc_storage_rebate ;
+            params.non_refundable_storage_fee= change_epoch.bfc_non_refundable_storage_fee ;
+
 
             if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
@@ -876,7 +874,6 @@ mod checked {
                     .expect("Advance epoch with safe mode must succeed");
             }
         }
-
 
         for (version, modules, dependencies) in change_epoch.system_packages.into_iter() {
             let max_format_version = protocol_config.move_binary_format_version();
