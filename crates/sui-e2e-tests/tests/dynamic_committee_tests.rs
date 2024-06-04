@@ -347,7 +347,7 @@ mod add_stake {
 }
 
 #[sim_test]
-async fn fuzz_dynamic_committee() {
+async fn sim_fuzz_dynamic_committee() {
     let num_operations = 10;
 
     // Add more actions here as we create them

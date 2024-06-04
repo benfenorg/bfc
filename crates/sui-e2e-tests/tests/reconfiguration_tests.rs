@@ -148,7 +148,7 @@ async fn sim_test_transaction_expiration() {
 // TODO: This test does not guarantee that tx would be reverted, and hence the code path
 // may not always be tested.
 #[sim_test]
-async fn reconfig_with_revert_end_to_end_test() {
+async fn sim_reconfig_with_revert_end_to_end_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let authorities = test_cluster.swarm.validator_node_handles();
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -287,7 +287,7 @@ async fn sim_test_passive_reconfig() {
 }
 
 #[sim_test(check_determinism)]
-async fn test_passive_reconfig_determinism() {
+async fn sim_test_passive_reconfig_determinism() {
     do_test_passive_reconfig().await;
 }
 
@@ -1805,7 +1805,7 @@ async fn sim_test_expired_locks() {
 }
 
 #[sim_test]
-async fn test_expired_locks_with_lock_table_upgrade() {
+async fn sim_test_expired_locks_with_lock_table_upgrade() {
     register_fail_point_arg("initial_epoch_flags", || {
         Some(vec![
             EpochFlag::InMemoryCheckpointRoots,
@@ -2031,7 +2031,7 @@ async fn test_validator_candidate_pool_read() {
 }
 
 #[sim_test]
-async fn test_inactive_validator_pool_read() {
+async fn sim_test_inactive_validator_pool_read() {
     let test_cluster = TestClusterBuilder::new()
         .with_num_validators(5)
         .build()
@@ -2157,7 +2157,7 @@ async fn sim_test_reconfig_with_committee_change_stress() {
 }
 
 #[sim_test(check_determinism)]
-async fn test_reconfig_with_committee_change_stress_determinism() {
+async fn sim_test_reconfig_with_committee_change_stress_determinism() {
     do_test_reconfig_with_committee_change_stress().await;
 }
 
