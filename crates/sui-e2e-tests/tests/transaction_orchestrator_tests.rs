@@ -202,7 +202,7 @@ async fn test_fullnode_wal_log() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_transaction_orchestrator_reconfig() {
+async fn sim_test_transaction_orchestrator_reconfig() {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new().build().await;
     let epoch = test_cluster.fullnode_handle.sui_node.with(|node| {

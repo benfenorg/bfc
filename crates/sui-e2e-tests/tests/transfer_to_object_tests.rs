@@ -90,7 +90,7 @@ async fn receive_of_object_with_reconfiguration_receive_of_old_parent_after_reco
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration_receive_of_old_parent_and_child_after_reconfig() {
+async fn sim_receive_of_object_with_reconfiguration_receive_of_old_parent_and_child_after_reconfig() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     env.receive(parent, child).await.unwrap();

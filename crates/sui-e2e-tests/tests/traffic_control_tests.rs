@@ -277,7 +277,7 @@ async fn test_traffic_control_manual_set_dead_mans_switch() -> Result<(), anyhow
 }
 
 #[sim_test]
-async fn test_traffic_sketch_no_blocks() {
+async fn sim_test_traffic_sketch_no_blocks() {
     let no_blocks_config = FreqThresholdConfig {
         threshold: 10_100,
         window_size_secs: 4,
@@ -314,7 +314,7 @@ async fn test_traffic_sketch_no_blocks() {
 }
 
 #[sim_test]
-async fn test_traffic_sketch_with_slow_blocks() {
+async fn sim_test_traffic_sketch_with_slow_blocks() {
     let no_blocks_config = FreqThresholdConfig {
         threshold: 9_900,
         window_size_secs: 4,
@@ -374,7 +374,7 @@ async fn assert_traffic_control_ok(mut test_cluster: TestCluster) -> Result<(), 
         ExecuteTransactionRequestType::WaitForLocalExecution
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 
@@ -387,7 +387,7 @@ async fn assert_traffic_control_ok(mut test_cluster: TestCluster) -> Result<(), 
     assert!(confirmed_local_execution.unwrap());
 
     let _response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_getTransactionBlock", rpc_params![*tx_digest])
+        .request("bfc_getTransactionBlock", rpc_params![*tx_digest])
         .await
         .unwrap();
 
@@ -400,7 +400,7 @@ async fn assert_traffic_control_ok(mut test_cluster: TestCluster) -> Result<(), 
         ExecuteTransactionRequestType::WaitForEffectsCert
     ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
-        .request("sui_executeTransactionBlock", params)
+        .request("bfc_executeTransactionBlock", params)
         .await
         .unwrap();
 
