@@ -160,6 +160,8 @@ pub struct ChangeEpoch {
     pub stable_gas_summarys: Vec<(TypeTag, GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
+
+    pub epoch_duration_ms: u64,
     /// System packages (specifically framework and move stdlib) that are written before the new
     /// epoch starts. This tracks framework upgrades on chain. When executing the ChangeEpoch txn,
     /// the validator must write out the modules below.  Modules are provided with the version they
@@ -2003,6 +2005,7 @@ impl VerifiedTransaction {
         bfc_non_refundable_storage_fee: u64,
         stable_gas_summary_map: HashMap<TypeTag, GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
+        epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
         let mut stable_gas_summarys = vec![];
@@ -2022,6 +2025,7 @@ impl VerifiedTransaction {
             bfc_non_refundable_storage_fee,
             stable_gas_summarys,
             epoch_start_timestamp_ms,
+            epoch_duration_ms: epoch_duration_ms,
             system_packages,
         }
             .pipe(TransactionKind::ChangeEpoch)

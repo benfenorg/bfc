@@ -3942,6 +3942,7 @@ impl AuthorityState {
             return Err(anyhow!("missing system packages: cannot form ChangeEpochTx"));
         };
 
+        let epoch_duration_ms = epoch_store.epoch_start_state().epoch_duration_ms();
         let tx = VerifiedTransaction::new_change_epoch(
             next_epoch,
             next_epoch_protocol_version,
@@ -3951,6 +3952,7 @@ impl AuthorityState {
             bfc_gas_cost_summary.non_refundable_storage_fee,
             stable_gas_cost_summarys.clone(),
             epoch_start_timestamp_ms,
+            epoch_duration_ms,
             next_epoch_system_package_bytes,
         );
 
