@@ -42,7 +42,6 @@ mod checked {
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::messages_consensus::ConsensusCommitPrologue;
     use sui_types::storage::WriteKind;
-    #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
     use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME, ChangeObcRoundParams};
     use sui_types::transaction::{
@@ -693,7 +692,6 @@ mod checked {
             let mut arguments = vec![];
             let args = vec![
                 CallArg::BFC_SYSTEM_MUT,
-                CallArg::CLOCK_IMM,
                 CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
             ].into_iter()
@@ -838,7 +836,6 @@ mod checked {
             advance_epoch_pt,
         );
 
-        #[cfg(msim)]
             let result = maybe_modify_result(result, change_epoch.epoch);
 
         if result.is_err() {

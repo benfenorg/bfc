@@ -5,7 +5,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
-#[cfg(msim)]
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::Duration;
@@ -136,7 +135,6 @@ pub struct ValidatorComponents {
     sui_tx_validator_metrics: Arc<SuiTxValidatorMetrics>,
 }
 
-#[cfg(msim)]
 struct SimState {
     sim_node: sui_simulator::runtime::NodeHandle,
     sim_safe_mode_expected: AtomicBool,
@@ -166,7 +164,6 @@ pub struct SuiNode {
 
     _db_checkpoint_handle: Option<tokio::sync::broadcast::Sender<()>>,
 
-    #[cfg(msim)]
     sim_state: SimState,
 
     _state_archive_handle: Option<broadcast::Sender<()>>,
@@ -623,7 +620,6 @@ impl SuiNode {
         self.end_of_epoch_channel.subscribe()
     }
 
-    #[cfg(msim)]
     pub fn set_safe_mode_expected(&self, new_value: bool) {
         info!("Setting safe mode expected to {}", new_value);
         self.sim_state
