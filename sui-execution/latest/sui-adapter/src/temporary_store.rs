@@ -852,7 +852,18 @@ impl<'backing> TemporaryStore<'backing> {
             SuiSystemState::V2(inner)=>{
                 inner.safe_mode()
             }
-            _ => unreachable!()
+            #[cfg(msim)]
+            SuiSystemState::SimTestV1(inner) =>{
+                inner.safe_mode()
+            }
+            #[cfg(msim)]
+            SuiSystemState::SimTestShallowV2(inner) => {
+                inner.safe_mode()
+            }
+            #[cfg(msim)]
+            SuiSystemState::SimTestDeepV2(inner)=>{
+                inner.safe_mode()
+            }
         }
     }
 

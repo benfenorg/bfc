@@ -66,7 +66,7 @@ module bfc_system::bfc_system {
 
     spec module { pragma verify = false; }
 
-    public fun create(
+    public(friend) fun create(
         id: UID,
         bfc_balance: Balance<BFC>,
         usd_supply: Supply<BUSD>,
@@ -142,7 +142,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
 
-    public fun bfc_round(
+    #[allow(unused_function)]
+    fun bfc_round(
         wrapper: &mut BfcSystemState,
         round: u64,
         epoch_start_time: u64,
@@ -152,7 +153,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
 
-    public fun inner_stablecoin_to_bfc<StableCoinType>(
+    #[allow(unused_function)]
+    fun inner_stablecoin_to_bfc<StableCoinType>(
         _self: &mut BfcSystemState,
         _balance: Balance<StableCoinType>,
         expect: u64,
