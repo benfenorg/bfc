@@ -4595,36 +4595,17 @@ impl AuthorityState {
             };
 
 
-        let tx = if epoch_store
-            .protocol_config()
-            .end_of_epoch_transaction_supported()
-        {
-            txns.push(EndOfEpochTransactionKind::new_change_epoch(
-                next_epoch,
-                next_epoch_protocol_version,
-                bfc_gas_cost_summary.storage_cost,
-                bfc_gas_cost_summary.computation_cost,
-                bfc_gas_cost_summary.storage_rebate,
-                bfc_gas_cost_summary.non_refundable_storage_fee,
-                stable_gas_cost_summarys.clone(),
-                epoch_start_timestamp_ms,
-                next_epoch_system_package_bytes,
-            ));
-
-            VerifiedTransaction::new_end_of_epoch_transaction(txns)
-        } else {
-            VerifiedTransaction::new_change_epoch(
-                next_epoch,
-                next_epoch_protocol_version,
-                bfc_gas_cost_summary.storage_cost,
-                bfc_gas_cost_summary.computation_cost,
-                bfc_gas_cost_summary.storage_rebate,
-                bfc_gas_cost_summary.non_refundable_storage_fee,
-                stable_gas_cost_summarys.clone(),
-                epoch_start_timestamp_ms,
-                next_epoch_system_package_bytes,
-            )
-        };
+        let tx = VerifiedTransaction::new_change_epoch(
+            next_epoch,
+            next_epoch_protocol_version,
+            bfc_gas_cost_summary.storage_cost,
+            bfc_gas_cost_summary.computation_cost,
+            bfc_gas_cost_summary.storage_rebate,
+            bfc_gas_cost_summary.non_refundable_storage_fee,
+            stable_gas_cost_summarys.clone(),
+            epoch_start_timestamp_ms,
+            next_epoch_system_package_bytes,
+        );
 
         let executable_tx = VerifiedExecutableTransaction::new_from_checkpoint(
             tx.clone(),
