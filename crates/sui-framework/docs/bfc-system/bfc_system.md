@@ -9,6 +9,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_unstake_manager_key)
 -  [Function `create`](#0xc8_bfc_system_create)
+-  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
@@ -251,6 +252,31 @@ title: Module `0xc8::bfc_system`
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
 
     <a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_change_round"></a>
+
+## Function `change_round`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_change_round">change_round</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, round: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code>entry <b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_change_round">change_round</a>( wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, round: u64) {
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
 }
 </code></pre>
 

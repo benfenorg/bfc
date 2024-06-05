@@ -5440,6 +5440,9 @@ unstake_manager_key
 create
 	public fun
 	0xc8::bfc_system
+change_round
+	public entry fun
+	0xc8::bfc_system
 bfc_round
 	public fun
 	0xc8::bfc_system
