@@ -489,6 +489,7 @@ impl TestCluster {
         ))
     }
 
+    #[cfg(msim)]
     pub fn set_safe_mode_expected(&self, value: bool) {
         for n in self.all_node_handles() {
             n.with(|node| node.set_safe_mode_expected(value));
