@@ -4,7 +4,6 @@
 module sui_system::validator_wrapper {
     use sui::versioned::Versioned;
     use sui::versioned;
-    use sui::tx_context::TxContext;
     use sui_system::validator::Validator;
 
     const VALIDATOR_VERSION_V1: u64 = 18446744073709551605;  // u64::MAX - 10

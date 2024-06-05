@@ -4,7 +4,6 @@
 module sui_system::validator {
     use std::ascii;
 
-    use sui::tx_context::TxContext;
     use std::string::{Self, String};
     use sui::bag::{Self, Bag};
     use sui::balance::{Self, Balance};

@@ -6,7 +6,7 @@ use std::fmt;
 use std::path::PathBuf;
 use std::str::FromStr;
 #[cfg(msim)]
-use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::atomic::{Ordering};
 use std::sync::Arc;
 use std::time::Duration;
 
