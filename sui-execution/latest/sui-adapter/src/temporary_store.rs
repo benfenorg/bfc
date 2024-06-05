@@ -340,42 +340,28 @@ impl<'backing> TemporaryStore<'backing> {
         let id = object.id();
         self.execution_results.created_object_ids.insert(id);
         self.execution_results.written_objects.insert(id, object);
+        let tmp = self.execution_results
+            .written_objects
+            .get(&id);
+        println!("wubin object id {}  isnone{}", id,  self.execution_results.written_objects.len());
+
     }
 
+    pub fn read_object(&self, id: &ObjectID) -> Option<&Object> {
+        // there should be no read after delete
+        debug_assert!(!self.execution_results.deleted_object_ids.contains(id));
+        println!("wubin get object id {} len{}", id, self.execution_results.written_objects.len());
 
-    pub fn write_object(&mut self, mut object: Object, kind: WriteKind) {
-        // there should be no write after delete
-        //debug_assert!(self.deleted.get(&object.id()).is_none());
-        // Check it is not read-only
-        #[cfg(test)] // Movevm should ensure this
-        if let Some(existing_object) = self.read_object(&object.id()) {
-            if existing_object.is_immutable() {
-                // This is an internal invariant violation. Move only allows us to
-                // mutate objects if they are &mut so they cannot be read-only.
-                panic!("Internal invariant violation: Mutating a read-only object.")
-            }
-        }
-
-        // Created mutable objects' versions are set to the store's lamport timestamp when it is
-        // committed to effects. Creating an object at a non-zero version risks violating the
-        // lamport timestamp invariant (that a transaction's lamport timestamp is strictly greater
-        // than all versions witnessed by the transaction).
-        debug_assert!(
-            kind != WriteKind::Create
-                || object.is_immutable()
-                || object.version() == SequenceNumber::MIN,
-            "Created mutable objects should not have a version set",
-        );
-
-        // The adapter is not very disciplined at filling in the correct
-        // previous transaction digest, so we ensure it is correct here.
-        object.previous_transaction = self.tx_digest;
-        self.execution_results.written_objects.insert(object.id(), object);
+        self.execution_results
+            .written_objects
+            .get(id)
+            .or_else(|| self.input_objects.get(id))
     }
-
     /// Delete a mutable input object. This is used to delete input objects outside of PT execution.
     pub fn delete_input_object(&mut self, id: &ObjectID) {
         // there should be no deletion after write
+        println!("wubin delete_input_object {}", id);
+
         debug_assert!(!self.execution_results.written_objects.contains_key(id));
         debug_assert!(self.input_objects.contains_key(id));
         self.execution_results.modified_objects.insert(*id);
@@ -383,17 +369,11 @@ impl<'backing> TemporaryStore<'backing> {
     }
 
     pub fn drop_writes(&mut self) {
+        println!("drop_writes");
         self.execution_results.drop_writes();
     }
 
-    pub fn read_object(&self, id: &ObjectID) -> Option<&Object> {
-        // there should be no read after delete
-        debug_assert!(!self.execution_results.deleted_object_ids.contains(id));
-        self.execution_results
-            .written_objects
-            .get(id)
-            .or_else(|| self.input_objects.get(id))
-    }
+
 
 
     pub fn estimate_effects_size_upperbound(&self) -> usize {
@@ -748,9 +728,9 @@ impl<'backing> TemporaryStore<'backing> {
     ) {
         let wrapper = get_bfc_system_state_wrapper(self.store.as_object_store())
             .expect("System state wrapper object must exist");
-        let new_object =
+        let (old_object, new_object) =
             wrapper.bfc_round_safe_mode(self.store.as_object_store(),protocol_config);
-        self.write_object(new_object, WriteKind::Mutate);
+        self.mutate_child_object(old_object, new_object);
     }
     pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
         get_bfc_system_proposal_state_map(self.store.as_object_store())
@@ -1082,6 +1062,7 @@ impl<'backing> Storage for TemporaryStore<'backing> {
         // possible to execute PT more than once during tx execution.
         self.execution_results.merge_results(results);
     }
+
     fn save_loaded_runtime_objects(
         &mut self,
         loaded_runtime_objects: BTreeMap<ObjectID, DynamicallyLoadedObjectMetadata>,
