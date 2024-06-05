@@ -2265,7 +2265,12 @@ vault info
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64): u64 {
     <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
     <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> u64);
-    (_vault.position_number <b>as</b> u64) * base_point_amount
+    <b>let</b> total_required_amount = (_vault.position_number <b>as</b> u64) * base_point_amount;
+    <b>if</b> (total_required_amount &gt; <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b)) {
+        total_required_amount - <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b)
+    } <b>else</b> {
+        0
+    }
 }
 </code></pre>
 

@@ -893,7 +893,12 @@ module bfc_system::vault {
     public fun bfc_required<StableCoinType>(_vault: &Vault<StableCoinType>, _treasury_total_bfc_supply: u64): u64 {
         let curve_dx_q64 = curve_dx((_vault.coin_market_cap as u128), (_treasury_total_bfc_supply as u128));
         let base_point_amount = (((_vault.base_point as u128) * (Q64 + curve_dx_q64) / Q64) as u64);
-        (_vault.position_number as u64) * base_point_amount
+        let total_required_amount = (_vault.position_number as u64) * base_point_amount;
+        if (total_required_amount > balance::value(&_vault.coin_b)) {
+            total_required_amount - balance::value(&_vault.coin_b)
+        } else {
+            0
+        }
     }
 
     public fun min_liquidity_rate(): u128 {
