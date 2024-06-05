@@ -446,7 +446,7 @@ pub struct ChangeObcRoundParams {
     pub storage_rebate: u64,
 }
 
-// #[cfg(msim)]
+#[cfg(msim)]
 pub mod advance_epoch_result_injection {
     use crate::{
         committee::EpochId,
