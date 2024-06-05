@@ -2618,7 +2618,26 @@ State checker
         // reset state counter
         _vault.state_counter = 0;
     } <b>else</b> {
-        <b>return</b> _vault.last_bfc_rebalance_amount
+        <b>let</b> should_break = <b>false</b>;
+        <b>let</b> edge_position = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, 1);
+        <b>let</b> (_, tu) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
+        <b>if</b> (<a href="i32.md#0xc8_i32_lte">i32::lte</a>(_vault.current_tick_index, tu)) {
+            should_break = <b>true</b>;
+        };
+        <b>if</b> (!should_break) {
+            edge_position = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, (_vault.position_number <b>as</b> u64));
+            <b>let</b> (tl, _) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
+            <b>if</b> (<a href="i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tl)) {
+                should_break = <b>true</b>;
+            };
+        };
+        <b>if</b> (!should_break) {
+            <b>return</b> _vault.last_bfc_rebalance_amount
+        } <b>else</b> {
+            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+            // reset state counter
+            _vault.state_counter = 0;
+        };
     };
     <b>let</b> (
         balance0,

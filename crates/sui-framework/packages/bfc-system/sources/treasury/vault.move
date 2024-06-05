@@ -1086,7 +1086,26 @@ module bfc_system::vault {
             // reset state counter
             _vault.state_counter = 0;
         } else {
-            return _vault.last_bfc_rebalance_amount
+            let should_break = false;
+            let edge_position = position::borrow_position(&_vault.position_manager, 1);
+            let (_, tu) = position::get_tick_range(edge_position);
+            if (i32::lte(_vault.current_tick_index, tu)) {
+                should_break = true;
+            };
+            if (!should_break) {
+                edge_position = position::borrow_position(&_vault.position_manager, (_vault.position_number as u64));
+                let (tl, _) = position::get_tick_range(edge_position);
+                if (i32::gte(_vault.current_tick_index, tl)) {
+                    should_break = true;
+                };
+            };
+            if (!should_break) {
+                return _vault.last_bfc_rebalance_amount
+            } else {
+                _vault.state = SHAPE_EQUAL_SIZE;
+                // reset state counter
+                _vault.state_counter = 0;
+            };
         };
         let (
             balance0,
