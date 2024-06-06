@@ -2,7 +2,7 @@
 name = "name"
 license = "license"
 authors = ["some author"]
-edition = "legacy"
+edition = "2024.beta"
 flavor = "core"
 
 [addresses]

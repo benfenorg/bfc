@@ -62,7 +62,7 @@ module sui_system::genesis {
     fun create(
         sui_system_state_id: UID,
         bfc_system_state_id: UID,
-        sui_supply: Balance<BFC>,
+        mut sui_supply: Balance<BFC>,
         genesis_chain_parameters: GenesisChainParameters,
         genesis_validators: vector<GenesisValidatorMetadata>,
         _token_distribution_schedule: TokenDistributionSchedule,
