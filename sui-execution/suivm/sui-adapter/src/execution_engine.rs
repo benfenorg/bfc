@@ -725,8 +725,7 @@ mod checked {
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
                 bcs::to_bytes(&(
-                    param.storage_rebate + param.bfc_computation_charge - calculate_reward_rate(param.bfc_computation_charge,
-                                                                                                param.reward_rate))).unwrap(),
+                    param.storage_rebate )).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -764,11 +763,13 @@ mod checked {
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
         let mut computation_charge = 0u64;
+        let mut deposit_computation_charge = 0u64;
 
         for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
             storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            computation_charge += calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
             storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
 
@@ -776,7 +777,8 @@ mod checked {
         let obc_params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
-            bfc_computation_charge: change_epoch.bfc_computation_charge,
+            bfc_computation_charge: computation_charge,
+            bfc_deposit_computation_charge : deposit_computation_charge,
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
             reward_rate,
             storage_rebate,
@@ -786,7 +788,7 @@ mod checked {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
             storage_charge: change_epoch.bfc_storage_charge + storage_charge,
-            computation_charge: change_epoch.bfc_computation_charge - calculate_reward_rate(change_epoch.bfc_computation_charge, reward_rate) + computation_charge,
+            computation_charge: change_epoch.bfc_computation_charge + computation_charge,
             storage_rebate: change_epoch.bfc_storage_rebate + storage_rebate,
             non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
