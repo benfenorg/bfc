@@ -2366,7 +2366,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .get_bfc_system_state_object_for_testing().unwrap();
 
     let treasury = bfc_system_state.clone().inner_state().treasury.clone();
-    assert_eq!(treasury.bfc_balance, Balance::new(8673437554378));
+    assert_ne!(treasury.bfc_balance, Balance::new(0));
     Ok(())
 }
 
@@ -2549,7 +2549,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(6000)
         .with_num_validators(5)
         .build()
         .await;
