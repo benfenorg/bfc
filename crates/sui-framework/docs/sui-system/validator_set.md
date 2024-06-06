@@ -2442,7 +2442,7 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     );
 
     // Deactivate the <a href="validator.md#0x3_validator">validator</a> and its staking pool
-    <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
+    <a href="validator.md#0x3_validator">validator</a>.deactivate(new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BUSD&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BJPY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BARS&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
@@ -2460,8 +2460,6 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BTRY&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;BZAR&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
     <a href="validator.md#0x3_validator_deactivate_stable">validator::deactivate_stable</a>&lt;MGG&gt;(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, new_epoch);
-
-    <a href="validator.md#0x3_validator">validator</a>.deactivate(new_epoch);
     self.inactive_validators.add(
         validator_pool_id,
         <a href="validator_wrapper.md#0x3_validator_wrapper_create_v1">validator_wrapper::create_v1</a>(<a href="validator.md#0x3_validator">validator</a>, ctx),

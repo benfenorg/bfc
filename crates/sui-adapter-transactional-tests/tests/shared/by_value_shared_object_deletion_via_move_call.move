@@ -6,7 +6,7 @@
 //# publish
 
 module t2::o2 {
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
 
     public struct Obj2 has key, store {

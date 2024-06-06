@@ -58,7 +58,7 @@ use tokio::time::{sleep, Duration};
 use tracing::info;
 
 #[sim_test]
-async fn test_full_node_follows_txes() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_follows_txes() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let fullnode = test_cluster.spawn_new_fullnode().await.sui_node;
 
@@ -90,7 +90,7 @@ async fn test_full_node_follows_txes() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_full_node_shared_objects() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_shared_objects() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let handle = test_cluster.spawn_new_fullnode().await;
 
@@ -196,7 +196,7 @@ async fn test_sponsored_transaction() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_full_node_move_function_index() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_move_function_index() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let node = &test_cluster.fullnode_handle.sui_node;
@@ -496,7 +496,7 @@ async fn test_full_node_indexes() -> Result<(), anyhow::Error> {
 
 // Test for syncing a node to an authority that already has many txes.
 #[sim_test]
-async fn test_full_node_cold_sync() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_cold_sync() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
 
     let context = &mut test_cluster.wallet;
@@ -531,12 +531,12 @@ async fn test_full_node_cold_sync() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_full_node_sync_flood() {
+async fn sim_test_full_node_sync_flood() {
     do_test_full_node_sync_flood().await
 }
 
 #[sim_test(check_determinism)]
-async fn test_full_node_sync_flood_determinism() {
+async fn sim_test_full_node_sync_flood_determinism() {
     do_test_full_node_sync_flood().await
 }
 
@@ -639,7 +639,7 @@ async fn do_test_full_node_sync_flood() {
 }
 
 #[sim_test]
-async fn test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new()
         .enable_fullnode_events()
         .build()
@@ -741,7 +741,7 @@ async fn test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Erro
 
 // Test fullnode has event read jsonrpc endpoints working
 #[sim_test]
-async fn test_full_node_event_read_api_ok() {
+async fn sim_test_full_node_event_read_api_ok() {
     let mut test_cluster = TestClusterBuilder::new()
         .with_fullnode_rpc_port(50000)
         .enable_fullnode_events()
@@ -794,7 +794,7 @@ async fn test_full_node_event_read_api_ok() {
 }
 
 #[sim_test]
-async fn test_full_node_event_query_by_module_ok() {
+async fn sim_test_full_node_event_query_by_module_ok() {
     let mut test_cluster = TestClusterBuilder::new()
         .enable_fullnode_events()
         .build()
@@ -1077,7 +1077,7 @@ async fn get_past_obj_read_from_node(
 }
 
 #[sim_test]
-async fn test_get_objects_read() -> Result<(), anyhow::Error> {
+async fn sim_test_get_objects_read() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -1244,7 +1244,7 @@ async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Erro
 
 // Object fast path should be disabled and unused.
 #[sim_test]
-async fn test_pass_back_no_object() -> Result<(), anyhow::Error> {
+async fn sim_test_pass_back_no_object() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let fullnode = test_cluster.spawn_new_fullnode().await.sui_node;
@@ -1316,7 +1316,7 @@ async fn test_pass_back_no_object() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_access_old_object_pruned() {
+async fn sim_test_access_old_object_pruned() {
     // This test checks that when we ask a validator to handle a transaction that uses
     // an old object that's already been pruned, it's able to return an non-retriable
     // error ObjectVersionUnavailableForConsumption, instead of the retriable error
@@ -1414,7 +1414,7 @@ async fn transfer_coin(
 }
 
 #[sim_test]
-async fn test_full_node_run_with_range_checkpoint() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_run_with_range_checkpoint() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let stop_after_checkpoint_seq = 5;
     let want_run_with_range = Some(RunWithRange::Checkpoint(stop_after_checkpoint_seq));
@@ -1461,7 +1461,7 @@ async fn test_full_node_run_with_range_checkpoint() -> Result<(), anyhow::Error>
 }
 
 #[sim_test]
-async fn test_full_node_run_with_range_epoch() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_run_with_range_epoch() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     let stop_after_epoch = 2;
     let want_run_with_range = Some(RunWithRange::Epoch(stop_after_epoch));

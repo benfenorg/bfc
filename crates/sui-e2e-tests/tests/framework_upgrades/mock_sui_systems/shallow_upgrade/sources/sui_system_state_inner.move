@@ -4,10 +4,8 @@
 module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::tx_context::TxContext;
     use sui::bag::{Self, Bag};
     use sui::table::{Self, Table};
-    use sui::object::ID;
 
     use sui_system::validator::Validator;
     use sui_system::validator_wrapper::ValidatorWrapper;

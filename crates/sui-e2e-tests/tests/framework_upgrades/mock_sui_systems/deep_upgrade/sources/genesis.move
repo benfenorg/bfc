@@ -2,12 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module sui_system::genesis {
-    use std::vector;
     use sui::balance::{Self, Balance};
-    use sui::object::UID;
     use sui::bfc::BFC;
-    use sui::tx_context::{Self, TxContext};
-    use std::option::Option;
 
     use sui_system::sui_system;
     use sui_system::validator;

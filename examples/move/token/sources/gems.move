@@ -34,7 +34,7 @@ module examples::sword {
 module examples::gem {
     use std::option::none;
     use std::string::{Self, String};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
     use sui::tx_context::{sender};
     use sui::coin::{Self, Coin, TreasuryCap};

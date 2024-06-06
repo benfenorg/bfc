@@ -8,7 +8,7 @@ module examples::coffee {
     use sui::coin::{Self, TreasuryCap, Coin};
     use sui::balance::{Self, Balance};
     use sui::token::{Self, Token};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     /// Error code for incorrect amount.
     const EIncorrectAmount: u64 = 0;

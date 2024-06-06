@@ -4,35 +4,42 @@ init:
 A: object(0,0)
 
 task 1 'publish'. lines 6-18:
-Error: error[E03002]: unbound module
-  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp7E7VuJ:8:9
-  │
-8 │     use sui::sui::SUI;
-  │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp7E7VuJ:14:50
-   │
-14 │         transfer::public_share_object(coin::zero<BFC>(ctx))
-   │                                                  ^^^ Unbound type 'BFC' in current scope
-
-
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 531240,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 20-22:
 Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
 Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(1) } }
 
 task 3 'programmable'. lines 24-26:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"sui\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: Some(1) } }
 
 task 4 'run'. lines 28-28:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(4,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 5 'view-object'. lines 30-32:
-Error: task 5, lines 30-30. Unbound fake id 4,0
+Owner: Shared
+Version: 3
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(4,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 6 'programmable'. lines 33-37:
-Error: INVALID TEST. Unknown object, object(4,0)
+created: object(6,0)
+mutated: object(0,0), object(4,0)
+gas summary: computation_cost: 1000000, storage_cost: 392160,  storage_rebate: 258826, non_refundable_storage_fee: 2614
 
 task 7 'programmable'. lines 38-41:
-Error: INVALID TEST. Unknown object, object(4,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None

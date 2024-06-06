@@ -8,7 +8,7 @@
 //# publish
 
 module test::m1 {
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin;
 
     public fun mint_shared(ctx: &mut TxContext) {

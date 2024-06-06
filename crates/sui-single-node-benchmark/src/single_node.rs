@@ -99,7 +99,8 @@ impl SingleValidator {
         keypair: &AccountKeyPair,
         gas: ObjectRef,
     ) -> (ObjectRef, ObjectRef) {
-        let tx_builder = TestTransactionBuilder::new(sender, gas, DEFAULT_VALIDATOR_GAS_PRICE)
+        let tx_builder = TestTransactionBuilder::new(sender, gas,
+                                                     DEFAULT_VALIDATOR_GAS_PRICE*6)
             .publish_with_data(publish_data);
         let transaction = tx_builder.build_and_sign(keypair);
         let effects = self.execute_raw_transaction(transaction).await;

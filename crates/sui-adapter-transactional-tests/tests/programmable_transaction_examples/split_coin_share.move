@@ -5,7 +5,7 @@
 
 //# publish
 module p::m {
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin;
 
     public fun sharer<T: key + store>(x: T) {

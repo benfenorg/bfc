@@ -176,7 +176,7 @@ module flash_lender::example {
     }
 
     // === Tests ===
-    #[test_only] use sui::sui::SUI;
+    #[test_only] use sui::bfc::BFC;
     #[test_only] use sui::test_scenario as ts;
 
     #[test_only] const ADMIN: address = @0xAD;

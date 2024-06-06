@@ -4,16 +4,13 @@
 module sui_system::sui_system_state_inner {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::tx_context::TxContext;
     use sui::bag::{Self, Bag};
     use sui::table::{Self, Table};
-    use sui::object::ID;
 
     use sui_system::validator::Validator;
     use sui_system::validator_wrapper::ValidatorWrapper;
     use sui_system::validator_wrapper;
     use sui_system::validator;
-    use sui::object;
 
     const SYSTEM_STATE_VERSION_V1: u64 = 18446744073709551605;  // u64::MAX - 10
 

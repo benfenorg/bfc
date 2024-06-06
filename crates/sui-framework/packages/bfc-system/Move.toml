@@ -2,9 +2,10 @@
 name = "BfcSystem"
 version = "0.0.1"
 published-at = "0xC8"
+edition = "2024.beta"
 
 [dependencies]
-MoveStdlib = { local = "../move-stdlib" }
+# MoveStdlib = { local = "../move-stdlib" }
 Sui = { local = "../sui-framework" }
 
 [addresses]

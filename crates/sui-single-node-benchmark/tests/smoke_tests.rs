@@ -9,7 +9,7 @@ use sui_single_node_benchmark::run_benchmark;
 use sui_single_node_benchmark::workload::Workload;
 
 #[sim_test]
-async fn benchmark_non_move_transactions_smoke_test() {
+async fn sim_benchmark_non_move_transactions_smoke_test() {
     for skip_signing in [true, false] {
         for component in Component::iter() {
             run_benchmark(
@@ -37,7 +37,7 @@ async fn benchmark_non_move_transactions_smoke_test() {
 }
 
 #[sim_test]
-async fn benchmark_move_transactions_smoke_test() {
+async fn sim_benchmark_move_transactions_smoke_test() {
     for skip_signing in [true, false] {
         for component in Component::iter() {
             run_benchmark(
@@ -65,7 +65,7 @@ async fn benchmark_move_transactions_smoke_test() {
 }
 
 #[sim_test]
-async fn benchmark_batch_mint_smoke_test() {
+async fn sim_benchmark_batch_mint_smoke_test() {
     for skip_signing in [true, false] {
         for component in Component::iter() {
             run_benchmark(
@@ -93,7 +93,7 @@ async fn benchmark_batch_mint_smoke_test() {
 }
 
 #[sim_test]
-async fn benchmark_publish_from_source() {
+async fn sim_benchmark_publish_from_source() {
     // This test makes sure that the benchmark runs.
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.extend([
@@ -120,7 +120,7 @@ async fn benchmark_publish_from_source() {
 }
 
 #[sim_test]
-async fn benchmark_publish_from_bytecode() {
+async fn sim_benchmark_publish_from_bytecode() {
     // This test makes sure that the benchmark runs.
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.extend([

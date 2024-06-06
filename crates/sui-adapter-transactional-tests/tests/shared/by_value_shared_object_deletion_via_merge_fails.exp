@@ -4,124 +4,154 @@ init:
 A: object(0,0)
 
 task 1 'publish'. lines 13-62:
-Error: error[E03002]: unbound module
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:17:9
-   │
-17 │     use sui::sui::SUI;
-   │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:23:50
-   │
-23 │         transfer::public_share_object(coin::zero<BFC>(ctx))
-   │                                                  ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:29:46
-   │
-29 │         transfer::public_transfer(coin::zero<BFC>(ctx), @A)
-   │                                              ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:31:33
-   │
-31 │     public fun deleter(o2: Coin<BFC>) {
-   │                                 ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:34:33
-   │
-34 │     public fun freezer(o2: Coin<BFC>) {
-   │                                 ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:37:50
-   │
-37 │     public fun dofer(parent: &mut Obj2, o2: Coin<BFC>) {
-   │                                                  ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:40:49
-   │
-40 │     public fun dfer(parent: &mut Obj2, o2: Coin<BFC>) {
-   │                                                 ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:43:36
-   │
-43 │     public fun transferer(o2: Coin<BFC>) {
-   │                                    ^^^ Unbound type 'BFC' in current scope
-
-error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.gKPRoFNgiS/.tmp1LDMQC:46:32
-   │
-46 │     public fun sharer(o2: Coin<BFC>) {
-   │                                ^^^ Unbound type 'BFC' in current scope
-
-
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 958360,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 64-64:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(2,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'run'. lines 66-66:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(3,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 4 'run'. lines 68-68:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(4,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 5 'view-object'. lines 70-70:
-Error: task 5, lines 70-70. Unbound fake id 2,0
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 3
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 6 'view-object'. lines 72-72:
-Error: task 6, lines 72-72. Unbound fake id 3,0
+Owner: Shared
+Version: 4
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(3,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 7 'view-object'. lines 74-76:
-Error: task 7, lines 74-74. Unbound fake id 4,0
+Owner: Shared
+Version: 5
+Contents: t2::o2::Obj2 {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(4,0),
+        },
+    },
+}
 
 task 8 'programmable'. lines 77-81:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 9 'programmable'. lines 82-86:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 10 'programmable'. lines 87-91:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 11 'programmable'. lines 92-96:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 12 'programmable'. lines 97-101:
-Error: INVALID TEST. Unknown object, object(2,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 13 'run'. lines 103-103:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(13,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 14 'run'. lines 105-105:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(14,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 15 'run'. lines 107-107:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+created: object(15,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 16 'view-object'. lines 109-109:
-Error: task 16, lines 109-109. Unbound fake id 13,0
+Owner: Shared
+Version: 6
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(13,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 17 'view-object'. lines 111-111:
-Error: task 17, lines 111-111. Unbound fake id 14,0
+Owner: Shared
+Version: 7
+Contents: sui::coin::Coin<sui::bfc::BFC> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(14,0),
+        },
+    },
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 0u64,
+    },
+}
 
 task 18 'view-object'. lines 113-115:
-Error: task 18, lines 113-113. Unbound fake id 15,0
+Owner: Shared
+Version: 8
+Contents: t2::o2::Obj2 {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(15,0),
+        },
+    },
+}
 
 task 19 'programmable'. lines 116-120:
-Error: INVALID TEST. Unknown object, object(13,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 20 'programmable'. lines 121-125:
-Error: INVALID TEST. Unknown object, object(13,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 21 'programmable'. lines 126-130:
-Error: INVALID TEST. Unknown object, object(13,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 22 'programmable'. lines 131-135:
-Error: INVALID TEST. Unknown object, object(13,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None
 
 task 23 'programmable'. lines 136-138:
-Error: INVALID TEST. Unknown object, object(13,0)
+Error: Transaction Effects Status: The shared object operation is not allowed.
+Debug of error: SharedObjectOperationNotAllowed at command None

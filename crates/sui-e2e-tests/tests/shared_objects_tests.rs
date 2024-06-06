@@ -26,7 +26,7 @@ use tokio::time::sleep;
 
 /// Send a simple shared object transaction to Sui and ensures the client gets back a response.
 #[sim_test]
-async fn shared_object_transaction() {
+async fn sim_shared_object_transaction() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let (sender, mut objects) = test_cluster.wallet.get_one_account().await.unwrap();
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -50,7 +50,7 @@ async fn shared_object_transaction() {
 
 /// Delete a shared object as the object owner
 #[sim_test]
-async fn shared_object_deletion() {
+async fn sim_shared_object_deletion() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let (package, counter) = publish_basics_package_and_make_counter(&test_cluster.wallet).await;
@@ -79,7 +79,7 @@ async fn shared_object_deletion() {
 }
 
 #[sim_test]
-async fn shared_object_deletion_multiple_times() {
+async fn sim_shared_object_deletion_multiple_times() {
     let num_deletions = 300;
     let mut test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {
@@ -211,7 +211,7 @@ async fn shared_object_deletion_multiple_times_cert_racing() {
 /// we will explore all possible orders, and `submit_transaction_to_validators` verifies that we
 /// get the same effects regardless of the order. (checkpoint fork detection will also test this).
 #[sim_test]
-async fn shared_object_deletion_multi_certs() {
+async fn sim_shared_object_deletion_multi_certs() {
     // cause random delay just before tx is executed
     register_fail_point_async("transaction_execution_delay", move || async move {
         let delay = {
@@ -315,7 +315,7 @@ async fn shared_object_deletion_multi_certs() {
 /// End-to-end shared transaction test for a Sui validator. It does not test the client or wallet,
 /// but tests the end-to-end flow from Sui to consensus.
 #[sim_test]
-async fn call_shared_object_contract() {
+async fn sim_call_shared_object_contract() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let (package, counter) = publish_basics_package_and_make_counter(&test_cluster.wallet).await;
     let package_id = package.0;
@@ -535,7 +535,7 @@ async fn access_clock_object_test() {
 }
 
 #[sim_test]
-async fn shared_object_sync() {
+async fn sim_shared_object_sync() {
     let test_cluster = TestClusterBuilder::new()
         // Set the threshold high enough so it won't be triggered.
         .with_authority_overload_config(AuthorityOverloadConfig {
@@ -624,7 +624,7 @@ async fn shared_object_sync() {
 
 /// Send a simple shared object transaction to Sui and ensures the client gets back a response.
 #[sim_test]
-async fn replay_shared_object_transaction() {
+async fn sim_replay_shared_object_transaction() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let package_id = publish_basics_package(&test_cluster.wallet).await.0;
 

@@ -208,7 +208,7 @@ async fn test_expired_zklogin_sig() {
 }
 
 #[sim_test]
-async fn test_auth_state_creation() {
+async fn sim_test_auth_state_creation() {
     // Create test cluster without auth state object in genesis
     let test_cluster = TestClusterBuilder::new()
         .with_protocol_version(23.into())
