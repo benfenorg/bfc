@@ -54,6 +54,7 @@ ChangeEpoch:
             - TYPENAME: TypeTag
             - TYPENAME: GasCostSummaryAdjusted
     - epoch_start_timestamp_ms: U64
+    - epoch_duration_ms: U64
     - system_packages:
         SEQ:
           TUPLE:
