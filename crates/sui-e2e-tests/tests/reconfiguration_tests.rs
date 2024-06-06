@@ -1931,6 +1931,7 @@ async fn sim_test_reconfig_with_committee_change_stress() {
     }
 }
 
+#[cfg(msim)]
 #[sim_test]
 async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
     use sui_test_transaction_builder::make_staking_transaction;
@@ -2022,6 +2023,7 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[cfg(msim)]
 #[sim_test]
 async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     use sui_test_transaction_builder::make_staking_transaction;
@@ -2100,6 +2102,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+#[cfg(msim)]
 #[sim_test]
 async fn safe_mode_reconfig_test() {
     use sui_test_transaction_builder::make_staking_transaction;
