@@ -1,6 +1,7 @@
 #!/bin/bash
 # cargo update -p tokio --precise 1.28.1
 # cargo simtest --profile ci  --retries 1
+#UPDATE_BASELINE=1 cargo simtest --profile ci  --retries 1
 cargo simtest sim_test_full_node_bootstrap_from_snapshot
 cargo simtest sim_test_upgraded_multisig_feature_deny
 cargo simtest sim_advance_epoch_tx_test
