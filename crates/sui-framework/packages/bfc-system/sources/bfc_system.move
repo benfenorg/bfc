@@ -131,7 +131,7 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
         // X-treasury rebalance
-        //bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        bfc_system_state_inner::rebalance(inner_state, clock, _ctx);
         bfc_system_state_inner::judge_proposal_state(inner_state, clock::timestamp_ms(clock));
     }
 
