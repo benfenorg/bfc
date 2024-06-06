@@ -513,11 +513,10 @@ async fn get_checkpoints(http_client: &HttpClient,descending_order: bool) -> Res
 }
 
 #[sim_test]
-#[ignore]
 async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error>{
     //telemetry_subscribers::init_for_testing();
 
-    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000)
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(30000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();

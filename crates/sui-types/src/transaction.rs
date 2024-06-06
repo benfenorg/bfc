@@ -1404,7 +1404,18 @@ impl TransactionKind {
                     }]
                 }
             Self::EndOfEpochTransaction(txns) => {
-                    txns.iter().flat_map(|txn| txn.input_objects()).collect()
+                    let mut transaction: Vec<_> = txns.iter().flat_map(|txn| txn.input_objects()).collect();
+                    transaction.push(InputObjectKind::SharedMoveObject {
+                        id: BFC_SYSTEM_STATE_OBJECT_ID,
+                        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                        mutable: true,
+                    });
+                    transaction.push(InputObjectKind::SharedMoveObject {
+                        id: SUI_CLOCK_OBJECT_ID,
+                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                        mutable: true,
+                    });
+                    transaction
                 }
             Self::ProgrammableTransaction(p) => return p.input_objects(),
             };
