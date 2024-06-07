@@ -792,9 +792,8 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.bfc_round_safe_mode(self.store.as_object_store(),protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-    pub fn get_bfc_system_proposal_stauts_map(& self) -> VecMap<u64, ProposalStatus> {
-        get_bfc_system_proposal_state_map(self.store.as_object_store())
-            .expect("System state wrapper object must exist")
+    pub fn get_bfc_system_proposal_stauts_map(& self) -> Result<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_state_map(self.store.as_object_store())?
     }
 
     pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {

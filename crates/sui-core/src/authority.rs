@@ -1186,7 +1186,13 @@ impl AuthorityState {
         let mut proposal_map = None;
 
         if transaction_data.is_change_epoch_tx() {
-            proposal_map = Some(temporary_store.get_bfc_system_proposal_stauts_map());
+            let proposal_map_result = temporary_store.get_bfc_system_proposal_stauts_map();
+            match proposal_map_result {
+                Ok(map) => {proposal_map = Some(map);}
+                Err(_) => {
+                    info!("No proposal map in epoch {:?}", epoch_store.epoch());
+                }
+            }
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
