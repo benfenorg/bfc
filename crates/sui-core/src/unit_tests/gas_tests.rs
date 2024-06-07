@@ -1015,7 +1015,7 @@ async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddre
         Vec::new(),
         gas_objects,
         args.clone(),
-        *MAX_GAS_BUDGET / 10,
+        *MAX_GAS_BUDGET / 100,
         rgp,
     )
         .unwrap();
