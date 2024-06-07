@@ -2395,7 +2395,6 @@ async fn swap_bfc_to_stablecoin_with_tag(
             )
         )), None, None).await?.data;
     // api ： https://docs.sui.io/sui-api-ref#suix_getownedobjects
-    let gas = objects.last().unwrap().object().unwrap();
     let coin = objects.first().unwrap().object().unwrap();
 
     let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
@@ -2422,7 +2421,7 @@ async fn swap_bfc_to_stablecoin_with_tag(
             function,
             vec![type_tag],
             args,
-            Some(gas.object_id),
+            None,
             10_000_00000.into(),
             None,
         )
