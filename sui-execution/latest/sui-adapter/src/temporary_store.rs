@@ -28,7 +28,7 @@ use sui_types::{base_types::{
 }, transaction::InputObjects};
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
+use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -782,44 +782,15 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.write_object(new_object, WriteKind::Mutate);
     }
-    pub fn advance_bfc_round_mode(
-        &mut self,
-        protocol_config: &ProtocolConfig,
-    ) {
-        let wrapper = get_bfc_system_state_wrapper(self.store.as_object_store())
-            .expect("System state wrapper object must exist");
-        let new_object =
-            wrapper.bfc_round_safe_mode(self.store.as_object_store(),protocol_config);
-        self.write_object(new_object, WriteKind::Mutate);
-    }
+
     pub fn get_bfc_system_proposal_stauts_map(& self) -> Result<VecMap<u64, ProposalStatus>,SuiError> {
         get_bfc_system_proposal_state_map(self.store.as_object_store())
     }
 
-    pub fn get_stable_rate_map(&self) -> VecMap<String, u64> {
-        let wrapper = get_stable_rate_map(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        wrapper
-    }
-
-    pub fn get_stable_rate_map_with_base_point(&self) -> (VecMap<String, u64>, u64) {
-        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        (wrapper, base_point)
-    }
     pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
         let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
             .expect("System stable rate map must exist");
         (wrapper, reward_rate)
-    }
-
-    pub fn get_stable_rate_by_name(&self, name: String) -> u64 {
-        let wrapper = get_stable_rate_map(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        wrapper.contents.clone().into_iter()
-            .find(|e| e.key == name)
-            .map(|e| e.value)
-            .unwrap_or_default()
     }
 
     pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> (u64, u64) {
@@ -832,37 +803,32 @@ impl<'backing> TemporaryStore<'backing> {
         (rate, base_point)
     }
 
-    pub fn get_bfc_state(&self) -> BFCSystemState {
-        let wrapper = get_bfc_system_state(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        wrapper
-    }
-
-    pub fn get_bfc_system_state_wrapper(& self) -> BfcSystemStateWrapper {
-        get_bfc_system_state_wrapper(self.store.as_object_store()).expect("System state wrapper object must exist")
-    }
-
     pub fn is_safe_mode(& self) -> bool {
-        let sui_system_state = get_sui_system_state(self.store.as_object_store()).expect("System state wrapper object must exist");
-        match sui_system_state {
-            SuiSystemState::V1(inner)=>{
-                inner.safe_mode()
-            },
-            SuiSystemState::V2(inner)=>{
-                inner.safe_mode()
+        let sui_system_state_result = get_sui_system_state(self.store.as_object_store());
+
+        if let Ok(sui_system_state) = sui_system_state_result {
+            match sui_system_state {
+                SuiSystemState::V1(inner)=>{
+                    inner.safe_mode()
+                },
+                SuiSystemState::V2(inner)=>{
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestV1(inner) =>{
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestShallowV2(inner) => {
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestDeepV2(inner)=>{
+                    inner.safe_mode()
+                }
             }
-            #[cfg(msim)]
-            SuiSystemState::SimTestV1(inner) =>{
-                inner.safe_mode()
-            }
-            #[cfg(msim)]
-            SuiSystemState::SimTestShallowV2(inner) => {
-                inner.safe_mode()
-            }
-            #[cfg(msim)]
-            SuiSystemState::SimTestDeepV2(inner)=>{
-                inner.safe_mode()
-            }
+        }else {
+            true
         }
     }
 
