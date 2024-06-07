@@ -470,7 +470,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
 
     authority_state.insert_genesis_object(stable_gas_object.clone()).await;
 
-    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET / 10,true,stable_gas_object,gas_object_id_stable,
+    let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET / 100,true,stable_gas_object,gas_object_id_stable,
                                                             sender,recipient,sender_key.copy(),rgp,authority_state.clone()).await;
 
     let effects = result
