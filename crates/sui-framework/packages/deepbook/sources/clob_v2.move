@@ -22,6 +22,12 @@ module deepbook::clob_v2 {
     use deepbook::custodian_v2::{Self as custodian, Custodian, AccountCap, mint_account_cap, account_owner};
     use deepbook::math::Self as clob_math;
 
+    #[test_only]
+    friend deepbook::clob_test;
+    #[test_only]
+    friend deepbook::critbit_test;
+    #[test_only]
+
     // <<<<<<<<<<<<<<<<<<<<<<<< Error codes <<<<<<<<<<<<<<<<<<<<<<<<
     const ENotImplemented: u64 = 1;
     const EInvalidFeeRateRebateRate: u64 = 2;
@@ -258,7 +264,7 @@ module deepbook::clob_v2 {
         linked_table::destroy_empty(orders);
     }
 
-    public fun create_account(ctx: &mut TxContext): AccountCap {
+    fun create_account(ctx: &mut TxContext): AccountCap {
         mint_account_cap(ctx)
     }
 
@@ -309,7 +315,7 @@ module deepbook::clob_v2 {
         })
     }
 
-    public fun create_pool<BaseAsset, QuoteAsset>(
+    public(friend) fun create_pool<BaseAsset, QuoteAsset>(
         tick_size: u64,
         lot_size: u64,
         creation_fee: Coin<BFC>,
@@ -329,7 +335,7 @@ module deepbook::clob_v2 {
     // Function for creating pool with customized taker fee rate and maker rebate rate.
     // The taker_fee_rate should be greater than or equal to the maker_rebate_rate, and both should have a scaling of 10^9.
     // Taker_fee_rate of 0.25% should be 2_500_000 for example
-    public fun create_customized_pool<BaseAsset, QuoteAsset>(
+    public(friend) fun create_customized_pool<BaseAsset, QuoteAsset>(
         tick_size: u64,
         lot_size: u64,
         taker_fee_rate: u64,
@@ -348,7 +354,7 @@ module deepbook::clob_v2 {
         )
     }
 
-    public fun deposit_base<BaseAsset, QuoteAsset>(
+    public(friend) fun deposit_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         coin: Coin<BaseAsset>,
         account_cap: &AccountCap
@@ -367,7 +373,7 @@ module deepbook::clob_v2 {
         })
     }
 
-    public fun deposit_quote<BaseAsset, QuoteAsset>(
+    public(friend) fun deposit_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         coin: Coin<QuoteAsset>,
         account_cap: &AccountCap
@@ -386,7 +392,7 @@ module deepbook::clob_v2 {
         })
     }
 
-    public fun withdraw_base<BaseAsset, QuoteAsset>(
+    public(friend) fun withdraw_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         account_cap: &AccountCap,
@@ -401,7 +407,7 @@ module deepbook::clob_v2 {
         custodian::withdraw_asset(&mut pool.base_custodian, quantity, account_cap, ctx)
     }
 
-    public fun withdraw_quote<BaseAsset, QuoteAsset>(
+    public(friend) fun withdraw_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         account_cap: &AccountCap,
@@ -417,7 +423,7 @@ module deepbook::clob_v2 {
     }
 
     // for smart routing
-    public fun swap_exact_base_for_quote<BaseAsset, QuoteAsset>(
+    public(friend) fun swap_exact_base_for_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         client_order_id: u64,
         account_cap: &AccountCap,
@@ -446,7 +452,7 @@ module deepbook::clob_v2 {
     }
 
     // for smart routing
-    public fun swap_exact_quote_for_base<BaseAsset, QuoteAsset>(
+    public(friend) fun swap_exact_quote_for_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         client_order_id: u64,
         account_cap: &AccountCap,
@@ -947,7 +953,7 @@ module deepbook::clob_v2 {
     }
 
     /// Place a market order to the order book.
-    public fun place_market_order<BaseAsset, QuoteAsset>(
+    public(friend) fun place_market_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap,
         client_order_id: u64,
@@ -1090,7 +1096,7 @@ module deepbook::clob_v2 {
     /// When the limit order is not successfully placed, we return false to indicate that and also returns a meaningless order_id 0.
     /// When the limit order is successfully placed, we return true to indicate that and also the corresponding order_id.
     /// So please check that boolean value first before using the order id.
-    public fun place_limit_order<BaseAsset, QuoteAsset>(
+    public(friend) fun place_limit_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         client_order_id: u64,
         price: u64,
@@ -1277,7 +1283,7 @@ module deepbook::clob_v2 {
 
     /// Cancel and opening order.
     /// Abort if order_id is invalid or if the order is not submitted by the transaction sender.
-    public fun cancel_order<BaseAsset, QuoteAsset>(
+    public(friend) fun cancel_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         order_id: u64,
         account_cap: &AccountCap
@@ -1335,7 +1341,7 @@ module deepbook::clob_v2 {
         order
     }
 
-    public fun cancel_all_orders<BaseAsset, QuoteAsset>(
+    public(friend) fun cancel_all_orders<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ) {
@@ -1396,7 +1402,7 @@ module deepbook::clob_v2 {
     /// and if orders with the same price are grouped together in the vector.
     /// For example, if we have the following order_id to price mapping, {0: 100., 1: 200., 2: 100., 3: 200.}.
     /// Grouping order_ids like [0, 2, 1, 3] would make it the most gas efficient.
-    public fun batch_cancel_order<BaseAsset, QuoteAsset>(
+    public(friend) fun batch_cancel_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         order_ids: vector<u64>,
         account_cap: &AccountCap
@@ -1477,7 +1483,7 @@ module deepbook::clob_v2 {
     /// Grouping order_ids like [0, 2, 1, 3] would make it the most gas efficient.
     /// Order owners should be the owner addresses from the account capacities which placed the orders,
     /// and they should correspond to the order IDs one by one.
-    public fun clean_up_expired_orders<BaseAsset, QuoteAsset>(
+    public(friend) fun clean_up_expired_orders<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         clock: &Clock,
         order_ids: vector<u64>,
@@ -1541,7 +1547,7 @@ module deepbook::clob_v2 {
         };
     }
 
-    public fun list_open_orders<BaseAsset, QuoteAsset>(
+    public(friend) fun list_open_orders<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ): vector<Order> {
@@ -1572,7 +1578,7 @@ module deepbook::clob_v2 {
     }
 
     /// query user balance inside custodian
-    public fun account_balance<BaseAsset, QuoteAsset>(
+    public(friend) fun account_balance<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ): (u64, u64, u64, u64) {
@@ -1585,7 +1591,7 @@ module deepbook::clob_v2 {
     /// Query the market price of order book
     /// returns (best_bid_price, best_ask_price) if there exists
     /// bid/ask order in the order book, otherwise returns None
-    public fun get_market_price<BaseAsset, QuoteAsset>(
+    public(friend) fun get_market_price<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>
     ): (Option<u64>, Option<u64>){
         let bid_price = if (!critbit::is_empty(&pool.bids)) {
@@ -1607,7 +1613,7 @@ module deepbook::clob_v2 {
     /// returns two vectors of u64
     /// The previous is a list of all valid prices
     /// The latter is the corresponding depth list
-    public fun get_level2_book_status_bid_side<BaseAsset, QuoteAsset>(
+    public(friend) fun get_level2_book_status_bid_side<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         price_low: u64,
         price_high: u64,
@@ -1643,7 +1649,7 @@ module deepbook::clob_v2 {
     /// returns two vectors of u64
     /// The previous is a list of all valid prices
     /// The latter is the corresponding depth list
-    public fun get_level2_book_status_ask_side<BaseAsset, QuoteAsset>(
+    public(friend) fun get_level2_book_status_ask_side<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         price_low: u64,
         price_high: u64,
@@ -1694,7 +1700,7 @@ module deepbook::clob_v2 {
         depth
     }
 
-    public fun get_order_status<BaseAsset, QuoteAsset>(
+    public(friend) fun get_order_status<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         order_id: u64,
         account_cap: &AccountCap
@@ -1728,7 +1734,7 @@ module deepbook::clob_v2 {
     #[test_only] struct USD {}
 
     #[test_only]
-    public fun setup_test_with_tick_lot(
+    public(friend) fun setup_test_with_tick_lot(
         taker_fee_rate: u64,
         maker_rebate_rate: u64,
         // tick size with scaling
@@ -1756,7 +1762,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun setup_test(
+    public(friend) fun setup_test(
         taker_fee_rate: u64,
         maker_rebate_rate: u64,
         scenario: &mut Scenario,
@@ -1797,7 +1803,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun check_tick_level(
+    public(friend) fun check_tick_level(
         tree: &CritbitTree<TickLevel>,
         price: u64,
         open_orders: &vector<Order>,
@@ -1819,7 +1825,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun check_empty_tick_level(
+    public(friend) fun check_empty_tick_level(
         tree: &CritbitTree<TickLevel>,
         price: u64,
     ) {
@@ -1829,7 +1835,7 @@ module deepbook::clob_v2 {
 
 
     #[test_only]
-    public fun order_id(
+    public(friend) fun order_id(
         sequence_id: u64,
         is_bid: bool
     ): u64 {
@@ -1837,7 +1843,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun mint_account_cap_transfer(
+    public(friend) fun mint_account_cap_transfer(
         user: address,
         ctx: &mut TxContext
     ) {
@@ -1845,21 +1851,21 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun borrow_mut_custodian<BaseAsset, QuoteAsset>(
+    public(friend) fun borrow_mut_custodian<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>
     ): (&mut Custodian<BaseAsset>, &mut Custodian<QuoteAsset>) {
         (&mut pool.base_custodian, &mut pool.quote_custodian)
     }
 
     #[test_only]
-    public fun borrow_custodian<BaseAsset, QuoteAsset>(
+    public(friend) fun borrow_custodian<BaseAsset, QuoteAsset>(
         pool: & Pool<BaseAsset, QuoteAsset>
     ): (&Custodian<BaseAsset>, &Custodian<QuoteAsset>) {
         (&pool.base_custodian, &pool.quote_custodian)
     }
 
     #[test_only]
-    public fun test_match_bid<BaseAsset, QuoteAsset>(
+    public(friend) fun test_match_bid<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap,
         client_order_id: u64,
@@ -1885,7 +1891,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_match_bid_with_quote_quantity<BaseAsset, QuoteAsset>(
+    public(friend) fun test_match_bid_with_quote_quantity<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap,
         client_order_id: u64,
@@ -1911,7 +1917,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_match_ask<BaseAsset, QuoteAsset>(
+    public(friend) fun test_match_ask<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap,
         client_order_id: u64,
@@ -1935,7 +1941,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_inject_limit_order<BaseAsset, QuoteAsset>(
+    public(friend) fun test_inject_limit_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         client_order_id: u64,
         price: u64,
@@ -1951,7 +1957,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_inject_limit_order_with_expiration<BaseAsset, QuoteAsset>(
+    public(friend) fun test_inject_limit_order_with_expiration<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         client_order_id: u64,
         price: u64,
@@ -1968,7 +1974,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun get_pool_stat<BaseAsset, QuoteAsset>(
+    public(friend) fun get_pool_stat<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>
     ): (u64, u64, &CritbitTree<TickLevel>, &CritbitTree<TickLevel>) {
         (
@@ -1980,7 +1986,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun get_usr_open_orders<BaseAsset, QuoteAsset>(
+    public(friend) fun get_usr_open_orders<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         owner: address
     ): &LinkedTable<u64, u64> {
@@ -1989,7 +1995,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_construct_order(sequence_id: u64, client_order_id: u64, price: u64, original_quantity: u64, quantity: u64, is_bid: bool, owner: address): Order {
+    public(friend) fun test_construct_order(sequence_id: u64, client_order_id: u64, price: u64, original_quantity: u64, quantity: u64, is_bid: bool, owner: address): Order {
         Order {
             order_id: order_id(sequence_id, is_bid),
             client_order_id,
@@ -2004,7 +2010,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_construct_order_with_expiration(
+    public(friend) fun test_construct_order_with_expiration(
         sequence_id: u64,
         client_order_id: u64,
         price: u64,
@@ -2028,7 +2034,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun check_usr_open_orders(
+    public(friend) fun check_usr_open_orders(
         usr_open_orders: &LinkedTable<u64, u64>,
         usr_open_orders_cmp: &vector<u64>,
     ) {
@@ -2046,7 +2052,7 @@ module deepbook::clob_v2 {
     }
 
     #[test_only]
-    public fun test_remove_order<BaseAsset, QuoteAsset>(
+    public(friend) fun test_remove_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         tick_index: u64,
         sequence_id: u64,
@@ -2616,7 +2622,7 @@ module deepbook::clob_v2 {
     // Ensure that the custodian's locked balance matches the sum of all values for a given account
     // Assumption: custodian has only placed orders in the given pool--if they have orders in other pools, the locked balance will be too small
     #[test_only]
-    public fun check_balance_invariants_for_account<BaseAsset, QuoteAsset>(
+    public(friend) fun check_balance_invariants_for_account<BaseAsset, QuoteAsset>(
         account_cap: &AccountCap,
         quote_custodian: &Custodian<QuoteAsset>,
         base_custodian: &Custodian<BaseAsset>, 

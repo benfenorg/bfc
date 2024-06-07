@@ -7,7 +7,7 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use crate::error::{UserInputError, UserInputResult};
-    use crate::gas::{self, calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate, GasCostSummary, SuiGasStatusAPI};
+    use crate::gas::{self, BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, SuiGasStatusAPI};
     use crate::gas_model::gas_predicates::{cost_table_for_version, txn_base_cost_as_multiplier};
     use crate::gas_model::units_types::CostTable;
     use crate::{
@@ -323,15 +323,23 @@ mod checked {
             }
 
             //4. Gas Coin type should be same type for all gas objects
-            if gas_objs.len() >1 {
-                let gas_coin_type = gas_objs[0].coin_type_maybe().unwrap();
-                for gas_object in gas_objs {
-                    if gas_object.coin_type_maybe().unwrap() != gas_coin_type {
-                        return Err(UserInputError::GasCoinTypeMismatch {
-                            coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
-                            second_coin_type: gas_coin_type.to_canonical_string(),
-                        });
+            if gas_objs.len() > 1 {
+                let gas_coin_type = gas_objs[0].coin_type_maybe();
+                match gas_coin_type {
+                    Some(coin_type) => {
+                        for gas_object in gas_objs {
+                            if let None = gas_object.coin_type_maybe() {
+                                return Err(UserInputError::GasCoinTypeMissing);
+                            }
+                            if gas_object.coin_type_maybe().unwrap() != coin_type {
+                                return Err(UserInputError::GasCoinTypeMismatch {
+                                    coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
+                                    second_coin_type: coin_type.to_canonical_string(),
+                                });
+                            }
+                        }
                     }
+                    None => return Err(UserInputError::GasCoinTypeMissing),
                 }
             }
 
@@ -381,13 +389,15 @@ mod checked {
             let base_points = if let Some(base) = self.base_points() {
                 base
             }else {
-                10u64 //default base points is 10.
+                DEFAULT_BASE_POINT_FOR_BFC
             };
-            let stable_gas_used = if let Some(rate) = self.stable_rate() {
-                calculate_bfc_to_stable_cost_with_base_point(gas_used, rate, base_points)
+            let rate = if let Some(rate) = self.stable_rate() {
+                rate
             }else {
-                gas_used
+                BASE_RATE
             };
+
+            let stable_gas_used =calculate_bfc_to_stable_cost_with_base_point(gas_used, rate, base_points);
 
             if self.gas_budget <= stable_gas_used {
                 self.computation_cost = self.gas_budget;
@@ -407,8 +417,8 @@ mod checked {
             assert!(sender_rebate <= self.storage_rebate);
             let non_refundable_storage_fee = self.storage_rebate - sender_rebate;
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost: self.computation_cost,
                 storage_cost: self.storage_cost,
                 storage_rebate: sender_rebate,
@@ -491,7 +501,7 @@ mod checked {
                 let base_points = if let Some(base) = self.base_points() {
                     base
                 }else {
-                    10u64 //default base points is 10.
+                    DEFAULT_BASE_POINT_FOR_BFC
                 };
                 let (stable_gas_left, stable_rebate) = if let Some(rate) =  self.stable_rate() {
                     let stable_storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, rate, base_points);

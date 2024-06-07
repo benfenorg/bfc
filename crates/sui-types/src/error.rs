@@ -161,6 +161,8 @@ pub enum UserInputError {
     GasBudgetTooLow { gas_budget: u64, min_budget: u64 },
     #[error("Gas coin type should be the same,{:?} and {:?} is different", coin_type, second_coin_type)]
     GasCoinTypeMismatch { coin_type: String, second_coin_type: String },
+    #[error("Gas coin type missing")]
+    GasCoinTypeMissing,
 
     #[error(
         "Balance of gas object {:?} is lower than the needed amount: {:?}.",

@@ -167,8 +167,11 @@ impl MoveObjectType {
         Self(MoveObjectType_::GasCoin(GAS::type_tag()))
     }
 
-    pub fn stable_gas_coin(index: u8) -> Self {
-        Self(MoveObjectType_::GasCoin(STABLE::from_index(index).type_tag()))
+    pub fn stable_gas_coin(index: u8) -> Result<Self, anyhow::Error> {
+        match STABLE::try_from(index) {
+            Ok(stable) => Ok(Self(MoveObjectType_::GasCoin(stable.type_tag()))),
+            Err(e) => Err(e)
+        }
     }
 
     pub fn gas_coin(tag: TypeTag) -> Self {
@@ -210,7 +213,7 @@ impl MoveObjectType {
                 if GAS::is_gas_type(tag) {
                     vec![GAS::type_tag()]
                 }else {
-                    vec![STABLE::from(tag.clone()).type_().into()]
+                    vec![STABLE::from(STABLE::try_from(tag.clone()).unwrap()).type_().into()]
                 }
             },
             MoveObjectType_::StakedSui => vec![],
@@ -285,12 +288,10 @@ impl MoveObjectType {
         }
     }
 
-    pub fn get_stable_gas_tag(&self) -> TypeTag {
+    pub fn get_stable_gas_tag(&self) -> anyhow::Result<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => tag.clone(),
-            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
-                panic!("not stable gas coin")
-            }
+            MoveObjectType_::GasCoin(tag) => Ok(tag.clone()),
+            _ => Err(anyhow!("not stable gas coin")),
         }
     }
 

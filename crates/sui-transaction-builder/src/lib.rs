@@ -76,7 +76,7 @@ impl TransactionBuilder {
             if obj_type.is_stable_gas_coin() {
                 // check if the gas object is sufficient for the required gas amount
                 let rate = if let ObjectType::Struct(type_) = obj_type {
-                    self.0.get_stable_rate(type_.get_stable_gas_tag()).await?
+                    self.0.get_stable_rate(type_.get_stable_gas_tag()?).await?
                 } else {
                     1u64
                 };

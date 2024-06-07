@@ -1207,9 +1207,6 @@ impl AuthorityState {
                     .epoch_start_config()
                     .epoch_data()
                     .epoch_start_timestamp(),
-                //temporary_store,
-                //shared_object_refs,
-                //&mut gas_charger,
                 input_objects,
                 shared_object_refs,
                 gas,
@@ -3997,7 +3994,7 @@ impl AuthorityState {
             .database
             .execution_lock_for_executable_transaction(&executable_tx)
             .await?;
-        let (temporary_store, proposal_map, effects, _execution_error_opt) = self
+        let (temporary_store, proposal_map, effects, _) = self
             .prepare_certificate(&execution_guard, &executable_tx, epoch_store)
             .await?;
 

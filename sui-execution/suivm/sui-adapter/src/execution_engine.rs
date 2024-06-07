@@ -9,11 +9,10 @@ mod checked {
     use move_vm_runtime::move_vm::MoveVM;
     use once_cell::sync::Lazy;
     use std::{
-        collections::{BTreeSet, HashSet, HashMap},
+        collections::{BTreeSet, HashSet},
         sync::Arc,
     };
-    use sui_types::gas::calculate_reward_rate;
-    use sui_types::collection_types::VecMap;
+    use sui_types::gas::{calculate_reward_rate, calculate_add};
 
     use sui_types::inner_temporary_store::InnerTemporaryStore;
     use sui_types::{
@@ -549,7 +548,6 @@ mod checked {
     pub fn construct_advance_epoch_pt(
         obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // obc
@@ -557,8 +555,6 @@ mod checked {
 
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
-
-        let rate_vec: Vec<_> = rate_map.contents.clone().into_iter().map(|e| (e.value)).collect();
 
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
@@ -571,7 +567,6 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.storage_fund_reinvest_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.reward_slashing_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&rate_vec).unwrap()),
         ]
             .into_iter()
             .map(|a| builder.input(a))
@@ -685,9 +680,9 @@ mod checked {
 
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(
+                    bcs::to_bytes(&calculate_add(
                         calculate_reward_rate(
-                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -702,7 +697,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -796,7 +791,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, &rate_map)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),

@@ -12,9 +12,8 @@ mod checked {
         collections::{BTreeSet, HashSet},
         sync::Arc,
     };
-    use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::calculate_reward_rate;
+    use sui_types::gas::{calculate_reward_rate, calculate_add};
 
     use sui_types::{balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
@@ -59,7 +58,6 @@ mod checked {
 
     use sui_types::{SUI_FRAMEWORK_PACKAGE_ID, SUI_SYSTEM_PACKAGE_ID, BFC_SYSTEM_PACKAGE_ID};
     use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
-    use sui_types::collection_types::VecMap;
     use sui_types::gas::GasCostSummary;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
@@ -68,7 +66,7 @@ mod checked {
     /// criteria for adding a digest to this list:
     /// 1. The certificate must be causing all validators to either panic or hang forever deterministically.
     /// 2. If we ever ship a fix to make it no longer panic or hang when executing such transaction,
-    /// we must make sure the transaction is already in this list. Otherwise nodes running the newer version
+    /// we must make sure the transaction is already in this list. Otherwise, nodes running the newer version
     /// without these transactions in the list will generate forked result.
     /// Below is a scenario of when we need to use this list:
     /// 1. We detect that a specific transaction is causing all validators to either panic or hang forever deterministically.
@@ -550,36 +548,9 @@ mod checked {
         (storage_rewards, computation_rewards)
     }
 
-    fn convert_rate_map(rate_map: &VecMap<String, u64>) -> Vec<u64> {
-        let mut temp_map = HashMap::<String, u64>::new();
-        for entity in &rate_map.contents {
-            temp_map.insert((*entity.key).to_string(), entity.value);
-        }
-        let mut rate_vec = Vec::new();
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::baud::BAUD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bbrl::BBRL").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bcad::BCAD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bgbp::BGBP").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bidr::BIDR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::binr::BINR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bkrw::BKRW").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bmxn::BMXN").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::brub::BRUB").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bsar::BSAR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::btry::BTRY").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bzar::BZAR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::mgg::MGG").unwrap());
-        rate_vec
-    }
-
     pub fn construct_advance_epoch_pt(
         obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>,
         is_safe_mode: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
@@ -588,7 +559,6 @@ mod checked {
 
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
-        let rate_vec: Vec<_> = convert_rate_map(rate_map);
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
         let call_arg_arguments = vec![
@@ -600,7 +570,6 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.storage_fund_reinvest_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.reward_slashing_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&rate_vec).unwrap()),
         ]
             .into_iter()
             .map(|a| builder.input(a))
@@ -714,11 +683,11 @@ mod checked {
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
-            let charge_arg = builder
+            let stable_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(
+                    bcs::to_bytes(&calculate_add(
                         calculate_reward_rate(
-                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -726,14 +695,14 @@ mod checked {
                 BALANCE_MODULE_NAME.to_owned(),
                 BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![charge_arg],
+                vec![stable_charge_arg],
             );
 
-            //exchange stable coin to bfc
+            // Exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-            let charge_arg = builder
+            let bfc_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -741,10 +710,10 @@ mod checked {
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![system_obj, rewards, charge_arg],
+                vec![system_obj, rewards, bfc_charge_arg],
             );
 
-            // Destroy the rewards.
+            // Destroy the rewards
             builder.programmable_move_call(
                 SUI_FRAMEWORK_PACKAGE_ID,
                 BALANCE_MODULE_NAME.to_owned(),
@@ -788,7 +757,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
+        let (_rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
 
         let is_safe_mode = temporary_store.is_safe_mode();
         let mut storage_rebate = 0u64;
@@ -828,7 +797,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, &rate_map,is_safe_mode)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, is_safe_mode)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),

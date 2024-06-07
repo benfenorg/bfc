@@ -138,13 +138,13 @@ fn build_packages(
 }
 
 fn build_packages_with_move_config(
-    deepbook_path: PathBuf,
+    _deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
     bfc_system_path: PathBuf,
     out_dir: PathBuf,
 
-    deepbook_dir: &str,
+    _deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
     stdlib_dir: &str,
@@ -178,34 +178,34 @@ fn build_packages_with_move_config(
     .build(sui_system_path)
     .unwrap();
 
-    let deepbook_pkg = BuildConfig {
-        config,
-        run_bytecode_verifier: true,
-        print_diags_to_stderr: false,
-        lint: false,
-    }
-    .build(deepbook_path)
-    .unwrap();
+    // let deepbook_pkg = BuildConfig {
+    //     config,
+    //     run_bytecode_verifier: true,
+    //     print_diags_to_stderr: false,
+    //     lint: false,
+    // }
+    // .build(deepbook_path)
+    // .unwrap();
 
     let sui_system = system_pkg.get_sui_system_modules();
     let sui_framework = framework_pkg.get_sui_framework_modules();
-    let deepbook = deepbook_pkg.get_deepbook_modules();
+    // let deepbook = deepbook_pkg.get_deepbook_modules();
     let move_stdlib = framework_pkg.get_stdlib_modules();
     let bfc_system = bfc_system_pkg.get_bfc_system_modules();
 
     serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
     serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
-    serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
+    // serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
     serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
     serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
 
     // write out generated docs
     // TODO: remove docs of deleted files
-    for (fname, doc) in deepbook_pkg.package.compiled_docs.unwrap() {
-        let mut dst_path = PathBuf::from(DOCS_DIR);
-        dst_path.push(fname);
-        fs::write(dst_path, doc).unwrap();
-    }
+    // for (fname, doc) in deepbook_pkg.package.compiled_docs.unwrap() {
+    //     let mut dst_path = PathBuf::from(DOCS_DIR);
+    //     dst_path.push(fname);
+    //     fs::write(dst_path, doc).unwrap();
+    // }
     for (fname, doc) in system_pkg.package.compiled_docs.unwrap() {
         let mut dst_path = PathBuf::from(DOCS_DIR);
         dst_path.push(fname);

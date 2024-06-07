@@ -37,7 +37,7 @@ fn run_bfc_system_tests() {
     });
 }
 #[test]
-#[cfg_attr(msim, ignore)]
+#[ignore]
 fn run_deepbook_tests() {
     check_move_unit_tests({
         let mut buf = PathBuf::from(env!("CARGO_MANIFEST_DIR"));

@@ -171,7 +171,7 @@ module bfc_system::bfc_system_tests {
 
         bfc_system::create(
             object::bfc_system_state_for_test(),
-            balance::create_for_testing<BFC>(0),
+            balance::create_for_testing<BFC>(1_000_000_000_000_000_000),
             bfc_system::busd::new_for_test(ctx),
             bfc_system::bjpy::new_for_test(ctx),
             bfc_system::bkrw::new_for_test(ctx),
