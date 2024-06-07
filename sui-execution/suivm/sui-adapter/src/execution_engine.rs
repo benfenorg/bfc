@@ -752,8 +752,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
-        let _rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(), e.value)).collect::<HashMap<_, _>>();
+        let (_rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
