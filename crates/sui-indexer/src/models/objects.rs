@@ -530,7 +530,7 @@ mod tests {
 
         match stored_obj.object_type {
             Some(t) => {
-                assert_eq!(t, "0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>");
+                assert_eq!(t, "0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>");
             }
             None => {
                 panic!("object_type should not be none");
@@ -546,7 +546,7 @@ mod tests {
         let stored_obj = StoredObject::from(indexed_obj);
 
         let sui_coin = SuiCoin::try_from(stored_obj).unwrap();
-        assert_eq!(sui_coin.coin_type, "0x2::sui::SUI");
+        assert_eq!(sui_coin.coin_type, "0x2::bfc::BFC");
     }
 
     #[test]
@@ -561,7 +561,7 @@ mod tests {
             coin_balance: 100,
         };
         let balance = Balance::try_from(test_balance).unwrap();
-        assert_eq!(balance.coin_type, "0x2::sui::SUI");
+        assert_eq!(balance.coin_type, "0x2::bfc::BFC");
     }
 
     #[test]
@@ -610,7 +610,7 @@ mod tests {
 
         match stored_obj.object_type {
             Some(t) => {
-                assert_eq!(t, "0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>");
+                assert_eq!(t, "0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>>>");
             }
             None => {
                 panic!("object_type should not be none");
