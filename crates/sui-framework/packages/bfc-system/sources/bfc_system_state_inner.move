@@ -1,5 +1,6 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
+    use std::vector;
     use std::ascii::String;
     use sui::balance;
     use sui::balance::{Balance, Supply};
@@ -493,15 +494,18 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(friend) fun judge_proposal_state(wrapper: &mut BfcSystemStateInner, current_time: u64) {
-        let proposal_record = bfc_dao::getProposalRecord(&mut wrapper.dao);
-        let size: u64 = vec_map::size(&proposal_record);
+        let keys=bfc_dao::get_all_proposal_info_keys(&wrapper.dao);
+        let size: u64 = vector::length(&keys);
         let i = 0;
         while (i < size) {
-            let (_, proposalInfo) = vec_map::get_entry_by_idx(&proposal_record, i);
-            let cur_status = bfc_dao::judge_proposal_state(proposalInfo, current_time);
-            bfc_dao::set_current_status_into_dao(&mut wrapper.dao, proposalInfo, cur_status);
+            let proposalInfo = bfc_dao::get_proposal_info(&wrapper.dao, *vector::borrow(&keys,i));
+            let cur_status = bfc_dao::judge_proposal_state(&proposalInfo, current_time);
+            bfc_dao::set_current_status_into_dao(&mut wrapper.dao, &proposalInfo, cur_status);
             i = i + 1;
         };
+    }
+    public (friend) fun remove_action(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,action_id: u64){
+        bfc_dao::remove_action(&mut self.dao,key,action_id);
     }
 
     public(friend) fun modify_proposal(

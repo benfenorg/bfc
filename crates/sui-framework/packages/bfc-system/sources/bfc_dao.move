@@ -3,6 +3,8 @@ module bfc_system::bfc_dao {
     use sui::object::{Self, UID};
     use sui::coin::{Self, Coin};
     use sui::vec_map::{Self, VecMap};
+    use sui::table::{Self,Table};
+    use sui::linked_table::{Self,LinkedTable};
     use sui::clock::{Self, Clock};
     use std::string;
     use sui::event;
@@ -33,7 +35,7 @@ module bfc_system::bfc_dao {
     }
 
     const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
-
+    const ACTIVE_NUM_THRESGOLD: u64= 200;
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
@@ -76,6 +78,7 @@ module bfc_system::bfc_dao {
     const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
     const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
+    const ERR_ACTION_ID_NOT_EXIST: u64= 1410;
     const ERR_ACTION_ID_ALREADY_INDAO: u64 = 1414;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
@@ -84,6 +87,7 @@ module bfc_system::bfc_dao {
     const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
     const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
     const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
+    const ERR_ACTION_NUM_TOO_LITTLE: u64=1418;
     #[allow(unused_field)]
     struct DaoEvent has copy, drop, store {
         name: string::String,
@@ -164,8 +168,8 @@ module bfc_system::bfc_dao {
         config: DaoConfig,
         info: DaoGlobalInfo,
 
-        proposal_record: VecMap<u64, ProposalInfo>,  //pid -> proposal address
-        action_record: VecMap<u64, BFCDaoAction>,    //actionId -> action address
+        proposal_record: LinkedTable<u64, ProposalInfo>,  //pid -> proposal address
+        action_record: Table<u64, BFCDaoAction>,    //actionId -> action address
         votes_record: VecMap<u64, u64>,  //pid -> vote count
         voting_pool: voting_pool::VotingPool,
 
@@ -185,8 +189,8 @@ module bfc_system::bfc_dao {
         status: bool,
     }
 
-    public(friend) fun getProposalRecord(dao : &mut Dao) :VecMap<u64, ProposalInfo>{
-        dao.proposal_record
+    public(friend) fun getProposalRecord(dao : &Dao) :&LinkedTable<u64, ProposalInfo>{
+        &dao.proposal_record
     }
 
     public(friend) fun get_bfcdao_actionid(bfcDaoAction: BFCDaoAction): u64 {
@@ -278,8 +282,8 @@ module bfc_system::bfc_dao {
             }
         );
 
-        assert!(vec_map::contains(&dao.action_record, &action_id) == false, ERR_ACTION_ID_ALREADY_INDAO);
-        vec_map::insert(&mut dao.action_record, action_id, copy action);
+        assert!(table::contains(&dao.action_record, action_id) == false, ERR_ACTION_ID_ALREADY_INDAO);
+        table::add(&mut dao.action_record, action_id, action);
         action
     }
 
@@ -312,8 +316,8 @@ module bfc_system::bfc_dao {
             admin: *rootAdmin,  //using the first of the admins as the admin of the dao
             config: daoConfig,
             info: daoInfo,
-            proposal_record: vec_map::empty(),
-            action_record: vec_map::empty(),
+            proposal_record: linked_table::new<u64, ProposalInfo>(ctx),
+            action_record: table::new<u64, BFCDaoAction>(ctx),
             votes_record: vec_map::empty(),
             voting_pool: votingPool,
             current_proposal_status: vec_map::empty(),
@@ -325,9 +329,16 @@ module bfc_system::bfc_dao {
         dao_obj
     }
 
-    fun getDaoActionByActionId(dao: &Dao, actionId: u64) : BFCDaoAction {
-        let data = vec_map::get(&dao.action_record, &actionId);
+    fun get_dao_action_by_action_id(dao: &Dao, actionId: u64) : BFCDaoAction {
+        assert!(table::contains<u64,BFCDaoAction>(&dao.action_record,actionId),ERR_ACTION_ID_NOT_EXIST);
+        let data=table::borrow<u64,BFCDaoAction>(&dao.action_record,actionId);
         *data
+    }
+    public(friend) fun remove_action(dao: &mut Dao,_: &BFCDaoManageKey, actionId: u64){
+        let size=table::length(&dao.action_record);
+        assert!(size > ACTIVE_NUM_THRESGOLD,ERR_ACTION_NUM_TOO_LITTLE);
+        assert!(table::contains<u64,BFCDaoAction>(&dao.action_record,actionId),ERR_ACTION_ID_NOT_EXIST);
+        table::remove<u64,BFCDaoAction>(&mut dao.action_record,actionId);
     }
 
 
@@ -355,8 +366,8 @@ module bfc_system::bfc_dao {
             admin: *rootAdmin,  //using the first of the admins as the admin of the dao
             config: daoConfig,
             info: daoInfo,
-            proposal_record: vec_map::empty(),
-            action_record: vec_map::empty(),
+            proposal_record: linked_table::new<u64, ProposalInfo>(ctx),
+            action_record: table::new<u64, BFCDaoAction>(ctx),
             votes_record: vec_map::empty(),
             voting_pool: votingPool,
             current_proposal_status: vec_map::empty(),
@@ -408,7 +419,7 @@ module bfc_system::bfc_dao {
         transfer::public_transfer(burn_bfc, ZERO_ADDRESS);
 
 
-        let action = getDaoActionByActionId(dao, action_id);
+        let action = get_dao_action_by_action_id(dao, action_id);
 
         if (action_delay <= 0 || action_delay <= min_action_delay(dao)) {
             action_delay = min_action_delay(dao);
@@ -442,10 +453,9 @@ module bfc_system::bfc_dao {
 
         let proposal = Proposal{
             id: object_id,
-            proposal: copy proposalInfo,
+            proposal:  proposalInfo,
         };
-        vec_map::insert(&mut dao.proposal_record, proposal_id, proposalInfo);
-
+        linked_table::push_back(&mut dao.proposal_record, proposal_id, proposalInfo);
 
         transfer::share_object(proposal);
 
@@ -459,8 +469,8 @@ module bfc_system::bfc_dao {
     }
 
     fun synchronize_proposal_into_dao(proposal: &Proposal, dao:  &mut Dao) {
-        if (vec_map::contains( &dao.proposal_record,&proposal.proposal.pid)) {
-            let old = vec_map::get_mut(&mut dao.proposal_record,& proposal.proposal.pid);
+        if (linked_table::contains(&dao.proposal_record,proposal.proposal.pid)) {
+            let old = linked_table::borrow_mut(&mut dao.proposal_record,proposal.proposal.pid);
             *old = proposal.proposal;
         }
     }
@@ -795,7 +805,7 @@ module bfc_system::bfc_dao {
         dao : &mut Dao,
         proposal: &Proposal,
     ): bool {
-        let result = vec_map::contains(&dao.proposal_record, &proposal.proposal.pid);
+        let result = linked_table::contains(&dao.proposal_record, proposal.proposal.pid);
         result
     }
 
@@ -1155,8 +1165,8 @@ module bfc_system::bfc_dao {
 
 
 
-        assert!(vec_map::contains(&dao.proposal_record, &proposal.proposal.pid), (ERR_PROPOSAL_NOT_EXIST));
-        vec_map::remove(&mut dao.proposal_record, &proposal.proposal.pid);
+        assert!(linked_table::contains(&dao.proposal_record, proposal.proposal.pid), (ERR_PROPOSAL_NOT_EXIST));
+        linked_table::remove(&mut dao.proposal_record, proposal.proposal.pid);
         if (proposal_state == DEFEATED) {
             let _ =  proposal.proposal.action;
         };
@@ -1175,6 +1185,20 @@ module bfc_system::bfc_dao {
             status: curProposalStatus,
         };
         vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
+    }
+
+    public fun get_all_proposal_info_keys(dao:  &Dao):vector<u64>{
+        let  infos=vector::empty<u64>();
+        let  head =*linked_table::front(&dao.proposal_record);
+        while (option::is_some(&head)){
+            let key=*option::borrow(&head);
+            vector::push_back(&mut infos,key);
+            head=*linked_table::next(&dao.proposal_record,key);
+        };
+        infos
+    }
+    public fun get_proposal_info(dao:  &Dao,key: u64):ProposalInfo{
+       *linked_table::borrow(&dao.proposal_record,key)
     }
 
 
