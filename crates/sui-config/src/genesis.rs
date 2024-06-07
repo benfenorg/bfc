@@ -673,13 +673,14 @@ impl GenesisCeremonyParameters {
         // 24 hrs
         //24 * 60 * 60 * 1000
 
-        //10 mins
+        //10 mins in test & develop mode
         1000*60*5
     }
 
     fn default_initial_stake_subsidy_distribution_amount() -> u64 {
-        // 5000 Sui
-        4500 * sui_types::gas_coin::MIST_PER_SUI
+        // 4500 Sui per 4 hour
+        // 4500 * 6 per day.
+        6*4500 * sui_types::gas_coin::MIST_PER_SUI
     }
 
     fn default_stake_subsidy_period_length() -> u64 {
