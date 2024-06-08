@@ -374,7 +374,7 @@ pub struct NFTStaking {
     last_reward_ts: u64,    // 上次更新奖励的时间
 
     // tickets
-    items: LinkedTable<ID, StakeItem>, // 质押的 NFT
+    items: LinkedTable<ID>, // 质押的 NFT
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
