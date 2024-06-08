@@ -25,7 +25,7 @@ use sui_json_rpc_types::SuiOwnedMiningNFTProfit;
 use sui_json_rpc_types::SuiParsedData;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::SuiAddress;
-use sui_types::collection_types::VecMap;
+use sui_types::collection_types::LinkedTable;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::dynamic_field::Field;
 use sui_types::error::SuiError;
@@ -374,7 +374,7 @@ pub struct NFTStaking {
     last_reward_ts: u64,    // 上次更新奖励的时间
 
     // tickets
-    items: VecMap<ID, StakeItem>, // 质押的 NFT
+    items: LinkedTable<ID, StakeItem>, // 质押的 NFT
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
