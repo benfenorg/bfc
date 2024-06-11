@@ -757,6 +757,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
+        //todo: remove unwrap
         let (_rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate().unwrap();
 
         let is_safe_mode = temporary_store.is_safe_mode();
