@@ -778,11 +778,13 @@ mod checked {
         }
 
         let is_safe_mode = temporary_store.is_safe_mode();
+        let mut reward_rate= 0u64; // deposit all gas to treasury
 
         match rate_result {
-            Ok((_,reward_rate)) => {
+            Ok((_,rate)) => {
+                reward_rate = rate;
                 for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
-                    let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+                    let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, rate);
 
                     // check u64 overflow
                     if storage_rebate > u64::MAX - gas_cost_summary.gas_by_bfc.storage_rebate

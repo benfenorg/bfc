@@ -200,6 +200,10 @@ pub fn get_bfc_system_state_wrapper(
 }
 
 pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemState, SuiError> {
+    #[cfg(msim)]
+    return Err(SuiError::BfcSystemStateReadError(format!(
+        "Unsupported BfcSystemState version: test mode",
+    )));
     let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
@@ -215,7 +219,7 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemS
                 )?;
             Ok(BFCSystemState::V1(result))
         }
-        _ => Err(SuiError::SuiSystemStateReadError(format!(
+        _ => Err(SuiError::BfcSystemStateReadError(format!(
             "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
