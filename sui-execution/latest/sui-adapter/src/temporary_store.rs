@@ -9,6 +9,7 @@ use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
+use std::fmt;
 use std::sync::Arc;
 use tracing::info;
 use sui_protocol_config::ProtocolConfig;
@@ -787,20 +788,19 @@ impl<'backing> TemporaryStore<'backing> {
         get_bfc_system_proposal_state_map(self.store.as_object_store())
     }
 
-    pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
-        let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        (wrapper, reward_rate)
+    pub fn get_stable_rate_map_and_reward_rate(&self) -> Result<(VecMap<String, u64>, u64),SuiError> {
+        get_stable_rate_and_reward_rate(self.store.as_object_store())
     }
 
-    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> (u64, u64) {
-        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())
-            .expect("System stable rate map must exist");
+    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> Result<(u64, u64),SuiError> {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())?;
         let rate = wrapper.contents.clone().into_iter()
             .find(|e| e.key == name)
-            .map(|e| e.value)
-            .unwrap_or_default();
-        (rate, base_point)
+            .map(|e| e.value);
+        match rate {
+            Some(rate) => Ok((rate, base_point)),
+            None => Err(SuiError::BfcSystemStateReadError(format!("Stable rate not found by name: {}",name))),
+        }
     }
 
     pub fn is_safe_mode(& self) -> bool {
