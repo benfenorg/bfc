@@ -9,7 +9,6 @@ use move_core_types::language_storage::{ModuleId, StructTag};
 use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
-use std::fmt;
 use std::sync::Arc;
 use tracing::info;
 use sui_protocol_config::ProtocolConfig;
