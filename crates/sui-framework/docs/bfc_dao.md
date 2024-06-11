@@ -28,6 +28,8 @@
 -  [Function `create_bfcdao_action`](#0xc8_bfc_dao_create_bfcdao_action)
 -  [Function `create_dao`](#0xc8_bfc_dao_create_dao)
 -  [Function `getDaoActionByActionId`](#0xc8_bfc_dao_getDaoActionByActionId)
+-  [Function `remove_action`](#0xc8_bfc_dao_remove_action)
+-  [Function `remove_proposal`](#0xc8_bfc_dao_remove_proposal)
 -  [Function `new_dao_config`](#0xc8_bfc_dao_new_dao_config)
 -  [Function `propose`](#0xc8_bfc_dao_propose)
 -  [Function `synchronize_proposal_into_dao`](#0xc8_bfc_dao_synchronize_proposal_into_dao)
@@ -934,6 +936,24 @@ Proposal state
 
 
 
+<a name="0xc8_bfc_dao_ACTIVE_MAX_NUM_THRESGOLD"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MAX_NUM_THRESGOLD">ACTIVE_MAX_NUM_THRESGOLD</a>: u64 = 200;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ACTIVE_MIN_NUM_THRESGOLD"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MIN_NUM_THRESGOLD">ACTIVE_MIN_NUM_THRESGOLD</a>: u64 = 20;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_DEFAULT_BFC_SUPPLY"></a>
 
 
@@ -1006,6 +1026,15 @@ Proposal state
 
 
 
+<a name="0xc8_bfc_dao_ERR_ACTION_ID_NOT_EXIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_ID_NOT_EXIST">ERR_ACTION_ID_NOT_EXIST</a>: u64 = 1410;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_dao_ERR_ACTION_MUST_EXIST"></a>
 
 
@@ -1020,6 +1049,24 @@ Proposal state
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>: u64 = 1416;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_ACTION_NUM_TOO_LITTLE"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NUM_TOO_LITTLE">ERR_ACTION_NUM_TOO_LITTLE</a>: u64 = 1420;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_ACTION_NUM_TOO_MUCH"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NUM_TOO_MUCH">ERR_ACTION_NUM_TOO_MUCH</a>: u64 = 1418;
 </code></pre>
 
 
@@ -1084,6 +1131,24 @@ Error codes
 
 
 <pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NOT_EXIST">ERR_PROPOSAL_NOT_EXIST</a>: u64 = 1415;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_LITTLE"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_LITTLE">ERR_PROPOSAL_NUM_TOO_LITTLE</a>: u64 = 1420;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_MANY"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_MANY">ERR_PROPOSAL_NUM_TOO_MANY</a>: u64 = 1419;
 </code></pre>
 
 
@@ -1173,7 +1238,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>: u64 = 1000;
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>: u64 = 200;
 </code></pre>
 
 
@@ -1358,6 +1423,8 @@ Error codes
     // ensure the user pays enough
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(payment) &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
     <b>assert</b>!(<a href="_length">vector::length</a>(&actionName) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_ACTION_NAME_LENGTH">MAX_ACTION_NAME_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
+    <b>let</b> size=<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&dao.action_record);
+    <b>assert</b>!(size &lt; <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MAX_NUM_THRESGOLD">ACTIVE_MAX_NUM_THRESGOLD</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NUM_TOO_MUCH">ERR_ACTION_NUM_TOO_MUCH</a>);
 
     // burn 10 BFC <b>to</b> prevent DDOS attacks
     <b>let</b> burn_bfc=<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(payment, <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_ACTION_COST">MIN_NEW_ACTION_COST</a>, ctx);
@@ -1529,6 +1596,60 @@ Error codes
 
 </details>
 
+<a name="0xc8_bfc_dao_remove_action"></a>
+
+## Function `remove_action`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_remove_action">remove_action</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, actionId: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_remove_action">remove_action</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,_: &BFCDaoManageKey, actionId: u64){
+    <b>let</b> size=<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&dao.action_record);
+    <b>assert</b>!(size &gt; <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MIN_NUM_THRESGOLD">ACTIVE_MIN_NUM_THRESGOLD</a>,<a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NUM_TOO_LITTLE">ERR_ACTION_NUM_TOO_LITTLE</a>);
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>&lt;u64,<a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>&gt;(&dao.action_record,&actionId),<a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_ID_NOT_EXIST">ERR_ACTION_ID_NOT_EXIST</a>);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>&lt;u64,<a href="bfc_dao.md#0xc8_bfc_dao_BFCDaoAction">BFCDaoAction</a>&gt;(&<b>mut</b> dao.action_record,&actionId);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_dao_remove_proposal"></a>
+
+## Function `remove_proposal`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_remove_proposal">remove_proposal</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, proposalId: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> (<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_remove_proposal">remove_proposal</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,_: &BFCDaoManageKey, proposalId: u64){
+    <b>let</b> size=<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&dao.proposal_record);
+    <b>assert</b>!(size &gt; <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MIN_NUM_THRESGOLD">ACTIVE_MIN_NUM_THRESGOLD</a>,<a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_LITTLE">ERR_PROPOSAL_NUM_TOO_LITTLE</a>);
+    <b>assert</b>!(<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>&lt;u64,<a href="bfc_dao.md#0xc8_bfc_dao_ProposalInfo">ProposalInfo</a>&gt;(&dao.proposal_record,&proposalId),<a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_ID_MISMATCH">ERR_PROPOSAL_ID_MISMATCH</a>);
+    <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>&lt;u64,<a href="bfc_dao.md#0xc8_bfc_dao_ProposalInfo">ProposalInfo</a>&gt;(&<b>mut</b> dao.proposal_record,&proposalId);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_dao_new_dao_config"></a>
 
 ## Function `new_dao_config`
@@ -1608,6 +1729,8 @@ propose a proposal.
     // ensure the user pays enough
     <b>assert</b>!(<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_value">coin::value</a>(payment) &gt;= <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_EINSUFFICIENT_FUNDS">ERR_EINSUFFICIENT_FUNDS</a>);
     <b>assert</b>!( <a href="_length">vector::length</a>(&description) &lt;= <a href="bfc_dao.md#0xc8_bfc_dao_MAX_DESCRIPTION_LENGTH">MAX_DESCRIPTION_LENGTH</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_NAME_TOO_LONG">ERR_ACTION_NAME_TOO_LONG</a>);
+    <b>let</b> size=<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_size">vec_map::size</a>(&dao.proposal_record);
+    <b>assert</b>!(size &lt; <a href="bfc_dao.md#0xc8_bfc_dao_ACTIVE_MAX_NUM_THRESGOLD">ACTIVE_MAX_NUM_THRESGOLD</a>, <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_MANY">ERR_PROPOSAL_NUM_TOO_MANY</a>);
 
     // burn 200 BFC <b>to</b> prevent DDOS attacks
     <b>let</b> burn_bfc=<a href="../../../.././build/Sui/docs/coin.md#0x2_coin_split">coin::split</a>(payment, <a href="bfc_dao.md#0xc8_bfc_dao_MIN_NEW_PROPOSE_COST">MIN_NEW_PROPOSE_COST</a>, ctx);
