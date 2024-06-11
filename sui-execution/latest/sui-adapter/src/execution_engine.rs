@@ -552,10 +552,11 @@ mod checked {
         obc_params: &ChangeObcRoundParams,
         params: &AdvanceEpochParams,
         is_safe_mode: bool,
+        discard: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         let mut builder = ProgrammableTransactionBuilder::new();
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder,is_safe_mode)?;
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard)?;
 
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
@@ -656,7 +657,8 @@ mod checked {
     pub fn construct_bfc_round_pt(
         param: &ChangeObcRoundParams,
         builder: &mut ProgrammableTransactionBuilder,
-        is_safe_mode:bool,
+        is_safe_mode: bool,
+        discard: bool,
     ) -> Result<(), ExecutionError> {
         if !is_safe_mode { // if safe mode skip judge dao vote result
             let mut arguments = vec![];
@@ -680,6 +682,10 @@ mod checked {
                 arguments,
             );
         }
+        if discard {
+            return Ok(());
+        }
+
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
@@ -687,7 +693,7 @@ mod checked {
                 .input(CallArg::Pure(
                     bcs::to_bytes(&calculate_add(
                         calculate_reward_rate(
-                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate), gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -702,7 +708,7 @@ mod checked {
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let bfc_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -766,14 +772,46 @@ mod checked {
         let mut storage_charge = 0u64;
         let mut computation_charge = 0u64;
         let mut deposit_computation_charge = 0u64;
+        let mut discard = false;
 
         info!("change epoch: {:?}",change_epoch);
         for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
+            let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+
+            // check u64 overflow
+            if storage_rebate > u64::MAX - gas_cost_summary.gas_by_bfc.storage_rebate
+                || non_refundable_storage_fee > u64::MAX - gas_cost_summary.gas_by_bfc.non_refundable_storage_fee
+                || storage_charge > u64::MAX - gas_cost_summary.gas_by_bfc.storage_cost
+                || computation_charge > u64::MAX - computation_reward
+                || deposit_computation_charge > u64::MAX - (gas_cost_summary.gas_by_bfc.computation_cost - computation_reward)
+            {
+                storage_rebate = 0;
+                non_refundable_storage_fee = 0;
+                storage_charge = 0;
+                computation_charge = 0;
+                deposit_computation_charge = 0;
+
+                discard = true;
+                break;
+            }
+
             storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
             non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-            computation_charge += calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
-            deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
+            computation_charge += computation_reward;
+            deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
             storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
+        }
+        // check u64 overflow for advance_epoch_params
+        if !discard && (storage_charge > u64::MAX - change_epoch.bfc_storage_charge
+            || computation_charge > u64::MAX - change_epoch.bfc_computation_charge
+            || storage_rebate > u64::MAX - change_epoch.bfc_storage_rebate
+            || non_refundable_storage_fee > u64::MAX - change_epoch.bfc_non_refundable_storage_fee) {
+            storage_charge = 0;
+            computation_charge = 0;
+            storage_rebate = 0;
+            non_refundable_storage_fee = 0;
+
+            discard = true;
         }
 
         let obc_params = ChangeObcRoundParams {
@@ -786,19 +824,23 @@ mod checked {
             storage_rebate,
         };
 
+        let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
+        let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;
+        let advance_epoch_storage_rebate = change_epoch.bfc_storage_rebate + storage_rebate;
+        let advance_epoch_non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee;
         let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.bfc_storage_charge + storage_charge,
-            computation_charge: change_epoch.bfc_computation_charge  + computation_charge,
-            storage_rebate: change_epoch.bfc_storage_rebate + storage_rebate,
-            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee,
+            storage_charge: advance_epoch_storage_charge,
+            computation_charge: advance_epoch_computation_charge,
+            storage_rebate: advance_epoch_storage_rebate,
+            non_refundable_storage_fee: advance_epoch_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, is_safe_mode)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, is_safe_mode, discard)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -822,10 +864,10 @@ mod checked {
             temporary_store.drop_writes();
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
-            params.storage_charge = change_epoch.bfc_storage_charge ;
-            params.computation_charge = change_epoch.bfc_computation_charge ;
-            params.storage_rebate = change_epoch.bfc_storage_rebate ;
-            params.non_refundable_storage_fee= change_epoch.bfc_non_refundable_storage_fee ;
+            params.storage_charge = change_epoch.bfc_storage_charge;
+            params.computation_charge = change_epoch.bfc_computation_charge;
+            params.storage_rebate = change_epoch.bfc_storage_rebate;
+            params.non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee;
 
 
             if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
