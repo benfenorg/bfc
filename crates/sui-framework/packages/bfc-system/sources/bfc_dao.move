@@ -77,7 +77,7 @@ module bfc_system::bfc_dao {
     const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
     const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
-    const ERR_ACTION_ID_NOT_EXIST: u64= 1410;
+    const ERR_ACTION_ID_NOT_EXIST: u64= 1422;
     const ERR_ACTION_ID_ALREADY_INDAO: u64 = 1414;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
@@ -89,7 +89,7 @@ module bfc_system::bfc_dao {
     const ERR_ACTION_NUM_TOO_MUCH: u64=1418;
     const ERR_PROPOSAL_NUM_TOO_MANY: u64=1419;
     const ERR_ACTION_NUM_TOO_LITTLE: u64 = 1420;
-    const ERR_PROPOSAL_NUM_TOO_LITTLE: u64 = 1420;
+    const ERR_PROPOSAL_NUM_TOO_LITTLE: u64 = 1421;
 
 
     #[allow(unused_field)]

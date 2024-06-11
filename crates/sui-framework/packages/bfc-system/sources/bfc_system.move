@@ -218,7 +218,7 @@ module bfc_system::bfc_system {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
     }
-    
+
     public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::remove_action(system_state,key,action_id);
