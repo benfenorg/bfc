@@ -308,7 +308,7 @@ pub fn monitored_reroute(
     client_addr: SocketAddr,
 ) -> SuiResult<(String, String)> {
     match name {
-        "sui_executeTransactionBlock" => {
+        "bfc_executeTransactionBlock" => {
             // add client IP arg to the params, as this is a router redirect
             // from `execute_transaction_block`, which does require the client IP
             let params = if let Some(params) = raw_params {
@@ -347,10 +347,10 @@ pub fn monitored_reroute(
 
             Ok((
                 params_str,
-                String::from("sui_monitoredExecuteTransactionBlock"),
+                String::from("bfc_monitoredExecuteTransactionBlock"),
             ))
         }
-        "sui_monitoredExecuteTransactionBlock" => {
+        "bfc_monitoredExecuteTransactionBlock" => {
             // Prevent an attacker calling it directly with a different
             // client IP in order to bypass monitoring
             Err(SuiError::InvalidRpcMethodError)
