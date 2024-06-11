@@ -33,7 +33,7 @@ module bfc_system::bfc_dao {
     }
 
     const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
-
+    const ACTIVE_NUM_THRESGOLD: u64= 200;
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
@@ -76,6 +76,7 @@ module bfc_system::bfc_dao {
     const ERR_CONFIG_PARAM_INVALID: u64 = 1407;
     const ERR_VOTE_STATE_MISMATCH: u64 = 1408;
     const ERR_ACTION_MUST_EXIST: u64 = 1409;
+    const ERR_ACTION_ID_NOT_EXIST: u64= 1410;
     const ERR_ACTION_ID_ALREADY_INDAO: u64 = 1414;
     const ERR_VOTED_OTHERS_ALREADY: u64 = 1410;
     const ERR_VOTED_ERR_AMOUNT: u64 = 1411;
@@ -84,6 +85,7 @@ module bfc_system::bfc_dao {
     const ERR_PROPOSAL_NOT_EXIST:u64 = 1415;
     const ERR_ACTION_NAME_TOO_LONG: u64 = 1416;
     const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
+    const ERR_ACTION_NUM_TOO_LITTLE: u64=1418;
     #[allow(unused_field)]
     struct DaoEvent has copy, drop, store {
         name: string::String,
@@ -328,6 +330,12 @@ module bfc_system::bfc_dao {
     fun getDaoActionByActionId(dao: &Dao, actionId: u64) : BFCDaoAction {
         let data = vec_map::get(&dao.action_record, &actionId);
         *data
+    }
+    public(friend) fun remove_action(dao: &mut Dao,_: &BFCDaoManageKey, actionId: u64){
+        let size=vec_map::size(&dao.action_record);
+        assert!(size > ACTIVE_NUM_THRESGOLD,ERR_ACTION_NUM_TOO_LITTLE);
+        assert!(vec_map::contains<u64,BFCDaoAction>(&dao.action_record,&actionId),ERR_ACTION_ID_NOT_EXIST);
+        vec_map::remove<u64,BFCDaoAction>(&mut dao.action_record,&actionId);
     }
 
 

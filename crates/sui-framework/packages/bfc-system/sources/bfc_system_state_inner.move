@@ -482,6 +482,9 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::set_min_action_delay(&mut self.dao, manager_key, value);
     }
 
+    public (friend) fun remove_action(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,action_id: u64){
+        bfc_dao::remove_action(&mut self.dao,key,action_id);
+    }
 
     public(friend) fun destroy_terminated_proposal(
         self: &mut BfcSystemStateInner,
