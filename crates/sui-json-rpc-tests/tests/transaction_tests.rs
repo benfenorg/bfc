@@ -149,7 +149,7 @@ async fn test_get_raw_transaction() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_fullnode_transaction() -> Result<(), anyhow::Error> {
+async fn sim_test_get_fullnode_transaction() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
 
     let context = &cluster.wallet;
