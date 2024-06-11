@@ -1934,6 +1934,7 @@ async fn sim_test_reconfig_with_committee_change_stress() {
 #[cfg(msim)]
 #[sim_test]
 async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
     const EPOCH_DURATION: u64 = 1000;
 
     let test_cluster = TestClusterBuilder::new()
@@ -1951,11 +1952,17 @@ async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error>
     assert_eq!(system_state.system_state_version, 1);
     assert_eq!(system_state.epoch, 0);
 
+    bfc_get_stable_rate_result_injection::set_result_error(Some(true));
     let system_state = test_cluster.wait_for_epoch(Some(2)).await;
     assert!(!system_state.safe_mode());
     assert!(system_state.epoch() > 1);
     assert_eq!(system_state.system_state_version(), 2);
 
+    bfc_get_stable_rate_result_injection::set_result_error(Some(false));
+    let system_state = test_cluster.wait_for_epoch(Some(2)).await;
+    assert!(!system_state.safe_mode());
+    assert!(system_state.epoch() > 2);
+    assert_eq!(system_state.system_state_version(), 2);
     Ok(())
 }
 
