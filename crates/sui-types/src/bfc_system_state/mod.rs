@@ -254,7 +254,6 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
 pub mod bfc_get_stable_rate_result_injection {
     use std::cell::RefCell;
     use crate::bfc_system_state::BFCSystemState;
-    use crate::collection_types::VecMap;
     use crate::error::SuiError;
 
     thread_local! {
@@ -271,7 +270,7 @@ pub mod bfc_get_stable_rate_result_injection {
         if let Some(enabled) = OVERRIDE.with(|o| *o.borrow()) {
             if enabled {
                 return Err::<BFCSystemState, SuiError>(
-                    SuiError::SuiSystemStateReadError("Unsupported BfcSystemState version: test mode".to_string()),
+                    SuiError::BfcSystemStateReadError("Unsupported BfcSystemState version: test mode".to_string()),
                 );
             }
         }

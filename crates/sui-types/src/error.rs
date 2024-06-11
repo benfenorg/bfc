@@ -754,6 +754,7 @@ impl SuiError {
                 (false, true)
             }
             SuiError::ObjectLockConflict { .. } => (false, true),
+            SuiError::BfcSystemStateReadError { .. } => (false, true),
 
             _ => (false, false),
         }

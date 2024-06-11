@@ -20,7 +20,7 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget, make_staking_transaction};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
@@ -1996,9 +1996,12 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
     test_cluster.wait_for_epoch(Some(2)).await;
 
     let swap_amount = 100_000_000_000u64;
-    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+    let response = transfer_with_swapped_stable_coin(&test_cluster, http_client,
                                             address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
-    ).await {
+    ).await;
+
+    error!("response is {:?}",response);
+    match response{
         Ok(_) => {}
         Err(e) => {
             if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
