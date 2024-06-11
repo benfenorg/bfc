@@ -653,7 +653,7 @@ async fn test_get_total_supply() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_staking() -> Result<(), anyhow::Error> {
+async fn sim_test_staking() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
 
     let http_client = cluster.rpc_client();
