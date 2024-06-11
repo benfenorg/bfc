@@ -1030,7 +1030,7 @@ Proposal state
 
 
 
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_ID_NOT_EXIST">ERR_ACTION_ID_NOT_EXIST</a>: u64 = 1410;
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_ACTION_ID_NOT_EXIST">ERR_ACTION_ID_NOT_EXIST</a>: u64 = 1422;
 </code></pre>
 
 
@@ -1139,7 +1139,7 @@ Error codes
 
 
 
-<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_LITTLE">ERR_PROPOSAL_NUM_TOO_LITTLE</a>: u64 = 1420;
+<pre><code><b>const</b> <a href="bfc_dao.md#0xc8_bfc_dao_ERR_PROPOSAL_NUM_TOO_LITTLE">ERR_PROPOSAL_NUM_TOO_LITTLE</a>: u64 = 1421;
 </code></pre>
 
 
