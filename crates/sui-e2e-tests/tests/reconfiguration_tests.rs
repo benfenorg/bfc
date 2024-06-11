@@ -1934,12 +1934,36 @@ async fn sim_test_reconfig_with_committee_change_stress() {
 #[cfg(msim)]
 #[sim_test]
 async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error> {
+    const EPOCH_DURATION: u64 = 1000;
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    let system_state = test_cluster.wait_for_epoch(Some(2)).await;
+    assert!(!system_state.safe_mode());
+    assert!(system_state.epoch() > 1);
+    assert_eq!(system_state.system_state_version(), 2);
+
+    Ok(())
+}
+
+#[cfg(msim)]
+#[sim_test]
+async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyhow::Error> {
     use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
-
     const EPOCH_DURATION: u64 = 20000;
-
-    // Inject failure at epoch change 1 -> 2.
-    bfc_get_stable_rate_result_injection::set_override(Some((2, 3)));
 
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(EPOCH_DURATION)
@@ -1957,13 +1981,43 @@ async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error>
     assert_eq!(system_state.system_state_version, 1);
     assert_eq!(system_state.epoch, 0);
 
-    // TODO  test
+    // test
+    bfc_get_stable_rate_result_injection::set_result_error(Some(true));
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_2();
+    let amount = 100_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+
+    let swap_amount = 100_000_000_000u64;
+    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await {
+        Ok(_) => {}
+        Err(e) => {
+            if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
+                panic!("unknown err: {:?}", e)
+            }
+        }
+    }
+
+    bfc_get_stable_rate_result_injection::set_result_error(Some(false));
+    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await {
+        Ok(_) => {}
+        Err(e) => {
+            panic!("unknown err: {:?}", e)
+        }
+    }
 
     // ...
-
-
-
-
 
     Ok(())
 }
@@ -2000,7 +2054,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
 
     let swap_amount = 100_000_000_000u64;
     match transfer_with_swapped_stable_coin(&test_cluster, http_client,
-        address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
     ).await {
         Ok(_) => {}
         Err(e) => {
@@ -2026,7 +2080,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     assert_eq!(system_state.epoch(), 5);
     assert!(system_state.safe_mode());
     // Check that time is properly set even in safe mode.
-    println!("system {} ,{} ", system_state.epoch_start_timestamp_ms(),prev_epoch_start_timestamp);
+    println!("system {} ,{} ", system_state.epoch_start_timestamp_ms(), prev_epoch_start_timestamp);
     assert!(system_state.epoch_start_timestamp_ms() >= prev_epoch_start_timestamp + EPOCH_DURATION);
 
     // Try a staking transaction.

@@ -43,8 +43,6 @@ mod checked {
     use sui_types::storage::WriteKind;
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
-    #[cfg(msim)]
-    use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
     use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME, ChangeObcRoundParams};
     use sui_types::transaction::{
         Argument, CallArg, ChangeEpoch, Command, GenesisTransaction, ProgrammableTransaction,
@@ -775,8 +773,6 @@ mod checked {
         info!("change epoch: {:?}",change_epoch);
 
         let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
-        #[cfg(msim)]
-            let rate_result = bfc_get_stable_rate_result_injection::maybe_modify_result(rate_result, change_epoch.epoch);
         if rate_result.is_err() {
             discard = true;
         }

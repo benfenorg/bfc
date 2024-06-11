@@ -200,7 +200,7 @@ pub fn get_bfc_system_state_wrapper(
 pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemState, SuiError> {
     let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
-    match wrapper.version {
+    let result = match wrapper.version {
         1 => {
             let result: BfcSystemStateInnerV1 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
@@ -217,7 +217,12 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemS
             "Unsupported BfcSystemState version: {}",
             wrapper.version
         ))),
-    }
+    };
+
+    #[cfg(msim)]
+        let result = bfc_get_stable_rate_result_injection::maybe_modify_result(result);
+
+    result
 }
 
 pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
@@ -247,28 +252,25 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
 
 #[cfg(msim)]
 pub mod bfc_get_stable_rate_result_injection {
-    use crate::{
-        committee::EpochId,
-    };
     use std::cell::RefCell;
+    use crate::bfc_system_state::BFCSystemState;
     use crate::collection_types::VecMap;
     use crate::error::SuiError;
 
     thread_local! {
-        static OVERRIDE: RefCell<Option<(EpochId, EpochId)>>  = RefCell::new(None);
+        static OVERRIDE: RefCell<Option<bool>>  = RefCell::new(None);
     }
 
-    pub fn set_override(value: Option<(EpochId, EpochId)>) {
+    pub fn set_result_error(value: Option<bool>) {
         OVERRIDE.with(|o| *o.borrow_mut() = value);
     }
 
     pub fn maybe_modify_result(
-        result: Result<(VecMap<String, u64>, u64), SuiError>,
-        current_epoch: EpochId,
-    ) -> Result<(VecMap<String, u64>, u64), SuiError> {
-        if let Some((start, end)) = OVERRIDE.with(|o| *o.borrow()) {
-            if current_epoch >= start && current_epoch < end {
-                return Err::<(VecMap<String, u64>, u64), SuiError>(
+        result: Result<BFCSystemState, SuiError>,
+    ) -> Result<BFCSystemState, SuiError> {
+        if let Some(enabled) = OVERRIDE.with(|o| *o.borrow()) {
+            if enabled {
+                return Err::<BFCSystemState, SuiError>(
                     SuiError::SuiSystemStateReadError("Unsupported BfcSystemState version: test mode".to_string()),
                 );
             }
