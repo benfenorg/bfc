@@ -1186,7 +1186,7 @@ impl AuthorityState {
         let mut proposal_map = None;
 
         if transaction_data.is_change_epoch_tx() {
-            let proposal_map_result = temporary_store.get_bfc_system_proposal_stauts_map();
+            let proposal_map_result = temporary_store.get_bfc_system_proposal_status_map();
             match proposal_map_result {
                 Ok(map) => {proposal_map = Some(map);}
                 Err(_) => {
