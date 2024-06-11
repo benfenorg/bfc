@@ -487,7 +487,7 @@ async fn test_gas_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
+async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address1 = test_cluster.get_address_0();
@@ -519,9 +519,6 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
         opts: OptsWithGas::for_testing(Some(gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
-        //serialize_unsigned_transaction: false,
-        //serialize_signed_transaction: false,
-        //lint: false,
     }
     .execute(context)
     .await?;
@@ -693,6 +690,7 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 
     assert!(resp.is_err());
     let err_string = format!("{} ", resp.err().unwrap());
+    println!("==========={}", err_string);
     assert!(err_string.contains("Gas price 1 under reference gas price"));
 
     // FIXME: uncomment once we figure out what is going on with `resolve_and_type_check`
@@ -731,8 +729,8 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
         function: "create".to_string(),
         type_args: vec![],
         args,
-        opts: OptsWithGas::for_testing(None, rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
-        gas_price: Some(12345),
+        opts: OptsWithGas::for_testing(None, 10*rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS),
+        gas_price: Some(9999),
     }
     .execute(context)
     .await?;
@@ -740,9 +738,10 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
     if let SuiClientCommandResult::Call(txn_response) = result {
         assert_eq!(
             txn_response.transaction.unwrap().data.gas_data().price,
-            12345
+            9999
         );
     } else {
+        println!("==========={}", result);
         panic!("Command failed with unexpected result.")
     };
 
@@ -750,7 +749,7 @@ async fn test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
+async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     let obj_id = ObjectID::random();
     let (address, keypair): (SuiAddress, AccountKeyPair) =
         deterministic_random_account_key();
