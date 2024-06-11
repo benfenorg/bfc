@@ -810,7 +810,8 @@ mod checked {
                     storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
                 }
             },
-            Err(_) => {
+            Err(e) => {
+                info!("Read reward_rate failed with err {:?}",e);
                 discard = true;
             }
         }
