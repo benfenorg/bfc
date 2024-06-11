@@ -108,6 +108,7 @@ diesel::table! {
 diesel::table! {
     dao_proposals (object_id) {
         object_id -> Varchar,
+        checkpoint_sequence_number -> Int8,
         action_id -> Int8,
         action_name -> Text,
         action_status -> Bool,
@@ -421,6 +422,31 @@ diesel::table! {
         yesterday_dt_ms -> Int8,
         miner_redeem -> Bool,
         transfered_at -> Int8,
+        sequence_number -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nfts_view (id) {
+        id -> Int8,
+        owner -> Varchar,
+        miner_id -> Varchar,
+        miner_url -> Varchar,
+        miner_name -> Varchar,
+        token_id -> Varchar,
+        power -> Int8,
+        cost_bfc -> Int8,
+        mint_at -> Int8,
+        earliest_held_at -> Int8,
+        mint_duration -> Int8,
+        mining_ticket_id -> Nullable<Varchar>,
+        mining_started_at -> Int8,
+        total_mint_bfc -> Int8,
+        yesterday_mint_bfc -> Int8,
+        yesterday_dt_ms -> Int8,
+        miner_redeem -> Bool,
+        transfered_at -> Int8,
+        sequence_number -> Int8,
     }
 }
 
@@ -437,12 +463,14 @@ diesel::table! {
 
 diesel::table! {
     mining_nft_staking(ticket_id) {
+        id -> Int8,
         ticket_id -> Varchar,
         owner -> Varchar,
         miner_id -> Varchar,
         staked_at -> Int8,
         unstaked_at -> Nullable<Int8>,
         total_mint_bfc -> Int8,
+        sequence_number -> Int8,
     }
 }
 

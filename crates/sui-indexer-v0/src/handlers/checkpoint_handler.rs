@@ -1543,14 +1543,15 @@ where
                 benfen::get_mining_nft_cost_in_bfc(self.config.clone(), self.http_client.clone())
                     .await? as i64;
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft))
+                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft), checkpoint.sequence_number)
                 .await?;
         }
         for p in operations.into_iter() {
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p))
+                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p), checkpoint.sequence_number)
                 .await?;
         }
+        self.state.refresh_mining_nft().await?;
 
         let liq_admin_addrs: HashSet<AccountAddress> = self
             .config
