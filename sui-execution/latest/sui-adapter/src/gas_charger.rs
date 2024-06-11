@@ -308,10 +308,11 @@ pub mod checked {
                             let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
                             deduct_gas(&mut gas_object, stable_gas_used);
                         },
-                        Err(err) => {
+                        Err(_) => {
                             *execution_result = Err(ExecutionError::from_kind(
                                 ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
                             ));
+                            // todo ? need deduct gas?
                             //deduct_gas(&mut gas_object, gas_used);
                         }
                     }
