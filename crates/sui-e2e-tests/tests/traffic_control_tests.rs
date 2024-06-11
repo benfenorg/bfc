@@ -444,8 +444,9 @@ async fn assert_traffic_control_dry_run(
     // it should take no more than 4 requests to be added to the blocklist
     for _ in 0..txn_count {
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("sui_executeTransactionBlock", params.clone())
+            .request("bfc_executeTransactionBlock", params.clone())
             .await;
+        println!("response={:?}", response);
         assert!(
             response.is_ok(),
             "Expected request to succeed in dry-run mode"
@@ -480,7 +481,7 @@ async fn assert_traffic_control_spam_blocked(
     // it should take no more than 4 requests to be added to the blocklist
     for _ in 0..txn_count {
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("sui_executeTransactionBlock", params.clone())
+            .request("bfc_executeTransactionBlock", params.clone())
             .await;
         if let Err(err) = response {
             // TODO: fix validator blocking error handling such that the error message
@@ -528,7 +529,7 @@ async fn assert_traffic_control_spam_delegated(
     // it should take no more than 4 requests to be added to the blocklist
     for _ in 0..txn_count {
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("sui_executeTransactionBlock", params.clone())
+            .request("bfc_executeTransactionBlock", params.clone())
             .await;
         assert!(response.is_ok(), "Expected request to succeed");
     }
