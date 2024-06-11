@@ -329,7 +329,7 @@ async fn do_test_passive_reconfig() {
 }
 
 #[sim_test]
-async fn test_change_bfc_round() {
+async fn sim_test_change_bfc_round() {
     telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_commit_root_state_digest_supported(true);
@@ -338,7 +338,7 @@ async fn test_change_bfc_round() {
     ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
@@ -1319,7 +1319,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error>{
 }
 
 #[sim_test]
-async fn test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
+async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1367,7 +1367,7 @@ async fn test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error>{
 }
 
 #[sim_test]
-async fn test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
+async fn sim_test_bfc_dao_change_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();

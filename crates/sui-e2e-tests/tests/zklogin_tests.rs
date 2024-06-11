@@ -66,7 +66,7 @@ async fn build_zklogin_tx(test_cluster: &TestCluster, max_epoch: EpochId) -> Tra
     Transaction::from_generic_sig_data(tx_data.clone(), vec![generic_sig])
 }
 #[sim_test]
-async fn test_zklogin_feature_deny() {
+async fn sim_test_zklogin_feature_deny() {
     use sui_protocol_config::ProtocolConfig;
 
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
@@ -82,7 +82,7 @@ async fn test_zklogin_feature_deny() {
 }
 
 #[sim_test]
-async fn test_zklogin_feature_legacy_address_deny() {
+async fn sim_test_zklogin_feature_legacy_address_deny() {
     use sui_protocol_config::ProtocolConfig;
 
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
@@ -112,7 +112,7 @@ async fn test_legacy_zklogin_address_accept() {
 }
 
 #[sim_test]
-async fn zklogin_end_to_end_test() {
+async fn sim_zklogin_end_to_end_test() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(15000)
         .with_default_jwks()
@@ -134,7 +134,7 @@ async fn zklogin_end_to_end_test() {
 }
 
 #[sim_test]
-async fn test_max_epoch_too_large_fail_tx() {
+async fn sim_test_max_epoch_too_large_fail_tx() {
     use sui_protocol_config::ProtocolConfig;
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_zklogin_max_epoch_upper_bound_delta(Some(1));
@@ -158,7 +158,7 @@ async fn test_max_epoch_too_large_fail_tx() {
 }
 
 #[sim_test]
-async fn test_expired_zklogin_sig() {
+async fn sim_test_expired_zklogin_sig() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(15000)
         .with_default_jwks()
@@ -224,7 +224,7 @@ async fn sim_test_auth_state_creation() {
 }
 
 #[sim_test]
-async fn test_create_authenticator_state_object() {
+async fn sim_test_create_authenticator_state_object() {
     let test_cluster = TestClusterBuilder::new()
         .with_protocol_version(23.into())
         .with_epoch_duration_ms(15000)
