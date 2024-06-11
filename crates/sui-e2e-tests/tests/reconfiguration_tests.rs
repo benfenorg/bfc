@@ -1937,7 +1937,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     use sui_test_transaction_builder::make_staking_transaction;
     use sui_types::sui_system_state::advance_epoch_result_injection;
 
-    const EPOCH_DURATION: u64 = 10000;
+    const EPOCH_DURATION: u64 = 20000;
 
     advance_epoch_result_injection::set_override(Some((5, 6)));
 
