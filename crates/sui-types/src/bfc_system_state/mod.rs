@@ -77,7 +77,7 @@ impl BfcSystemStateWrapper {
             1 => {
                 Self::bfc_round_safe_mode_impl::<BfcSystemStateInnerV1>(
                     move_object,
-                    protocol_config
+                    protocol_config,
                 );
             }
             _ => unreachable!(),
@@ -104,7 +104,7 @@ impl BfcSystemStateWrapper {
         );
         let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
         move_object
-            .update_contents(new_contents,protocol_config)
+            .update_contents(new_contents, protocol_config)
             .expect("Update bfc system object content cannot fail since it should be small");
     }
 }
@@ -141,22 +141,20 @@ impl BFCSystemState {
         }
     }
 }
+
 impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
-    fn round(&self) -> u64{
+    fn round(&self) -> u64 {
         0
     }
 
-    fn bfc_round_safe_mode(&mut self){
-
-    }
-
+    fn bfc_round_safe_mode(&mut self) {}
 }
 
 pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<String, u64>, SuiError> {
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok(bfc_system_state.rate_map)
-        },
+        }
         Err(e) => Err(e),
     }
 }
@@ -165,7 +163,7 @@ pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.stable_base_points))
-        },
+        }
         Err(e) => Err(e),
     }
 }
@@ -174,7 +172,7 @@ pub fn get_stable_rate_and_reward_rate(object_store: &dyn ObjectStore) -> Result
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.reward_rate))
-        },
+        }
         Err(e) => Err(e),
     }
 }
@@ -200,10 +198,6 @@ pub fn get_bfc_system_state_wrapper(
 }
 
 pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemState, SuiError> {
-    #[cfg(msim)]
-    return Err(SuiError::BfcSystemStateReadError(format!(
-        "Unsupported BfcSystemState version: test mode",
-    )));
     let wrapper = get_bfc_system_state_wrapper(object_store)?;
     let id = wrapper.id.id.bytes;
     match wrapper.version {
@@ -251,3 +245,35 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
 }
 
 
+#[cfg(msim)]
+pub mod bfc_get_stable_rate_result_injection {
+    use crate::{
+        committee::EpochId,
+    };
+    use std::cell::RefCell;
+    use crate::collection_types::VecMap;
+    use crate::error::SuiError;
+
+    thread_local! {
+        static OVERRIDE: RefCell<Option<(EpochId, EpochId)>>  = RefCell::new(None);
+    }
+
+    pub fn set_override(value: Option<(EpochId, EpochId)>) {
+        OVERRIDE.with(|o| *o.borrow_mut() = value);
+    }
+
+    pub fn maybe_modify_result(
+        result: Result<(VecMap<String, u64>, u64), SuiError>,
+        current_epoch: EpochId,
+    ) -> Result<(VecMap<String, u64>, u64), SuiError> {
+        if let Some((start, end)) = OVERRIDE.with(|o| *o.borrow()) {
+            if current_epoch >= start && current_epoch < end {
+                return Err::<(VecMap<String, u64>, u64), SuiError>(
+                    SuiError::SuiSystemStateReadError("Unsupported BfcSystemState version: test mode".to_string()),
+                );
+            }
+        }
+
+        result
+    }
+}

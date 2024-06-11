@@ -20,7 +20,7 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget, make_staking_transaction};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
@@ -1930,6 +1930,44 @@ async fn sim_test_reconfig_with_committee_change_stress() {
             .all(|v| !committee.authority_exists(v));
     }
 }
+
+#[cfg(msim)]
+#[sim_test]
+async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
+
+    const EPOCH_DURATION: u64 = 20000;
+
+    // Inject failure at epoch change 1 -> 2.
+    bfc_get_stable_rate_result_injection::set_override(Some((2, 3)));
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    // On startup, we should be at V1.
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    // TODO  test
+
+    // ...
+
+
+
+
+
+    Ok(())
+}
+
 
 #[cfg(msim)]
 #[sim_test]
