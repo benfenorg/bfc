@@ -33,7 +33,9 @@ module bfc_system::bfc_dao {
     }
 
     const ZERO_ADDRESS: address = @0000000000000000000000000000000000000000000000000000000000000000;
-    const ACTIVE_NUM_THRESGOLD: u64= 200;
+    const ACTIVE_MAX_NUM_THRESGOLD: u64= 200;
+    const ACTIVE_MIN_NUM_THRESGOLD: u64= 20;
+
     const DEFAULT_VOTE_DELAY: u64      = 1000 * 60 * 60  * 24 * 3; // 3 days || 3 hour for test
     const DEFAULT_VOTE_PERIOD: u64     = 1000 * 60 * 60  * 24 * 7; // 7 days || 7 hour for test
     const DEFAULT_MIN_ACTION_DELAY: u64 = 1000 * 60 * 60 * 24 * 7; // 7 days || 7 hour for test
@@ -48,10 +50,9 @@ module bfc_system::bfc_dao {
     const MIN_NEW_PROPOSE_COST: u64 = 200 * 1000000000; // 200 BFC
     const MIN_NEW_ACTION_COST: u64 = 10 * 1000000000; // 10 BFC
     const MAX_ACTION_NAME_LENGTH: u64 = 100;
-    const MAX_DESCRIPTION_LENGTH: u64 = 1000;
+    const MAX_DESCRIPTION_LENGTH: u64 = 200;
 
     const MIN_STAKE_MANAGER_KEY_COST: u64 = 100000 * 1000000000; // 10 0000 BFC
-
     const MAX_VOTE_AMOUNT: u64 = 10 * 1_0000_0000 * 1000000000 ; // 1 billion max BFC
     const MIN_VOTING_THRESHOLD: u64 = 1_000_000_000; // 1 bfc
 
@@ -87,6 +88,9 @@ module bfc_system::bfc_dao {
     const ERR_DESCRIPTION_TOO_LONG: u64 = 1417;
     const ERR_ACTION_NUM_TOO_MUCH: u64=1418;
     const ERR_PROPOSAL_NUM_TOO_MANY: u64=1419;
+    const ERR_ACTION_NUM_TOO_LITTLE: u64 = 1420;
+    const ERR_PROPOSAL_NUM_TOO_LITTLE: u64 = 1420;
+
 
     #[allow(unused_field)]
     struct DaoEvent has copy, drop, store {
@@ -258,7 +262,7 @@ module bfc_system::bfc_dao {
         assert!(coin::value(payment) >= MIN_NEW_ACTION_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!(vector::length(&actionName) <= MAX_ACTION_NAME_LENGTH, ERR_ACTION_NAME_TOO_LONG);
         let size=vec_map::size(&dao.action_record);
-        assert!(size == ACTIVE_NUM_THRESGOLD, ERR_ACTION_NUM_TOO_MUCH);
+        assert!(size < ACTIVE_MAX_NUM_THRESGOLD, ERR_ACTION_NUM_TOO_MUCH);
 
         // burn 10 BFC to prevent DDOS attacks
         let burn_bfc=coin::split(payment, MIN_NEW_ACTION_COST, ctx);
@@ -337,8 +341,16 @@ module bfc_system::bfc_dao {
     }
     public(friend) fun remove_action(dao: &mut Dao,_: &BFCDaoManageKey, actionId: u64){
         let size=vec_map::size(&dao.action_record);
+        assert!(size > ACTIVE_MIN_NUM_THRESGOLD,ERR_ACTION_NUM_TOO_LITTLE);
         assert!(vec_map::contains<u64,BFCDaoAction>(&dao.action_record,&actionId),ERR_ACTION_ID_NOT_EXIST);
         vec_map::remove<u64,BFCDaoAction>(&mut dao.action_record,&actionId);
+    }
+
+    public (friend) fun remove_proposal(dao: &mut Dao,_: &BFCDaoManageKey, proposalId: u64){
+        let size=vec_map::size(&dao.proposal_record);
+        assert!(size > ACTIVE_MIN_NUM_THRESGOLD,ERR_PROPOSAL_NUM_TOO_LITTLE);
+        assert!(vec_map::contains<u64,ProposalInfo>(&dao.proposal_record,&proposalId),ERR_PROPOSAL_ID_MISMATCH);
+        vec_map::remove<u64,ProposalInfo>(&mut dao.proposal_record,&proposalId);
     }
 
 
@@ -414,7 +426,7 @@ module bfc_system::bfc_dao {
         assert!(coin::value(payment) >= MIN_NEW_PROPOSE_COST, ERR_EINSUFFICIENT_FUNDS);
         assert!( vector::length(&description) <= MAX_DESCRIPTION_LENGTH, ERR_ACTION_NAME_TOO_LONG);
         let size=vec_map::size(&dao.proposal_record);
-        assert!(size == ACTIVE_NUM_THRESGOLD, ERR_PROPOSAL_NUM_TOO_MANY);
+        assert!(size < ACTIVE_MAX_NUM_THRESGOLD, ERR_PROPOSAL_NUM_TOO_MANY);
 
         // burn 200 BFC to prevent DDOS attacks
         let burn_bfc=coin::split(payment, MIN_NEW_PROPOSE_COST, ctx);

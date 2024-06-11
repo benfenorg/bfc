@@ -214,6 +214,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
+    public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
+        let system_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
+    }
+    
     public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::remove_action(system_state,key,action_id);
