@@ -252,14 +252,14 @@ module bfc_system::bfc_system_tests {
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let bfc = balance::create_for_testing<BFC>(100);
         let current_balance = bfc_system::treasury_balance(&system_state);
-        assert!(current_balance == 0, 1);
+        assert!(current_balance == 8673437554378, 1);
         bfc_system::deposit_to_treasury(
             &mut system_state,
             coin::from_balance(bfc, test_scenario::ctx(&mut scenario_val)),
         );
 
         let new_balance = bfc_system::treasury_balance(&system_state);
-        assert!(new_balance == 0, 1);
+        assert!(new_balance == 8673437554478, 1);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -272,16 +272,14 @@ module bfc_system::bfc_system_tests {
         let amount = bfc_system::bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
         let current_balance = bfc_system::treasury_balance(&system_state);
-        assert!(current_balance == 0, 2);
-
+        assert!(current_balance == 8673437554378, 2);
         bfc_system::deposit_to_treasury(
             &mut system_state,
             coin::from_balance(bfc, test_scenario::ctx(&mut scenario_val)),
         );
 
         let new_balance = bfc_system::treasury_balance(&system_state);
-        assert!(new_balance == amount, 3);
-
+        assert!(new_balance == amount + 8673437554378, 3);
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
