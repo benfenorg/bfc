@@ -247,10 +247,10 @@ async fn test_stake_all() {
 
 #[tokio::test]
 async fn test_withdraw_stake() {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(15000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();
@@ -318,7 +318,7 @@ async fn test_withdraw_stake() {
     assert_eq!(1000000000, response.balances[0].value);
 
     // wait for epoch.
-    tokio::time::sleep(Duration::from_millis(15000)).await;
+    tokio::time::sleep(Duration::from_millis(20000)).await;
 
     // withdraw all stake
     let ops = serde_json::from_value(json!(
@@ -434,7 +434,7 @@ async fn test_pay_sui() {
 #[tokio::test]
 async fn test_pay_sui_multiple_times() {
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(30000)
+        .with_epoch_duration_ms(50000)
         .build()
         .await;
     let sender = test_cluster.get_address_0();

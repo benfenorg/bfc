@@ -67,12 +67,12 @@ async fn pay_with_gas_budget(budget: u64) -> TransactionIdentifierResponseResult
             "operation_identifier":{"index":0},
             "type":"PaySui",
             "account": { "address" : recipient.to_string() },
-            "amount" : { "value": "1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+            "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         },{
             "operation_identifier":{"index":1},
             "type":"PaySui",
             "account": { "address" : sender.to_string() },
-            "amount" : { "value": "-1000000000" , "currency": { "symbol": "SUI", "decimals": 9}}
+            "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
         }]
     ))
     .unwrap();
@@ -170,7 +170,7 @@ async fn test_pay_with_gas_budget() {
 
 #[tokio::test]
 async fn test_pay_with_gas_budget_fail() {
-    const TX_BUDGET_FAIL: u64 = 1_100_000;
+    const TX_BUDGET_FAIL: u64 = 210000;
     let submit = pay_with_gas_budget(TX_BUDGET_FAIL).await;
     match submit {
         TransactionIdentifierResponseResult::Error(rosetta_submit_gas_error) => {

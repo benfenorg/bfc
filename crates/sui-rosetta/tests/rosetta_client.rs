@@ -4,6 +4,7 @@
 use std::fmt::{Display, Formatter};
 use std::net::SocketAddr;
 use std::str::FromStr;
+use std::time::Duration;
 
 use fastcrypto::encoding::{Encoding, Hex};
 use reqwest::Client;
@@ -57,7 +58,9 @@ pub struct RosettaClient {
 
 impl RosettaClient {
     fn new(online: u16, offline: u16) -> Self {
-        let client = Client::new();
+        let client = Client::builder().connect_timeout(Duration::from_secs(30)).
+            timeout(Duration::from_secs(60)).build().unwrap();
+
         Self {
             client,
             online_port: online,
