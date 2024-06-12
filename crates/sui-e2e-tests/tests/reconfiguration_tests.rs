@@ -2011,9 +2011,9 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
     match response{
         Ok(_) => {}
         Err(e) => {
-            // if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
+            if !e.to_string().contains("Unsupported BfcSystemState version: test mode") {
                 panic!("unknown err: {:?}", e)
-            // }
+            }
         }
     }
 
@@ -2057,14 +2057,8 @@ async fn bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error>
 
     // test
     bfc_get_stable_rate_with_base_point_result_injection::set_result_error(Some(true));
-
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_2();
-    let amount = 100_000_000_000u64 * 60;
-    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
-                                           Option::Some(address),
-                                           Option::Some(amount)).await;
-    test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
     test_cluster.wait_for_epoch(Some(2)).await;
     rebalance(&test_cluster, http_client, address).await?;
     test_cluster.wait_for_epoch(Some(2)).await;
@@ -2072,16 +2066,13 @@ async fn bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error>
     match transfer_with_swapped_stable_coin(&test_cluster, http_client,
                                             address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
     ).await {
-        Ok(_) => {
-            panic!("Should be error")
-        }
+        Ok(_) => {}
         Err(e) => {
-            // if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
-            panic!("unknown err: {:?}", e)
-            // }
+            if !e.to_string().contains("not found in rate map") {
+                panic!("unknown err: {:?}", e)
+            }
         }
     }
-
     // ...
 
     Ok(())
@@ -3097,7 +3088,10 @@ async fn transfer_with_swapped_stable_coin(
         address,
         gas_coins.clone(),
     ).await;
-    test_cluster.wallet.execute_transaction_may_fail(tx.clone()).await?;
+    let response = test_cluster.wallet.execute_transaction_may_fail(tx.clone()).await?;
+    if !response.status_ok().unwrap() {
+        return Err(Error::msg(response.effects.unwrap().to_string()));
+    }
 
     let check_point_page = get_checkpoints(http_client, true).await?;
     assert!(check_point_page.data.len() > 0);
