@@ -312,8 +312,7 @@ pub mod checked {
                             *execution_result = Err(ExecutionError::from_kind(
                                 ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
                             ));
-                            // todo ? need deduct gas?
-                            //deduct_gas(&mut gas_object, gas_used);
+                            self.reset(temporary_store);
                         }
                     }
                 }else {

@@ -783,7 +783,7 @@ impl<'backing> TemporaryStore<'backing> {
         self.write_object(new_object, WriteKind::Mutate);
     }
 
-    pub fn get_bfc_system_proposal_stauts_map(& self) -> Result<VecMap<u64, ProposalStatus>,SuiError> {
+    pub fn get_bfc_system_proposal_status_map(& self) -> Result<VecMap<u64, ProposalStatus>,SuiError> {
         get_bfc_system_proposal_state_map(self.store.as_object_store())
     }
 
