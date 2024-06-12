@@ -1314,7 +1314,6 @@ impl PgIndexerStore {
     }
 
     fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
-        info!("persist_mining_nft {:?}", operation);
         match operation {
             MiningNFTOperation::Creation(mining_nft) => {
                 transactional_blocking!(&self.blocking_cp, |conn| {
@@ -1322,13 +1321,13 @@ impl PgIndexerStore {
                     if mining_nft.power == 0 {
                         let before: Result<MiningNFT, Error> = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .filter(crate::schema::mining_nfts::mining_started_at.eq(0))
+                            .filter(mining_nfts::mining_started_at.eq(0))
                             .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn);
                         match before {
                             Ok(mut nft) => {
-                                nft.id = Option::None;
+                                nft.id = None;
                                 nft.transfered_at = mining_nft.earliest_held_at;
                                 nft.sequence_number = sequence_number;
                                 diesel::insert_into(mining_nfts::table)
@@ -1358,7 +1357,7 @@ impl PgIndexerStore {
                             .first(conn);
                     match before {
                         Ok(mut nft) => {
-                            nft.id = Option::None;
+                            nft.id = None;
                             nft.transfered_at = mining_nft.earliest_held_at;
                             nft.miner_redeem = mining_nft.miner_redeem;
                             diesel::insert_into(mining_nfts::table)
@@ -1432,7 +1431,7 @@ impl PgIndexerStore {
                         prev_staking.unstaked_at = Some(v.timestamp as i64);
                         prev_staking.sequence_number = sequence_number;
                         diesel::insert_into(mining_nft_staking::table)
-                            .values(vec![prev_staking])
+                            .values(prev_staking.clone())
                             .execute(conn)
                     })
                     .context("Failed to handle unstaking event.")?;
@@ -1461,7 +1460,7 @@ impl PgIndexerStore {
                         prev_staking.total_mint_bfc = prev_staking.total_mint_bfc + v.reward as i64;
                         prev_staking.sequence_number = sequence_number;
                         diesel::insert_into(mining_nft_staking::table)
-                            .values(vec![prev_staking])
+                            .values(prev_staking.clone())
                             .execute(conn)?;
                         diesel::insert_into(mining_nft_history_profits::table)
                             .values(vec![MiningNFTHistoryProfit {

@@ -462,7 +462,7 @@ diesel::table! {
 }
 
 diesel::table! {
-    mining_nft_staking(ticket_id) {
+    mining_nft_staking(id) {
         id -> Int8,
         ticket_id -> Varchar,
         owner -> Varchar,

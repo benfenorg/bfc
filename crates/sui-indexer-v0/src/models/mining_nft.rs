@@ -45,8 +45,8 @@ pub struct MiningNFT {
 pub struct MiningNFTStaking {
     #[diesel(deserialize_as = i64)]
     pub id: Option<i64>,
-    pub owner: String,
     pub ticket_id: String,
+    pub owner: String,
     pub miner_id: String,
     pub staked_at: i64,
     pub unstaked_at: Option<i64>,
