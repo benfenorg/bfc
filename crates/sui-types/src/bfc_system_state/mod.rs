@@ -160,12 +160,17 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
 }
 
 pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
-    match get_bfc_system_state(object_store) {
+   let result = match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.stable_base_points))
         }
         Err(e) => Err(e),
-    }
+    };
+
+    #[cfg(msim)]
+        let result = bfc_get_stable_rate_with_base_point_result_injection::maybe_modify_result(result);
+
+    result
 }
 
 pub fn get_stable_rate_and_reward_rate(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
@@ -270,7 +275,37 @@ pub mod bfc_get_stable_rate_result_injection {
         if let Some(enabled) = OVERRIDE.with(|o| *o.borrow()) {
             if enabled {
                 return Err::<BFCSystemState, SuiError>(
-                    SuiError::BfcSystemStateReadError("Unsupported BfcSystemState version: test mode".to_string()),
+                    SuiError::BfcSystemStateReadError("Unsupported BfcSystemState version: test mode(bfc_get_stable_rate_result_injection)".to_string()),
+                );
+            }
+        }
+
+        result
+    }
+}
+
+
+#[cfg(msim)]
+pub mod bfc_get_stable_rate_with_base_point_result_injection {
+    use std::cell::RefCell;
+    use crate::collection_types::VecMap;
+    use crate::error::SuiError;
+
+    thread_local! {
+        static OVERRIDE: RefCell<Option<bool>> = RefCell::new(None);
+    }
+
+    pub fn set_result_error(value: Option<bool>) {
+        OVERRIDE.with(|o| *o.borrow_mut() = value);
+    }
+
+    pub fn maybe_modify_result(
+        result: anyhow::Result<(VecMap<String, u64>, u64), SuiError>,
+    ) -> anyhow::Result<(VecMap<String, u64>, u64), SuiError> {
+        if let Some(enabled) = OVERRIDE.with(|o| *o.borrow()) {
+            if enabled {
+                return Err::<(VecMap<String, u64>, u64), SuiError>(
+                    SuiError::BfcSystemStateReadError("Unsupported BfcSystemState version: test mode(bfc_get_stable_rate_with_base_point_result_injection)".to_string()),
                 );
             }
         }

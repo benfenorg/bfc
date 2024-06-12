@@ -2011,9 +2011,9 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
     match response{
         Ok(_) => {}
         Err(e) => {
-            if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
+            // if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
                 panic!("unknown err: {:?}", e)
-            }
+            // }
         }
     }
 
@@ -2032,6 +2032,60 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
     Ok(())
 }
 
+
+#[cfg(msim)]
+#[sim_test]
+async fn bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_with_base_point_result_injection;
+    const EPOCH_DURATION: u64 = 20000;
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    // On startup, we should be at V1.
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    // test
+    bfc_get_stable_rate_with_base_point_result_injection::set_result_error(Some(true));
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_2();
+    let amount = 100_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let swap_amount = 100_000_000_000u64;
+    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await {
+        Ok(_) => {
+            panic!("Should be error")
+        }
+        Err(e) => {
+            // if !e.to_string().contains("Unsupported BfcSystemState version: test mode.") {
+            panic!("unknown err: {:?}", e)
+            // }
+        }
+    }
+
+    // ...
+
+    Ok(())
+}
 
 #[cfg(msim)]
 #[sim_test]
