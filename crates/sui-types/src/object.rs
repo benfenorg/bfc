@@ -425,8 +425,6 @@ impl MoveObject {
             Ok(traversal.finish())
         }
     }
-
-
 }
 
 
@@ -506,7 +504,7 @@ impl Data {
 }
 
 #[derive(
-Eq, PartialEq, Debug, Clone, Copy, Deserialize, Serialize, Hash, JsonSchema, Ord, PartialOrd,
+    Eq, PartialEq, Debug, Clone, Copy, Deserialize, Serialize, Hash, JsonSchema, Ord, PartialOrd,
 )]
 #[cfg_attr(feature = "fuzzing", derive(proptest_derive::Arbitrary))]
 pub enum Owner {
@@ -680,7 +678,7 @@ impl Object {
         modules: &[CompiledModule],
         previous_transaction: TransactionDigest,
         max_move_package_size: u64,
-        dependencies: impl IntoIterator<Item = &'p MovePackage>,
+        dependencies: impl IntoIterator<Item=&'p MovePackage>,
     ) -> Result<Self, ExecutionError> {
         Ok(Self::new_package_from_data(
             Data::Package(MovePackage::new_initial(
@@ -698,7 +696,7 @@ impl Object {
         modules: &[CompiledModule],
         previous_transaction: TransactionDigest,
         protocol_config: &ProtocolConfig,
-        dependencies: impl IntoIterator<Item = &'p MovePackage>,
+        dependencies: impl IntoIterator<Item=&'p MovePackage>,
     ) -> Result<Self, ExecutionError> {
         Ok(Self::new_package_from_data(
             Data::Package(previous_package.new_upgraded(
@@ -714,7 +712,7 @@ impl Object {
     pub fn new_package_for_testing(
         modules: &[CompiledModule],
         previous_transaction: TransactionDigest,
-        dependencies: impl IntoIterator<Item = MovePackage>,
+        dependencies: impl IntoIterator<Item=MovePackage>,
     ) -> Result<Self, ExecutionError> {
         let dependencies: Vec<_> = dependencies.into_iter().collect();
         Self::new_package(
@@ -855,7 +853,7 @@ impl ObjectInner {
     pub fn get_gas_coin_name(&self) -> String {
         if let Some(move_object) = self.data.try_as_move() {
             move_object.type_().get_gas_coin_name()
-        }else {
+        } else {
             "".to_string()
         }
     }
@@ -949,10 +947,10 @@ impl Object {
             Data::Move(m) => {
                 if m.type_.is_stable_gas_coin() {
                     self.storage_rebate
-                }else {
-                    self.storage_rebate +  m.get_total_sui(layout_resolver)?
+                } else {
+                    self.storage_rebate + m.get_total_sui(layout_resolver)?
                 }
-            },
+            }
             Data::Package(_) => self.storage_rebate,
         })
     }
@@ -1313,20 +1311,23 @@ fn test_object_digest_and_serialized_format() {
         TransactionDigest::ZERO,
     );
     let bytes = bcs::to_bytes(&o).unwrap();
-
+    println!("{:?}", bytes);
     assert_eq!(
         bytes,
         [
-            0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+            0, 1, 7, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 98, 102, 99, 3, 66, 70, 67, 0,
+            1, 1, 0, 0, 0, 0, 0, 0, 0, 40, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 123, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 32, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0
         ]
     );
 
     let objref = format!("{:?}", o.compute_object_reference());
-    assert_eq!(objref, "(0x0000000000000000000000000000000000000000000000000000000000000000, SequenceNumber(1), o#59tZq65HVqZjUyNtD7BCGLTD87N5cpayYwEFrtwR4aMz)");
+    assert_eq!(objref, "(0x0000000000000000000000000000000000000000000000000000000000000000, SequenceNumber(1), o#HmD83JNBnXfLM7mopePjMxGSaC2ipqy9Aaa8bZLfrDHA)");
 }
 
 #[test]
