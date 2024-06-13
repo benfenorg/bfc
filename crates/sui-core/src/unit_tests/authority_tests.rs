@@ -1231,7 +1231,7 @@ async fn test_dry_run_with_stable_gas_coin() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS/10,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);

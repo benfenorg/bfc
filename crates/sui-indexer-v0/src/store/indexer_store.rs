@@ -408,6 +408,8 @@ pub trait IndexerStore {
         base_coin: String,
         limit: usize,
     ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError>;
+
+    async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError>;
 }
 
 #[derive(Clone, Debug)]

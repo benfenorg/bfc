@@ -25,7 +25,7 @@ use sui_json_rpc_types::SuiOwnedMiningNFTProfit;
 use sui_json_rpc_types::SuiParsedData;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::SuiAddress;
-use sui_types::collection_types::VecMap;
+use sui_types::collection_types::LinkedTable;
 use sui_types::dynamic_field::DynamicFieldName;
 use sui_types::dynamic_field::Field;
 use sui_types::error::SuiError;
@@ -205,7 +205,8 @@ async fn get_mining_nft_cost_in_usd(
 }
 
 fn get_price_from_sqrt_price(sqrt_price: &str) -> Result<f64, IndexerError> {
-    let div: Decimal = (u64::MAX - 1/* 2^64 */).into();
+    let two: Decimal = 2u64.into();
+    let div = two.powi(64); // 2^64
     let coin_a_price = Decimal::from_str_exact(sqrt_price)
         .map_err(|err| IndexerError::UncategorizedError(err.into()))?
         .div(&div)
@@ -282,7 +283,7 @@ pub async fn get_nft_staking_overview(
     let mut nft_future_profit_rates = vec![];
     let mut rewarded: u64 = 0;
     let mut overall_reward: u64 = 0;
-    let max_count_per_day: u64 = 20;
+    let max_count_per_day: u64 = 1000;
     for d in 0..180 {
         let new_suply = (d + 1) * max_count_per_day;
         let dp = timestamp + d * 86_400;
@@ -304,7 +305,7 @@ pub async fn get_nft_staking_overview(
             overall_profits.push(SuiOwnedMiningNFTProfit {
                 mint_bfc: latest_profit.mint_bfc + overall_reward,
                 mint_usd: 0,
-                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 5)),
+                cost_bfc: latest_profit.cost_bfc + nft_cost * ((d + 1) * (max_count_per_day - 500)),
                 dt_timestamp_ms: dp * 1_000,
             })
         }
@@ -329,6 +330,7 @@ pub async fn get_nft_staking_overview(
                 dt_timestamp_ms: x.dt_timestamp_ms,
             })
             .collect(),
+        total_addresses: 0,
     })
 }
 
@@ -342,8 +344,9 @@ fn nth_day(begin_at: u64, now: u64) -> u64 {
 
 fn calculate_nft_cost(n: u64) -> u64 {
     let m: u64 = 0;
-    let l = 12960f64;
-    (((1 + 180 / (n + m)) as f64).ln() * l) as u64 * MIST_PER_SUI
+    let l = 259_200f64 / 1_000f64;
+    let t = if n < 180 { 60f64 } else { 180f64 };
+    ((1f64 + t / (n as f64 + m as f64)).ln() * l) as u64 * MIST_PER_SUI
 }
 
 const NFT_SHARED_GLOBAL_STAKING_FIELD: &'static str = "4";
@@ -371,7 +374,7 @@ pub struct NFTStaking {
     last_reward_ts: u64,    // 上次更新奖励的时间
 
     // tickets
-    items: VecMap<ID, StakeItem>, // 质押的 NFT
+    items: LinkedTable<ID>, // 质押的 NFT
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
@@ -767,6 +770,15 @@ mod test_benfen {
 
     #[test]
     fn test_calculate_nft_cost() {
-        println!("{}", super::calculate_nft_cost(1));
+        assert_eq!(super::calculate_nft_cost(1), 1_065_000_000_000);
+        assert_eq!(super::calculate_nft_cost(10), 504_000_000_000);
+        assert_eq!(super::calculate_nft_cost(30), 284_000_000_000);
+        assert_eq!(super::calculate_nft_cost(60), 179_000_000_000);
+        assert_eq!(super::calculate_nft_cost(90), 132_000_000_000);
+        assert_eq!(super::calculate_nft_cost(179), 74_000_000_000);
+
+        assert_eq!(super::calculate_nft_cost(180), 179_000_000_000);
+        assert_eq!(super::calculate_nft_cost(270), 132_000_000_000);
+        assert_eq!(super::calculate_nft_cost(360), 105_000_000_000);
     }
 }

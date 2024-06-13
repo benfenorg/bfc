@@ -130,8 +130,18 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
-            let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
-            let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
+            let mut primary_gas_object = temporary_store
+                .objects()
+                .get(&gas_coin_id)
+                // unwrap should be safe because we checked that this exists in `self.objects()` above
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Invariant violation: gas coin not found in store in txn {}",
+                        self.tx_digest
+                    )
+                })
+                .clone();
+            let gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
 
             // sum the value of all gas coins
             let new_balance = self
@@ -168,17 +178,7 @@ pub mod checked {
                 })
                 .iter()
                 .sum();
-            let mut primary_gas_object = temporary_store
-                .objects()
-                .get(&gas_coin_id)
-                // unwrap should be safe because we checked that this exists in `self.objects()` above
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Invariant violation: gas coin not found in store in txn {}",
-                        self.tx_digest
-                    )
-                })
-                .clone();
+
             // delete all gas objects except the primary_gas_object
             for (id, version, _digest) in &self.gas_coins[1..] {
                 debug_assert_ne!(*id, primary_gas_object.id());

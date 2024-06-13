@@ -40,10 +40,12 @@
 -  [Function `bfc_system_treasury_parameters`](#0xc8_bfc_system_state_inner_bfc_system_treasury_parameters)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_state_inner_create_bfcdao_action)
 -  [Function `propose`](#0xc8_bfc_system_state_inner_propose)
+-  [Function `remove_proposal`](#0xc8_bfc_system_state_inner_remove_proposal)
 -  [Function `set_voting_delay`](#0xc8_bfc_system_state_inner_set_voting_delay)
 -  [Function `set_voting_period`](#0xc8_bfc_system_state_inner_set_voting_period)
 -  [Function `set_voting_quorum_rate`](#0xc8_bfc_system_state_inner_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_bfc_system_state_inner_set_min_action_delay)
+-  [Function `remove_action`](#0xc8_bfc_system_state_inner_remove_action)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_state_inner_destroy_terminated_proposal)
 -  [Function `judge_proposal_state`](#0xc8_bfc_system_state_inner_judge_proposal_state)
 -  [Function `modify_proposal`](#0xc8_bfc_system_state_inner_modify_proposal)
@@ -1336,6 +1338,30 @@ X-vault
 
 </details>
 
+<a name="0xc8_bfc_system_state_inner_remove_proposal"></a>
+
+## Function `remove_proposal`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">remove_proposal</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, key: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, proposal_id: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> (<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">remove_proposal</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,key: &BFCDaoManageKey,proposal_id: u64){
+    <a href="bfc_dao.md#0xc8_bfc_dao_remove_proposal">bfc_dao::remove_proposal</a>(&<b>mut</b> self.dao,key,proposal_id);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_state_inner_set_voting_delay"></a>
 
 ## Function `set_voting_delay`
@@ -1437,6 +1463,30 @@ X-vault
     value: u64,
 ) {
     <a href="bfc_dao.md#0xc8_bfc_dao_set_min_action_delay">bfc_dao::set_min_action_delay</a>(&<b>mut</b> self.dao, manager_key, value);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_remove_action"></a>
+
+## Function `remove_action`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">remove_action</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>, key: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, action_id: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> (<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">remove_action</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,key: &BFCDaoManageKey,action_id: u64){
+    <a href="bfc_dao.md#0xc8_bfc_dao_remove_action">bfc_dao::remove_action</a>(&<b>mut</b> self.dao,key,action_id);
 }
 </code></pre>
 

@@ -10411,7 +10411,7 @@
                 }
               }
             }
-          },
+          }
         ]
       },
       "TransactionBlockResponse": {
