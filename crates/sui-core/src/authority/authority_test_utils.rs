@@ -472,3 +472,33 @@ pub async fn upgrade_package_on_single_authority(
          .0;
     Ok(package_id)
 }
+
+pub async fn init_bfc_state_with_ids_and_expensive_checks<
+    I: IntoIterator<Item = (SuiAddress, ObjectID)>,
+>(
+    objects: I,
+    config: ExpensiveSafetyCheckConfig,
+) -> Arc<AuthorityState> {
+    let state = TestAuthorityBuilder::new()
+        .with_expensive_safety_checks(config)
+        .build()
+        .await;
+    for (address, object_id) in objects {
+        let obj = Object::with_stable_id_owner_version_for_testing(object_id, SequenceNumber::from_u64(1), address);
+        // TODO: Make this part of genesis initialization instead of explicit insert.
+        state.insert_genesis_object(obj).await;
+    }
+    state
+}
+
+pub async fn init_bfc_state_with_ids<I: IntoIterator<Item = (SuiAddress, ObjectID)>>(
+    objects: I,
+) -> Arc<AuthorityState> {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, object_id) in objects {
+        let obj = Object::with_stable_id_owner_version_for_testing(object_id, SequenceNumber::from_u64(1), address);
+        // TODO: Make this part of genesis initialization instead of explicit insert.
+        state.insert_genesis_object(obj).await;
+    }
+    state
+}

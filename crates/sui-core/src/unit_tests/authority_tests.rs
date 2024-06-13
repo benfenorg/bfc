@@ -6405,3 +6405,412 @@ pub async fn init_bfc_state_with_ids_and_object_basics_with_fullnode<
     fullnode.insert_genesis_object(pkg).await;
     (validator, fullnode, pkg_ref)
 }
+
+#[tokio::test]
+async fn test_bfc_paranoid_mode_with_natives() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let mut expensive_safety_checks_config = ExpensiveSafetyCheckConfig::default();
+    expensive_safety_checks_config.enable_paranoid_checks();
+    let authority_state = init_bfc_state_with_ids_and_expensive_checks(
+        vec![(sender, gas_object_id)],
+        expensive_safety_checks_config,
+    )
+    .await;
+
+    let gas_object = authority_state
+        .get_object(&gas_object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    let gas_object_ref = gas_object.compute_object_reference();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let vector = builder.programmable_move_call(
+        MOVE_STDLIB_PACKAGE_ID,
+        ident_str!("vector").to_owned(),
+        ident_str!("empty").to_owned(),
+        vec![TypeTag::U8],
+        vec![],
+    );
+    let value = builder
+        .input(CallArg::Pure(bcs::to_bytes(&(1_u8)).unwrap()))
+        .unwrap();
+    builder.programmable_move_call(
+        MOVE_STDLIB_PACKAGE_ID,
+        ident_str!("vector").to_owned(),
+        ident_str!("push_back").to_owned(),
+        vec![TypeTag::U8],
+        vec![vector, value],
+    );
+    builder.programmable_move_call(
+        MOVE_STDLIB_PACKAGE_ID,
+        ident_str!("vector").to_owned(),
+        ident_str!("pop_back").to_owned(),
+        vec![TypeTag::U8],
+        vec![vector],
+    );
+
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let data = TransactionData::new_programmable(
+        sender,
+        vec![gas_object_ref],
+        builder.finish(),
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 10,
+        rgp,
+    );
+
+    let transaction = to_sender_signed_transaction(data, &sender_key);
+    let signed_effects = send_and_confirm_transaction(&authority_state, transaction)
+        .await
+        .unwrap()
+        .1;
+    assert_eq!(signed_effects.data().status(), &ExecutionStatus::Success);
+}
+
+#[tokio::test]
+async fn test_bfc_dev_inspect_on_validator() {
+    let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let (validator, object_basics) =
+        init_bfc_state_with_ids_and_object_basics(vec![(sender, gas_object_id)]).await;
+
+    // test normal call
+    let result = call_dev_inspect(
+        &validator,
+        &sender,
+        &object_basics.0,
+        "object_basics",
+        "create",
+        vec![],
+        vec![
+            TestCallArg::Pure(bcs::to_bytes(&(16_u64)).unwrap()),
+            TestCallArg::Pure(bcs::to_bytes(&sender).unwrap()),
+        ],
+    )
+    .await;
+    assert!(result.is_err())
+}
+
+#[tokio::test]
+async fn test_bfc_dry_run_on_validator() {
+    let (validator, _fullnode, transaction, _gas_object_id, _shared_object_id) =
+        construct_bfc_shared_object_transaction_with_sequence_number(None).await;
+    let transaction_digest = *transaction.digest();
+    let response = validator
+        .dry_exec_transaction(
+            transaction.data().intent_message().value.clone(),
+            transaction_digest,
+        )
+        .await;
+    assert!(response.is_err());
+}
+
+// Tests using a dynamic field that is newer than the parent in dev inspect/dry run results
+// in not being able to access the dynamic field object
+#[tokio::test]
+async fn test_bfc_dry_run_dev_inspect_dynamic_field_too_new() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let (validator, fullnode) = init_state_validator_with_fullnode().await;
+    let (validator, object_basics) = publish_object_basics(validator).await;
+    let (fullnode, _object_basics) = publish_object_basics(fullnode).await;
+    let gas_object = Object::with_stable_id_owner_version_for_testing(gas_object_id, SequenceNumber::from_u64(1), sender);
+    let gas_object_ref = gas_object.compute_object_reference();
+    validator.insert_genesis_object(gas_object.clone()).await;
+    fullnode.insert_genesis_object(gas_object).await;
+    // create the parent
+    let effects = call_move_(
+        &validator,
+        Some(&fullnode),
+        &gas_object_id,
+        &sender,
+        &sender_key,
+        &object_basics.0,
+        "object_basics",
+        "create",
+        vec![],
+        vec![
+            TestCallArg::Pure(bcs::to_bytes(&(16_u64)).unwrap()),
+            TestCallArg::Pure(bcs::to_bytes(&sender).unwrap()),
+        ],
+        false,
+    )
+    .await
+    .unwrap();
+    assert_eq!(effects.status(), &ExecutionStatus::Success);
+    assert_eq!(effects.created().len(), 1);
+    let parent = effects.created()[0].0;
+
+    // create the child
+    let effects = call_move_(
+        &validator,
+        Some(&fullnode),
+        &gas_object_id,
+        &sender,
+        &sender_key,
+        &object_basics.0,
+        "object_basics",
+        "create",
+        vec![],
+        vec![
+            TestCallArg::Pure(bcs::to_bytes(&(32_u64)).unwrap()),
+            TestCallArg::Pure(bcs::to_bytes(&sender).unwrap()),
+        ],
+        false,
+    )
+    .await
+    .unwrap();
+    assert_eq!(effects.status(), &ExecutionStatus::Success);
+    assert_eq!(effects.created().len(), 1);
+    let child = effects.created()[0].0;
+
+    // add/wrap the child
+    let effects = call_move_(
+        &validator,
+        Some(&fullnode),
+        &gas_object_id,
+        &sender,
+        &sender_key,
+        &object_basics.0,
+        "object_basics",
+        "add_field",
+        vec![],
+        vec![TestCallArg::Object(parent.0), TestCallArg::Object(child.0)],
+        false,
+    )
+    .await
+    .unwrap();
+    assert_eq!(effects.status(), &ExecutionStatus::Success);
+    assert_eq!(effects.created().len(), 1);
+
+    // make sure the parent was updated
+    let new_parent = fullnode.get_object(&parent.0).await.unwrap().unwrap();
+    assert!(parent.1 < new_parent.version());
+
+    // no child to delete since we are using the old version of the parent
+    let pt = ProgrammableTransaction {
+        inputs: vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(parent))],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: object_basics.0,
+            module: Identifier::new("object_basics").unwrap(),
+            function: Identifier::new("remove_field").unwrap(),
+            type_arguments: vec![],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let kind = TransactionKind::programmable(pt.clone());
+    let rgp = fullnode.reference_gas_price_for_testing().unwrap();
+    // dev inspect
+    let DevInspectResults { effects, .. } = fullnode
+        .dev_inspect_transaction_block(sender, kind, Some(rgp))
+        .await
+        .unwrap();
+    assert_eq!(effects.deleted().len(), 0);
+    // dry run
+    let rgp = fullnode.reference_gas_price_for_testing().unwrap();
+    let data = TransactionData::new_programmable(
+        sender,
+        vec![gas_object_ref],
+        pt,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp,
+    );
+    let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
+    let digest = *transaction.digest();
+    let DryRunTransactionBlockResponse { effects, .. } =
+        fullnode.dry_exec_transaction(data, digest).await.unwrap().0;
+    assert_eq!(effects.deleted().len(), 0);
+}
+
+#[tokio::test]
+async fn test_bfc_handle_transfer_transaction_bad_signature() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let recipient = dbg_addr(2);
+    let object_id = ObjectID::random();
+    let gas_object_id = ObjectID::random();
+    let authority_state =
+        init_bfc_state_with_ids(vec![(sender, object_id), (sender, gas_object_id)]).await;
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let object = authority_state
+        .get_object(&object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    let gas_object = authority_state
+        .get_object(&gas_object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    let transfer_transaction = init_transfer_transaction(
+        &authority_state,
+        sender,
+        &sender_key,
+        recipient,
+        object.compute_object_reference(),
+        gas_object.compute_object_reference(),
+        rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+        rgp,
+    );
+
+    let consensus_address = "/ip4/127.0.0.1/tcp/0/http".parse().unwrap();
+
+    let server = AuthorityServer::new_for_test(
+        "/ip4/127.0.0.1/tcp/0/http".parse().unwrap(),
+        authority_state.clone(),
+        consensus_address,
+    );
+    let metrics = server.metrics.clone();
+
+    let server_handle = server.spawn_for_test().await.unwrap();
+
+    let client = NetworkAuthorityClient::connect(server_handle.address())
+        .await
+        .unwrap();
+
+    let (_unknown_address, unknown_key): (_, AccountKeyPair) = get_key_pair();
+    let mut bad_signature_transfer_transaction = transfer_transaction.clone().into_inner();
+    *bad_signature_transfer_transaction
+        .data_mut_for_testing()
+        .tx_signatures_mut_for_testing() =
+        vec![
+            Signature::new_secure(transfer_transaction.data().intent_message(), &unknown_key)
+                .into(),
+        ];
+
+    assert!(client
+        .handle_transaction(bad_signature_transfer_transaction)
+        .await
+        .is_err());
+
+    assert_eq!(metrics.signature_errors.get(), 1);
+
+    let object = authority_state
+        .get_object(&object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    assert!(authority_state
+        .get_transaction_lock(
+            &object.compute_object_reference(),
+            &authority_state.epoch_store_for_testing()
+        )
+        .await
+        .unwrap()
+        .is_none());
+
+    assert!(authority_state
+        .get_transaction_lock(
+            &object.compute_object_reference(),
+            &authority_state.epoch_store_for_testing()
+        )
+        .await
+        .unwrap()
+        .is_none());
+}
+
+#[cfg(test)]
+pub async fn init_bfc_state_with_ids_and_object_basics<
+    I: IntoIterator<Item = (SuiAddress, ObjectID)>,
+>(
+    objects: I,
+) -> (Arc<AuthorityState>, ObjectRef) {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, object_id) in objects {
+        let obj = Object::with_stable_id_owner_version_for_testing(object_id, SequenceNumber::from_u64(1), address);
+        state.insert_genesis_object(obj).await;
+    }
+    publish_object_basics(state).await
+}
+
+// TODO break this up into a cleaner set of components. It does a bit too much
+// currently
+async fn construct_bfc_shared_object_transaction_with_sequence_number(
+    initial_shared_version_override: Option<SequenceNumber>,
+) -> (
+    Arc<AuthorityState>,
+    Arc<AuthorityState>,
+    VerifiedTransaction,
+    ObjectID,
+    ObjectID,
+) {
+    let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
+
+    // Initialize an authority with a (owned) gas object and a shared object.
+    let gas_object_id = ObjectID::random();
+    let (shared_object_id, shared_object) = {
+        let (authority, package) =
+            init_bfc_state_with_ids_and_object_basics(vec![(sender, gas_object_id)]).await;
+        let effects = call_move_(
+            &authority,
+            None,
+            &gas_object_id,
+            &sender,
+            &keypair,
+            &package.0,
+            "object_basics",
+            "share",
+            vec![],
+            vec![],
+            true,
+        )
+        .await
+        .unwrap();
+        effects.status().unwrap();
+        let shared_object_id = effects.created()[0].0 .0;
+        let mut shared_object = authority
+            .get_object(&shared_object_id)
+            .await
+            .unwrap()
+            .unwrap();
+        if let Some(initial_shared_version) = initial_shared_version_override {
+            shared_object
+                .data
+                .try_as_move_mut()
+                .unwrap()
+                .increment_version_to(initial_shared_version);
+            shared_object.owner = Owner::Shared {
+                initial_shared_version,
+            };
+        }
+        shared_object.previous_transaction = TransactionDigest::genesis();
+        (shared_object_id, shared_object)
+    };
+    let initial_shared_version = shared_object.version();
+
+    // Make a sample transaction.
+    let (validator, fullnode, package) =
+        init_bfc_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)]).await;
+    validator.insert_genesis_object(shared_object.clone()).await;
+    fullnode.insert_genesis_object(shared_object.clone()).await;
+    let rgp = validator.reference_gas_price_for_testing().unwrap();
+    let gas_object = validator.get_object(&gas_object_id).await.unwrap();
+    let gas_object_ref = gas_object.unwrap().compute_object_reference();
+    let data = TransactionData::new_move_call(
+        sender,
+        package.0,
+        ident_str!("object_basics").to_owned(),
+        ident_str!("set_value").to_owned(),
+        /* type_args */ vec![],
+        gas_object_ref,
+        /* args */
+        vec![
+            CallArg::Object(ObjectArg::SharedObject {
+                id: shared_object_id,
+                initial_shared_version,
+                mutable: true,
+            }),
+            CallArg::Pure(16u64.to_le_bytes().to_vec()),
+        ],
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        rgp,
+    )
+    .unwrap();
+    (
+        validator,
+        fullnode,
+        VerifiedTransaction::new_unchecked(to_sender_signed_transaction(data, &keypair)),
+        gas_object_id,
+        shared_object_id,
+    )
+}
