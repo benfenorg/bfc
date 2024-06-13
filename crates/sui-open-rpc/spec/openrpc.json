@@ -12,7 +12,7 @@
       "name": "Apache-2.0",
       "url": "https://www.benfen.org/"
     },
-    "version": "1.1.4"
+    "version": "1.1.6"
   },
   "methods": [
     {
@@ -3746,43 +3746,6 @@
       ]
     },
     {
-      "name": "bfcx_getStablePools",
-      "tags": [
-        {
-          "name": "Governance Read API"
-        }
-      ],
-      "params": [
-        {
-          "name": "owner",
-          "required": true,
-          "schema": {
-            "$ref": "#/components/schemas/SuiAddress"
-          }
-        }
-      ],
-      "result": {
-        "name": "Vec<(ObjectID,DynamicFieldInfo)>",
-        "required": true,
-        "schema": {
-          "type": "array",
-          "items": {
-            "type": "array",
-            "items": [
-              {
-                "$ref": "#/components/schemas/ObjectID"
-              },
-              {
-                "$ref": "#/components/schemas/DynamicFieldInfo"
-              }
-            ],
-            "maxItems": 2,
-            "minItems": 2
-          }
-        }
-      }
-    },
-    {
       "name": "bfcx_getStableRate",
       "tags": [
         {
@@ -5981,7 +5944,7 @@
             "$ref": "#/components/schemas/DynamicFieldType"
           },
           "version": {
-            "$ref": "#/components/schemas/SequenceNumber"
+            "$ref": "#/components/schemas/SequenceNumber2"
           }
         }
       },
