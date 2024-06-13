@@ -763,9 +763,6 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let (_rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
-
-        let is_safe_mode = temporary_store.is_safe_mode();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
@@ -774,31 +771,49 @@ mod checked {
         let mut discard = false;
 
         info!("change epoch: {:?}",change_epoch);
-        for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
-            let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
 
-            // check u64 overflow
-            if storage_rebate > u64::MAX - gas_cost_summary.gas_by_bfc.storage_rebate
-                || non_refundable_storage_fee > u64::MAX - gas_cost_summary.gas_by_bfc.non_refundable_storage_fee
-                || storage_charge > u64::MAX - gas_cost_summary.gas_by_bfc.storage_cost
-                || computation_charge > u64::MAX - computation_reward
-                || deposit_computation_charge > u64::MAX - (gas_cost_summary.gas_by_bfc.computation_cost - computation_reward)
-            {
-                storage_rebate = 0;
-                non_refundable_storage_fee = 0;
-                storage_charge = 0;
-                computation_charge = 0;
-                deposit_computation_charge = 0;
+        let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
+        if rate_result.is_err() {
+            discard = true;
+        }
 
+        let is_safe_mode = temporary_store.is_safe_mode();
+        let mut reward_rate= 0u64; // deposit all gas to treasury
+
+        match rate_result {
+            Ok((_,rate)) => {
+                reward_rate = rate;
+                for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
+                    let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, rate);
+
+                    // check u64 overflow
+                    if storage_rebate > u64::MAX - gas_cost_summary.gas_by_bfc.storage_rebate
+                        || non_refundable_storage_fee > u64::MAX - gas_cost_summary.gas_by_bfc.non_refundable_storage_fee
+                        || storage_charge > u64::MAX - gas_cost_summary.gas_by_bfc.storage_cost
+                        || computation_charge > u64::MAX - computation_reward
+                        || deposit_computation_charge > u64::MAX - (gas_cost_summary.gas_by_bfc.computation_cost - computation_reward)
+                    {
+                        storage_rebate = 0;
+                        non_refundable_storage_fee = 0;
+                        storage_charge = 0;
+                        computation_charge = 0;
+                        deposit_computation_charge = 0;
+
+                        discard = true;
+                        break;
+                    }
+
+                    storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
+                    non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
+                    computation_charge += computation_reward;
+                    deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
+                    storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
+                }
+            },
+            Err(e) => {
+                info!("Read reward_rate failed with err {:?}",e);
                 discard = true;
-                break;
             }
-
-            storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
-            non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-            computation_charge += computation_reward;
-            deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
-            storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
         }
         // check u64 overflow for advance_epoch_params
         if !discard && (storage_charge > u64::MAX - change_epoch.bfc_storage_charge

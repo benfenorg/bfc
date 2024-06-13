@@ -7,7 +7,7 @@ use crate::base_types::{
 use crate::digests::TransactionEventsDigest;
 use crate::effects::{InputSharedObjectKind, TransactionEffectsAPI};
 use crate::execution_status::ExecutionStatus;
-use crate::gas::GasCostSummary;
+use crate::gas::{BASE_RATE, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary};
 use crate::object::Owner;
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
@@ -197,8 +197,8 @@ impl Default for TransactionEffectsV1 {
             status: ExecutionStatus::Success,
             executed_epoch: 0,
             gas_used: GasCostSummary {
-                base_point: 0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost: 0,
                 storage_cost: 0,
                 storage_rebate: 0,

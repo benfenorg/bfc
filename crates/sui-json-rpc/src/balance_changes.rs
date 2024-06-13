@@ -25,14 +25,24 @@ pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
     input_objs: Vec<InputObjectKind>,
     mocked_coin: Option<ObjectID>,
 ) -> Result<Vec<BalanceChange>, E> {
-    let (_, gas_owner) = effects.gas_object();
+    let (gas_obj_ref, gas_owner) = effects.gas_object();
 
     // Only charge gas when tx fails, skip all object parsing
     if effects.status() != &ExecutionStatus::Success {
+        let mut gas_coin_type = GAS::type_tag();
+
+        let object_result = object_provider.get_object(&gas_obj_ref.0, &gas_obj_ref.1).await;
+        if let Ok(o) = object_result {
+            if let Some(type_) = o.type_() {
+                let coin_type = type_.clone().into_type_params();
+                gas_coin_type = coin_type[0].clone();
+            }
+        }
+
         return Ok(vec![BalanceChange {
             owner: gas_owner,
-            coin_type: GAS::type_tag(),
-            amount: effects.gas_cost_summary().net_gas_usage().neg() as i128,
+            coin_type: gas_coin_type,
+            amount: effects.gas_cost_summary().net_gas_usage_improved().neg() as i128,
         }]);
     }
 

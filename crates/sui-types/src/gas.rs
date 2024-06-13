@@ -178,8 +178,8 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -227,8 +227,8 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),
@@ -246,6 +246,14 @@ pub mod checked {
                 non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
         }
+
+        pub fn net_gas_usage_improved(&self) -> i64 {
+            let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
+            let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
+            let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point);
+            (computation_cost + storage_cost) as i64 - (storage_rebate as i64)
+        }
+
     }
 
     impl std::fmt::Display for GasCostSummary {

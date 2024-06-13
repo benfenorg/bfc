@@ -34,7 +34,7 @@ use sui_types::crypto::{AuthoritySignInfo, AuthorityStrongQuorumSignInfo};
 use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::gas::{calculate_bfc_to_stable_cost_with_base_point, GasCostSummary, GasCostSummaryAdjusted};
+use sui_types::gas::{BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::SignedCheckpointSummary;
 use sui_types::messages_checkpoint::{
@@ -1131,8 +1131,8 @@ impl CheckpointBuilder {
         let authority_store = self.state.database.clone();
 
         let mut bfc_gas_cost_summary = GasCostSummary {
-            base_point:0,
-            rate:1,
+            base_point: DEFAULT_BASE_POINT_FOR_BFC,
+            rate: BASE_RATE,
             storage_cost: 0,
             computation_cost: 0,
             storage_rebate: 0,

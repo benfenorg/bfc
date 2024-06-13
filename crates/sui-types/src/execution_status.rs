@@ -182,6 +182,10 @@ pub enum ExecutionFailureStatus {
         Please run the Sui Move Verifier for more information."
     )]
     SuiMoveVerificationTimedout,
+
+    #[error("Failed to read or deserialize stable coin rate: {0}")]
+    StableCoinRateErr(String),
+
     // NOTE: if you want to add a new enum,
     // please add it at the end for Rust SDK backward compatibility.
 }
