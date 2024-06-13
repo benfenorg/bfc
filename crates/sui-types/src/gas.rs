@@ -178,8 +178,8 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -227,8 +227,8 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),

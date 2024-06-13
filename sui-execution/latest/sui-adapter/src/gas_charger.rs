@@ -290,9 +290,6 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
-                cost_summary.rate = 1000000000;
-                cost_summary.base_point = 0;
-
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
@@ -313,6 +310,7 @@ pub mod checked {
                                 ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
                             ));
                             self.reset(temporary_store);
+                            deduct_gas(&mut gas_object, gas_used);
                         }
                     }
                 }else {
