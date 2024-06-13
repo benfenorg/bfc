@@ -552,6 +552,15 @@ mod tests {
         bcs::from_bytes(&buffer).map_err(|_| anyhow!("Unable to parse checkpoint file"))
     }
 
+    async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
+        let mut reader = fs::File::open(checkpoint_path.clone())?;
+        let mut json: String = String::new();
+        reader.read_to_string(&mut json);
+        let rs: CheckpointData = serde_json::from_str(&json).unwrap();
+
+        serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
+    }
+
     // clippy ignore dead-code
     #[allow(dead_code)]
     async fn write_full_checkpoint(
@@ -567,8 +576,7 @@ mod tests {
 
     async fn read_data() -> (Committee, CheckpointData) {
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        d.push("example_config/20873329.yaml");
-
+        d.push("example_config/right.yaml");
         let mut reader = fs::File::open(d.clone()).unwrap();
         let metadata = fs::metadata(&d).unwrap();
         let mut buffer = vec![0; metadata.len() as usize];
@@ -594,9 +602,8 @@ mod tests {
         let committee = Committee::new(checkpoint.epoch().checked_add(1).unwrap(), prev_committee);
 
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-        d.push("example_config/20958462.bcs");
-
-        let full_checkpoint = read_full_checkpoint(&d).await.unwrap();
+        d.push("example_config/checkpoint.json");
+        let full_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
 
         (committee, full_checkpoint)
     }
