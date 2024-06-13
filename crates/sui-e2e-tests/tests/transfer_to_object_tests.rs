@@ -16,7 +16,7 @@ use sui_types::transaction::{CallArg, ObjectArg, Transaction};
 use test_cluster::{TestCluster, TestClusterBuilder};
 
 #[sim_test]
-async fn receive_object_feature_deny() {
+async fn sim_receive_object_feature_deny() {
     use sui_protocol_config::ProtocolConfig;
 
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
@@ -55,7 +55,7 @@ async fn receive_of_object() {
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration() {
+async fn sim_receive_of_object_with_reconfiguration() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     env.receive(parent, child).await.unwrap();
@@ -63,7 +63,7 @@ async fn receive_of_object_with_reconfiguration() {
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration_receive_after_reconfig() {
+async fn sim_receive_of_object_with_reconfiguration_receive_after_reconfig() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     let (new_parent, new_child) = env.receive(parent, child).await.unwrap();
@@ -72,7 +72,7 @@ async fn receive_of_object_with_reconfiguration_receive_after_reconfig() {
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration_receive_of_old_child_after_reconfig() {
+async fn sim_receive_of_object_with_reconfiguration_receive_of_old_child_after_reconfig() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     let (new_parent, _) = env.receive(parent, child).await.unwrap();
@@ -81,7 +81,7 @@ async fn receive_of_object_with_reconfiguration_receive_of_old_child_after_recon
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration_receive_of_old_parent_after_reconfig() {
+async fn sim_receive_of_object_with_reconfiguration_receive_of_old_parent_after_reconfig() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     let (_, new_child) = env.receive(parent, child).await.unwrap();
@@ -99,7 +99,7 @@ async fn sim_receive_of_object_with_reconfiguration_receive_of_old_parent_and_ch
 }
 
 #[sim_test]
-async fn receive_of_object_with_reconfiguration_receive_after_reconfig_with_invalid_child() {
+async fn sim_receive_of_object_with_reconfiguration_receive_after_reconfig_with_invalid_child() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     let (new_parent, new_child) = env.receive(parent, child).await.unwrap();
@@ -108,7 +108,7 @@ async fn receive_of_object_with_reconfiguration_receive_after_reconfig_with_inva
 }
 
 #[sim_test]
-async fn delete_of_object_with_reconfiguration_receive_of_old_parent_and_child_after_reconfig() {
+async fn sim_delete_of_object_with_reconfiguration_receive_of_old_parent_and_child_after_reconfig() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     env.delete(parent, child).await;
@@ -117,7 +117,7 @@ async fn delete_of_object_with_reconfiguration_receive_of_old_parent_and_child_a
 }
 
 #[sim_test]
-async fn delete_of_object_with_reconfiguration_receive_of_new_parent_and_old_child_after_reconfig()
+async fn sim_delete_of_object_with_reconfiguration_receive_of_new_parent_and_old_child_after_reconfig()
 {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;

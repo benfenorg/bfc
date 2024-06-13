@@ -7,7 +7,7 @@ use sui_macros::sim_test;
 use sui_surfer::default_surf_strategy::DefaultSurfStrategy;
 
 #[sim_test]
-async fn smoke_test() {
+async fn sim_smoke_test() {
     // This test makes sure that the sui surfer runs.
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.extend(["tests", "move_building_blocks"]);

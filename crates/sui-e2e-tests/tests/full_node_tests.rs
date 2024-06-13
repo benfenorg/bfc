@@ -827,7 +827,7 @@ async fn sim_test_full_node_event_query_by_module_ok() {
 }
 
 #[sim_test]
-async fn test_full_node_transaction_orchestrator_basic() -> Result<(), anyhow::Error> {
+async fn sim_test_full_node_transaction_orchestrator_basic() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let fullnode = test_cluster.spawn_new_fullnode().await.sui_node;
     let metrics = KeyValueStoreMetrics::new_for_tests();

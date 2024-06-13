@@ -177,7 +177,7 @@ async fn test_multisig_e2e() {
 }
 
 #[sim_test]
-async fn test_multisig_with_zklogin_scenerios() {
+async fn sim_test_multisig_with_zklogin_scenerios() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(15000)
         .with_default_jwks()
@@ -648,7 +648,7 @@ async fn test_multisig_with_zklogin_scenerios() {
 }
 
 #[sim_test]
-async fn test_expired_epoch_zklogin_in_multisig() {
+async fn sim_test_expired_epoch_zklogin_in_multisig() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(15000)
         .with_default_jwks()
@@ -674,7 +674,7 @@ async fn test_expired_epoch_zklogin_in_multisig() {
 }
 
 #[sim_test]
-async fn test_max_epoch_too_large_fail_zklogin_in_multisig() {
+async fn sim_test_max_epoch_too_large_fail_zklogin_in_multisig() {
     use sui_protocol_config::ProtocolConfig;
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_zklogin_max_epoch_upper_bound_delta(Some(1));
@@ -706,7 +706,7 @@ async fn test_max_epoch_too_large_fail_zklogin_in_multisig() {
 }
 
 #[sim_test]
-async fn test_random_zklogin_in_multisig() {
+async fn sim_test_random_zklogin_in_multisig() {
     let test_vectors =
         &load_test_vectors("../sui-types/src/unit_tests/zklogin_test_vectors.json")[1..11];
     let test_cluster = TestClusterBuilder::new()
@@ -793,7 +793,7 @@ async fn test_multisig_legacy_works() {
 }
 
 #[sim_test]
-async fn test_zklogin_inside_multisig_feature_deny() {
+async fn sim_test_zklogin_inside_multisig_feature_deny() {
     // if feature disabled, fails to execute.
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_accept_zklogin_in_multisig_for_testing(false);

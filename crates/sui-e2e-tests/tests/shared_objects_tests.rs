@@ -142,7 +142,7 @@ async fn sim_shared_object_deletion_multiple_times() {
 }
 
 #[sim_test]
-async fn shared_object_deletion_multiple_times_cert_racing() {
+async fn sim_shared_object_deletion_multiple_times_cert_racing() {
     let num_deletions = 10;
     let mut test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {
