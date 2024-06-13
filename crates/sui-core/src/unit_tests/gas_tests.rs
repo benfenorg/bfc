@@ -1036,7 +1036,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     ];
 
     let gas_budget = if gas_object.is_stable_gas_coin() {
-        *MAX_GAS_BUDGET / 10
+        *MAX_GAS_BUDGET / 100
     } else {
         *MAX_GAS_BUDGET
     };
