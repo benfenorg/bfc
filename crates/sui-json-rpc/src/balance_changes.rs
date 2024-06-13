@@ -34,15 +34,15 @@ pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
         let object_result = object_provider.get_object(&gas_obj_ref.0, &gas_obj_ref.1).await;
         if let Ok(o) = object_result {
             if let Some(type_) = o.type_() {
-                let [coin_type]: [TypeTag; 1] = type_.clone().into_type_params().try_into().unwrap();
-                gas_coin_type = coin_type;
+                let coin_type = type_.clone().into_type_params();
+                gas_coin_type = coin_type[0].clone();
             }
         }
 
         return Ok(vec![BalanceChange {
             owner: gas_owner,
             coin_type: gas_coin_type,
-            amount: effects.gas_cost_summary().net_gas_usage().neg() as i128,
+            amount: effects.gas_cost_summary().net_gas_usage_improved().neg() as i128,
         }]);
     }
 
