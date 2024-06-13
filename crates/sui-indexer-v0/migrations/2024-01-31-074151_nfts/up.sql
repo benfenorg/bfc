@@ -29,25 +29,34 @@ CREATE TABLE mining_nfts
   yesterday_mint_bfc        BIGINT        NOT NULL,
   yesterday_dt_ms           BIGINT        NOT NULL,
   miner_redeem              BOOLEAN       NOT NULL,
-  transfered_at             BIGINT        NOT NULL
+  transfered_at             BIGINT        NOT NULL,
+  sequence_number           BIGINT        NOT NULL
 );
-CREATE UNIQUE INDEX mining_nfts_owner_miner_id_uniq ON mining_nfts (owner, miner_id);
+CREATE INDEX mining_nfts_owner_miner_id_uniq ON mining_nfts (owner, miner_id);
 CREATE INDEX mining_nfts_yesterday_dt_ms ON mining_nfts (yesterday_dt_ms);
 CREATE INDEX mining_nfts_transfered_at ON mining_nfts (transfered_at);
 
+CREATE MATERIALIZED VIEW mining_nfts_view as
+select * from mining_nfts where id in (SELECT max(id) FROM mining_nfts group by owner, miner_id);
 
 CREATE TABLE mining_nft_staking
 (
-  ticket_id                 address       PRIMARY KEY,
+  id                        BIGSERIAL     PRIMARY KEY,
+  ticket_id                 address       NOT NULL,
   owner                     address       NOT NULL,
   miner_id                  address       NOT NULL,
   staked_at                 BIGINT        NOT NULL,
   unstaked_at               BIGINT        NULL,
-  total_mint_bfc            BIGINT        NOT NULL
+  total_mint_bfc            BIGINT        NOT NULL,
+  sequence_number           BIGINT        NOT NULL
 );
 
 CREATE INDEX mining_nft_staking_miner_id_index ON mining_nft_staking(miner_id);
 CREATE INDEX mining_nft_staking_owner_index ON mining_nft_staking(owner);
+CREATE INDEX mining_nft_staking_ticket_id_index ON mining_nft_staking(ticket_id);
+
+CREATE MATERIALIZED VIEW mining_nft_staking_view as
+select * from mining_nft_staking where id in (SELECT max(id) FROM mining_nft_staking group by ticket_id);
 
 CREATE TABLE mining_nft_history_profits
 (

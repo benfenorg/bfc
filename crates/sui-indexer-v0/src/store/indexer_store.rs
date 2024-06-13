@@ -347,7 +347,9 @@ pub trait IndexerStore {
         current_checkpoint: i64,
         current_timestamp_ms: i64,
     ) -> Result<f64, IndexerError>;
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation) -> Result<(), IndexerError>;
+    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError>;
+
+    async fn refresh_mining_nft(&self) -> Result<(), IndexerError>;
 
     async fn get_mining_nfts(
         &self,

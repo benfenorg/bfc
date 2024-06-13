@@ -38,17 +38,21 @@ pub struct MiningNFT {
     pub yesterday_dt_ms: i64,
     pub miner_redeem: bool,
     pub transfered_at: i64,
+    pub sequence_number: i64,
 }
 
 #[derive(Queryable, Insertable, Clone, Debug)]
 #[diesel(table_name = mining_nft_staking)]
 pub struct MiningNFTStaking {
-    pub owner: String,
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
     pub ticket_id: String,
+    pub owner: String,
     pub miner_id: String,
     pub staked_at: i64,
     pub unstaked_at: Option<i64>,
     pub total_mint_bfc: i64,
+    pub sequence_number: i64,
 }
 
 #[derive(Queryable, Insertable, Clone, Debug, Default)]
@@ -89,7 +93,7 @@ pub enum ExtractedMiningNFT {
 pub enum MiningNFTOperation {
     StakingStake(StakeEvent),
     StakingUnstake(UnstakeEvent),
-    StakingEmergencyUnstake(EmergencyUnstakeEvent),
+    StakingEmergencyUnstake(UnstakeEvent),
     StakingTransferReward(TransferRewardEvent),
     BurnNFT(BurnNFTEvent),
 }
@@ -238,7 +242,7 @@ pub fn extract_operations_from_events(
                 )?));
             } else if type_.name == ident_str!("EmergencyUnstakeEvent").into() {
                 results.push(MiningNFTOperation::StakingEmergencyUnstake(
-                    bcs::from_bytes::<EmergencyUnstakeEvent>(&x.event_bcs)?,
+                    bcs::from_bytes::<UnstakeEvent>(&x.event_bcs)?,
                 ));
             } else if type_.name == ident_str!("TransferReward").into() {
                 results.push(MiningNFTOperation::StakingTransferReward(
@@ -297,6 +301,7 @@ impl From<(Checkpoint, ExtractedMiningNFT)> for MiningNFT {
                 miner_name: String::new(),
                 miner_redeem: false,
                 transfered_at: 0,
+                sequence_number: cp.sequence_number,
             },
             ExtractedMiningNFT::Transfer(object) => Self {
                 id: None,
@@ -319,6 +324,7 @@ impl From<(Checkpoint, ExtractedMiningNFT)> for MiningNFT {
                 yesterday_dt_ms: benfen::get_yesterday_started_at(),
                 miner_redeem: false,
                 transfered_at: 0,
+                sequence_number: cp.sequence_number,
             },
         }
     }

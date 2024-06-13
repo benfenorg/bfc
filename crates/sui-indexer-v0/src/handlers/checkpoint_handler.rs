@@ -1533,6 +1533,7 @@ where
             extracted_nfts.extend(transfered_nfts);
         }
 
+        let mut flag = false;
         for e in extracted_nfts.into_iter() {
             let mut mining_nft: MiningNFT = (checkpoint.clone(), e).into();
             let object_id = ObjectID::from_hex_literal(&mining_nft.miner_id)?;
@@ -1542,14 +1543,19 @@ where
             mining_nft.cost_bfc =
                 benfen::get_mining_nft_cost_in_bfc(self.config.clone(), self.http_client.clone())
                     .await? as i64;
+            flag = true;
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft))
+                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft), checkpoint.sequence_number)
                 .await?;
         }
         for p in operations.into_iter() {
+            flag = true;
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p))
+                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p), checkpoint.sequence_number)
                 .await?;
+        }
+        if flag {
+            self.state.refresh_mining_nft().await?;
         }
 
         let liq_admin_addrs: HashSet<AccountAddress> = self

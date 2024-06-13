@@ -15,6 +15,7 @@ use diesel::upsert::excluded;
 use diesel::{ExpressionMethods, TextExpressionMethods};
 use diesel::{OptionalExtension, QueryableByName};
 use diesel::{QueryDsl, RunQueryDsl};
+use diesel::result::Error;
 use fastcrypto::hash::Digest;
 use fastcrypto::traits::ToFromBytes;
 use itertools::Itertools;
@@ -84,7 +85,7 @@ use crate::schema::{
     active_addresses, address_stakes, address_stats, addresses, changed_objects,
     checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes,
     epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities,
-    mining_nft_staking, mining_nfts, move_calls, network_segment_metrics, objects, objects_history,
+    mining_nft_staking, mining_nfts, mining_nfts_view, move_calls, network_segment_metrics, objects, objects_history,
     packages, price_history, recipients, system_states, transactions, validators,
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
@@ -129,30 +130,30 @@ pub struct PgIndexerStore {
 
 macro_rules! mining_nfts_query {
     ($address: ident, $filter: ident) => {{
-        let mut query = crate::schema::mining_nfts::dsl::mining_nfts.into_boxed();
+        let mut query = crate::schema::mining_nfts_view::dsl::mining_nfts_view.into_boxed();
         if let Some(ref filter) = $filter {
             query = match filter {
                 sui_json_rpc_types::SuiOwnedMiningNFTFilter::Status(s) => match s {
                     sui_json_rpc_types::SuiMiningNFTStatus::Mining => {
-                        query.filter(crate::schema::mining_nfts::mining_started_at.ne(0))
+                        query.filter(crate::schema::mining_nfts_view::mining_started_at.ne(0))
                     }
                     sui_json_rpc_types::SuiMiningNFTStatus::Idle => query
-                        .filter(crate::schema::mining_nfts::mining_started_at.eq(0))
-                        .filter(crate::schema::mining_nfts::miner_redeem.eq(false)),
+                        .filter(crate::schema::mining_nfts_view::mining_started_at.eq(0))
+                        .filter(crate::schema::mining_nfts_view::miner_redeem.eq(false)),
                     sui_json_rpc_types::SuiMiningNFTStatus::Redeem => {
-                        query.filter(crate::schema::mining_nfts::miner_redeem.eq(true))
+                        query.filter(crate::schema::mining_nfts_view::miner_redeem.eq(true))
                     }
                 },
             };
         }
         query
             .filter(
-                crate::schema::mining_nfts::owner.eq(
+                crate::schema::mining_nfts_view::owner.eq(
                     move_core_types::account_address::AccountAddress::new($address.to_inner())
                         .to_hex_literal(),
                 ),
             )
-            .filter(crate::schema::mining_nfts::transfered_at.eq(0))
+            .filter(crate::schema::mining_nfts_view::transfered_at.eq(0))
     }};
 }
 
@@ -1312,132 +1313,154 @@ impl PgIndexerStore {
         })
     }
 
-    fn persist_mining_nft(&self, operation: MiningNFTOperation) -> Result<(), IndexerError> {
-        let null: Option<String> = None;
+    fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
         match operation {
             MiningNFTOperation::Creation(mining_nft) => {
                 transactional_blocking!(&self.blocking_cp, |conn| {
                     // Update the Idle mining NFT to Sold as it may transfered to this wallet.
                     if mining_nft.power == 0 {
-                        diesel::update(mining_nfts::table)
+                        let before: Result<MiningNFT, Error> = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .filter(crate::schema::mining_nfts::mining_started_at.eq(0))
-                            .set((mining_nfts::dsl::transfered_at.eq(mining_nft.earliest_held_at),))
-                            .execute(conn)?;
+                            .filter(mining_nfts::mining_started_at.eq(0))
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn);
+                        match before {
+                            Ok(mut nft) => {
+                                nft.id = None;
+                                nft.transfered_at = mining_nft.earliest_held_at;
+                                nft.sequence_number = sequence_number;
+                                diesel::insert_into(mining_nfts::table)
+                                    .values(nft)
+                                    .on_conflict_do_nothing()
+                                    .execute(conn)?;
+                            }
+                            Err(_) => {}
+                        }
                     }
-
                     let mut mining_nft = mining_nft.clone();
                     // Copy power and token_id
                     if mining_nft.power == 0 {
                         let prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
                             .first(conn)?;
                         mining_nft.power = prev.power;
                         mining_nft.token_id = prev.token_id;
                     }
-                    diesel::insert_into(mining_nfts::table)
-                        .values(vec![mining_nft.clone()])
-                        .on_conflict((mining_nfts::dsl::owner, mining_nfts::dsl::miner_id))
-                        .do_update()
-                        .set((mining_nfts::dsl::miner_redeem.eq(mining_nft.miner_redeem),))
-                        .execute(conn)
+                    let before: Result<MiningNFT, Error> = mining_nfts::table
+                            .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
+                            .filter(mining_nfts::dsl::owner.eq(&mining_nft.owner))
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn);
+                    match before {
+                        Ok(mut nft) => {
+                            nft.id = None;
+                            nft.transfered_at = mining_nft.earliest_held_at;
+                            nft.miner_redeem = mining_nft.miner_redeem;
+                            diesel::insert_into(mining_nfts::table)
+                                .values(nft)
+                                .on_conflict_do_nothing()
+                                .execute(conn)
+                        }
+                        Err(_) => {
+                            diesel::insert_into(mining_nfts::table)
+                                .values(vec![mining_nft.clone()])
+                                .execute(conn)
+                        }
+                    }
                 })
                 .context("Failed to write mining NFTs to PostgresDB")?;
             }
             MiningNFTOperation::Operation(op) => match op {
                 crate::models::mining_nft::MiningNFTOperation::StakingStake(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
+                        let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .set((
-                                mining_nfts::dsl::mining_started_at.eq(v.timestamp as i64),
-                                mining_nfts::dsl::mining_ticket_id
-                                    .eq(v.ticket_id.bytes.to_hex_literal()),
-                            ))
-                            .execute(conn)?;
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev.id = None;
+                        prev.mining_started_at = v.timestamp as i64;
+                        prev.mining_ticket_id = Some(v.ticket_id.bytes.to_hex_literal());
+                        prev.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nfts::table)
+                                    .values(prev)
+                                    .execute(conn)?;
                         diesel::insert_into(mining_nft_staking::table)
                             .values(vec![MiningNFTStaking {
+                                id: None,
                                 ticket_id: v.ticket_id.bytes.to_hex_literal(),
                                 miner_id: v.nft.id.bytes.to_hex_literal(),
                                 owner: v.recipient.to_hex_literal(),
                                 staked_at: v.timestamp as i64,
                                 unstaked_at: None,
                                 total_mint_bfc: 0,
+                                sequence_number: sequence_number,
                             }])
                             .execute(conn)
                     })
                     .context("Failed to handle staking event.")?;
                 }
-                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v) => {
+                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v) | crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
+                        let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .set((
-                                mining_nfts::dsl::mint_duration.eq(mining_nfts::dsl::mint_duration
-                                    + (diesel::dsl::sql::<diesel::sql_types::BigInt>(&format!(
-                                        "{}",
-                                        v.timestamp
-                                    )) - mining_nfts::dsl::mining_started_at)),
-                                mining_nfts::dsl::mining_started_at.eq(0),
-                                mining_nfts::dsl::mining_ticket_id.eq(null),
-                            ))
-                            .execute(conn)?;
-                        diesel::update(mining_nft_staking::table)
-                            .filter(
-                                mining_nft_staking::dsl::ticket_id
-                                    .eq(v.ticket_id.bytes.to_hex_literal()),
-                            )
-                            .set(mining_nft_staking::dsl::unstaked_at.eq(v.timestamp as i64))
-                            .execute(conn)
-                    })
-                    .context("Failed to handle unstaking event.")?;
-                }
-                crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
-                    transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
-                            .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
-                            .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .set((
-                                mining_nfts::dsl::mint_duration.eq(mining_nfts::dsl::mint_duration
-                                    + (diesel::dsl::sql::<diesel::sql_types::BigInt>(&format!(
-                                        "{}",
-                                        v.timestamp
-                                    )) - mining_nfts::dsl::mining_started_at)),
-                                mining_nfts::dsl::mining_started_at.eq(0),
-                                mining_nfts::dsl::mining_ticket_id.eq(null),
-                            ))
-                            .execute(conn)?;
-                        diesel::update(mining_nft_staking::table)
-                            .filter(
-                                mining_nft_staking::dsl::ticket_id
-                                    .eq(v.ticket_id.bytes.to_hex_literal()),
-                            )
-                            .set(mining_nft_staking::dsl::unstaked_at.eq(v.timestamp as i64))
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev.id = None;
+                        prev.mint_duration = prev.mint_duration + v.timestamp as i64 - prev.mining_started_at;
+                        prev.mining_started_at = 0;
+                        prev.mining_ticket_id = None;
+                        prev.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nfts::table)
+                                    .values(prev)
+                                    .on_conflict_do_nothing()
+                                    .execute(conn)?;
+                        let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
+                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
+                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev_staking.id = None;
+                        prev_staking.unstaked_at = Some(v.timestamp as i64);
+                        prev_staking.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nft_staking::table)
+                            .values(prev_staking.clone())
                             .execute(conn)
                     })
                     .context("Failed to handle unstaking event.")?;
                 }
                 crate::models::mining_nft::MiningNFTOperation::StakingTransferReward(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
+                        let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .set(
-                                mining_nfts::dsl::total_mint_bfc
-                                    .eq(mining_nfts::dsl::total_mint_bfc + v.reward as i64),
-                            )
-                            .execute(conn)?;
-                        diesel::update(mining_nft_staking::table)
-                            .filter(
-                                mining_nft_staking::dsl::ticket_id
-                                    .eq(v.ticket_id.bytes.to_hex_literal()),
-                            )
-                            .set(
-                                mining_nft_staking::dsl::total_mint_bfc
-                                    .eq(mining_nft_staking::dsl::total_mint_bfc + v.reward as i64),
-                            )
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev.id = None;
+                        prev.total_mint_bfc = prev.total_mint_bfc + v.reward as i64;
+                        prev.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nfts::table)
+                                    .values(prev)
+                                    .on_conflict_do_nothing()
+                                    .execute(conn)?;
+                        let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
+                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
+                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev_staking.id = None;
+                        prev_staking.total_mint_bfc = prev_staking.total_mint_bfc + v.reward as i64;
+                        prev_staking.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nft_staking::table)
+                            .values(prev_staking.clone())
                             .execute(conn)?;
                         diesel::insert_into(mining_nft_history_profits::table)
                             .values(vec![MiningNFTHistoryProfit {
@@ -1469,16 +1492,32 @@ impl PgIndexerStore {
                 }
                 crate::models::mining_nft::MiningNFTOperation::BurnNFT(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
-                        diesel::update(mining_nfts::table)
+                        let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
                             .filter(mining_nfts::dsl::transfered_at.eq(0))
-                            .set(mining_nfts::dsl::miner_redeem.eq(true))
-                            .execute(conn)
+                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .limit(1)
+                            .first(conn)?;
+                        prev.id = None;
+                        prev.miner_redeem = true;
+                        prev.sequence_number = sequence_number;
+                        diesel::insert_into(mining_nfts::table)
+                                    .values(prev)
+                                    .on_conflict_do_nothing()
+                                    .execute(conn)
                     })
                     .context("Failed to handle burn NFT event.")?;
                 }
             },
         };
+        Ok(())
+    }
+
+    fn refresh_mining_nft(&self) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nfts_view;").execute(conn)?;
+            diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nft_staking_view;").execute(conn)
+        });
         Ok(())
     }
 
@@ -1497,7 +1536,7 @@ impl PgIndexerStore {
             if page > 1 {
                 query = query.offset(((page - 1) * limit) as i64);
             }
-            query = query.order_by(mining_nfts::id.desc()).limit(limit as i64);
+            query = query.order_by(mining_nfts_view::id.desc()).limit(limit as i64);
             let records: Vec<MiningNFT> = query.load(conn)?;
             Ok::<(usize, Vec<MiningNFT>), IndexerError>((count, records))
         })
@@ -3222,8 +3261,13 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation) -> Result<(), IndexerError> {
-        self.spawn_blocking(move |this| this.persist_mining_nft(operation))
+    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| this.persist_mining_nft(operation, sequence_number))
+            .await
+    }
+
+    async fn refresh_mining_nft(&self) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| this.refresh_mining_nft())
             .await
     }
 
