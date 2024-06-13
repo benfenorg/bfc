@@ -8,7 +8,8 @@ use test_cluster::TestClusterBuilder;
 use sui_macros::sim_test;
 
 #[sim_test]
-async fn test_create_randomness_state_object() {
+async fn sim_test_create_randomness_state_object() {
+
     let test_cluster = TestClusterBuilder::new()
         .with_protocol_version(31.into())
         .with_epoch_duration_ms(10000)
