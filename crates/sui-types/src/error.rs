@@ -581,6 +581,9 @@ pub enum SuiError {
     #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
     SuiSystemStateReadError(String),
 
+    #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
+    BfcSystemStateReadError(String),
+
     #[error("Unexpected version error: {0}")]
     UnexpectedVersion(String),
 
@@ -751,6 +754,7 @@ impl SuiError {
                 (false, true)
             }
             SuiError::ObjectLockConflict { .. } => (false, true),
+            SuiError::BfcSystemStateReadError { .. } => (false, true),
 
             _ => (false, false),
         }

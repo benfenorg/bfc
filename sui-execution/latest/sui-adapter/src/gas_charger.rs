@@ -20,6 +20,7 @@ pub mod checked {
         storage::{DeleteKindWithOldVersion, WriteKind},
     };
     use tracing::{trace};
+    use sui_types::execution_status::ExecutionFailureStatus;
     use crate::temporary_store::TemporaryStore;
 
     /// Tracks all gas operations for a single transaction.
@@ -289,20 +290,29 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
-                cost_summary.rate = 1000000000;
-                cost_summary.base_point = 0;
-
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
                 if gas_object.is_stable_gas_coin() {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
-                    let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
-                    cost_summary.rate = rate;
-                    cost_summary.base_point = base_point;
-                    let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
-                    deduct_gas(&mut gas_object, stable_gas_used);
+                    let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
+
+                    match result {
+                        Ok((rate, base_point)) => {
+                            cost_summary.rate = rate;
+                            cost_summary.base_point = base_point;
+                            let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
+                            deduct_gas(&mut gas_object, stable_gas_used);
+                        },
+                        Err(_) => {
+                            *execution_result = Err(ExecutionError::from_kind(
+                                ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
+                            ));
+                            self.reset(temporary_store);
+                            deduct_gas(&mut gas_object, gas_used);
+                        }
+                    }
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

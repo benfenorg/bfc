@@ -1933,6 +1933,153 @@ async fn sim_test_reconfig_with_committee_change_stress() {
 
 #[cfg(msim)]
 #[sim_test]
+async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
+    const EPOCH_DURATION: u64 = 1000;
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    bfc_get_stable_rate_result_injection::set_result_error(Some(true));
+    let system_state = test_cluster.wait_for_epoch(Some(2)).await;
+    assert!(!system_state.safe_mode());
+    assert!(system_state.epoch() > 1);
+    assert_eq!(system_state.system_state_version(), 2);
+
+    bfc_get_stable_rate_result_injection::set_result_error(Some(false));
+    let system_state = test_cluster.wait_for_epoch(Some(2)).await;
+    assert!(!system_state.safe_mode());
+    assert!(system_state.epoch() > 2);
+    assert_eq!(system_state.system_state_version(), 2);
+    Ok(())
+}
+
+#[cfg(msim)]
+#[sim_test]
+async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
+    const EPOCH_DURATION: u64 = 20000;
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    // On startup, we should be at V1.
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    // test
+    bfc_get_stable_rate_result_injection::set_result_error(Some(true));
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_2();
+    let amount = 100_000_000_000u64 * 60;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
+    test_cluster.wait_for_epoch(Some(2)).await;
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+
+    let swap_amount = 100_000_000_000u64;
+    let response = transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await;
+
+    error!("response is {:?}",response);
+    match response{
+        Ok(_) => {}
+        Err(e) => {
+            if !e.to_string().contains("Unsupported BfcSystemState version: test mode") {
+                panic!("unknown err: {:?}", e)
+            }
+        }
+    }
+
+    bfc_get_stable_rate_result_injection::set_result_error(Some(false));
+    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await {
+        Ok(_) => {}
+        Err(e) => {
+            panic!("unknown err: {:?}", e)
+        }
+    }
+
+    // ...
+
+    Ok(())
+}
+
+
+#[cfg(msim)]
+#[sim_test]
+async fn bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error> {
+    use sui_types::bfc_system_state::bfc_get_stable_rate_with_base_point_result_injection;
+    const EPOCH_DURATION: u64 = 20000;
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(EPOCH_DURATION)
+        .build()
+        .await;
+
+    let system_state = test_cluster
+        .sui_client()
+        .governance_api()
+        .get_latest_sui_system_state()
+        .await
+        .unwrap();
+
+    // On startup, we should be at V1.
+    assert_eq!(system_state.system_state_version, 1);
+    assert_eq!(system_state.epoch, 0);
+
+    // test
+    bfc_get_stable_rate_with_base_point_result_injection::set_result_error(Some(true));
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_2();
+    test_cluster.wait_for_epoch(Some(2)).await;
+    rebalance(&test_cluster, http_client, address).await?;
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let swap_amount = 100_000_000_000u64;
+    match transfer_with_swapped_stable_coin(&test_cluster, http_client,
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string()],
+    ).await {
+        Ok(_) => {}
+        Err(e) => {
+            if !e.to_string().contains("not found in rate map") {
+                panic!("unknown err: {:?}", e)
+            }
+        }
+    }
+    // ...
+
+    Ok(())
+}
+
+#[cfg(msim)]
+#[sim_test]
 async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     use sui_test_transaction_builder::make_staking_transaction;
     use sui_types::sui_system_state::advance_epoch_result_injection;
@@ -1962,7 +2109,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
 
     let swap_amount = 100_000_000_000u64;
     match transfer_with_swapped_stable_coin(&test_cluster, http_client,
-        address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
+                                            address, swap_amount, 100, vec!["0xc8::busd::BUSD".to_string(), "0xc8::busd::BUSD".to_string()],
     ).await {
         Ok(_) => {}
         Err(e) => {
@@ -1988,7 +2135,7 @@ async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     assert_eq!(system_state.epoch(), 5);
     assert!(system_state.safe_mode());
     // Check that time is properly set even in safe mode.
-    println!("system {} ,{} ", system_state.epoch_start_timestamp_ms(),prev_epoch_start_timestamp);
+    println!("system {} ,{} ", system_state.epoch_start_timestamp_ms(), prev_epoch_start_timestamp);
     assert!(system_state.epoch_start_timestamp_ms() >= prev_epoch_start_timestamp + EPOCH_DURATION);
 
     // Try a staking transaction.
@@ -2941,7 +3088,10 @@ async fn transfer_with_swapped_stable_coin(
         address,
         gas_coins.clone(),
     ).await;
-    test_cluster.wallet.execute_transaction_may_fail(tx.clone()).await?;
+    let response = test_cluster.wallet.execute_transaction_may_fail(tx.clone()).await?;
+    if !response.status_ok().unwrap() {
+        return Err(Error::msg(response.effects.unwrap().to_string()));
+    }
 
     let check_point_page = get_checkpoints(http_client, true).await?;
     assert!(check_point_page.data.len() > 0);

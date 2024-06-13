@@ -9,7 +9,7 @@ use sui_json_rpc_types::Checkpoint as RpcCheckpoint;
 use sui_types::base_types::TransactionDigest;
 use sui_types::crypto::AggregateAuthoritySignature;
 use sui_types::digests::CheckpointDigest;
-use sui_types::gas::GasCostSummary;
+use sui_types::gas::{BASE_RATE, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary};
 use sui_types::messages_checkpoint::EndOfEpochData;
 
 use crate::errors::IndexerError;
@@ -148,8 +148,8 @@ impl Checkpoint {
             end_of_epoch_data,
             validator_signature: validator_sig,
             epoch_rolling_bfc_gas_cost_summary: GasCostSummary {
-                base_point: 0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost: self.total_computation_cost as u64,
                 storage_cost: self.total_storage_cost as u64,
                 storage_rebate: self.total_storage_rebate as u64,

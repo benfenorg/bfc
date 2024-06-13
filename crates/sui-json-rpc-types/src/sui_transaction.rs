@@ -45,6 +45,7 @@ use sui_types::transaction::{
 };
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use std::str::FromStr;
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 
 // similar to EpochId of sui-types but BigInt
 pub type SuiEpochId = BigInt<u64>;
@@ -461,10 +462,10 @@ impl SuiGasCostSummary {
         gas_cost_summary: GasCostSummary
     ) -> Self {
         Self{
-            computation_cost: gas_cost_summary.computation_cost,
-            storage_cost: gas_cost_summary.storage_cost,
-            storage_rebate: gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee: gas_cost_summary.non_refundable_storage_fee,
+            computation_cost: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.computation_cost,gas_cost_summary.rate,gas_cost_summary.base_point),
+            storage_cost: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.storage_cost,gas_cost_summary.rate,gas_cost_summary.base_point),
+            storage_rebate: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.storage_rebate,gas_cost_summary.rate,gas_cost_summary.base_point),
+            non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.non_refundable_storage_fee,gas_cost_summary.rate,gas_cost_summary.base_point),
         }
     }
 
