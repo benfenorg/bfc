@@ -376,6 +376,9 @@ ExecutionFailureStatus:
       CertificateDenied: UNIT
     30:
       SuiMoveVerificationTimedout: UNIT
+    31:
+      StableCoinRateErr:
+        NEWTYPE: STR
 ExecutionStatus:
   ENUM:
     0:
