@@ -862,7 +862,7 @@ impl DevInspectResults {
             }
         };
         Ok(Self {
-            effects: effects.try_into()?,
+            effects: SuiTransactionBlockEffects::try_from(effects)?,
             events: SuiTransactionBlockEvents::try_from(events, tx_digest, None, resolver)?,
             results,
             error,
