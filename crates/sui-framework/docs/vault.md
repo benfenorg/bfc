@@ -2386,6 +2386,7 @@ State checker
 
     _vault.last_sqrt_price = price;
     event::update_state(
+        <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;()),
         price,
         last_price,
         _vault.state,
@@ -2590,6 +2591,7 @@ State checker
         };
         index = index + 1;
     };
+    event::rebalance(<a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;StableCoinType&gt;()));
 }
 </code></pre>
 

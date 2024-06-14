@@ -12,6 +12,7 @@
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
+-  [Struct `RebalanceEvent`](#0xc8_event_RebalanceEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
 -  [Function `init_treasury_pool`](#0xc8_event_init_treasury_pool)
 -  [Function `create_vault`](#0xc8_event_create_vault)
@@ -19,6 +20,7 @@
 -  [Function `deposit`](#0xc8_event_deposit)
 -  [Function `update_state`](#0xc8_event_update_state)
 -  [Function `set_pause`](#0xc8_event_set_pause)
+-  [Function `rebalance`](#0xc8_event_rebalance)
 -  [Module Specification](#@Module_Specification_0)
 
 
@@ -310,6 +312,12 @@
 
 <dl>
 <dt>
+<code>coin_type: <a href="_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>current_sqrt_price: u128</code>
 </dt>
 <dd>
@@ -329,6 +337,33 @@
 </dd>
 <dt>
 <code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_RebalanceEvent"></a>
+
+## Struct `RebalanceEvent`
+
+
+
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -510,7 +545,7 @@
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(coin_type: <a href="_String">ascii::String</a>, current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
 </code></pre>
 
 
@@ -520,6 +555,7 @@
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(
+    coin_type: String,
     current_sqrt_price: u128,
     last_sqrt_price: u128,
     state: u8,
@@ -527,6 +563,7 @@
 ) {
     emit(
         <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
+            coin_type,
             current_sqrt_price,
             last_sqrt_price,
             state,
@@ -560,6 +597,34 @@
         <a href="event.md#0xc8_event_PauseEvent">PauseEvent</a> {
             <a href="vault.md#0xc8_vault">vault</a>: vault_id,
             is_pause
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_rebalance"></a>
+
+## Function `rebalance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_rebalance">rebalance</a>(coin_type: <a href="_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_rebalance">rebalance</a>(coin_type: String) {
+    emit(
+        <a href="event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> {
+            coin_type,
         }
     )
 }

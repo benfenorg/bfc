@@ -58,10 +58,15 @@ module bfc_system::event {
     }
 
     struct UpdateStateEvent has copy, drop {
+        coin_type: String,
         current_sqrt_price: u128,
         last_sqrt_price: u128,
         state: u8,
         state_counter: u32,
+    }
+
+    struct RebalanceEvent has copy, drop {
+        coin_type: String,
     }
 
     public(friend) fun init_treasury(vaults_id: ID) {
@@ -133,6 +138,7 @@ module bfc_system::event {
     }
 
     public(friend) fun update_state(
+        coin_type: String,
         current_sqrt_price: u128,
         last_sqrt_price: u128,
         state: u8,
@@ -140,6 +146,7 @@ module bfc_system::event {
     ) {
         emit(
             UpdateStateEvent {
+                coin_type,
                 current_sqrt_price,
                 last_sqrt_price,
                 state,
@@ -153,6 +160,14 @@ module bfc_system::event {
             PauseEvent {
                 vault: vault_id,
                 is_pause
+            }
+        )
+    }
+
+    public(friend) fun rebalance(coin_type: String) {
+        emit(
+            RebalanceEvent {
+                coin_type,
             }
         )
     }
