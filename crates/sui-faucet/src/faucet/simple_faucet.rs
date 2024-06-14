@@ -1224,7 +1224,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_batch_transfer_interface() {
-        let test_cluster = TestClusterBuilder::new().with_epoch_duration_ms(30000).build().await;
+        let test_cluster = TestClusterBuilder::new().build().await;
         let config: FaucetConfig = Default::default();
         let coin_amount = config.amount;
         let prom_registry = Registry::new();
