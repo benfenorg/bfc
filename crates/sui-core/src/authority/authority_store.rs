@@ -1645,14 +1645,18 @@ impl AuthorityStore {
 
     pub  fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
         if gas_ref.is_empty() {
-            return Ok((None, None));
+            return Err(SuiError::ExecutionError("gas ref is empty".to_string()));
         }
 
         let gas = self.get_object(&gas_ref[0].0)?
             .ok_or_else(|| SuiError::ExecutionError("gas obj not exist".to_string()))?;
 
+        if gas.is_gas_coin() {
+            return Ok((None, None)); // bfc gas
+        }
+
         if !gas.is_stable_gas_coin() {
-            return Ok((None, None));
+            return Err(SuiError::ExecutionError(format!("gas ref not valid gas object: {:?}", gas)));
         }
 
         let gas_tag = gas.coin_type_maybe();
