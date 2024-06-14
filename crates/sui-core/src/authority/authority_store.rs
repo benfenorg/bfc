@@ -1645,23 +1645,25 @@ impl AuthorityStore {
 
     pub  fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
         if gas_ref.is_empty() {
-            return Err(SuiError::ExecutionError("gas ref is empty".to_string()));
+            return Ok((None, None));//dry run /dev inspect
         }
 
         let gas = self.get_object(&gas_ref[0].0)?
-            .ok_or_else(|| SuiError::ExecutionError("gas obj not exist".to_string()))?;
+            .ok_or_else(|| SuiError::UserInputError{error:UserInputError::ObjectNotFound {object_id:gas_ref[0].0,version:None}})?;
 
         if gas.is_gas_coin() {
             return Ok((None, None)); // bfc gas
         }
 
-        if !gas.is_stable_gas_coin() {
-            return Err(SuiError::ExecutionError(format!("gas ref not valid gas object: {:?}", gas)));
-        }
-
         let gas_tag = gas.coin_type_maybe();
         if gas_tag.is_none() {
-            return Ok((None, None));
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
+        }
+
+        let tag = gas_tag.unwrap();
+
+        if !gas.is_stable_gas_coin() {
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string()}});
         }
 
         let bfc_system_state = self.get_bfc_system_state_object()?;
@@ -1671,13 +1673,12 @@ impl AuthorityStore {
             .map(|entity| ((*entity.key).to_string(), entity.value))
             .collect();
 
-        let tag = gas_tag.unwrap();
         let base_points = inner_state.clone().stable_base_points;
         let rate_option = rate_map.get(&tag.to_canonical_string()).or_else(|| rate_map.get(&tag.to_string())).copied();
         if let Some(rate) = rate_option {
             Ok((Some(rate), Some(base_points)))
         }else {
-            Ok((None, None))
+            return Err(SuiError::UserInputError{error:UserInputError::NoRateFoundInBfcSystem {coin_type: tag.to_canonical_string()}});
         }
     }
 

@@ -163,6 +163,10 @@ pub enum UserInputError {
     GasCoinTypeMismatch { coin_type: String, second_coin_type: String },
     #[error("Gas coin type missing")]
     GasCoinTypeMissing,
+    #[error("Invalid gas coin type: {:?}.", coin_type)]
+    GasCoinInvalid{ coin_type: String },
+    #[error("Invalid gas coin type: {:?}.", coin_type)]
+    NoRateFoundInBfcSystem{ coin_type: String },
 
     #[error(
         "Balance of gas object {:?} is lower than the needed amount: {:?}.",
