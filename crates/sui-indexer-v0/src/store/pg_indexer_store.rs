@@ -1517,7 +1517,7 @@ impl PgIndexerStore {
         transactional_blocking!(&self.blocking_cp, |conn| {
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nfts_view;").execute(conn)?;
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nft_staking_view;").execute(conn)
-        });
+        }).context("Failed to refresh_mining_nft.")?;
         Ok(())
     }
 
