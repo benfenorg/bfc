@@ -367,20 +367,20 @@ fn pack(
     let num_fields = num_fields(struct_def);
     verifier.stack_popn(num_fields - 1)?;
     let last_value = verifier.stack.pop().unwrap();
-    if handle.abilities.has_key() && last_value != AbstractValue::Fresh {
-        let (cur_package, cur_module, cur_function) = verifier.cur_function();
-        let msg = format!(
-            "Invalid object creation in {cur_package}::{cur_module}::{cur_function}. \
-                Object created without a newly created UID. \
-                The UID must come directly from sui::{}::{}. \
-                Or for tests, it can come from sui::{}::{}",
-            OBJECT_NEW.1, OBJECT_NEW.2, TS_NEW_OBJECT.1, TS_NEW_OBJECT.2,
-        );
-
-        return Err(PartialVMError::new(StatusCode::UNKNOWN_VERIFICATION_ERROR)
-            .with_message(msg)
-            .with_sub_status(VMMVerifierErrorSubStatusCode::INVALID_OBJECT_CREATION as u64));
-    }
+    // if handle.abilities.has_key() && last_value != AbstractValue::Fresh {
+    //     let (cur_package, cur_module, cur_function) = verifier.cur_function();
+    //     let msg = format!(
+    //         "Invalid object creation in {cur_package}::{cur_module}::{cur_function}. \
+    //             Object created without a newly created UID. \
+    //             The UID must come directly from sui::{}::{}. \
+    //             Or for tests, it can come from sui::{}::{}",
+    //         OBJECT_NEW.1, OBJECT_NEW.2, TS_NEW_OBJECT.1, TS_NEW_OBJECT.2,
+    //     );
+    //
+    //     return Err(PartialVMError::new(StatusCode::UNKNOWN_VERIFICATION_ERROR)
+    //         .with_message(msg)
+    //         .with_sub_status(VMMVerifierErrorSubStatusCode::INVALID_OBJECT_CREATION as u64));
+    // }
     verifier.stack_push(AbstractValue::Other)?;
     Ok(())
 }

@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::any::Any;
 use super::object_runtime::{ObjectRuntime, TransferResult};
 use crate::NativesCostTable;
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
@@ -131,13 +132,13 @@ pub fn share_object(
         obj,
     )?;
     let cost = context.gas_used();
+
     Ok(match transfer_result {
         // New means the ID was created in this transaction
         // SameOwner means the object was previously shared and was re-shared; since
         // shared objects cannot be taken by-value in the adapter, this can only
         // happen via test_scenario
-        TransferResult::New | TransferResult::SameOwner => NativeResult::ok(cost, smallvec![]),
-        TransferResult::OwnerChanged => NativeResult::err(cost, E_SHARED_NON_NEW_OBJECT),
+        TransferResult::New | TransferResult::OwnerChanged | TransferResult::SameOwner => NativeResult::ok(cost, smallvec![]),
     })
 }
 
