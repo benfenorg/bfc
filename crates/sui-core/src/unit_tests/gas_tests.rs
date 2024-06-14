@@ -134,15 +134,13 @@ where
     F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
 {
     // initial system with given gas coins
-    let mut GAS_AMOUNT: u64 = 0;//1_000_000_000;
     let gas_amount: u64 = if budget < 10_000_000_000 {
         10_000_000_000
     } else {
         budget
     };
-    GAS_AMOUNT = gas_amount;
 
-    let gas_coins = make_gas_coins(sender, GAS_AMOUNT, coin_num);
+    let gas_coins = make_gas_coins(sender, gas_amount, coin_num);
     let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
     let authority_state = TestAuthorityBuilder::new().build().await;
     for obj in gas_coins {
@@ -150,7 +148,7 @@ where
     }
 
     let gas_object_id = ObjectID::random();
-    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, GAS_AMOUNT);
+    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, gas_amount);
     authority_state.insert_genesis_object(gas_coin).await;
     // touch gas coins so that `storage_rebate` is set (not 0 as in genesis)
     touch_gas_coins(
@@ -201,6 +199,7 @@ where
         .into_data();
 
     // check effects
+    println!("======={:?}", effects.status().clone().unwrap_err().0);
     assert_eq!(
         effects.status().clone().unwrap_err().0,
         ExecutionFailureStatus::InsufficientGas
@@ -227,7 +226,7 @@ where
     let summary = effects.gas_cost_summary();
 
     // call checker
-    checker(summary, GAS_AMOUNT, final_value)
+    checker(summary, gas_amount, final_value)
 }
 
 // make a `coin_num` coins distributing `gas_amount` across them
@@ -349,8 +348,8 @@ async fn test_oog_computation_storage_ok_multi_coins() -> SuiResult {
 // OOG for computation, OOG for minimal storage (e.g. computation is entire budget)
 #[tokio::test]
 async fn test_oog_computation_oog_storage_final_one_coin() -> SuiResult {
-    const GAS_PRICE: u64 = 1000;
-    const MAX_UNIT_BUDGET: u64 = 5_000_000;
+    const GAS_PRICE: u64 = 500;
+    const MAX_UNIT_BUDGET: u64 = 5000_000;
     const BUDGET: u64 = MAX_UNIT_BUDGET * GAS_PRICE;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
