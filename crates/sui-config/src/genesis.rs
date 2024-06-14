@@ -84,10 +84,10 @@ impl TreasuryParameters {
             key: "BUSD".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 58333726687135162368,
             },
         });
@@ -97,10 +97,10 @@ impl TreasuryParameters {
             key: "MGG".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 14986205729530720256,
             },
         });
@@ -110,10 +110,10 @@ impl TreasuryParameters {
             key: "BJPY".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 4915287178933356544,
             },
         });
@@ -123,10 +123,10 @@ impl TreasuryParameters {
             key: "BKRW".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 1618695223101379840,
             },
         });
@@ -135,10 +135,10 @@ impl TreasuryParameters {
             key: "BAUD".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 48103223333394006016,
             },
         });
@@ -147,10 +147,10 @@ impl TreasuryParameters {
             key: "BARS".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 2020739568339092224,
             },
         });
@@ -159,10 +159,10 @@ impl TreasuryParameters {
             key: "BBRL".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 26731871811266244608,
             },
         });
@@ -171,10 +171,10 @@ impl TreasuryParameters {
             key: "BCAD".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 50854163925868765184,
             },
         });
@@ -183,10 +183,10 @@ impl TreasuryParameters {
             key: "BEUR".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 61180928696206655488,
             },
         });
@@ -195,10 +195,10 @@ impl TreasuryParameters {
             key: "BGBP".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 65738771359798919168,
             },
         });
@@ -207,8 +207,8 @@ impl TreasuryParameters {
             key: "BIDR".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
                 base_point: 10000_000_000_000,
                 initialize_price: 470301539970485312,
@@ -219,10 +219,10 @@ impl TreasuryParameters {
             key: "BINR".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 6390139593977006080,
             },
         });
@@ -231,10 +231,10 @@ impl TreasuryParameters {
             key: "BRUB".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 6118092869620665344,
             },
         });
@@ -243,10 +243,10 @@ impl TreasuryParameters {
             key: "BSAR".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 30311093525086388224,
             },
         });
@@ -255,10 +255,10 @@ impl TreasuryParameters {
             key: "BTRY".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 10756207731032303616,
             },
         });
@@ -267,10 +267,10 @@ impl TreasuryParameters {
             key: "BZAR".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 13555533118889377792,
             },
         });
@@ -279,10 +279,10 @@ impl TreasuryParameters {
             key: "BMXN".to_string(),
             value: TreasuryParameters {
                 position_numbers: 9,
-                tick_spacing: 100,
-                spacing_times: 2,
+                tick_spacing: 2,
+                spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 34000_000_000_000,
+                base_point: 340000_000_000_000,
                 initialize_price: 14169212980379457536,
             },
         });
