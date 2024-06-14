@@ -979,6 +979,22 @@ impl Object {
         Object::new_move(obj, owner, TransactionDigest::genesis())
     }
 
+
+    pub fn with_stable_id_owner_gas_for_testing(id: ObjectID, owner: SuiAddress, gas: u64) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::type_().into(),
+            has_public_transfer: true,
+            version: OBJECT_START_VERSION,
+            contents: StableCoin::new(id, gas).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
+    }
+
     pub fn with_id_owner_gas_for_testing(id: ObjectID, owner: SuiAddress, gas: u64) -> Self {
         let data = Data::Move(MoveObject {
             type_: GasCoin::type_().into(),
@@ -1044,6 +1060,11 @@ impl Object {
         Self::with_id_owner_gas_for_testing(id, owner, GAS_VALUE_FOR_TESTING)
     }
 
+    pub fn with_stable_id_owner_for_testing(id: ObjectID, owner: SuiAddress) -> Self {
+        // For testing, we provide sufficient gas by default.
+        Self::with_stable_id_owner_gas_for_testing(id, owner, GAS_VALUE_FOR_TESTING)
+    }
+
     pub fn with_id_owner_version_for_testing(
         id: ObjectID,
         version: SequenceNumber,
@@ -1062,6 +1083,7 @@ impl Object {
             storage_rebate: 0,
         }
     }
+
     pub fn with_stable_id_owner_version_for_testing(
         id: ObjectID,
         version: SequenceNumber,
@@ -1104,6 +1126,10 @@ impl Object {
 
     pub fn with_owner_for_testing(owner: SuiAddress) -> Self {
         Self::with_id_owner_for_testing(ObjectID::random(), owner)
+    }
+
+    pub fn with_stable_owner_for_testing(owner: SuiAddress) -> Self {
+        Self::with_stable_id_owner_for_testing(ObjectID::random(), owner)
     }
 
     /// Generate a new gas coin worth `value` with a random object ID and owner
