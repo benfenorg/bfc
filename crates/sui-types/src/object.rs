@@ -1311,7 +1311,6 @@ fn test_object_digest_and_serialized_format() {
         TransactionDigest::ZERO,
     );
     let bytes = bcs::to_bytes(&o).unwrap();
-    println!("{:?}", bytes);
     assert_eq!(
         bytes,
         [
