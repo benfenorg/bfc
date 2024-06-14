@@ -1796,8 +1796,8 @@ impl ProtocolConfig {
                         .advance_to_highest_supported_protocol_version = true;
                 }
                 10 => {
-                    cfg.max_verifier_meter_ticks_per_function = Some(17_000_000);
-                    cfg.max_meter_ticks_per_module = Some(17_000_000);
+                    cfg.max_verifier_meter_ticks_per_function = Some(20_000_000);
+                    cfg.max_meter_ticks_per_module = Some(20_000_000);
                 }
                 11 => {
                     cfg.max_move_value_depth = Some(128);
@@ -2126,7 +2126,7 @@ impl ProtocolConfig {
                 42 => {}
                 43 => {
                     cfg.feature_flags.zklogin_max_epoch_upper_bound_delta = Some(30);
-                    cfg.max_meter_ticks_per_package = Some(16_000_000);
+                    cfg.max_meter_ticks_per_package = Some(20_000_000);
                 }
                 44 => {
                     //open bfc system state

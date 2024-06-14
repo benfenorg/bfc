@@ -226,12 +226,18 @@ fn test_meter_system_packages() {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
 
     let protocol_config = ProtocolConfig::get_for_max_version_UNSAFE();
+    println!("=======getting version {:?}", protocol_config);
     let verifier_config = protocol_config.verifier_config(/* for_signing */ true);
     let meter_config = protocol_config.meter_config();
+    println!("=======getting meter config {:?}", meter_config);
     let registry = &Registry::new();
     let bytecode_verifier_metrics = Arc::new(BytecodeVerifierMetrics::new(registry));
     let mut meter = SuiVerifierMeter::new(meter_config);
     for system_package in BuiltInFramework::iter_system_packages() {
+        println!("=======getting system package {:?}", system_package.id());
+        // if system_package.id.to_string()== String::from("0x000000000000000000000000000000000000000000000000000000000000dee9")  {
+        //     continue;
+        // }
         run_metered_move_bytecode_verifier(
             &system_package.modules(),
             &verifier_config,
