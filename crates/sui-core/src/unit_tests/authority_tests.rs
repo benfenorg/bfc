@@ -8597,7 +8597,7 @@ async fn test_bfc_transfer_sui_with_amount() {
     )
     .unwrap();
     assert_eq!(
-        new_balance as i64 + effects.gas_cost_summary().net_gas_usage() + 500,
+        new_balance as i64 + effects.gas_cost_summary().net_gas_usage_improved() + 500,
         init_balance as i64
     );
 }
