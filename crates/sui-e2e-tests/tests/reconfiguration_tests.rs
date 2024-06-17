@@ -3297,7 +3297,7 @@ async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     let sender = test_cluster.get_address_0();
     rebalance(&test_cluster, http_client, sender).await?;
     stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
-    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
+    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, test_cluster.get_address_1(), "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
     Ok(())
 }
 
