@@ -1693,7 +1693,7 @@ async fn test_reconfig_with_failing_validator() {
 }
 
 #[sim_test]
-async fn test_validator_resign_effects() {
+async fn sim_test_validator_resign_effects() {
     // This test checks that validators are able to re-sign transaction effects that were finalized
     // in previous epochs. This allows authority aggregator to form a new effects certificate
     // in the new epoch.
@@ -3488,7 +3488,7 @@ async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
