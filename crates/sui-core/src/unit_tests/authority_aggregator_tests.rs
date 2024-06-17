@@ -482,7 +482,7 @@ async fn test_map_reducer() {
 }
 
 #[sim_test]
-async fn test_process_transaction_fault_success() {
+async fn sim_test_process_transaction_fault_success() {
     // This test exercises the 4 different possible failing case when one authority is faulty.
     // A transaction is sent to all authories, however one of them will error out either before or after processing the transaction.
     // A cert should still be created, and sent out to all authorities again. This time
