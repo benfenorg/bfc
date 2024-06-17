@@ -26,7 +26,7 @@ const GIT_REVISION: &str = {
 
 fn main() {
     // Always generate snapshot for the latest version.
-    let version = ProtocolVersion::MAX.as_u64();
+    let version =  ProtocolVersion::MAX.as_u64();
     let mut files = vec![];
     for package in BuiltInFramework::iter_system_packages() {
         write_package_to_file(version, package);

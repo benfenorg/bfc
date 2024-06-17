@@ -954,6 +954,7 @@ module bfc_system::vault {
 
         _vault.last_sqrt_price = price;
         event::update_state(
+            type_name::into_string(type_name::get<StableCoinType>()),
             price,
             last_price,
             _vault.state,
@@ -1078,6 +1079,7 @@ module bfc_system::vault {
             };
             index = index + 1;
         };
+        event::rebalance(type_name::into_string(type_name::get<StableCoinType>()));
     }
 
     public(friend) fun rebalance<StableCoinType>(
