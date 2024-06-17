@@ -1077,30 +1077,17 @@ fn create_genesis_objects(
         }
     }
 
-    if protocol_config.get_bfc_system_state_open() == 0 {
-        generate_genesis_system_object_v0(
-            &mut store,
-            executor.as_ref(),
-            validators,
-            genesis_ctx,
-            parameters,
-            token_distribution_schedule,
-            metrics,
-        )
-            .unwrap();
-    }else {
-        generate_genesis_system_object(
-            &mut store,
-            executor.as_ref(),
-            validators,
-            genesis_ctx,
-            parameters,
-            bfc_system_parameters,
-            token_distribution_schedule,
-            metrics,
-        )
-            .unwrap();
-    }
+    generate_genesis_system_object(
+        &mut store,
+        executor.as_ref(),
+        validators,
+        genesis_ctx,
+        parameters,
+        bfc_system_parameters,
+        token_distribution_schedule,
+        metrics,
+    )
+        .unwrap();
 
     store.into_inner().into_values().collect()
 }
