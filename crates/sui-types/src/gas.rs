@@ -191,6 +191,12 @@ pub mod checked {
             self.computation_cost + self.storage_cost
         }
 
+        pub fn gas_used_improved(&self) -> u64 {
+            let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
+            let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
+            computation_cost + storage_cost
+        }
+
         /// Portion of the storage rebate that gets passed on to the transaction sender. The remainder
         /// will be burned, then re-minted + added to the storage fund at the next epoch change
         pub fn sender_rebate(&self, storage_rebate_rate: u64) -> u64 {
