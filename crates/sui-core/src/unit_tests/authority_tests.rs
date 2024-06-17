@@ -5592,7 +5592,7 @@ async fn test_publish_not_a_package_dependency() {
 
 // tests using a gas coin with version MAX - 1
 #[tokio::test]
-async fn test_bfc_dry_run_dev_inspect_max_gas_version() {
+async fn test_stable_dry_run_dev_inspect_max_gas_version() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, fullnode) = init_state_validator_with_fullnode().await;
@@ -5644,7 +5644,7 @@ async fn test_bfc_dry_run_dev_inspect_max_gas_version() {
 }
 
 #[tokio::test]
-async fn test_bfc_dry_run_no_gas_big_transfer() {
+async fn test_stable_dry_run_no_gas_big_transfer() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let gas_object_id = ObjectID::random();
@@ -5677,7 +5677,7 @@ async fn test_bfc_dry_run_no_gas_big_transfer() {
 
 #[ignore]
 #[tokio::test]
-async fn test_bfc_dev_inspect_object_by_bytes() {
+async fn test_stable_dev_inspect_object_by_bytes() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, fullnode, object_basics) =
@@ -5824,7 +5824,7 @@ async fn test_bfc_dev_inspect_object_by_bytes() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_unowned_object() {
+async fn test_stable_dev_inspect_unowned_object() {
     let (alice, alice_key): (_, AccountKeyPair) = get_key_pair();
     let alice_gas_id = ObjectID::random();
     let (validator, fullnode, object_basics) =
@@ -5894,7 +5894,7 @@ async fn test_bfc_dev_inspect_unowned_object() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_dynamic_field() {
+async fn test_stable_dev_inspect_dynamic_field() {
     let (test_object1_bytes, test_object2_bytes) = {
         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_object_id = ObjectID::random();
@@ -6006,7 +6006,7 @@ async fn test_bfc_dev_inspect_dynamic_field() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_return_values() {
+async fn test_stable_dev_inspect_return_values() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, fullnode, object_basics) =
@@ -6186,7 +6186,7 @@ async fn test_bfc_dev_inspect_return_values() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_gas_coin_argument() {
+async fn test_stable_dev_inspect_gas_coin_argument() {
     let (validator, fullnode, _object_basics) =
         init_state_with_stable_ids_and_object_basics_with_fullnode(vec![]).await;
     let epoch_store = validator.epoch_store_for_testing();
@@ -6233,7 +6233,7 @@ async fn test_bfc_dev_inspect_gas_coin_argument() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_gas_price() {
+async fn test_stable_dev_inspect_gas_price() {
     let (_, fullnode, _object_basics) =
         init_state_with_stable_ids_and_object_basics_with_fullnode(vec![]).await;
 
@@ -6275,7 +6275,7 @@ async fn test_bfc_dev_inspect_gas_price() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_uses_unbound_object() {
+async fn test_stable_dev_inspect_uses_unbound_object() {
     let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (_validator, fullnode, object_basics) =
@@ -6310,7 +6310,7 @@ async fn test_bfc_dev_inspect_uses_unbound_object() {
 }
 
 #[tokio::test]
-async fn test_bfc_for_inc_201_dev_inspect() {
+async fn test_stable_for_inc_201_dev_inspect() {
     use sui_move_build::BuildConfig;
 
     let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
@@ -6350,7 +6350,7 @@ async fn test_bfc_for_inc_201_dev_inspect() {
 }
 
 #[tokio::test]
-async fn test_bfc_for_inc_201_dry_run() {
+async fn test_stable_for_inc_201_dry_run() {
     use sui_move_build::BuildConfig;
 
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
@@ -6442,7 +6442,7 @@ pub async fn init_state_with_stable_ids_and_object_basics_with_fullnode<
 }
 
 #[tokio::test]
-async fn test_bfc_paranoid_mode_with_natives() {
+async fn test_stable_paranoid_mode_with_natives() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let mut expensive_safety_checks_config = ExpensiveSafetyCheckConfig::default();
@@ -6504,7 +6504,7 @@ async fn test_bfc_paranoid_mode_with_natives() {
 }
 
 #[tokio::test]
-async fn test_bfc_dev_inspect_on_validator() {
+async fn test_stable_dev_inspect_on_validator() {
     let (sender, _sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, object_basics) =
@@ -6528,7 +6528,7 @@ async fn test_bfc_dev_inspect_on_validator() {
 }
 
 #[tokio::test]
-async fn test_bfc_dry_run_on_validator() {
+async fn test_stable_dry_run_on_validator() {
     let (validator, _fullnode, transaction, _gas_object_id, _shared_object_id) =
         construct_stable_shared_object_transaction_with_sequence_number(None).await;
     let transaction_digest = *transaction.digest();
@@ -6544,7 +6544,7 @@ async fn test_bfc_dry_run_on_validator() {
 // Tests using a dynamic field that is newer than the parent in dev inspect/dry run results
 // in not being able to access the dynamic field object
 #[tokio::test]
-async fn test_bfc_dry_run_dev_inspect_dynamic_field_too_new() {
+async fn test_stable_dry_run_dev_inspect_dynamic_field_too_new() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (validator, fullnode) = init_state_validator_with_fullnode().await;
@@ -6659,7 +6659,7 @@ async fn test_bfc_dry_run_dev_inspect_dynamic_field_too_new() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_transaction_bad_signature() {
+async fn test_stable_handle_transfer_transaction_bad_signature() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -6745,7 +6745,7 @@ async fn test_bfc_handle_transfer_transaction_bad_signature() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_transaction_with_max_sequence_number() {
+async fn test_stable_handle_transfer_transaction_with_max_sequence_number() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let object_id: ObjectID = ObjectID::random();
     let gas_object_id = ObjectID::random();
@@ -6788,7 +6788,7 @@ async fn test_bfc_handle_transfer_transaction_with_max_sequence_number() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_shared_object_with_max_sequence_number() {
+async fn test_stable_handle_shared_object_with_max_sequence_number() {
     let (authority, _fullnode, transaction, _, _) =
         construct_stable_shared_object_transaction_with_sequence_number(Some(SequenceNumber::MAX)).await;
     let epoch_store = authority.load_epoch_store_one_call_per_task();
@@ -6803,7 +6803,7 @@ async fn test_bfc_handle_shared_object_with_max_sequence_number() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_transaction_unknown_sender() {
+async fn test_stable_handle_transfer_transaction_unknown_sender() {
     let sender = dbg_addr(1);
     let (unknown_address, unknown_key) = get_key_pair();
     let object_id: ObjectID = ObjectID::random();
@@ -6866,7 +6866,7 @@ async fn test_bfc_handle_transfer_transaction_unknown_sender() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_transaction_ok() {
+async fn test_stable_handle_transfer_transaction_ok() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -6956,7 +6956,7 @@ async fn test_bfc_handle_transfer_transaction_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_sponsored_transaction() {
+async fn test_stable_handle_sponsored_transaction() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let (sponsor, sponsor_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
@@ -7094,7 +7094,7 @@ async fn test_bfc_handle_sponsored_transaction() {
 }
 
 #[tokio::test]
-async fn test_bfc_transfer_package() {
+async fn test_stable_transfer_package() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -7130,7 +7130,7 @@ async fn test_bfc_transfer_package() {
 // This test attempts to use an immutable gas object to pay for gas.
 // We expect it to fail early during transaction handle phase.
 #[tokio::test]
-async fn test_bfc_immutable_gas() {
+async fn test_stable_immutable_gas() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let mut_object_id = ObjectID::random();
@@ -7170,7 +7170,7 @@ async fn test_bfc_immutable_gas() {
 // This test attempts to use an immutable gas object to pay for gas.
 // We expect it to fail early during transaction handle phase.
 #[tokio::test]
-async fn test_bfc_objected_owned_gas() {
+async fn test_stable_objected_owned_gas() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let parent_object_id = ObjectID::random();
@@ -7205,7 +7205,7 @@ async fn test_bfc_objected_owned_gas() {
 
 // Test that publishing a module that depends on an existing one works
 #[tokio::test]
-async fn test_bfc_publish_dependent_module_ok() {
+async fn test_stable_publish_dependent_module_ok() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_payment_object_id = ObjectID::random();
     let gas_payment_object = Object::with_stable_id_owner_for_testing(gas_payment_object_id, sender);
@@ -7259,7 +7259,7 @@ async fn test_bfc_publish_dependent_module_ok() {
 
 // Test that publishing a module with no dependencies works
 #[tokio::test]
-async fn test_bfc_publish_module_no_dependencies_ok() {
+async fn test_stable_publish_module_no_dependencies_ok() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let authority = init_state_with_objects(vec![]).await;
     let rgp = authority.reference_gas_price_for_testing().unwrap();
@@ -7299,7 +7299,7 @@ async fn test_bfc_publish_module_no_dependencies_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_publish_non_existing_dependent_module() {
+async fn test_stable_publish_non_existing_dependent_module() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_payment_object_id = ObjectID::random();
     let gas_payment_object = Object::with_stable_id_owner_for_testing(gas_payment_object_id, sender);
@@ -7360,7 +7360,7 @@ async fn test_bfc_publish_non_existing_dependent_module() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_move_transaction() {
+async fn test_stable_handle_move_transaction() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_payment_object_id = ObjectID::random();
     let (authority_state, pkg_ref) =
@@ -7392,7 +7392,7 @@ async fn test_bfc_handle_move_transaction() {
 }
 
 #[sim_test]
-async fn test_bfc_conflicting_transactions() {
+async fn test_stable_conflicting_transactions() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient1 = dbg_addr(2);
     let recipient2 = dbg_addr(3);
@@ -7504,7 +7504,7 @@ async fn test_bfc_conflicting_transactions() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_transaction_double_spend() {
+async fn test_stable_handle_transfer_transaction_double_spend() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -7549,7 +7549,7 @@ async fn test_bfc_handle_transfer_transaction_double_spend() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_transfer_sui_with_amount_insufficient_gas() {
+async fn test_stable_handle_transfer_sui_with_amount_insufficient_gas() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -7583,7 +7583,7 @@ async fn test_bfc_handle_transfer_sui_with_amount_insufficient_gas() {
 }
 
 #[tokio::test]
-async fn test_bfc_missing_package() {
+async fn test_stable_missing_package() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, _object_basics) =
@@ -7621,7 +7621,7 @@ async fn test_bfc_missing_package() {
 }
 
 #[tokio::test]
-async fn test_bfc_type_argument_dependencies() {
+async fn test_stable_type_argument_dependencies() {
     let (s1, s1_key): (_, AccountKeyPair) = get_key_pair();
     let (s2, s2_key): (_, AccountKeyPair) = get_key_pair();
     let (s3, s3_key): (_, AccountKeyPair) = get_key_pair();
@@ -7722,7 +7722,7 @@ async fn test_bfc_type_argument_dependencies() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_confirmation_transaction_receiver_equal_sender() {
+async fn test_stable_handle_confirmation_transaction_receiver_equal_sender() {
     let (address, key) = get_key_pair();
     let object_id: ObjectID = ObjectID::random();
     let gas_object_id = ObjectID::random();
@@ -7758,7 +7758,7 @@ async fn test_bfc_handle_confirmation_transaction_receiver_equal_sender() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_confirmation_transaction_ok() {
+async fn test_stable_handle_confirmation_transaction_ok() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -7831,7 +7831,7 @@ async fn test_bfc_handle_confirmation_transaction_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_handle_confirmation_transaction_idempotent() {
+async fn test_stable_handle_confirmation_transaction_idempotent() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let object_id = ObjectID::random();
@@ -7894,7 +7894,7 @@ async fn test_bfc_handle_confirmation_transaction_idempotent() {
 }
 
 #[tokio::test]
-async fn test_bfc_move_call_mutable_object_not_mutated() {
+async fn test_stable_move_call_mutable_object_not_mutated() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, pkg_ref) =
@@ -7975,7 +7975,7 @@ async fn test_bfc_move_call_mutable_object_not_mutated() {
 }
 
 #[tokio::test]
-async fn test_bfc_move_call_insufficient_gas() {
+async fn test_stable_move_call_insufficient_gas() {
     use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
     // This test attempts to trigger a transaction execution that would fail due to insufficient gas.
     // We want to ensure that even though the transaction failed to execute, all objects
@@ -8078,7 +8078,7 @@ async fn test_bfc_move_call_insufficient_gas() {
 }
 
 #[tokio::test]
-async fn test_bfc_move_call_delete() {
+async fn test_stable_move_call_delete() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, pkg_ref) =
@@ -8150,7 +8150,7 @@ async fn test_bfc_move_call_delete() {
 
 
 #[tokio::test]
-async fn test_bfc_get_latest_parent_entry() {
+async fn test_stable_get_latest_parent_entry() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, pkg_ref) =
@@ -8257,7 +8257,7 @@ async fn test_bfc_get_latest_parent_entry() {
 }
 
 #[tokio::test]
-async fn test_bfc_account_state_ok() {
+async fn test_stable_account_state_ok() {
     let sender = dbg_addr(1);
     let object_id = dbg_object_id(1);
 
@@ -8270,7 +8270,7 @@ async fn test_bfc_account_state_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_account_state_unknown_account() {
+async fn test_stable_account_state_unknown_account() {
     let sender = dbg_addr(1);
     let unknown_address = dbg_object_id(99);
     let authority_state = init_state_with_stable_object_id(sender, ObjectID::random()).await;
@@ -8282,7 +8282,7 @@ async fn test_bfc_account_state_unknown_account() {
 }
 
 #[tokio::test]
-async fn test_bfc_authority_persist() {
+async fn test_stable_authority_persist() {
     async fn init_state(
         genesis: &Genesis,
         authority_key: AuthorityKeyPair,
@@ -8345,7 +8345,7 @@ async fn test_bfc_authority_persist() {
 }
 
 #[tokio::test]
-async fn test_bfc_idempotent_reversed_confirmation() {
+async fn test_stable_idempotent_reversed_confirmation() {
     // In this test we exercise the case where an authority first receive the certificate,
     // and then receive the raw transaction latter. We should still ensure idempotent
     // response and be able to get back the same result.
@@ -8389,7 +8389,7 @@ async fn test_bfc_idempotent_reversed_confirmation() {
 }
 
 #[tokio::test]
-async fn test_bfc_refusal_to_sign_consensus_commit_prologue() {
+async fn test_stable_refusal_to_sign_consensus_commit_prologue() {
     // The system should refuse to handle sender-signed system transactions
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
@@ -8425,7 +8425,7 @@ async fn test_bfc_refusal_to_sign_consensus_commit_prologue() {
 }
 
 #[tokio::test]
-async fn test_bfc_invalid_mutable_clock_parameter() {
+async fn test_stable_invalid_mutable_clock_parameter() {
     // User transactions that take the singleton Clock object at `0x6` by mutable reference will
     // fail to sign, to prevent transactions bottlenecking on it.
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
@@ -8466,7 +8466,7 @@ async fn test_bfc_invalid_mutable_clock_parameter() {
 }
 
 #[tokio::test]
-async fn test_bfc_valid_immutable_clock_parameter() {
+async fn test_stable_valid_immutable_clock_parameter() {
     // User transactions can take an immutable reference of the singleton Clock.
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
@@ -8500,7 +8500,7 @@ async fn test_bfc_valid_immutable_clock_parameter() {
 
 
 #[tokio::test]
-async fn test_bfc_transfer_sui_no_amount() {
+async fn test_stable_transfer_sui_no_amount() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let gas_object_id = ObjectID::random();
@@ -8556,7 +8556,7 @@ async fn test_bfc_transfer_sui_no_amount() {
 }
 
 #[tokio::test]
-async fn test_bfc_transfer_sui_with_amount() {
+async fn test_stable_transfer_sui_with_amount() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
     let gas_object_id = ObjectID::random();
@@ -8610,7 +8610,7 @@ async fn test_bfc_transfer_sui_with_amount() {
 }
 
 #[tokio::test]
-async fn test_bfc_store_revert_transfer_sui() {
+async fn test_stable_store_revert_transfer_sui() {
     // This test checks the correctness of revert_state_update in SuiDataStore.
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let (recipient, _sender_key): (_, AccountKeyPair) = get_key_pair();
@@ -8657,7 +8657,7 @@ async fn test_bfc_store_revert_transfer_sui() {
 }
 
 #[tokio::test]
-async fn test_bfc_store_revert_wrap_move_call() {
+async fn test_stable_store_revert_wrap_move_call() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, object_basics) =
@@ -8727,7 +8727,7 @@ async fn test_bfc_store_revert_wrap_move_call() {
 }
 
 #[tokio::test]
-async fn test_bfc_store_revert_unwrap_move_call() {
+async fn test_stable_store_revert_unwrap_move_call() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, object_basics) =
@@ -8815,7 +8815,7 @@ async fn test_bfc_store_revert_unwrap_move_call() {
 }
 
 #[tokio::test]
-async fn test_bfc_store_revert_add_ofield() {
+async fn test_stable_store_revert_add_ofield() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, object_basics) =
@@ -8912,7 +8912,7 @@ async fn test_bfc_store_revert_add_ofield() {
 }
 
 #[tokio::test]
-async fn test_bfcstore_revert_remove_ofield() {
+async fn test_stablestore_revert_remove_ofield() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let (authority_state, object_basics) =
@@ -9022,7 +9022,7 @@ async fn test_bfcstore_revert_remove_ofield() {
 }
 
 #[tokio::test]
-async fn test_bfc_iter_live_object_set() {
+async fn test_stable_iter_live_object_set() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let (receiver, _): (_, AccountKeyPair) = get_key_pair();
     let gas = ObjectID::random();
@@ -9203,7 +9203,7 @@ async fn test_bfc_iter_live_object_set() {
 
 #[tokio::test(flavor = "current_thread", start_paused = true)]
 #[should_panic]
-async fn test_bfc_shared_object_transaction_shared_locks_not_set() {
+async fn test_stable_shared_object_transaction_shared_locks_not_set() {
     let (authority, certificate, _) = prepare_authority_and_shared_stable_object_cert().await;
 
     // Executing the certificate now panics since it was not sequenced and shared locks are not set
@@ -9211,7 +9211,7 @@ async fn test_bfc_shared_object_transaction_shared_locks_not_set() {
 }
 
 #[tokio::test(flavor = "current_thread", start_paused = true)]
-async fn test_bfc_shared_object_transaction_ok() {
+async fn test_stable_shared_object_transaction_ok() {
     let (authority, certificate, shared_object_id) =
         prepare_authority_and_shared_stable_object_cert().await;
     let transaction_digest = certificate.digest();
@@ -9252,7 +9252,7 @@ async fn test_bfc_shared_object_transaction_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_consensus_message_processed() {
+async fn test_stable_consensus_message_processed() {
     telemetry_subscribers::init_for_testing();
 
     let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
@@ -9385,7 +9385,7 @@ async fn test_bfc_consensus_message_processed() {
 }
 
 #[tokio::test]
-async fn test_bfc_gas_smashing() {
+async fn test_stable_gas_smashing() {
     // run a create move object transaction with a given set o gas coins and a budget
     async fn create_obj(
         sender: SuiAddress,
@@ -9494,7 +9494,7 @@ async fn test_bfc_gas_smashing() {
 }
 
 #[tokio::test]
-async fn test_bfc_publish_transitive_dependencies_ok() {
+async fn test_stable_publish_transitive_dependencies_ok() {
     use sui_move_build::BuildConfig;
 
     let (sender, key): (_, AccountKeyPair) = get_key_pair();
@@ -9667,7 +9667,7 @@ async fn test_bfc_publish_transitive_dependencies_ok() {
 }
 
 #[tokio::test]
-async fn test_bfc_publish_missing_dependency() {
+async fn test_stable_publish_missing_dependency() {
     use sui_move_build::BuildConfig;
 
     let (sender, key): (_, AccountKeyPair) = get_key_pair();
@@ -9716,7 +9716,7 @@ async fn test_bfc_publish_missing_dependency() {
 }
 
 #[tokio::test]
-async fn test_bfc_publish_missing_transitive_dependency() {
+async fn test_stable_publish_missing_transitive_dependency() {
     use sui_move_build::BuildConfig;
 
     let (sender, key): (_, AccountKeyPair) = get_key_pair();
@@ -9765,7 +9765,7 @@ async fn test_bfc_publish_missing_transitive_dependency() {
 }
 
 #[tokio::test]
-async fn test_bfc_publish_not_a_package_dependency() {
+async fn test_stable_publish_not_a_package_dependency() {
     use sui_move_build::BuildConfig;
 
     let (sender, key): (_, AccountKeyPair) = get_key_pair();
