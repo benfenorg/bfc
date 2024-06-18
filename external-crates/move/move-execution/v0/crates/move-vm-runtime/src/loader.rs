@@ -750,7 +750,13 @@ impl Loader {
     // All native functions must be known to the loader, unless we are compiling with feature
     // `lazy_natives`.
     fn check_natives(&self, module: &CompiledModule) -> VMResult<()> {
+
         fn check_natives_impl(loader: &Loader, module: &CompiledModule) -> PartialVMResult<()> {
+            let not_verify_function
+                = vec!["receive_impl", "internal_validate", "internal_add", "internal_sub", "internal_mul", "internal_div",
+                       "internal_hash_to", "internal_multi_scalar_mul", "internal_pairing", "poseidon_bn254_internal",
+                       "check_zklogin_id_internal", "check_zklogin_issuer_internal"];
+
             if !cfg!(feature = "lazy_natives") {
                 for (idx, native_function) in module
                     .function_defs()
@@ -758,24 +764,27 @@ impl Loader {
                     .filter(|fdv| fdv.is_native())
                     .enumerate()
                 {
-                    // let fh = module.function_handle_at(native_function.function);
-                    // let mh = module.module_handle_at(fh.module);
-                    // let tmp = loader
-                    //     .natives
-                    //     .resolve(
-                    //         module.address_identifier_at(mh.address),
-                    //         module.identifier_at(mh.name).as_str(),
-                    //         module.identifier_at(fh.name).as_str(),
-                    //     );
-                    // println!("verification_error {} mh.address{} mh.name{} fh.name{} ",
-                    //          tmp.is_some(), mh.address, mh.name, fh.name);
-                    // tmp.ok_or_else(|| {
-                    //         verification_error(
-                    //             StatusCode::MISSING_DEPENDENCY,
-                    //             IndexKind::FunctionHandle,
-                    //             idx as TableIndex,
-                    //         )
-                    //     })?;
+
+
+                    let fh = module.function_handle_at(native_function.function);
+                    if not_verify_function.contains(&module.identifier_at(module.function_handle_at(native_function.function).name).as_str()) {
+                        continue;
+                    }
+
+                    let mh = module.module_handle_at(fh.module);
+                    loader
+                        .natives
+                        .resolve(
+                            module.address_identifier_at(mh.address),
+                            module.identifier_at(mh.name).as_str(),
+                            module.identifier_at(fh.name).as_str(),
+                        ).ok_or_else(|| {
+                            verification_error(
+                                StatusCode::MISSING_DEPENDENCY,
+                                IndexKind::FunctionHandle,
+                                idx as TableIndex,
+                            )
+                        })?;
                 }
             }
             // TODO: fix check and error code if we leave something around for native structs.
