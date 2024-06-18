@@ -155,7 +155,7 @@ impl MoveObject {
     pub fn new_stable_coin(version: SequenceNumber, id: ObjectID, value: u64) -> Self {
         unsafe {
             Self::new_from_execution_with_limit(
-                StableCoin::type_().into(),
+                StableCoin::busd_type_().into(),
                 true,
                 version,
                 StableCoin::new(id, value).to_bcs_bytes(),
@@ -982,7 +982,7 @@ impl Object {
 
     pub fn with_stable_id_owner_gas_for_testing(id: ObjectID, owner: SuiAddress, gas: u64) -> Self {
         let data = Data::Move(MoveObject {
-            type_: StableCoin::type_().into(),
+            type_: StableCoin::busd_type_().into(),
             has_public_transfer: true,
             version: OBJECT_START_VERSION,
             contents: StableCoin::new(id, gas).to_bcs_bytes(),
@@ -1090,7 +1090,26 @@ impl Object {
         owner: SuiAddress,
     ) -> Self {
         let data = Data::Move(MoveObject {
-            type_: StableCoin::type_().into(),
+            type_: StableCoin::busd_type_().into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
+        });
+        Self {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }
+    }
+
+    pub fn with_id_owner_version_invalid_gas_obj_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::invalid_gas_coin_type().into(),
             has_public_transfer: true,
             version,
             contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
