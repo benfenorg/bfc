@@ -5,7 +5,7 @@ A: object(0,0)
 
 task 1 'publish'. lines 6-32:
 Error: warning[W02021]: duplicate alias
-  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:8:14
+  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:8:14
   │
 8 │     use std::vector;
   │              ^^^^^^ Unnecessary alias 'vector' for module 'std::vector'. This alias is provided by default
@@ -13,7 +13,7 @@ Error: warning[W02021]: duplicate alias
   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:10:23
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:10:23
    │
 10 │     use sui::object::{Self, UID};
    │                       ^^^^ Unnecessary alias 'object' for module 'sui::object'. This alias is provided by default
@@ -21,7 +21,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:10:29
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:10:29
    │
 10 │     use sui::object::{Self, UID};
    │                             ^^^ Unnecessary alias 'UID' for module member 'sui::object::UID'. This alias is provided by default
@@ -29,7 +29,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:12:14
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:12:14
    │
 12 │     use sui::transfer;
    │              ^^^^^^^^ Unnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default
@@ -37,7 +37,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:13:27
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:13:27
    │
 13 │     use sui::tx_context::{Self, TxContext};
    │                           ^^^^ Unnecessary alias 'tx_context' for module 'sui::tx_context'. This alias is provided by default
@@ -45,7 +45,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:13:33
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:13:33
    │
 13 │     use sui::tx_context::{Self, TxContext};
    │                                 ^^^^^^^^^ Unnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default
@@ -53,7 +53,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 error[E01003]: invalid modifier
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmplVIcIs:14:5
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:14:5
    │
 14 │     struct Wrapper has key {
    │     ^^^^^^ Invalid struct declaration. Internal struct declarations are not yet supported

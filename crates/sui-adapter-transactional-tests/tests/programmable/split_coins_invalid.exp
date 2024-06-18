@@ -5,7 +5,7 @@ A: object(0,0), B: object(0,1), C: object(0,2)
 
 task 1 'publish'. lines 9-26:
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmpUDk7DN:11:14
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpLOze3F:11:14
    │
 11 │     use std::vector;
    │              ^^^^^^ Unnecessary alias 'vector' for module 'std::vector'. This alias is provided by default
@@ -13,7 +13,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.WXmZv3PwS1/.tmpUDk7DN:13:14
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpLOze3F:13:14
    │
 13 │     use sui::transfer;
    │              ^^^^^^^^ Unnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default

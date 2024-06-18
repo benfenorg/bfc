@@ -370,7 +370,8 @@ fn pack(
     if handle.abilities.has_key() && last_value != AbstractValue::Fresh {
         let (cur_package, cur_module, cur_function) = verifier.cur_function();
         let object_name = format!("{cur_package}::{cur_module}::{cur_function}");
-        if object_name.contains("02::deny_list::create") {
+        if object_name.contains("02::deny_list") || object_name.contains("02::authenticator")
+            || object_name.contains("02::random"){
             verifier.stack_push(AbstractValue::Other)?;
             return Ok(());
         }
