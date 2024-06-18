@@ -3,33 +3,124 @@ processed 11 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 8-53:
-Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"bfc\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: None } }
+task 1 'publish'. lines 8-51:
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 781280,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 2 'programmable'. lines 55-59:
-Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
+task 2 'programmable'. lines 53-57:
+created: object(2,0), object(2,1), object(2,2)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 660440,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 3 'view-object'. lines 61-61:
-Error: task 3, lines 61-61. Unbound fake id 2,0
+task 3 'view-object'. lines 59-59:
+Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
+Version: 2
+Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    name: 0u64,
+    value: test::m::Obj {
+        id: sui::object::UID {
+            id: sui::object::ID {
+                bytes: _,
+            },
+        },
+        value: 0u64,
+    },
+}
 
-task 4 'view-object'. lines 63-63:
-Error: task 4, lines 63-63. Unbound fake id 2,1
+task 4 'view-object'. lines 61-61:
+Owner: Object ID: ( BFC3a622f284aa42a84aee7d3f881252497305a24d74bba78d08f6ee3752a71d3a62e87 )
+Version: 2
+Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+    name: 0u64,
+    value: test::m::Obj {
+        id: sui::object::UID {
+            id: sui::object::ID {
+                bytes: _,
+            },
+        },
+        value: 0u64,
+    },
+}
 
-task 5 'view-object'. lines 65-65:
-Error: task 5, lines 65-65. Unbound fake id 2,2
+task 5 'view-object'. lines 63-63:
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 2
+Contents: test::m::Obj {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
 
-task 6 'programmable'. lines 67-70:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 6 'programmable'. lines 65-68:
+mutated: object(0,0), object(2,0), object(2,2)
+gas summary: computation_cost: 1000000, storage_cost: 459800,  storage_rebate: 455202, non_refundable_storage_fee: 4598
 
-task 7 'view-object'. lines 72-72:
-Error: task 7, lines 72-72. Unbound fake id 2,0
+task 7 'view-object'. lines 70-70:
+Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
+Version: 3
+Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,0),
+        },
+    },
+    name: 0u64,
+    value: test::m::Obj {
+        id: sui::object::UID {
+            id: sui::object::ID {
+                bytes: _,
+            },
+        },
+        value: 112u64,
+    },
+}
 
-task 8 'view-object'. lines 74-74:
-Error: task 8, lines 74-74. Unbound fake id 2,1
+task 8 'view-object'. lines 72-72:
+Owner: Object ID: ( BFC3a622f284aa42a84aee7d3f881252497305a24d74bba78d08f6ee3752a71d3a62e87 )
+Version: 2
+Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,1),
+        },
+    },
+    name: 0u64,
+    value: test::m::Obj {
+        id: sui::object::UID {
+            id: sui::object::ID {
+                bytes: _,
+            },
+        },
+        value: 0u64,
+    },
+}
 
-task 9 'view-object'. lines 76-79:
-Error: task 9, lines 76-76. Unbound fake id 2,2
+task 9 'view-object'. lines 74-77:
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 3
+Contents: test::m::Obj {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
 
-task 10 'programmable'. lines 81-82:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 10 'programmable'. lines 79-80:
+mutated: object(0,0), object(2,2)
+gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 256568, non_refundable_storage_fee: 2592

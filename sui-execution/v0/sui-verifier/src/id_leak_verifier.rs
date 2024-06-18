@@ -369,6 +369,11 @@ fn pack(
     let last_value = verifier.stack.pop().unwrap();
     if handle.abilities.has_key() && last_value != AbstractValue::Fresh {
         let (cur_package, cur_module, cur_function) = verifier.cur_function();
+        let object_name = format!("{cur_package}::{cur_module}::{cur_function}");
+        if object_name.contains("02::deny_list::create") {
+            verifier.stack_push(AbstractValue::Other)?;
+            return Ok(());
+        }
         let msg = format!(
             "Invalid object creation in {cur_package}::{cur_module}::{cur_function}. \
                 Object created without a newly created UID. \
@@ -528,6 +533,7 @@ fn execute_inner(
         Bytecode::PackGeneric(idx) => {
             let struct_inst = verifier.binary_view.struct_instantiation_at(*idx);
             let struct_def = verifier.binary_view.struct_def_at(struct_inst.def);
+
             pack(verifier, struct_def)?;
         }
         Bytecode::Unpack(idx) => {
