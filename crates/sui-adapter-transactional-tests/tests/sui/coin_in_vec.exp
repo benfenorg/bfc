@@ -4,71 +4,21 @@ init:
 A: object(0,0)
 
 task 1 'publish'. lines 6-32:
-Error: warning[W02021]: duplicate alias
-  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:8:14
-  │
-8 │     use std::vector;
-  │              ^^^^^^ Unnecessary alias 'vector' for module 'std::vector'. This alias is provided by default
-  │
-  = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:10:23
-   │
-10 │     use sui::object::{Self, UID};
-   │                       ^^^^ Unnecessary alias 'object' for module 'sui::object'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:10:29
-   │
-10 │     use sui::object::{Self, UID};
-   │                             ^^^ Unnecessary alias 'UID' for module member 'sui::object::UID'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:12:14
-   │
-12 │     use sui::transfer;
-   │              ^^^^^^^^ Unnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:13:27
-   │
-13 │     use sui::tx_context::{Self, TxContext};
-   │                           ^^^^ Unnecessary alias 'tx_context' for module 'sui::tx_context'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:13:33
-   │
-13 │     use sui::tx_context::{Self, TxContext};
-   │                                 ^^^^^^^^^ Unnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-error[E01003]: invalid modifier
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpfcMEqI:14:5
-   │
-14 │     struct Wrapper has key {
-   │     ^^^^^^ Invalid struct declaration. Internal struct declarations are not yet supported
-   │
-   = Visibility annotations are required on struct declarations from the Move 2024 edition onwards.
-
-
+created: object(1,0), object(1,1)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 824600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 34-36:
-created: object(1,0)
+created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 3 'run'. lines 38-38:
-Error: INVALID TEST. Unknown object, object(2,0)
+mutated: object(0,0), object(1,0)
+wrapped: object(2,0)
+gas summary: computation_cost: 1000000, storage_cost: 294880,  storage_rebate: 391248, non_refundable_storage_fee: 3952
 
 task 4 'run'. lines 40-40:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+mutated: object(0,0), object(1,0)
+unwrapped: object(2,0)
+gas summary: computation_cost: 1000000, storage_cost: 395200,  storage_rebate: 291931, non_refundable_storage_fee: 2949
