@@ -2,6 +2,7 @@
 
 CREATE TABLE dao_proposals (
   object_id       address   PRIMARY KEY,
+  checkpoint_sequence_number       BIGINT    NOT NULL,
   action_id       BIGINT    NOT NULL,
   action_name     TEXT      NOT NULL,
   action_status   BOOLEAN   NOT NULL,

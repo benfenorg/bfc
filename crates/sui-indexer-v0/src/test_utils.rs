@@ -125,3 +125,61 @@ impl<'a> SuiTransactionBlockResponseBuilder<'a> {
         }
     }
 }
+
+#[cfg(test)]
+mod test_stable_pool {
+    use crate::utils::stable_pool::{get_pool_exchange_rate, get_stable_pool_from_dynamic_fields};
+    use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
+    use move_core_types::account_address::AccountAddress;
+    use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
+    use sui_types::base_types::ObjectID;
+
+    fn create_http_client() -> HttpClient {
+        let rpc_client_url = "https://testrpc.benfen.org:443/";
+        let mut headers = HeaderMap::new();
+        headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("indexer"));
+        HttpClientBuilder::default()
+            .max_request_body_size(2 << 30)
+            .max_concurrent_requests(usize::MAX)
+            .set_headers(headers.clone())
+            .build(rpc_client_url)
+            .unwrap()
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn test_stable_pool() {
+        let http_client = create_http_client();
+        // https://explorer.benfen.org/#/object/BFCf3923fc05269d085b120171094893759b655dae115a85beaac028d52d703d53356e6
+        let pool_id = ObjectID::from_address(
+            AccountAddress::from_hex_literal(
+                "0xb09616a1f82ffe6d9d6c048a0e52b2b98fa74779566d901c9e6b044f7b192105",
+            )
+            .unwrap(),
+        );
+        let pool = get_stable_pool_from_dynamic_fields(
+            http_client,
+            pool_id,
+            "00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"
+                .to_owned(),
+        )
+        .await
+        .unwrap();
+        println!("{:?}", pool);
+    }
+
+    #[ignore]
+    #[tokio::test]
+    async fn test_exchange_rate() {
+        let http_client = create_http_client();
+        // https://explorer.benfen.org/#/object/BFCfd8dc21acd65cdf6ed263c16bc552342e1a0aca38f4db4e36284acc48eed36688f96
+        let table_id = ObjectID::from_hex_literal(
+            "0xaa38424a4ac5ef3514e17715ff51368fd36420c43232fff5857aa991b331c44b",
+        )
+        .unwrap();
+        let exchange_rate = get_pool_exchange_rate(http_client, table_id, 31)
+            .await
+            .unwrap();
+        println!("{:?}", exchange_rate)
+    }
+}
