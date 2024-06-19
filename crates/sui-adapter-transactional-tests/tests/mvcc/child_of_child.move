@@ -8,13 +8,13 @@
 //# publish
 
 module test::m {
-    use std::option::{Self, Option};
-    use sui::object::{Self, UID};
+    //use std::option::{Self, Option};
+    //use sui::object::{Self, UID};
     use std::debug;
-    use sui::tx_context::TxContext;
+    //use sui::tx_context::TxContext;
     use sui::dynamic_object_field as ofield;
 
-    struct Obj has key, store {
+    public struct Obj has key, store {
         id: UID,
         value: u64,
     }
@@ -25,8 +25,8 @@ module test::m {
     // new
 
     public fun new(ctx: &mut TxContext): Obj {
-        let grand = Obj { id: object::new(ctx), value: 0 };
-        let parent = Obj { id: object::new(ctx), value: 0 };
+        let mut grand = Obj { id: object::new(ctx), value: 0 };
+        let mut parent = Obj { id: object::new(ctx), value: 0 };
         let child = Obj { id: object::new(ctx), value: 0 };
         ofield::add(&mut parent.id, KEY, child);
         ofield::add(&mut grand.id, KEY, parent);
@@ -59,7 +59,7 @@ module test::m {
     public fun check(grand: &Obj, v1: u64, v2: u64, v3: Option<u64>) {
         debug::print(grand);
         assert!(grand.value == v1, 0);
-        let parent: &Obj = ofield::borrow(&grand.id, KEY);
+        let  parent: &Obj = ofield::borrow(&grand.id, KEY);
         assert!(parent.value == v2, 0);
         if (option::is_some(&v3)) {
             let child: &Obj = ofield::borrow(&parent.id, KEY);

@@ -6,14 +6,14 @@
 //# publish --sender A
 
 module test::coin_in_vec {
-    use std::vector;
+    //use std::vector;
     use sui::coin::Coin;
-    use sui::object::{Self, UID};
+    //use sui::object::{Self, UID};
     use sui::bfc::BFC;
-    use sui::transfer;
-    use sui::tx_context::{Self, TxContext};
+    //use sui::transfer;
+    //use sui::tx_context::{Self, TxContext};
 
-    struct Wrapper has key {
+    public struct Wrapper has key {
         id: UID,
         coins: vector<Coin<BFC>>,
     }
