@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-pub(crate) use benfen_api::BenfenApi;
 pub(crate) use coin_api::CoinReadApi;
 pub(crate) use extended_api::ExtendedApi;
 pub(crate) use governance_api::GovernanceReadApi;
@@ -11,7 +10,6 @@ pub(crate) use read_api::ReadApi;
 pub(crate) use transaction_builder_api::TransactionBuilderApi;
 pub(crate) use write_api::WriteApi;
 
-mod benfen_api;
 mod coin_api;
 mod extended_api;
 mod governance_api;

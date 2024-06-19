@@ -1,16 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::HashMap;
+
 use async_trait::async_trait;
 use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
 use sui_json_rpc_types::{
     Checkpoint as RpcCheckpoint, CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo,
-    EventFilter, EventPage, MoveCallMetrics, NetworkMetrics, NetworkOverview, SuiDaoProposal,
-    SuiMiningNFT, SuiObjectData, SuiObjectDataFilter, SuiOwnedMiningNFTFilter,
-    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiTransactionBlockResponse,
-    SuiTransactionBlockResponseOptions,
+    EventFilter, EventPage, IndexedStake, MoveCallMetrics, NetworkMetrics, NetworkOverview,
+    StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectData, SuiObjectDataFilter,
+    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
+    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
@@ -19,16 +21,19 @@ use sui_types::event::EventID;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::ObjectRead;
 use sui_types::storage::ObjectStore;
+use sui_types::TypeTag;
 
 use crate::errors::IndexerError;
 use crate::metrics::IndexerMetrics;
+use crate::models::address_stake::{AddressStake, ExtractedAddressStake};
 use crate::models::addresses::{ActiveAddress, Address, AddressStats};
 use crate::models::checkpoint_metrics::CheckpointMetrics;
 use crate::models::checkpoints::Checkpoint;
 use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::DBEpochInfo;
+use crate::models::epoch_stake;
 use crate::models::events::Event;
-use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit};
+use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
 use crate::models::prices::PriceHistory;
@@ -36,6 +41,8 @@ use crate::models::system_state::{DBSystemStateSummary, DBValidatorSummary};
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
 use crate::types::CheckpointTransactionBlockResponse;
+use crate::utils::stable_pool::StablePoolSummary;
+use crate::utils::validator_stake::ValidatorStake;
 
 #[async_trait]
 pub trait IndexerStore {
@@ -220,6 +227,10 @@ pub trait IndexerStore {
         &self,
         filter: Option<DaoProposalFilter>,
     ) -> Result<Vec<SuiDaoProposal>, IndexerError>;
+    async fn get_stake_metrics(
+        &self,
+        epoch: Option<SequenceNumber>,
+    ) -> Result<StakeMetrics, IndexerError>;
 
     async fn get_historic_price(
         &self,
@@ -272,6 +283,18 @@ pub trait IndexerStore {
 
     async fn persist_epoch(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
     async fn persist_proposals(&self, proposals: &[Proposal]) -> Result<(), IndexerError>;
+    async fn persist_address_stake(
+        &self,
+        checkpoint: Checkpoint,
+        stake: ExtractedAddressStake,
+        deleted_objects: Vec<DeletedObject>,
+    ) -> Result<(), IndexerError>;
+    async fn get_ongoing_address_stakes(&self) -> Result<Vec<AddressStake>, IndexerError>;
+    async fn get_address_stakes(
+        &self,
+        owner: SuiAddress,
+    ) -> Result<Vec<IndexedStake>, IndexerError>;
+    async fn update_address_stake_reward(&self, stake: &AddressStake) -> Result<(), IndexerError>;
     async fn get_network_total_transactions_previous_epoch(
         &self,
         epoch: i64,
@@ -324,7 +347,9 @@ pub trait IndexerStore {
         current_checkpoint: i64,
         current_timestamp_ms: i64,
     ) -> Result<f64, IndexerError>;
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation) -> Result<(), IndexerError>;
+    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError>;
+
+    async fn refresh_mining_nft(&self) -> Result<(), IndexerError>;
 
     async fn get_mining_nfts(
         &self,
@@ -337,7 +362,7 @@ pub trait IndexerStore {
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
-    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>), IndexerError>;
+    ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError>;
 
     async fn get_unsettle_mining_nfts(
         &self,
@@ -355,11 +380,36 @@ pub trait IndexerStore {
         profits: Vec<MiningNFTHistoryProfit>,
     ) -> Result<usize, IndexerError>;
 
+    async fn calculate_mining_nft_overall(
+        &self,
+        dt_timestamp_ms: i64,
+        total_pending_reward: u64,
+    ) -> Result<(), IndexerError>;
+
     async fn get_owned_mining_nft_profits(
         &self,
         address: SuiAddress,
-        limit: usize,
+        limit: Option<usize>,
     ) -> Result<Vec<SuiOwnedMiningNFTProfit>, IndexerError>;
+
+    async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError>;
+    async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn get_last_epoch_stake_coin(
+        &self,
+        coin: TypeTag,
+    ) -> Result<Option<epoch_stake::EpochStakeCoin>, IndexerError>;
+    async fn persist_mining_nft_liquidities(
+        &self,
+        mls: Vec<MiningNFTLiquiditiy>,
+    ) -> Result<usize, IndexerError>;
+
+    async fn get_mining_nft_liquidities(
+        &self,
+        base_coin: String,
+        limit: usize,
+    ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError>;
+
+    async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError>;
 }
 
 #[derive(Clone, Debug)]
@@ -431,6 +481,9 @@ pub struct TemporaryEpochStore {
     pub new_epoch: DBEpochInfo,
     pub system_state: DBSystemStateSummary,
     pub validators: Vec<DBValidatorSummary>,
+    pub stable_pools: Vec<StablePoolSummary>,
+    pub validator_stakes: Vec<ValidatorStake>,
+    pub last_epoch_stable_rate: HashMap<TypeTag, u64>,
 }
 
 #[derive(Clone, Debug)]

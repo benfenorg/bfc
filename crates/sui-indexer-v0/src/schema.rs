@@ -108,6 +108,7 @@ diesel::table! {
 diesel::table! {
     dao_proposals (object_id) {
         object_id -> Varchar,
+        checkpoint_sequence_number -> Int8,
         action_id -> Int8,
         action_name -> Text,
         action_status -> Bool,
@@ -392,6 +393,16 @@ diesel::table! {
 }
 
 diesel::table! {
+    epoch_stake_coins(epoch, coin_type) {
+        epoch -> Int8,
+        coin_type -> Varchar,
+        coin_balance -> Int8,
+        bfc_value -> Int8,
+        stable_rate -> Nullable<Int8>,
+    }
+}
+
+diesel::table! {
     mining_nfts (id) {
         id -> Int8,
         owner -> Varchar,
@@ -400,6 +411,7 @@ diesel::table! {
         miner_name -> Varchar,
         token_id -> Varchar,
         power -> Int8,
+        cost_bfc -> Int8,
         mint_at -> Int8,
         earliest_held_at -> Int8,
         mint_duration -> Int8,
@@ -410,17 +422,55 @@ diesel::table! {
         yesterday_dt_ms -> Int8,
         miner_redeem -> Bool,
         transfered_at -> Int8,
+        sequence_number -> Int8,
     }
 }
 
 diesel::table! {
-    mining_nft_staking(ticket_id) {
+    mining_nfts_view (id) {
+        id -> Int8,
+        owner -> Varchar,
+        miner_id -> Varchar,
+        miner_url -> Varchar,
+        miner_name -> Varchar,
+        token_id -> Varchar,
+        power -> Int8,
+        cost_bfc -> Int8,
+        mint_at -> Int8,
+        earliest_held_at -> Int8,
+        mint_duration -> Int8,
+        mining_ticket_id -> Nullable<Varchar>,
+        mining_started_at -> Int8,
+        total_mint_bfc -> Int8,
+        yesterday_mint_bfc -> Int8,
+        yesterday_dt_ms -> Int8,
+        miner_redeem -> Bool,
+        transfered_at -> Int8,
+        sequence_number -> Int8,
+    }
+}
+
+diesel::table! {
+    epoch_stakes(epoch) {
+        epoch -> Int8,
+        total_stake -> Int8,
+        total_reward -> Int8,
+        accumulated_reward -> Int8,
+        avg_exchange_rate -> Int8,
+        apy -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nft_staking(id) {
+        id -> Int8,
         ticket_id -> Varchar,
         owner -> Varchar,
         miner_id -> Varchar,
         staked_at -> Int8,
         unstaked_at -> Nullable<Int8>,
         total_mint_bfc -> Int8,
+        sequence_number -> Int8,
     }
 }
 
@@ -431,8 +481,48 @@ diesel::table! {
         dt_timestamp_ms -> Int8,
         mint_bfc -> Int8,
         mint_usd -> Int8,
+        cost_bfc -> Int8,
         pending_reward -> Int8,
         claimed_reward -> Int8,
+    }
+}
+
+diesel::table! {
+    address_stakes(staked_object_id) {
+        staked_object_id -> Varchar,
+        staker_address -> Text,
+        pool_id -> Text,
+        validator_address -> Text,
+        stake_coin -> Varchar,
+
+        principal_epoch -> Int8,
+        principal_amount -> Int8,
+        principal_timestamp_ms -> Int8,
+
+        estimated_reward -> Int8,
+        estimated_at_epoch -> Int8,
+
+        stake_activation_epoch -> Int8,
+
+        unstaking_epoch -> Nullable<Int8>,
+        unstaking_amount -> Nullable<Int8>,
+        unstaking_timestamp_ms -> Nullable<Int8>,
+
+        unstaking_reward_amount -> Nullable<Int8>,
+        timestamp_ms -> Int8,
+    }
+}
+
+diesel::table! {
+    mining_nft_liquidities(transaction_digest) {
+        transaction_digest -> Varchar,
+        base_coin -> Varchar,
+        quote_coin -> Varchar,
+        base_price_gte -> Int8,
+        base_price_lte -> Int8,
+        base_amount -> Int8,
+        quote_amount -> Int8,
+        timestamp_ms -> Int8,
     }
 }
 
@@ -458,6 +548,4 @@ diesel::allow_tables_to_appear_in_same_query!(
     transactions,
     validators,
     network_segment_metrics,
-    price_history,
-    mining_nfts,
 );
