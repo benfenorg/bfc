@@ -8,9 +8,9 @@
 
 //# publish
 module test::m1 {
-    use std::vector;
+    //use std::vector;
     use sui::coin;
-    use sui::transfer;
+    //use sui::transfer;
 
     public fun ret_one_amount(): u64 {
         100

@@ -4,22 +4,6 @@ init:
 A: object(0,0), B: object(0,1)
 
 task 1 'publish'. lines 9-26:
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpZlV9YA:11:14
-   │
-11 │     use std::vector;
-   │              ^^^^^^ Unnecessary alias 'vector' for module 'std::vector'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
-warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpZlV9YA:13:14
-   │
-13 │     use sui::transfer;
-   │              ^^^^^^^^ Unnecessary alias 'transfer' for module 'sui::transfer'. This alias is provided by default
-   │
-   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
-
 created: object(1,0)
 mutated: object(0,2)
 gas summary: computation_cost: 1000000, storage_cost: 564680,  storage_rebate: 0, non_refundable_storage_fee: 0
