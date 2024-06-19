@@ -11,7 +11,6 @@ use crate::schema::dao_proposals::{self};
 #[diesel(table_name = dao_proposals)]
 pub struct Proposal {
     pub object_id: String,
-    pub checkpoint_sequence_number: i64,
     pub action_id: i64,
     pub action_name: String,
     pub action_status: bool,
@@ -58,7 +57,6 @@ impl TryFrom<Object> for Proposal {
             let val = p.proposal;
             Ok(Proposal {
                 object_id: value.object_id,
-                checkpoint_sequence_number: value.checkpoint as i64,
                 action_id: val.action.action_id as i64,
                 action_name: val.action.name,
                 action_status: val.action.status,

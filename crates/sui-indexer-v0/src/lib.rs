@@ -22,8 +22,8 @@ use tracing::{info, warn};
 use url::Url;
 
 use apis::{
-    CoinReadApi, ExtendedApi, GovernanceReadApi, IndexerApi, ReadApi, TransactionBuilderApi,
-    WriteApi,
+    BenfenApi, CoinReadApi, ExtendedApi, GovernanceReadApi, IndexerApi, ReadApi,
+    TransactionBuilderApi, WriteApi,
 };
 use errors::IndexerError;
 use handlers::checkpoint_handler::CheckpointHandler;
@@ -110,17 +110,6 @@ pub struct IndexerConfig {
     // NOTE: experimental only, do not use in production.
     #[clap(long)]
     pub skip_db_commit: bool,
-
-    #[clap(long, num_args(1..))]
-    pub mining_nft_liquidity_admins: Vec<String>,
-
-    #[clap(
-        long,
-        default_value = "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226",
-        global = true
-    )]
-    pub mining_nft_dex_contract: String,
-
     #[clap(
         long,
         default_value = "BFC08933cb86b9581613b0402501bd095a279de4b1b4229718f799106df9169f1dfa080",
@@ -140,13 +129,6 @@ pub struct IndexerConfig {
     )]
     pub mining_nft_global: String,
 
-    #[clap(
-        long,
-        default_value = "BFC1537ad845c190d7363b8e558100a5d782c2d4ce6e2a39d0f1b56db639a3ad3fa34bb",
-        global = true
-    )]
-    pub mining_nft_pool_id: String,
-
     #[clap(long)]
     pub migrate: bool,
 }
@@ -157,7 +139,7 @@ impl IndexerConfig {
         let url_str = self.get_db_url()?;
         let url = Url::parse(&url_str).expect("Failed to parse URL");
         Ok(format!(
-            "{}://{}:{}@{}:{}/obcdb",
+            "{}://{}:{}@{}:{}/",
             url.scheme(),
             url.username(),
             url.password().unwrap_or_default(),
@@ -203,28 +185,14 @@ impl Default for IndexerConfig {
             fullnode_sync_worker: true,
             rpc_server_worker: true,
             skip_db_commit: false,
-            mining_nft_liquidity_admins: vec![
-                "BFCe0c4a22895dc9b82706f5a62193b4a4d1f9f5d25d492f42e3b9fd2ffa50e83431348"
-                    .to_string(),
-                "BFCe0c4a22895dc9b82706f5a62193b4a4d1f9f5d25d492f42e3b9fd2ffa50e83431348"
-                    .to_string(),
-                "BFC520eef03f83d2fd08316762b60601a88cdbc956912f3ee22f804c521bc352c8f2f80"
-                    .to_string(),
-            ],
-            mining_nft_dex_contract:
-                "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226"
-                    .to_string(),
             mining_nft_contract:
-                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
+                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
                     .to_string(),
             mining_nft_global:
-                "BFC7bfaf4d8018565811b0e84f313baf3bead9bc753f4e9e775d2ad9c7df45145fb4845"
+                "BFC93667906efdfe7eb45ab61ccd25266f5d4cde8e23525c04fa6d888b1435e8c8a27f8"
                     .to_string(),
             mining_nft_event_package:
-                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
-                    .to_string(),
-            mining_nft_pool_id:
-                "BFC8d7dd979d4860e8df8f519e9ccf124a1a76fef8cbba9378102f9361929218c7952d9"
+                "BFCf5a54de8d667b66ef7ac77f657c70806f48a9339ef9999049077c4271135d34ad693"
                     .to_string(),
             migrate: false,
         }
@@ -464,7 +432,13 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.migrated_methods.clone(),
     ))?;
     builder.register_module(WriteApi::new(state.clone(), http_client.clone()))?;
-    builder.register_module(ExtendedApi::new(
+    builder.register_module(BenfenApi::new(
+        state.clone(),
+        http_client.clone(),
+        config.clone(),
+    ))?;
+    builder.register_module(ExtendedApi::new(state.clone(), http_client.clone()))?;
+    builder.register_module(BenfenApi::new(
         state.clone(),
         http_client.clone(),
         config.clone(),
