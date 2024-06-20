@@ -806,6 +806,7 @@ impl<'backing> TemporaryStore<'backing> {
         layout_resolver: &mut impl LayoutResolver,
     ) -> Result<u64, ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
+            tracing::error!("get_input_sui {:?} layout:{:?}",obj,layout_resolver);
             // the assumption here is that if it is in the input objects must be the right one
             if obj.version() != expected_version {
                 invariant_violation!(
@@ -829,6 +830,7 @@ impl<'backing> TemporaryStore<'backing> {
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
+            tracing::error!("get_input_sui dynamic field {:?}",obj);
             obj.get_total_sui(layout_resolver).map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for type \
@@ -898,8 +900,10 @@ impl<'backing> TemporaryStore<'backing> {
             }
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;
+                tracing::error!("mofei:{:?},storage_rebate:{:?},total_output_rebate:{:?}",object,object.storage_rebate,total_output_rebate);
             }
         }
+        tracing::error!("mofei: total_output_rebate:{:?}",total_output_rebate);
 
         if gas_summary.storage_cost == 0 {
             // this condition is usually true when the transaction went OOG and no
@@ -941,6 +945,7 @@ impl<'backing> TemporaryStore<'backing> {
             // all SUI charged for storage should flow into the storage rebate field
             // of some output object
             if gas_summary.storage_cost != total_output_rebate {
+                tracing::error!("mofei final error,gas_summary.storage_cost:{:?},total_output_rebate:{:?}",gas_summary.storage_cost,total_output_rebate);
                 return Err(ExecutionError::invariant_violation(format!(
                     "SUI conservation failed -- {} SUI charged for storage, \
                         {} SUI in storage rebate field of output objects",
@@ -973,6 +978,7 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_sui = 0;
         // total amount of SUI in output objects, including both coins and storage rebates
         let mut total_output_sui = 0;
+        tracing::error!("get_modified_objects {:?}",self.get_modified_objects());
         for (id, input, output) in self.get_modified_objects() {
             if let Some(input) = input {
                 total_input_sui += self.get_input_sui(&id, input.version, layout_resolver)?;
@@ -997,6 +1003,7 @@ impl<'backing> TemporaryStore<'backing> {
             total_output_sui += epoch_rebates;
         }
         if total_input_sui != total_output_sui {
+            tracing::error!("mofei error,total_input_sui:{:?},total_output_sui:{:?}",total_input_sui,total_output_sui);
             return Err(ExecutionError::invariant_violation(format!(
                 "SUI conservation failed: input={}, output={}, \
                     this transaction either mints or burns SUI",
