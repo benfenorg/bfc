@@ -55,7 +55,7 @@ use sui_graphql_rpc::config::ConnectionConfig;
 use sui_graphql_rpc::test_infra::cluster::ExecutorCluster;
 use sui_graphql_rpc::test_infra::cluster::{serve_executor, SnapshotLagConfig};
 use sui_json_rpc_api::QUERY_MAX_RESULT_LIMIT;
-use sui_json_rpc_types::{DevInspectResults, SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
+use sui_json_rpc_types::{DevInspectResults, EventFilter, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_protocol_config::{Chain, ProtocolConfig};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,
@@ -85,7 +85,7 @@ use sui_types::{
 };
 use sui_types::{SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
-use sui_types::{gas::GasCostSummary, object::GAS_VALUE_FOR_TESTING};
+use sui_types::{object::GAS_VALUE_FOR_TESTING};
 use sui_types::{
     move_package::MovePackage,
     transaction::{Argument, CallArg},
@@ -167,7 +167,7 @@ struct TxnSummary {
     unwrapped_then_deleted: Vec<ObjectID>,
     wrapped: Vec<ObjectID>,
     events: Vec<Event>,
-    gas_summary: GasCostSummary,
+    gas_summary: SuiGasCostSummary,
 }
 
 #[async_trait]
@@ -1460,7 +1460,7 @@ impl<'a> SuiTestAdapter {
                     .await?;
                 Ok(TxnSummary {
                     events,
-                    gas_summary: gas_summary.clone(),
+                    gas_summary: SuiGasCostSummary::from(gas_summary.clone()),
                     created: created_ids,
                     mutated: mutated_ids,
                     unwrapped: unwrapped_ids,

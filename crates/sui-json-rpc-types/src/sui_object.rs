@@ -20,7 +20,6 @@ use serde::Serialize;
 use serde_json::Value;
 use serde_with::serde_as;
 use serde_with::DisplayFromStr;
-use tracing::info;
 
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::{
@@ -363,7 +362,6 @@ impl TryFrom<&SuiMoveStruct> for GasCoin {
 impl TryFrom<&SuiMoveStruct> for StableCoin {
     type Error = anyhow::Error;
     fn try_from(move_struct: &SuiMoveStruct) -> Result<Self, Self::Error> {
-        info!("move struct: {}", move_struct);
         match move_struct {
             SuiMoveStruct::WithFields(fields) | SuiMoveStruct::WithTypes { type_: _, fields } => {
                 if let Some(SuiMoveValue::String(balance)) = fields.get("balance") {

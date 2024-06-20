@@ -373,6 +373,7 @@ impl MoveObject {
         bcs::from_bytes(self.contents()).ok()
     }
 
+
     /// Approximate size of the object in bytes. This is used for gas metering.
     /// For the type tag field, we serialize it on the spot to get the accurate size.
     /// This should not be very expensive since the type tag is usually simple, and
@@ -857,6 +858,8 @@ impl ObjectInner {
             "".to_string()
         }
     }
+
+
 
     // TODO: use `MoveObj::get_balance_unsafe` instead.
     // context: https://github.com/MystenLabs/sui/pull/10679#discussion_r1165877816

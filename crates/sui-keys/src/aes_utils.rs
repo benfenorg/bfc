@@ -17,7 +17,6 @@ pub fn default_des_128_encode(plaintext: &[u8]) -> String {
     let encrypted_128 = cipher.cbc_encrypt(iv, plaintext);
 
     let base64_string =  Base64::encode(&encrypted_128);
-    println!("Encrypted base64: {:?}", base64_string);
     let s_with_prefix = DEFAULT_AES_PREFIX.to_owned() + base64_string.as_str();
 
     return s_with_prefix
@@ -61,14 +60,12 @@ pub fn small_data() {
     let encrypted_128 = cipher.cbc_encrypt(iv, plaintext);
 
     let base64_string =  Base64::encode(&encrypted_128);
-    println!("Encrypted base64: {:?}", base64_string);
 
     let base64_decode = Base64::decode(&base64_string).unwrap();
 
 
     let decrypted_128 = cipher.cbc_decrypt(iv, &base64_decode[..]);
     let string = String::from_utf8_lossy(&decrypted_128);
-    println!("Decrypted: {:?}", string);
 
 }
 

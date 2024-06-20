@@ -253,6 +253,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
         let next_epoch_protocol_version = self.epoch_state.protocol_version();
         let gas_cost_summary = self.checkpoint_builder.epoch_rolling_gas_cost_summary();
         let epoch_start_timestamp_ms = self.store.get_clock().timestamp_ms();
+        let epoch_duration_ms = self.epoch_start_state().epoch_duration_ms();
         let next_epoch_system_package_bytes = vec![];
 
         let mut kinds = vec![];
@@ -271,6 +272,7 @@ impl<R, S: store::SimulatorStore> Simulacrum<R, S> {
             gas_cost_summary.non_refundable_storage_fee,
             hash,
             epoch_start_timestamp_ms,
+            epoch_duration_ms,
             next_epoch_system_package_bytes,
         ));
 

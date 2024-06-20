@@ -558,6 +558,24 @@ pub async fn make_transfer_sui_transaction_with_gas_coins(
             .build(),
     )
 }
+
+pub async fn make_transfer_sui_transaction_with_gas_coins_budget(
+    context: &WalletContext,
+    recipient: Option<SuiAddress>,
+    amount: Option<u64>,
+    sender: SuiAddress,
+    gas_objects: Vec<ObjectRef>,
+    gas_budget: u64,
+) -> Transaction {
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    let txn_data = TestTransactionBuilder::new_with_gas_objects(sender, gas_objects, gas_price)
+        .transfer_sui(amount, recipient.unwrap_or(sender))
+        .build();
+    let TransactionData::V1(mut txn_data_v1) = txn_data;
+    txn_data_v1.gas_data.budget= gas_budget;
+    context.sign_transaction(&TransactionData::V1(txn_data_v1))
+}
+
 pub async fn make_staking_transaction(
     context: &WalletContext,
     validator_address: SuiAddress,

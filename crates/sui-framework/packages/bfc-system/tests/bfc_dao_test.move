@@ -855,7 +855,7 @@ module bfc_system::bfc_dao_test {
     }
 }
 
-//sui move test test_dao_init
+//bfc move test test_dao_init
 //
 
 

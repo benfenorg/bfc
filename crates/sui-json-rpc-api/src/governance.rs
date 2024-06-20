@@ -50,6 +50,4 @@ pub trait GovernanceReadApi {
     // #[method(name = "getProposal")]
     // async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
 
-    // #[method(name = "getStablePools")]
-    // async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>>;
 }

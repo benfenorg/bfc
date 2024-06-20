@@ -523,18 +523,6 @@ mod checked {
         metrics: Arc<LimitsMetrics>,
     ) -> Result<Mode::ExecutionResults, ExecutionError> {
         let result = match transaction_kind {
-            TransactionKind::ChangeBfcRound(change_round) => {
-                bfc_round(
-                    change_round,
-                    temporary_store,
-                    tx_ctx,
-                    move_vm,
-                    gas_charger,
-                    protocol_config,
-                    metrics,
-                )?;
-                Ok(Mode::empty_results())
-            }
             TransactionKind::ChangeEpoch(change_epoch) => {
                 let builder = ProgrammableTransactionBuilder::new();
                 advance_epoch(

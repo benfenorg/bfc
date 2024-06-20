@@ -227,7 +227,8 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                 )
             }else if move_obj.type_().is_stable_gas_coin() {
                 StoreData::StableCoin(
-                    STABLE::from(move_obj.type_().get_stable_gas_tag()).get_index(),
+                    STABLE::try_from(move_obj.type_().get_stable_gas_tag().expect("failed to get stable tag"))
+                        .expect("failed to parse stable index").get_index(),
                     Coin::from_bcs_bytes(move_obj.contents())
                         .expect("failed to deserialize coin")
                         .balance
@@ -278,8 +279,16 @@ pub(crate) fn try_construct_object(
             )?)
         },
         (StoreData::StableCoin(index, balance), None) => unsafe {
+            let move_obj_type = match MoveObjectType::stable_gas_coin(index) {
+                Ok(type_) => type_,
+                Err(e) => {
+                    return Err(SuiError::StorageCorruptedFieldError(e.to_string())
+                    )
+                },
+            };
+
             Data::Move(MoveObject::new_from_execution_with_limit(
-                MoveObjectType::stable_gas_coin(index),
+                move_obj_type,
                 true,
                 object_key.1,
                 bcs::to_bytes(&(object_key.0, balance)).expect("serialization failed"),

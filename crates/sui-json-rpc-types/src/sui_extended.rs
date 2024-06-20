@@ -279,6 +279,10 @@ pub struct NFTStakingOverview {
     pub nft_future_rewards: Vec<SuiMiningNFTFutureReward>,
     pub nft_future_profit_rates: Vec<SuiMiningNFTProfitRate>,
     pub btc_past_profit_rates: Vec<SuiMiningNFTProfitRate>,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_addresses: u64,
 }
 
 #[serde_as]

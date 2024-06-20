@@ -53,6 +53,8 @@ mod checked {
         protocol_config: &ProtocolConfig,
         reference_gas_price: u64,
         transaction: &TransactionData,
+        stable_rate: Option<u64>,
+        base_points: Option<u64>,
     ) -> SuiResult<SuiGasStatus> {
         check_gas(
             objects,
@@ -61,6 +63,8 @@ mod checked {
             gas,
             transaction.gas_budget(),
             transaction.gas_price(),
+            stable_rate,
+            base_points,
             transaction.kind(),
         )
     }
@@ -99,6 +103,12 @@ mod checked {
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let gas_object_ref = gas_object.compute_object_reference();
         input_objects.push(ObjectReadResult::new_from_gas_object(&gas_object));
+
+        let (stable_rate, base_points) = if !transaction.is_system_txn() {
+            store.get_stable_rate_and_base_points(transaction.gas())?
+        }else {
+            (None, None)
+        };
 
         let gas_status = check_transaction_input_inner(
             protocol_config,
@@ -185,6 +195,7 @@ mod checked {
         input_objects: &InputObjects,
         // Overrides the gas objects in the transaction.
         gas_override: &[ObjectRef],
+
     ) -> SuiResult<SuiGasStatus> {
         // Cheap validity checks that is ok to run multiple times during processing.
         transaction.check_version_supported(protocol_config)?;
@@ -196,12 +207,20 @@ mod checked {
             gas_override
         };
 
+        let (stable_rate, base_point) = if !transaction.is_system_txn() {
+            store.get_stable_rate_and_base_points(transaction.gas())?
+        }else {
+            (None, None)
+        };
+
         let gas_status = get_gas_status(
             input_objects,
             gas,
             protocol_config,
             reference_gas_price,
             transaction,
+            stable_rate,
+            base_point,
         )?;
         check_objects(transaction, input_objects)?;
 
@@ -326,13 +345,15 @@ mod checked {
         gas: &[ObjectRef],
         gas_budget: u64,
         gas_price: u64,
+        stable_rate: Option<u64>,
+        base_points: Option<u64>,
         tx_kind: &TransactionKind,
     ) -> SuiResult<SuiGasStatus> {
         if tx_kind.is_system_tx() {
             Ok(SuiGasStatus::new_unmetered())
         } else {
             let gas_status =
-                SuiGasStatus::new(gas_budget, gas_price, reference_gas_price, protocol_config)?;
+                SuiGasStatus::new(gas_budget, gas_price, reference_gas_price, protocol_config,  stable_rate, base_points)?;
 
             // check balance and coins consistency
             // load all gas coins

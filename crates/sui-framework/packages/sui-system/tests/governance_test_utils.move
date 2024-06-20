@@ -22,6 +22,7 @@ module sui_system::governance_test_utils {
     use sui_system::stable_pool::StakedStable;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
+    const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
 
     public fun create_validator_for_testing(
         addr: address, init_stake_amount_in_sui: u64, ctx: &mut TxContext
@@ -102,7 +103,7 @@ module sui_system::governance_test_utils {
             ctx,
         );
 
-        create_bfc_system_state(ctx);
+        create_bfc_system_state(ctx, BFC_AMOUNT);
         sui_system::create(
             object::new(ctx), // it doesn't matter what ID sui system state has in tests
             object::bfc_system_state_for_test(),

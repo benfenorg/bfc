@@ -4,6 +4,7 @@ pub mod checked {
     use move_core_types::language_storage::{StructTag, TypeTag};
     use crate::BFC_SYSTEM_ADDRESS;
     use std::str::FromStr;
+    use std::convert::TryFrom;
 
     pub enum STABLE {
         BUSD,
@@ -99,29 +100,6 @@ pub mod checked {
             }
         }
 
-        pub fn from_index(index: u8) -> Self {
-            match index {
-                0 => STABLE::BUSD,
-                1 => STABLE::BARS,
-                2 => STABLE::BAUD,
-                3 => STABLE::BBRL,
-                4 => STABLE::BCAD,
-                5 => STABLE::BEUR,
-                6 => STABLE::BGBP,
-                7 => STABLE::BIDR,
-                8 => STABLE::BINR,
-                9 => STABLE::BJPY,
-                10 => STABLE::BKRW,
-                11 => STABLE::BMXN,
-                12 => STABLE::BRUB,
-                13 => STABLE::BSAR,
-                14 => STABLE::BTRY,
-                15 => STABLE::BZAR,
-                16 => STABLE::MGG,
-                _ => panic!("Invalid index for stable coin: {}", index),
-            }
-        }
-
         pub fn type_tag(&self) -> TypeTag {
             TypeTag::Struct(Box::new(self.type_()))
         }
@@ -176,36 +154,66 @@ pub mod checked {
     }
 
 
-    impl From<StructTag> for STABLE {
-        fn from(s: StructTag) -> Self {
-            match (s.module.as_str(), s.name.as_str()) {
-                ("bars", "BARS") => STABLE::BARS,
-                ("busd", "BUSD") => STABLE::BUSD,
-                ("baud", "BAUD") => STABLE::BAUD,
-                ("bbrl", "BBRL") => STABLE::BBRL,
-                ("bcad", "BCAD") => STABLE::BCAD,
-                ("beur", "BEUR") => STABLE::BEUR,
-                ("bgbp", "BGBP") => STABLE::BGBP,
-                ("bidr", "BIDR") => STABLE::BIDR,
-                ("binr", "BINR") => STABLE::BINR,
-                ("bjpy", "BJPY") => STABLE::BJPY,
-                ("bkrw", "BKRW") => STABLE::BKRW,
-                ("bmxn", "BMXN") => STABLE::BMXN,
-                ("brub", "BRUB") => STABLE::BRUB,
-                ("bsar", "BSAR") => STABLE::BSAR,
-                ("btry", "BTRY") => STABLE::BTRY,
-                ("bzar", "BZAR") => STABLE::BZAR,
-                ("mgg", "MGG") => STABLE::MGG,
-                // default
-                _ => panic!("unreachable tag: {:?}", s),
+    impl TryFrom<u8> for STABLE {
+        type Error = anyhow::Error;
+
+        fn try_from(index: u8) -> Result<Self, Self::Error> {
+            match index {
+                0 => Ok(STABLE::BUSD),
+                1 => Ok(STABLE::BARS),
+                2 => Ok(STABLE::BAUD),
+                3 => Ok(STABLE::BBRL),
+                4 => Ok(STABLE::BCAD),
+                5 => Ok(STABLE::BEUR),
+                6 => Ok(STABLE::BGBP),
+                7 => Ok(STABLE::BIDR),
+                8 => Ok(STABLE::BINR),
+                9 => Ok(STABLE::BJPY),
+                10 => Ok(STABLE::BKRW),
+                11 => Ok(STABLE::BMXN),
+                12 => Ok(STABLE::BRUB),
+                13 => Ok(STABLE::BSAR),
+                14 => Ok(STABLE::BTRY),
+                15 => Ok(STABLE::BZAR),
+                16 => Ok(STABLE::MGG),
+                _ => Err(anyhow::anyhow!("Invalid index for stable coin: {}", index)),
             }
         }
     }
-    impl From<TypeTag> for STABLE {
-        fn from(s: TypeTag) -> Self {
+
+    impl TryFrom<StructTag> for STABLE {
+        type Error = anyhow::Error;
+        fn try_from(s: StructTag) -> Result<Self, Self::Error> {
+
+            match (s.module.as_str(), s.name.as_str()) {
+                ("bars", "BARS") => Ok(STABLE::BARS),
+                ("busd", "BUSD") => Ok(STABLE::BUSD),
+                ("baud", "BAUD") => Ok(STABLE::BAUD),
+                ("bbrl", "BBRL") => Ok(STABLE::BBRL),
+                ("bcad", "BCAD") => Ok(STABLE::BCAD),
+                ("beur", "BEUR") => Ok(STABLE::BEUR),
+                ("bgbp", "BGBP") => Ok(STABLE::BGBP),
+                ("bidr", "BIDR") => Ok(STABLE::BIDR),
+                ("binr", "BINR") => Ok(STABLE::BINR),
+                ("bjpy", "BJPY") => Ok(STABLE::BJPY),
+                ("bkrw", "BKRW") => Ok(STABLE::BKRW),
+                ("bmxn", "BMXN") => Ok(STABLE::BMXN),
+                ("brub", "BRUB") => Ok(STABLE::BRUB),
+                ("bsar", "BSAR") => Ok(STABLE::BSAR),
+                ("btry", "BTRY") => Ok(STABLE::BTRY),
+                ("bzar", "BZAR") => Ok(STABLE::BZAR),
+                ("mgg", "MGG") => Ok(STABLE::MGG),
+                _ => Err(anyhow::anyhow!("unreachable tag: {:?}", s)),
+            }
+        }
+    }
+
+    impl TryFrom<TypeTag> for STABLE {
+        type Error = anyhow::Error;
+        fn try_from(s: TypeTag) -> Result<Self, Self::Error> {
             match s {
-                TypeTag::Struct(s1) => STABLE::from(*s1),
-                _ => panic!("unreachable tag: {:?}", s),
+                TypeTag::Struct(s1) => STABLE::try_from(*s1),
+                _ => Err(anyhow::anyhow!("unreachable tag: {:?}", s)),
             }
         }
     }

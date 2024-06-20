@@ -61,7 +61,7 @@ module bfc_system::bfc_system {
 
     //spec module { pragma verify = false; }
 
-    public fun create(
+    public(friend) fun create(
         id: UID,
         bfc_balance: Balance<BFC>,
         usd_supply: Supply<BUSD>,
@@ -122,7 +122,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
-    public fun bfc_round(
+    #[allow(unused_function)]
+    fun bfc_round(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
         round: u64,
@@ -135,7 +136,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, clock::timestamp_ms(clock));
     }
 
-    public fun inner_stablecoin_to_bfc<StableCoinType>(
+    #[allow(unused_function)]
+    fun inner_stablecoin_to_bfc<StableCoinType>(
         _self: &mut BfcSystemState,
         _balance: Balance<StableCoinType>,
         expect: u64,
@@ -179,6 +181,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_rate_map(inner)
     }
 
+    public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
+        let system_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
+    }
+
+    public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
+        let system_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::remove_action(system_state,key,action_id);
+    }
+
     public entry fun destroy_terminated_proposal(
         wrapper: &mut BfcSystemState,
         manager_key: &BFCDaoManageKey,
@@ -213,8 +225,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
-    #[test_only]
-    public fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
+    public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }

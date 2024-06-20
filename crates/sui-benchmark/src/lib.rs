@@ -175,13 +175,13 @@ impl ExecutionEffects {
         }
     }
 
-    pub fn gas_cost_summary(&self) -> GasCostSummary {
+    pub fn gas_cost_summary(&self) -> SuiGasCostSummary {
         match self {
             crate::ExecutionEffects::CertifiedTransactionEffects(a, _) => {
-                a.data().gas_cost_summary().clone()
+                SuiGasCostSummary::from(a.data().gas_cost_summary().clone())
             }
             crate::ExecutionEffects::SuiTransactionBlockEffects(b) => {
-                std::convert::Into::<GasCostSummary>::into(b.gas_cost_summary().clone())
+                b.gas_cost_summary().clone()
             }
         }
     }

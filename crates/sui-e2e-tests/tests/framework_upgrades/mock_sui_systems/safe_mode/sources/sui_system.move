@@ -58,7 +58,6 @@ module sui_system::sui_system {
         _storage_fund_reinvest_rate: u64,
         _reward_slashing_rate: u64,
         _epoch_start_timestamp_ms: u64,
-        _rate_vec : vector<u64>,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);

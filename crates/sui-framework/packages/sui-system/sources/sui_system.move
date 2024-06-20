@@ -618,29 +618,11 @@ module sui_system::sui_system {
         // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
-        rate_vec : vector<u64>,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get stable exchange rate from bfc system
-        assert!(vector::length(&rate_vec) == 17, EWrongStableRateLength);
-        let mut stable_rate = vec_map::empty<ascii::String, u64>();
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BUSD>()), *vector::borrow<u64>(&rate_vec,0));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BARS>()), *vector::borrow<u64>(&rate_vec,1));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BAUD>()), *vector::borrow<u64>(&rate_vec,2));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BBRL>()), *vector::borrow<u64>(&rate_vec,3));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BCAD>()), *vector::borrow<u64>(&rate_vec,4));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BEUR>()), *vector::borrow<u64>(&rate_vec,5));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BGBP>()), *vector::borrow<u64>(&rate_vec,6));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BIDR>()), *vector::borrow<u64>(&rate_vec,7));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BINR>()), *vector::borrow<u64>(&rate_vec,8));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BJPY>()), *vector::borrow<u64>(&rate_vec,9));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BKRW>()), *vector::borrow<u64>(&rate_vec,10));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BMXN>()), *vector::borrow<u64>(&rate_vec,11));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BRUB>()), *vector::borrow<u64>(&rate_vec,12));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BSAR>()), *vector::borrow<u64>(&rate_vec,13));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BTRY>()), *vector::borrow<u64>(&rate_vec,14));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<BZAR>()), *vector::borrow<u64>(&rate_vec,15));
-        vec_map::insert(&mut stable_rate, type_name::into_string(type_name::get<MGG>()), *vector::borrow<u64>(&rate_vec,16));
+        let stable_rate = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
+
 
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
@@ -661,6 +643,10 @@ module sui_system::sui_system {
         );
 
         storage_rebate
+    }
+
+    public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
+        get_stable_rate_from_bfc(&self.bfc_system_id)
     }
 
     #[allow(unused_function)]
@@ -881,11 +867,7 @@ module sui_system::sui_system {
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
-        let mut rates = vector::empty<u64>();
-        while (vector::length(&rates) < 17) {
-            vector::push_back(&mut rates, 1000000000u64);
-        };
-        assert!(vector::length(&rates) == 17, EWrongStableRateLength);
+
         let storage_rebate = advance_epoch(
             storage_reward,
             computation_reward,
@@ -897,7 +879,6 @@ module sui_system::sui_system {
             storage_fund_reinvest_rate,
             reward_slashing_rate,
             epoch_start_timestamp_ms,
-            rates,
             ctx,
         );
         storage_rebate

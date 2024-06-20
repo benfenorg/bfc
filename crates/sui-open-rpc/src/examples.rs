@@ -18,9 +18,8 @@ use serde_json::json;
 
 use sui_json::SuiJsonValue;
 use sui_json_rpc::error::Error;
-use sui_json_rpc_types::DevInspectArgs;
 use sui_json_rpc_types::{
-    Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
+    SuiGasCostSummary, Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
     DevInspectResults, DynamicFieldPage, EventFilter, EventPage, MoveCallParams,
     MoveFunctionArgType, ObjectChange, ObjectValueKind::ByImmutableReference,
     ObjectValueKind::ByMutableReference, ObjectValueKind::ByValue, ObjectsPage, OwnedObjectRef,
@@ -727,9 +726,7 @@ impl RpcExampleProvider {
                     status: SuiExecutionStatus::Success,
                     executed_epoch: 0,
                     modified_at_versions: vec![],
-                    gas_used: GasCostSummary {
-                        base_point: 0,
-                        rate:1,
+                    gas_used: SuiGasCostSummary {
                         computation_cost: 100,
                         storage_cost: 100,
                         storage_rebate: 10,

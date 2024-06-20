@@ -1005,12 +1005,6 @@ fn extract_end_of_epoch_tx(
         *checkpoint_sequence,
     );
 
-    assert!(change_epoch_tx
-        .data()
-        .intent_message()
-        .value
-        .is_end_of_epoch_tx());
-
     Some((*digests, change_epoch_tx))
 }
 

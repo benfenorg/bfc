@@ -430,6 +430,14 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
+    public(package) fun remove_proposal(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,proposal_id: u64){
+        bfc_dao::remove_proposal(&mut self.dao,key,proposal_id);
+    }
+
+    public(package) fun remove_action(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,action_id: u64){
+        bfc_dao::remove_action(&mut self.dao,key,action_id);
+    }
+
     public(package) fun set_voting_delay(self: &mut BfcSystemStateInner, manager_key: &BFCDaoManageKey, value: u64) {
         bfc_dao::set_voting_delay(&mut self.dao, manager_key, value);
     }
