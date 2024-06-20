@@ -1,12 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import {
-	formatPercentageDisplay,
-	useGetValidatorsApy,
-	useGetTimeBeforeEpochNumber,
-} from '@mysten/core';
-
 import { StakeAmount } from '_app/staking/home/StakeAmount';
 import { ValidatorLogo } from '_app/staking/validators/ValidatorLogo';
 import {
@@ -16,8 +10,12 @@ import {
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
-
 import type { SuiEvent } from '@benfen/bfc.js/client';
+import {
+	formatPercentageDisplay,
+	useGetTimeBeforeEpochNumber,
+	useGetValidatorsApy,
+} from '@mysten/core';
 
 type StakeTxnCardProps = {
 	event: SuiEvent;

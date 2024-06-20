@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { splitGenericParameters } from '../bcs/src/index.js';
-import type { TypeTag } from '../bcs/index.js';
 import { normalizeSuiAddress } from '../utils/bfc-types.js';
+import type { TypeTag } from './index.js';
+import { splitGenericParameters } from './src/index.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;

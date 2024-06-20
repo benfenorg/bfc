@@ -34,8 +34,9 @@ export async function getAccountSources(filter?: { type: AccountSourceType }) {
 	const db = await getDB();
 	return (
 		await (filter?.type
-			? await db.accountSources.where('type').equals(filter.type).sortBy('createdAt')
-			: await db.accountSources.toCollection().sortBy('createdAt'))
+			? await db.accountSources.where('type').equals(filter.type)
+			: await db.accountSources
+		).toArray()
 	).map(toAccountSource);
 }
 
@@ -93,13 +94,6 @@ export async function getQredoAccountSource(filter: string | QredoConnectIdentit
 	return accountSource;
 }
 
-export async function lockAllAccountSources() {
-	const allAccountSources = await getAccountSources();
-	for (const anAccountSource of allAccountSources) {
-		await anAccountSource.lock();
-	}
-}
-
 export async function accountSourcesHandleUIMessage(msg: Message, uiConnection: UiConnection) {
 	const { payload } = msg;
 	if (isMethodPayload(payload, 'createAccountSource')) {
@@ -115,7 +109,6 @@ export async function accountSourcesHandleUIMessage(msg: Message, uiConnection: 
 		);
 		return true;
 	}
-
 	if (isMethodPayload(payload, 'unlockAccountSourceOrAccount')) {
 		const { id, password } = payload.args;
 		const accountSource = await getAccountSourceByID(id);
@@ -135,39 +128,6 @@ export async function accountSourcesHandleUIMessage(msg: Message, uiConnection: 
 			await uiConnection.send(createMessage({ type: 'done' }, msg.id));
 			return true;
 		}
-	}
-	if (isMethodPayload(payload, 'getAccountSourceEntropy')) {
-		const accountSource = await getAccountSourceByID(payload.args.accountSourceID);
-		if (!accountSource) {
-			throw new Error('Account source not found');
-		}
-		if (!(accountSource instanceof MnemonicAccountSource)) {
-			throw new Error('Invalid account source type');
-		}
-		await uiConnection.send(
-			createMessage<MethodPayload<'getAccountSourceEntropyResponse'>>(
-				{
-					type: 'method-payload',
-					method: 'getAccountSourceEntropyResponse',
-					args: { entropy: await accountSource.getEntropy(payload.args.password) },
-				},
-				msg.id,
-			),
-		);
-		return true;
-	}
-	if (isMethodPayload(payload, 'verifyPasswordRecoveryData')) {
-		const { accountSourceID, entropy } = payload.args.data;
-		const accountSource = await getAccountSourceByID(accountSourceID);
-		if (!accountSource) {
-			throw new Error('Account source not found');
-		}
-		if (!(accountSource instanceof MnemonicAccountSource)) {
-			throw new Error('Invalid account source type');
-		}
-		await accountSource.verifyRecoveryData(entropy);
-		uiConnection.send(createMessage({ type: 'done' }, msg.id));
-		return true;
 	}
 	return false;
 }

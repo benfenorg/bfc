@@ -1,10 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Text } from '_src/ui/app/shared/text';
+
+import { useNextMenuUrl } from '../hooks';
 import AutoLockTimerSelector from './AutoLockTimerSelector';
 import { MenuLayout } from './MenuLayout';
-import { useNextMenuUrl } from '../hooks';
-import { Text } from '_src/ui/app/shared/text';
 
 export function AutoLockSettings() {
 	const backUrl = useNextMenuUrl(true, '/');

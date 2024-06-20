@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { SVGProps } from 'react';
-
 const SvgCopy12 = (props: SVGProps<SVGSVGElement>) => (
 	<svg
 		width="14"

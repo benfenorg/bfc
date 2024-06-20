@@ -1,16 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { CoinIcon } from '_src/ui/app/components/coin-icon';
+import { Text } from '_src/ui/app/shared/text';
 import {
-	type BalanceChangeSummary,
 	CoinFormat,
 	useFormatCoin,
 	type BalanceChange,
+	type BalanceChangeSummary,
 } from '@mysten/core';
 
 import { Card } from '../Card';
 import { OwnerFooter } from '../OwnerFooter';
-import { CoinIcon } from '_src/ui/app/components/coin-icon';
-import { Text } from '_src/ui/app/shared/text';
 
 interface BalanceChangesProps {
 	changes?: BalanceChangeSummary;

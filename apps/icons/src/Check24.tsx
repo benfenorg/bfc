@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { SVGProps } from 'react';
-
 const SvgCheck24 = (props: SVGProps<SVGSVGElement>) => (
 	<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" {...props}>
 		<g id="Group">

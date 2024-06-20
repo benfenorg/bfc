@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { TypeName } from '@mysten/bcs';
+import type { TypeName } from '../bcs/index.js';
 
 export const ARGUMENT_INNER = 'Argument';
 export const VECTOR = 'vector';

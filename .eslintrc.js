@@ -34,6 +34,7 @@ module.exports = {
 		'external-crates',
 		'storybook-static',
 		'.next',
+		'sdk/docs/public/typedoc',
 	],
 	rules: {
 		'no-case-declarations': 'off',
@@ -73,7 +74,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-			files: ['sdk/typescript/src/**/*'],
+			files: ['sdk/**/*'],
 			rules: {
 				'require-extensions/require-extensions': 'error',
 				'require-extensions/require-index': 'error',
@@ -220,30 +221,6 @@ module.exports = {
 			files: ['apps/wallet/**/*'],
 			rules: {
 				'react/display-name': 'off',
-				'import/order': [
-					'warn',
-					{
-						groups: [['builtin', 'external'], ['internal', 'parent', 'sibling', 'index'], 'type'],
-						pathGroups: [
-							{
-								pattern: '{.,..,_*,*}/**/*.?(s)css',
-								group: 'type',
-								position: 'after',
-							},
-							{
-								pattern: '_*',
-								group: 'internal',
-							},
-							{
-								pattern: '_*/**',
-								group: 'internal',
-							},
-						],
-						pathGroupsExcludedImportTypes: ['builtin', 'object', 'type'],
-						alphabetize: { order: 'asc' },
-						warnOnUnassignedImports: true,
-					},
-				],
 				'import/no-duplicates': ['error'],
 				'@typescript-eslint/consistent-type-imports': [
 					'error',
@@ -283,7 +260,7 @@ module.exports = {
 			},
 		},
 		{
-			files: ['sdk/ledgerjs-hw-app-sui/**/*', 'apps/wallet/**/*', 'sdk/zklogin/**/*'],
+			files: ['sdk/ledgerjs-hw-app-sui/**/*', 'apps/wallet/**/*'],
 			rules: {
 				// ledgerjs-hw-app-sui and wallet use Buffer
 				'no-restricted-globals': ['off'],
@@ -293,6 +270,11 @@ module.exports = {
 		{
 			files: ['*.test.*', '*.spec.*'],
 			rules: {
+				// Tests can violate extension rules:
+				'require-extensions/require-extensions': 'off',
+				'require-extensions/require-index': 'off',
+				'@typescript-eslint/consistent-type-imports': ['off'],
+				'import/consistent-type-specifier-style': ['off'],
 				// Reset to defaults to allow `Buffer` usage in tests (given they run in Node and do not impact bundle):
 				'no-restricted-globals': ['off'],
 				'@typescript-eslint/ban-types': ['error'],
@@ -303,6 +285,13 @@ module.exports = {
 			rules: {
 				// Story files have render functions that this rule incorrectly warns on:
 				'react-hooks/rules-of-hooks': 'off',
+			},
+		},
+		{
+			files: ['sdk/create-dapp/templates/**/*'],
+			rules: {
+				'header/header': 'off',
+				'require-extensions/require-extensions': 'off',
 			},
 		},
 	],

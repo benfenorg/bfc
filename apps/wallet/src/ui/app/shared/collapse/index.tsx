@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Disclosure } from '@headlessui/react';
-
 import { type ReactNode } from 'react';
+
 import { Heading } from '../heading';
 
 type CollapseProps = {

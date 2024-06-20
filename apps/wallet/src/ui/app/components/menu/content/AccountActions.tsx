@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ReactNode } from 'react';
-
-import { VerifyLedgerConnectionStatus } from './VerifyLedgerConnectionStatus';
-import { BadgeLabel } from '../../BadgeLabel';
-import { useNextMenuUrl } from '../hooks';
 import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
 import { Link } from '_src/ui/app/shared/Link';
+import { type ReactNode } from 'react';
+
+import { BadgeLabel } from '../../BadgeLabel';
+import { useNextMenuUrl } from '../hooks';
+import { VerifyLedgerConnectionStatus } from './VerifyLedgerConnectionStatus';
 
 export type AccountActionsProps = {
 	account: SerializedAccount;

@@ -1,13 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromExportedKeypair } from '@benfen/bfc.js';
-import { mnemonicToSeedHex } from '@benfen/bfc.js/cryptography';
-
 import { EPHEMERAL_PASSWORD_KEY, EPHEMERAL_VAULT_KEY } from '_src/background/keyring/VaultStorage';
 import { toEntropy } from '_src/shared/utils/bip39';
-
-import type { Keypair } from '@benfen/bfc.js';
+import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
+import { mnemonicToSeedHex } from '@benfen/bfc.js/cryptography';
+import type { Keypair } from '@benfen/bfc.js/cryptography';
 
 export const testMnemonic =
 	'loud eye weather change muffin brisk episode dance mirror smart image energy';

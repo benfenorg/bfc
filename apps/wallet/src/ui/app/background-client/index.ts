@@ -1,43 +1,41 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SignedTransaction, type SignedMessage } from '@benfen/bfc.js';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-
-import { type SerializedSignature, type ExportedKeypair } from '@benfen/bfc.js/cryptography';
-import { toB64 } from '@benfen/bfc.js/utils';
-import { lastValueFrom, map, take } from 'rxjs';
-
-import { growthbook } from '../experimentation/feature-gating';
 import { createMessage } from '_messages';
+import type { Message } from '_messages';
 import { PortStream } from '_messaging/PortStream';
 import { type BasePayload } from '_payloads';
 import { isLoadedFeaturesPayload } from '_payloads/feature-gating';
 import { isKeyringPayload } from '_payloads/keyring';
+import type { KeyringPayload } from '_payloads/keyring';
 import { isSetNetworkPayload, type SetNetworkPayload } from '_payloads/network';
 import { isPermissionRequests } from '_payloads/permissions';
+import type { GetPermissionRequests, PermissionResponse } from '_payloads/permissions';
+import type { DisconnectApp } from '_payloads/permissions/DisconnectApp';
 import { isUpdateActiveOrigin } from '_payloads/tabs/updateActiveOrigin';
+import type { GetTransactionRequests } from '_payloads/transactions/ui/GetTransactionRequests';
 import { isGetTransactionRequestsResponse } from '_payloads/transactions/ui/GetTransactionRequestsResponse';
+import type { TransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
 import { setKeyringStatus } from '_redux/slices/account';
-import { setActiveOrigin, changeActiveNetwork } from '_redux/slices/app';
+import { changeActiveNetwork, setActiveOrigin } from '_redux/slices/app';
 import { setPermissions } from '_redux/slices/permissions';
 import { setTransactionRequests } from '_redux/slices/transaction-requests';
-import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
 import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
+import type { NetworkEnvType } from '_src/background/NetworkEnv';
 import { type QredoConnectIdentity } from '_src/background/qredo/types';
 import {
 	isQredoConnectPayload,
 	type QredoConnectPayload,
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
-
-import type { Message } from '_messages';
-import type { KeyringPayload } from '_payloads/keyring';
-import type { GetPermissionRequests, PermissionResponse } from '_payloads/permissions';
-import type { DisconnectApp } from '_payloads/permissions/DisconnectApp';
-import type { GetTransactionRequests } from '_payloads/transactions/ui/GetTransactionRequests';
-import type { TransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
-import type { NetworkEnvType } from '_src/background/NetworkEnv';
 import type { AppDispatch } from '_store';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type ExportedKeypair, type SerializedSignature } from '@benfen/bfc.js/cryptography';
+import { toB64 } from '@benfen/bfc.js/utils';
+import { lastValueFrom, map, take } from 'rxjs';
+
+import { growthbook } from '../experimentation/feature-gating';
+import { type SignedMessage, type SignedTransaction } from '../WalletSigner';
 
 /**
  * The duration in milliseconds that the UI sends status updates (active/inactive) to the background service.

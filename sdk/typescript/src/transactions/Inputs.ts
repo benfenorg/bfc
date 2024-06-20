@@ -2,12 +2,21 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Infer } from 'superstruct';
+import { array, bigint, boolean, integer, number, object, string, union } from 'superstruct';
 
-import { array, boolean, integer, object, string, union } from 'superstruct';
-import type { SharedObjectRef } from '../bcs/index.js';
-import { SuiObjectRef } from '../types/index.js';
-import { builder } from './bcs.js';
-import { normalizeSuiAddress } from '../utils/bfc-types.js';
+import { bcs, isSerializedBcs } from '../bcs/index.js';
+import type { SerializedBcs, SharedObjectRef } from '../bcs/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
+
+export const SuiObjectRef = object({
+	/** Base64 string representing the object digest */
+	digest: string(),
+	/** Hex code as string representing the object id */
+	objectId: string(),
+	/** Object version */
+	version: union([number(), string(), bigint()]),
+});
+export type SuiObjectRef = Infer<typeof SuiObjectRef>;
 
 const ObjectArg = union([
 	object({ ImmOrOwned: SuiObjectRef }),
@@ -18,6 +27,7 @@ const ObjectArg = union([
 			mutable: boolean(),
 		}),
 	}),
+	object({ Receiving: SuiObjectRef }),
 ]);
 
 export const PureCallArg = object({ Pure: array(integer()) });
@@ -28,17 +38,24 @@ export type ObjectCallArg = Infer<typeof ObjectCallArg>;
 export const BuilderCallArg = union([PureCallArg, ObjectCallArg]);
 export type BuilderCallArg = Infer<typeof BuilderCallArg>;
 
+function Pure(data: Uint8Array | SerializedBcs<any>, type?: string): PureCallArg;
+/** @deprecated pass SerializedBcs values instead */
+function Pure(data: unknown, type?: string): PureCallArg;
+function Pure(data: unknown, type?: string): PureCallArg {
+	return {
+		Pure: Array.from(
+			data instanceof Uint8Array
+				? data
+				: isSerializedBcs(data)
+				? data.toBytes()
+				: // NOTE: We explicitly set this to be growable to infinity, because we have maxSize validation at the builder-level:
+				  bcs.ser(type!, data, { maxSize: Infinity }).toBytes(),
+		),
+	};
+}
+
 export const Inputs = {
-	Pure(data: unknown, type?: string): PureCallArg {
-		return {
-			Pure: Array.from(
-				data instanceof Uint8Array
-					? data
-					: // NOTE: We explicitly set this to be growable to infinity, because we have maxSize validation at the builder-level:
-					  builder.ser(type!, data, { maxSize: Infinity }).toBytes(),
-			),
-		};
-	},
+	Pure,
 	ObjectRef({ objectId, digest, version }: SuiObjectRef): ObjectCallArg {
 		return {
 			Object: {
@@ -61,6 +78,17 @@ export const Inputs = {
 			},
 		};
 	},
+	ReceivingRef({ objectId, digest, version }: SuiObjectRef): ObjectCallArg {
+		return {
+			Object: {
+				Receiving: {
+					digest,
+					version,
+					objectId: normalizeSuiAddress(objectId),
+				},
+			},
+		};
+	},
 };
 
 export function getIdFromCallArg(arg: string | ObjectCallArg) {
@@ -70,6 +98,11 @@ export function getIdFromCallArg(arg: string | ObjectCallArg) {
 	if ('ImmOrOwned' in arg.Object) {
 		return normalizeSuiAddress(arg.Object.ImmOrOwned.objectId);
 	}
+
+	if ('Receiving' in arg.Object) {
+		return normalizeSuiAddress(arg.Object.Receiving.objectId);
+	}
+
 	return normalizeSuiAddress(arg.Object.Shared.objectId);
 }
 

@@ -27,7 +27,7 @@ export function AppsPageBanner() {
 					href={AppsBannerConfig.value?.bannerUrl}
 					onClick={() => ampli.clickedBullsharkQuestsCta({ sourceFlow: 'Banner - Apps tab' })}
 				>
-					<img className="w-full" src={AppsBannerConfig.value?.imageUrl} alt="Apps Banner" />
+					<img src={AppsBannerConfig.value?.imageUrl} alt="Apps Banner" />
 				</ExternalLink>
 			)}
 		</div>

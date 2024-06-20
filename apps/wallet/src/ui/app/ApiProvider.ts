@@ -1,16 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
-
-import { type WalletSigner } from './WalletSigner';
-import { BackgroundServiceSigner } from './background-client/BackgroundServiceSigner';
-import { queryClient } from './helpers/queryClient';
 import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
 import { API_ENV } from '_src/shared/api-env';
+import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
 
 import type { BackgroundClient } from './background-client';
-import type { SignerWithProvider } from '@benfen/bfc.js';
+import { BackgroundServiceSigner } from './background-client/BackgroundServiceSigner';
+import { queryClient } from './helpers/queryClient';
+import { type WalletSigner } from './WalletSigner';
 
 type EnvInfo = {
 	name: string;
@@ -59,7 +57,7 @@ export const generateActiveNetworkList = (): NetworkTypes[] => {
 
 export default class ApiProvider {
 	private _apiFullNodeProvider?: SuiClient;
-	private _signerByAddress: Map<string, SignerWithProvider> = new Map();
+	private _signerByAddress: Map<string, WalletSigner> = new Map();
 
 	public setNewJsonRpcProvider(apiEnv: API_ENV = DEFAULT_API_ENV, customRPC?: string | null) {
 		const connection = customRPC ? customRPC : getDefaultAPI(apiEnv);
@@ -89,7 +87,7 @@ export default class ApiProvider {
 	public getSignerInstance(
 		account: SerializedAccount,
 		backgroundClient: BackgroundClient,
-	): SignerWithProvider {
+	): WalletSigner {
 		if (!this._apiFullNodeProvider) {
 			this.setNewJsonRpcProvider();
 		}

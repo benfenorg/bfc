@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useEffect } from 'react';
-
 import { PersistableStorage } from '../utils/persistableStorage';
 
 export const ANALYTICS_COOKIE_CATEGORY = 'analytics';

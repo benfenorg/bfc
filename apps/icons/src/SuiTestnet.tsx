@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { SVGProps } from 'react';
-
 const SvgSuiTestnet = (props: SVGProps<SVGSVGElement>) => (
 	<svg xmlns="http://www.w3.org/2000/svg" width="78" height="26" viewBox="0 0 78 26" fill="none" {...props}>
 		<rect x="0.500015" width="26" height="26" rx="6" fill="#171719" />

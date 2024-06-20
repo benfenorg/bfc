@@ -1,6 +1,35 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import ForgotPasswordPage from '_app/wallet/forgot-password-page';
+import LockedPage from '_app/wallet/locked-page';
+import { useAppDispatch, useAppSelector } from '_hooks';
+import { AccountsPage } from '_pages/accounts/AccountsPage';
+import { AddAccountPage } from '_pages/accounts/AddAccountPage';
+import { ImportLedgerAccountsPage } from '_pages/accounts/ImportLedgerAccountsPage';
+import { ImportPassphrasePage } from '_pages/accounts/ImportPassphrasePage';
+import { ImportPrivateKeyPage } from '_pages/accounts/ImportPrivateKeyPage';
+import { ApprovalRequestPage } from '_pages/approval-request';
+import HomePage, {
+	AppsPage,
+	CoinsSelectorPage,
+	NFTDetailsPage,
+	NftTransferPage,
+	OnrampPage,
+	ReceiptPage,
+	ReceivePage,
+	TokensPage,
+	TransactionBlocksPage,
+	TransferCoinPage,
+} from '_pages/home';
+import InitializePage from '_pages/initialize';
+import BackupPage from '_pages/initialize/backup';
+import CreatePage from '_pages/initialize/create';
+import { ImportPage } from '_pages/initialize/import';
+import SelectPage from '_pages/initialize/select';
+import SiteConnectPage from '_pages/site-connect';
+import WelcomePage from '_pages/welcome';
+import { setNavVisibility } from '_redux/slices/app';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useEffect } from 'react';
 import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
@@ -13,36 +42,6 @@ import { SelectQredoAccountsPage } from './pages/qredo-connect/SelectQredoAccoun
 import { RestrictedPage } from './pages/restricted';
 import { AppType } from './redux/slices/app/AppType';
 import { Staking } from './staking/home';
-import ForgotPasswordPage from '_app/wallet/forgot-password-page';
-import LockedPage from '_app/wallet/locked-page';
-import { useAppDispatch, useAppSelector } from '_hooks';
-import { AccountsPage } from '_pages/accounts/AccountsPage';
-import { AddAccountPage } from '_pages/accounts/AddAccountPage';
-import { ImportLedgerAccountsPage } from '_pages/accounts/ImportLedgerAccountsPage';
-import { ImportPassphrasePage } from '_pages/accounts/ImportPassphrasePage';
-import { ImportPrivateKeyPage } from '_pages/accounts/ImportPrivateKeyPage';
-import { ApprovalRequestPage } from '_pages/approval-request';
-import HomePage, {
-	TokensPage,
-	TransactionBlocksPage,
-	TransferCoinPage,
-	NFTDetailsPage,
-	ReceiptPage,
-	KioskDetailsPage,
-	CoinsSelectorPage,
-	AppsPage,
-	NftTransferPage,
-	OnrampPage,
-	ReceivePage,
-} from '_pages/home';
-import InitializePage from '_pages/initialize';
-import BackupPage from '_pages/initialize/backup';
-import CreatePage from '_pages/initialize/create';
-import { ImportPage } from '_pages/initialize/import';
-import SelectPage from '_pages/initialize/select';
-import SiteConnectPage from '_pages/site-connect';
-import WelcomePage from '_pages/welcome';
-import { setNavVisibility } from '_redux/slices/app';
 
 const HIDDEN_MENU_PATHS = [
 	'/nft-details',
@@ -75,7 +74,6 @@ const App = () => {
 				<Route path="nfts/*" element={<AssetsPage />} />
 				<Route path="apps/*" element={<AppsPage />} />
 				<Route path="nft-details" element={<NFTDetailsPage />} />
-				<Route path="kiosk" element={<KioskDetailsPage />} />
 				<Route path="nft-transfer/:nftId" element={<NftTransferPage />} />
 				<Route path="transactions/:status?" element={<TransactionBlocksPage />} />
 				<Route path="send" element={<TransferCoinPage />} />

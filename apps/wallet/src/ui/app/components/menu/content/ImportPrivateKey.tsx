@@ -1,8 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB64 } from '@benfen/bfc.js';
+import { ampli } from '_src/shared/analytics/ampli';
+import { useBackgroundClient } from '_src/ui/app/hooks/useBackgroundClient';
+import { Button } from '_src/ui/app/shared/ButtonUI';
+import FieldLabel from '_src/ui/app/shared/field-label';
 import { type ExportedKeypair } from '@benfen/bfc.js/cryptography';
+import { toB64 } from '@benfen/bfc.js/utils';
 import { ArrowRight16 } from '@mysten/icons';
 import { hexToBytes } from '@noble/hashes/utils';
 import { useMutation } from '@tanstack/react-query';
@@ -12,14 +16,10 @@ import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 import { object, string as yupString } from 'yup';
 
-import { MenuLayout } from './MenuLayout';
-import { PasswordInputDialog } from './PasswordInputDialog';
 import Alert from '../../alert';
 import { useNextMenuUrl } from '../hooks';
-import { ampli } from '_src/shared/analytics/ampli';
-import { useBackgroundClient } from '_src/ui/app/hooks/useBackgroundClient';
-import { Button } from '_src/ui/app/shared/ButtonUI';
-import FieldLabel from '_src/ui/app/shared/field-label';
+import { MenuLayout } from './MenuLayout';
+import { PasswordInputDialog } from './PasswordInputDialog';
 
 const validation = object({
 	privateKey: yupString()

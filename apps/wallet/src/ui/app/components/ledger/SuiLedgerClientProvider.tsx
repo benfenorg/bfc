@@ -1,22 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
+import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
 import { toB64 } from '@benfen/bfc.js/bcs';
 import TransportWebHID from '@ledgerhq/hw-transport-webhid';
 import TransportWebUSB from '@ledgerhq/hw-transport-webusb';
 import SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
+import { useAccounts } from '../../hooks/useAccounts';
+import { useBackgroundClient } from '../../hooks/useBackgroundClient';
 import {
 	convertErrorToLedgerConnectionFailedError,
 	LedgerDeviceNotFoundError,
 	LedgerNoTransportMechanismError,
 } from './ledgerErrors';
-import { useAccounts } from '../../hooks/useAccounts';
-import { useBackgroundClient } from '../../hooks/useBackgroundClient';
-import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
-import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
-import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
 
 type SuiLedgerClientProviderProps = {
 	children: React.ReactNode;

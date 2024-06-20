@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { ampli } from '_src/shared/analytics/ampli';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { ConnectLedgerModal } from './ConnectLedgerModal';
 import { getLedgerConnectionErrorMessage } from '../../helpers/errorMessages';
 import { useNextMenuUrl } from '../menu/hooks';
-import { ampli } from '_src/shared/analytics/ampli';
+import { ConnectLedgerModal } from './ConnectLedgerModal';
 
 export function ConnectLedgerModalContainer() {
 	const navigate = useNavigate();

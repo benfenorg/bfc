@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Coin } from '@benfen/bfc.js';
 import { CoinMetadata } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
+
 import { formatAmount } from '../utils/formatAmount';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 
 type FormattedCoin = [
 	formattedBalance: string,
@@ -99,17 +99,7 @@ export function useFormatCoin(
 	const queryResult = useCoinMetadata(coinType);
 	const { isFetched, data } = queryResult;
 
-	const fallbackSymbol = useMemo(() => {
-		let type = data?.symbol;
-		if (!type) {
-			if (!coinType) {
-				type = '';
-			} else {
-				type = Coin.getCoinSymbol(coinType);
-			}
-		}
-		return type === 'SUI' ? 'BFC' : type;
-	}, [coinType, data]);
+	const fallbackSymbol = useMemo(() => (coinType ? getCoinSymbol(coinType) ?? '' : ''), [coinType]);
 
 	const formatted = useMemo(() => {
 		if (typeof balance === 'undefined' || balance === null) return '';
@@ -120,4 +110,8 @@ export function useFormatCoin(
 	}, [data?.decimals, isFetched, balance, format]);
 
 	return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
+}
+
+export function getCoinSymbol(coinTypeArg: string) {
+	return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 }

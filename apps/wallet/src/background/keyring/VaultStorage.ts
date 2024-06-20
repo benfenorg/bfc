@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromExportedKeypair } from '@benfen/bfc.js';
+import { getRandomEntropy, toEntropy } from '_shared/utils/bip39';
+import { getRandomPassword, makeEphemeraPassword } from '_src/shared/cryptography/keystore';
+import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
+import type { ExportedKeypair } from '@benfen/bfc.js/cryptography';
 
-import { type DerivedAccount } from './DerivedAccount';
-import { type ImportedAccount } from './ImportedAccount';
-import { Vault } from './Vault';
 import {
 	getFromLocalStorage,
 	getFromSessionStorage,
@@ -13,11 +13,10 @@ import {
 	setToLocalStorage,
 	setToSessionStorage,
 } from '../storage-utils';
-import { getRandomEntropy, toEntropy } from '_shared/utils/bip39';
-
-import { getRandomPassword, makeEphemeraPassword } from '_src/shared/cryptography/keystore';
+import { type DerivedAccount } from './DerivedAccount';
+import { type ImportedAccount } from './ImportedAccount';
+import { Vault } from './Vault';
 import type { StoredData } from './Vault';
-import type { ExportedKeypair } from '@benfen/bfc.js/cryptography';
 
 // we use this password + a random one for each time we store the encrypted
 // vault to session storage

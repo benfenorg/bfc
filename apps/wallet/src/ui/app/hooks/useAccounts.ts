@@ -3,8 +3,8 @@
 
 import { useMemo } from 'react';
 
-import useAppSelector from './useAppSelector';
 import { accountsAdapterSelectors } from '../redux/slices/account';
+import useAppSelector from './useAppSelector';
 
 export function useAccounts(addressesFilters?: string[]) {
 	const accounts = useAppSelector(accountsAdapterSelectors.selectAll);

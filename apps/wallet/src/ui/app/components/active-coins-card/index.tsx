@@ -1,15 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SUI_TYPE_ARG } from '@benfen/bfc.js';
-import { useGetAllBalances } from '@mysten/core';
-import { Link } from 'react-router-dom';
-
-import { CoinItem } from './CoinItem';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import Loading from '_components/loading';
 import { filterAndSortTokenBalances } from '_helpers';
 import { useCoinsReFetchingConfig } from '_hooks';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useGetAllBalances } from '@mysten/core';
+import { Link } from 'react-router-dom';
+
+import { CoinItem } from './CoinItem';
 
 export function ActiveCoinsCard({
 	activeCoinType = SUI_TYPE_ARG,

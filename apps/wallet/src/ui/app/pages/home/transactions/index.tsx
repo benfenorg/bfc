@@ -1,15 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import FiltersPortal from '_components/filters-tags';
+import { AccountType } from '_src/background/keyring/Account';
+import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import PageTitle from '_src/ui/app/shared/PageTitle';
 import cl from 'classnames';
 import { Navigate, useParams } from 'react-router-dom';
 
 import { CompletedTransactions } from './CompletedTransactions';
 import { QredoPendingTransactions } from './QredoPendingTransactions';
-import FiltersPortal from '_components/filters-tags';
-import { AccountType } from '_src/background/keyring/Account';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import PageTitle from '_src/ui/app/shared/PageTitle';
 
 function TransactionBlocksPage() {
 	const activeAccount = useActiveAccount();

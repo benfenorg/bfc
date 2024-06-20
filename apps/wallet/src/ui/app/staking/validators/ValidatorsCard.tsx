@@ -1,7 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type StakeObject } from '@benfen/bfc.js';
+import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
+import { Card, CardItem } from '_app/shared/card';
+import Alert from '_components/alert';
+import LoadingIndicator from '_components/loading/LoadingIndicator';
+import { ampli } from '_src/shared/analytics/ampli';
+import { type StakeObject } from '@benfen/bfc.js/client';
 import { useGetSystemState } from '@mysten/core';
 import { Plus12 } from '@mysten/icons';
 import { useMemo } from 'react';
@@ -9,14 +15,8 @@ import { useMemo } from 'react';
 import { useActiveAddress } from '../../hooks/useActiveAddress';
 import { getAllStakeSui } from '../getAllStakeSui';
 import { StakeAmount } from '../home/StakeAmount';
-import { StakeCard } from '../home/StakedCard';
+import { StakeCard, type DelegationObjectWithValidator } from '../home/StakedCard';
 import { useGetDelegatedStake } from '../useGetDelegatedStake';
-import { Button } from '_app/shared/ButtonUI';
-import BottomMenuLayout, { Menu, Content } from '_app/shared/bottom-menu-layout';
-import { Card, CardItem } from '_app/shared/card';
-import Alert from '_components/alert';
-import LoadingIndicator from '_components/loading/LoadingIndicator';
-import { ampli } from '_src/shared/analytics/ampli';
 
 export function ValidatorsCard() {
 	const accountAddress = useActiveAddress();
@@ -129,7 +129,7 @@ export function ValidatorsCard() {
 									?.filter(({ inactiveValidator }) => !inactiveValidator)
 									.map((delegation) => (
 										<StakeCard
-											delegationObject={delegation}
+											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
 											key={delegation.stakedSuiId}
 										/>

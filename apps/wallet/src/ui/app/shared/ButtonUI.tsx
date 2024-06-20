@@ -6,7 +6,7 @@
 
 import { cva, type VariantProps } from 'class-variance-authority';
 import cl from 'classnames';
-import { forwardRef, type Ref, type ReactNode } from 'react';
+import { forwardRef, type ReactNode, type Ref } from 'react';
 
 import { ButtonOrLink, type ButtonOrLinkProps } from './utils/ButtonOrLink';
 

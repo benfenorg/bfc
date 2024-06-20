@@ -1,19 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { randomBytes } from '@noble/hashes/utils';
 import { exec } from 'child_process';
+import { resolve } from 'path';
+import { randomBytes } from '@noble/hashes/utils';
 import CopyPlugin from 'copy-webpack-plugin';
 import DotEnv from 'dotenv-webpack';
 import gitRevSync from 'git-rev-sync';
 import HtmlWebpackPlugin from 'html-webpack-plugin';
 import MiniCssExtractPlugin from 'mini-css-extract-plugin';
-import { resolve } from 'path';
 import { DefinePlugin, ProvidePlugin } from 'webpack';
+import type { Configuration } from 'webpack';
 
 import packageJson from '../../package.json';
-
-import type { Configuration } from 'webpack';
 
 function generateDateVersion(patch: number) {
 	const sha = gitRevSync.short();

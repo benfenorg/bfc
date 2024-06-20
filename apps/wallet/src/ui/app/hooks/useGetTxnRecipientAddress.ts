@@ -1,11 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getTransactionKind, getTransactionSender } from '@benfen/bfc.js';
+import { getAmount } from '_helpers';
 import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useMemo } from 'react';
-
-import { getAmount } from '_helpers';
 
 type Props = {
 	txn: SuiTransactionBlockResponse;
@@ -20,7 +18,7 @@ export function useGetTxnRecipientAddress({ txn, address }: Props) {
 	//     return coins;
 	// }, [events, address]);
 
-	const transaction = getTransactionKind(txn)!;
+	const transaction = txn.transaction?.data.transaction!;
 	const amountByRecipient = getAmount(transaction, txn.effects!, events);
 
 	const recipientAddress = useMemo(() => {
@@ -35,7 +33,7 @@ export function useGetTxnRecipientAddress({ txn, address }: Props) {
 		//         ({ receiverAddress }) => receiverAddress !== address
 		//     )?.receiverAddress;
 
-		return null ?? transferObjectRecipientAddress ?? getTransactionSender(txn);
+		return null ?? transferObjectRecipientAddress ?? txn.transaction?.data.sender;
 	}, [address, amountByRecipient, txn]);
 	// }, [address, amountByRecipient, eventsSummary, txn]);
 

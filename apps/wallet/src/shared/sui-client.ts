@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
 import networkEnv from '_src/background/NetworkEnv';
-import { type NetworkEnvType, ENV_TO_API } from '_src/shared/api-env';
+import { ENV_TO_API, type NetworkEnvType } from '_src/shared/api-env';
+import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
 
 const suiClientPerNetwork = new Map<string, SuiClient>();
 
