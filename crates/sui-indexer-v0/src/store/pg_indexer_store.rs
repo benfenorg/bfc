@@ -1559,9 +1559,9 @@ impl PgIndexerStore {
         address: SuiAddress,
     ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError> {
         let mining_nfts: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
-            mining_nfts::dsl::mining_nfts
+            mining_nfts_view::dsl::mining_nfts_view
                 .filter(
-                    mining_nfts::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()),
+                    mining_nfts_view::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()),
                 )
                 .load(conn)
         })
@@ -1606,8 +1606,8 @@ impl PgIndexerStore {
         dt_timestamp_ms: i64,
     ) -> Result<Vec<MiningNFT>, IndexerError> {
         let pendings: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
-            mining_nfts::dsl::mining_nfts
-                .filter(mining_nfts::dsl::yesterday_dt_ms.ne(dt_timestamp_ms))
+            mining_nfts_view::dsl::mining_nfts_view
+                .filter(mining_nfts_view::dsl::yesterday_dt_ms.ne(dt_timestamp_ms))
                 .load(conn)
         })
         .context("Failed to load pending NFTs")?;
