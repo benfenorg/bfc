@@ -36,7 +36,10 @@ use crate::{
 };
 use sui_protocol_config::ProtocolConfig;
 use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
+use crate::gas::GasCostSummary;
 use crate::stable_coin::{StableCoin};
+use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
+use crate::stable_coin::stable::checked::STABLE;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
 pub const OBJECT_START_VERSION: SequenceNumber = SequenceNumber::from_u64(1);
@@ -390,6 +393,21 @@ impl MoveObject {
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         let balances = self.get_coin_balances(layout_resolver)?;
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
+    }
+
+    pub fn get_total_stable_coin(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
+        tracing::error!("stable coin {:?} balance:{:?}",STABLE::try_from(self.type_().get_stable_gas_tag().expect("failed to get stable tag"))
+            .expect("failed to parse stable index").get_index(),Coin::from_bcs_bytes(self.contents())
+        .expect("failed to deserialize coin")
+        .balance
+        .value());
+        Ok(Coin::from_bcs_bytes(self.contents())
+            .expect("failed to deserialize coin")
+            .balance
+            .value())
+        // let balances = self.get_coin_balances(layout_resolver)?;
+        // tracing::error!("balances {:?}",balances);
+        // Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
 }
 
@@ -940,6 +958,22 @@ impl Object {
                 },
                 Data::Package(_) => self.storage_rebate,
             })
+    }
+
+    pub fn get_total_stable_coin(&self, layout_resolver: &mut dyn LayoutResolver, gas_summary: &GasCostSummary) -> Result<u64, SuiError> {
+        Ok(match &self.data {
+            Data::Move(m) => {
+                if m.type_.is_stable_gas_coin() {
+                    //把bfc换算成stable coin
+                    tracing::error!("m {:?} total_stable_coin {:?}",m,m.get_total_stable_coin(layout_resolver));
+                    calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate + m.get_total_stable_coin(layout_resolver)?, gas_summary.rate, gas_summary.base_point)
+                } else {
+                    //返回错误
+                    self.storage_rebate + m.get_total_sui(layout_resolver)?
+                }
+            }
+            Data::Package(_) => self.storage_rebate,
+        })
     }
 
     pub fn immutable_with_id_for_testing(id: ObjectID) -> Self {

@@ -191,6 +191,13 @@ pub mod checked {
             self.computation_cost + self.storage_cost
         }
 
+        pub fn gas_pay_with_stable_coin(&self) -> bool {
+            if self.base_point != DEFAULT_BASE_POINT_FOR_BFC && self.rate != BASE_RATE {
+                return true;
+            }
+            false
+        }
+
         pub fn gas_used_improved(&self) -> u64 {
             let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
             let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);

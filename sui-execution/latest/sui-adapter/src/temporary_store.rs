@@ -29,6 +29,7 @@ use sui_types::{base_types::{
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -942,6 +943,7 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_rebate = 0;
         // total amount of SUI in storage rebate of output objects
         let mut total_output_rebate = 0;
+        tracing::error!("get_modified_objects {:?}",self.get_modified_objects());
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
@@ -950,8 +952,18 @@ impl<'backing> TemporaryStore<'backing> {
                 }
             }
             if let Some(object) = output {
+                //TODO: output rebate暂未处理
                 total_output_rebate += object.storage_rebate;
-                if do_expensive_checks {
+                tracing::error!("pay with stable coin {:?} summary {:?}",gas_summary.gas_pay_with_stable_coin(),gas_summary);
+                if do_expensive_checks && gas_summary.gas_pay_with_stable_coin() {
+                    total_output_sui += object.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
+                        make_invariant_violation!(
+                            "Failed looking up output Stable Coin in SUI conservation checking for \
+                             mutated type {:?}: {e:#?}",
+                            object.struct_tag(),
+                        )
+                    })?;
+                } else if do_expensive_checks && !gas_summary.gas_pay_with_stable_coin() {
                     total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
                         make_invariant_violation!(
                             "Failed looking up output SUI in SUI conservation checking for \
@@ -962,23 +974,29 @@ impl<'backing> TemporaryStore<'backing> {
                 }
             }
         }
+        tracing::error!("1 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
         if do_expensive_checks {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
             // both computation costs and storage rebate inflow are
-            total_output_sui +=
-                gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+            let other_cost = gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+            total_output_sui += match gas_summary.gas_pay_with_stable_coin() {
+                true => calculate_bfc_to_stable_cost_with_base_point(other_cost, gas_summary.rate, gas_summary.base_point),
+                false => other_cost
+            };
+            tracing::error!("2 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
                 total_input_sui += epoch_fees;
                 total_output_sui += epoch_rebates;
             }
+            tracing::error!("3 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
             if total_input_sui != total_output_sui {
-                // return Err(ExecutionError::invariant_violation(
-                //     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                //             total_input_sui,
-                //             total_output_sui))
-                // );
-                //return  Ok(());
+                return Err(ExecutionError::invariant_violation(
+                    format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                            total_input_sui,
+                            total_output_sui))
+                );
+                return Ok(());
             }
         }
 
