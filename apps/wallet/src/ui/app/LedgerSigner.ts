@@ -3,14 +3,14 @@
 
 import { type SuiClient } from '@benfen/bfc.js/client';
 import {
-	type SerializedSignature,
 	toSerializedSignature,
+	type SerializedSignature,
 	type SignatureScheme,
 } from '@benfen/bfc.js/cryptography';
 import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
-import { WalletSigner } from './WalletSigner';
-
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
+
+import { WalletSigner } from './WalletSigner';
 
 export class LedgerSigner extends WalletSigner {
 	#suiLedgerClient: SuiLedgerClient | null;
@@ -58,7 +58,7 @@ export class LedgerSigner extends WalletSigner {
 		return toSerializedSignature({
 			signature,
 			signatureScheme: this.#signatureScheme,
-			pubKey,
+			publicKey: pubKey,
 		});
 	}
 

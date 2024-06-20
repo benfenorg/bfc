@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowLeft16 } from '@mysten/icons';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Overlay from '_components/overlay';
 import { useActiveAddress, useCopyToClipboard, useExplorerLink } from '_hooks';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import BottomMenuLayout, { Content, Menu } from '_src/ui/app/shared/bottom-menu-layout';
+import { ArrowLeft16 } from '@mysten/icons';
+import { useNavigate } from 'react-router-dom';
 
 function ReceivePage() {
 	const navigate = useNavigate();

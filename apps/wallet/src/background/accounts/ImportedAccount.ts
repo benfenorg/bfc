@@ -1,16 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { decrypt, encrypt } from '_src/shared/cryptography/keystore';
+import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
 import { type ExportedKeypair } from '@benfen/bfc.js/cryptography';
+
 import {
 	Account,
 	type PasswordUnlockableAccount,
+	type SerializedAccount,
 	type SerializedUIAccount,
 	type SigningAccount,
-	type SerializedAccount,
 } from './Account';
-import { decrypt, encrypt } from '_src/shared/cryptography/keystore';
-import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
 
 type SessionStorageData = { keyPair: ExportedKeypair };
 type EncryptedData = { keyPair: ExportedKeypair };
@@ -55,6 +56,7 @@ export class ImportedAccount
 			lastUnlockedOn: null,
 			selected: false,
 			nickname: null,
+			createdAt: Date.now(),
 		};
 	}
 
@@ -87,6 +89,7 @@ export class ImportedAccount
 			selected,
 			nickname,
 			isPasswordUnlockable: true,
+			isKeyPairExportable: true,
 		};
 	}
 

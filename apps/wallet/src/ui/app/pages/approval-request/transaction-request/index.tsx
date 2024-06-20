@@ -1,13 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { useTransactionSummary } from '@mysten/core';
-import { useMemo, useState } from 'react';
-
-import { GasFees } from './GasFees';
-import { TransactionDetails } from './TransactionDetails';
-import { ConfirmationModal } from '../../../shared/ConfirmationModal';
 import { UserApproveContainer } from '_components/user-approve-container';
 import { useAppDispatch, useSigner, useTransactionData, useTransactionDryRun } from '_hooks';
 import { type TransactionApprovalRequest } from '_payloads/transactions/ApprovalRequest';
@@ -17,6 +10,13 @@ import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
 import { PageMainLayoutTitle } from '_src/ui/app/shared/page-main-layout/PageMainLayoutTitle';
 import { TransactionSummary } from '_src/ui/app/shared/transaction-summary';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { useTransactionSummary } from '@mysten/core';
+import { useMemo, useState } from 'react';
+
+import { ConfirmationModal } from '../../../shared/ConfirmationModal';
+import { GasFees } from './GasFees';
+import { TransactionDetails } from './TransactionDetails';
 
 export type TransactionRequestProps = {
 	txRequest: TransactionApprovalRequest;

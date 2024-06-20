@@ -1,5 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import type { IdentifierString } from '@wallet-standard/core';
 
 /** Sui Devnet */
 export const BFC_DEVNET_CHAIN = 'bfc:devnet';
@@ -25,3 +26,11 @@ export type BfcChain =
 	| typeof BFC_TESTNET_CHAIN
 	| typeof BFC_LOCALNET_CHAIN
 	| typeof BFC_MAINNET_CHAIN;
+
+/**
+ * Utility that returns whether or not a chain identifier is a valid Sui chain.
+ * @param chain a chain identifier in the form of `${string}:{$string}`
+ */
+export function isBfcChain(chain: IdentifierString): chain is BfcChain {
+	return BFC_CHAINS.includes(chain as BfcChain);
+}

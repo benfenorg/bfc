@@ -2,8 +2,9 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
-	"version": "0.1.5",
+	"version": "0.1.6",
 	"license": "Apache-2.0",
+	"sideEffects": false,
 	"files": [
 		"CHANGELOG.md",
 		"LICENSE",
@@ -15,6 +16,7 @@
 		"dapp-kit",
 		"dist",
 		"faucet",
+		"graphql",
 		"keypairs",
 		"multisig",
 		"src",
@@ -23,73 +25,63 @@
 		"verify",
 		"wallet-kit",
 		"wallet-kit-core",
-		"wallet-standard"
+		"wallet-standard",
+		"zklogin"
 	],
 	"engines": {
 		"node": ">=16"
 	},
 	"type": "commonjs",
-	"main": "./dist/cjs/index.js",
-	"module": "./dist/esm/index.js",
-	"types": "./dist/cjs/index.d.ts",
 	"exports": {
-		".": {
-			"source": "./src/index.ts",
-			"import": "./dist/esm/index.js",
-			"require": "./dist/cjs/index.js"
-		},
 		"./bcs": {
-			"source": "./src/bcs/index.ts",
 			"import": "./dist/esm/bcs/index.js",
 			"require": "./dist/cjs/bcs/index.js"
 		},
 		"./client": {
-			"source": "./src/client/index.ts",
 			"import": "./dist/esm/client/index.js",
 			"require": "./dist/cjs/client/index.js"
 		},
 		"./cryptography": {
-			"source": "./src/cryptography/index.ts",
 			"import": "./dist/esm/cryptography/index.js",
 			"require": "./dist/cjs/cryptography/index.js"
 		},
 		"./faucet": {
-			"source": "./src/faucet/index.ts",
 			"import": "./dist/esm/faucet/index.js",
 			"require": "./dist/cjs/faucet/index.js"
 		},
+		"./graphql": {
+			"import": "./dist/esm/graphql/index.js",
+			"require": "./dist/cjs/graphql/index.js"
+		},
+		"./graphql/schemas/2024-01": {
+			"import": "./dist/esm/graphql/schemas/2024-01/index.js",
+			"require": "./dist/cjs/graphql/schemas/2024-01/index.js"
+		},
 		"./keypairs/ed25519": {
-			"source": "./src/keypairs/ed25519/index.ts",
 			"import": "./dist/esm/keypairs/ed25519/index.js",
 			"require": "./dist/cjs/keypairs/ed25519/index.js"
 		},
 		"./keypairs/secp256k1": {
-			"source": "./src/keypairs/secp256k1/index.ts",
 			"import": "./dist/esm/keypairs/secp256k1/index.js",
 			"require": "./dist/cjs/keypairs/secp256k1/index.js"
 		},
 		"./keypairs/secp256r1": {
-			"source": "./src/keypairs/secp256r1/index.ts",
 			"import": "./dist/esm/keypairs/secp256r1/index.js",
 			"require": "./dist/cjs/keypairs/secp256r1/index.js"
 		},
 		"./multisig": {
-			"source": "./src/multisig/index.ts",
 			"import": "./dist/esm/multisig/index.js",
 			"require": "./dist/cjs/multisig/index.js"
 		},
 		"./transactions": {
-			"source": "./src/builder/export.ts",
-			"import": "./dist/esm/builder/export.js",
-			"require": "./dist/cjs/builder/export.js"
+			"import": "./dist/esm/transactions/export.js",
+			"require": "./dist/cjs/transactions/export.js"
 		},
 		"./utils": {
-			"source": "./src/utils/index.ts",
 			"import": "./dist/esm/utils/index.js",
 			"require": "./dist/cjs/utils/index.js"
 		},
 		"./verify": {
-			"source": "./src/verify/index.ts",
 			"import": "./dist/esm/verify/index.js",
 			"require": "./dist/cjs/verify/index.js"
 		},
@@ -112,23 +104,25 @@
 			"source": "./src/wallet-kit/index.ts",
 			"import": "./dist/esm/wallet-kit/index.js",
 			"require": "./dist/cjs/wallet-kit/index.js"
+		},
+		"./zklogin": {
+			"source": "./src/zklogin/index.ts",
+			"import": "./dist/esm/zklogin/index.js",
+			"require": "./dist/cjs/zklogin/index.js"
 		}
 	},
 	"scripts": {
 		"clean": "rm -rf tsconfig.tsbuildinfo ./dist",
 		"codegen:version": "node genversion.mjs",
-		"dev": "pnpm build:tsup --watch",
-		"build": "node genversion.mjs && pnpm build:package && pnpm build:tsup",
+		"build": "node genversion.mjs && pnpm build:package",
 		"build:package": "build-package",
-		"build:tsup": "tsup ./src/index.ts --format esm,cjs --sourcemap --env.NODE_ENV=production",
-		"doc": "typedoc",
 		"vitest": "vitest",
 		"test": "pnpm test:typecheck && pnpm test:unit",
 		"test:typecheck": "tsc -p ./test",
 		"test:unit": "vitest run unit __tests__",
-		"test:e2e": "wait-on http://127.0.0.1:9123 -l --timeout 120000 && vitest run e2e",
+		"test:e2e": "wait-on http://127.0.0.1:9123 -l --timeout 180000 && vitest run e2e",
 		"test:e2e:nowait": "vitest run e2e",
-		"prepare:e2e": "cargo build --bin bfc-test-validator --bin sui --profile dev && cross-env RUST_LOG=info,sui=error,anemo_tower=warn,consensus=off cargo run --bin sui-test-validator",
+		"prepare:e2e": "docker-compose down && docker-compose up -d && cargo build --bin sui-test-validator --bin sui --profile dev && cross-env RUST_LOG=info,sui=error,anemo_tower=warn,consensus=off cargo run --bin sui-test-validator -- --with-indexer --pg-port 5435 --pg-db-name sui_indexer_v2 --graphql-host 127.0.0.1 --graphql-port 9125",
 		"prepublishOnly": "pnpm build",
 		"size": "size-limit",
 		"analyze": "size-limit --why",
@@ -142,22 +136,18 @@
 	"publishConfig": {
 		"access": "public"
 	},
-	"size-limit": [
-		{
-			"path": "dist/index.js",
-			"limit": "100 KB"
-		},
-		{
-			"path": "dist/index.mjs",
-			"limit": "100 KB"
-		}
-	],
 	"devDependencies": {
+		"@0no-co/graphqlsp": "^1.7.1",
 		"@benfen/build-scripts": "workspace:*",
+		"@graphql-codegen/add": "^5.0.2",
+		"@graphql-codegen/cli": "^5.0.2",
+		"@graphql-codegen/typed-document-node": "^5.0.4",
+		"@graphql-codegen/typescript": "4.0.4",
+		"@graphql-codegen/typescript-operations": "^4.1.2",
 		"@headlessui/react": "^1.7.15",
 		"@iarna/toml": "^2.2.5",
 		"@size-limit/preset-small-lib": "^8.2.6",
-		"@tanstack/react-query": "^4.29.25",
+		"@tanstack/react-query": "^5.0.0",
 		"@testing-library/dom": "^9.3.1",
 		"@testing-library/jest-dom": "^5.17.0",
 		"@testing-library/react": "^14.0.0",
@@ -167,35 +157,50 @@
 		"@types/react": "^18.2.15",
 		"@types/testing-library__jest-dom": "^5.14.9",
 		"@types/tmp": "^0.2.3",
+		"@types/ws": "^8.5.9",
 		"cross-env": "^7.0.3",
+		"graphql-config": "^5.0.3",
 		"msw": "^1.2.2",
 		"react": "^18.2.0",
 		"size-limit": "^8.2.6",
 		"tmp": "^0.2.1",
 		"ts-retry-promise": "^0.7.0",
-		"tsup": "^7.1.0",
-		"tsx": "^3.12.7",
-		"typedoc": "^0.24.8",
-		"typescript": "^5.1.6",
+		"typescript": "^5.3.3",
 		"vite": "^4.4.4",
 		"vitest": "^0.33.0",
-		"wait-on": "^7.0.1"
+		"wait-on": "^7.0.1",
+		"ws": "^8.14.2"
 	},
 	"dependencies": {
+		"@graphql-typed-document-node/core": "^3.2.0",
 		"@noble/curves": "^1.1.0",
 		"@noble/hashes": "^1.3.1",
-		"@open-rpc/client-js": "^1.8.1",
+		"@radix-ui/react-dialog": "^1.0.5",
+		"@radix-ui/react-dropdown-menu": "^2.0.6",
+		"@radix-ui/react-slot": "^1.0.2",
 		"@scure/bip32": "^1.3.1",
 		"@scure/bip39": "^1.2.1",
 		"@stitches/react": "^1.2.8",
 		"@suchipi/femver": "^1.0.0",
+		"@vanilla-extract/css": "^1.15.3",
+		"@vanilla-extract/dynamic": "^2.1.1",
+		"@vanilla-extract/recipes": "^0.5.3",
 		"@wallet-standard/core": "^1.0.3",
+		"bech32": "^2.0.0",
 		"bignumber.js": "^9.1.1",
 		"bs58": "^5.0.0",
+		"clsx": "^2.0.0",
 		"events": "^3.3.0",
 		"fast-sha256": "^1.3.0",
+		"gql.tada": "^1.4.1",
+		"graphql": "^16.8.1",
+		"jose": "^5.4.1",
+		"mitt": "^3.0.1",
+		"poseidon-lite": "^0.2.0",
 		"superstruct": "^1.0.3",
-		"tweetnacl": "^1.0.3"
+		"tweetnacl": "^1.0.3",
+		"valibot": "^0.25.0",
+		"zustand": "^4.4.1"
 	},
 	"peerDependencies": {
 		"@headlessui/react": "*",

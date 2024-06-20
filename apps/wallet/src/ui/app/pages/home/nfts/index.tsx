@@ -1,16 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getKioskIdFromOwnerCap, isKioskOwnerToken, useOnScreen } from '@mysten/core';
-import { Check12, EyeClose16 } from '@mysten/icons';
-import { get, set } from 'idb-keyval';
-import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-
-import AssetsOptionsMenu from './AssetsOptionsMenu';
-import { Link as InlineLink } from '../../../shared/Link';
-import { Text } from '../../../shared/text';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
@@ -21,6 +11,16 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { useGetNFTs } from '_src/ui/app/hooks/useGetNFTs';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
+import { useOnScreen } from '@mysten/core';
+import { Check12, EyeClose16 } from '@mysten/icons';
+import { get, set } from 'idb-keyval';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
+
+import { Link as InlineLink } from '../../../shared/Link';
+import { Text } from '../../../shared/text';
+import AssetsOptionsMenu from './AssetsOptionsMenu';
 
 const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
 
@@ -171,15 +171,9 @@ function NftsPage() {
 					<div className="grid w-full grid-cols-2 gap-x-3.5 gap-y-4 mb-5">
 						{filteredNFTs.map((object) => (
 							<Link
-								to={
-									isKioskOwnerToken(object)
-										? `/kiosk?${new URLSearchParams({
-												kioskId: getKioskIdFromOwnerCap(object),
-										  })}`
-										: `/nft-details?${new URLSearchParams({
-												objectId: object.objectId,
-										  }).toString()}`
-								}
+								to={`/nft-details?${new URLSearchParams({
+									objectId: object.objectId,
+								}).toString()}`}
 								onClick={() => {
 									ampli.clickedCollectibleCard({
 										objectId: object.objectId,
@@ -191,22 +185,20 @@ function NftsPage() {
 							>
 								<div className="group">
 									<div className="w-full h-full justify-center z-10 absolute pointer-events-auto text-gray-60 transition-colors duration-200 p-0">
-										{!isKioskOwnerToken(object) ? (
-											<div className="absolute top-2 right-3 rounded-md h-8 w-8 opacity-0 group-hover:opacity-100">
-												<Button
-													variant="hidden"
-													size="icon"
-													onClick={(event: any) => {
-														ampli.clickedHideAsset({
-															objectId: object.objectId,
-															collectibleType: object.type!,
-														});
-														hideAsset(object.objectId, event);
-													}}
-													after={<EyeClose16 />}
-												/>
-											</div>
-										) : null}
+										<div className="absolute top-2 right-3 rounded-md h-8 w-8 opacity-0 group-hover:opacity-100">
+											<Button
+												variant="hidden"
+												size="icon"
+												onClick={(event: any) => {
+													ampli.clickedHideAsset({
+														objectId: object.objectId,
+														collectibleType: object.type!,
+													});
+													hideAsset(object.objectId, event);
+												}}
+												after={<EyeClose16 />}
+											/>
+										</div>
 									</div>
 									<ErrorBoundary>
 										<NFTDisplayCard

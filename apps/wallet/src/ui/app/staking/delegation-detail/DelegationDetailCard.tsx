@@ -1,23 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
-import {
-	useGetValidatorsApy,
-	useGetSystemState,
-	useCoinMetadata,
-	useGetCoinBalance,
-} from '@mysten/core';
-import { ArrowLeft16 } from '@mysten/icons';
-import BigNumber from 'bignumber.js';
-import { useMemo } from 'react';
-
-import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
-import { StakeAmount } from '../home/StakeAmount';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
-import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
 import { Card } from '_app/shared/card';
 import { Text } from '_app/shared/text';
 import { IconTooltip } from '_app/shared/tooltip';
@@ -29,6 +14,21 @@ import { API_ENV } from '_src/shared/api-env';
 import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import type { StakeObject } from '@benfen/bfc.js/client';
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import {
+	useCoinMetadata,
+	useGetCoinBalance,
+	useGetSystemState,
+	useGetValidatorsApy,
+} from '@mysten/core';
+import { ArrowLeft16 } from '@mysten/icons';
+import BigNumber from 'bignumber.js';
+import { useMemo } from 'react';
+
+import { useActiveAddress } from '../../hooks/useActiveAddress';
+import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
+import { StakeAmount } from '../home/StakeAmount';
+import { useGetDelegatedStake } from '../useGetDelegatedStake';
 
 type DelegationDetailCardProps = {
 	validatorAddress: string;

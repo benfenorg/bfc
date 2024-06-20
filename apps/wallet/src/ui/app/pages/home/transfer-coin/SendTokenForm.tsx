@@ -1,28 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Coin as CoinAPI } from '@benfen/bfc.js';
-import { type CoinStruct } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-import {
-	useCoinMetadata,
-	useFormatCoin,
-	CoinFormat,
-	isSuiNSName,
-	useSuiNSEnabled,
-} from '@mysten/core';
-import { ArrowRight16 } from '@mysten/icons';
-import { useQuery } from '@tanstack/react-query';
-import cl from 'classnames';
-import { Field, Form, useFormikContext, Formik } from 'formik';
-import { useMemo, useEffect } from 'react';
-
-import { createTokenTransferTransaction } from './utils/transaction';
-import { createValidationSchemaStepOne } from './validation';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
-import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import { AddressInput } from '_components/address-input';
 import Alert from '_components/alert';
@@ -31,6 +12,24 @@ import { parseAmount } from '_helpers';
 import { useGetAllCoins } from '_hooks';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
+import { type CoinStruct } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import {
+	CoinFormat,
+	isSuiNSName,
+	useCoinMetadata,
+	useFormatCoin,
+	useSuiNSEnabled,
+} from '@mysten/core';
+import { ArrowRight16 } from '@mysten/icons';
+import { useQuery } from '@tanstack/react-query';
+import cl from 'classnames';
+import { Field, Form, Formik, useFormikContext } from 'formik';
+import { useEffect, useMemo } from 'react';
+
+import { createTokenTransferTransaction } from './utils/transaction';
+import { createValidationSchemaStepOne } from './validation';
 
 const initialValues = {
 	to: '',
@@ -56,6 +55,13 @@ export type SendTokenFormProps = {
 	initialAmount: string;
 	initialTo: string;
 };
+
+function totalBalance(coins: CoinStruct[]): bigint {
+	return coins.reduce((partialSum, c) => partialSum + getBalanceFromCoinStruct(c), BigInt(0));
+}
+function getBalanceFromCoinStruct(coin: CoinStruct): bigint {
+	return BigInt(coin.balance);
+}
 
 function GasBudgetEstimation({
 	coinDecimals,
@@ -154,8 +160,8 @@ export function SendTokenForm({
 
 	const suiCoins = suiCoinsData;
 	const coins = coinsData;
-	const coinBalance = CoinAPI.totalBalance(coins || []);
-	const suiBalance = CoinAPI.totalBalance(suiCoins || []);
+	const coinBalance = totalBalance(coins || []);
+	const suiBalance = totalBalance(suiCoins || []);
 
 	const coinMetadata = useCoinMetadata(coinType);
 	const coinDecimals = coinMetadata.data?.decimals ?? 0;

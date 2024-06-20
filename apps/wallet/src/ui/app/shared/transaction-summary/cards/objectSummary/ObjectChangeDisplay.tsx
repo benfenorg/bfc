@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import ExplorerLink from '_src/ui/app/components/explorer-link';
+import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
+import { NftImage } from '_src/ui/app/components/nft-display/NftImage';
 import { formatAddress } from '@benfen/bfc.js/utils';
 import { type SuiObjectChangeWithDisplay } from '@mysten/core';
 
 import { Text } from '../../../text';
-import ExplorerLink from '_src/ui/app/components/explorer-link';
-import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
-import { NftImage } from '_src/ui/app/components/nft-display/NftImage';
 
 export function ObjectChangeDisplay({ change }: { change: SuiObjectChangeWithDisplay }) {
 	const display = change?.display?.data;

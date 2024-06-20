@@ -1,16 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowRight16 } from '@mysten/icons';
-import { Formik, Form } from 'formik';
-import * as Yup from 'yup';
-
 import { Button } from '_app/shared/ButtonUI';
 import FieldLabel from '_app/shared/field-label';
 import Alert from '_components/alert';
 import { mnemonicValidation } from '_pages/initialize/import/validation';
 import { PasswordInputField } from '_src/ui/app/shared/input/password';
 import { Text } from '_src/ui/app/shared/text';
+import { ArrowRight16 } from '@mysten/icons';
+import { Form, Formik } from 'formik';
+import * as Yup from 'yup';
 
 import type { StepProps } from '.';
 

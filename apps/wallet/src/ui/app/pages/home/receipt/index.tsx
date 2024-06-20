@@ -1,18 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getExecutionStatusType } from '@benfen/bfc.js';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { Check24 } from '@mysten/icons';
-import { useQuery } from '@tanstack/react-query';
-import { useCallback, useMemo, useState } from 'react';
-import { Navigate, useSearchParams, useNavigate, useLocation } from 'react-router-dom';
-
 import Alert from '_components/alert';
 import Loading from '_components/loading';
 import Overlay from '_components/overlay';
 import { ReceiptCard } from '_src/ui/app/components/receipt-card';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { Check24 } from '@mysten/icons';
+import { useQuery } from '@tanstack/react-query';
+import { useCallback, useMemo, useState } from 'react';
+import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 
 function ReceiptPage() {
 	const location = useLocation();
@@ -25,7 +24,7 @@ function ReceiptPage() {
 	const fromParam = searchParams.get('from');
 	const rpc = useSuiClient();
 
-	const { data, isLoading, isError } = useQuery({
+	const { data, isLoading, isError } = useQuery<SuiTransactionBlockResponse>({
 		queryKey: ['transactions-by-id', transactionId],
 		queryFn: async () => {
 			return rpc.getTransactionBlock({
@@ -53,7 +52,7 @@ function ReceiptPage() {
 
 	const pageTitle = useMemo(() => {
 		if (data) {
-			const executionStatus = getExecutionStatusType(data);
+			const executionStatus = data.effects?.status.status;
 
 			// TODO: Infer out better name:
 			const transferName = 'Transaction';

@@ -1,6 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import Loading from '_components/loading';
+import { UserApproveContainer } from '_components/user-approve-container';
+import { useAppDispatch, useAppSelector } from '_hooks';
+import type { RootState } from '_redux/RootReducer';
+import { permissionsSelectors, respondToPermissionRequest } from '_redux/slices/permissions';
+import { ampli } from '_src/shared/analytics/ampli';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 
@@ -9,14 +15,6 @@ import { SummaryCard } from '../../components/SummaryCard';
 import { WalletListSelect } from '../../components/WalletListSelect';
 import { useActiveAddress } from '../../hooks/useActiveAddress';
 import { PageMainLayoutTitle } from '../../shared/page-main-layout/PageMainLayoutTitle';
-import Loading from '_components/loading';
-import { UserApproveContainer } from '_components/user-approve-container';
-import { useAppDispatch, useAppSelector } from '_hooks';
-import { permissionsSelectors, respondToPermissionRequest } from '_redux/slices/permissions';
-import { ampli } from '_src/shared/analytics/ampli';
-
-import type { RootState } from '_redux/RootReducer';
-
 import st from './SiteConnectPage.module.scss';
 
 function SiteConnectPage() {

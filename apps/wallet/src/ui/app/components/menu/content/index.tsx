@@ -1,16 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback } from 'react';
-import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
-
-import { AccountsSettings } from './AccountsSettings';
-import { AutoLockSettings } from './AutoLockSettings';
-import { ExportAccount } from './ExportAccount';
-import { ImportPrivateKey } from './ImportPrivateKey';
-import MenuList from './MenuList';
-import { NetworkSettings } from './NetworkSettings';
-import { ConnectLedgerModalContainer } from '../../ledger/ConnectLedgerModalContainer';
 import { ErrorBoundary } from '_components/error-boundary';
 import {
 	MainLocationContext,
@@ -20,9 +10,18 @@ import {
 } from '_components/menu/hooks';
 import { RecoveryPassphrase } from '_components/recovery-passphrase/RecoveryPassphrase';
 import { useOnKeyboardEvent } from '_hooks';
-
 import { ImportLedgerAccountsPage } from '_src/ui/app/pages/accounts/ImportLedgerAccountsPage';
+import { useCallback } from 'react';
 import type { MouseEvent } from 'react';
+import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+
+import { ConnectLedgerModalContainer } from '../../ledger/ConnectLedgerModalContainer';
+import { AccountsSettings } from './AccountsSettings';
+import { AutoLockSettings } from './AutoLockSettings';
+import { ExportAccount } from './ExportAccount';
+import { ImportPrivateKey } from './ImportPrivateKey';
+import MenuList from './MenuList';
+import { NetworkSettings } from './NetworkSettings';
 
 const CLOSE_KEY_CODES: string[] = ['Escape'];
 

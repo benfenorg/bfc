@@ -1,12 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SUI_TYPE_ARG } from '@benfen/bfc.js';
+import { ImageIcon } from '_app/shared/image-icon';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useCoinMetadata } from '@mysten/core';
 import { Logo, Unstaked } from '@mysten/icons';
 import { cva, type VariantProps } from 'class-variance-authority';
-
-import { ImageIcon } from '_app/shared/image-icon';
 
 const imageStyle = cva(['rounded-full flex rounded-full flex justify-center items-center'], {
 	variants: {

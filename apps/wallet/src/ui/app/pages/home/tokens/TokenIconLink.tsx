@@ -1,15 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SUI_TYPE_ARG } from '@benfen/bfc.js';
+import { DelegatedAPY } from '_app/shared/delegated-apy';
+import { LargeButton } from '_app/shared/LargeButton';
+import { useGetDelegatedStake } from '_app/staking/useGetDelegatedStake';
+import { ampli } from '_src/shared/analytics/ampli';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
 import { WalletActionStake24 } from '@mysten/icons';
 import { useMemo } from 'react';
-
-import { LargeButton } from '_app/shared/LargeButton';
-import { DelegatedAPY } from '_app/shared/delegated-apy';
-import { useGetDelegatedStake } from '_app/staking/useGetDelegatedStake';
-import { ampli } from '_src/shared/analytics/ampli';
 
 export function TokenIconLink({ accountAddress }: { accountAddress: string }) {
 	const { data: delegatedStake, isLoading } = useGetDelegatedStake(accountAddress);

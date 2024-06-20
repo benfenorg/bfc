@@ -1,5 +1,6 @@
 {
 	"private": true,
 	"import": "../dist/esm/wallet-kit/index.js",
-	"main": "../dist/cjs/wallet-kit/index.js"
+	"main": "../dist/cjs/wallet-kit/index.js",
+	"sideEffects": false
 }

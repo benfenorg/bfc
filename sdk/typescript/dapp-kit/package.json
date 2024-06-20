@@ -1,5 +1,6 @@
 {
 	"private": true,
 	"import": "../dist/esm/dapp-kit/index.js",
-	"main": "../dist/cjs/dapp-kit/index.js"
+	"main": "../dist/cjs/dapp-kit/index.js",
+	"sideEffects": false
 }

@@ -1,11 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type CoinBalance } from '@benfen/bfc.js';
+import { CoinItem } from '_components/active-coins-card/CoinItem';
+import { type CoinBalance } from '@benfen/bfc.js/client';
 import { type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-
-import { CoinItem } from '_components/active-coins-card/CoinItem';
 
 type Props = {
 	coinBalance: CoinBalance;

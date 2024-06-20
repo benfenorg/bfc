@@ -1,44 +1,25 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ZkLoginProvider } from '_src/background/accounts/zklogin/providers';
-import { type Wallet } from '_src/shared/qredo-api';
 import {
 	createContext,
-	useCallback,
 	useContext,
-	useMemo,
-	useRef,
-	type MutableRefObject,
+	useState,
+	type Dispatch,
 	type ReactNode,
+	type SetStateAction,
 } from 'react';
 
-export type AccountsFormValues =
-	| { type: 'zkLogin'; provider: ZkLoginProvider }
-	| { type: 'new-mnemonic' }
-	| { type: 'import-mnemonic'; entropy: string }
-	| { type: 'mnemonic-derived'; sourceID: string }
-	| { type: 'imported'; keyPair: string }
-	| {
-			type: 'ledger';
-			accounts: { publicKey: string; derivationPath: string; address: string }[];
-	  }
-	| { type: 'qredo'; accounts: Wallet[]; qredoID: string }
-	| null;
+import { type FormValues as ImportRecoveryPhraseFormValues } from './ImportRecoveryPhraseForm';
+import { type FormValues as ProtectAccountFormValues } from './ProtectAccountForm';
 
-type AccountsFormContextType = [
-	MutableRefObject<AccountsFormValues>,
-	(values: AccountsFormValues) => void,
-];
+type AccountsFormValues = Partial<ImportRecoveryPhraseFormValues & ProtectAccountFormValues> | null;
+type AccountsFormContextType = [AccountsFormValues, Dispatch<SetStateAction<AccountsFormValues>>];
 
 const AccountsFormContext = createContext<AccountsFormContextType | null>(null);
 
 export const AccountsFormProvider = ({ children }: { children: ReactNode }) => {
-	const valuesRef = useRef<AccountsFormValues>(null);
-	const setter = useCallback((values: AccountsFormValues) => {
-		valuesRef.current = values;
-	}, []);
-	const value = useMemo(() => [valuesRef, setter] as AccountsFormContextType, [setter]);
+	const value = useState<AccountsFormValues>(null);
 	return <AccountsFormContext.Provider value={value}>{children}</AccountsFormContext.Provider>;
 };
 

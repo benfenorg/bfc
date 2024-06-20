@@ -1,8 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress, formatDigest, sui2BfcAddress } from './format.js';
 import {
+	bfcDigitsToHumanReadable,
+	hexToString,
+	humanReadableToBfcDigits,
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	isValidTransactionDigest,
@@ -10,14 +12,12 @@ import {
 	normalizeSuiAddress,
 	normalizeSuiObjectId,
 	parseStructTag,
-	SUI_ADDRESS_LENGTH,
-	humanReadableToBfcDigits,
-	bfcDigitsToHumanReadable,
-	hexToString,
 	strToHex,
+	SUI_ADDRESS_LENGTH,
 } from './bfc-types.js';
+import { bfc2SuiAddress, formatAddress, formatDigest, sui2BfcAddress } from './format.js';
 
-export { fromB64, toB64 } from '../bcs/src/index.js';
+export { fromB64, toB64, fromHEX, toHEX } from '../bcs/src/index.js';
 export { is, assert } from 'superstruct';
 
 export {
@@ -35,7 +35,11 @@ export {
 	bfcDigitsToHumanReadable,
 	hexToString,
 	strToHex,
+	sui2BfcAddress,
+	bfc2SuiAddress,
 };
+
+export { isValidSuiNSName, normalizeSuiNSName } from './suins.js';
 
 export const SUI_DECIMALS = 9;
 export const MIST_PER_SUI = BigInt(1000000000);

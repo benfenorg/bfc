@@ -1,10 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowLeft16, Check12 } from '@mysten/icons';
-import { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-
 import { Button } from '_app/shared/ButtonUI';
 import { CardLayout } from '_app/shared/card-layout';
 import { Text } from '_app/shared/text';
@@ -16,6 +12,9 @@ import { loadEntropyFromKeyring } from '_redux/slices/account';
 import { entropyToMnemonic, toEntropy } from '_shared/utils/bip39';
 import { HideShowDisplayBox } from '_src/ui/app/components/HideShowDisplayBox';
 import { PasswordInputDialog } from '_src/ui/app/components/menu/content/PasswordInputDialog';
+import { ArrowLeft16, Check12 } from '@mysten/icons';
+import { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 
 export type BackupPageProps = {
 	mode?: 'created' | 'imported';

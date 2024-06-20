@@ -1,8 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
+import { type Message } from '_src/shared/messaging/messages';
+import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
+import { QredoAPI, type AccessTokenResponse } from '_src/shared/qredo-api';
 import mitt from 'mitt';
 
+import { type ContentScriptConnection } from '../connections/ContentScriptConnection';
+import keyring from '../keyring';
+import Tabs from '../Tabs';
+import { Window } from '../Window';
 import {
 	createPendingRequest,
 	deletePendingRequest,
@@ -15,19 +23,11 @@ import {
 	updatePendingRequest,
 } from './storage';
 import {
-	type UIQredoInfo,
-	type QredoConnectPendingRequest,
 	type QredoConnectIdentity,
+	type QredoConnectPendingRequest,
+	type UIQredoInfo,
 } from './types';
 import { qredoConnectPageUrl, toUIQredoPendingRequest, validateInputOrThrow } from './utils';
-import Tabs from '../Tabs';
-import { Window } from '../Window';
-import { type ContentScriptConnection } from '../connections/ContentScriptConnection';
-import keyring from '../keyring';
-import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
-import { type Message } from '_src/shared/messaging/messages';
-import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
-import { type AccessTokenResponse, QredoAPI } from '_src/shared/qredo-api';
 
 const qredoEvents = mitt<{
 	onConnectionResponse: {

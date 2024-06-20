@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SuiObjectData } from '@benfen/bfc.js/client';
-import { hasDisplayData, isKioskOwnerToken, useGetOwnedObjects } from '@mysten/core';
+import { hasDisplayData, useGetOwnedObjects } from '@mysten/core';
 
 export function useGetNFTs(address?: string | null) {
 	const {
@@ -26,7 +26,6 @@ export function useGetNFTs(address?: string | null) {
 		data?.pages
 			.flatMap((page) => page.data)
 			.sort((object) => (hasDisplayData(object) ? -1 : 1))
-			.sort((object) => (isKioskOwnerToken(object) ? -1 : 1))
 			.map(({ data }) => data as SuiObjectData) ?? [];
 
 	return {

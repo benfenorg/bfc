@@ -1,14 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
-import cl from 'classnames';
-import { memo } from 'react';
-
 import Loading from '_components/loading';
 import { useAppSelector, useFullscreenGuard } from '_hooks';
 import { getNavIsVisible } from '_redux/slices/app';
-
+import { useFeatureIsOn } from '@growthbook/growthbook-react';
+import cl from 'classnames';
+import { memo } from 'react';
 import type { ReactNode } from 'react';
 
 import st from './Layout.module.scss';

@@ -1,11 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Handclap, Logo } from '@mysten/icons';
-
 import { Heading } from '_app/shared/heading';
 import { Text } from '_app/shared/text';
-
+import { Handclap, Logo } from '@mysten/icons';
 import type { ReactNode } from 'react';
 
 export type CardLayoutProps = {

@@ -1,9 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { describe, it, expect } from 'vitest';
+import { describe, expect, it } from 'vitest';
+
 import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { serde } from './utils.js';
+import { serde } from './utils';
 
 describe('BCS: Config', () => {
 	it('should work with Rust config', () => {

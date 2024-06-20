@@ -4,10 +4,11 @@
 // This is adapted from https://github.com/alepop/ed25519-hd-key replacing create-hmac
 // with @noble/hashes to be browser compatible.
 
-import { sha512 } from '@noble/hashes/sha512';
 import { hmac } from '@noble/hashes/hmac';
+import { sha512 } from '@noble/hashes/sha512';
 import nacl from 'tweetnacl';
-import { fromHEX } from '../../bcs/src';
+
+import { fromHEX } from '../../bcs/index.js';
 
 type Hex = string;
 type Path = string;

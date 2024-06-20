@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { DelegatedStake } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
-
-import type { DelegatedStake } from '@benfen/bfc.js/client';
 
 export function useGetDelegatedStake(address: string): UseQueryResult<DelegatedStake[], Error> {
 	const rpc = useSuiClient();
