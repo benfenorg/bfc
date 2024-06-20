@@ -16,6 +16,7 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
+use tracing::error;
 use tracing::log::info;
 
 use crate::balance::Balance;
@@ -965,14 +966,12 @@ impl Object {
             Data::Move(m) => {
                 if m.type_.is_stable_gas_coin() {
                     //把bfc换算成stable coin
-                    tracing::error!("m {:?} total_stable_coin {:?}",m,m.get_total_stable_coin(layout_resolver));
-                    calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate + m.get_total_stable_coin(layout_resolver)?, gas_summary.rate, gas_summary.base_point)
+                    calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, gas_summary.rate, gas_summary.base_point) + m.get_total_stable_coin(layout_resolver)?
                 } else {
-                    //返回错误
-                    self.storage_rebate + m.get_total_sui(layout_resolver)?
+                    Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
                 }
             }
-            Data::Package(_) => self.storage_rebate,
+            Data::Package(_) => Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?,
         })
     }
 

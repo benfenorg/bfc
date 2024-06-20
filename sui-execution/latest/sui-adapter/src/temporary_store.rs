@@ -843,6 +843,8 @@ impl<'backing> TemporaryStore<'backing> {
         id: &ObjectID,
         expected_version: SequenceNumber,
         layout_resolver: &mut impl LayoutResolver,
+        stable_coin: bool,
+        gas_summary: &GasCostSummary,
     ) -> Result<u64, ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
@@ -854,27 +856,53 @@ impl<'backing> TemporaryStore<'backing> {
                     obj.version(),
                 );
             }
-            obj.get_total_sui(layout_resolver).map_err(|e| {
-                make_invariant_violation!(
+            match stable_coin {
+                true => {
+                    return obj.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
+                        make_invariant_violation!(
+                    "Failed looking up input Stable Coin in SUI conservation checking for input with \
+                         type {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+                    });
+                }
+                false => {
+                    obj.get_total_sui(layout_resolver).map_err(|e| {
+                        make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for input with \
                          type {:?}: {e:#?}",
                     obj.struct_tag(),
                 )
-            })
+                    })
+                }
+            }
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+            let Ok(Some(obj)) = self.store.get_object_by_key(id, expected_version) else {
                 invariant_violation!(
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            obj.get_total_sui(layout_resolver).map_err(|e| {
-                make_invariant_violation!(
+            match stable_coin {
+                true => {
+                    obj.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
+                        make_invariant_violation!(
+                    "Failed looking up input Stable Coin in SUI conservation checking for type \
+                         {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+                    })
+                }
+                false => {
+                    obj.get_total_sui(layout_resolver).map_err(|e| {
+                        make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
                     obj.struct_tag(),
                 )
-            })
+                    })
+                }
+            }
         }
     }
 
@@ -943,18 +971,15 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_rebate = 0;
         // total amount of SUI in storage rebate of output objects
         let mut total_output_rebate = 0;
-        tracing::error!("get_modified_objects {:?}",self.get_modified_objects());
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
                 if do_expensive_checks {
-                    total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
+                    total_input_sui += self.get_input_sui(&id, version, layout_resolver, gas_summary.gas_pay_with_stable_coin(), gas_summary)?;
                 }
             }
             if let Some(object) = output {
-                //TODO: output rebate暂未处理
                 total_output_rebate += object.storage_rebate;
-                tracing::error!("pay with stable coin {:?} summary {:?}",gas_summary.gas_pay_with_stable_coin(),gas_summary);
                 if do_expensive_checks && gas_summary.gas_pay_with_stable_coin() {
                     total_output_sui += object.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
                         make_invariant_violation!(
