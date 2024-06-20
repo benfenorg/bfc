@@ -769,6 +769,8 @@ impl Loader {
                             module.identifier_at(fh.name).as_str(),
                         )
                         .ok_or_else(|| {
+                            println!("Missing dependeny error========{:?},,,,{:?}", module.identifier_at(mh.name).as_str(),
+                                     module.identifier_at(fh.name).as_str());
                             verification_error(
                                 StatusCode::MISSING_DEPENDENCY,
                                 IndexKind::FunctionHandle,
@@ -781,6 +783,7 @@ impl Loader {
             // For now this generates the only error test cases care about...
             for (idx, struct_def) in module.struct_defs().iter().enumerate() {
                 if struct_def.field_information == StructFieldInformation::Native {
+                    println!("Missing dependeny error======== StructFieldInformation::Native");
                     return Err(verification_error(
                         StatusCode::MISSING_DEPENDENCY,
                         IndexKind::FunctionHandle,

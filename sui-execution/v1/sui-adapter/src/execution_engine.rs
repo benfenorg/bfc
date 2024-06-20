@@ -187,7 +187,7 @@ mod checked {
         tracing::debug!(
         kind = ?error.kind(),
         tx_digest = ?transaction_digest,
-        "Verification Error. Source: {:?}",
+        "V1 Verification Error. Source: {:?}",
         error.source(),
         );
         }
