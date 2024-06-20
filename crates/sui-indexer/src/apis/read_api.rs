@@ -198,6 +198,12 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
         self.fullnode.get_inner_dao_info().await
     }
 
+    async fn get_bfc_zklogin_salt(&self) -> RpcResult<String> {
+        self.fullnode.get_bfc_zklogin_salt().await
+    }
+
+
+
     async fn try_multi_get_past_objects(
         &self,
         _past_objects: Vec<SuiGetPastObjectRequest>,
