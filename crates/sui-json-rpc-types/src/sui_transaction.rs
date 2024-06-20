@@ -537,11 +537,11 @@ impl SuiTransactionBlockKind {
     ) -> Result<Self, anyhow::Error> {
         Ok(match tx {
             TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(e.into()),
-            TransactionKind::ChangeBfcRound(o) => {
-                Self::ChangeBfcRound(SuiChangeBfcRound {
-                    round:o.bfc_round,
-                })
-            },
+            // TransactionKind::ChangeBfcRound(o) => {
+            //     Self::ChangeBfcRound(SuiChangeBfcRound {
+            //         round:o.bfc_round,
+            //     })
+            // },
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
             }),

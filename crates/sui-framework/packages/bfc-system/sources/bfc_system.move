@@ -61,7 +61,7 @@ module bfc_system::bfc_system {
 
     //spec module { pragma verify = false; }
 
-    public(friend) fun create(
+    public(package) fun create(
         id: UID,
         bfc_balance: Balance<BFC>,
         usd_supply: Supply<BUSD>,

@@ -5,7 +5,6 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-
     use move_binary_format::CompiledModule;
 
     use move_vm_runtime::move_vm::MoveVM;
@@ -69,7 +68,7 @@ mod checked {
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME},
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS,
-        SUI_SYSTEM_PACKAGE_ID,SUI_FRAMEWORK_PACKAGE_ID
+        SUI_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
     };
 
     use sui_types::{BFC_SYSTEM_PACKAGE_ID};
@@ -105,7 +104,6 @@ mod checked {
     //     certificate_deny_set.contains(transaction_digest)
     //         || get_denied_certificates().contains(transaction_digest)
     // }
-
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
         store: &dyn BackingStore,
@@ -468,7 +466,7 @@ mod checked {
                 }
             }
         } // else, we're in the genesis transaction which mints the SUI supply, and hence does not satisfy SUI conservation, or
-          // we're in the non-production dev inspect mode which allows us to violate conservation
+        // we're in the non-production dev inspect mode which allows us to violate conservation
 
         result
     }
@@ -609,7 +607,7 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                .expect("ConsensusCommitPrologue cannot fail");
+                    .expect("ConsensusCommitPrologue cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ConsensusCommitPrologueV2(prologue) => {
@@ -622,7 +620,7 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                .expect("ConsensusCommitPrologueV2 cannot fail");
+                    .expect("ConsensusCommitPrologueV2 cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ProgrammableTransaction(pt) => {
@@ -764,9 +762,9 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.reward_slashing_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
         ]
-        .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
+            .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
 
         assert_invariant!(
             call_arg_arguments.is_ok(),
@@ -862,12 +860,9 @@ mod checked {
                 .map(|a| builder.input(a))
                 .collect::<Result<_, _>>();
 
-        let mut builder = ProgrammableTransactionBuilder::new();
-        let mut arguments = vec![];
+            arguments.append(&mut args.unwrap());
 
-        arguments.append(&mut args.unwrap());
-
-        info!("Call arguments to bfc round transaction: {:?}",round_id);
+            info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
             builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
@@ -880,7 +875,6 @@ mod checked {
         if discard {
             return Ok(());
         }
-
 
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
@@ -900,11 +894,12 @@ mod checked {
                 vec![stable_charge_arg],
             );
 
-            //exchange stable coin to bfc
+            // Exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
             let bfc_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),                ))
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
@@ -914,7 +909,7 @@ mod checked {
                 vec![system_obj, rewards, bfc_charge_arg],
             );
 
-            // Destroy the rewards.
+            // Destroy the rewards
             builder.programmable_move_call(
                 SUI_FRAMEWORK_PACKAGE_ID,
                 BALANCE_MODULE_NAME.to_owned(),
@@ -922,7 +917,6 @@ mod checked {
                 vec![GAS::type_tag()],
                 vec![rewards_bfc],
             );
-
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
@@ -944,50 +938,9 @@ mod checked {
             BFC_SYSTEM_MODULE_NAME.to_owned(),
             DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![system_obj,storage_rebate],
+            vec![system_obj, storage_rebate],
         );
 
-        Ok(builder.finish())
-    }
-
-    fn bfc_round(
-        _change_round: ChangeBfcRound,
-        _temporary_store: &mut TemporaryStore<'_>,
-        _tx_ctx: &mut TxContext,
-        _move_vm: &Arc<MoveVM>,
-        _gas_charger: &mut GasCharger,
-        _protocol_config: &ProtocolConfig,
-        _metrics: Arc<LimitsMetrics>,
-    ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
-
-        // #[cfg(msim)]
-        // let _result = maybe_modify_result(result, change_round.bfc_round);
-
-        // if result.is_err() {
-        //     tracing::error!(
-        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-        //     result.as_ref().err(),
-        //     temporary_store.objects(),
-        // );
-        //     temporary_store.drop_writes();
-        //     // Must reset the storage rebate since we are re-executing.
-        //     gas_charger.reset_storage_cost_and_rebate();
-        //
-        //     temporary_store.advance_bfc_round_mode(protocol_config);
-        // }
         Ok(())
     }
 
@@ -1017,10 +970,10 @@ mod checked {
         }
 
         let is_safe_mode = temporary_store.is_safe_mode();
-        let mut reward_rate= 0u64; // deposit all gas to treasury
+        let mut reward_rate = 0u64; // deposit all gas to treasury
 
         match rate_result {
-            Ok((_,rate)) => {
+            Ok((_, rate)) => {
                 reward_rate = rate;
                 for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
                     let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, rate);
@@ -1048,7 +1001,7 @@ mod checked {
                     deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
                     storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
                 }
-            },
+            }
             Err(e) => {
                 info!("Read reward_rate failed with err {:?}",e);
                 discard = true;
@@ -1104,7 +1057,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let result = maybe_modify_result(result, change_epoch.epoch);
+            let result = maybe_modify_result(result, change_epoch.epoch);
 
         if result.is_err() {
             tracing::error!(
@@ -1135,7 +1088,7 @@ mod checked {
                     gas_charger,
                     advance_epoch_safe_mode_pt,
                 )
-                .expect("Advance epoch with safe mode must succeed");
+                    .expect("Advance epoch with safe mode must succeed");
             }
         }
 
@@ -1166,7 +1119,7 @@ mod checked {
                     gas_charger,
                     publish_pt,
                 )
-                .expect("System Package Publish must succeed");
+                    .expect("System Package Publish must succeed");
             } else {
                 let mut new_package = Object::new_system_package(
                     &deserialized_modules,

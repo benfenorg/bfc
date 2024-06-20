@@ -289,14 +289,14 @@ module bfc_system::bfc_dao {
         action
     }
 
-    public(friend) fun remove_action(dao: &mut Dao,_: &BFCDaoManageKey, actionId: u64){
+    public(package) fun remove_action(dao: &mut Dao,_: &BFCDaoManageKey, actionId: u64){
         let size=vec_map::size(&dao.action_record);
         assert!(size > ACTIVE_MIN_NUM_THRESGOLD,ERR_ACTION_NUM_TOO_LITTLE);
         assert!(vec_map::contains<u64,BFCDaoAction>(&dao.action_record,&actionId),ERR_ACTION_ID_NOT_EXIST);
         vec_map::remove<u64,BFCDaoAction>(&mut dao.action_record,&actionId);
     }
 
-    public (friend) fun remove_proposal(dao: &mut Dao,_: &BFCDaoManageKey, proposalId: u64){
+    public (package) fun remove_proposal(dao: &mut Dao,_: &BFCDaoManageKey, proposalId: u64){
         let size=vec_map::size(&dao.proposal_record);
         assert!(size > ACTIVE_MIN_NUM_THRESGOLD,ERR_PROPOSAL_NUM_TOO_LITTLE);
         assert!(vec_map::contains<u64,ProposalInfo>(&dao.proposal_record,&proposalId),ERR_PROPOSAL_ID_MISMATCH);

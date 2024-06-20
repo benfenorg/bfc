@@ -280,7 +280,7 @@ impl WalletContext {
 
     pub async fn get_stable_rate(&self, tag: String) -> Result<u64, anyhow::Error> {
         let client = self.get_client().await?;
-        let rate = client.read_api.get_stable_rate(tag).await?;
+        let rate = client.read_api().get_stable_rate(tag).await?;
         Ok(rate)
     }
 

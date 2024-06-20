@@ -12,16 +12,16 @@ mod checked {
         collections::{HashSet, HashMap},
         sync::Arc,
     };
-    use sui_types::gas::calculate_reward_rate;
     use sui_types::collection_types::VecMap;
 
     use sui_types::inner_temporary_store::InnerTemporaryStore;
 
+    use sui_types::gas::{calculate_reward_rate, calculate_add};
 
     use sui_types::{balance::{
-            BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
-            BALANCE_MODULE_NAME,
-        } };
+        BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
+        BALANCE_MODULE_NAME,
+    }, SUI_RANDOMNESS_STATE_OBJECT_ID};
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
@@ -47,13 +47,13 @@ mod checked {
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
     use sui_types::gas::SuiGasStatus;
-    use sui_types::storage::BackingStore;
+    use sui_types::storage::{BackingStore, WriteKind};
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
     use sui_types::sui_system_state::{AdvanceEpochParams,
                                       ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME,
                                       ChangeObcRoundParams};
-    use sui_types::transaction::CheckedInputObjects;
+    use sui_types::transaction::{CheckedInputObjects, RandomnessStateUpdate};
     use sui_types::transaction::{
             Argument, AuthenticatorStateExpire, AuthenticatorStateUpdate, CallArg, ChangeEpoch,
             Command, EndOfEpochTransactionKind, GenesisTransaction, ObjectArg, ProgrammableTransaction,
@@ -73,6 +73,8 @@ mod checked {
     };
 
     use sui_types::{ BFC_SYSTEM_PACKAGE_ID};
+    use sui_types::deny_list::{DENY_LIST_CREATE_FUNC, DENY_LIST_MODULE};
+    use sui_types::randomness_state::{RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME, RANDOMNESS_STATE_UPDATE_FUNCTION_NAME};
 
 
     /// If a transaction digest shows up in this list, when executing such transaction,
@@ -542,7 +544,7 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<Mode::ExecutionResults, ExecutionError> {
-        let result = match transaction_kind {
+        match transaction_kind {
             TransactionKind::ChangeEpoch(change_epoch) => {
                 let builder = ProgrammableTransactionBuilder::new();
                 advance_epoch(
@@ -554,22 +556,22 @@ mod checked {
                     gas_charger,
                     protocol_config,
                     metrics,
-                    )?;
-                    Ok(Mode::empty_results())
-                }
+                )?;
+                Ok(Mode::empty_results())
+            }
             TransactionKind::Genesis(GenesisTransaction { objects }) => {
                 if tx_ctx.epoch() != 0 {
-                   panic!("BUG: Genesis Transactions can only be executed in epoch 0");
+                    panic!("BUG: Genesis Transactions can only be executed in epoch 0");
                 }
 
                 for genesis_object in objects {
                     match genesis_object {
                         sui_types::transaction::GenesisObject::RawObject { data, owner } => {
-                                let object = ObjectInner {
-                                    data,
-                                    owner,
-                                    previous_transaction: tx_ctx.digest(),
-                                    storage_rebate: 0,
+                            let object = ObjectInner {
+                                data,
+                                owner,
+                                previous_transaction: tx_ctx.digest(),
+                                storage_rebate: 0,
                             };
                             temporary_store.create_object(object.into());
                         }
@@ -579,34 +581,34 @@ mod checked {
             }
             TransactionKind::ConsensusCommitPrologue(prologue) => {
                 setup_consensus_commit(
-                prologue.commit_timestamp_ms,
-                temporary_store,
-                tx_ctx,
-                move_vm,
-                gas_charger,
-                protocol_config,
-                metrics,
+                    prologue.commit_timestamp_ms,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
                 )
-                .expect("ConsensusCommitPrologue cannot fail");
+                    .expect("ConsensusCommitPrologue cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ConsensusCommitPrologueV2(prologue) => {
                 setup_consensus_commit(
-                prologue.commit_timestamp_ms,
-                temporary_store,
-                tx_ctx,
-                move_vm,
-                gas_charger,
-                protocol_config,
-                metrics,
+                    prologue.commit_timestamp_ms,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
                 )
-                .expect("ConsensusCommitPrologue cannot fail");
+                    .expect("ConsensusCommitPrologueV2 cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ProgrammableTransaction(pt) => {
                 programmable_transactions::execution::execute::<Mode>(
-                 protocol_config,
-                 metrics,
+                    protocol_config,
+                    metrics,
                     move_vm,
                     temporary_store,
                     tx_ctx,
@@ -614,32 +616,29 @@ mod checked {
                     pt,
                 )
             }
-
             TransactionKind::EndOfEpochTransaction(txns) => {
-                        let mut builder = ProgrammableTransactionBuilder::new();
-                        let len = txns.len();
+                let mut builder = ProgrammableTransactionBuilder::new();
+                let len = txns.len();
                 for (i, tx) in txns.into_iter().enumerate() {
                     match tx {
                         EndOfEpochTransactionKind::ChangeEpoch(change_epoch) => {
-                    assert_eq!(i, len - 1);
-                    advance_epoch(
-                        builder,
-                        change_epoch,
-                        temporary_store,
-                        tx_ctx,
-                        move_vm,
-                        gas_charger,
-                        protocol_config,
-                        metrics,
-                    )?;
-                return Ok(Mode::empty_results());
-                }
-
+                            assert_eq!(i, len - 1);
+                            advance_epoch(
+                                builder,
+                                change_epoch,
+                                temporary_store,
+                                tx_ctx,
+                                move_vm,
+                                gas_charger,
+                                protocol_config,
+                                metrics,
+                            )?;
+                            return Ok(Mode::empty_results());
+                        }
                         EndOfEpochTransactionKind::AuthenticatorStateCreate => {
-                        assert!(protocol_config.enable_jwk_consensus_updates());
-                        builder = setup_authenticator_state_create(builder);
-                }
-
+                            assert!(protocol_config.enable_jwk_consensus_updates());
+                            builder = setup_authenticator_state_create(builder);
+                        }
                         EndOfEpochTransactionKind::AuthenticatorStateExpire(expire) => {
                             assert!(protocol_config.enable_jwk_consensus_updates());
 
@@ -647,37 +646,43 @@ mod checked {
                             // safe mode.
                             builder = setup_authenticator_state_expire(builder, expire);
                         }
-
                         EndOfEpochTransactionKind::RandomnessStateCreate => {
-                                 panic!("EndOfEpochTransactionKind::RandomnessStateCreate should not exist in v1");
-                               }
+                            assert!(protocol_config.random_beacon());
+                            builder = setup_randomness_state_create(builder);
+                        }
                         EndOfEpochTransactionKind::DenyListStateCreate => {
-                                panic!("EndOfEpochTransactionKind::CoinDenyListStateCreate should not exist in v1");
+                            assert!(protocol_config.enable_coin_deny_list());
+                            builder = setup_coin_deny_list_state_create(builder);
                         }
                     }
                 }
                 unreachable!("EndOfEpochTransactionKind::ChangeEpoch should be the last transaction in the list")
             }
-
-
             TransactionKind::AuthenticatorStateUpdate(auth_state_update) => {
-                        setup_authenticator_state_update(
-                        auth_state_update,
-                        temporary_store,
-                        tx_ctx,
-                        move_vm,
-                        gas_charger,
-                        protocol_config,
-                        metrics,
-                        )?;
-                        Ok(Mode::empty_results())
-                        }
-            TransactionKind::RandomnessStateUpdate(_) => {
-                        panic!("RandomnessStateUpdate should not exist in v1");
+                setup_authenticator_state_update(
+                    auth_state_update,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
+                Ok(Mode::empty_results())
             }
-        }?;
-        temporary_store.check_execution_results_consistency()?;
-        Ok(result)
+            TransactionKind::RandomnessStateUpdate(randomness_state_update) => {
+                setup_randomness_state_update(
+                    randomness_state_update,
+                    temporary_store,
+                    tx_ctx,
+                    move_vm,
+                    gas_charger,
+                    protocol_config,
+                    metrics,
+                )?;
+                Ok(Mode::empty_results())
+            }
+        }
     }
 
     fn mint_epoch_rewards_in_pt(
@@ -715,15 +720,16 @@ mod checked {
     }
 
     pub fn construct_advance_epoch_pt(
+        obc_params: &ChangeObcRoundParams,
         mut builder: ProgrammableTransactionBuilder,
         params: &AdvanceEpochParams,
+        is_safe_mode: bool,
+        discard: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
-        construct_bfc_round_pt(obc_params, &mut builder)?;
-
+        // obc
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
-
-
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
         let call_arg_arguments = vec![
@@ -767,6 +773,7 @@ mod checked {
         );
         Ok(builder.finish())
     }
+
 
     pub fn construct_advance_epoch_safe_mode_pt(
         params: &AdvanceEpochParams,
@@ -821,37 +828,43 @@ mod checked {
     pub fn construct_bfc_round_pt(
         param: &ChangeObcRoundParams,
         builder: &mut ProgrammableTransactionBuilder,
+        is_safe_mode: bool,
+        discard: bool,
     ) -> Result<(), ExecutionError> {
-        let mut builder = ProgrammableTransactionBuilder::new();
-        let mut arguments = vec![];
+        if !is_safe_mode { // if safe mode skip judge dao vote result
+            let mut arguments = vec![];
+            let args = vec![
+                CallArg::BFC_SYSTEM_MUT,
+                CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
+            ].into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
 
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
-        ].into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
+            arguments.append(&mut args.unwrap());
 
-        arguments.append(&mut args.unwrap());
+            info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
-        info!("Call arguments to bfc round transaction: {:?}",param.epoch);
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+        }
+        if discard {
+            return Ok(());
+        }
 
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_ROUND_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
-            let charge_arg = builder
+            let stable_charge_arg = builder
                 .input(CallArg::Pure(
                     bcs::to_bytes(&calculate_add(
                         calculate_reward_rate(
-                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate), gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -859,24 +872,25 @@ mod checked {
                 BALANCE_MODULE_NAME.to_owned(),
                 BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![charge_arg],
+                vec![stable_charge_arg],
             );
 
-            //exchange stable coin to bfc
+            // Exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-            let charge_arg = builder
+            let bfc_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate) , gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),                ))
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![system_obj,rewards,charge_arg],
+                vec![system_obj, rewards, bfc_charge_arg],
             );
 
-            // Destroy the rewards.
+            // Destroy the rewards
             builder.programmable_move_call(
                 SUI_FRAMEWORK_PACKAGE_ID,
                 BALANCE_MODULE_NAME.to_owned(),
@@ -884,12 +898,11 @@ mod checked {
                 vec![GAS::type_tag()],
                 vec![rewards_bfc],
             );
-
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
                 bcs::to_bytes(&(
-                    param.storage_rebate )).unwrap(),
+                    param.storage_rebate)).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -906,10 +919,10 @@ mod checked {
             BFC_SYSTEM_MODULE_NAME.to_owned(),
             DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![system_obj,storage_rebate],
+            vec![system_obj, storage_rebate],
         );
 
-        Ok(builder.finish())
+        Ok(())
     }
 
     fn advance_epoch(
@@ -922,13 +935,14 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let _rate_hash_map = &rate_map.contents.iter().map(|e| (e.key.clone(),e.value)).collect::<HashMap<_,_>>();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
         let mut storage_charge = 0u64;
         let mut computation_charge = 0u64;
         let mut deposit_computation_charge = 0u64;
         let mut discard = false;
+
+        info!("change epoch: {:?}",change_epoch);
 
         let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
         if rate_result.is_err() {
@@ -995,6 +1009,7 @@ mod checked {
             reward_rate,
             storage_rebate,
         };
+
         let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
         let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;
         let advance_epoch_storage_rebate = change_epoch.bfc_storage_rebate + storage_rebate;
@@ -1011,7 +1026,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, &params, is_safe_mode, discard)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1059,12 +1074,18 @@ mod checked {
             }
         }
 
-
         let binary_config = to_binary_config(protocol_config);
+
         for (version, modules, dependencies) in change_epoch.system_packages.into_iter() {
+            let max_format_version = protocol_config.move_binary_format_version();
             let deserialized_modules: Vec<_> = modules
                 .iter()
-                .map(|m| CompiledModule::deserialize_with_config(m, &binary_config).unwrap())
+                .map(|m| {
+                    CompiledModule::deserialize_with_config(
+                        m, &binary_config
+                    )
+                        .unwrap()
+                })
                 .collect();
 
             if version == OBJECT_START_VERSION {
@@ -1174,6 +1195,21 @@ mod checked {
         builder
     }
 
+    fn setup_randomness_state_create(
+        mut builder: ProgrammableTransactionBuilder,
+    ) -> ProgrammableTransactionBuilder {
+        builder
+            .move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                RANDOMNESS_MODULE_NAME.to_owned(),
+                RANDOMNESS_STATE_CREATE_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![],
+            )
+            .expect("Unable to generate randomness_state_create transaction!");
+        builder
+    }
+
     fn setup_authenticator_state_update(
         update: AuthenticatorStateUpdate,
         temporary_store: &mut TemporaryStore<'_>,
@@ -1238,4 +1274,63 @@ mod checked {
             .expect("Unable to generate authenticator_state_expire transaction!");
         builder
     }
+
+    fn setup_randomness_state_update(
+        update: RandomnessStateUpdate,
+        temporary_store: &mut TemporaryStore<'_>,
+        tx_ctx: &mut TxContext,
+        move_vm: &Arc<MoveVM>,
+        gas_charger: &mut GasCharger,
+        protocol_config: &ProtocolConfig,
+        metrics: Arc<LimitsMetrics>,
+    ) -> Result<(), ExecutionError> {
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            let res = builder.move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                RANDOMNESS_MODULE_NAME.to_owned(),
+                RANDOMNESS_STATE_UPDATE_FUNCTION_NAME.to_owned(),
+                vec![],
+                vec![
+                    CallArg::Object(ObjectArg::SharedObject {
+                        id: SUI_RANDOMNESS_STATE_OBJECT_ID,
+                        initial_shared_version: update.randomness_obj_initial_shared_version,
+                        mutable: true,
+                    }),
+                    CallArg::Pure(bcs::to_bytes(&update.randomness_round).unwrap()),
+                    CallArg::Pure(bcs::to_bytes(&update.random_bytes).unwrap()),
+                ],
+            );
+            assert_invariant!(
+                res.is_ok(),
+                "Unable to generate randomness_state_update transaction!"
+            );
+            builder.finish()
+        };
+        programmable_transactions::execution::execute::<execution_mode::System>(
+            protocol_config,
+            metrics,
+            move_vm,
+            temporary_store,
+            tx_ctx,
+            gas_charger,
+            pt,
+        )
+    }
+
+    fn setup_coin_deny_list_state_create(
+        mut builder: ProgrammableTransactionBuilder,
+    ) -> ProgrammableTransactionBuilder {
+        builder
+            .move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                DENY_LIST_MODULE.to_owned(),
+                DENY_LIST_CREATE_FUNC.to_owned(),
+                vec![],
+                vec![],
+            )
+            .expect("Unable to generate coin_deny_list_create transaction!");
+        builder
+    }
 }
+

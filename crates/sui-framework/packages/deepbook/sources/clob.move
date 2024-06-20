@@ -1437,7 +1437,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(friend) fun check_empty_tick_level(
+    public(package) fun check_empty_tick_level(
         tree: &CritbitTree<TickLevel>,
         price: u64,
     ) {
@@ -1455,7 +1455,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(friend) fun mint_account_cap_transfer(
+    public(package) fun mint_account_cap_transfer(
         user: address,
         ctx: &mut TxContext
     ) {
@@ -1587,7 +1587,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(friend) fun test_construct_order(sequence_id: u64, price: u64, quantity: u64, is_bid: bool, owner: ID): Order {
+    public(package) fun test_construct_order(sequence_id: u64, price: u64, quantity: u64, is_bid: bool, owner: ID): Order {
         Order {
             order_id: order_id(sequence_id, is_bid),
             price,

@@ -253,7 +253,7 @@ fn build_packages_with_move_config(
         let published_api = [
             sui_system_members.join("\n"),
             sui_framework_members.join("\n"),
-            deepbook_members.join("\n"),
+            //deepbook_members.join("\n"),
             bfc_system_members.join("\n"),
             stdlib_members.join("\n"),
         ]

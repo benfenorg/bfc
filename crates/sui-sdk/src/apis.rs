@@ -627,6 +627,10 @@ impl ReadApi {
         Ok(*self.api.http.get_reference_gas_price().await?)
     }
 
+    pub async fn get_stable_rate(&self, tag: String) -> SuiRpcResult<u64> {
+        Ok(*self.api.http.get_stable_rate(tag).await?)
+    }
+
     /// Dry run a transaction block given the provided transaction data. Returns an error upon failure.
     ///
     /// Simulate running the transaction, including all standard checks, without actually running it.

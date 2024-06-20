@@ -14,8 +14,6 @@ mod checked {
         BALANCE_MODULE_NAME,
     };
 
-    use sui_types::transaction::ChangeBfcRound;
-
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
@@ -1032,18 +1030,6 @@ mod checked {
             gas_charger,
             pt,
         )
-    }
-    fn bfc_round(
-        _change_round: ChangeBfcRound,
-        _temporary_store: &mut TemporaryStore<'_>,
-        _tx_ctx: &mut TxContext,
-        _move_vm: &Arc<MoveVM>,
-        _gas_charger: &mut GasCharger,
-        _protocol_config: &ProtocolConfig,
-        _metrics: Arc<LimitsMetrics>,
-    ) -> Result<(), ExecutionError>{
-
-        Ok(())
     }
 
     fn setup_authenticator_state_expire(

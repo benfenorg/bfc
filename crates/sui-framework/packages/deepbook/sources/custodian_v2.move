@@ -63,7 +63,7 @@ module deepbook::custodian_v2 {
     }
 
     /// Return the owner of an AccountCap
-    public(friend) fun account_owner(account_cap: &AccountCap): address {
+    public(package) fun account_owner(account_cap: &AccountCap): address {
         account_cap.owner
     }
 

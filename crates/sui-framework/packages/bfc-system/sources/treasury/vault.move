@@ -1054,7 +1054,7 @@ module bfc_system::vault {
         event::rebalance(type_name::into_string(type_name::get<StableCoinType>()));
     }
 
-    public(friend) fun rebalance<StableCoinType>(
+    public(package) fun rebalance<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _bfc_balance: &mut Balance<BFC>,
         _supply: &mut Supply<StableCoinType>,
