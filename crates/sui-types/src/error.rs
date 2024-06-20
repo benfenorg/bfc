@@ -835,7 +835,7 @@ impl SuiError {
             // limit / blocking of a client. It must be non-retryable otherwise
             // we will make the threat worse through automatic retries.
             SuiError::TooManyRequests => false,
-            SuiError::BfcSystemStateReadError { .. } => (false, true),
+            SuiError::BfcSystemStateReadError { .. } => false,
 
             // For all un-categorized errors, return here with categorized = false.
             _ => return (false, false),

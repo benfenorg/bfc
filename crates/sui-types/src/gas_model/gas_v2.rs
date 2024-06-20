@@ -344,22 +344,19 @@ mod checked {
 
             //4. Gas Coin type should be same type for all gas objects
             if gas_objs.len() > 1 {
-                let gas_coin_type = gas_objs[0].coin_type_maybe();
-                match gas_coin_type {
-                    Some(coin_type) => {
-                        for gas_object in gas_objs {
-                            if let None = gas_object.coin_type_maybe() {
-                                return Err(UserInputError::GasCoinTypeMissing);
-                            }
-                            if gas_object.coin_type_maybe().unwrap() != coin_type {
-                                return Err(UserInputError::GasCoinTypeMismatch {
-                                    coin_type: gas_object.coin_type_maybe().unwrap().to_canonical_string(),
-                                    second_coin_type: coin_type.to_canonical_string(),
-                                });
-                            }
-                        }
+                let first_gas_object = gas_objs[0].as_object().expect("object must be owned");
+                let gas_coin_type = first_gas_object.coin_type_maybe().ok_or(UserInputError::GasCoinTypeMissing)?;
+
+                for gas_object_ref in gas_objs {
+                    let gas_object = gas_object_ref.as_object().expect("object must be owned");
+                    let current_coin_type = gas_object.coin_type_maybe().ok_or(UserInputError::GasCoinTypeMissing)?;
+
+                    if current_coin_type != gas_coin_type {
+                        return Err(UserInputError::GasCoinTypeMismatch {
+                            coin_type: current_coin_type.to_canonical_string(true),
+                            second_coin_type: gas_coin_type.to_canonical_string(true),
+                        });
                     }
-                    None => return Err(UserInputError::GasCoinTypeMissing),
                 }
             }
 
@@ -556,12 +553,12 @@ mod checked {
                     DEFAULT_BASE_POINT_FOR_BFC
                 };
                 let (stable_gas_left, stable_rebate) = if let Some(rate) =  self.stable_rate() {
-                    let stable_storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, rate, base_points);
+                    let stable_storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost(), rate, base_points);
                     let stable_sender_rebate = calculate_bfc_to_stable_cost_with_base_point(sender_rebate, rate, base_points);
                     (self.gas_budget - calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, rate, base_points),
                      stable_storage_cost - stable_sender_rebate)
                 }else {
-                    (self.gas_budget - self.computation_cost, self.storage_cost - sender_rebate)
+                    (self.gas_budget - self.computation_cost, self.storage_cost() - sender_rebate)
                 };
 
                 // we have to charge for storage and may go out of gas, check
