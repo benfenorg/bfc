@@ -59,7 +59,7 @@ module bfc_system::event {
         state_counter: u32,
     }
 
-    struct RebalanceEvent has copy, drop {
+    public struct RebalanceEvent has copy, drop {
         coin_type: String,
     }
 
