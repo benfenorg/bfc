@@ -999,7 +999,6 @@ impl<'backing> TemporaryStore<'backing> {
                 }
             }
         }
-        tracing::error!("1 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
         if do_expensive_checks {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
@@ -1009,12 +1008,10 @@ impl<'backing> TemporaryStore<'backing> {
                 true => calculate_bfc_to_stable_cost_with_base_point(other_cost, gas_summary.rate, gas_summary.base_point),
                 false => other_cost
             };
-            tracing::error!("2 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
                 total_input_sui += epoch_fees;
                 total_output_sui += epoch_rebates;
             }
-            tracing::error!("3 total_input_sui {:?} total_output_sui {:?}",total_input_sui,total_output_sui);
             if total_input_sui != total_output_sui {
                 return Err(ExecutionError::invariant_violation(
                     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",

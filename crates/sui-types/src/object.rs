@@ -967,6 +967,9 @@ impl Object {
                 if m.type_.is_stable_gas_coin() {
                     //把bfc换算成stable coin
                     calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, gas_summary.rate, gas_summary.base_point) + m.get_total_stable_coin(layout_resolver)?
+                } else if (m.type_.is_gas_coin()) {
+                    let total = self.storage_rebate + m.get_total_sui(layout_resolver)?;
+                    calculate_bfc_to_stable_cost_with_base_point(total, gas_summary.rate, gas_summary.base_point)
                 } else {
                     Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
                 }
