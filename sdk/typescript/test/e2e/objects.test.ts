@@ -1,18 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { describe, it, expect, beforeAll } from 'vitest';
-import { normalizeSuiAddress } from '../../src/utils';
-import { SUI_TYPE_ARG } from '../../src/framework';
-import { SuiObjectData } from '../../src/client';
-import { TransactionBlock } from '../../src/builder';
-=======
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { TransactionBlock } from '../../src/transactions';
 import { normalizeSuiAddress, SUI_TYPE_ARG } from '../../src/utils';
->>>>>>> mainnet-v1.24.1
 import { setup, TestToolbox } from './utils/setup';
 
 describe('Object Reading API', () => {

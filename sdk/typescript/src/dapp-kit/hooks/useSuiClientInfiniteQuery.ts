@@ -1,13 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/dapp-kit/hooks/useSuiClientInfiniteQuery.ts
-import type { UseInfiniteQueryOptions } from '@tanstack/react-query';
-import { useInfiniteQuery } from '@tanstack/react-query';
-import { useSuiClientContext } from './useSuiClient.js';
-import type { SuiClient } from '../../client/index.js';
-=======
-import type { SuiClient } from '@mysten/sui.js/client';
 import type {
 	InfiniteData,
 	UseInfiniteQueryOptions,
@@ -15,9 +8,9 @@ import type {
 } from '@tanstack/react-query';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
+import type { SuiClient } from '../../client/index.js';
 import type { PartialBy } from '../types/utilityTypes.js';
 import { useSuiClientContext } from './useSuiClient.js';
->>>>>>> mainnet-v1.24.1:sdk/dapp-kit/src/hooks/useSuiClientInfiniteQuery.ts
 
 interface PaginatedResult {
 	data?: unknown;

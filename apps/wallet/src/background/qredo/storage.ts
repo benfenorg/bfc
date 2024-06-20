@@ -4,14 +4,17 @@
 import { v4 as uuid } from 'uuid';
 
 import {
+	getFromLocalStorage,
 	getFromSessionStorage,
 	isSessionStorageSupported,
+	setToLocalStorage,
 	setToSessionStorage,
 } from '../storage-utils';
-import type { QredoConnectIdentity, QredoConnectPendingRequest } from './types';
+import type { QredoConnectIdentity, QredoConnection, QredoConnectPendingRequest } from './types';
 import { isSameQredoConnection } from './utils';
 
 const SESSION_STORAGE_KEY = 'qredo-connect-requests';
+const STORAGE_ACCEPTED_CONNECTIONS_KEY = 'qredo-connections';
 
 function sessionStorageAssert() {
 	if (!isSessionStorageSupported()) {
@@ -37,7 +40,7 @@ export async function getPendingRequest(requestIdentity: QredoConnectIdentity | 
 	);
 }
 
-async function storePendingRequest(request: QredoConnectPendingRequest) {
+export async function storePendingRequest(request: QredoConnectPendingRequest) {
 	const allPendingRequests = await getAllPendingRequests();
 	const existingIndex = allPendingRequests.findIndex((aRequest) => aRequest.id === request.id);
 	if (existingIndex >= 0) {
@@ -100,7 +103,6 @@ export async function updatePendingRequest(
 	}
 	await storePendingRequest(request);
 }
-<<<<<<< HEAD
 
 /**
  * @deprecated
@@ -143,5 +145,3 @@ export async function storeQredoConnectionAccessToken(qredoID: string, accessTok
 		await storeQredoConnection(existingConnection);
 	}
 }
-=======
->>>>>>> mainnet-v1.24.1

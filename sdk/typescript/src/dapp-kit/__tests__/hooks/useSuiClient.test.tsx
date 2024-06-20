@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
 import { renderHook } from '@testing-library/react';
-<<<<<<< HEAD:sdk/typescript/src/dapp-kit/__tests__/hooks/useSuiClient.test.tsx
-import { useSuiClient } from '../../index.js';
-import { SuiClient, getFullnodeUrl } from '../../../client/index.js';
-=======
 
-import { useSuiClient } from '../../src/index.js';
->>>>>>> mainnet-v1.24.1:sdk/dapp-kit/test/hooks/useSuiClient.test.tsx
+import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
+import { useSuiClient } from '../../index.js';
 import { createSuiClientContextWrapper } from '../test-utils.js';
 
 describe('useSuiClient', () => {

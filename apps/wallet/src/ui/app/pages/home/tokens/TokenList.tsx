@@ -1,12 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { Disclosure } from '@headlessui/react';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-=======
-import { Collapsible } from '_src/ui/app/shared/collapse';
->>>>>>> mainnet-v1.24.1
 import { type ReactNode } from 'react';
 
 type Props = {

@@ -1,13 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { getObjectType } from '@benfen/bfc.js';
-
-import type { SuiObjectData, SuiMoveObject } from '@benfen/bfc.js';
-=======
-import type { SuiMoveObject, SuiObjectData } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
+import type { SuiMoveObject, SuiObjectData } from '@benfen/bfc.js/client';
 
 const COIN_TYPE = '0x2::coin::Coin';
 const COIN_TYPE_ARG_REGEX = /^0x2::coin::Coin<(.+)>$/;
@@ -18,7 +12,8 @@ export const GAS_SYMBOL = 'BFC';
 // TODO use sdk
 export class Coin {
 	public static isCoin(obj: SuiObjectData) {
-		return getObjectType(obj)?.startsWith(COIN_TYPE) ?? false;
+		const type = obj?.content?.dataType === 'package' ? 'package' : obj?.content?.type;
+		return type?.startsWith(COIN_TYPE) ?? false;
 	}
 
 	public static getCoinTypeArg(obj: SuiMoveObject) {
@@ -36,11 +31,11 @@ export class Coin {
 	}
 
 	public static getBalance(obj: SuiMoveObject): bigint {
-		return BigInt(obj.fields.balance);
+		return BigInt((obj.fields as { balance: string }).balance);
 	}
 
 	public static getID(obj: SuiMoveObject): string {
-		return obj.fields.id.id;
+		return (obj.fields as { id: { id: string } }).id.id;
 	}
 
 	public static getCoinTypeFromArg(coinTypeArg: string) {

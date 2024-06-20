@@ -1,18 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type BasePayload, isBasePayload } from './BasePayload';
-import { type Payload } from './Payload';
 import {
 	type QredoConnectIdentity,
 	type UIQredoInfo,
 	type UIQredoPendingRequest,
 } from '_src/background/qredo/types';
-=======
-import { type QredoSerializedUiAccount } from '_src/background/accounts/QredoAccount';
-import { type UIQredoInfo, type UIQredoPendingRequest } from '_src/background/qredo/types';
->>>>>>> mainnet-v1.24.1
 import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
 import { type Wallet } from '_src/shared/qredo-api';
 
@@ -34,7 +27,6 @@ type Methods = {
 		accounts: Wallet[];
 		password: string;
 	};
-	acceptQredoConnectionResponse: { accounts: QredoSerializedUiAccount[] };
 	rejectQredoConnection: {
 		qredoID: string;
 	};

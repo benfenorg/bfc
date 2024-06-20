@@ -1,19 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64, toB64 } from '../bcs/src/index.js';
-import type { TransactionBlock } from '../builder/TransactionBlock.js';
-import { isTransactionBlock } from '../builder/TransactionBlock.js';
-import { TransactionBlockDataBuilder } from '../builder/TransactionBlockData.js';
-import type { SerializedSignature } from '../cryptography/signature.js';
-import type { JsonRpcProvider } from '../providers/json-rpc-provider.js';
-import type { HttpHeaders } from '../rpc/client.js';
-=======
-import { fromB64, toB64 } from '@mysten/bcs';
-
-import { bcs } from '../bcs/index.js';
->>>>>>> mainnet-v1.24.1
+import { bcs, fromB64, toB64 } from '../bcs/index.js';
 import type {
 	DevInspectResults,
 	DryRunTransactionBlockResponse,
@@ -53,25 +41,7 @@ export abstract class SignerWithProvider implements Signer {
 	///////////////////
 	// Sub-classes MAY override these
 
-<<<<<<< HEAD
-	/**
-	 * Request gas tokens from a faucet server and send to the signer
-	 * address
-	 * @param httpHeaders optional request headers
-	 * @deprecated Use `@benfen/bfc.js/faucet` instead.
-	 */
-	async requestSuiFromFaucet(httpHeaders?: HttpHeaders) {
-		if (!('requestSuiFromFaucet' in this.provider)) {
-			throw new Error('To request SUI from faucet, please use @benfen/bfc.js/faucet instead');
-		}
-
-		return this.provider.requestSuiFromFaucet(await this.getAddress(), httpHeaders);
-	}
-
-	constructor(client: JsonRpcProvider | SuiClient) {
-=======
 	constructor(client: SuiClient) {
->>>>>>> mainnet-v1.24.1
 		this.client = client as SuiClient;
 	}
 

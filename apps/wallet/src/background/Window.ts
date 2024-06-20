@@ -1,11 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { POPUP_HEIGHT, POPUP_WIDTH } from '_src/ui/app/wallet/constants';
 import { filter, fromEventPattern, share, take, takeWhile } from 'rxjs';
 import Browser from 'webextension-polyfill';
-
-const POPUP_WIDTH = 360;
-const POPUP_HEIGHT = 680;
 
 const windowRemovedStream = fromEventPattern<number>(
 	(handler) => Browser.windows.onRemoved.addListener(handler),

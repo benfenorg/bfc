@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import LoadingIndicator from '_components/loading/LoadingIndicator';
-import clsx from 'clsx';
+import clsx from 'classnames';
 import { forwardRef, type ReactNode, type Ref } from 'react';
 
 import { ButtonOrLink, type ButtonOrLinkProps } from './utils/ButtonOrLink';
@@ -28,28 +28,11 @@ interface LargeButtonProps extends ButtonOrLinkProps {
 	top?: ReactNode;
 	center?: boolean;
 	disabled?: boolean;
-	primary?: boolean;
 }
 
 export const LargeButton = forwardRef(
 	(
-<<<<<<< HEAD
 		{ top, before, after, center, loading, disabled, children, ...otherProps }: LargeButtonProps,
-=======
-		{
-			top,
-			before,
-			after,
-			center,
-			spacing,
-			loading,
-			disabled,
-			children,
-			primary,
-			className,
-			...otherProps
-		}: LargeButtonProps,
->>>>>>> mainnet-v1.24.1
 		ref: Ref<HTMLAnchorElement | HTMLButtonElement>,
 	) => {
 		return (
@@ -57,16 +40,8 @@ export const LargeButton = forwardRef(
 				ref={ref}
 				{...otherProps}
 				className={clsx(
-<<<<<<< HEAD
 					'group border border-solid border-transparent flex rounded-2xl items-center w-full p-3.75 justify-between no-underline',
 					disabled ? 'bg-gray-40' : 'bg-sui/10 hover:shadow-drop hover:border-sui/10',
-=======
-					'group border border-solid border-transparent flex rounded-md items-center py-2 px-8 justify-between no-underline',
-					disabled ? 'bg-hero-darkest/5 pointer-events-none' : 'bg-white/80 hover:border-sui/10',
-					primary ? '!bg-sui-primaryBlue2023' : '',
-					spacing === 'sm' && '!p-3',
-					className,
->>>>>>> mainnet-v1.24.1
 				)}
 			>
 				{loading && (
@@ -81,14 +56,8 @@ export const LargeButton = forwardRef(
 							{top && <Decorator disabled={disabled}>{top}</Decorator>}
 							<div
 								className={clsx(
-<<<<<<< HEAD
 									'text-body font-semibold',
 									disabled ? 'text-gray-60' : 'text-hero-dark group-hover:text-hero',
-=======
-									'text-bodySmall font-semibold',
-									disabled ? 'text-steel' : 'text-hero-dark group-hover:text-hero',
-									primary ? '!text-white' : '',
->>>>>>> mainnet-v1.24.1
 								)}
 							>
 								{children}

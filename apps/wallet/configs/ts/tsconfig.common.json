@@ -43,23 +43,9 @@
 			"_values/*": ["./src/ui/styles/values/*"],
 			"_utils": ["./src/ui/styles/utils"],
 			"_utils/*": ["./src/ui/styles/utils/*"],
-<<<<<<< HEAD
-			"@benfen/bfc.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
 			"@benfen/bfc.js/*": ["../../sdk/typescript/src/*"],
 			"@benfen/bfc.js": ["../../sdk/typescript/src/"],
-=======
-			"@mysten/sui.js/*": ["../../sdk/typescript/src/*"],
-			"@mysten/sui.js": ["../../sdk/typescript/src/"],
->>>>>>> mainnet-v1.24.1
-			"@mysten/kiosk": ["../../sdk/kiosk/src/index.ts"],
-			"@mysten/ledgerjs-hw-app-sui": ["../../sdk/ledgerjs-hw-app-sui/src/Sui.ts"],
-<<<<<<< HEAD
-			"@mysten/zklogin": ["../../sdk/zklogin/src/"]
-=======
-			"@mysten/wallet-standard": ["../../sdk/wallet-standard/src/"],
-			"@mysten/zklogin": ["../../sdk/zklogin/src/"],
-			"@mysten/deepbook": ["../../sdk/deepbook/src/"]
->>>>>>> mainnet-v1.24.1
+			"@mysten/ledgerjs-hw-app-sui": ["../../sdk/ledgerjs-hw-app-sui/src/Sui.ts"]
 		}
 	},
 	"include": ["../../src", "../../tests"],

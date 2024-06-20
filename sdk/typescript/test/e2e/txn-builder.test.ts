@@ -3,17 +3,7 @@
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-<<<<<<< HEAD
-import {
-	SuiTransactionBlockResponse,
-	SuiObjectData,
-	SuiObjectChangeCreated,
-} from '../../src/client';
-import { normalizeSuiObjectId } from '../../src/utils';
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/framework';
-=======
 import { SuiClient, SuiObjectChangeCreated, SuiTransactionBlockResponse } from '../../src/client';
->>>>>>> mainnet-v1.24.1
 import type { Keypair } from '../../src/cryptography';
 import { normalizeSuiObjectId, SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/utils';
 import {
@@ -80,13 +70,8 @@ describe('Transaction Builders', () => {
 		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: '0x2::pay::split',
-<<<<<<< HEAD
 			typeArguments: ['0x2::bfc::BFC'],
-			arguments: [tx.object(coin_0.objectId), tx.pure(DEFAULT_GAS_BUDGET * 2)],
-=======
-			typeArguments: ['0x2::sui::SUI'],
 			arguments: [tx.object(coin_0.coinObjectId), tx.pure.u64(DEFAULT_GAS_BUDGET * 2)],
->>>>>>> mainnet-v1.24.1
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});

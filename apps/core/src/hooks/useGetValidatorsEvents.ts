@@ -1,12 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { type EventId, SuiEvent } from '@benfen/bfc.js/client';
-=======
-import { useSuiClient } from '@mysten/dapp-kit';
-import { SuiEvent, type EventId } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
 import { useQuery } from '@tanstack/react-query';
 
 type GetValidatorsEvent = {

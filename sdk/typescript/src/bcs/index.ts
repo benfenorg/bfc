@@ -1,12 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import type { EnumTypeDefinition, StructTypeDefinition } from './src/index.js';
-import { BCS, getSuiMoveConfig } from './src/index.js';
-import type { SuiObjectRef } from '../types/objects.js';
-=======
-import type { BcsType, BcsTypeOptions } from '@mysten/bcs';
+import type { MoveCallTransaction } from '../transactions/Transactions.js';
+import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/sui-types.js';
+import type { BcsType, BcsTypeOptions } from './src/index.js';
 import {
 	bcs,
 	BCS as BcsRegistry,
@@ -17,14 +14,10 @@ import {
 	toB58,
 	toB64,
 	toHEX,
-} from '@mysten/bcs';
-
-import type { MoveCallTransaction } from '../transactions/Transactions.js';
-import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/sui-types.js';
+} from './src/index.js';
 import { TypeTagSerializer } from './type-tag-serializer.js';
 
 export { TypeTagSerializer } from './type-tag-serializer.js';
->>>>>>> mainnet-v1.24.1
 
 export * from './src/index.js';
 

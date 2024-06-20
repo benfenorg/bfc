@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@mysten/sui.js/utils';
-import type { WalletAccount } from '@mysten/wallet-standard';
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import clsx from 'clsx';
 
+import { formatAddress } from '../../utils/index.js';
+import type { WalletAccount } from '../../wallet-standard/index.js';
 import { useResolveSuiNSName } from '../hooks/useResolveSuiNSNames.js';
 import { useAccounts } from '../hooks/wallet/useAccounts.js';
 import { useDisconnectWallet } from '../hooks/wallet/useDisconnectWallet.js';

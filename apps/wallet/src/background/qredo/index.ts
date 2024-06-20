@@ -4,14 +4,11 @@
 import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
 import { type Message } from '_src/shared/messaging/messages';
 import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
-import { QredoAPI } from '_src/shared/qredo-api';
+import { QredoAPI, type AccessTokenResponse } from '_src/shared/qredo-api';
 import mitt from 'mitt';
 
-import { getQredoAccountSource } from '../account-sources';
-import { QredoAccountSource } from '../account-sources/QredoAccountSource';
-import { addNewAccounts } from '../accounts';
-import { type QredoAccount, type QredoSerializedAccount } from '../accounts/QredoAccount';
 import { type ContentScriptConnection } from '../connections/ContentScriptConnection';
+import keyring from '../keyring';
 import Tabs from '../Tabs';
 import { Window } from '../Window';
 import {
@@ -25,25 +22,12 @@ import {
 	storeQredoConnectionAccessToken,
 	updatePendingRequest,
 } from './storage';
-<<<<<<< HEAD
 import {
-	type UIQredoInfo,
-	type QredoConnectPendingRequest,
 	type QredoConnectIdentity,
+	type QredoConnectPendingRequest,
+	type UIQredoInfo,
 } from './types';
 import { qredoConnectPageUrl, toUIQredoPendingRequest, validateInputOrThrow } from './utils';
-import Tabs from '../Tabs';
-import { Window } from '../Window';
-import { type ContentScriptConnection } from '../connections/ContentScriptConnection';
-import keyring from '../keyring';
-import { type QredoConnectInput } from '_src/dapp-interface/WalletStandardInterface';
-import { type Message } from '_src/shared/messaging/messages';
-import { type QredoConnectPayload } from '_src/shared/messaging/messages/payloads/QredoConnect';
-import { type AccessTokenResponse, QredoAPI } from '_src/shared/qredo-api';
-=======
-import { type QredoConnectPendingRequest, type UIQredoInfo } from './types';
-import { qredoConnectPageUrl, toUIQredoPendingRequest, validateInputOrThrow } from './utils';
->>>>>>> mainnet-v1.24.1
 
 const qredoEvents = mitt<{
 	onConnectionResponse: {
@@ -81,7 +65,7 @@ export async function requestUserApproval(
 				url: qredoConnectUrl,
 				windowID: existingPendingRequest.windowID || undefined,
 				match: ({ url, inAppRedirectUrl }) => {
-					const urlMatch = `/accounts/qredo-connect/${existingPendingRequest.id}`;
+					const urlMatch = `/dapp/qredo-connect/${existingPendingRequest.id}`;
 					return (
 						url.includes(urlMatch) || (!!inAppRedirectUrl && inAppRedirectUrl.includes(urlMatch))
 					);
@@ -226,7 +210,6 @@ export async function acceptQredoConnection({
 		origin,
 		service,
 		organization,
-<<<<<<< HEAD
 	});
 	const qredoIDToUse = existingConnection?.id || qredoID;
 	await keyring.storeQredoConnection(qredoIDToUse, pendingRequest.token, password, accounts);
@@ -240,45 +223,9 @@ export async function acceptQredoConnection({
 		accessToken: null,
 		organization,
 	});
-=======
-	};
-	// make sure we replace an existing connection when it's the same
-	let qredoAccountSource = await getQredoAccountSource(connectionIdentity);
-	if (!qredoAccountSource) {
-		qredoAccountSource = await QredoAccountSource.save(
-			await QredoAccountSource.createNew({
-				password,
-				apiUrl,
-				origin,
-				organization,
-				refreshToken: pendingRequest.token,
-				service,
-				originFavIcon: originFavIcon || '',
-			}),
-		);
-	}
-	if (!(await qredoAccountSource.isLocked())) {
-		// credentials are kept in session storage, force renewal
-		await qredoAccountSource.unlock(password);
-	}
-	const newQredoAccounts: Omit<QredoSerializedAccount, 'id'>[] = [];
-	for (const aWallet of accounts) {
-		newQredoAccounts.push({
-			...aWallet,
-			type: 'qredo',
-			sourceID: qredoAccountSource.id,
-			lastUnlockedOn: null,
-			selected: false,
-			nickname: null,
-			createdAt: Date.now(),
-		});
-	}
-	const connectedAccounts = (await addNewAccounts(newQredoAccounts)) as QredoAccount[];
->>>>>>> mainnet-v1.24.1
 	await deletePendingRequest(pendingRequest);
 	qredoEvents.emit('onConnectionResponse', {
 		allowed: true,
 		request: pendingRequest,
 	});
-	return Promise.all(connectedAccounts.map(async (anAccount) => await anAccount.toUISerialized()));
 }

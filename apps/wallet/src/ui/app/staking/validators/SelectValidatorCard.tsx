@@ -1,31 +1,20 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import {
-	useGetValidatorsApy,
-	formatPercentageDisplay,
-	calculateStakeShare,
-	useGetSystemState,
-} from '@mysten/core';
-import { ArrowRight16 } from '@mysten/icons';
-import cl from 'classnames';
-import { useState, useMemo } from 'react';
-
-import { ValidatorListItem } from './ValidatorListItem';
-import { Button } from '_app/shared/ButtonUI';
-=======
->>>>>>> mainnet-v1.24.1
 import { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Alert from '_components/alert';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
 import { ampli } from '_src/shared/analytics/ampli';
-import { calculateStakeShare, formatPercentageDisplay, useGetValidatorsApy } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
+import {
+	calculateStakeShare,
+	formatPercentageDisplay,
+	useGetSystemState,
+	useGetValidatorsApy,
+} from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
-import cl from 'clsx';
+import cl from 'classnames';
 import { useMemo, useState } from 'react';
 
 import { ValidatorListItem } from './ValidatorListItem';
@@ -49,11 +38,7 @@ export function SelectValidatorCard() {
 	const [selectedValidator, setSelectedValidator] = useState<Validator | null>(null);
 	const [sortKey, setSortKey] = useState<SortKeys | null>(null);
 	const [sortAscending, setSortAscending] = useState(true);
-<<<<<<< HEAD
 	const { data, isLoading, isError } = useGetSystemState();
-=======
-	const { data, isPending, isError } = useSuiClientQuery('getLatestSuiSystemState');
->>>>>>> mainnet-v1.24.1
 
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
@@ -111,7 +96,7 @@ export function SelectValidatorCard() {
 		return sortedAsc;
 	}, [validatorsRandomOrder, sortAscending, rollingAverageApys, totalStake, sortKey]);
 
-	if (isPending) {
+	if (isLoading) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />
@@ -130,11 +115,7 @@ export function SelectValidatorCard() {
 	}
 
 	return (
-<<<<<<< HEAD
 		<div className="flex flex-col w-full">
-=======
-		<div className="flex flex-col w-full h-full -my-5">
->>>>>>> mainnet-v1.24.1
 			<Content className="flex flex-col w-full items-center">
 				<div className="flex flex-col w-full items-center bg-white sticky pt-5 pb-2.5 z-50 mt-0">
 					<div className="flex items-start w-full mb-2">

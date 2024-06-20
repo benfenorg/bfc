@@ -1,27 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64, toB58, toB64 } from '@mysten/bcs';
 import { secp256r1 } from '@noble/curves/p256';
 import { sha256 } from '@noble/hashes/sha256';
 import { describe, expect, it } from 'vitest';
 
-import { decodeSuiPrivateKey } from '../../../src/cryptography/keypair';
+import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
+import { decodeSuiPrivateKey, PRIVATE_KEY_SIZE } from '../../../src/cryptography/keypair';
 import {
 	DEFAULT_SECP256R1_DERIVATION_PATH,
-	PRIVATE_KEY_SIZE,
 	Secp256r1Keypair,
-<<<<<<< HEAD
-	TransactionBlock,
-} from '../../../src';
-import { describe, it, expect } from 'vitest';
-import { secp256r1 } from '@noble/curves/p256';
-import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
-import { sha256 } from '@noble/hashes/sha256';
-=======
 } from '../../../src/keypairs/secp256r1';
 import { TransactionBlock } from '../../../src/transactions';
->>>>>>> mainnet-v1.24.1
 import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/verify';
 
 const VALID_SECP256R1_SECRET_KEY = [

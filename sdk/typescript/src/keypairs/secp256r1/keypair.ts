@@ -2,14 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { secp256r1 } from '@noble/curves/p256';
-<<<<<<< HEAD
-import { isValidBIP32Path, mnemonicToSeed } from '../../cryptography/mnemonics.js';
-import { HDKey } from '@scure/bip32';
-import { toB64 } from '../../bcs/src/index.js';
-import type { SignatureScheme } from '../../cryptography/signature.js';
-import { bytesToHex } from '@noble/hashes/utils';
-=======
->>>>>>> mainnet-v1.24.1
 import { blake2b } from '@noble/hashes/blake2b';
 import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';

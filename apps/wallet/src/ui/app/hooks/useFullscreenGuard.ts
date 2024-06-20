@@ -1,13 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { useEffect } from 'react';
-=======
 import { AppType } from '_redux/slices/app/AppType';
 import { openInNewTab } from '_shared/utils';
-import { useEffect, useRef } from 'react';
->>>>>>> mainnet-v1.24.1
+import { useEffect } from 'react';
 
 import useAppSelector from './useAppSelector';
 

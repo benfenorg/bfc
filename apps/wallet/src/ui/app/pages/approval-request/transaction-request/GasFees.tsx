@@ -1,15 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { formatAddress } from '@benfen/bfc.js';
-import { type TransactionBlock } from '@benfen/bfc.js/transactions';
-=======
 import { useTransactionData, useTransactionGasBudget } from '_src/ui/app/hooks';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
-import { type TransactionBlock } from '@mysten/sui.js/transactions';
-import { formatAddress } from '@mysten/sui.js/utils';
->>>>>>> mainnet-v1.24.1
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
+import { formatAddress } from '@benfen/bfc.js/utils';
 
 import { DescriptionItem, DescriptionList } from './DescriptionList';
 import { SummaryCard } from './SummaryCard';
@@ -21,7 +16,7 @@ interface Props {
 
 export function GasFees({ sender, transaction }: Props) {
 	const { data: transactionData } = useTransactionData(sender, transaction);
-	const { data: gasBudget, isPending, isError } = useTransactionGasBudget(sender, transaction);
+	const { data: gasBudget, isLoading, isError } = useTransactionGasBudget(sender, transaction);
 	const isSponsored =
 		transactionData?.gasConfig.owner && transactionData.sender !== transactionData.gasConfig.owner;
 	return (
@@ -38,7 +33,7 @@ export function GasFees({ sender, transaction }: Props) {
 		>
 			<DescriptionList>
 				<DescriptionItem title="You Pay">
-					{isPending
+					{isLoading
 						? 'Estimating...'
 						: isError
 						? 'Gas estimation failed'

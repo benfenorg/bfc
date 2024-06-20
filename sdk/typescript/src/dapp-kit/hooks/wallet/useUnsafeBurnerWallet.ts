@@ -1,13 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<<< HEAD:sdk/typescript/src/wallet-kit/UnsafeBurnerWallet.tsx
-import { Ed25519Keypair } from '../keypairs/ed25519/index.js';
-import { SuiClient, getFullnodeUrl } from '../client/index.js';
-========
-import type { SuiClient } from '@mysten/sui.js/client';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
->>>>>>>> mainnet-v1.24.1:sdk/typescript/src/dapp-kit/hooks/wallet/useUnsafeBurnerWallet.ts
+import { useEffect } from 'react';
+
+import type { SuiClient } from '../../../client/index.js';
+import { Ed25519Keypair } from '../../../keypairs/ed25519/index.js';
 import type {
 	StandardConnectFeature,
 	StandardConnectMethod,
@@ -17,20 +14,10 @@ import type {
 	SuiSignAndExecuteTransactionBlockMethod,
 	SuiSignPersonalMessageMethod,
 	SuiSignTransactionBlockMethod,
-<<<<<<<< HEAD:sdk/typescript/src/wallet-kit/UnsafeBurnerWallet.tsx
-	SuiSignAndExecuteTransactionBlockMethod,
 	Wallet,
-} from '../wallet-standard/index.js';
-import { getWallets, BFC_CHAINS, ReadonlyWalletAccount } from '../wallet-standard/index.js';
-import { getFaucetHost, requestSuiFromFaucetV0 } from '../faucet/index.js';
-========
-	Wallet,
-} from '@mysten/wallet-standard';
-import { getWallets, ReadonlyWalletAccount, SUI_CHAINS } from '@mysten/wallet-standard';
-import { useEffect } from 'react';
-
+} from '../../../wallet-standard/index.js';
+import { BFC_CHAINS, getWallets, ReadonlyWalletAccount } from '../../../wallet-standard/index.js';
 import { useSuiClient } from '../useSuiClient.js';
->>>>>>>> mainnet-v1.24.1:sdk/typescript/src/dapp-kit/hooks/wallet/useUnsafeBurnerWallet.ts
 
 const WALLET_NAME = 'Unsafe Burner Wallet';
 
@@ -64,15 +51,9 @@ function registerUnsafeBurnerWallet(suiClient: SuiClient) {
 	const keypair = new Ed25519Keypair();
 	const account = new ReadonlyWalletAccount({
 		address: keypair.getPublicKey().toSuiAddress(),
-<<<<<<<< HEAD:sdk/typescript/src/wallet-kit/UnsafeBurnerWallet.tsx
 		chains: ['bfc:unknown'],
 		features: ['bfc:signAndExecuteTransactionBlock', 'bfc:signTransactionBlock'],
-		publicKey: keypair.getPublicKey().toBytes(),
-========
 		publicKey: keypair.getPublicKey().toSuiBytes(),
-		chains: ['sui:unknown'],
-		features: ['sui:signAndExecuteTransactionBlock', 'sui:signTransactionBlock'],
->>>>>>>> mainnet-v1.24.1:sdk/typescript/src/dapp-kit/hooks/wallet/useUnsafeBurnerWallet.ts
 	});
 
 	class UnsafeBurnerWallet implements Wallet {

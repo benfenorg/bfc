@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type {
-	SuiSignPersonalMessageInput,
-	SuiSignPersonalMessageOutput,
-} from '@mysten/wallet-standard';
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
+import type {
+	SuiSignPersonalMessageInput,
+	SuiSignPersonalMessageOutput,
+} from '../../../wallet-standard/index.js';
 import {
 	WalletFeatureNotSupportedError,
 	WalletNoAccountSelectedError,
@@ -66,7 +66,7 @@ export function useSignPersonalMessage({
 				);
 			}
 
-			const signPersonalMessageFeature = currentWallet.features['sui:signPersonalMessage'];
+			const signPersonalMessageFeature = currentWallet.features['bfc:signPersonalMessage'];
 			if (signPersonalMessageFeature) {
 				return await signPersonalMessageFeature.signPersonalMessage({
 					...signPersonalMessageArgs,
@@ -75,7 +75,7 @@ export function useSignPersonalMessage({
 			}
 
 			// TODO: Remove this once we officially discontinue sui:signMessage in the wallet standard
-			const signMessageFeature = currentWallet.features['sui:signMessage'];
+			const signMessageFeature = currentWallet.features['bfc:signMessage'];
 			if (signMessageFeature) {
 				console.warn(
 					"This wallet doesn't support the `signPersonalMessage` feature... falling back to `signMessage`.",

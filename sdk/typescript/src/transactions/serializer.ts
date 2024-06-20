@@ -1,17 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/builder/serializer.ts
-import { isValidSuiAddress } from '../utils/bfc-types.js';
-import { extractStructTag } from '../types/index.js';
-import {
-	ID_STRUCT_NAME,
-	MOVE_STDLIB_ADDRESS,
-	OBJECT_MODULE_NAME,
-	SUI_FRAMEWORK_ADDRESS,
-} from '../framework/framework.js';
-=======
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/serializer.ts
 import type { SuiJsonValue, SuiMoveNormalizedType } from '../client/index.js';
 import { MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS } from '../utils/index.js';
 import { isValidSuiAddress } from '../utils/sui-types.js';

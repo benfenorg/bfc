@@ -3,22 +3,6 @@
 
 import { execSync } from 'child_process';
 import tmp from 'tmp';
-<<<<<<< HEAD
-
-import {
-	getPublishedObjectChanges,
-	getExecutionStatusType,
-	sui2BfcAddress,
-	bfc2SuiAddress,
-} from '../../../src';
-import { Coin } from '../../../src';
-import { TransactionBlock, UpgradePolicy } from '../../../src/builder';
-import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
-import { retry } from 'ts-retry-promise';
-import { FaucetRateLimitError, getFaucetHost, requestSuiFromFaucetV0 } from '../../../src/faucet';
-import { SuiClient, getFullnodeUrl } from '../../../src/client';
-import { Keypair } from '../../../src/cryptography';
-=======
 import { retry } from 'ts-retry-promise';
 import { expect } from 'vitest';
 import { WebSocket } from 'ws';
@@ -31,10 +15,10 @@ import {
 	getFaucetHost,
 	requestSuiFromFaucetV0,
 } from '../../../src/faucet/index.js';
+import { bfc2SuiAddress, sui2BfcAddress } from '../../../src/index.js';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519/index.js';
 import { TransactionBlock, UpgradePolicy } from '../../../src/transactions/index.js';
 import { SUI_TYPE_ARG } from '../../../src/utils/index.js';
->>>>>>> mainnet-v1.24.1
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
 const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
@@ -66,10 +50,6 @@ export class TestToolbox {
 			owner: this.address(),
 			coinType: SUI_TYPE_ARG,
 		});
-<<<<<<< HEAD
-		return objects.data.filter((obj) => Coin.isBFC(obj));
-=======
->>>>>>> mainnet-v1.24.1
 	}
 
 	public async getActiveValidators() {
@@ -158,19 +138,16 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 			showObjectChanges: true,
 		},
 	});
-<<<<<<< HEAD
-	expect(getExecutionStatusType(publishTxn)).toEqual('success');
-=======
 
 	await toolbox.client.waitForTransactionBlock({ digest: publishTxn.digest });
 
 	expect(publishTxn.effects?.status.status).toEqual('success');
->>>>>>> mainnet-v1.24.1
 
-	const packageId = bfc2SuiAddress(getPublishedObjectChanges(publishTxn)[0].packageId).replace(
-		/^(0x)(0+)/,
-		'0x',
-	) as string;
+	const packageId = bfc2SuiAddress(
+		((publishTxn.objectChanges?.filter(
+			(a) => a.type === 'published',
+		) as SuiObjectChangePublished[]) ?? [])[0].packageId,
+	).replace(/^(0x)(0+)/, '0x') as string;
 
 	expect(packageId).toBeTypeOf('string');
 
@@ -231,7 +208,7 @@ export async function upgradePackage(
 		},
 	});
 
-	expect(getExecutionStatusType(result)).toEqual('success');
+	expect(result.effects?.status.status).toEqual('success');
 }
 
 export function getRandomAddresses(n: number): string[] {
@@ -280,7 +257,7 @@ export async function paySui(
 			showObjectChanges: true,
 		},
 	});
-	expect(getExecutionStatusType(txn)).toEqual('success');
+	expect(txn.effects?.status.status).toEqual('success');
 	return txn;
 }
 

@@ -1,9 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { WalletWithRequiredFeatures } from '@mysten/wallet-standard';
-import { ZKSEND_WALLET_NAME } from '@mysten/zksend';
-
+import type { WalletWithRequiredFeatures } from '../../wallet-standard/index.js';
 import { createInMemoryStore } from '../utils/stateStorage.js';
 
 export const SUI_WALLET_NAME = 'Sui Wallet';
@@ -17,4 +15,4 @@ export const DEFAULT_REQUIRED_FEATURES: (keyof WalletWithRequiredFeatures['featu
 	'sui:signTransactionBlock',
 ];
 
-export const DEFAULT_PREFERRED_WALLETS = [SUI_WALLET_NAME, ZKSEND_WALLET_NAME];
+export const DEFAULT_PREFERRED_WALLETS = [SUI_WALLET_NAME];

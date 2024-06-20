@@ -1,10 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
-import { useCoinMetadata } from '@mysten/core';
-import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
-=======
-
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
@@ -12,15 +7,12 @@ import { ActiveCoinsCard } from '_components/active-coins-card';
 import Overlay from '_components/overlay';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import { useSigner } from '_src/ui/app/hooks';
+import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-import { useSigner } from '_src/ui/app/hooks/useSigner';
-import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { useCoinMetadata } from '@mysten/core';
 import { ArrowLeft16, ArrowRight16 } from '@mysten/icons';
-import * as Sentry from '@sentry/react';
->>>>>>> mainnet-v1.24.1
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -28,21 +20,6 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { PreviewTransfer } from './PreviewTransfer';
 import { SendTokenForm } from './SendTokenForm';
-<<<<<<< HEAD
-import { createTokenTransferTransaction } from './utils/transaction';
-import { Button } from '_app/shared/ButtonUI';
-import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
-import { Text } from '_app/shared/text';
-import { ActiveCoinsCard } from '_components/active-coins-card';
-import Overlay from '_components/overlay';
-import { ampli } from '_src/shared/analytics/ampli';
-import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
-import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useSigner } from '_src/ui/app/hooks';
-import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
-import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-=======
->>>>>>> mainnet-v1.24.1
 import type { SubmitProps } from './SendTokenForm';
 import { createTokenTransferTransaction } from './utils/transaction';
 
@@ -114,10 +91,6 @@ function TransferCoinPage() {
 		},
 	});
 
-	if (useUnlockedGuard()) {
-		return null;
-	}
-
 	if (!coinType) {
 		return <Navigate to="/" replace={true} />;
 	}
@@ -128,11 +101,7 @@ function TransferCoinPage() {
 			title={showTransactionPreview ? 'Review & Send' : 'Send Coins'}
 			closeOverlay={() => navigate('/')}
 		>
-<<<<<<< HEAD
 			<div className="flex flex-col w-full">
-=======
-			<div className="flex flex-col w-full h-full">
->>>>>>> mainnet-v1.24.1
 				{showTransactionPreview && formData ? (
 					<BottomMenuLayout>
 						<Content>

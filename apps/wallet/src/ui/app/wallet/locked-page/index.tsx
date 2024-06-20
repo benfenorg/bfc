@@ -1,12 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LockUnlocked16, BenFenLogoDark } from '@mysten/icons';
-import { Form, Formik } from 'formik';
-import { Link } from 'react-router-dom';
-import Browser from 'webextension-polyfill';
-import * as Yup from 'yup';
-
 import Alert from '_app/components/alert';
 import { Button } from '_app/shared/ButtonUI';
 import { CardLayout } from '_app/shared/card-layout';
@@ -21,6 +15,11 @@ import { useLockedGuard } from '_app/wallet/hooks';
 import Loading from '_components/loading';
 import { useAppDispatch, useInitializedGuard } from '_hooks';
 import PageLayout from '_pages/layout';
+import { BenFenLogoDark, LockUnlocked16 } from '@mysten/icons';
+import { Form, Formik } from 'formik';
+import { Link } from 'react-router-dom';
+import Browser from 'webextension-polyfill';
+import * as Yup from 'yup';
 
 import st from './LockedPage.module.scss';
 

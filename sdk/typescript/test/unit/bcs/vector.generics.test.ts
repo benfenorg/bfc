@@ -1,16 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/test/unit/bcs/vector.generics.test.ts
-import { describe, it, expect } from 'vitest';
-import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { serde } from './utils.js';
-=======
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../src/index';
-import { serde } from './utils';
->>>>>>> mainnet-v1.24.1:sdk/bcs/tests/vector.generics.test.ts
+import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { serde } from './utils.js';
 
 describe('BCS: Inline struct definitions', () => {
 	it('should de/serialize inline definition', () => {

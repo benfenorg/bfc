@@ -1,19 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { formatAddress } from '@benfen/bfc.js/utils';
-import { CheckFill16 } from '@mysten/icons';
-import cn from 'classnames';
-
-=======
->>>>>>> mainnet-v1.24.1
 import { type Wallet } from '_src/shared/qredo-api';
 import { BadgeLabel } from '_src/ui/app/components/BadgeLabel';
 import { Text } from '_src/ui/app/shared/text';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { CheckFill16 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui.js/utils';
-import cn from 'clsx';
+import cn from 'classnames';
 
 export type QredoAccountItemProps = Wallet & {
 	selected: boolean;

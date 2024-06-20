@@ -1,17 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/builder/TransactionBlock.ts
-import { fromB64 } from '../bcs/src/index.js';
-=======
-import type { SerializedBcs } from '@mysten/bcs';
-import { fromB64, isSerializedBcs } from '@mysten/bcs';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/TransactionBlock.ts
 import { is, mask } from 'superstruct';
 
-import { bcs } from '../bcs/index.js';
+import type { SerializedBcs } from '../bcs/index.js';
+import { bcs, fromB64, isSerializedBcs } from '../bcs/index.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
 import type { SignatureWithBytes, Signer } from '../cryptography/index.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { SUI_TYPE_ARG } from '../utils/index.js';
 import { normalizeSuiAddress, normalizeSuiObjectId } from '../utils/sui-types.js';
 import {
@@ -27,19 +23,9 @@ import { createPure } from './pure.js';
 import { getPureSerializationType, isTxContext } from './serializer.js';
 import type { TransactionExpiration } from './TransactionBlockData.js';
 import { TransactionBlockDataBuilder } from './TransactionBlockData.js';
-<<<<<<< HEAD:sdk/typescript/src/builder/TransactionBlock.ts
-import type { WellKnownEncoding } from './utils.js';
-import { TRANSACTION_TYPE, create } from './utils.js';
-import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
-import { sui2BfcAddress } from '../utils/format.js';
-import { normalizeSuiObjectId } from '../utils/bfc-types.js';
-import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
-import { SUI_TYPE_ARG } from '../framework/framework.js';
-=======
 import type { MoveCallTransaction, TransactionArgument, TransactionType } from './Transactions.js';
 import { TransactionBlockInput, Transactions } from './Transactions.js';
 import { create, extractMutableReference, extractReference, extractStructTag } from './utils.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/TransactionBlock.ts
 
 export type TransactionObjectArgument = Exclude<
 	TransactionArgument,
@@ -173,16 +159,6 @@ export type TransactionObjectInput = string | ObjectCallArg | TransactionObjectA
  * Transaction Builder
  */
 export class TransactionBlock {
-<<<<<<< HEAD:sdk/typescript/src/builder/TransactionBlock.ts
-	/** Returns `true` if the object is an instance of the Transaction builder class.
-	 * @deprecated Use `isTransactionBlock` from `@benfen/bfc.js/transactions` instead.
-	 */
-	static is(obj: unknown): obj is TransactionBlock {
-		return !!obj && typeof obj === 'object' && (obj as any)[TRANSACTION_BRAND] === true;
-	}
-
-=======
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/TransactionBlock.ts
 	/**
 	 * Converts from a serialize transaction kind (built with `build({ onlyTransactionKind: true })`) to a `Transaction` class.
 	 * Supports either a byte array, or base64-encoded bytes.
@@ -218,25 +194,6 @@ export class TransactionBlock {
 		return tx;
 	}
 
-<<<<<<< HEAD:sdk/typescript/src/builder/TransactionBlock.ts
-	/**
-	 * A helper to retrieve the Transaction builder `Transactions`
-	 * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Transactions` from `@benfen/bfc.js/transactions`.
-	 */
-	static get Transactions() {
-		return Transactions;
-	}
-
-	/**
-	 * A helper to retrieve the Transaction builder `Inputs`
-	 * * @deprecated Either use the helper methods on the `TransactionBlock` class, or import `Inputs` from `@benfen/bfc.js/transactions`.
-	 */
-	static get Inputs() {
-		return Inputs;
-	}
-
-=======
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/TransactionBlock.ts
 	setSender(sender: string) {
 		this.#blockData.sender = sender;
 	}

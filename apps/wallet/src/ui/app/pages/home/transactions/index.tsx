@@ -2,31 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import FiltersPortal from '_components/filters-tags';
-import { isQredoAccountSerializedUI } from '_src/background/accounts/QredoAccount';
+import { AccountType } from '_src/background/keyring/Account';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
 import PageTitle from '_src/ui/app/shared/PageTitle';
-import cl from 'clsx';
+import cl from 'classnames';
 import { Navigate, useParams } from 'react-router-dom';
 
 import { CompletedTransactions } from './CompletedTransactions';
 import { QredoPendingTransactions } from './QredoPendingTransactions';
-<<<<<<< HEAD
-import FiltersPortal from '_components/filters-tags';
-import { AccountType } from '_src/background/keyring/Account';
-import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
-import PageTitle from '_src/ui/app/shared/PageTitle';
-=======
->>>>>>> mainnet-v1.24.1
 
 function TransactionBlocksPage() {
 	const activeAccount = useActiveAccount();
 	const isQredoAccount = activeAccount?.type === AccountType.QREDO;
 	const { status } = useParams();
 	const isPendingTransactions = status === 'pending';
-	if (useUnlockedGuard()) {
-		return null;
-	}
 	if (activeAccount && !isQredoAccount && isPendingTransactions) {
 		return <Navigate to="/transactions" replace />;
 	}

@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type {
-	SuiSignTransactionBlockInput,
-	SuiSignTransactionBlockOutput,
-} from '@mysten/wallet-standard';
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
+import type {
+	SuiSignTransactionBlockInput,
+	SuiSignTransactionBlockOutput,
+} from '../../../wallet-standard/index.js';
 import {
 	WalletFeatureNotSupportedError,
 	WalletNoAccountSelectedError,
@@ -66,7 +66,7 @@ export function useSignTransactionBlock({
 				);
 			}
 
-			const walletFeature = currentWallet.features['sui:signTransactionBlock'];
+			const walletFeature = currentWallet.features['bfc:signTransactionBlock'];
 			if (!walletFeature) {
 				throw new WalletFeatureNotSupportedError(
 					"This wallet doesn't support the `SignTransactionBlock` feature.",

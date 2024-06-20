@@ -3,12 +3,6 @@
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-<<<<<<< HEAD
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/framework';
-
-import { SuiObjectData, SuiTransactionBlockResponse } from '../../src/client';
-=======
->>>>>>> mainnet-v1.24.1
 import { SharedObjectRef } from '../../src/bcs';
 import { SuiTransactionBlockResponse } from '../../src/client';
 import { BuilderCallArg, TransactionBlock } from '../../src/transactions';

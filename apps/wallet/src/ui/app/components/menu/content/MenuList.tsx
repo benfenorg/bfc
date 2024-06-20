@@ -1,38 +1,38 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@benfen/bfc.js';
-import { useResolveSuiNSName } from '@mysten/core';
-import {
-	Account24,
-	ArrowUpRight12,
-	ArrowUpRight16,
-	Domain24,
-	Version24,
-	CopyArchiveDoNotUse24,
-} from '@mysten/icons';
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import Browser from 'webextension-polyfill';
-
-import { MenuLayout } from './MenuLayout';
-import MenuListItem from './MenuListItem';
-import LoadingIndicator from '../../loading/LoadingIndicator';
 import { API_ENV_TO_INFO } from '_app/ApiProvider';
 import { Button } from '_app/shared/ButtonUI';
 import { lockWallet } from '_app/wallet/actions';
 import { useNextMenuUrl } from '_components/menu/hooks';
 import { useAppDispatch, useAppSelector } from '_hooks';
-import { ToS_LINK, FAQ_LINK } from '_src/shared/constants';
+import { FAQ_LINK, ToS_LINK } from '_src/shared/constants';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { useAutoLockInterval } from '_src/ui/app/hooks/useAutoLockInterval';
 import { useExplorerLink } from '_src/ui/app/hooks/useExplorerLink';
 import { logout } from '_src/ui/app/redux/slices/account';
 import { ConfirmationModal } from '_src/ui/app/shared/ConfirmationModal';
-import { Link } from '_src/ui/app/shared/Link';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
+import { Link } from '_src/ui/app/shared/Link';
 import { Text } from '_src/ui/app/shared/text';
+import { formatAddress } from '@benfen/bfc.js/utils';
+import { useResolveSuiNSName } from '@mysten/core';
+import {
+	Account24,
+	ArrowUpRight12,
+	ArrowUpRight16,
+	CopyArchiveDoNotUse24,
+	Domain24,
+	Version24,
+} from '@mysten/icons';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import Browser from 'webextension-polyfill';
+
+import LoadingIndicator from '../../loading/LoadingIndicator';
+import { MenuLayout } from './MenuLayout';
+import MenuListItem from './MenuListItem';
 
 function MenuList() {
 	const accountUrl = useNextMenuUrl(true, '/accounts');

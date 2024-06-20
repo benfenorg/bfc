@@ -1,11 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/builder/Transactions.ts
-import { BCS, fromB64 } from '../bcs/src/index.js';
-=======
-import { fromB64 } from '@mysten/bcs';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/Transactions.ts
 import type { Infer, Struct } from 'superstruct';
 import {
 	any,
@@ -22,20 +17,14 @@ import {
 	union,
 	unknown,
 } from 'superstruct';
-<<<<<<< HEAD:sdk/typescript/src/builder/Transactions.ts
-import type { WellKnownEncoding } from './utils.js';
-import { TRANSACTION_TYPE, create } from './utils.js';
-import { TypeTagSerializer } from './type-tag-serializer.js';
-import { normalizeSuiObjectId } from '../utils/bfc-types.js';
-=======
 
 import type { TypeTag } from '../bcs/index.js';
 import { bcs } from '../bcs/index.js';
+import { fromB64 } from '../bcs/src/index.js';
 import { TypeTagSerializer } from '../bcs/type-tag-serializer.js';
 import { normalizeSuiObjectId } from '../utils/sui-types.js';
 import { Inputs } from './Inputs.js';
 import { create } from './utils.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/Transactions.ts
 
 const option = <T extends Struct<any, any>>(some: T) =>
 	union([object({ None: union([literal(true), literal(null)]) }), object({ Some: some })]);

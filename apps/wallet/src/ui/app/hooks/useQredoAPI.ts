@@ -11,11 +11,7 @@ const API_INSTANCES: Record<string, QredoAPI> = {};
 
 export function useQredoAPI(qredoID?: string) {
 	const backgroundClient = useBackgroundClient();
-<<<<<<< HEAD
 	const { data, isLoading, error } = useQredoInfo(qredoID ? { qredoID } : null);
-=======
-	const { data, isPending, error } = useQredoInfo(qredoID || null);
->>>>>>> mainnet-v1.24.1
 	const [api, setAPI] = useState(() => (qredoID && API_INSTANCES[qredoID]) || null);
 	useEffect(() => {
 		if (data?.qredoInfo?.apiUrl && data?.qredoInfo?.accessToken && qredoID) {
@@ -33,5 +29,5 @@ export function useQredoAPI(qredoID?: string) {
 		}
 		setAPI((qredoID && API_INSTANCES[qredoID]) || null);
 	}, [backgroundClient, data?.qredoInfo?.apiUrl, data?.qredoInfo?.accessToken, qredoID]);
-	return [api, isPending, error] as const;
+	return [api, isLoading, error] as const;
 }

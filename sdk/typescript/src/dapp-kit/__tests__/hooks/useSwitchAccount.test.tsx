@@ -3,12 +3,10 @@
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import {
-	WalletAccountNotFoundError,
-	WalletNotConnectedError,
-} from '../../src/errors/walletErrors.js';
-import { useSwitchAccount } from '../../src/hooks/wallet/useSwitchAccount.js';
-import { useConnectWallet, useCurrentAccount } from '../../src/index.js';
+import { WalletAccountNotFoundError, WalletNotConnectedError } from '../../errors/walletErrors.js';
+import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
+import { useCurrentAccount } from '../../hooks/wallet/useCurrentAccount.js';
+import { useSwitchAccount } from '../../hooks/wallet/useSwitchAccount.js';
 import { createMockAccount } from '../mocks/mockAccount.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 

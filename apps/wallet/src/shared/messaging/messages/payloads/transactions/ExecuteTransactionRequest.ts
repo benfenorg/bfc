@@ -1,13 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SuiSignTransactionBlockInput } from '@benfen/bfc.js/wallet-standard';
-=======
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
-import { type SuiSignTransactionBlockInput } from '@mysten/wallet-standard';
->>>>>>> mainnet-v1.24.1
+import { type SuiSignTransactionBlockInput } from '@benfen/bfc.js/wallet-standard';
 
 import { type TransactionDataType } from './ApprovalRequest';
 
@@ -24,7 +20,7 @@ export function isExecuteTransactionRequest(
 
 export type SuiSignTransactionSerialized = Omit<
 	SuiSignTransactionBlockInput,
-	'transactionBlock' | 'account'
+	'transaction' | 'account'
 > & {
 	transaction: string;
 	account: string;

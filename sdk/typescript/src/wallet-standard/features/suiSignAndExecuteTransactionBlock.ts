@@ -5,12 +5,7 @@ import type {
 	ExecuteTransactionRequestType,
 	SuiTransactionBlockResponse,
 	SuiTransactionBlockResponseOptions,
-<<<<<<< HEAD:sdk/typescript/src/wallet-standard/features/suiSignAndExecuteTransactionBlock.ts
 } from '../../client/index.js';
-=======
-} from '@mysten/sui.js/client';
-
->>>>>>> mainnet-v1.24.1:sdk/wallet-standard/src/features/suiSignAndExecuteTransactionBlock.ts
 import type { SuiSignTransactionBlockInput } from './suiSignTransactionBlock.js';
 
 /** The latest API version of the signAndExecuteTransactionBlock API. */

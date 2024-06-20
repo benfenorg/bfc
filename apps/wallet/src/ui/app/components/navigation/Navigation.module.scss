@@ -5,64 +5,16 @@
 .container {
 	display: flex;
 	flex-flow: row nowrap;
-<<<<<<< HEAD
 	position: absolute;
 	align-items: stretch;
 	justify-content: stretch;
-=======
-	background-color: v.use(v.$colors-nav-background-color);
-	backdrop-filter: v.use(v.$colors-nav-background-filter);
-	position: sticky;
->>>>>>> mainnet-v1.24.1
 	bottom: 0;
 	width: 100%;
 	overflow: hidden;
-<<<<<<< HEAD
 	transition: transform 300ms ease-in-out;
-=======
-	border: 1px solid rgb(111 188 240 / 1%);
-	transition:
-		max-height 300ms ease-in-out,
-		opacity 300ms ease-in-out;
->>>>>>> mainnet-v1.24.1
 	opacity: 1;
 	z-index: 40;
-<<<<<<< HEAD
 	background-color: values.$colors-bfc-card;
-=======
-	max-height: 120px;
-	padding-top: 8px;
-}
-
-.nav-menu {
-	display: flex;
-	flex-flow: row nowrap;
-	align-items: center;
-	justify-content: stretch;
-	width: 100%;
-}
-
-.filter-tags {
-	display: flex;
-	gap: 8px;
-
-	.filter {
-		height: 25px;
-		background: colors.$white;
-		color: colors.$sui-steel-blue;
-		padding: 6px 10px;
-		border: 1px solid colors.$gray-60;
-		border-radius: 16px;
-		text-decoration: none;
-		display: flex;
-		align-items: center;
-
-		&.active {
-			background: v.use(v.$colors-nav-item-highlighted-color);
-			color: colors.$white;
-		}
-	}
->>>>>>> mainnet-v1.24.1
 }
 
 .link {
@@ -94,11 +46,10 @@
 }
 
 .hidden {
-	padding-top: 0;
-	max-height: 0;
+	transform: translateY(100%);
 	opacity: 0;
 	transition:
-		max-height 300ms ease-in-out,
+		transform 300ms ease-in-out,
 		opacity 0ms ease-in 300ms;
 }
 

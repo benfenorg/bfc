@@ -1,6 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { Mock } from 'vitest';
+
+import { BFC_CHAINS } from '../../../wallet-standard/index.js';
 import type {
 	IdentifierRecord,
 	ReadonlyWalletAccount,
@@ -8,14 +11,12 @@ import type {
 	StandardEventsOnMethod,
 	Wallet,
 	WalletWithRequiredFeatures,
-} from '@mysten/wallet-standard';
-import { SUI_CHAINS } from '@mysten/wallet-standard';
-import type { Mock } from 'vitest';
+} from '../../../wallet-standard/index.js';
 
 export class MockWallet implements Wallet {
 	version = '1.0.0' as const;
 	icon = `data:image/png;base64,` as const;
-	chains = SUI_CHAINS;
+	chains = BFC_CHAINS;
 
 	mocks: {
 		connect: Mock;

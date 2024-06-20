@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import sha256 from 'fast-sha256';
+
 import { fromB58, toB58 } from './b58.js';
 import { fromB64, toB64 } from './b64.js';
 import { BcsType } from './bcs-type.js';
@@ -492,7 +494,9 @@ export class BCS {
 						return fromHEX(data).reduce((writer, el) => writer.write8(el), writer);
 					},
 					function decodeAddress(reader) {
-						return toHEX(reader.readBytes(length));
+						const hex = toHEX(reader.readBytes(length)).padStart(2 * length, '0');
+						const hash = toHEX(sha256(new TextEncoder().encode(hex)));
+						return `BFC${hex}${hash.slice(0, 4)}`;
 					},
 				);
 			default:

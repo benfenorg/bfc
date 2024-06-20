@@ -1,22 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SUI_TYPE_ARG } from '@benfen/bfc.js';
-=======
 import { ImageIcon } from '_app/shared/image-icon';
->>>>>>> mainnet-v1.24.1
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useCoinMetadata } from '@mysten/core';
 import { Logo, Unstaked } from '@mysten/icons';
 import { cva, type VariantProps } from 'class-variance-authority';
 
-<<<<<<< HEAD
-import { ImageIcon } from '_app/shared/image-icon';
-
 const imageStyle = cva(['rounded-full flex rounded-full flex justify-center items-center'], {
-=======
-const imageStyle = cva(['rounded-full flex'], {
->>>>>>> mainnet-v1.24.1
 	variants: {
 		size: {
 			sm: 'w-6 h-6',
@@ -32,13 +23,7 @@ const imageStyle = cva(['rounded-full flex'], {
 });
 
 function SuiCoin() {
-<<<<<<< HEAD
 	return <Logo className="w-6 h-6 text-body rounded-full bg-bfc" />;
-=======
-	return (
-		<Sui className="flex items-center w-full h-full justify-center text-white p-1.5 text-body rounded-full" />
-	);
->>>>>>> mainnet-v1.24.1
 }
 
 type NonSuiCoinProps = {
@@ -54,7 +39,7 @@ function NonSuiCoin({ coinType }: NonSuiCoinProps) {
 					src={coinMeta.iconUrl}
 					label={coinMeta.name || coinType}
 					fallback={coinMeta.name || coinType}
-					rounded="full"
+					circle
 				/>
 			) : (
 				<Unstaked />

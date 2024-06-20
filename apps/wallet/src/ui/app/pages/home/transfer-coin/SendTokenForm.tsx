@@ -1,28 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { Coin as CoinAPI } from '@benfen/bfc.js';
-import { type CoinStruct } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-import {
-	useCoinMetadata,
-	useFormatCoin,
-	CoinFormat,
-	isSuiNSName,
-	useSuiNSEnabled,
-} from '@mysten/core';
-import { ArrowRight16 } from '@mysten/icons';
-import { useQuery } from '@tanstack/react-query';
-import cl from 'classnames';
-import { Field, Form, useFormikContext, Formik } from 'formik';
-import { useMemo, useEffect } from 'react';
-
-import { createTokenTransferTransaction } from './utils/transaction';
-import { createValidationSchemaStepOne } from './validation';
-=======
->>>>>>> mainnet-v1.24.1
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
@@ -34,6 +12,9 @@ import { parseAmount } from '_helpers';
 import { useGetAllCoins } from '_hooks';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
+import { type CoinStruct } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import {
 	CoinFormat,
 	isSuiNSName,
@@ -41,11 +22,9 @@ import {
 	useFormatCoin,
 	useSuiNSEnabled,
 } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
-import { type CoinStruct } from '@mysten/sui.js/client';
-import { SUI_TYPE_ARG } from '@mysten/sui.js/utils';
 import { useQuery } from '@tanstack/react-query';
+import cl from 'classnames';
 import { Field, Form, Formik, useFormikContext } from 'formik';
 import { useEffect, useMemo } from 'react';
 
@@ -172,9 +151,9 @@ export function SendTokenForm({
 	const rpc = useSuiClient();
 	const activeAddress = useActiveAddress();
 	// Get all coins of the type
-	const { data: coinsData, isPending: coinsIsPending } = useGetAllCoins(coinType, activeAddress!);
+	const { data: coinsData, isLoading: coinsIsLoading } = useGetAllCoins(coinType, activeAddress!);
 
-	const { data: suiCoinsData, isPending: suiCoinsIsPending } = useGetAllCoins(
+	const { data: suiCoinsData, isLoading: suiCoinsIsLoading } = useGetAllCoins(
 		SUI_TYPE_ARG,
 		activeAddress!,
 	);
@@ -202,7 +181,7 @@ export function SendTokenForm({
 	return (
 		<Loading
 			loading={
-				queryResult.isPending || coinMetadata.isPending || suiCoinsIsPending || coinsIsPending
+				queryResult.isLoading || coinMetadata.isLoading || suiCoinsIsLoading || coinsIsLoading
 			}
 		>
 			<Formik
@@ -292,15 +271,7 @@ export function SendTokenForm({
 												await setFieldValue('amount', formattedTokenBalance);
 												validateField('amount');
 											}}
-<<<<<<< HEAD
 											actionDisabled={actionDisabled}
-=======
-											actionDisabled={
-												parseAmount(values?.amount, coinDecimals) === coinBalance ||
-												queryResult.isPending ||
-												!coinBalance
-											}
->>>>>>> mainnet-v1.24.1
 										/>
 									</div>
 									{!hasEnoughBalance && isValid ? (

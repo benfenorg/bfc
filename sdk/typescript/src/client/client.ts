@@ -1,26 +1,23 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { fromB58, toB64, toHEX } from '@mysten/bcs';
-
+import { fromB58, toB64, toHEX } from '../bcs/src/index.js';
 import type { Signer } from '../cryptography/index.js';
-import type { TransactionBlock } from '../transactions/index.js';
-import { isTransactionBlock } from '../transactions/index.js';
+import type { TransactionBlock } from '../transactions/TransactionBlock.js';
+import { isTransactionBlock } from '../transactions/TransactionBlock.js';
 import {
 	isValidSuiAddress,
 	isValidSuiObjectId,
 	isValidTransactionDigest,
 	normalizeSuiAddress,
-	normalizeSuiObjectId,
-} from '../utils/sui-types.js';
+} from '../utils/bfc-types.js';
+import { sui2BfcAddress } from '../utils/format.js';
 import { normalizeSuiNSName } from '../utils/suins.js';
 import { SuiHTTPTransport } from './http-transport.js';
 import type { SuiTransport } from './http-transport.js';
 import type {
 	AddressMetrics,
 	AllEpochsAddressMetrics,
-<<<<<<< HEAD
 	BfcDao,
-=======
 	Checkpoint,
 	CheckpointPage,
 	CoinBalance,
@@ -29,7 +26,6 @@ import type {
 	CommitteeInfo,
 	DelegatedStake,
 	DevInspectResults,
->>>>>>> mainnet-v1.24.1
 	DevInspectTransactionBlockParams,
 	DryRunTransactionBlockParams,
 	DryRunTransactionBlockResponse,
@@ -94,22 +90,6 @@ import type {
 	Unsubscribe,
 	ValidatorsApy,
 } from './types/index.js';
-<<<<<<< HEAD
-import {
-	isValidTransactionDigest,
-	isValidSuiAddress,
-	isValidSuiObjectId,
-	normalizeSuiAddress,
-} from '../utils/bfc-types.js';
-import { fromB58, toB64, toHEX } from '../bcs/src/index.js';
-import { sui2BfcAddress } from '../utils/format.js';
-import type { TransactionBlock } from '../builder/index.js';
-import { isTransactionBlock } from '../builder/index.js';
-import { SuiHTTPTransport } from './http-transport.js';
-import type { SuiTransport } from './http-transport.js';
-import type { Keypair } from '../cryptography/index.js';
-=======
->>>>>>> mainnet-v1.24.1
 
 export interface PaginationArguments<Cursor> {
 	/** Optional paging cursor */
@@ -630,13 +610,8 @@ export class SuiClient {
 		}
 
 		return await this.transport.request({
-<<<<<<< HEAD
 			method: 'bfc_devInspectTransactionBlock',
-			params: [input.sender, devInspectTxBytes, input.gasPrice, input.epoch],
-=======
-			method: 'sui_devInspectTransactionBlock',
 			params: [input.sender, devInspectTxBytes, input.gasPrice?.toString(), input.epoch],
->>>>>>> mainnet-v1.24.1
 		});
 	}
 
@@ -794,15 +769,6 @@ export class SuiClient {
 		});
 	}
 
-<<<<<<< HEAD
-	async resolveNameServiceNames(
-		input: ResolveNameServiceNamesParams,
-	): Promise<ResolvedNameServiceNames> {
-		return await this.transport.request({
-			method: 'bfcx_resolveNameServiceNames',
-			params: [input.address, input.cursor, input.limit],
-		});
-=======
 	async resolveNameServiceNames({
 		format = 'dot',
 		...input
@@ -811,7 +777,7 @@ export class SuiClient {
 	}): Promise<ResolvedNameServiceNames> {
 		const { nextCursor, hasNextPage, data }: ResolvedNameServiceNames =
 			await this.transport.request({
-				method: 'suix_resolveNameServiceNames',
+				method: 'bfcx_resolveNameServiceNames',
 				params: [input.address, input.cursor, input.limit],
 			});
 
@@ -820,7 +786,6 @@ export class SuiClient {
 			nextCursor,
 			data: data.map((name) => normalizeSuiNSName(name, format)),
 		};
->>>>>>> mainnet-v1.24.1
 	}
 
 	async getProtocolConfig(input?: GetProtocolConfigParams): Promise<ProtocolConfig> {

@@ -1,10 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { type TransactionSummary as TransactionSummaryType } from '@mysten/core';
-<<<<<<< HEAD
-=======
-import clsx from 'clsx';
->>>>>>> mainnet-v1.24.1
 
 import LoadingIndicator from '../../components/loading/LoadingIndicator';
 import { Heading } from '../heading';
@@ -28,11 +24,7 @@ export function TransactionSummary({
 }) {
 	if (isError) return null;
 	return (
-<<<<<<< HEAD
 		<section className="min-h-full pb-5">
-=======
-		<section className="-mx-6 bg-sui/10 min-h-full">
->>>>>>> mainnet-v1.24.1
 			{isLoading ? (
 				<div className="flex items-center justify-center p-10">
 					<LoadingIndicator />

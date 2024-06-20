@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Config } from 'tailwindcss';
-import colors from 'tailwindcss/colors';
 import { fontFamily } from 'tailwindcss/defaultTheme';
+import colors from 'tailwindcss/colors';
 
 /** The minimum line height that text should use to avoid clipping and overflow scrolling */
 const MIN_LINE_HEIGHT = '1.13';
@@ -96,26 +96,12 @@ export default {
 			offwhite: '#fefefe',
 			offblack: '#111111',
 			ebony: '#101828',
-			avocado: {
-				200: '#CBE5BE',
-			},
 		},
 
 		extend: {
 			scale: {
 				'101': '1.01',
 			},
-<<<<<<< HEAD
-=======
-			// backdrop-blur values that are found in the design:
-			backdropBlur: {
-				sm: '8px',
-				md: '16px',
-				DEFAULT: '20px',
-				lg: '24px',
-				xl: '32px',
-			},
->>>>>>> mainnet-v1.24.1
 			colors: {
 				'gradient-blue-start': '#589AEA',
 				'gradient-blue-end': '#4C75A6',
@@ -128,28 +114,17 @@ export default {
 				130: '1.3',
 			},
 			boxShadow: {
-				xs: '0px 1px 2px rgba(16, 24, 40, 0.05)',
-				sm: '0px 1px 2px 0px rgba(86, 104, 115, 0.08)',
-				md: '1px 2px 8px 2px rgba(86, 104, 115, 0.06)',
-				lg: '0px 0px 44px 0px rgba(86, 104, 115, 0.22)',
-				DEFAULT: '0px 0px 20px 0px rgba(86, 104, 115, 0.14)',
 				notification: '0px 0px 20px rgba(29, 55, 87, 0.11)',
 				moduleOption:
 					'0px 0px 29px rgba(0, 0, 0, 0.13), 0px 0px 44px rgba(0, 0, 0, 0.15), 0px 0px 0px rgba(0, 0, 0, 0.2)',
 				blurXl: '0 0 20px 0 rgba(0, 0, 0, 0.3)',
 				button: '0px 1px 2px rgba(16, 24, 40, 0.05)',
+				xs: '0px 1px 2px rgba(16, 24, 40, 0.05)',
+				DEFAULT: '0px 5px 30px rgba(86, 104, 115, 0.2), 0px 0px 0px 1px rgba(160, 182, 195, 0.08)',
 				glow: '0 0px 6px 4px rgba(213,247,238,1)',
 				drop: '0px 0px 10px rgba(111, 188, 240, 0.2)',
-<<<<<<< HEAD
 				mistyEdge:
 					'0px 0px 0px 1px rgba(160, 182, 195, 0.08), 0px 5px 30px 0px rgba(86, 104, 115, 0.20)',
-=======
-				'effect-ui-regular':
-					'0px 5px 30px 0px rgba(86, 104, 115, 0.20), 0px 0px 0px 1px rgba(86, 104, 115, 0.03)',
-				panel: '0px 2px 7px 0px rgba(160, 182, 195, 0.32)',
-				dropdownContent: '0px 1px 2px 0px rgba(21, 82, 123, 0.08)',
-				'effect-ui-wallet-content': '0px -5px 20px 5px rgba(111, 188, 240, 0.11)',
->>>>>>> mainnet-v1.24.1
 			},
 			fontSize: {
 				// Text sizes:
@@ -208,9 +183,7 @@ export default {
 				600: '37.5rem',
 			},
 			height: {
-				12.5: '3.125rem',
 				31.5: '7.5rem',
-				100: '25rem',
 				120: '30rem',
 				300: '75rem',
 				coinsAndAssetsContainer: '31.25rem',
@@ -221,7 +194,6 @@ export default {
 				ownCoinsPanel: '14.375rem',
 			},
 			width: {
-				12.5: '3.125rem',
 				31.5: '7.5rem',
 				walletLogo: '4.813rem',
 			},
@@ -231,7 +203,6 @@ export default {
 			minWidth: {
 				10: '2.5rem',
 				18: '4.5rem',
-				44: '11rem',
 				50: '12.5rem',
 				transactionColumn: '31.875rem',
 				smallThumbNailsViewContainer: '13.125rem',
@@ -252,13 +223,7 @@ export default {
 				placeholderGradient01: 'linear-gradient(165.96deg, #e6f5ff 10%, #ebecff 95%)',
 				placeholderShimmer:
 					'linear-gradient(90deg, #ecf1f4 -24.18%, rgba(237 242 245 / 40%) 73.61%, #f3f7f9 114.81%, #ecf1f4 114.82%)',
-<<<<<<< HEAD
 				main: 'linear-gradient(176deg, #D2EBFA 51.68%, #D5F7EE 100%)',
-=======
-				'gradients-graph-cards': 'linear-gradient(176deg, #D2EBFA 51.68%, #D5F7EE 100%)',
-				'gradients-failure': 'linear-gradient(166deg, #FBF0FF 0%, #FFF0F0 100%)',
-				objectCard: 'linear-gradient(166deg, #F0F9FF 9.97%, #FEF7FF 94.97%)',
->>>>>>> mainnet-v1.24.1
 			},
 			rotate: {
 				135: '135deg',
@@ -266,13 +231,10 @@ export default {
 			borderRadius: {
 				'2lg': '0.625rem',
 			},
-			aspectRatio: {
-				square: '1 / 1',
-			},
 		},
 	},
 	corePlugins: {
-		aspectRatio: true,
+		aspectRatio: false,
 	},
 	plugins: [
 		require('@headlessui/tailwindcss'),

@@ -7,11 +7,8 @@ import { TxnAmount } from '_components/receipt-card/TxnAmount';
 import { parseAmount } from '_helpers';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
-<<<<<<< HEAD
 import { Heading } from '_src/ui/app/shared/heading';
-=======
 import { useCoinMetadata } from '@mysten/core';
->>>>>>> mainnet-v1.24.1
 
 export type PreviewTransferProps = {
 	coinType: string;

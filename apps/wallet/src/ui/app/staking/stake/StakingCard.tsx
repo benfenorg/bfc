@@ -1,81 +1,38 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
-import { Popover } from '@headlessui/react';
-import { useCoinMetadata, useGetSystemState, useGetAllBalances } from '@mysten/core';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { ArrowLeft16 } from '@mysten/icons';
-import { useQueryClient, useMutation } from '@tanstack/react-query';
-import { Formik } from 'formik';
-import { useCallback, useMemo, useState } from 'react';
-import { toast } from 'react-hot-toast';
-import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
-
-import StakeForm from './StakeForm';
-import { UnStakeForm } from './UnstakeForm';
-import { ValidatorFormDetail } from './ValidatorFormDetail';
-import { createStakeTransaction, createUnstakeTransaction } from './utils/transaction';
-import { createValidationSchema } from './utils/validation';
-import { QredoActionIgnoredByUser } from '../../QredoSigner';
-import Alert from '../../components/alert';
-import { getSignerOperationErrorMessage } from '../../helpers/errorMessages';
-import { useQredoTransaction } from '../../hooks/useQredoTransaction';
-import { useSigner } from '../../hooks/useSigner';
-import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
-import { getStakeSuiBySuiId } from '../getStakeSuiBySuiId';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
-import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
 import { Collapse } from '_app/shared/collapse';
-
-=======
-import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
-import { Button } from '_app/shared/ButtonUI';
-import { Collapsible } from '_app/shared/collapse';
->>>>>>> mainnet-v1.24.1
 import { Text } from '_app/shared/text';
 import Loading from '_components/loading';
 import { parseAmount } from '_helpers';
 import { useCoinsReFetchingConfig } from '_hooks';
 import { Coin } from '_redux/slices/sui-objects/Coin';
 import { ampli } from '_src/shared/analytics/ampli';
-<<<<<<< HEAD
 import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
 import type { StakeObject } from '@benfen/bfc.js/client';
-
-=======
-import {
-	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	DELEGATED_STAKES_QUERY_STALE_TIME,
-	MIN_NUMBER_SUI_TO_STAKE,
-} from '_src/shared/constants';
-import { FEATURES } from '_src/shared/experimentation/features';
-import { useFeatureIsOn } from '@growthbook/growthbook-react';
-import { useCoinMetadata, useGetDelegatedStake } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { Popover } from '@headlessui/react';
+import { useCoinMetadata, useGetAllBalances, useGetSystemState } from '@mysten/core';
 import { ArrowLeft16 } from '@mysten/icons';
-import type { StakeObject } from '@mysten/sui.js/client';
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
-import * as Sentry from '@sentry/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik } from 'formik';
->>>>>>> mainnet-v1.24.1
 import type { FormikHelpers } from 'formik';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Alert from '../../components/alert';
 import { getSignerOperationErrorMessage } from '../../helpers/errorMessages';
-import { useActiveAccount } from '../../hooks/useActiveAccount';
 import { useQredoTransaction } from '../../hooks/useQredoTransaction';
 import { useSigner } from '../../hooks/useSigner';
 import { QredoActionIgnoredByUser } from '../../QredoSigner';
 import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
 import { getStakeSuiBySuiId } from '../getStakeSuiBySuiId';
+import { useGetDelegatedStake } from '../useGetDelegatedStake';
 import StakeForm from './StakeForm';
 import { UnStakeForm } from './UnstakeForm';
 import { createStakeTransaction, createUnstakeTransaction } from './utils/transaction';
@@ -94,17 +51,10 @@ function StakingCard() {
 
 	const accountAddress = useActiveAddress();
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-<<<<<<< HEAD
 	const { data, isLoading: loadingSuiBalances } = useGetAllBalances(
 		accountAddress,
 		refetchInterval,
 		staleTime,
-=======
-	const { data: suiBalance, isPending: loadingSuiBalances } = useSuiClientQuery(
-		'getBalance',
-		{ coinType: SUI_TYPE_ARG, owner: accountAddress! },
-		{ refetchInterval, staleTime, enabled: !!accountAddress },
->>>>>>> mainnet-v1.24.1
 	);
 
 	const coinData = data?.find((coin) => coin.coinType === coinType);
@@ -113,23 +63,9 @@ function StakingCard() {
 	const validatorAddress = searchParams.get('address');
 	const stakeSuiIdParams = searchParams.get('staked');
 	const unstake = searchParams.get('unstake') === 'true';
-<<<<<<< HEAD
 	const { data: allDelegation, isLoading } = useGetDelegatedStake(accountAddress || '');
 
 	const { data: system, isLoading: validatorsIsloading } = useGetSystemState();
-=======
-	const { data: allDelegation, isPending } = useGetDelegatedStake({
-		address: accountAddress || '',
-		staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
-		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	});
-	const effectsOnlySharedTransactions = useFeatureIsOn(
-		FEATURES.WALLET_EFFECTS_ONLY_SHARED_TRANSACTION as string,
-	);
-
-	const { data: system, isPending: validatorsisPending } =
-		useSuiClientQuery('getLatestSuiSystemState');
->>>>>>> mainnet-v1.24.1
 
 	const totalTokenBalance = useMemo(() => {
 		if (!allDelegation) return 0n;
@@ -266,7 +202,7 @@ function StakingCard() {
 						queryKey: ['system', 'state'],
 					}),
 					queryClient.invalidateQueries({
-						queryKey: ['delegated-stakes'],
+						queryKey: ['validator'],
 					}),
 				]);
 				resetForm();
@@ -313,12 +249,12 @@ function StakingCard() {
 		],
 	);
 
-	if (!coinType || !validatorAddress || (!validatorsisPending && !system)) {
+	if (!coinType || !validatorAddress || (!validatorsIsloading && !system)) {
 		return <Navigate to="/" replace={true} />;
 	}
 	return (
 		<div className="flex flex-col flex-nowrap flex-grow w-full">
-			<Loading loading={isPending || validatorsisPending || loadingSuiBalances}>
+			<Loading loading={isLoading || validatorsIsloading || loadingSuiBalances}>
 				<Formik
 					initialValues={initialValues}
 					validationSchema={validationSchema}

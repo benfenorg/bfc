@@ -1,28 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
-
-import { type WalletSigner } from './WalletSigner';
-import { BackgroundServiceSigner } from './background-client/BackgroundServiceSigner';
-import { queryClient } from './helpers/queryClient';
 import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
 import { API_ENV } from '_src/shared/api-env';
-
-import type { BackgroundClient } from './background-client';
-import type { SignerWithProvider } from '@benfen/bfc.js';
-=======
-import { type AccountType, type SerializedUIAccount } from '_src/background/accounts/Account';
-import { API_ENV } from '_src/shared/api-env';
-import { getSuiClient } from '_src/shared/sui-client';
-import { type SuiClient } from '@mysten/sui.js/client';
+import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
 
 import type { BackgroundClient } from './background-client';
 import { BackgroundServiceSigner } from './background-client/BackgroundServiceSigner';
 import { queryClient } from './helpers/queryClient';
 import { type WalletSigner } from './WalletSigner';
->>>>>>> mainnet-v1.24.1
 
 type EnvInfo = {
 	name: string;
@@ -69,18 +55,9 @@ export const generateActiveNetworkList = (): NetworkTypes[] => {
 	return Object.values(API_ENV);
 };
 
-<<<<<<< HEAD
-export default class ApiProvider {
-	private _apiFullNodeProvider?: SuiClient;
-	private _signerByAddress: Map<string, SignerWithProvider> = new Map();
-=======
-const accountTypesWithBackgroundSigner: AccountType[] = ['mnemonic-derived', 'imported', 'zkLogin'];
-
 export default class ApiProvider {
 	private _apiFullNodeProvider?: SuiClient;
 	private _signerByAddress: Map<string, WalletSigner> = new Map();
-	apiEnv: API_ENV = DEFAULT_API_ENV;
->>>>>>> mainnet-v1.24.1
 
 	public setNewJsonRpcProvider(apiEnv: API_ENV = DEFAULT_API_ENV, customRPC?: string | null) {
 		const connection = customRPC ? customRPC : getDefaultAPI(apiEnv);
@@ -149,5 +126,3 @@ export default class ApiProvider {
 		return this._signerByAddress.get(address)!;
 	}
 }
-
-export const walletApiProvider = new ApiProvider();

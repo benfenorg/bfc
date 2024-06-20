@@ -2,9 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { cx } from 'class-variance-authority';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 
 import { useAccounts } from '../hooks/useAccounts';
+import { useDeriveNextAccountMutation } from '../hooks/useDeriveNextAccountMutation';
 import { Link } from '../shared/Link';
 import { SummaryCard } from './SummaryCard';
 import { WalletListSelectItem, type WalletListSelectItemProps } from './WalletListSelectItem';
@@ -28,18 +29,15 @@ export function WalletListSelect({
 	onChange,
 	boxShadow = false,
 }: WalletListSelectProps) {
-<<<<<<< HEAD
 	const [newAccounts, setNewAccounts] = useState<string[]>([]);
 	const accounts = useAccounts();
-=======
-	const { data: accounts } = useAccounts();
->>>>>>> mainnet-v1.24.1
 	const filteredAccounts = useMemo(() => {
 		if (visibleValues) {
 			return accounts.filter(({ address }) => visibleValues.includes(address));
 		}
 		return accounts;
 	}, [accounts, visibleValues]);
+	const deriveNextAccount = useDeriveNextAccountMutation();
 	return (
 		<SummaryCard
 			header={title}
@@ -77,6 +75,7 @@ export function WalletListSelect({
 								selected={values.includes(address)}
 								mode={mode}
 								disabled={disabled}
+								isNew={newAccounts.includes(address)}
 							/>
 						</li>
 					))}
@@ -96,14 +95,13 @@ export function WalletListSelect({
 								/>
 							) : null}
 						</div>
-<<<<<<< HEAD
 						<div>
 							<Link
 								color="bfc-text2"
 								weight="medium"
 								text="New account"
 								disabled={disabled}
-								loading={deriveNextAccount.isLoading}
+								loading={deriveNextAccount.isPending}
 								onClick={async () => {
 									const newAccountAddress = await deriveNextAccount.mutateAsync();
 									setNewAccounts([...newAccounts, newAccountAddress]);
@@ -113,8 +111,6 @@ export function WalletListSelect({
 								}}
 							/>
 						</div>
-=======
->>>>>>> mainnet-v1.24.1
 					</div>
 				) : null
 			}

@@ -2,20 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import {
-<<<<<<< HEAD
-	WalletActionStake24,
-	ArrowTopRight24,
-=======
 	Account24,
-	ArrowRight16,
->>>>>>> mainnet-v1.24.1
+	ArrowTopRight24,
 	Info16,
 	Sui,
 	Swap16,
 	Unstaked,
 	WalletActionStake24,
 } from '@mysten/icons';
-import cl from 'clsx';
+import cl from 'classnames';
 
 import LoadingIndicator from '../loading/LoadingIndicator';
 

@@ -1,11 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-=======
 import { Text } from '_app/shared/text';
->>>>>>> mainnet-v1.24.1
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
 
 //TODO create variant for different use cases like heading4, subtitle, bodySmall and different symbols color

@@ -4,7 +4,7 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
-import { ConnectButton } from '../../src/components/ConnectButton';
+import { ConnectButton } from '../../components/ConnectButton';
 import { createWalletProviderContextWrapper } from '../test-utils';
 
 describe('ConnectButton', () => {

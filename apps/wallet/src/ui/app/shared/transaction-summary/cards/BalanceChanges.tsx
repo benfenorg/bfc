@@ -1,32 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import Alert from '_components/alert';
 import { CoinIcon } from '_src/ui/app/components/coin-icon';
 import { Text } from '_src/ui/app/shared/text';
 import {
 	CoinFormat,
-<<<<<<< HEAD
-	useFormatCoin,
-	type BalanceChange,
-} from '@mysten/core';
-
-import { Card } from '../Card';
-import { OwnerFooter } from '../OwnerFooter';
-import { CoinIcon } from '_src/ui/app/components/coin-icon';
-import { Text } from '_src/ui/app/shared/text';
-=======
-	getRecognizedUnRecognizedTokenChanges,
-	useCoinMetadata,
 	useFormatCoin,
 	type BalanceChange,
 	type BalanceChangeSummary,
 } from '@mysten/core';
-import classNames from 'clsx';
-import { useMemo } from 'react';
 
 import { Card } from '../Card';
 import { OwnerFooter } from '../OwnerFooter';
->>>>>>> mainnet-v1.24.1
 
 interface BalanceChangesProps {
 	changes?: BalanceChangeSummary;
@@ -46,42 +30,11 @@ function BalanceChangeEntry({ change }: { change: BalanceChange }) {
 					{symbol}
 				</Text>
 			</div>
-<<<<<<< HEAD
 			<div className="flex">
 				<Text variant="body" weight="medium" color={isPositive ? 'bfc-text1' : 'bfc-red'}>
 					{isPositive ? '+' : ''}
 					{formatted} {symbol}
 				</Text>
-=======
-		</div>
-	);
-}
-
-function BalanceChangeEntries({ changes }: { changes: BalanceChange[] }) {
-	const { recognizedTokenChanges, unRecognizedTokenChanges } = useMemo(
-		() => getRecognizedUnRecognizedTokenChanges(changes),
-		[changes],
-	);
-
-	return (
-		<div className="flex flex-col gap-2">
-			<div className="flex flex-col gap-4 pb-3">
-				{recognizedTokenChanges.map((change) => (
-					<BalanceChangeEntry change={change} key={change.coinType + change.amount} />
-				))}
-				{unRecognizedTokenChanges.length > 0 && (
-					<div
-						className={classNames(
-							'flex flex-col gap-2 pt-2',
-							recognizedTokenChanges?.length && 'border-t border-gray-45',
-						)}
-					>
-						{unRecognizedTokenChanges.map((change, index) => (
-							<BalanceChangeEntry change={change} key={change.coinType + index} />
-						))}
-					</div>
-				)}
->>>>>>> mainnet-v1.24.1
 			</div>
 		</div>
 	);

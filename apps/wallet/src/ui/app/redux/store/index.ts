@@ -4,12 +4,8 @@
 import rootReducer from '_redux/RootReducer';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { thunkExtras } from './thunk-extras';
-<<<<<<< HEAD
 import { amplitudePersistenceMiddleware } from '../slices/account';
-import rootReducer from '_redux/RootReducer';
-=======
->>>>>>> mainnet-v1.24.1
+import { thunkExtras } from './thunk-extras';
 
 const store = configureStore({
 	reducer: rootReducer,

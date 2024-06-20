@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { ResolvedNameServiceNames } from '@mysten/sui.js/client';
 import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 
+import type { ResolvedNameServiceNames } from '../../client/index.js';
 import { useSuiClientQuery } from './useSuiClientQuery.js';
 
 export function useResolveSuiNSName(

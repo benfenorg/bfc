@@ -1,10 +1,5 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
-import { QredoTransaction } from './QredoTransaction';
-=======
-
->>>>>>> mainnet-v1.24.1
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
 import { NoActivityCard } from '_components/transactions-card/NoActivityCard';
@@ -34,7 +29,7 @@ export function QredoPendingTransactions() {
 	const qredoID = isQredoAccount ? activeAccount.qredoConnectionID : undefined;
 	const {
 		data: qredoTransactions,
-		isPending,
+		isLoading,
 		error,
 	} = useGetQredoTransactions({
 		qredoID,
@@ -44,7 +39,7 @@ export function QredoPendingTransactions() {
 		return <Alert>{(error as Error)?.message}</Alert>;
 	}
 	return (
-		<Loading loading={isPending}>
+		<Loading loading={isLoading}>
 			{qredoTransactions?.length && activeAddress ? (
 				qredoTransactions.map((txn) => (
 					<ErrorBoundary key={txn.txID}>

@@ -104,14 +104,6 @@ export class SuiHTTPTransport implements SuiTransport {
 				params: input.params,
 			}),
 		});
-<<<<<<< HEAD
-		this.rpcClient = new Client(new RequestManager([transport]));
-		this.websocketClient = new WebsocketClient(websocketUrl ?? url, websocketOptions);
-	}
-
-	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
-		return this.rpcClient.request(input);
-=======
 
 		if (!res.ok) {
 			throw new SuiHTTPStatusError(
@@ -128,7 +120,6 @@ export class SuiHTTPTransport implements SuiTransport {
 		}
 
 		return data.result;
->>>>>>> mainnet-v1.24.1
 	}
 
 	async subscribe<T>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {

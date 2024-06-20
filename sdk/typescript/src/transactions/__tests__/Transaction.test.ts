@@ -1,17 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/builder/__tests__/Transaction.test.ts
-import { toB58 } from '../../bcs/src/index.js';
-import { describe, it, expect } from 'vitest';
-import { TransactionBlock, Transactions, builder } from '../index.js';
-=======
-import { toB58 } from '@mysten/bcs';
 import { describe, expect, it } from 'vitest';
 
-import { bcs } from '../../bcs/index.js';
+import { bcs, toB58 } from '../../bcs/index.js';
 import { TransactionBlock, Transactions } from '../index.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/__tests__/Transaction.test.ts
 import { Inputs } from '../Inputs.js';
 
 it('can construct and serialize an empty tranaction', () => {

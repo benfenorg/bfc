@@ -1,17 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type Keypair, type ExportedKeypair } from '@benfen/bfc.js/cryptography';
-=======
 import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
-import { type Keypair } from '@mysten/sui.js/cryptography';
+import { type ExportedKeypair, type Keypair } from '@benfen/bfc.js/cryptography';
 
 import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
->>>>>>> mainnet-v1.24.1
 import {
 	Account,
-	type KeyPairExportableAccount,
 	type PasswordUnlockableAccount,
 	type SerializedAccount,
 	type SerializedUIAccount,
@@ -38,15 +33,14 @@ export function isMnemonicSerializedUiAccount(
 	return account.type === 'mnemonic-derived';
 }
 
-type SessionStorageData = { keyPair: string };
+type SessionStorageData = { keyPair: ExportedKeypair };
 
 export class MnemonicAccount
 	extends Account<MnemonicSerializedAccount, SessionStorageData>
-	implements PasswordUnlockableAccount, SigningAccount, KeyPairExportableAccount
+	implements PasswordUnlockableAccount, SigningAccount
 {
 	readonly unlockType = 'password' as const;
 	readonly canSign = true;
-	readonly exportableKeyPair = true;
 
 	static isOfType(serialized: SerializedAccount): serialized is MnemonicSerializedAccount {
 		return serialized.type === 'mnemonic-derived';
@@ -87,17 +81,12 @@ export class MnemonicAccount
 		await this.onLocked(allowRead);
 	}
 
-	async passwordUnlock(password?: string): Promise<void> {
-		const mnemonicSource = await this.#getMnemonicSource();
-		if ((await mnemonicSource.isLocked()) && !password) {
-			throw new Error('Missing password to unlock the account');
-		}
+	async passwordUnlock(password: string): Promise<void> {
 		const { derivationPath } = await this.getStoredData();
-		if (password) {
-			await mnemonicSource.unlock(password);
-		}
+		const mnemonicSource = await this.#getMnemonicSource();
+		await mnemonicSource.unlock(password);
 		await this.setEphemeralValue({
-			keyPair: (await mnemonicSource.deriveKeyPair(derivationPath)).getSecretKey(),
+			keyPair: (await mnemonicSource.deriveKeyPair(derivationPath)).export(),
 		});
 		await this.onUnlocked();
 	}
@@ -140,13 +129,6 @@ export class MnemonicAccount
 
 	get sourceID() {
 		return this.getCachedData().then(({ sourceID }) => sourceID);
-	}
-
-	async exportKeyPair(password: string): Promise<string> {
-		const { derivationPath } = await this.getStoredData();
-		const mnemonicSource = await this.#getMnemonicSource();
-		await mnemonicSource.unlock(password);
-		return (await mnemonicSource.deriveKeyPair(derivationPath)).getSecretKey();
 	}
 
 	async #getKeyPair() {

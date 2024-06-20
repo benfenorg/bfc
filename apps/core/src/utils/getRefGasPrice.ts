@@ -1,12 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { SuiValidatorSummary } from '@benfen/bfc.js/client';
-=======
-import { SuiValidatorSummary } from '@mysten/sui.js/client';
-
->>>>>>> mainnet-v1.24.1
 import { calculateStakeShare } from './calculateStakeShare';
 
 const REF_THRESHOLD = 66.67;

@@ -1,10 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { IdentifierRecord, SuiFeatures, SuiSignMessageFeature } from '@mysten/wallet-standard';
+import type {
+	IdentifierRecord,
+	SuiFeatures,
+	SuiSignMessageFeature,
+} from '../../../wallet-standard/index.js';
 
 export const signMessageFeature: SuiSignMessageFeature = {
-	'sui:signMessage': {
+	'bfc:signMessage': {
 		version: '1.0.0',
 		signMessage: vi.fn(),
 	},
@@ -19,15 +23,15 @@ export const superCoolFeature: IdentifierRecord<unknown> = {
 
 export const suiFeatures: SuiFeatures = {
 	...signMessageFeature,
-	'sui:signPersonalMessage': {
+	'bfc:signPersonalMessage': {
 		version: '1.0.0',
 		signPersonalMessage: vi.fn(),
 	},
-	'sui:signTransactionBlock': {
+	'bfc:signTransactionBlock': {
 		version: '1.0.0',
 		signTransactionBlock: vi.fn(),
 	},
-	'sui:signAndExecuteTransactionBlock': {
+	'bfc:signAndExecuteTransactionBlock': {
 		version: '1.0.0',
 		signAndExecuteTransactionBlock: vi.fn(),
 	},

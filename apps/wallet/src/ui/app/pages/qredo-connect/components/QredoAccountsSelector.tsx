@@ -1,12 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { Search14 } from '@mysten/icons';
-=======
 import { type Wallet } from '_src/shared/qredo-api';
-import { Search16 } from '@mysten/icons';
->>>>>>> mainnet-v1.24.1
+import { Search14 } from '@mysten/icons';
 import { useState } from 'react';
 
 import { QredoAccountItem } from './QredoAccountItem';

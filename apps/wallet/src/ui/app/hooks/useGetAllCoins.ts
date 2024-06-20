@@ -1,17 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
+import type { CoinStruct, PaginatedCoins } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
-import type { PaginatedCoins, CoinStruct } from '@benfen/bfc.js/client';
-=======
-import { useSuiClient } from '@mysten/dapp-kit';
-import type { CoinStruct, PaginatedCoins } from '@mysten/sui.js/client';
-import { useQuery } from '@tanstack/react-query';
-
->>>>>>> mainnet-v1.24.1
 const MAX_COINS_PER_REQUEST = 100;
 
 // Fetch all coins for an address, this will keep calling the API until all coins are fetched

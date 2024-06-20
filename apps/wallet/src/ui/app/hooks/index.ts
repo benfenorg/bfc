@@ -16,15 +16,10 @@ export { useGetTxnRecipientAddress } from './useGetTxnRecipientAddress';
 export { useQueryTransactionsByAddress } from './useQueryTransactionsByAddress';
 export { useGetTransferAmount } from './useGetTransferAmount';
 export { useOwnedNFT } from './useOwnedNFT';
-export { useSortedCoinsByCategories } from './useSortedCoinsByCategories';
 export * from './useTransactionData';
 export * from './useActiveAddress';
 export * from './useGetAllCoins';
 export * from './useCoinsReFetchingConfig';
-<<<<<<< HEAD
 export * from './useCopyToClipboard';
 export * from './useExplorerLink';
 export * from './useSigner';
-=======
-export * from './deepbook';
->>>>>>> mainnet-v1.24.1

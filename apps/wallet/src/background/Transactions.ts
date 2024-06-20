@@ -1,11 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SignedTransaction } from '@benfen/bfc.js';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type SuiSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
-=======
 import {
 	type ApprovalRequest,
 	type TransactionDataType,
@@ -15,9 +10,8 @@ import { type SignMessageRequest } from '_payloads/transactions/SignMessage';
 import type { TransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
 import type { ContentScriptConnection } from '_src/background/connections/ContentScriptConnection';
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
-import { type SuiSignMessageOutput } from '@mysten/wallet-standard';
->>>>>>> mainnet-v1.24.1
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type SuiSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
 import { filter, lastValueFrom, map, race, Subject, take } from 'rxjs';
 import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';

@@ -1,38 +1,27 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64 } from '@benfen/bfc.js/utils';
-=======
 import { createMessage, type Message } from '_src/shared/messaging/messages';
 import {
 	isMethodPayload,
 	type MethodPayload,
 } from '_src/shared/messaging/messages/payloads/MethodPayload';
 import { type WalletStatusChange } from '_src/shared/messaging/messages/payloads/wallet-status-change';
-import { fromB64 } from '@mysten/sui.js/utils';
->>>>>>> mainnet-v1.24.1
+import { fromB64 } from '@benfen/bfc.js/utils';
 import Dexie from 'dexie';
 
 import { getAccountSourceByID } from '../account-sources';
-import { accountSourcesEvents } from '../account-sources/events';
 import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
 import { type UiConnection } from '../connections/UiConnection';
 import { backupDB, getDB } from '../db';
-import { LegacyVault } from '../legacy-accounts/LegacyVault';
 import { makeUniqueKey } from '../storage-utils';
-import {
-	isKeyPairExportableAccount,
-	isPasswordUnLockable,
-	isSigningAccount,
-	type SerializedAccount,
-} from './Account';
+import { isPasswordUnLockable, isSigningAccount, type SerializedAccount } from './Account';
 import { accountsEvents } from './events';
 import { ImportedAccount } from './ImportedAccount';
 import { LedgerAccount } from './LedgerAccount';
 import { MnemonicAccount } from './MnemonicAccount';
 import { QredoAccount } from './QredoAccount';
-import { ZkLoginAccount, type ZkLoginAccountSerialized } from './zklogin/ZkLoginAccount';
+import { ZkLoginAccount } from './zklogin/ZkLoginAccount';
 
 function toAccount(account: SerializedAccount) {
 	if (MnemonicAccount.isOfType(account)) {
@@ -57,11 +46,11 @@ export async function getAllAccounts(filter?: { sourceID: string }) {
 	const db = await getDB();
 	let accounts;
 	if (filter?.sourceID) {
-		accounts = await db.accounts.where('sourceID').equals(filter.sourceID).sortBy('createdAt');
+		accounts = await db.accounts.where('sourceID').equals(filter.sourceID);
 	} else {
-		accounts = await db.accounts.toCollection().sortBy('createdAt');
+		accounts = db.accounts;
 	}
-	return accounts.map(toAccount);
+	return (await accounts.toArray()).map(toAccount);
 }
 
 export async function getAccountByID(id: string) {
@@ -89,8 +78,8 @@ export async function getAccountsStatusData(
 ): Promise<Required<WalletStatusChange>['accounts']> {
 	const allAccounts = await (await getDB()).accounts.toArray();
 	return allAccounts
-		.filter(({ address }) => !accountsFilter || accountsFilter.includes(address))
-		.map(({ address, publicKey, nickname }) => ({ address, publicKey, nickname }));
+		.filter(({ address }) => !accountsFilter?.length || accountsFilter.includes(address))
+		.map(({ address, publicKey }) => ({ address, publicKey }));
 }
 
 export async function changeActiveAccount(accountID: string) {
@@ -187,13 +176,6 @@ export async function addNewAccounts<T extends SerializedAccount>(accounts: Omit
 	return accountsCreated;
 }
 
-export async function lockAllAccounts() {
-	const allAccounts = await getAllAccounts();
-	for (const anAccount of allAccounts) {
-		await anAccount.lock();
-	}
-}
-
 export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConnection) {
 	const { payload } = msg;
 	if (isMethodPayload(payload, 'lockAccountSourceOrAccount')) {
@@ -218,6 +200,9 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 		const account = await getAccountByID(id);
 		if (account) {
 			if (isPasswordUnLockable(account)) {
+				if (!password) {
+					throw new Error('Missing password to unlock the account');
+				}
 				await account.passwordUnlock(password);
 			} else {
 				await account.unlock();
@@ -267,7 +252,7 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 			for (const aLedgerAccount of accounts) {
 				newSerializedAccounts.push(await LedgerAccount.createNew({ ...aLedgerAccount, password }));
 			}
-		} else if (type === 'zkLogin') {
+		} else if (type === 'zk') {
 			newSerializedAccounts.push(await ZkLoginAccount.createNew(payload.args));
 		} else {
 			throw new Error(`Unknown accounts type to create ${type}`);
@@ -295,13 +280,6 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 		return true;
 	}
 	if (isMethodPayload(payload, 'verifyPassword')) {
-		if (payload.args.legacyAccounts) {
-			if (!(await LegacyVault.verifyPassword(payload.args.password))) {
-				throw new Error('Wrong password');
-			}
-			await uiConnection.send(createMessage({ type: 'done' }, msg.id));
-			return true;
-		}
 		const allAccounts = await getAllAccounts();
 		for (const anAccount of allAccounts) {
 			if (isPasswordUnLockable(anAccount)) {
@@ -321,72 +299,6 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 				await db.accounts.update(accountID, { publicKey });
 			}
 		});
-		return true;
-	}
-	if (isMethodPayload(payload, 'getAccountKeyPair')) {
-		const { password, accountID } = payload.args;
-		const account = await getAccountByID(accountID);
-		if (!account) {
-			throw new Error(`Account with id ${accountID} not found.`);
-		}
-		if (!isKeyPairExportableAccount(account)) {
-			throw new Error(`Cannot export account with id ${accountID}.`);
-		}
-		await uiConnection.send(
-			createMessage<MethodPayload<'getAccountKeyPairResponse'>>(
-				{
-					type: 'method-payload',
-					method: 'getAccountKeyPairResponse',
-					args: {
-						accountID: account.id,
-						keyPair: await account.exportKeyPair(password),
-					},
-				},
-				msg.id,
-			),
-		);
-		return true;
-	}
-	if (isMethodPayload(payload, 'removeAccount')) {
-		const { accountID } = payload.args;
-		const db = await getDB();
-		await db.transaction('rw', db.accounts, db.accountSources, async () => {
-			const account = await db.accounts.get(accountID);
-			if (!account) {
-				throw new Error(`Account with id ${accountID} not found.`);
-			}
-			const accountSourceID =
-				'sourceID' in account && typeof account.sourceID === 'string' && account.sourceID;
-			await db.accounts.delete(account.id);
-			if (accountSourceID) {
-				const totalSameSourceAccounts = await db.accounts
-					.where('sourceID')
-					.equals(accountSourceID)
-					.count();
-				if (totalSameSourceAccounts === 0) {
-					await db.accountSources.delete(accountSourceID);
-				}
-			}
-		});
-		await backupDB();
-		accountsEvents.emit('accountsChanged');
-		accountSourcesEvents.emit('accountSourcesChanged');
-		await uiConnection.send(createMessage({ type: 'done' }, msg.id));
-		return true;
-	}
-	if (isMethodPayload(payload, 'acknowledgeZkLoginWarning')) {
-		const { accountID } = payload.args;
-		const account = await getAccountByID(accountID);
-		if (!account) {
-			throw new Error(`Account with id ${accountID} not found.`);
-		}
-		if (!(account instanceof ZkLoginAccount)) {
-			throw new Error(`Account with id ${accountID} is not a zkLogin account.`);
-		}
-		const updates: Partial<ZkLoginAccountSerialized> = { warningAcknowledged: true };
-		await (await getDB()).accounts.update(accountID, updates);
-		accountsEvents.emit('accountStatusChanged', { accountID });
-		await uiConnection.send(createMessage({ type: 'done' }, msg.id));
 		return true;
 	}
 	return false;

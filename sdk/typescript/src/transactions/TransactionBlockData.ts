@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toB58 } from '../bcs/src/index.js';
 import type { Infer } from 'superstruct';
 import {
 	array,
@@ -16,24 +15,15 @@ import {
 	string,
 	union,
 } from 'superstruct';
-<<<<<<< HEAD:sdk/typescript/src/builder/TransactionBlockData.ts
-import { hashTypedData } from './hash.js';
-import { SuiObjectRef } from '../types/index.js';
-import { builder } from './bcs.js';
-import { TransactionType, TransactionBlockInput } from './Transactions.js';
-import { BuilderCallArg, PureCallArg } from './Inputs.js';
-import { create } from './utils.js';
-import { bfc2SuiAddress } from '../utils/format.js';
-import { normalizeSuiAddress } from '../utils/bfc-types.js';
-=======
 
 import { bcs } from '../bcs/index.js';
+import { toB58 } from '../bcs/src/index.js';
+import { bfc2SuiAddress } from '../utils/format.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
 import { hashTypedData } from './hash.js';
 import { BuilderCallArg, PureCallArg, SuiObjectRef } from './Inputs.js';
 import { TransactionBlockInput, TransactionType } from './Transactions.js';
 import { create } from './utils.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/TransactionBlockData.ts
 
 export const TransactionExpiration = optional(
 	nullable(

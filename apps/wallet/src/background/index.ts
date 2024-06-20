@@ -2,33 +2,20 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { openInNewTab } from '_shared/utils';
+import { MSG_CONNECT } from '_src/content-script/keep-bg-alive';
 import { growthbook, setAttributes } from '_src/shared/experimentation/features';
 import { coerce, lte } from 'semver';
 import Browser from 'webextension-polyfill';
 
-import { lockAllAccountSources } from './account-sources';
-import { accountSourcesEvents } from './account-sources/events';
-import { getAccountsStatusData, getAllAccounts, lockAllAccounts } from './accounts';
-import { accountsEvents } from './accounts/events';
-import Alarms, { autoLockAlarmName, cleanUpAlarmName } from './Alarms';
-import { Connections } from './connections';
-import NetworkEnv from './NetworkEnv';
-import Permissions from './Permissions';
-<<<<<<< HEAD
-import Transactions from './Transactions';
+import Alarms, { CLEAN_UP_ALARM_NAME, LOCK_ALARM_NAME } from './Alarms';
 import { Connections } from './connections';
 import Keyring from './keyring';
 import { deleteAccountsPublicInfo, getStoredAccountsPublicInfo } from './keyring/accounts';
+import NetworkEnv from './NetworkEnv';
+import Permissions from './Permissions';
 import * as Qredo from './qredo';
 import { isSessionStorageSupported } from './storage-utils';
-import { openInNewTab } from '_shared/utils';
-import { MSG_CONNECT } from '_src/content-script/keep-bg-alive';
-import { growthbook, setAttributes } from '_src/shared/experimentation/features';
-=======
-import * as Qredo from './qredo';
-import { initSentry } from './sentry';
 import Transactions from './Transactions';
->>>>>>> mainnet-v1.24.1
 
 growthbook.loadFeatures().catch(() => {
 	// silence the error
@@ -113,14 +100,29 @@ Keyring.on('accountsChanged', async (accounts) => {
 });
 
 Browser.alarms.onAlarm.addListener((alarm) => {
-	if (alarm.name === autoLockAlarmName) {
-		lockAllAccounts();
-		lockAllAccountSources();
-	} else if (alarm.name === cleanUpAlarmName) {
+	if (alarm.name === LOCK_ALARM_NAME) {
+		Keyring.reviveDone.finally(() => Keyring.lock());
+	} else if (alarm.name === CLEAN_UP_ALARM_NAME) {
 		Transactions.clearStaleTransactions();
 	}
 });
 
+if (!isSessionStorageSupported()) {
+	Keyring.on('lockedStatusUpdate', async (isLocked) => {
+		if (!isLocked) {
+			const allTabs = await Browser.tabs.query({});
+			for (const aTab of allTabs) {
+				if (aTab.id) {
+					try {
+						await Browser.tabs.sendMessage(aTab.id, MSG_CONNECT);
+					} catch (e) {
+						// not all tabs have the cs installed
+					}
+				}
+			}
+		}
+	});
+}
 NetworkEnv.getActiveNetwork().then(async ({ env, customRpcUrl }) => {
 	setAttributes({
 		apiEnv: env,

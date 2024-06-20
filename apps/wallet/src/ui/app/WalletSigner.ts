@@ -1,27 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SignedMessage, type SignedTransaction, SignerWithProvider } from '@benfen/bfc.js';
-=======
-import { bcs } from '@mysten/sui.js/bcs';
->>>>>>> mainnet-v1.24.1
+import { bcs } from '@benfen/bfc.js/bcs';
 import {
 	type DryRunTransactionBlockResponse,
 	type ExecuteTransactionRequestType,
 	type SuiClient,
 	type SuiTransactionBlockResponse,
 	type SuiTransactionBlockResponseOptions,
-<<<<<<< HEAD
 } from '@benfen/bfc.js/client';
-import { type SerializedSignature } from '@benfen/bfc.js/cryptography';
-import { type TransactionBlock } from '@benfen/bfc.js/transactions';
-=======
-} from '@mysten/sui.js/client';
-import { IntentScope, messageWithIntent } from '@mysten/sui.js/cryptography';
-import { isTransactionBlock, type TransactionBlock } from '@mysten/sui.js/transactions';
-import { fromB64, toB64 } from '@mysten/sui.js/utils';
->>>>>>> mainnet-v1.24.1
+import { IntentScope, messageWithIntent } from '@benfen/bfc.js/cryptography';
+import { isTransactionBlock, type TransactionBlock } from '@benfen/bfc.js/transactions';
+import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 
 export type SignedTransaction = {
 	transactionBlockBytes: string;

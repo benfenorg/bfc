@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { WalletWithRequiredFeatures } from '@mysten/wallet-standard';
-
+import type { WalletWithRequiredFeatures } from '../../../../wallet-standard/index.js';
 import { Button } from '../../ui/Button.js';
 import { Heading } from '../../ui/Heading.js';
 import { Text } from '../../ui/Text.js';

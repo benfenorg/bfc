@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/types/__tests__/common.test.ts
-import { describe, it, expect } from 'vitest';
-import { normalizeStructTag, parseStructTag } from '../../utils/bfc-types.js';
-=======
 import { describe, expect, it } from 'vitest';
 
 import { normalizeStructTag, parseStructTag } from '../../../src/utils/sui-types.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/test/unit/types/common.test.ts
 
 describe('parseStructTag', () => {
 	it('parses struct tags correctly', () => {

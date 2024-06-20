@@ -3,13 +3,8 @@
 
 import { GAS_TYPE_ARG } from '_redux/slices/sui-objects/Coin';
 import { Text } from '_src/ui/app/shared/text';
-<<<<<<< HEAD
-
 import type { GasCostSummary } from '@benfen/bfc.js/client';
-=======
 import { useFormatCoin } from '@mysten/core';
-import type { GasCostSummary } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
 
 type TxnGasSummaryProps = {
 	gasSummary?: GasCostSummary;

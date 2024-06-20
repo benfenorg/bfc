@@ -1,18 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64, toB64 } from '../bcs/src/index.js';
-import type { PublicKey } from './publickey.js';
-import type { MultiSigStruct } from '../multisig/publickey.js';
-import { builder } from '../builder/bcs.js';
-=======
-import { fromB64, toB64 } from '@mysten/bcs';
->>>>>>> mainnet-v1.24.1
-
 import { bcs } from '../bcs/index.js';
+import { fromB64, toB64 } from '../bcs/src/index.js';
 import type { MultiSigStruct } from '../multisig/publickey.js';
-import { parseSerializedZkLoginSignature } from '../zklogin/publickey.js';
+import { parseSerializedZkLoginSignature } from '../zklogin/helper/publickey.js';
 import type { PublicKey } from './publickey.js';
 import type { SignatureScheme } from './signature-scheme.js';
 import {

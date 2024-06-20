@@ -1,12 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
 import { fromB64 } from '../bcs/src/index.js';
-import { publicKeyFromRawBytes } from '../verify/index.js';
-=======
-import { fromB64 } from '@mysten/bcs';
-
->>>>>>> mainnet-v1.24.1
 import type { SignatureFlag } from '../cryptography/index.js';
 import { SIGNATURE_FLAG_TO_SCHEME } from '../cryptography/index.js';
 import { publicKeyFromRawBytes } from '../verify/index.js';

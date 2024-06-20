@@ -1,26 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64, toB64 } from '@mysten/bcs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { bcs } from '../../../src/bcs';
+import { bcs, fromB64, toB64 } from '../../../src/bcs';
 import { PublicKey } from '../../../src/cryptography/publickey';
 import {
 	parseSerializedSignature,
 	SerializeSignatureInput,
 	toSerializedSignature,
 } from '../../../src/cryptography/signature';
-<<<<<<< HEAD
-import {
-	PubkeyWeightPair,
-	combinePartialSigs,
-	decodeMultiSig,
-} from '../../../src/cryptography/multisig';
-import { fromB64, toB64 } from '../../../src/bcs/index.js';
-import { PublicKey } from '../../../src/cryptography/publickey';
-=======
->>>>>>> mainnet-v1.24.1
 import { Ed25519Keypair, Ed25519PublicKey } from '../../../src/keypairs/ed25519';
 import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';
 import { Secp256r1Keypair } from '../../../src/keypairs/secp256r1';

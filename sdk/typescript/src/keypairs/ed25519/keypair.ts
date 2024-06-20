@@ -7,13 +7,7 @@ import { encodeSuiPrivateKey, Keypair, PRIVATE_KEY_SIZE } from '../../cryptograp
 import { isValidHardenedPath, mnemonicToSeedHex } from '../../cryptography/mnemonics.js';
 import type { SignatureScheme } from '../../cryptography/signature-scheme.js';
 import { derivePath } from './ed25519-hd-key.js';
-<<<<<<< HEAD
-import { toB64 } from '../../bcs/src/index.js';
-import type { SignatureScheme } from '../../cryptography/signature.js';
-import { PRIVATE_KEY_SIZE, Keypair } from '../../cryptography/keypair.js';
-=======
 import { Ed25519PublicKey } from './publickey.js';
->>>>>>> mainnet-v1.24.1
 
 export const DEFAULT_ED25519_DERIVATION_PATH = "m/44'/784'/0'/0'/0'";
 
@@ -67,21 +61,6 @@ export class Ed25519Keypair extends Keypair {
 	 * This is NOT the private scalar which is result of hashing and bit clamping of
 	 * the raw secret key.
 	 *
-<<<<<<< HEAD
-	 * The sui.keystore key is a list of Base64 encoded `flag || privkey`. To import
-	 * a key from sui.keystore to typescript, decode from base64 and remove the first
-	 * flag byte after checking it is indeed the Ed25519 scheme flag 0x00 (See more
-	 * on flag for signature scheme: https://github.com/MystenLabs/sui/blob/818406c5abdf7de1b80915a0519071eec3a5b1c7/crates/bfc-types/src/crypto.rs#L1650):
-	 * ```
-	 * import { Ed25519Keypair, fromB64 } from '@benfen/bfc.js';
-	 * const raw = fromB64(t[1]);
-	 * if (raw[0] !== 0 || raw.length !== PRIVATE_KEY_SIZE + 1) {
-	 *   throw new Error('invalid key');
-	 * }
-	 * const imported = Ed25519Keypair.fromSecretKey(raw.slice(1))
-	 * ```
-=======
->>>>>>> mainnet-v1.24.1
 	 * @throws error if the provided secret key is invalid and validation is not skipped.
 	 *
 	 * @param secretKey secret key byte array

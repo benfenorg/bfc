@@ -1,33 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
+import { Text } from '_src/ui/app/shared/text';
+import { TypeTagSerializer, type TypeTag } from '@benfen/bfc.js/bcs';
 import {
-	type TransactionType,
 	type MakeMoveVecTransaction,
 	type PublishTransaction,
-	TypeTagSerializer,
-	type TypeTag,
-} from '@benfen/bfc.js';
-import { type TransactionArgument } from '@benfen/bfc.js/transactions';
+	type TransactionArgument,
+	type TransactionType,
+} from '@benfen/bfc.js/transactions';
 import { formatAddress, normalizeSuiAddress, toB64 } from '@benfen/bfc.js/utils';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-
 import { useState } from 'react';
-
-import { Text } from '_src/ui/app/shared/text';
-=======
-import { Text } from '_src/ui/app/shared/text';
-import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-import { TypeTagSerializer, type TypeTag } from '@mysten/sui.js/bcs';
-import { type TransactionArgument, type Transactions } from '@mysten/sui.js/transactions';
-import { formatAddress, normalizeSuiAddress, toB64 } from '@mysten/sui.js/utils';
-import { useState } from 'react';
-
-type TransactionType = ReturnType<(typeof Transactions)[keyof typeof Transactions]>;
-type MakeMoveVecTransaction = ReturnType<(typeof Transactions)['MakeMoveVec']>;
-type PublishTransaction = ReturnType<(typeof Transactions)['Publish']>;
->>>>>>> mainnet-v1.24.1
 
 function convertCommandArgumentToString(
 	arg:

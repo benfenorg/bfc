@@ -47,22 +47,12 @@ export function SignMessageRequest({ request }: SignMessageRequestProps) {
 			address={request.tx.accountAddress}
 			scrollable
 			blended
-			checkAccountLock
 		>
 			<PageMainLayoutTitle title="Sign Message" />
-<<<<<<< HEAD
 			<Heading variant="heading6" color="gray-90" weight="semibold" centered>
 				Message You Are Signing
 			</Heading>
 			<div className="flex flex-col flex-nowrap items-stretch border border-solid border-gray-50 rounded-15 overflow-y-auto overflow-x-hidden bg-white shadow-summary-card">
-=======
-			<div className="py-4">
-				<Heading variant="heading6" color="gray-90" weight="semibold" centered>
-					Message You Are Signing
-				</Heading>
-			</div>
-			<div className="flex flex-col flex-nowrap items-stretch border border-solid border-gray-50 rounded-15 overflow-y-auto overflow-x-hidden bg-white shadow-card-soft">
->>>>>>> mainnet-v1.24.1
 				<div className="p-5 break-words">
 					<Text variant="pBodySmall" weight="medium" color="steel-darker" mono={type === 'base64'}>
 						{message}

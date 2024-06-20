@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/test/unit/bcs/bcs.test.ts
-import { describe, it, expect } from 'vitest';
-import { BCS, fromB64, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-=======
 import { describe, expect, it } from 'vitest';
 
-import { BCS, fromB64, getSuiMoveConfig } from './../src/index';
->>>>>>> mainnet-v1.24.1:sdk/bcs/tests/bcs.test.ts
+import { BCS, fromB64, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('BCS: Primitives', () => {
 	it('should de/ser primitives: u8', () => {

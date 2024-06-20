@@ -1,27 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import cl from 'classnames';
 import { useCallback, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { Button } from '../../shared/ButtonUI';
 import { DAppInfoCard } from '../DAppInfoCard';
-
-import type { ReactNode } from 'react';
-
 import st from './UserApproveContainer.module.scss';
-=======
-import { type PermissionType } from '_src/shared/messaging/messages/payloads/permissions';
-import cn from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
-import type { ReactNode } from 'react';
-
-import { useAccountByAddress } from '../../hooks/useAccountByAddress';
-import { Button } from '../../shared/ButtonUI';
-import { UnlockAccountButton } from '../accounts/UnlockAccountButton';
-import { DAppInfoCard } from '../DAppInfoCard';
->>>>>>> mainnet-v1.24.1
 
 type UserApproveContainerProps = {
 	children: ReactNode | ReactNode[];
@@ -37,11 +23,6 @@ type UserApproveContainerProps = {
 	address?: string | null;
 	scrollable?: boolean;
 	blended?: boolean;
-<<<<<<< HEAD
-=======
-	permissions?: PermissionType[];
-	checkAccountLock?: boolean;
->>>>>>> mainnet-v1.24.1
 };
 
 export function UserApproveContainer({
@@ -56,13 +37,8 @@ export function UserApproveContainer({
 	isWarning,
 	addressHidden = false,
 	address,
-<<<<<<< HEAD
 	scrollable,
 	blended = false,
-=======
-	permissions,
-	checkAccountLock,
->>>>>>> mainnet-v1.24.1
 }: UserApproveContainerProps) {
 	const [submitting, setSubmitting] = useState(false);
 	const handleOnResponse = useCallback(
@@ -73,8 +49,9 @@ export function UserApproveContainer({
 		},
 		[onSubmit],
 	);
-	const { data: selectedAccount } = useAccountByAddress(address);
+
 	const parsedOrigin = useMemo(() => new URL(origin), [origin]);
+
 	return (
 		<div className={st.container}>
 			<div className={cl(st.scrollBody, { [st.scrollable]: scrollable })}>
@@ -84,7 +61,6 @@ export function UserApproveContainer({
 					iconUrl={originFavIcon}
 					connectedAddress={!addressHidden && address ? address : undefined}
 				/>
-<<<<<<< HEAD
 				<div className={cl(st.children, { [st.scrollable]: scrollable })}>{children}</div>
 			</div>
 			<div className={st.actionsContainer}>
@@ -124,41 +100,6 @@ export function UserApproveContainer({
 						loading={submitting || approveLoading}
 						text={approveTitle}
 					/>
-=======
-				<div className="flex flex-1 flex-col px-6 bg-hero-darkest/5">{children}</div>
-			</div>
-			<div className="sticky bottom-0">
-				<div
-					className={cn('bg-hero-darkest/5 backdrop-blur-lg py-4 px-5 flex items-center gap-2.5', {
-						'flex-row-reverse': isWarning,
-					})}
-				>
-					{!checkAccountLock || !selectedAccount?.isLocked ? (
-						<>
-							<Button
-								size="tall"
-								variant="secondary"
-								onClick={() => {
-									handleOnResponse(false);
-								}}
-								disabled={submitting}
-								text={rejectTitle}
-							/>
-							<Button
-								size="tall"
-								variant={isWarning ? 'secondary' : 'primary'}
-								onClick={() => {
-									handleOnResponse(true);
-								}}
-								disabled={approveDisabled}
-								loading={submitting || approveLoading}
-								text={approveTitle}
-							/>
-						</>
-					) : (
-						<UnlockAccountButton account={selectedAccount} title="Unlock to Approve" />
-					)}
->>>>>>> mainnet-v1.24.1
 				</div>
 			</div>
 		</div>

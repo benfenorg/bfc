@@ -1,17 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { useCoinMetadata, useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
-import { Field, Form, useFormikContext } from 'formik';
-import { memo, useMemo } from 'react';
-
-import { type FormValues } from './StakingCard';
-import { createStakeTransaction } from './utils/transaction';
-import { parseAmount } from '../../helpers';
-import { useTransactionGasBudget, useActiveAddress } from '../../hooks';
-=======
->>>>>>> mainnet-v1.24.1
 import { Card } from '_app/shared/card';
 import { Text } from '_app/shared/text';
 import NumberInput from '_components/number-input';
@@ -22,7 +11,7 @@ import {
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { useCoinMetadata, useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
 import { Field, Form, useFormikContext } from 'formik';
-import { memo, useCallback, useMemo } from 'react';
+import { memo, useMemo } from 'react';
 
 import { parseAmount } from '../../helpers';
 import { useActiveAddress, useTransactionGasBudget } from '../../hooks';
@@ -74,7 +63,6 @@ function StakeForm({ validatorAddress, coinBalance, coinType, epoch }: StakeFrom
 					Available - {maxToken} {symbol}
 				</Text>
 			</div>
-<<<<<<< HEAD
 			<Card variant="gray">
 				<div className="p-2.5 w-full flex bg-white">
 					<Field
@@ -90,48 +78,6 @@ function StakeForm({ validatorAddress, coinBalance, coinType, epoch }: StakeFrom
 				</div>
 				<div className="p-2.5 flex justify-between w-full">
 					<Text variant="body" weight="normal" color="bfc-text1">
-=======
-			<Card
-				variant="gray"
-				titleDivider
-				header={
-					<div className="p-2.5 w-full flex bg-white">
-						<Field
-							data-testid="stake-amount-input"
-							component={NumberInput}
-							allowNegative={false}
-							name="amount"
-							className="w-full border-none text-hero-dark text-heading4 font-semibold bg-white placeholder:text-gray-70 placeholder:font-semibold"
-							decimals
-							suffix={` ${symbol}`}
-							autoFocus
-						/>
-						{!HIDE_MAX ? (
-							<button
-								className="bg-white border border-solid border-gray-60 hover:border-steel-dark rounded-2xl h-6 w-11 flex justify-center items-center cursor-pointer text-steel-darker hover:text-steel-darker text-bodySmall font-medium disabled:opacity-50 disabled:cursor-auto"
-								onClick={setMaxToken}
-								disabled={queryResult.isPending}
-								type="button"
-							>
-								Max
-							</button>
-						) : null}
-					</div>
-				}
-				footer={
-					<div className="py-px flex justify-between w-full">
-						<Text variant="body" weight="medium" color="steel-darker">
-							Gas Fees
-						</Text>
-						<Text variant="body" weight="medium" color="steel-darker">
-							{gasBudget} {symbol}
-						</Text>
-					</div>
-				}
-			>
-				<div className="pb-3.75 flex justify-between w-full">
-					<Text variant="body" weight="medium" color="steel-darker">
->>>>>>> mainnet-v1.24.1
 						Staking Rewards Start
 					</Text>
 					{timeBeforeStakeRewardsStarts > 0 ? (

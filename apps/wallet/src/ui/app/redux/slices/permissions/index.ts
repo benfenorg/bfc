@@ -10,13 +10,9 @@ import {
 	createSelector,
 	createSlice,
 } from '@reduxjs/toolkit';
-<<<<<<< HEAD
+import type { PayloadAction } from '@reduxjs/toolkit';
 
 import { activeAddressSelector } from '../account';
-
-=======
->>>>>>> mainnet-v1.24.1
-import type { PayloadAction } from '@reduxjs/toolkit';
 
 const permissionsAdapter = createEntityAdapter<Permission>({
 	sortComparer: (a, b) => {

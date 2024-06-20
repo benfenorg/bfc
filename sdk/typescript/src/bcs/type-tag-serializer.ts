@@ -1,16 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/builder/type-tag-serializer.ts
-import { splitGenericParameters } from '../bcs/src/index.js';
-import type { TypeTag } from '../bcs/index.js';
 import { normalizeSuiAddress } from '../utils/bfc-types.js';
-=======
-import { splitGenericParameters } from '@mysten/bcs';
-
-import { normalizeSuiAddress } from '../utils/sui-types.js';
 import type { TypeTag } from './index.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/bcs/type-tag-serializer.ts
+import { splitGenericParameters } from './src/index.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;

@@ -1,17 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { Outlet } from 'react-router-dom';
-
 import PageMainLayout from '_app/shared/page-main-layout';
 import { useLockedGuard } from '_app/wallet/hooks';
-=======
->>>>>>> mainnet-v1.24.1
 import Loading from '_components/loading';
 import { useInitializedGuard } from '_hooks';
+import PageLayout from '_pages/layout';
 import { useSetGrowthbookAttributes } from '_shared/utils';
-import { PageMainLayout } from '_src/ui/app/shared/page-main-layout/PageMainLayout';
 import { Outlet } from 'react-router-dom';
 
 interface Props {
@@ -25,15 +20,17 @@ const HomePage = ({ disableNavigation }: Props) => {
 
 	useSetGrowthbookAttributes();
 	return (
-		<Loading loading={guardChecking}>
-			<PageMainLayout
-				bottomNavEnabled={!disableNavigation}
-				dappStatusEnabled={!disableNavigation}
-				topNavMenuEnabled={!disableNavigation}
-			>
-				<Outlet />
-			</PageMainLayout>
-		</Loading>
+		<PageLayout>
+			<Loading loading={guardChecking}>
+				<PageMainLayout
+					bottomNavEnabled={!disableNavigation}
+					dappStatusEnabled={!disableNavigation}
+					topNavMenuEnabled={!disableNavigation}
+				>
+					<Outlet />
+				</PageMainLayout>
+			</Loading>
+		</PageLayout>
 	);
 };
 
@@ -46,7 +43,6 @@ export { default as TransactionBlocksPage } from './transactions';
 export { default as TransferCoinPage } from './transfer-coin';
 export { default as NFTDetailsPage } from './nft-details';
 export { default as NftTransferPage } from './nft-transfer';
-export { default as KioskDetailsPage } from './kiosk-details';
 export { default as ReceiptPage } from './receipt';
 export { default as CoinsSelectorPage } from './transfer-coin/CoinSelector';
 export { default as ReceivePage } from './receive';

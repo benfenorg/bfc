@@ -1,13 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { formatAddress } from '@benfen/bfc.js/utils';
-=======
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { NftImage } from '_src/ui/app/components/nft-display/NftImage';
->>>>>>> mainnet-v1.24.1
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { type SuiObjectChangeWithDisplay } from '@mysten/core';
 
 import { Text } from '../../../text';

@@ -1,24 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { bcs, toB64 } from '@mysten/bcs';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bech32 } from 'bech32';
 
+import { bcs } from '../bcs/index.js';
+import { toB64 } from '../bcs/src/index.js';
 import { IntentScope, messageWithIntent } from './intent.js';
 import type { PublicKey } from './publickey.js';
 import { SIGNATURE_FLAG_TO_SCHEME, SIGNATURE_SCHEME_TO_FLAG } from './signature-scheme.js';
 import type { SignatureScheme } from './signature-scheme.js';
 import type { SerializedSignature } from './signature.js';
 import { toSerializedSignature } from './signature.js';
-<<<<<<< HEAD
-import type { SignatureScheme } from './signature.js';
-import { IntentScope, messageWithIntent } from './intent.js';
-import { blake2b } from '@noble/hashes/blake2b';
-import { bcs } from '../bcs/index.js';
-import { toB64 } from '../bcs/src/index.js';
-=======
->>>>>>> mainnet-v1.24.1
 
 export const PRIVATE_KEY_SIZE = 32;
 export const LEGACY_PRIVATE_KEY_SIZE = 64;

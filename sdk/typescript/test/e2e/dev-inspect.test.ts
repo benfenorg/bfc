@@ -46,13 +46,8 @@ describe('Test dev inspect', () => {
 		const coin_0 = coins.data[0];
 		const obj = tx.moveCall({
 			target: `${packageId}::serializer_tests::return_struct`,
-<<<<<<< HEAD
 			typeArguments: ['0x2::coin::Coin<0x2::bfc::BFC>'],
-			arguments: [tx.pure(coin_0.objectId)],
-=======
-			typeArguments: ['0x2::coin::Coin<0x2::sui::SUI>'],
 			arguments: [tx.pure(coin_0.coinObjectId)],
->>>>>>> mainnet-v1.24.1
 		});
 
 		// TODO: Ideally dev inspect transactions wouldn't need this, but they do for now

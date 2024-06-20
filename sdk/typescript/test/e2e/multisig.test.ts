@@ -1,35 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { describe, it, expect, beforeAll } from 'vitest';
-// import { setupSuiClient, executeTransactionBlock } from './setup';
-import { fromB64, toB58 } from '../../src/bcs/index.js';
-// import { setup, TestToolbox } from './utils/setup';
-import { SignatureWithBytes } from '../../src/cryptography/keypair';
-import { parseSerializedSignature } from '../../src/cryptography';
-import {
-	PubkeyWeightPair,
-	toMultiSigAddress,
-	combinePartialSigs,
-	decodeMultiSig,
-} from '../../src/cryptography/multisig';
-import { PublicKey } from '../../src/cryptography/publickey';
-import {
-	MultiSigPublicKey,
-	parsePartialSignatures,
-	MultiSigStruct,
-} from '../../src/multisig/publickey';
-import { Ed25519Keypair, Ed25519PublicKey } from '../../src/keypairs/ed25519';
-import { Secp256k1Keypair } from '../../src/keypairs/secp256k1';
-import { Secp256r1Keypair } from '../../src/keypairs/secp256r1';
-import { TransactionBlock } from '../../src/builder';
-import { builder } from '../../src/builder/bcs.js';
-=======
-import { fromB64 } from '@mysten/bcs';
 import { describe, expect, it } from 'vitest';
->>>>>>> mainnet-v1.24.1
 
+import { fromB64 } from '../../src/bcs/index.js';
 import { decodeSuiPrivateKey } from '../../src/cryptography';
 import { Ed25519Keypair } from '../../src/keypairs/ed25519';
 import { MultiSigPublicKey } from '../../src/multisig/publickey';

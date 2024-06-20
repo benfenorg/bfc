@@ -1,20 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
-import { formatAddress } from '@benfen/bfc.js/utils';
-import { type GasSummaryType, useFormatCoin } from '@mysten/core';
-
-import { Heading } from '../../heading';
-import { Text } from '../../text';
-=======
->>>>>>> mainnet-v1.24.1
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useActiveAddress } from '_src/ui/app/hooks';
 import { GAS_TYPE_ARG } from '_src/ui/app/redux/slices/sui-objects/Coin';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { useFormatCoin, type GasSummaryType } from '@mysten/core';
-import { formatAddress } from '@mysten/sui.js/utils';
 
+import { Heading } from '../../heading';
 import { Text } from '../../text';
 
 export function GasSummary({ gasSummary }: { gasSummary?: GasSummaryType }) {

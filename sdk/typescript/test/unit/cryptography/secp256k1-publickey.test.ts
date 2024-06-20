@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { toB64, toHEX } from '../../../src/bcs/index.js';
-import { describe, it, expect } from 'vitest';
-=======
-import { toB64, toHEX } from '@mysten/bcs';
 import { describe, expect, it } from 'vitest';
 
->>>>>>> mainnet-v1.24.1
+import { toB64, toHEX } from '../../../src/bcs/index.js';
 import { Secp256k1PublicKey } from '../../../src/keypairs/secp256k1/publickey';
 import { INVALID_SECP256K1_PUBLIC_KEY, VALID_SECP256K1_PUBLIC_KEY } from './secp256k1-keypair.test';
 

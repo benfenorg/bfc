@@ -1,31 +1,24 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromB64, toB64 } from '../bcs/src/index.js';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bytesToHex } from '@noble/hashes/utils';
 
 import { bcs } from '../bcs/index.js';
+import { fromB64, toB64 } from '../bcs/src/index.js';
 import { bytesEqual, PublicKey } from '../cryptography/publickey.js';
 import {
 	SIGNATURE_FLAG_TO_SCHEME,
 	SIGNATURE_SCHEME_TO_FLAG,
-<<<<<<< HEAD
-	parseSerializedSignature,
-} from '../cryptography/signature.js';
-import { normalizeSuiAddress } from '../utils/bfc-types.js';
-import { builder } from '../builder/bcs.js';
-=======
 } from '../cryptography/signature-scheme.js';
 import type { SignatureFlag, SignatureScheme } from '../cryptography/signature-scheme.js';
 import { parseSerializedSignature } from '../cryptography/signature.js';
 import type { SerializedSignature } from '../cryptography/signature.js';
 import type { SuiGraphQLClient } from '../graphql/client.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
->>>>>>> mainnet-v1.24.1
 // eslint-disable-next-line import/no-cycle
 import { publicKeyFromRawBytes } from '../verify/index.js';
-import { toZkLoginPublicIdentifier } from '../zklogin/publickey.js';
+import { toZkLoginPublicIdentifier } from '../zklogin/helper/publickey.js';
 
 type CompressedSignature =
 	| { ED25519: number[] }

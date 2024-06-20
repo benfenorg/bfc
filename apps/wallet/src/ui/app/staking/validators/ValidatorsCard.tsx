@@ -1,8 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type StakeObject } from '@benfen/bfc.js';
+import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
+import { Card, CardItem } from '_app/shared/card';
+import Alert from '_components/alert';
+import LoadingIndicator from '_components/loading/LoadingIndicator';
+import { ampli } from '_src/shared/analytics/ampli';
+import { type StakeObject } from '@benfen/bfc.js/client';
 import { useGetSystemState } from '@mysten/core';
 import { Plus12 } from '@mysten/icons';
 import { useMemo } from 'react';
@@ -10,52 +15,19 @@ import { useMemo } from 'react';
 import { useActiveAddress } from '../../hooks/useActiveAddress';
 import { getAllStakeSui } from '../getAllStakeSui';
 import { StakeAmount } from '../home/StakeAmount';
-import { StakeCard } from '../home/StakedCard';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
-=======
-import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
->>>>>>> mainnet-v1.24.1
-import { Button } from '_app/shared/ButtonUI';
-import { Card, CardItem } from '_app/shared/card';
-import Alert from '_components/alert';
-import LoadingIndicator from '_components/loading/LoadingIndicator';
-import { ampli } from '_src/shared/analytics/ampli';
-<<<<<<< HEAD
-=======
-import {
-	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	DELEGATED_STAKES_QUERY_STALE_TIME,
-} from '_src/shared/constants';
-import { useGetDelegatedStake } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { Plus12 } from '@mysten/icons';
-import type { StakeObject } from '@mysten/sui.js/client';
-import { useMemo } from 'react';
-
-import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { getAllStakeSui } from '../getAllStakeSui';
-import { StakeAmount } from '../home/StakeAmount';
 import { StakeCard, type DelegationObjectWithValidator } from '../home/StakedCard';
->>>>>>> mainnet-v1.24.1
+import { useGetDelegatedStake } from '../useGetDelegatedStake';
 
 export function ValidatorsCard() {
 	const accountAddress = useActiveAddress();
 	const {
 		data: delegatedStake,
-		isPending,
+		isLoading,
 		isError,
 		error,
-	} = useGetDelegatedStake({
-		address: accountAddress || '',
-		staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
-		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	});
+	} = useGetDelegatedStake(accountAddress || '');
 
-<<<<<<< HEAD
 	const { data: system } = useGetSystemState();
-=======
-	const { data: system } = useSuiClientQuery('getLatestSuiSystemState');
->>>>>>> mainnet-v1.24.1
 	const activeValidators = system?.activeValidators;
 
 	// Total active stake for all Staked validators
@@ -101,7 +73,7 @@ export function ValidatorsCard() {
 
 	const numberOfValidators = delegatedStake?.length || 0;
 
-	if (isPending) {
+	if (isLoading) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />
@@ -157,7 +129,7 @@ export function ValidatorsCard() {
 									?.filter(({ inactiveValidator }) => !inactiveValidator)
 									.map((delegation) => (
 										<StakeCard
-											delegationObject={delegation}
+											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
 											key={delegation.stakedSuiId}
 										/>

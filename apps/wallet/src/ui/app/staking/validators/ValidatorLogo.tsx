@@ -1,20 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-<<<<<<< HEAD
-import { formatAddress } from '@benfen/bfc.js';
-import { useGetSystemState } from '@mysten/core';
-import cl from 'classnames';
-import { useMemo } from 'react';
-
-=======
->>>>>>> mainnet-v1.24.1
 import { Heading } from '_app/shared/heading';
 import { ImageIcon } from '_app/shared/image-icon';
 import { Text } from '_app/shared/text';
 import { Badge } from '_src/ui/app/shared/Badge';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { formatAddress } from '@mysten/sui.js/utils';
-import cl from 'clsx';
+import { formatAddress } from '@benfen/bfc.js/utils';
+import { useGetSystemState } from '@mysten/core';
+import cl from 'classnames';
 import { useMemo } from 'react';
 
 interface ValidatorLogoProps {
@@ -38,11 +30,7 @@ export function ValidatorLogo({
 	showActiveStatus = false,
 	activeEpoch,
 }: ValidatorLogoProps) {
-<<<<<<< HEAD
 	const { data, isLoading } = useGetSystemState();
-=======
-	const { data, isPending } = useSuiClientQuery('getLatestSuiSystemState');
->>>>>>> mainnet-v1.24.1
 
 	const validatorMeta = useMemo(() => {
 		if (!data) return null;
@@ -62,7 +50,7 @@ export function ValidatorLogo({
 	// flag if the validator is at risk of being removed from the active set
 	const isAtRisk = data?.atRiskValidators.some((item) => item[0] === validatorAddress);
 
-	if (isPending) {
+	if (isLoading) {
 		return <div className="flex justify-center items-center">...</div>;
 	}
 	// for inactive validators, show the epoch number
@@ -83,7 +71,7 @@ export function ValidatorLogo({
 				label={validatorMeta?.name || ''}
 				fallback={validatorMeta?.name || ''}
 				size={iconSize}
-				rounded="full"
+				circle
 			/>
 			<div className="flex flex-col overflow-hidden">
 				<div className="flex">

@@ -1,26 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import {} from '../../../src';
-import { describe, it, expect, beforeAll } from 'vitest';
-import { parseSerializedSignature } from '../../../src/cryptography';
-import {
-	PubkeyWeightPair,
-	toMultiSigAddress,
-	MAX_SIGNER_IN_MULTISIG,
-	combinePartialSigs,
-	decodeMultiSig,
-} from '../../../src/cryptography/multisig';
-=======
-import { fromB64, toB58, toB64 } from '@mysten/bcs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { bcs } from '../../../src/bcs';
+import { bcs, fromB64, toB58, toB64 } from '../../../src/bcs';
 import { parseSerializedSignature, SIGNATURE_SCHEME_TO_FLAG } from '../../../src/cryptography';
 // import { setup, TestToolbox } from './utils/setup';
 import { SignatureWithBytes } from '../../../src/cryptography/keypair';
->>>>>>> mainnet-v1.24.1
 import { PublicKey } from '../../../src/cryptography/publickey';
 import { Ed25519Keypair, Ed25519PublicKey } from '../../../src/keypairs/ed25519';
 import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';
@@ -102,15 +88,7 @@ describe('Multisig scenarios', () => {
 			threshold: 3,
 			publicKeys: [
 				{ publicKey: pk1, weight: 1 },
-<<<<<<< HEAD
-				{
-					publicKey: pk2,
-					weight: 2,
-				},
-				{ publicKey: pk3, weight: 3 },
-=======
 				{ publicKey: pk2, weight: 2 },
->>>>>>> mainnet-v1.24.1
 			],
 		});
 

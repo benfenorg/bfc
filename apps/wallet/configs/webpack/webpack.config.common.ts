@@ -4,11 +4,6 @@
 import { exec } from 'child_process';
 import { resolve } from 'path';
 import { randomBytes } from '@noble/hashes/utils';
-<<<<<<< HEAD
-import { exec } from 'child_process';
-=======
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
->>>>>>> mainnet-v1.24.1
 import CopyPlugin from 'copy-webpack-plugin';
 import DotEnv from 'dotenv-webpack';
 import gitRevSync from 'git-rev-sync';
@@ -192,11 +187,6 @@ const commonConfig: () => Promise<Configuration> = async () => {
 								...walletVersionDetails,
 								name: APP_NAME,
 								description: packageJson.description,
-								...(IS_DEV
-									? {
-											key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2HTQu/66edl64fM/SKDnHJmCz9SIYqM/QK7NM3vD1LTE2UNXzHX5Clj8geuoWAYS6HE/aFcd//qPnAh8TnPgqTS3IX+IbZsY/+kcokxIEWHly3eKEHWB32tQsGdJx6tgDzx8TRkFZEcCCdE4pFqQO68W3I/+8AQPosdd5fsIoF6OGKZ/i29mpGkYJSmMroCN5zYCQqvpjTBIkiTkI9TTjxmBid77pHyG4TsHz0wda4KxHV9ZtzZQXB4vexTku/Isczdtif7pDqFEDCAqEkpiGPyKoIuqrxc75IfpzIGFsIylycBr0fZellSsl2M6FM34R99/vUrGj5iWcjNmhYvZ8QIDAQAB',
-									  }
-									: undefined),
 							};
 							return JSON.stringify(manifestJson, null, 4);
 						},

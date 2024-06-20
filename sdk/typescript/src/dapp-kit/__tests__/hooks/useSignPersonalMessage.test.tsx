@@ -7,8 +7,9 @@ import type { Mock } from 'vitest';
 import {
 	WalletFeatureNotSupportedError,
 	WalletNotConnectedError,
-} from '../../src/errors/walletErrors.js';
-import { useConnectWallet, useSignPersonalMessage } from '../../src/index.js';
+} from '../../errors/walletErrors.js';
+import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
+import { useSignPersonalMessage } from '../../hooks/wallet/useSignPersonalMessage.js';
 import { signMessageFeature, suiFeatures } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
@@ -67,7 +68,7 @@ describe('useSignPersonalMessage', () => {
 		result.current.connectWallet.mutate({ wallet: mockWallet });
 		await waitFor(() => expect(result.current.connectWallet.isSuccess).toBe(true));
 
-		const mockSignMessageFeature = mockWallet.features['sui:signMessage'];
+		const mockSignMessageFeature = mockWallet.features['bfc:signMessage'];
 		const signMessageMock = mockSignMessageFeature!.signMessage as Mock;
 
 		signMessageMock.mockReturnValueOnce({ messageBytes: 'abc', signature: '123' });
@@ -104,7 +105,7 @@ describe('useSignPersonalMessage', () => {
 
 		await waitFor(() => expect(result.current.connectWallet.isSuccess).toBe(true));
 
-		const signPersonalMessageFeature = mockWallet.features['sui:signPersonalMessage'];
+		const signPersonalMessageFeature = mockWallet.features['bfc:signPersonalMessage'];
 		const signPersonalMessageMock = signPersonalMessageFeature!.signPersonalMessage as Mock;
 
 		signPersonalMessageMock.mockReturnValueOnce({ bytes: 'abc', signature: '123' });

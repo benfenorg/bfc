@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useAppSelector } from '_hooks';
 import { useEffect } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-
-import { useAppSelector } from '_hooks';
 
 export function useLockedGuard(requiredLockedStatus: boolean) {
 	const navigate = useNavigate();

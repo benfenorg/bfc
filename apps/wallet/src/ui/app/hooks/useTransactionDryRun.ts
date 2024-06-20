@@ -3,11 +3,7 @@
 
 import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useQuery } from '@tanstack/react-query';
-<<<<<<< HEAD
-=======
 
-import { useAccountByAddress } from './useAccountByAddress';
->>>>>>> mainnet-v1.24.1
 import { useSigner } from './useSigner';
 
 export function useTransactionDryRun(

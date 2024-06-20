@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type {
-	SuiSignAndExecuteTransactionBlockInput,
-	SuiSignAndExecuteTransactionBlockOutput,
-} from '@mysten/wallet-standard';
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
+import type {
+	SuiSignAndExecuteTransactionBlockInput,
+	SuiSignAndExecuteTransactionBlockOutput,
+} from '../../../wallet-standard/index.js';
 import { walletMutationKeys } from '../../constants/walletMutationKeys.js';
 import {
 	WalletFeatureNotSupportedError,
@@ -75,7 +75,7 @@ export function useSignAndExecuteTransactionBlock({
 			}
 
 			if (executeFromWallet) {
-				const walletFeature = currentWallet.features['sui:signAndExecuteTransactionBlock'];
+				const walletFeature = currentWallet.features['bfc:signAndExecuteTransactionBlock'];
 				if (!walletFeature) {
 					throw new WalletFeatureNotSupportedError(
 						"This wallet doesn't support the `signAndExecuteTransactionBlock` feature.",
@@ -91,7 +91,7 @@ export function useSignAndExecuteTransactionBlock({
 				});
 			}
 
-			const walletFeature = currentWallet.features['sui:signTransactionBlock'];
+			const walletFeature = currentWallet.features['bfc:signTransactionBlock'];
 			if (!walletFeature) {
 				throw new WalletFeatureNotSupportedError(
 					"This wallet doesn't support the `signTransactionBlock` feature.",

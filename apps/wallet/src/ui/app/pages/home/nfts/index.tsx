@@ -1,19 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { getKioskIdFromOwnerCap, isKioskOwnerToken, useOnScreen } from '@mysten/core';
-import { Check12, EyeClose16 } from '@mysten/icons';
-import { get, set } from 'idb-keyval';
-import { useRef, useEffect, useCallback, useState, useMemo } from 'react';
-import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-
-import AssetsOptionsMenu from './AssetsOptionsMenu';
-import { Link as InlineLink } from '../../../shared/Link';
-import { Text } from '../../../shared/text';
-=======
->>>>>>> mainnet-v1.24.1
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
@@ -25,13 +12,15 @@ import { useGetNFTs } from '_src/ui/app/hooks/useGetNFTs';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
 import { useOnScreen } from '@mysten/core';
-import { useEffect, useMemo, useRef } from 'react';
-import { useParams } from 'react-router-dom';
+import { Check12, EyeClose16 } from '@mysten/icons';
+import { get, set } from 'idb-keyval';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
 
-import { useHiddenAssets } from '../hidden-assets/HiddenAssetsProvider';
+import { Link as InlineLink } from '../../../shared/Link';
+import { Text } from '../../../shared/text';
 import AssetsOptionsMenu from './AssetsOptionsMenu';
-import NonVisualAssets from './NonVisualAssets';
-import VisualAssets from './VisualAssets';
 
 const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
 
@@ -41,10 +30,10 @@ function NftsPage() {
 	const {
 		data: ownedAssets,
 		hasNextPage,
-		isLoading,
+		isInitialLoading,
 		isFetchingNextPage,
 		error,
-		isPending,
+		isLoading,
 		fetchNextPage,
 		isError,
 	} = useGetNFTs(accountAddress);
@@ -155,17 +144,10 @@ function NftsPage() {
 	};
 
 	const filteredNFTs = useMemo(() => {
-<<<<<<< HEAD
 		return ownedAssets?.filter((nft) => !internalHiddenAssetIds.includes(nft.objectId));
 	}, [ownedAssets, internalHiddenAssetIds]);
-=======
-		if (!filterType) return ownedAssets?.visual;
-		return ownedAssets?.[filterType as AssetFilterTypes] ?? [];
-	}, [ownedAssets, filterType]);
-	const { hiddenAssetIds } = useHiddenAssets();
->>>>>>> mainnet-v1.24.1
 
-	if (isLoading) {
+	if (isInitialLoading) {
 		return (
 			<div className="mt-1 flex w-full justify-center">
 				<LoadingSpinner />
@@ -174,18 +156,9 @@ function NftsPage() {
 	}
 
 	return (
-<<<<<<< HEAD
 		<div className="flex flex-1 flex-col flex-nowrap items-center gap-4">
 			<PageTitle title="Assets" after={<AssetsOptionsMenu />} />
 			<Loading loading={isLoading}>
-=======
-		<div className="flex min-h-full flex-col flex-nowrap items-center gap-4">
-			<PageTitle title="Assets" after={hiddenAssetIds.length ? <AssetsOptionsMenu /> : null} />
-			{!!ownedAssets?.other.length && (
-				<FiltersPortal firstLastMargin tags={tags} callback={handleFilterChange} />
-			)}
-			<Loading loading={isPending}>
->>>>>>> mainnet-v1.24.1
 				{isError ? (
 					<Alert>
 						<div>
@@ -198,15 +171,9 @@ function NftsPage() {
 					<div className="grid w-full grid-cols-2 gap-x-3.5 gap-y-4 mb-5">
 						{filteredNFTs.map((object) => (
 							<Link
-								to={
-									isKioskOwnerToken(object)
-										? `/kiosk?${new URLSearchParams({
-												kioskId: getKioskIdFromOwnerCap(object),
-										  })}`
-										: `/nft-details?${new URLSearchParams({
-												objectId: object.objectId,
-										  }).toString()}`
-								}
+								to={`/nft-details?${new URLSearchParams({
+									objectId: object.objectId,
+								}).toString()}`}
 								onClick={() => {
 									ampli.clickedCollectibleCard({
 										objectId: object.objectId,
@@ -218,22 +185,20 @@ function NftsPage() {
 							>
 								<div className="group">
 									<div className="w-full h-full justify-center z-10 absolute pointer-events-auto text-gray-60 transition-colors duration-200 p-0">
-										{!isKioskOwnerToken(object) ? (
-											<div className="absolute top-2 right-3 rounded-md h-8 w-8 opacity-0 group-hover:opacity-100">
-												<Button
-													variant="hidden"
-													size="icon"
-													onClick={(event: any) => {
-														ampli.clickedHideAsset({
-															objectId: object.objectId,
-															collectibleType: object.type!,
-														});
-														hideAsset(object.objectId, event);
-													}}
-													after={<EyeClose16 />}
-												/>
-											</div>
-										) : null}
+										<div className="absolute top-2 right-3 rounded-md h-8 w-8 opacity-0 group-hover:opacity-100">
+											<Button
+												variant="hidden"
+												size="icon"
+												onClick={(event: any) => {
+													ampli.clickedHideAsset({
+														objectId: object.objectId,
+														collectibleType: object.type!,
+													});
+													hideAsset(object.objectId, event);
+												}}
+												after={<EyeClose16 />}
+											/>
+										</div>
 									</div>
 									<ErrorBoundary>
 										<NFTDisplayCard
@@ -253,7 +218,7 @@ function NftsPage() {
 					</div>
 				)}
 			</Loading>
-			<div ref={observerElem}>
+			<div className="mb-5" ref={observerElem}>
 				{isSpinnerVisible ? (
 					<div className="mt-1 flex w-full justify-center">
 						<LoadingSpinner />

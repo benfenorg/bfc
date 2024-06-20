@@ -1,23 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { getTransactionDigest } from '@benfen/bfc.js';
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { useGetKioskContents, isSuiNSName, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { ArrowRight16 } from '@mysten/icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Form, Field, Formik } from 'formik';
-import { toast } from 'react-hot-toast';
-import { useNavigate } from 'react-router-dom';
-
-import { useTransferKioskItem } from './useTransferKioskItem';
-import { createValidationSchema } from './validation';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
-import { Button } from '_app/shared/ButtonUI';
-=======
->>>>>>> mainnet-v1.24.1
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
@@ -26,22 +10,17 @@ import { useSigner } from '_hooks';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
-<<<<<<< HEAD
-=======
-import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
-import { isSuiNSName, useGetKioskContents, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Field, Form, Formik } from 'formik';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { useTransferKioskItem } from './useTransferKioskItem';
 import { createValidationSchema } from './validation';
->>>>>>> mainnet-v1.24.1
 
 export function TransferNFTForm({
 	objectId,
@@ -59,10 +38,6 @@ export function TransferNFTForm({
 	const navigate = useNavigate();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
 
-	const { data: kiosk } = useGetKioskContents(activeAddress);
-	const transferKioskItem = useTransferKioskItem({ objectId, objectType });
-	const isContainedInKiosk = kiosk?.list.some((kioskItem) => kioskItem.data?.objectId === objectId);
-
 	const transferNFT = useMutation({
 		mutationFn: async (to: string) => {
 			if (!to || !signer) {
@@ -79,12 +54,8 @@ export function TransferNFTForm({
 				to = address;
 			}
 
-			if (isContainedInKiosk) {
-				return transferKioskItem.mutateAsync({ to, clientIdentifier });
-			}
-
 			const tx = new TransactionBlock();
-			tx.transferObjects([tx.object(objectId)], to);
+			tx.transferObjects([tx.object(objectId)], tx.pure(to));
 
 			return signer.signAndExecuteTransactionBlock(
 				{
@@ -107,7 +78,7 @@ export function TransferNFTForm({
 
 			return navigate(
 				`/receipt?${new URLSearchParams({
-					txdigest: getTransactionDigest(response),
+					txdigest: response.digest,
 					from: 'nfts',
 				}).toString()}`,
 			);

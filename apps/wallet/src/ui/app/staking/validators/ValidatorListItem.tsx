@@ -1,15 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
+import { Text } from '_app/shared/text';
 import { cx } from 'class-variance-authority';
 import { AnimatePresence } from 'framer-motion';
-=======
-import { Text } from '_app/shared/text';
-import { CheckFill16 } from '@mysten/icons';
-import { cx } from 'class-variance-authority';
-import { AnimatePresence, motion } from 'framer-motion';
->>>>>>> mainnet-v1.24.1
 
 import { ValidatorLogo } from './ValidatorLogo';
 

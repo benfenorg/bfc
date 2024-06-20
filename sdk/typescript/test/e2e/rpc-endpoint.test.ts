@@ -17,11 +17,7 @@ describe('Invoke any RPC endpoint', () => {
 		const gasObjectsExpected = await toolbox.client.getOwnedObjects({
 			owner: toolbox.address(),
 		});
-<<<<<<< HEAD
-		const gasObjects = await toolbox.client.call<{ data: GasData }>('bfcx_getOwnedObjects', [
-=======
-		const gasObjects = await toolbox.client.call<{ data: SuiGasData }>('suix_getOwnedObjects', [
->>>>>>> mainnet-v1.24.1
+		const gasObjects = await toolbox.client.call<{ data: SuiGasData }>('bfcx_getOwnedObjects', [
 			toolbox.address(),
 		]);
 		expect(gasObjects.data).toStrictEqual(gasObjectsExpected.data);

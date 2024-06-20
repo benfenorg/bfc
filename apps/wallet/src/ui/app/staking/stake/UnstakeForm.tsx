@@ -1,13 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-=======
 import { Card } from '_app/shared/card';
 import { Text } from '_app/shared/text';
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
->>>>>>> mainnet-v1.24.1
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
 import { Form } from 'formik';
 import { useMemo } from 'react';

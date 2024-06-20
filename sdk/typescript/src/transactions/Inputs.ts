@@ -1,23 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SerializedBcs } from '@mysten/bcs';
-import { isSerializedBcs } from '@mysten/bcs';
 import type { Infer } from 'superstruct';
-<<<<<<< HEAD:sdk/typescript/src/builder/Inputs.ts
-
-import { array, boolean, integer, object, string, union } from 'superstruct';
-import type { SharedObjectRef } from '../bcs/index.js';
-import { SuiObjectRef } from '../types/index.js';
-import { builder } from './bcs.js';
-import { normalizeSuiAddress } from '../utils/bfc-types.js';
-=======
 import { array, bigint, boolean, integer, number, object, string, union } from 'superstruct';
 
-import { bcs } from '../bcs/index.js';
-import type { SharedObjectRef } from '../bcs/index.js';
+import { bcs, isSerializedBcs } from '../bcs/index.js';
+import type { SerializedBcs, SharedObjectRef } from '../bcs/index.js';
 import { normalizeSuiAddress } from '../utils/sui-types.js';
->>>>>>> mainnet-v1.24.1:sdk/typescript/src/transactions/Inputs.ts
 
 export const SuiObjectRef = object({
 	/** Base64 string representing the object digest */

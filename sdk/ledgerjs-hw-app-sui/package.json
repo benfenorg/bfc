@@ -68,7 +68,7 @@
 	},
 	"devDependencies": {
 		"@ledgerhq/hw-transport-mocker": "^6.27.13",
-		"@mysten/build-scripts": "workspace:*",
+		"@benfen/build-scripts": "workspace:*",
 		"@size-limit/preset-small-lib": "^8.2.6",
 		"@types/node": "^20.4.2",
 		"size-limit": "^8.2.6",

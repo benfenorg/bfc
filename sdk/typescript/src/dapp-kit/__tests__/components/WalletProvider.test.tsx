@@ -10,7 +10,7 @@ import {
 	useCurrentWallet,
 	useDisconnectWallet,
 	useWallets,
-} from '../../src/index.js';
+} from '../../index.js';
 import { createMockAccount } from '../mocks/mockAccount.js';
 import { suiFeatures, superCoolFeature } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';

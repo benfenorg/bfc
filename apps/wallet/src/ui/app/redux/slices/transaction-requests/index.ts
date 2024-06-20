@@ -1,12 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SignedMessage, type SignedTransaction } from '@benfen/bfc.js';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { fromB64 } from '@benfen/bfc.js/utils';
-=======
 import type { ApprovalRequest } from '_payloads/transactions/ApprovalRequest';
 import type { RootState } from '_redux/RootReducer';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
@@ -16,10 +10,9 @@ import {
 	type WalletSigner,
 } from '_src/ui/app/WalletSigner';
 import type { AppThunkConfig } from '_store/thunk-extras';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
-import { TransactionBlock } from '@mysten/sui.js/transactions';
-import { fromB64 } from '@mysten/sui.js/utils';
->>>>>>> mainnet-v1.24.1
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { fromB64 } from '@benfen/bfc.js/utils';
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 

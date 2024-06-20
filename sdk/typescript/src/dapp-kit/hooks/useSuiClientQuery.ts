@@ -1,19 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/dapp-kit/hooks/useSuiClientQuery.ts
-import type { UseQueryOptions } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
-import { useSuiClientContext } from './useSuiClient.js';
-import type { SuiClient } from '../../client/index.js';
-=======
-import type { SuiClient } from '@mysten/sui.js/client';
 import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 
+import type { SuiClient } from '../../client/index.js';
 import type { PartialBy } from '../types/utilityTypes.js';
 import { useSuiClientContext } from './useSuiClient.js';
->>>>>>> mainnet-v1.24.1:sdk/dapp-kit/src/hooks/useSuiClientQuery.ts
 
 export type SuiRpcMethodName = {
 	[K in keyof SuiClient]: SuiClient[K] extends ((input: any) => Promise<any>) | (() => Promise<any>)

@@ -1,15 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
+import { TransactionBlock } from '../../../transactions/index.js';
 import {
 	WalletFeatureNotSupportedError,
 	WalletNotConnectedError,
-} from '../../src/errors/walletErrors.js';
-import { useConnectWallet, useSignTransactionBlock } from '../../src/index.js';
+} from '../../errors/walletErrors.js';
+import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
+import { useSignTransactionBlock } from '../../hooks/wallet/useSignTransactionBlock.js';
 import { suiFeatures } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
@@ -72,7 +73,7 @@ describe('useSignTransactionBlock', () => {
 
 		await waitFor(() => expect(result.current.connectWallet.isSuccess).toBe(true));
 
-		const signTransactionBlockFeature = mockWallet.features['sui:signTransactionBlock'];
+		const signTransactionBlockFeature = mockWallet.features['bfc:signTransactionBlock'];
 		const signTransactionBlockMock = signTransactionBlockFeature!.signTransactionBlock as Mock;
 
 		signTransactionBlockMock.mockReturnValueOnce({

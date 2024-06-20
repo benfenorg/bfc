@@ -1,16 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { useFeatureValue } from '@growthbook/growthbook-react';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-=======
 import { FEATURES } from '_src/shared/experimentation/features';
+import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
 import { useFeatureValue } from '@growthbook/growthbook-react';
-import { useSuiClient } from '@mysten/dapp-kit';
-import { type SuiTransactionBlockResponse } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
 import { useQuery } from '@tanstack/react-query';
 
 export function useQueryTransactionsByAddress(address: string | null) {

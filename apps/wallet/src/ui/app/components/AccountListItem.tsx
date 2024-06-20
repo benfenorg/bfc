@@ -1,25 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js';
-=======
-import { type SerializedUIAccount } from '_src/background/accounts/Account';
->>>>>>> mainnet-v1.24.1
+import { type SerializedAccount } from '_src/background/keyring/Account';
+import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js/utils';
 import { useResolveSuiNSName } from '@mysten/core';
 import { Check24, Copy12 } from '@mysten/icons';
 
-<<<<<<< HEAD
-import { AccountBadge } from './AccountBadge';
 import { useActiveAddress } from '../hooks/useActiveAddress';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { Text } from '../shared/text';
-import { type SerializedAccount } from '_src/background/keyring/Account';
-=======
-import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
-import { Text } from '../shared/text';
 import { AccountBadge } from './AccountBadge';
->>>>>>> mainnet-v1.24.1
 
 export type AccountItemProps = {
 	account: SerializedAccount;

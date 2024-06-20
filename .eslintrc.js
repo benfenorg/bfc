@@ -74,11 +74,7 @@ module.exports = {
 	},
 	overrides: [
 		{
-<<<<<<< HEAD
-			files: ['sdk/typescript/src/**/*'],
-=======
 			files: ['sdk/**/*'],
->>>>>>> mainnet-v1.24.1
 			rules: {
 				'require-extensions/require-extensions': 'error',
 				'require-extensions/require-index': 'error',
@@ -88,7 +84,6 @@ module.exports = {
 			},
 		},
 		{
-<<<<<<< HEAD
 			files: ['apps/explorer/**/*'],
 			rules: {
 				'import/order': [
@@ -223,8 +218,6 @@ module.exports = {
 			},
 		},
 		{
-=======
->>>>>>> mainnet-v1.24.1
 			files: ['apps/wallet/**/*'],
 			rules: {
 				'react/display-name': 'off',

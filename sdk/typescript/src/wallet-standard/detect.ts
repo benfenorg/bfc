@@ -1,14 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/wallet-standard/detect.ts
-import type { Wallet } from '@wallet-standard/core';
-import type { WalletWithSuiFeatures } from './features/index.js';
-=======
 import type { Wallet, WalletWithFeatures } from '@wallet-standard/core';
 
 import type { MinimallyRequiredFeatures, WalletWithSuiFeatures } from './features/index.js';
->>>>>>> mainnet-v1.24.1:sdk/wallet-standard/src/detect.ts
 
 // These features are absolutely required for wallets to function in the Sui ecosystem.
 // Eventually, as wallets have more consistent support of features, we may want to extend this list.

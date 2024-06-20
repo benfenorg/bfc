@@ -1,19 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64 } from '../../bcs/src/index.js';
-import { PublicKey, bytesEqual } from '../../cryptography/publickey.js';
-import type { PublicKeyInitData } from '../../cryptography/publickey.js';
-import type { SerializedSignature } from '../../cryptography/signature.js';
-import {
-	SIGNATURE_SCHEME_TO_FLAG,
-	parseSerializedSignature,
-} from '../../cryptography/signature.js';
-import { sha256 } from '@noble/hashes/sha256';
-=======
-import { fromB64 } from '@mysten/bcs';
->>>>>>> mainnet-v1.24.1
 import { secp256r1 } from '@noble/curves/p256';
 import { sha256 } from '@noble/hashes/sha256';
 
@@ -22,6 +9,7 @@ import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
 import type { SerializedSignature } from '../../cryptography/signature.js';
 import { parseSerializedSignature } from '../../cryptography/signature.js';
+import { fromB64 } from '../../utils/index.js';
 
 const SECP256R1_PUBLIC_KEY_SIZE = 33;
 

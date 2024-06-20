@@ -1,20 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import {
-	DisplayFieldsResponse,
-	SuiObjectChange,
+	SuiObjectChangeTransferred,
 	SuiObjectChangeCreated,
-	SuiObjectChangeDeleted,
 	SuiObjectChangeMutated,
 	SuiObjectChangePublished,
-	SuiObjectChangeTransferred,
+	SuiObjectChange,
+	DisplayFieldsResponse,
+	SuiObjectChangeDeleted,
 	SuiObjectChangeWrapped,
-<<<<<<< HEAD
 } from '@benfen/bfc.js/client';
-=======
-} from '@mysten/sui.js/client';
-
->>>>>>> mainnet-v1.24.1
 import { groupByOwner } from './groupByOwner';
 import { SuiObjectChangeTypes } from './types';
 

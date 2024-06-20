@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@benfen/bfc.js';
-import { Copy12 } from '@mysten/icons';
-import { useEffect, useRef, useState } from 'react';
-import { useNextMenuUrl } from '../hooks';
-
 import { type SerializedAccount } from '_src/background/keyring/Account';
 import { useCopyToClipboard } from '_src/ui/app/hooks/useCopyToClipboard';
 import { Link } from '_src/ui/app/shared/Link';
+import { formatAddress } from '@benfen/bfc.js/utils';
+import { Copy12 } from '@mysten/icons';
+import { useEffect, useRef, useState } from 'react';
+
+import { useNextMenuUrl } from '../hooks';
 
 export type AccountProps = {
 	account: SerializedAccount;

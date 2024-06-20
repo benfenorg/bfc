@@ -1,16 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/test/unit/bcs/config.test.ts
-import { describe, it, expect } from 'vitest';
-import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { serde } from './utils.js';
-=======
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getRustConfig, getSuiMoveConfig } from '../src/index';
+import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils';
->>>>>>> mainnet-v1.24.1:sdk/bcs/tests/config.test.ts
 
 describe('BCS: Config', () => {
 	it('should work with Rust config', () => {

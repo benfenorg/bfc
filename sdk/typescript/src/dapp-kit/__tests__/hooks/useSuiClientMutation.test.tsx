@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { useSuiClientMutation } from '../../src/hooks/useSuiClientMutation.js';
+import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
+import { useSuiClientMutation } from '../../hooks/useSuiClientMutation.js';
 import { createWalletProviderContextWrapper } from '../test-utils.js';
 
 describe('useSuiClientMutation', () => {

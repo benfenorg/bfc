@@ -1,25 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js';
-import {
-	useGetValidatorsApy,
-	useGetSystemState,
-	useCoinMetadata,
-	useGetCoinBalance,
-} from '@mysten/core';
-import { ArrowLeft16 } from '@mysten/icons';
-import BigNumber from 'bignumber.js';
-import { useMemo } from 'react';
-
-import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
-import { StakeAmount } from '../home/StakeAmount';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
-import { Button } from '_app/shared/ButtonUI';
-=======
->>>>>>> mainnet-v1.24.1
 import BottomMenuLayout, { Content } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
 import { Card } from '_app/shared/card';
@@ -30,28 +11,24 @@ import LoadingIndicator from '_components/loading/LoadingIndicator';
 import { useAppSelector, useCoinsReFetchingConfig } from '_hooks';
 import { ampli } from '_src/shared/analytics/ampli';
 import { API_ENV } from '_src/shared/api-env';
-import {
-	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	DELEGATED_STAKES_QUERY_STALE_TIME,
-	MIN_NUMBER_SUI_TO_STAKE,
-} from '_src/shared/constants';
+import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
-<<<<<<< HEAD
 import type { StakeObject } from '@benfen/bfc.js/client';
-=======
-import { useCoinMetadata, useGetDelegatedStake, useGetValidatorsApy } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { ArrowLeft16, StakeAdd16, StakeRemove16 } from '@mysten/icons';
-import type { StakeObject } from '@mysten/sui.js/client';
-import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui.js/utils';
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import {
+	useCoinMetadata,
+	useGetCoinBalance,
+	useGetSystemState,
+	useGetValidatorsApy,
+} from '@mysten/core';
+import { ArrowLeft16 } from '@mysten/icons';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { Heading } from '../../shared/heading';
 import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
 import { StakeAmount } from '../home/StakeAmount';
->>>>>>> mainnet-v1.24.1
+import { useGetDelegatedStake } from '../useGetDelegatedStake';
 
 type DelegationDetailCardProps = {
 	validatorAddress: string;
@@ -61,40 +38,21 @@ type DelegationDetailCardProps = {
 export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationDetailCardProps) {
 	const {
 		data: system,
-		isPending: loadingValidators,
+		isLoading: loadingValidators,
 		isError: errorValidators,
-<<<<<<< HEAD
 	} = useGetSystemState();
-=======
-	} = useSuiClientQuery('getLatestSuiSystemState');
->>>>>>> mainnet-v1.24.1
 
 	const accountAddress = useActiveAddress();
 
-	const {
-		data: allDelegation,
-		isPending,
-		isError,
-	} = useGetDelegatedStake({
-		address: accountAddress || '',
-		staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
-		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
-	});
+	const { data: allDelegation, isLoading, isError } = useGetDelegatedStake(accountAddress || '');
 
 	const apiEnv = useAppSelector(({ app }) => app.apiEnv);
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-<<<<<<< HEAD
 	const { data: suiCoinBalance } = useGetCoinBalance(
 		SUI_TYPE_ARG,
 		accountAddress,
 		refetchInterval,
 		staleTime,
-=======
-	const { data: suiCoinBalance } = useSuiClientQuery(
-		'getBalance',
-		{ coinType: SUI_TYPE_ARG, owner: accountAddress!! },
-		{ refetchInterval, staleTime, enabled: !!accountAddress },
->>>>>>> mainnet-v1.24.1
 	);
 	const { data: metadata } = useCoinMetadata(SUI_TYPE_ARG);
 	// set minimum stake amount to 1 SUI
@@ -140,7 +98,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 
 	const commission = validatorData ? Number(validatorData.commissionRate) / 100 : 0;
 
-	if (isPending || loadingValidators) {
+	if (isLoading || loadingValidators) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />

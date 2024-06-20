@@ -1,12 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD:sdk/typescript/src/wallet-standard/features/suiSignTransactionBlock.ts
-import type { SignedTransaction, TransactionBlock } from '../../index.js';
-=======
-import type { TransactionBlock } from '@mysten/sui.js/transactions';
->>>>>>> mainnet-v1.24.1:sdk/wallet-standard/src/features/suiSignTransactionBlock.ts
 import type { IdentifierString, WalletAccount } from '@wallet-standard/core';
+
+import type { TransactionBlock } from '../../transactions/index.js';
 
 /** The latest API version of the signTransactionBlock API. */
 export type SuiSignTransactionBlockVersion = '1.0.0';

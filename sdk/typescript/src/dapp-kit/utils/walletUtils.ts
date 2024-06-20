@@ -1,12 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getWallets, isWalletWithRequiredFeatureSet } from '../../wallet-standard/index.js';
 import type {
 	MinimallyRequiredFeatures,
 	Wallet,
 	WalletWithFeatures,
-} from '@mysten/wallet-standard';
-import { getWallets, isWalletWithRequiredFeatureSet } from '@mysten/wallet-standard';
+} from '../../wallet-standard/index.js';
+
+export {} from '@wallet-standard/core'; // fix ts error
 
 export function getRegisteredWallets<AdditionalFeatures extends Wallet['features']>(
 	preferredWallets: string[],

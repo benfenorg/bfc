@@ -1,24 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { type SuiClient } from '@benfen/bfc.js/client';
-=======
-import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
-import { type SuiClient } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
 import {
 	toSerializedSignature,
 	type SerializedSignature,
 	type SignatureScheme,
-<<<<<<< HEAD
 } from '@benfen/bfc.js/cryptography';
 import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
-import { WalletSigner } from './WalletSigner';
-=======
-} from '@mysten/sui.js/cryptography';
-import { Ed25519PublicKey } from '@mysten/sui.js/keypairs/ed25519';
->>>>>>> mainnet-v1.24.1
+import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
 
 import { WalletSigner } from './WalletSigner';
 
@@ -64,11 +54,11 @@ export class LedgerSigner extends WalletSigner {
 	async signData(data: Uint8Array): Promise<SerializedSignature> {
 		const ledgerClient = await this.#initializeSuiLedgerClient();
 		const { signature } = await ledgerClient.signTransaction(this.#derivationPath, data);
-		const publicKey = await this.getPublicKey();
+		const pubKey = await this.getPublicKey();
 		return toSerializedSignature({
 			signature,
 			signatureScheme: this.#signatureScheme,
-			publicKey,
+			publicKey: pubKey,
 		});
 	}
 

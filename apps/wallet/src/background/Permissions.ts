@@ -10,17 +10,9 @@ import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';
 
 import type { ContentScriptConnection } from './connections/ContentScriptConnection';
+import { type Account } from './keyring/Account';
 import Tabs from './Tabs';
 import { Window } from './Window';
-<<<<<<< HEAD
-import { type Account } from './keyring/Account';
-import { ALL_PERMISSION_TYPES, isValidPermissionTypes } from '_payloads/permissions';
-
-import type { ContentScriptConnection } from './connections/ContentScriptConnection';
-import type { Permission, PermissionResponse, PermissionType } from '_payloads/permissions';
-import type { Observable } from 'rxjs';
-=======
->>>>>>> mainnet-v1.24.1
 
 const PERMISSIONS_STORAGE_KEY = 'permissions';
 const PERMISSION_UI_URL = `${Browser.runtime.getURL('ui.html')}#/dapp/connect/`;

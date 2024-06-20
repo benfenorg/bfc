@@ -1,15 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
 import { ChevronDown14 } from '@mysten/icons';
 import clsx from 'classnames';
-import { type ReactNode, useMemo, useState } from 'react';
-=======
-import { ChevronDown12 } from '@mysten/icons';
-import clsx from 'clsx';
 import { useMemo, useState, type ReactNode } from 'react';
->>>>>>> mainnet-v1.24.1
 
 import { Link } from './Link';
 import { Text } from './text';

@@ -1,16 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
-=======
 import {
 	getLedgerConnectionErrorMessage,
 	getSuiApplicationErrorMessage,
 } from '_src/ui/app/helpers/errorMessages';
 import { Link } from '_src/ui/app/shared/Link';
 import { Text } from '_src/ui/app/shared/text';
->>>>>>> mainnet-v1.24.1
+import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import { Check12, X12 } from '@mysten/icons';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
@@ -37,12 +34,12 @@ export function VerifyLedgerConnectionStatus({
 	derivationPath,
 }: VerifyLedgerConnectionLinkProps) {
 	const { connectToLedger } = useSuiLedgerClient();
-	const [isPending, setLoading] = useState(false);
+	const [isLoading, setLoading] = useState(false);
 	const [verificationStatus, setVerificationStatus] = useState(VerificationStatus.UNKNOWN);
 
 	switch (verificationStatus) {
 		case VerificationStatus.UNKNOWN:
-			if (isPending) {
+			if (isLoading) {
 				return (
 					<div className="flex gap-1 text-hero-dark">
 						<LoadingIndicator color="inherit" />

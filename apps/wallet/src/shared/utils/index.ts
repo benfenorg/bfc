@@ -1,12 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64, toB64 } from '@benfen/bfc.js/utils';
-=======
 import { useAppSelector } from '_hooks';
 import { setAttributes } from '_src/shared/experimentation/features';
->>>>>>> mainnet-v1.24.1
+import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 import { useGrowthBook } from '@growthbook/growthbook-react';
 import { useEffect } from 'react';
 import Browser from 'webextension-polyfill';

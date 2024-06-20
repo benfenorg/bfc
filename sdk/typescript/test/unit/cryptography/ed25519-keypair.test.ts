@@ -1,14 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
-=======
-import { fromB64, toB58 } from '@mysten/bcs';
->>>>>>> mainnet-v1.24.1
 import nacl from 'tweetnacl';
 import { describe, expect, it } from 'vitest';
 
+import { fromB64, toB58 } from '../../../src/bcs/index.js';
 import { decodeSuiPrivateKey } from '../../../src/cryptography/keypair';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
 import { TransactionBlock } from '../../../src/transactions';

@@ -1,18 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { type SuiClient } from '@benfen/bfc.js/client';
-=======
-import { type QredoSerializedUiAccount } from '_src/background/accounts/QredoAccount';
+import { type SerializedQredoAccount } from '_src/background/keyring/QredoAccount';
 import { API_ENV, networkNames } from '_src/shared/api-env';
 import {
 	type NetworkType,
 	type QredoAPI,
 	type TransactionInfoResponse,
 } from '_src/shared/qredo-api';
-import { type SuiClient } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
+import { type SuiClient } from '@benfen/bfc.js/client';
 import {
 	IntentScope,
 	messageWithIntent,
@@ -22,16 +18,6 @@ import { toB64 } from '@benfen/bfc.js/utils';
 import mitt from 'mitt';
 
 import { WalletSigner } from './WalletSigner';
-<<<<<<< HEAD
-import { type SerializedQredoAccount } from '_src/background/keyring/QredoAccount';
-import { API_ENV, networkNames } from '_src/shared/api-env';
-import {
-	type TransactionInfoResponse,
-	type NetworkType,
-	type QredoAPI,
-} from '_src/shared/qredo-api';
-=======
->>>>>>> mainnet-v1.24.1
 
 export class QredoActionIgnoredByUser extends Error {}
 

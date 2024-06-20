@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerAccountRow } from './LedgerAccountRow';
 import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
+
+import { LedgerAccountRow } from './LedgerAccountRow';
 
 export type SelectableLedgerAccount = SerializedLedgerAccount & {
 	isSelected: boolean;
