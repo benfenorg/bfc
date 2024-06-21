@@ -942,7 +942,7 @@ impl SuiTransactionBlockEffects {
             },
             executed_epoch: 0,
             modified_at_versions: vec![],
-            gas_used: GasCostSummary::default(),
+            gas_used: SuiGasCostSummary::default(),
             shared_objects: vec![],
             created: vec![],
             mutated: vec![],
