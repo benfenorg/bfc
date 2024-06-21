@@ -90,7 +90,7 @@ describe('Contract links', () => {
 				[
 				  {
 				    "amount": 100n,
-				    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+				    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
 				  },
 				]
 			`);
@@ -185,7 +185,7 @@ describe('Contract links', () => {
 				[
 				  {
 				    "amount": 100n,
-				    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+				    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
 				  },
 				]
 			`);
@@ -270,7 +270,7 @@ describe('Contract links', () => {
 					[
 					  {
 					    "amount": 100n,
-					    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+					    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
 					  },
 					]
 				`);
@@ -336,7 +336,7 @@ describe('Non contract links', () => {
 					[
 					  {
 					    "amount": 100n,
-					    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+					    "coinType": "0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
 					  },
 					]
 				`);
@@ -400,7 +400,7 @@ describe('Non contract links', () => {
 			expect(claimLink.assets?.nfts.length).toEqual(0);
 			expect(claimLink.assets?.balances.length).toEqual(1);
 			expect(claimLink.assets?.balances[0].coinType).toEqual(
-				'0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI',
+				'0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC',
 			);
 
 			const claimTx = await claimLink.claimAssets(keypair.toSuiAddress());

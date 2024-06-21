@@ -50,7 +50,7 @@ describe('useSignPersonalMessage', () => {
 		act(() => unregister());
 	});
 
-	test('falls back to the `sui:signMessage` feature with a wallet that lacks support for `sui:signPersonalMessage`.', async () => {
+	test('falls back to the `bfc:signMessage` feature with a wallet that lacks support for `bfc:signPersonalMessage`.', async () => {
 		const { unregister, mockWallet } = registerMockWallet({
 			walletName: 'Mock Wallet 1',
 			features: signMessageFeature,

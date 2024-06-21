@@ -9,7 +9,7 @@ import { Ed25519Keypair } from '../../src/keypairs/ed25519';
 import { MultiSigPublicKey } from '../../src/multisig/publickey';
 import { TransactionBlock } from '../../src/transactions';
 import { getZkLoginSignature } from '../../src/zklogin';
-import { toZkLoginPublicIdentifier } from '../../src/zklogin/publickey';
+import { toZkLoginPublicIdentifier } from '../../src/zklogin/helper/publickey.js';
 import { DEFAULT_RECIPIENT, setupWithFundedAddress } from './utils/setup';
 
 describe('MultiSig with zklogin signature', () => {

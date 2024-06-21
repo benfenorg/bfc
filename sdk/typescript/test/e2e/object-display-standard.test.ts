@@ -4,7 +4,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { SuiObjectData } from '../../src/client';
-import { bfc2SuiAddress } from '../../src/index.js';
+import { bfc2SuiAddress } from '../../src/utils/index.js';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Test Object Display Standard', () => {

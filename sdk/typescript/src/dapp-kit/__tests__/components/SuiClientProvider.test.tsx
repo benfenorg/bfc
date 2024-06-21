@@ -51,7 +51,7 @@ describe('SuiClientProvider', () => {
 		expect(screen.getByText('Test')).toBeInTheDocument();
 	});
 
-	test('can create sui clients with custom options', async () => {
+	test('can create bfc clients with custom options', async () => {
 		function NetworkSelector() {
 			const ctx = useSuiClientContext();
 

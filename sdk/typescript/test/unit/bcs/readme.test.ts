@@ -10,7 +10,7 @@ import { describe, it } from 'vitest';
 
 import type { BcsWriter } from '../../../src/bcs/src/index.js';
 import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { SUI_ADDRESS_LENGTH } from '../../../src/index.js';
+import { SUI_ADDRESS_LENGTH } from '../../../src/utils/bfc-types.js';
 
 describe('BCS: README Examples', () => {
 	it('quick start', () => {

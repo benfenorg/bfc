@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import sha256 from 'fast-sha256';
+
 import type { MoveCallTransaction } from '../transactions/Transactions.js';
 import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/sui-types.js';
 import type { BcsType, BcsTypeOptions } from './src/index.js';
@@ -193,7 +195,11 @@ function enumKind<T extends object, Input extends object>(type: BcsType<T, Input
 const Address = bcs.bytes(SUI_ADDRESS_LENGTH).transform({
 	input: (val: string | Uint8Array) =>
 		typeof val === 'string' ? fromHEX(normalizeSuiAddress(val)) : val,
-	output: (val) => normalizeSuiAddress(toHEX(val)),
+	output: (val) => {
+		const hex = toHEX(val).padStart(2 * SUI_ADDRESS_LENGTH, '0');
+		const hash = toHEX(sha256(new TextEncoder().encode(hex)));
+		return `BFC${hex}${hash.slice(0, 4)}`;
+	},
 });
 
 const ObjectDigest = bcs.vector(bcs.u8()).transform({

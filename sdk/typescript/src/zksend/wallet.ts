@@ -149,7 +149,7 @@ export class ZkSendWallet implements Wallet {
 				new ReadonlyWalletAccount({
 					address,
 					chains: [BFC_MAINNET_CHAIN],
-					features: ['sui:signTransactionBlock', 'sui:signPersonalMessage'],
+					features: ['bfc:signTransactionBlock', 'bfc:signPersonalMessage'],
 					// NOTE: zkSend doesn't support getting public keys, and zkLogin accounts don't have meaningful public keys anyway
 					publicKey: new Uint8Array(),
 				}),

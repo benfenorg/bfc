@@ -4,7 +4,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { SUI_ADDRESS_LENGTH } from '../../../src/index.js';
+import { SUI_ADDRESS_LENGTH } from '../../../src/utils/bfc-types.js';
 
 describe('BCS: Serde', () => {
 	it('should serialize primitives in both directions', () => {

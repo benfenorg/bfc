@@ -19,7 +19,7 @@ describe('useSignTransactionBlock', () => {
 		const wrapper = createWalletProviderContextWrapper();
 		const { result } = renderHook(() => useSignTransactionBlock(), { wrapper });
 
-		result.current.mutate({ transactionBlock: new TransactionBlock(), chain: 'sui:testnet' });
+		result.current.mutate({ transactionBlock: new TransactionBlock(), chain: 'bfc:testnet' });
 
 		await waitFor(() => expect(result.current.error).toBeInstanceOf(WalletNotConnectedError));
 	});
@@ -43,7 +43,7 @@ describe('useSignTransactionBlock', () => {
 
 		result.current.signTransactionBlock.mutate({
 			transactionBlock: new TransactionBlock(),
-			chain: 'sui:testnet',
+			chain: 'bfc:testnet',
 		});
 		await waitFor(() =>
 			expect(result.current.signTransactionBlock.error).toBeInstanceOf(
@@ -83,7 +83,7 @@ describe('useSignTransactionBlock', () => {
 
 		result.current.signTransactionBlock.mutate({
 			transactionBlock: new TransactionBlock(),
-			chain: 'sui:testnet',
+			chain: 'bfc:testnet',
 		});
 
 		await waitFor(() => expect(result.current.signTransactionBlock.isSuccess).toBe(true));

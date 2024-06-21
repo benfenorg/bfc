@@ -10,8 +10,8 @@ export function createMockAccount(accountOverrides: Partial<WalletAccount> = {})
 	return new ReadonlyWalletAccount({
 		address: keypair.getPublicKey().toSuiAddress(),
 		publicKey: keypair.getPublicKey().toSuiBytes(),
-		chains: ['sui:unknown'],
-		features: ['sui:signAndExecuteTransactionBlock', 'sui:signTransactionBlock'],
+		chains: ['bfc:unknown'],
+		features: ['bfc:signAndExecuteTransactionBlock', 'bfc:signTransactionBlock'],
 		...accountOverrides,
 	});
 }

@@ -3,9 +3,7 @@
 
 import { describe, expect, test } from 'vitest';
 
-import { BcsReader, BcsWriter, toB58, toB64, toHEX } from '../src';
-import { BcsType } from '../src/bcs-type.js';
-import { bcs } from '../src/bcs.js';
+import { bcs, BcsReader, BcsType, BcsWriter, toB58, toB64, toHEX } from '../../../src/bcs/index.js';
 
 describe('bcs', () => {
 	describe('base types', () => {

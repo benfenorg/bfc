@@ -13,7 +13,7 @@ import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';
 import { Secp256r1Keypair } from '../../../src/keypairs/secp256r1';
 import { MultiSigPublicKey, parsePartialSignatures } from '../../../src/multisig';
 import { TransactionBlock } from '../../../src/transactions';
-import { toZkLoginPublicIdentifier } from '../../../src/zklogin/publickey';
+import { toZkLoginPublicIdentifier } from '../../../src/zklogin/helper/publickey.js';
 
 describe('Multisig scenarios', () => {
 	it('multisig address creation and combine sigs using Secp256r1Keypair', async () => {

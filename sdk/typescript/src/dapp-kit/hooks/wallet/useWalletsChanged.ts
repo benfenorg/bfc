@@ -4,7 +4,7 @@
 import { useEffect } from 'react';
 
 import { getWallets } from '../../../wallet-standard/index.js';
-import type { WalletWithRequiredFeatures } from '../../../wallet-standard/index.js';
+import type { Wallet, WalletWithRequiredFeatures } from '../../../wallet-standard/index.js';
 import { getRegisteredWallets } from '../../utils/walletUtils.js';
 import { useWalletStore } from './useWalletStore.js';
 
@@ -20,6 +20,16 @@ export function useWalletsChanged(
 
 	useEffect(() => {
 		const walletsApi = getWallets();
+		let wallets: Wallet[] = [];
+
+		const checkInterval = window.setInterval(() => {
+			const registered = walletsApi.get();
+			const newWallets = registered.filter((wallet) => !wallets.includes(wallet));
+			if (newWallets.length > 0) {
+				setWalletRegistered(getRegisteredWallets(preferredWallets, requiredFeatures));
+				wallets = [...registered];
+			}
+		}, 100);
 
 		const unsubscribeFromRegister = walletsApi.on('register', () => {
 			setWalletRegistered(getRegisteredWallets(preferredWallets, requiredFeatures));
@@ -35,6 +45,7 @@ export function useWalletsChanged(
 		return () => {
 			unsubscribeFromRegister();
 			unsubscribeFromUnregister();
+			clearInterval(checkInterval);
 		};
 	}, [preferredWallets, requiredFeatures, setWalletRegistered, setWalletUnregistered]);
 }

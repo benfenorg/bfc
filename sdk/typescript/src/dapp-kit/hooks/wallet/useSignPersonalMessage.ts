@@ -74,7 +74,7 @@ export function useSignPersonalMessage({
 				});
 			}
 
-			// TODO: Remove this once we officially discontinue sui:signMessage in the wallet standard
+			// TODO: Remove this once we officially discontinue bfc:signMessage in the wallet standard
 			const signMessageFeature = currentWallet.features['bfc:signMessage'];
 			if (signMessageFeature) {
 				console.warn(
