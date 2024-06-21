@@ -338,7 +338,7 @@ mod checked {
             if gas_budget < self.cost_table.min_transaction_cost {
                 return Err(UserInputError::GasBudgetTooLow {
                     gas_budget,
-                    min_budget: self.cost_table.min_transaction_cost,
+                    min_budget: stable_min_budget,
                 });
             }
 

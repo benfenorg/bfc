@@ -71,7 +71,7 @@ impl BfcSystemStateWrapper {
         protocol_config: &ProtocolConfig,
     ) -> (Object, Object) {
         let id = self.id.id.bytes;
-        let mut old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
+        let  old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
             .expect("Dynamic field object of wrapper should always be present in the object store");
         let mut new_field_object = old_field_object.clone();
         let move_object = new_field_object

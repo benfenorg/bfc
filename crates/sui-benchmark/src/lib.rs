@@ -52,7 +52,7 @@ use sui_types::{
     base_types::{AuthorityName, SuiAddress},
     sui_system_state::SuiSystemStateTrait,
 };
-use sui_types::{error::SuiError};
+use sui_types::error::SuiError;
 use tokio::{
     task::JoinSet,
     time::{sleep, timeout},

@@ -20,8 +20,11 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use move_core_types::parser::parse_struct_tag;
+use sui_types::sui_serde::BigInt;
+use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -36,7 +39,6 @@ use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, P
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
-use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
@@ -45,8 +47,10 @@ use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
-use move_core_types::parser::parse_struct_tag;
-use sui_types::sui_serde::BigInt;
+use sui_json_rpc_api::ReadApiClient;
+use sui_json_rpc_api::IndexerApiClient;
+use sui_json_rpc_api::WriteApiClient;
+use sui_json_rpc_api::TransactionBuilderClient;
 
 
 #[sim_test]
@@ -100,7 +104,7 @@ async fn basic_reconfig_end_to_end_test() {
 }
 
 #[sim_test]
-async fn test_transaction_expiration() {
+async fn sim_test_transaction_expiration() {
     let test_cluster = TestClusterBuilder::new().build().await;
     test_cluster.trigger_reconfiguration().await;
 
@@ -123,7 +127,7 @@ async fn test_transaction_expiration() {
         .with_async(|node| async {
             let epoch_store = node.state().epoch_store_for_testing();
             let state = node.state();
-            let expired_transaction = state.verify_transaction(expired_transaction).unwrap();
+            let expired_transaction = epoch_store.verify_transaction(expired_transaction).unwrap();
             state
                 .handle_transaction(&epoch_store, expired_transaction)
                 .await
@@ -138,7 +142,7 @@ async fn test_transaction_expiration() {
         .with_async(|node| async {
             let epoch_store = node.state().epoch_store_for_testing();
             let state = node.state();
-            let transaction = state.verify_transaction(transaction).unwrap();
+            let transaction = epoch_store.verify_transaction(transaction).unwrap();
             state.handle_transaction(&epoch_store, transaction).await
         })
         .await
@@ -176,7 +180,7 @@ async fn reconfig_with_revert_end_to_end_test() {
         .sui_node
         .with(|node| node.clone_authority_aggregator().unwrap());
     let cert = net
-        .process_transaction(tx.clone())
+        .process_transaction(tx.clone(), None)
         .await
         .unwrap()
         .into_cert_for_testing();
@@ -202,7 +206,10 @@ async fn reconfig_with_revert_end_to_end_test() {
     let client = net
         .get_client(&authorities[reverting_authority_idx].with(|node| node.state().name))
         .unwrap();
-    client.handle_certificate(cert.clone()).await.unwrap();
+    client
+        .handle_certificate_v2(cert.clone(), None)
+        .await
+        .unwrap();
 
     authorities[reverting_authority_idx]
         .with_async(|node| async {
@@ -1712,7 +1719,7 @@ async fn sim_test_validator_resign_effects() {
         .sui_node
         .with(|node| node.clone_authority_aggregator().unwrap());
     let effects1 = net
-        .process_transaction(tx)
+        .process_transaction(tx, None)
         .await
         .unwrap()
         .into_effects_for_testing();
@@ -1737,14 +1744,14 @@ async fn test_validator_candidate_pool_read() {
             .unwrap();
         let system_state_summary = system_state.clone().into_sui_system_state_summary();
         let staking_pool_id = get_validator_from_table(
-            node.state().db().as_ref(),
+            node.state().get_object_store().as_ref(),
             system_state_summary.validator_candidates_id,
             &address,
         )
             .unwrap()
             .staking_pool_id;
         let validator = get_validator_by_pool_id(
-            node.state().db().as_ref(),
+            node.state().get_object_store().as_ref(),
             &system_state,
             &system_state_summary,
             staking_pool_id,
@@ -1781,7 +1788,7 @@ async fn test_inactive_validator_pool_read() {
         let system_state_summary = system_state.clone().into_sui_system_state_summary();
         // Validator is active. Check that we can find its summary by staking pool id.
         let validator = get_validator_by_pool_id(
-            node.state().db().as_ref(),
+            node.state().get_object_store().as_ref(),
             &system_state,
             &system_state_summary,
             staking_pool_id,
@@ -1816,7 +1823,7 @@ async fn test_inactive_validator_pool_read() {
         );
         let system_state_summary = system_state.clone().into_sui_system_state_summary();
         let validator = get_validator_by_pool_id(
-            node.state().db().as_ref(),
+            node.state().get_object_store().as_ref(),
             &system_state,
             &system_state_summary,
             staking_pool_id,
@@ -2377,7 +2384,7 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
             .get_sui_system_state_object_for_testing()
             .unwrap();
         system_state
-            .get_pending_active_validators(node.state().db().as_ref())
+            .get_pending_active_validators(node.state().get_object_store().as_ref())
             .unwrap()
             .len()
     });
@@ -2422,7 +2429,7 @@ async fn execute_add_validator_transactions(test_cluster: &TestCluster, new_vali
             .get_sui_system_state_object_for_testing()
             .unwrap();
         let pending_active_validators = system_state
-            .get_pending_active_validators(node.state().db().as_ref())
+            .get_pending_active_validators(node.state().get_object_store().as_ref())
             .unwrap();
         assert_eq!(pending_active_validators.len(), pending_active_count + 1);
         assert_eq!(
@@ -3170,6 +3177,7 @@ async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) ->
             Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
             /* gas_price */ None,
             /* epoch_id */ None,
+            None,
         )
         .await
         .unwrap();
@@ -3421,6 +3429,7 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
             Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
             /* gas_price */ None,
             /* epoch_id */ None,
+            None,
         )
         .await
         .unwrap();
