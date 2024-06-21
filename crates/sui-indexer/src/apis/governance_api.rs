@@ -340,14 +340,7 @@ impl<T: R2D2Connection + 'static> GovernanceReadApiServer for GovernanceReadApi<
     }
 
     async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
-        let epoch = self.get_epoch_info(None).await?;
-        Ok(BigInt::from(epoch.reference_gas_price.ok_or_else(
-            || {
-                IndexerError::PersistentStorageDataCorruptionError(
-                    "missing latest reference gas price".to_owned(),
-                )
-            },
-        )?))
+        todo!()
     }
 
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {
