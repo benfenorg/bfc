@@ -21,7 +21,7 @@ use sui_json_rpc_types::{SuiCommittee, ValidatorApy, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::committee::EpochId;
-use sui_types::dynamic_field::{DynamicFieldInfo, get_dynamic_field_from_store};
+use sui_types::dynamic_field::get_dynamic_field_from_store;
 use sui_types::error::{SuiError, UserInputError};
 use sui_types::governance::StakedSui;
 use sui_types::id::ID;

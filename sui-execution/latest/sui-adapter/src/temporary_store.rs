@@ -35,7 +35,7 @@ use sui_types::{
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{BFCSystemState, BfcSystemStateWrapper, get_bfc_system_proposal_state_map, get_bfc_system_state, get_bfc_system_state_wrapper, get_stable_rate_and_reward_rate, get_stable_rate_map, get_stable_rate_with_base_point};
+use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {

@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::any::Any;
 use super::object_runtime::{ObjectRuntime, TransferResult};
 use crate::NativesCostTable;
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
