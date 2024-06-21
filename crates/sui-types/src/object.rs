@@ -966,12 +966,17 @@ impl Object {
             Data::Move(m) => {
                 if m.type_.is_stable_gas_coin() {
                     //把bfc换算成stable coin
+                    // println!("stable gas coin self.storage_rebate:{:?}", self.storage_rebate);
                     calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, gas_summary.rate, gas_summary.base_point) + m.get_total_stable_coin(layout_resolver)?
                 } else if (m.type_.is_gas_coin()) {
-                    let total = self.storage_rebate + m.get_total_sui(layout_resolver)?;
-                    calculate_bfc_to_stable_cost_with_base_point(total, gas_summary.rate, gas_summary.base_point)
+                    // println!("gas coin self.storage_rebate:{:?},total sui:{:?}", self.storage_rebate, m.get_total_sui(layout_resolver)?);
+                    let total = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, gas_summary.rate, gas_summary.base_point) + calculate_bfc_to_stable_cost_with_base_point(m.get_total_sui(layout_resolver)?, gas_summary.rate, gas_summary.base_point);
+                    total
                 } else {
-                    Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
+                    // println!("other coin self.storage_rebate:{:?},total sui:{:?}", self.storage_rebate, m.get_total_sui(layout_resolver)?);
+                    // println!("get_total_stable_coin: should be Stable Coin {:?}", m);
+                    let total = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, gas_summary.rate, gas_summary.base_point) + calculate_bfc_to_stable_cost_with_base_point(m.get_total_sui(layout_resolver)?, gas_summary.rate, gas_summary.base_point);
+                    total
                 }
             }
             Data::Package(_) => Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?,

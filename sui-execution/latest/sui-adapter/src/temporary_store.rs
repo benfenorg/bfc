@@ -858,6 +858,7 @@ impl<'backing> TemporaryStore<'backing> {
             }
             match stable_coin {
                 true => {
+                    println!("input stable coin: {:?} id:{:?}", obj.get_total_stable_coin(layout_resolver, gas_summary), id);
                     return obj.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
                         make_invariant_violation!(
                     "Failed looking up input Stable Coin in SUI conservation checking for input with \
@@ -973,6 +974,7 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_output_rebate = 0;
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
+                println!("input is {:?}", input);
                 total_input_rebate += storage_rebate;
                 if do_expensive_checks {
                     total_input_sui += self.get_input_sui(&id, version, layout_resolver, gas_summary.gas_pay_with_stable_coin(), gas_summary)?;
@@ -981,6 +983,7 @@ impl<'backing> TemporaryStore<'backing> {
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;
                 if do_expensive_checks && gas_summary.gas_pay_with_stable_coin() {
+                    println!("output stable coin :{:?} id:{:?}", object.get_total_stable_coin(layout_resolver, gas_summary), object);
                     total_output_sui += object.get_total_stable_coin(layout_resolver, gas_summary).map_err(|e| {
                         make_invariant_violation!(
                             "Failed looking up output Stable Coin in SUI conservation checking for \
@@ -989,6 +992,7 @@ impl<'backing> TemporaryStore<'backing> {
                         )
                     })?;
                 } else if do_expensive_checks && !gas_summary.gas_pay_with_stable_coin() {
+                    println!("output gas coin :{:?} id:{:?}", object.get_total_stable_coin(layout_resolver, gas_summary), object);
                     total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
                         make_invariant_violation!(
                             "Failed looking up output SUI in SUI conservation checking for \
