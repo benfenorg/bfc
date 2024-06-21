@@ -536,10 +536,14 @@ pub enum SuiError {
     #[serde(rename = "StorageMissingFieldError")]
     #[error("DEPRECATED")]
     DEPRECATED_StorageMissingFieldError,
+
     #[allow(non_camel_case_types)]
     #[serde(rename = "StorageCorruptedFieldError")]
     #[error("DEPRECATED")]
     DEPRECATED_StorageCorruptedFieldError,
+
+    #[error("Corrupted fields/data in storage error: {0}")]
+    StorageCorruptedFieldError(String),
 
     #[error("Authority Error: {error:?}")]
     GenericAuthorityError { error: String },

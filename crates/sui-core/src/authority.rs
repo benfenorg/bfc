@@ -4677,6 +4677,7 @@ impl AuthorityState {
                 bfc_gas_cost_summary.non_refundable_storage_fee,
                 stable_gas_cost_summarys.clone(),
                 epoch_start_timestamp_ms,
+                epoch_duration_ms,
                 next_epoch_system_package_bytes,
             ));
 
@@ -4782,88 +4783,6 @@ impl AuthorityState {
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
         Ok((system_obj, effects))
-    }
-
-    pub async fn create_and_execute_bfc_round_tx(
-        &self,
-        epoch_store: &Arc<AuthorityPerEpochStore>,
-        checkpoint: CheckpointSequenceNumber,
-    ) -> anyhow::Result<(InnerTemporaryStore, TransactionEffects)> {
-        let epoch = epoch_store.epoch();
-
-        let tx = VerifiedTransaction::new_change_bfc_round(
-            checkpoint,
-        );
-
-        let executable_tx = VerifiedExecutableTransaction::new_round_from_checkpoint(
-            tx.clone(),
-            epoch,
-            epoch,
-            checkpoint,
-        );
-
-        let tx_digest = executable_tx.digest();
-
-        let _tx_lock = epoch_store.acquire_tx_guard(&executable_tx).await?;
-
-        if self
-            .is_tx_already_executed(tx_digest)
-            .expect("read cannot fail")
-        {
-            warn!("bfc round has already been executed via state sync： {:?}", tx_digest);
-            return Err(anyhow::anyhow!(
-                "bfc round tx has already been executed via state sync"
-            ));
-        }
-
-        let execution_guard = self
-            .execution_lock_for_executable_transaction(&executable_tx)
-            .await?;
-
-        info!(
-            "Try to execute transaction: {:?}",tx_digest
-        );
-
-        let input_objects = self
-            .input_loader
-            .read_objects_for_synchronous_execution(
-                tx_digest,
-                &executable_tx
-                    .data()
-                    .intent_message()
-                    .value
-                    .input_objects()?,
-                epoch_store.protocol_config(),
-            )
-            .await?;
-        let (store, _, effects, _execution_error_opt) = self
-            .prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store)?;
-
-        self.commit_certificate(
-            &executable_tx,
-            store.clone(),
-            &effects,
-            _tx_lock,
-            execution_guard,
-            epoch_store,
-        )
-            .await?;
-
-
-        // We must write tx and effects to the state sync tables so that state sync is able to
-        // deliver to the transaction to CheckpointExecutor after it is included in a certified
-        // checkpoint.
-
-        info!(
-            "Effects summary of the change bfc round transaction: {:?}",
-            effects.summary_for_debug()
-        );
-
-        //epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
-        // The change epoch transaction cannot fail to execute.
-        assert!(effects.status().is_ok());
-
-        Ok((store, effects))
     }
 
     /// This function is called at the very end of the epoch.

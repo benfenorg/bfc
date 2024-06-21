@@ -1049,12 +1049,6 @@ fn extract_bfc_round_tx(
         *checkpoint_sequence,
     );
 
-    assert!(change_epoch_tx
-        .data()
-        .intent_message()
-        .value
-        .is_change_bfc_round_tx());
-
     Some((digests, change_epoch_tx))
 }
 
