@@ -16,7 +16,7 @@ use smallvec::smallvec;
 use std::collections::VecDeque;
 use sui_types::{base_types::SequenceNumber, object::Owner};
 
-const E_SHARED_NON_NEW_OBJECT: u64 = 0;
+//const E_SHARED_NON_NEW_OBJECT: u64 = 0;
 
 #[derive(Clone, Debug)]
 pub struct TransferInternalCostParams {

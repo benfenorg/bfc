@@ -340,11 +340,6 @@ impl<'backing> TemporaryStore<'backing> {
         let id = object.id();
         self.execution_results.created_object_ids.insert(id);
         self.execution_results.written_objects.insert(id, object);
-        let tmp = self.execution_results
-            .written_objects
-            .get(&id);
-        //println!("wubin create object id {}  written_objects len {}", id,  self.execution_results.written_objects.len());
-
     }
 
     pub fn read_object(&self, id: &ObjectID) -> Option<&Object> {
