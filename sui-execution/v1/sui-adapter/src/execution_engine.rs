@@ -1075,7 +1075,7 @@ mod checked {
         let binary_config = to_binary_config(protocol_config);
 
         for (version, modules, dependencies) in change_epoch.system_packages.into_iter() {
-            let max_format_version = protocol_config.move_binary_format_version();
+            //let max_format_version = protocol_config.move_binary_format_version();
             let deserialized_modules: Vec<_> = modules
                 .iter()
                 .map(|m| {

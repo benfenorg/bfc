@@ -154,12 +154,12 @@ fn build_packages(
 }
 
 fn build_packages_with_move_config(
-    deepbook_path: PathBuf,
+    _deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
     bfc_system_path: PathBuf,
     out_dir: PathBuf,
-    deepbook_dir: &str,
+    _deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
     stdlib_dir: &str,

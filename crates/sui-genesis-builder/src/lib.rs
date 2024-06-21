@@ -893,7 +893,6 @@ fn build_unsigned_genesis_data(
         &genesis_chain_parameters,
         &bfc_system_parameters,
         token_distribution_schedule,
-        system_packages,
         metrics.clone(),
     );
 
@@ -1039,7 +1038,6 @@ fn create_genesis_objects(
     parameters: &GenesisChainParameters,
     bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
-    system_packages: Vec<SystemPackage>,
     metrics: Arc<LimitsMetrics>,
 ) -> Vec<Object> {
     let mut store = InMemoryStorage::new(Vec::new());
@@ -1174,117 +1172,117 @@ fn process_package(
 }
 
 
-pub fn generate_genesis_system_object_v0(
-    store: &mut InMemoryStorage,
-    executor: &dyn Executor,
-    genesis_validators: &[GenesisValidatorMetadata],
-    genesis_ctx: &mut TxContext,
-    genesis_chain_parameters: &GenesisChainParameters,
-    token_distribution_schedule: &TokenDistributionSchedule,
-    metrics: Arc<LimitsMetrics>,
-) -> anyhow::Result<()> {
-    let protocol_config = ProtocolConfig::get_for_version(
-        ProtocolVersion::new(genesis_chain_parameters.protocol_version),
-        ChainIdentifier::default().chain(),
-    );
-
-    let pt = {
-        let mut builder = ProgrammableTransactionBuilder::new();
-        // Step 1: Create the SuiSystemState UID
-        let sui_system_state_uid = builder.programmable_move_call(
-            SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("object").to_owned(),
-            ident_str!("sui_system_state").to_owned(),
-            vec![],
-            vec![],
-        );
-
-
-
-        // Step 2: Create and share the Clock.
-        builder.move_call(
-            SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("clock").to_owned(),
-            ident_str!("create").to_owned(),
-            vec![],
-            vec![],
-        )?;
-
-
-        // Step 4: Mint the supply of SUI.
-        let sui_supply = builder.programmable_move_call(
-            SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("bfc").to_owned(),
-            ident_str!("new").to_owned(),
-            vec![],
-            vec![],
-        );
-
-        let arguments =  vec![
-            sui_supply,
-            builder.input(CallArg::Pure(bcs::to_bytes(&TOTAL_SUPPLY_WITH_ALLOCATION_MIST).unwrap()))?
-        ];
-        //Step 4 allocation to swap_pool
-        let new_sui_supply= builder.programmable_move_call(
-            SUI_FRAMEWORK_ADDRESS.into(),
-            ident_str!("balance").to_owned(),
-            ident_str!("split").to_owned(),
-            vec![GAS::type_tag()],
-            arguments,
-        );
-
-        // Step 5: Run genesis.
-        // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
-        // got from step 3.
-        let mut arguments = vec![sui_system_state_uid, sui_system_state_uid,sui_supply];
-        let mut call_arg_arguments = vec![
-            CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&token_distribution_schedule).unwrap()),
-        ]
-            .into_iter()
-            .map(|a| builder.input(a))
-            .collect::<anyhow::Result<_, _>>()?;
-        arguments.append(&mut call_arg_arguments);
-        builder.programmable_move_call(
-            SUI_SYSTEM_ADDRESS.into(),
-            ident_str!("genesis").to_owned(),
-            ident_str!("create").to_owned(),
-            vec![],
-            arguments,
-        );
-
-
-        builder.finish()
-    };
-
-
-    info!("Genesis system object created===before InnerTemporaryStore");
-    let InnerTemporaryStore {
-        mut written, ..
-    } = executor.update_genesis_state(
-        &*store,
-        &protocol_config,
-        metrics,
-        genesis_ctx,
-        CheckedInputObjects::new_for_genesis(vec![]),
-        pt,
-    )?;
-
-    // update the value of the clock to match the chain start time
-    {
-        let object = written.get_mut(&sui_types::SUI_CLOCK_OBJECT_ID).unwrap();
-        object
-            .data
-            .try_as_move_mut()
-            .unwrap()
-            .set_clock_timestamp_ms_unsafe(genesis_chain_parameters.chain_start_timestamp_ms);
-    }
-
-    store.finish(written);
-
-    Ok(())
-}
+// pub fn generate_genesis_system_object_v0(
+//     store: &mut InMemoryStorage,
+//     executor: &dyn Executor,
+//     genesis_validators: &[GenesisValidatorMetadata],
+//     genesis_ctx: &mut TxContext,
+//     genesis_chain_parameters: &GenesisChainParameters,
+//     token_distribution_schedule: &TokenDistributionSchedule,
+//     metrics: Arc<LimitsMetrics>,
+// ) -> anyhow::Result<()> {
+//     let protocol_config = ProtocolConfig::get_for_version(
+//         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
+//         ChainIdentifier::default().chain(),
+//     );
+//
+//     let pt = {
+//         let mut builder = ProgrammableTransactionBuilder::new();
+//         // Step 1: Create the SuiSystemState UID
+//         let sui_system_state_uid = builder.programmable_move_call(
+//             SUI_FRAMEWORK_ADDRESS.into(),
+//             ident_str!("object").to_owned(),
+//             ident_str!("sui_system_state").to_owned(),
+//             vec![],
+//             vec![],
+//         );
+//
+//
+//
+//         // Step 2: Create and share the Clock.
+//         builder.move_call(
+//             SUI_FRAMEWORK_ADDRESS.into(),
+//             ident_str!("clock").to_owned(),
+//             ident_str!("create").to_owned(),
+//             vec![],
+//             vec![],
+//         )?;
+//
+//
+//         // Step 4: Mint the supply of SUI.
+//         let sui_supply = builder.programmable_move_call(
+//             SUI_FRAMEWORK_ADDRESS.into(),
+//             ident_str!("bfc").to_owned(),
+//             ident_str!("new").to_owned(),
+//             vec![],
+//             vec![],
+//         );
+//
+//         let arguments =  vec![
+//             sui_supply,
+//             builder.input(CallArg::Pure(bcs::to_bytes(&TOTAL_SUPPLY_WITH_ALLOCATION_MIST).unwrap()))?
+//         ];
+//         //Step 4 allocation to swap_pool
+//         let new_sui_supply= builder.programmable_move_call(
+//             SUI_FRAMEWORK_ADDRESS.into(),
+//             ident_str!("balance").to_owned(),
+//             ident_str!("split").to_owned(),
+//             vec![GAS::type_tag()],
+//             arguments,
+//         );
+//
+//         // Step 5: Run genesis.
+//         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
+//         // got from step 3.
+//         let mut arguments = vec![sui_system_state_uid, sui_system_state_uid,sui_supply];
+//         let mut call_arg_arguments = vec![
+//             CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
+//             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),
+//             CallArg::Pure(bcs::to_bytes(&token_distribution_schedule).unwrap()),
+//         ]
+//             .into_iter()
+//             .map(|a| builder.input(a))
+//             .collect::<anyhow::Result<_, _>>()?;
+//         arguments.append(&mut call_arg_arguments);
+//         builder.programmable_move_call(
+//             SUI_SYSTEM_ADDRESS.into(),
+//             ident_str!("genesis").to_owned(),
+//             ident_str!("create").to_owned(),
+//             vec![],
+//             arguments,
+//         );
+//
+//
+//         builder.finish()
+//     };
+//
+//
+//     info!("Genesis system object created===before InnerTemporaryStore");
+//     let InnerTemporaryStore {
+//         mut written, ..
+//     } = executor.update_genesis_state(
+//         &*store,
+//         &protocol_config,
+//         metrics,
+//         genesis_ctx,
+//         CheckedInputObjects::new_for_genesis(vec![]),
+//         pt,
+//     )?;
+//
+//     // update the value of the clock to match the chain start time
+//     {
+//         let object = written.get_mut(&sui_types::SUI_CLOCK_OBJECT_ID).unwrap();
+//         object
+//             .data
+//             .try_as_move_mut()
+//             .unwrap()
+//             .set_clock_timestamp_ms_unsafe(genesis_chain_parameters.chain_start_timestamp_ms);
+//     }
+//
+//     store.finish(written);
+//
+//     Ok(())
+// }
 pub fn generate_genesis_system_object(
     store: &mut InMemoryStorage,
     executor: &dyn Executor,

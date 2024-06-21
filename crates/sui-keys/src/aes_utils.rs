@@ -65,7 +65,7 @@ pub fn small_data() {
 
 
     let decrypted_128 = cipher.cbc_decrypt(iv, &base64_decode[..]);
-    let string = String::from_utf8_lossy(&decrypted_128);
+    let _string = String::from_utf8_lossy(&decrypted_128);
 
 }
 
