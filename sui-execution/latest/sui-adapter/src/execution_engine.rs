@@ -330,6 +330,7 @@ mod checked {
                     advance_epoch_gas_summary,
                     &mut layout_resolver,
                     enable_expensive_checks,
+                    gas_charger,
                 )
             };
             if let Err(conservation_err) = conservation_result {
@@ -346,6 +347,7 @@ mod checked {
                     advance_epoch_gas_summary,
                     &mut layout_resolver,
                     enable_expensive_checks,
+                    gas_charger,
                 ) {
                     // if we still fail, it's a problem with gas
                     // charging that happens even in the "aborted" case--no other option but panic.
