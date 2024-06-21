@@ -77,6 +77,8 @@ mod checked {
         input_objects: InputObjects,
         receiving_objects: &ReceivingObjects,
         metrics: &Arc<BytecodeVerifierMetrics>,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let gas_status = check_transaction_input_inner(
             protocol_config,
@@ -84,6 +86,8 @@ mod checked {
             transaction,
             &input_objects,
             &[],
+            stable_rate,
+            base_point,
         )?;
         check_receiving_objects(&input_objects, receiving_objects)?;
         // Runs verifier, which could be expensive.
@@ -100,15 +104,11 @@ mod checked {
         receiving_objects: ReceivingObjects,
         gas_object: Object,
         metrics: &Arc<BytecodeVerifierMetrics>,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let gas_object_ref = gas_object.compute_object_reference();
         input_objects.push(ObjectReadResult::new_from_gas_object(&gas_object));
-
-        let (stable_rate, base_points) = if !transaction.is_system_txn() {
-            store.get_stable_rate_and_base_points(transaction.gas())?
-        }else {
-            (None, None)
-        };
 
         let gas_status = check_transaction_input_inner(
             protocol_config,
@@ -116,6 +116,8 @@ mod checked {
             transaction,
             &input_objects,
             &[gas_object_ref],
+            stable_rate,
+            base_point,
         )?;
         check_receiving_objects(&input_objects, &receiving_objects)?;
         // Runs verifier, which could be expensive.
@@ -134,6 +136,8 @@ mod checked {
         input_objects: InputObjects,
         protocol_config: &ProtocolConfig,
         reference_gas_price: u64,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let transaction = cert.data().transaction_data();
         let gas_status = check_transaction_input_inner(
@@ -142,6 +146,8 @@ mod checked {
             transaction,
             &input_objects,
             &[],
+            stable_rate,
+            base_point,
         )?;
         // NB: We do not check receiving objects when executing. Only at signing time do we check.
         // NB: move verifier is only checked at signing time, not at execution.
@@ -195,7 +201,8 @@ mod checked {
         input_objects: &InputObjects,
         // Overrides the gas objects in the transaction.
         gas_override: &[ObjectRef],
-
+        stable_rate: Option<u64>,
+        base_point: Option<u64>
     ) -> SuiResult<SuiGasStatus> {
         // Cheap validity checks that is ok to run multiple times during processing.
         transaction.check_version_supported(protocol_config)?;
@@ -205,12 +212,6 @@ mod checked {
         } else {
             transaction.validity_check_no_gas_check(protocol_config)?;
             gas_override
-        };
-
-        let (stable_rate, base_point) = if !transaction.is_system_txn() {
-            store.get_stable_rate_and_base_points(transaction.gas())?
-        }else {
-            (None, None)
         };
 
         let gas_status = get_gas_status(

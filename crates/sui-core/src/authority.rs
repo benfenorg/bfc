@@ -881,6 +881,12 @@ impl AuthorityState {
             )
             .await?;
 
+        let (stable_rate, base_point) = if !transaction.is_system_txn() {
+            self.get_stable_rate_and_base_points(transaction.gas())?
+        }else {
+            (None, None)
+        };
+
         let (_gas_status, checked_input_objects) = sui_transaction_checks::check_transaction_input(
             epoch_store.protocol_config(),
             epoch_store.reference_gas_price(),
@@ -888,6 +894,8 @@ impl AuthorityState {
             input_objects,
             &receiving_objects,
             &self.metrics.bytecode_verifier_metrics,
+            stable_rate,
+            base_point,
         )?;
 
         if epoch_store.coin_deny_list_state_enabled() {
@@ -1783,6 +1791,11 @@ impl AuthorityState {
                 Some(gas_object_id),
             )
         } else {
+            let (stable_rate, base_point) = if !transaction.is_system_txn() {
+                self.get_stable_rate_and_base_points(transaction.gas())?
+            }else {
+                (None, None)
+            };
             (
                 sui_transaction_checks::check_transaction_input(
                     epoch_store.protocol_config(),
@@ -1791,6 +1804,8 @@ impl AuthorityState {
                     input_objects,
                     &receiving_objects,
                     &self.metrics.bytecode_verifier_metrics,
+                    stable_rate,
+                    base_point,
                 )?,
                 None,
             )
@@ -2023,6 +2038,11 @@ impl AuthorityState {
                     &self.metrics.bytecode_verifier_metrics,
                 )?
             } else {
+                let (stable_rate, base_point) = if !transaction.is_system_txn() {
+                    self.get_stable_rate_and_base_points(transaction.gas())?
+                }else {
+                    (None, None)
+                };
                 sui_transaction_checks::check_transaction_input(
                     epoch_store.protocol_config(),
                     epoch_store.reference_gas_price(),
@@ -2030,6 +2050,8 @@ impl AuthorityState {
                     input_objects,
                     &receiving_objects,
                     &self.metrics.bytecode_verifier_metrics,
+                    stable_rate,
+                    base_point,
                 )?
             }
         };
@@ -3172,6 +3194,44 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
+    pub async  fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
+        if gas_ref.is_empty() {
+            return Ok((None, None));//dry run /dev inspect
+        }
+
+        let gas = self.get_object(&gas_ref[0].0).await?
+            .ok_or_else(|| SuiError::UserInputError{error:UserInputError::ObjectNotFound {object_id:gas_ref[0].0,version:None}})?;
+
+        if gas.is_gas_coin() {
+            return Ok((None, None)); // bfc gas
+        }
+
+        let gas_tag = gas.coin_type_maybe();
+        if gas_tag.is_none() {
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
+        }
+
+        let tag = gas_tag.unwrap();
+
+        if !gas.is_stable_gas_coin() {
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string()}});
+        }
+
+        let bfc_system_state = self.get_bfc_system_state()?;
+        let inner_state =bfc_system_state.inner_state();
+        let rate_map: HashMap<String, u64> = inner_state.rate_map.contents
+            .iter()
+            .map(|entity| ((*entity.key).to_string(), entity.value))
+            .collect();
+
+        let base_points = inner_state.clone().stable_base_points;
+        let rate_option = rate_map.get(&tag.to_canonical_string(true)).or_else(|| rate_map.get(&tag.to_string(true))).copied();
+        if let Some(rate) = rate_option {
+            Ok((Some(rate), Some(base_points)))
+        }else {
+            return Err(SuiError::UserInputError{error:UserInputError::NoRateFoundInBfcSystem {coin_type: tag.to_canonical_string(true)}});
+        }
+    }
 
     pub async fn get_bfc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
@@ -3188,6 +3248,10 @@ impl AuthorityState {
     }
 
     pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
+        self.execution_cache.get_bfc_system_state_object()
+    }
+
+    pub fn get_bfc_system_state(&self) -> SuiResult<BFCSystemState> {
         self.execution_cache.get_bfc_system_state_object()
     }
 

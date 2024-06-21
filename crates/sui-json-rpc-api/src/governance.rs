@@ -42,6 +42,10 @@ pub trait GovernanceReadApi {
     #[method(name = "getReferenceGasPrice")]
     async fn get_reference_gas_price(&self) -> RpcResult<BigInt<u64>>;
 
+    /// Return the rate of stable coin
+    #[method(name = "getStableRate")]
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>>;
+
     /// Return the validator APY
     #[method(name = "getValidatorsApy")]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys>;
