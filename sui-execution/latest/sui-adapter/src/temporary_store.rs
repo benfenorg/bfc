@@ -1001,7 +1001,6 @@ impl<'backing> TemporaryStore<'backing> {
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
         do_expensive_checks: bool,
-        gas_charger: &GasCharger,
     ) -> Result<(), ExecutionError> {
         println!("begin check_sui_conserved");
         // total amount of SUI in input objects, including both coins and storage rebates
@@ -1019,14 +1018,6 @@ impl<'backing> TemporaryStore<'backing> {
         let mut input_rebate_stable = 0;
         let mut output_rebate_stable = 0;
 
-        let mut gas_coins = HashSet::new();
-        gas_charger.gas_coins().iter().for_each(|obj_ref| {
-            gas_coins.insert(obj_ref.0.clone());
-        });
-        let gas_coin = gas_charger.gas_coin();
-        if gas_coin.is_some(){
-            gas_coins.insert(gas_coin.unwrap().clone());
-        }
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
@@ -1045,7 +1036,6 @@ impl<'backing> TemporaryStore<'backing> {
                 }
             }
             if let Some(object) = output {
-                println!("output obj is {:?}", object);
                 total_output_rebate += object.storage_rebate;
                 if do_expensive_checks && gas_summary.gas_pay_with_stable_coin() {
                     if object.is_stable_gas_coin() {
