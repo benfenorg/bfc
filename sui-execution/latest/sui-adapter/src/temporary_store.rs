@@ -1002,7 +1002,6 @@ impl<'backing> TemporaryStore<'backing> {
         layout_resolver: &mut impl LayoutResolver,
         do_expensive_checks: bool,
     ) -> Result<(), ExecutionError> {
-        println!("begin check_sui_conserved");
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;
         // total amount of SUI in output objects, including both coins and storage rebates

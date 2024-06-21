@@ -318,6 +318,7 @@ async fn test_execution_with_dependencies() {
         execute_owned_on_first_three_authorities(&authority_clients, &aggregator.committee, &tx1)
             .await;
     executed_owned_certs.push(cert);
+    println!("Effects: {:?}", effects1);
     let mut owned_object_ref = effects1.created()[0].0;
 
     // Initialize a shared counter, re-using gas_ref_0 so it has to execute after tx1.
