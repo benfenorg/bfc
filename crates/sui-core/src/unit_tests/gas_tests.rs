@@ -21,7 +21,6 @@ use sui_types::object::GAS_VALUE_FOR_TESTING;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::utils::to_sender_signed_transaction;
 use sui_types::{base_types::dbg_addr, crypto::get_key_pair};
-use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::stable_coin::stable::checked::STABLE::BJPY;
 
 // The cost table is used only to get the max budget available which is not dependent on

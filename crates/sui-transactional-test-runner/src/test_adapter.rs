@@ -55,7 +55,7 @@ use sui_graphql_rpc::config::ConnectionConfig;
 use sui_graphql_rpc::test_infra::cluster::ExecutorCluster;
 use sui_graphql_rpc::test_infra::cluster::{serve_executor, SnapshotLagConfig};
 use sui_json_rpc_api::QUERY_MAX_RESULT_LIMIT;
-use sui_json_rpc_types::{DevInspectResults, EventFilter, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
+use sui_json_rpc_types::{DevInspectResults, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_protocol_config::{Chain, ProtocolConfig};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,

@@ -18,7 +18,6 @@ use sui_types::gas_coin::GAS;
 use sui_types::transaction::TransactionData;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 use sui_types::{
-    gas::GasCostSummary,
     transaction::{CallArg, ObjectArg},
 };
 use test_cluster::{TestCluster, TestClusterBuilder};

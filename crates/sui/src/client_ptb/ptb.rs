@@ -21,14 +21,11 @@ use move_core_types::account_address::AccountAddress;
 use serde::Serialize;
 use shared_crypto::intent::Intent;
 use std::collections::BTreeSet;
-use sui_json_rpc_types::{
-    SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
 use sui_keys::keystore::AccountKeystore;
 use sui_sdk::{wallet_context::WalletContext, SuiClient};
 use sui_types::{
     digests::TransactionDigest,
-    gas::GasCostSummary,
     quorum_driver_types::ExecuteTransactionRequestType,
     transaction::{
         ProgrammableTransaction, SenderSignedData, Transaction, TransactionData,
@@ -52,7 +49,7 @@ pub struct PTBPreview<'a> {
 pub struct Summary {
     pub digest: TransactionDigest,
     pub status: SuiExecutionStatus,
-    pub gas_cost: GasCostSummary,
+    pub gas_cost: SuiGasCostSummary,
 }
 
 impl PTB {
@@ -246,10 +243,7 @@ impl PTB {
             Summary {
                 digest: transaction_response.digest,
                 status: effects.status().clone(),
-                gas_cost: GasCostSummary::new(effects.gas_cost_summary().computation_cost,
-                                              effects.gas_cost_summary().storage_cost,
-                                              effects.gas_cost_summary().storage_rebate,
-                                              effects.gas_cost_summary().non_refundable_storage_fee),
+                gas_cost: effects.gas_cost_summary().clone(),
             }
         };
 
