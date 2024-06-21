@@ -523,7 +523,7 @@ async fn test_dev_inspect_dynamic_field() {
             () => {{
                 let effects = call_move_(
                     &validator,
-                    Some(&fullnode),
+                    Some(&full_node),
                     &gas_object_id,
                     &sender,
                     &sender_key,
