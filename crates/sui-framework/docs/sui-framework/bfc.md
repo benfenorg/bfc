@@ -108,7 +108,7 @@ This should be called only once during genesis creation.
     <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../sui-framework/bfc.md#0x2_bfc_ENotSystemAddress">ENotSystemAddress</a>);
     <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="../sui-framework/bfc.md#0x2_bfc_EAlreadyMinted">EAlreadyMinted</a>);
 
-    <b>let</b> (treasury, metadata) = <a href="../sui-framework/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
+    <b>let</b> (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, metadata) = <a href="../sui-framework/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
         <a href="../sui-framework/bfc.md#0x2_bfc_BFC">BFC</a>{},
         9,
         b"<a href="../sui-framework/bfc.md#0x2_bfc_BFC">BFC</a>",
@@ -119,7 +119,7 @@ This should be called only once during genesis creation.
         ctx
     );
     <a href="../sui-framework/transfer.md#0x2_transfer_public_freeze_object">transfer::public_freeze_object</a>(metadata);
-    <b>let</b> <b>mut</b> supply = <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">coin::treasury_into_supply</a>(treasury);
+    <b>let</b> <b>mut</b> supply = <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">coin::treasury_into_supply</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
     <b>let</b> total_sui = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(&<b>mut</b> supply, <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>);
     <a href="../sui-framework/balance.md#0x2_balance_destroy_supply">balance::destroy_supply</a>(supply);
     total_sui

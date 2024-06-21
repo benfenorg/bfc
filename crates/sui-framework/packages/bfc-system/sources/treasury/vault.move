@@ -58,6 +58,9 @@ module bfc_system::vault {
 
         /// 0 -- init, equal, 1 -- down, 2 -- up
         state: u8,
+
+        last_rebalance_state: u8,
+
         state_counter: u32,
         max_counter_times: u32,
         last_sqrt_price: u128,
@@ -147,7 +150,8 @@ module bfc_system::vault {
             id: uid,
             position_number: _position_number,
             state: 0,
-            state_counter: 0,
+            last_rebalance_state: 0,
+            state_counter: _max_counter_times, // init
             last_sqrt_price: current_sqrt_price,
             coin_a: balance::zero<StableCoinType>(),
             coin_b: balance::zero<BFC>(),
@@ -1065,8 +1069,8 @@ module bfc_system::vault {
             // reset state counter
             _vault.state_counter = 0;
         } else {
-            let should_break = false;
-            let edge_position = position::borrow_position(&_vault.position_manager, 1);
+            let mut should_break = false;
+            let mut edge_position = position::borrow_position(&_vault.position_manager, 1);
             let (_, tu) = position::get_tick_range(edge_position);
             if (i32::lte(_vault.current_tick_index, tu)) {
                 should_break = true;

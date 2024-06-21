@@ -136,6 +136,21 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, clock::timestamp_ms(clock));
     }
 
+    #[test_only]
+    public fun bfc_round_test(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        round: u64,
+        epoch_start_time: u64,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::update_round(inner_state, round);
+        // X-treasury rebalance
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
+    }
+
     #[allow(unused_function)]
     fun inner_stablecoin_to_bfc<StableCoinType>(
         _self: &mut BfcSystemState,

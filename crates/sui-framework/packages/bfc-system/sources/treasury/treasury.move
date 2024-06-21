@@ -372,23 +372,23 @@ module bfc_system::treasury {
     public(package) fun next_epoch_bfc_required(_treasury: &Treasury): u64 {
         let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
 
-        let total = one_coin_next_epoch_bfc_required<BUSD>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<MGG>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BJPY>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BAUD>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BKRW>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BBRL>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BCAD>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BEUR>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BGBP>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BIDR>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BINR>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BRUB>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BSAR>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BTRY>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BZAR>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BMXN>(_treasury, times_per_day) +
-            one_coin_next_epoch_bfc_required<BARS>(_treasury, times_per_day);
+        let total = one_coin_bfc_required<BUSD>(_treasury, times_per_day) +
+            one_coin_bfc_required<MGG>(_treasury, times_per_day) +
+            one_coin_bfc_required<BJPY>(_treasury, times_per_day) +
+            one_coin_bfc_required<BAUD>(_treasury, times_per_day) +
+            one_coin_bfc_required<BKRW>(_treasury, times_per_day) +
+            one_coin_bfc_required<BBRL>(_treasury, times_per_day) +
+            one_coin_bfc_required<BCAD>(_treasury, times_per_day) +
+            one_coin_bfc_required<BEUR>(_treasury, times_per_day) +
+            one_coin_bfc_required<BGBP>(_treasury, times_per_day) +
+            one_coin_bfc_required<BIDR>(_treasury, times_per_day) +
+            one_coin_bfc_required<BINR>(_treasury, times_per_day) +
+            one_coin_bfc_required<BRUB>(_treasury, times_per_day) +
+            one_coin_bfc_required<BSAR>(_treasury, times_per_day) +
+            one_coin_bfc_required<BTRY>(_treasury, times_per_day) +
+            one_coin_bfc_required<BZAR>(_treasury, times_per_day) +
+            one_coin_bfc_required<BMXN>(_treasury, times_per_day) +
+            one_coin_bfc_required<BARS>(_treasury, times_per_day);
 
         let get_treasury_balance = get_balance(_treasury);
         if (total > get_treasury_balance) {
@@ -514,13 +514,13 @@ module bfc_system::treasury {
         )
     }
 
-    fun one_coin_next_epoch_bfc_required<StableCoinType>(
+    fun one_coin_bfc_required<StableCoinType>(
         _treasury: &Treasury,
-        _times_per_day: u64
+        _treasury_total_bfc_supply: u64
     ): u64 {
         let key = get_vault_key<StableCoinType>();
         if (dynamic_field::exists_(&_treasury.id, key)) {
-            vault::bfc_required(borrow_vault<StableCoinType>(_treasury, key)) * _times_per_day
+            vault::bfc_required(borrow_vault<StableCoinType>(_treasury, key), _treasury_total_bfc_supply)
         } else {
             0
         }

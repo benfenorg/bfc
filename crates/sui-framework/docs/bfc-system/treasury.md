@@ -31,7 +31,7 @@ title: Module `0xc8::treasury`
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
 -  [Function `get_total_supply`](#0xc8_treasury_get_total_supply)
 -  [Function `one_coin_rebalance_internal`](#0xc8_treasury_one_coin_rebalance_internal)
--  [Function `one_coin_next_epoch_bfc_required`](#0xc8_treasury_one_coin_next_epoch_bfc_required)
+-  [Function `one_coin_bfc_required`](#0xc8_treasury_one_coin_bfc_required)
 -  [Function `one_coin_exchange_rate`](#0xc8_treasury_one_coin_exchange_rate)
 
 
@@ -899,23 +899,23 @@ Rebalance
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_next_epoch_bfc_required">next_epoch_bfc_required</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
     <b>let</b> times_per_day = (3600 * 24 / _treasury.time_interval <b>as</b> u64);
 
-    <b>let</b> total = <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BUSD&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;MGG&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BJPY&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BAUD&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BKRW&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BBRL&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BCAD&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BEUR&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BGBP&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BIDR&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BINR&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BRUB&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BSAR&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BTRY&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BZAR&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BMXN&gt;(_treasury, times_per_day) +
-        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;BARS&gt;(_treasury, times_per_day);
+    <b>let</b> total = <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BUSD&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;MGG&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BJPY&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BAUD&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BKRW&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BBRL&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BCAD&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BEUR&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BGBP&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BIDR&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BINR&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BRUB&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BSAR&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BTRY&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BZAR&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BMXN&gt;(_treasury, times_per_day) +
+        <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BARS&gt;(_treasury, times_per_day);
 
     <b>let</b> get_treasury_balance = <a href="../bfc-system/treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
     <b>if</b> (total &gt; get_treasury_balance) {
@@ -1145,13 +1145,13 @@ Rebalance
 
 </details>
 
-<a name="0xc8_treasury_one_coin_next_epoch_bfc_required"></a>
+<a name="0xc8_treasury_one_coin_bfc_required"></a>
 
-## Function `one_coin_next_epoch_bfc_required`
+## Function `one_coin_bfc_required`
 
 
 
-<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _times_per_day: u64): u64
+<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _treasury_total_bfc_supply: u64): u64
 </code></pre>
 
 
@@ -1160,13 +1160,13 @@ Rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_next_epoch_bfc_required">one_coin_next_epoch_bfc_required</a>&lt;StableCoinType&gt;(
+<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(
     _treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-    _times_per_day: u64
+    _treasury_total_bfc_supply: u64
 ): u64 {
     <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
     <b>if</b> (<a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
-        <a href="../bfc-system/vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(<a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, key)) * _times_per_day
+        <a href="../bfc-system/vault.md#0xc8_vault_bfc_required">vault::bfc_required</a>(<a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, key), _treasury_total_bfc_supply)
     } <b>else</b> {
         0
     }

@@ -51,27 +51,8 @@ module sui_system::sui_system {
     use sui_system::sui_system_state_inner::{Self, SystemParameters, SuiSystemStateInner, SuiSystemStateInnerV2};
     use sui_system::stake_subsidy::StakeSubsidy;
     use sui_system::staking_pool::PoolTokenExchangeRate;
-    use std::type_name;
     use bfc_system::bfc_system;
-    use bfc_system::bars::BARS;
-    use bfc_system::baud::BAUD;
-    use bfc_system::bbrl::BBRL;
-    use bfc_system::bcad::BCAD;
-    use bfc_system::beur::BEUR;
-    use bfc_system::bgbp::BGBP;
-    use bfc_system::bidr::BIDR;
-    use bfc_system::binr::BINR;
-    use bfc_system::bjpy::BJPY;
-    use bfc_system::bkrw::BKRW;
-    use bfc_system::bmxn::BMXN;
-    use bfc_system::brub::BRUB;
-    use bfc_system::bsar::BSAR;
-    use bfc_system::btry::BTRY;
-    use bfc_system::busd::BUSD;
-    use bfc_system::bzar::BZAR;
-    use bfc_system::mgg::MGG;
     use sui::dynamic_field;
-    use sui::vec_map;
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::StakedStable;
 
@@ -90,7 +71,6 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
-    const EWrongStableRateLength: u64 = 2;
 
     // ==== functions that can only be called by genesis ====
 
