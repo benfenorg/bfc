@@ -214,7 +214,7 @@ impl TreasuryParameters {
                 tick_spacing: 2,
                 spacing_times: 1000,
                 max_counter_times: 5,
-                base_point: 340000_000_000_000,
+                base_point: 10000_000_000_000,
                 initialize_price: 470301539970485312,
             },
         });
