@@ -7,10 +7,8 @@ use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{DelegatedStake, SuiCommittee, ValidatorApys};
 use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SuiAddress};
-use sui_types::dynamic_field::DynamicFieldInfo;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
-use sui_types::proposal::Proposal;
 
 #[open_rpc(namespace = "bfcx", tag = "Governance Read API")]
 #[rpc(server, client, namespace = "bfcx")]

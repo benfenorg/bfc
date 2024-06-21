@@ -9,11 +9,9 @@ mod checked {
     use move_vm_runtime::move_vm::MoveVM;
     //use once_cell::sync::Lazy;
     use std::{
-        collections::{HashSet, HashMap},
+        collections::HashSet,
         sync::Arc,
     };
-    use sui_types::collection_types::VecMap;
-
     use sui_types::inner_temporary_store::InnerTemporaryStore;
 
     use sui_types::gas::{calculate_reward_rate, calculate_add};
@@ -47,7 +45,7 @@ mod checked {
     use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
     use sui_types::gas::SuiGasStatus;
-    use sui_types::storage::{BackingStore, WriteKind};
+    use sui_types::storage::BackingStore;
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
     use sui_types::sui_system_state::{AdvanceEpochParams,
