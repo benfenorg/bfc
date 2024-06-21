@@ -127,6 +127,8 @@ function sortWallets(
 	];
 }
 
+let checkInterval = 0;
+
 export function createWalletKitCore({
 	preferredWallets = [SUI_WALLET_NAME],
 	storageAdapter = localStorageAdapter,
@@ -192,6 +194,18 @@ export function createWalletKitCore({
 
 	registeredWallets.on('register', handleWalletsChanged);
 	registeredWallets.on('unregister', handleWalletsChanged);
+
+	if (checkInterval) {
+		clearInterval(checkInterval);
+	}
+	checkInterval = window.setInterval(() => {
+		const registered = registeredWallets.get();
+		const newWallets = registered.filter((wallet) => !wallets.includes(wallet));
+		if (newWallets.length > 0) {
+			handleWalletsChanged();
+			wallets = registered;
+		}
+	}, 100);
 
 	const walletKit: WalletKitCore = {
 		async autoconnect() {
