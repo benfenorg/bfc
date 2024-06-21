@@ -735,7 +735,7 @@ impl LocalExec {
                             epoch_start_timestamp,
                             CheckedInputObjects::new_for_replay(input_objects),
                             tx_info.gas.clone(),
-                            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config)?,
+                            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config, None, None)?,
                             transaction_kind.clone(),
                             tx_info.sender,
                             *tx_digest,
