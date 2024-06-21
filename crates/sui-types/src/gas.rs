@@ -81,7 +81,7 @@ pub mod checked {
                 }
                 .into());
             }
-            let stable_max_price= calculate_divide_rate(config.max_gas_price(), stable_rate);
+            let stable_max_price = calculate_divide_rate(config.max_gas_price(), stable_rate);
             if gas_price_too_high(config.gas_model_version()) && gas_price >= stable_max_price
             {
                 return Err(UserInputError::GasPriceTooHigh {
@@ -319,14 +319,6 @@ pub fn calculate_divide_rate(val: u64, rate_option: Option<u64>) -> u64 {
     }
 }
 
-pub fn calculate_multiply_rate(val: u64, rate_option: Option<u64>) -> u64 {
-    if let Some(rate) = rate_option {
-        let result =  (val as u128)  * (rate as u128) / BASE_RATE as u128;
-        result as u64
-    }else {
-        val
-    }
-}
 const REWARD_BASIS_POINTS: u128 = 100;
 pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
     if reward_rate == 0 {
