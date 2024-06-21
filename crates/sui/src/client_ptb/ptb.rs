@@ -246,7 +246,10 @@ impl PTB {
             Summary {
                 digest: transaction_response.digest,
                 status: effects.status().clone(),
-                gas_cost: effects.gas_cost_summary().clone(),
+                gas_cost: GasCostSummary::new(effects.gas_cost_summary().computation_cost,
+                                              effects.gas_cost_summary().storage_cost,
+                                              effects.gas_cost_summary().storage_rebate,
+                                              effects.gas_cost_summary().non_refundable_storage_fee),
             }
         };
 
