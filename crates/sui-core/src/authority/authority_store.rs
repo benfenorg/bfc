@@ -1700,7 +1700,7 @@ impl AuthorityStore {
         let tag = gas_tag.unwrap();
 
         if !gas.is_stable_gas_coin() {
-            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string()}});
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string(true)}});
         }
 
         let bfc_system_state = self.get_bfc_system_state_object()?;
@@ -1711,11 +1711,11 @@ impl AuthorityStore {
             .collect();
 
         let base_points = inner_state.clone().stable_base_points;
-        let rate_option = rate_map.get(&tag.to_canonical_string()).or_else(|| rate_map.get(&tag.to_string())).copied();
+        let rate_option = rate_map.get(&tag.to_canonical_string(true)).or_else(|| rate_map.get(&tag.to_string())).copied();
         if let Some(rate) = rate_option {
             Ok((Some(rate), Some(base_points)))
         }else {
-            return Err(SuiError::UserInputError{error:UserInputError::NoRateFoundInBfcSystem {coin_type: tag.to_canonical_string()}});
+            return Err(SuiError::UserInputError{error:UserInputError::NoRateFoundInBfcSystem {coin_type: tag.to_canonical_string(true)}});
         }
     }
 

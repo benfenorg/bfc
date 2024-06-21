@@ -881,8 +881,8 @@ impl AuthorityState {
             )
             .await?;
 
-        let (stable_rate, base_point) = if !transaction.is_system_txn() {
-            self.get_stable_rate_and_base_points(transaction.gas())?
+        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
+            self.get_stable_rate_and_base_points(transaction.gas()).await?
         }else {
             (None, None)
         };
@@ -1586,13 +1586,14 @@ impl AuthorityState {
         let tx_data = certificate.data().transaction_data();
         tx_data.check_version_supported(epoch_store.protocol_config())?;
         tx_data.validity_check(epoch_store.protocol_config())?;
-
         // The cost of partially re-auditing a transaction before execution is tolerated.
         let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
             certificate,
             input_objects,
             epoch_store.protocol_config(),
             epoch_store.reference_gas_price(),
+            None,
+            None,
         )?;
 
         let owned_object_refs = input_objects.inner().filter_owned_objects();
@@ -1787,12 +1788,14 @@ impl AuthorityState {
                     receiving_objects,
                     gas_object,
                     &self.metrics.bytecode_verifier_metrics,
+                    None,
+                    None,
                 )?,
                 Some(gas_object_id),
             )
         } else {
             let (stable_rate, base_point) = if !transaction.is_system_txn() {
-                self.get_stable_rate_and_base_points(transaction.gas())?
+                self.get_stable_rate_and_base_points(transaction.gas()).await?
             }else {
                 (None, None)
             };
@@ -2036,10 +2039,12 @@ impl AuthorityState {
                     receiving_objects,
                     dummy_gas_object,
                     &self.metrics.bytecode_verifier_metrics,
+                    None,
+                    None,
                 )?
             } else {
                 let (stable_rate, base_point) = if !transaction.is_system_txn() {
-                    self.get_stable_rate_and_base_points(transaction.gas())?
+                    self.get_stable_rate_and_base_points(transaction.gas()).await?
                 }else {
                     (None, None)
                 };
@@ -3214,7 +3219,7 @@ impl AuthorityState {
         let tag = gas_tag.unwrap();
 
         if !gas.is_stable_gas_coin() {
-            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string()}});
+            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string(true)}});
         }
 
         let bfc_system_state = self.get_bfc_system_state()?;
@@ -3225,7 +3230,7 @@ impl AuthorityState {
             .collect();
 
         let base_points = inner_state.clone().stable_base_points;
-        let rate_option = rate_map.get(&tag.to_canonical_string(true)).or_else(|| rate_map.get(&tag.to_string(true))).copied();
+        let rate_option = rate_map.get(&tag.to_canonical_string(true)).or_else(|| rate_map.get(&tag.to_string())).copied();
         if let Some(rate) = rate_option {
             Ok((Some(rate), Some(base_points)))
         }else {
