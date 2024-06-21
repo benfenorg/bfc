@@ -1072,9 +1072,8 @@ impl<'backing> TemporaryStore<'backing> {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
             // both computation costs and storage rebate inflow are
-            println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?},{input_rebate_stable} {output_rebate_stable}",
-                     total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
-            println!("gas_summary is {:?},is stable is {:?}",gas_summary,gas_summary.gas_pay_with_stable_coin());
+            // println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?},{input_rebate_stable} {output_rebate_stable}",
+            //          total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
 
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
                 total_input_sui += epoch_fees;
@@ -1095,7 +1094,7 @@ impl<'backing> TemporaryStore<'backing> {
                 }else {
                     total_output_sui-total_input_sui
                 };
-                println!("stable_amount is {:?},sui_amount is {:?}",stable_amount,sui_amount);
+                // println!("stable_amount is {:?},sui_amount is {:?}",stable_amount,sui_amount);
 
                 if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
                     return Err(ExecutionError::invariant_violation(
@@ -1105,7 +1104,7 @@ impl<'backing> TemporaryStore<'backing> {
                     );
                 }
 
-                println!("sui amount is {sui_amount},gas_summary.net_gas_usage().abs() is {:?}",gas_summary.net_gas_usage().abs());
+                // println!("sui amount is {sui_amount},gas_summary.net_gas_usage().abs() is {:?}",gas_summary.net_gas_usage().abs());
                 if sui_amount != gas_summary.storage_gas_usage_abs() {
                     return Err(ExecutionError::invariant_violation(
                         format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
@@ -1116,8 +1115,8 @@ impl<'backing> TemporaryStore<'backing> {
 
             } else {
                 total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-                println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?}",
-                         total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
+                // println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?}",
+                //          total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
                 if total_input_sui != total_output_sui {
                     return Err(ExecutionError::invariant_violation(
                         format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
