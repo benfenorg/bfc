@@ -1837,13 +1837,13 @@ static NAMED_ADDRESSES: Lazy<BTreeMap<String, NumericalAddress>> = Lazy::new(|| 
             move_compiler::shared::NumberFormat::Hex,
         ),
     );
-    map.insert(
-        "deepbook".to_string(),
-        NumericalAddress::new(
-            DEEPBOOK_ADDRESS.into_bytes(),
-            move_compiler::shared::NumberFormat::Hex,
-        ),
-    );
+    // map.insert(
+    //     "deepbook".to_string(),
+    //     NumericalAddress::new(
+    //         DEEPBOOK_ADDRESS.into_bytes(),
+    //         move_compiler::shared::NumberFormat::Hex,
+    //     ),
+    // );
     map.insert(
         "bfc_system".to_string(),
         NumericalAddress::new(
@@ -1873,11 +1873,6 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
         buf.extend(["packages", "move-stdlib", "sources"]);
         buf.to_string_lossy().to_string()
     };
-    let deepbook_sources = {
-        let mut buf = sui_files.to_path_buf();
-        buf.extend(["packages", "deepbook", "sources"]);
-        buf.to_string_lossy().to_string()
-    };
     let bfc_system_sources = {
         let mut buf = sui_files.to_path_buf();
         buf.extend(["packages", "bfc-system", "sources"]);
@@ -1891,7 +1886,7 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     };
     let fully_compiled_res = move_compiler::construct_pre_compiled_lib(
         vec![PackagePaths {
-            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps, deepbook_sources],
+            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps,],
             name: Some(("sui-framework".into(), config)),
             named_address_map: NAMED_ADDRESSES.clone(),
         }],
