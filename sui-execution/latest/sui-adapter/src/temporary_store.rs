@@ -28,7 +28,6 @@ use sui_types::{base_types::{
                 object::{Data, Object},
                 storage::{
     BackingPackageStore, ChildObjectResolver, ParentSync, Storage,
-    WriteKind,
 }, transaction::InputObjects};
 use sui_types::{
     effects::EffectsObjectChange,
