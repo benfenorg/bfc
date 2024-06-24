@@ -152,7 +152,7 @@ async fn sim_test_transaction_expiration() {
 // TODO: This test does not guarantee that tx would be reverted, and hence the code path
 // may not always be tested.
 #[sim_test]
-async fn reconfig_with_revert_end_to_end_test() {
+async fn sim_reconfig_with_revert_end_to_end_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let authorities = test_cluster.swarm.validator_node_handles();
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -3189,7 +3189,7 @@ async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) ->
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -3388,7 +3388,7 @@ fn get_staked_stable(object_change: Vec<ObjectChange>, stable_tag: TypeTag) -> O
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -3441,7 +3441,7 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)

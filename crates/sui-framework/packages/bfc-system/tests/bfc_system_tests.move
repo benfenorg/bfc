@@ -240,7 +240,7 @@ module bfc_system::bfc_system_tests {
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         assert!(amount == 0, 1);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
-        let total = (
+        let _total = (
                 50000_000_000_000 * 5 * 6 * 6 + // usd
                 50000_000_000_000 * 5 * 6 * 6 + // mgg
                 50000_000_000_000 * 5 * 6 * 6 + // jpy
