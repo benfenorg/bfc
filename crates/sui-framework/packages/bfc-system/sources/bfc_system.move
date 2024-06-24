@@ -9,7 +9,6 @@ module bfc_system::bfc_system {
     use sui::coin::Coin;
     use sui::clock::{Clock};
     use sui::dynamic_field;
-    use sui::clock::{Self};
 
     use sui::bfc::BFC;
     use sui::vec_map::VecMap;
@@ -128,15 +127,12 @@ module bfc_system::bfc_system {
     #[allow(unused_function)]
     fun bfc_round(
         wrapper: &mut BfcSystemState,
-        clock: &Clock,
         round: u64,
-        _ctx: &mut TxContext,
+        epoch_start_time: u64,
     ) {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
-        // X-treasury rebalance
-        bfc_system_state_inner::rebalance(inner_state, clock, _ctx);
-        bfc_system_state_inner::judge_proposal_state(inner_state, clock::timestamp_ms(clock));
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
 
     #[test_only]

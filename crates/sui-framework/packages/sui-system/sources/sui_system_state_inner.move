@@ -19,6 +19,7 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
+    use sui_system::stake_subsidy;
     use sui_system::stable_pool;
     use sui_system::stable_pool::StakedStable;
 
@@ -857,73 +858,75 @@ module sui_system::sui_system_state_inner {
             epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
             ctx: &mut TxContext,
         ) : Balance<BFC> {
-            let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
-            self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
+        let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
+        self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
 
-            let bps_denominator_u64 = BASIS_POINT_DENOMINATOR as u64;
-            // Rates can't be higher than 100%.
-            assert!(
+        let bps_denominator_u64 = (BASIS_POINT_DENOMINATOR as u64);
+        // Rates can't be higher than 100%.
+        assert!(
             storage_fund_reinvest_rate <= bps_denominator_u64
-            && reward_slashing_rate <= bps_denominator_u64,
+                && reward_slashing_rate <= bps_denominator_u64,
             EBpsTooLarge,
-            );
+        );
 
-            // TODO: remove this in later upgrade.
-            if (self.parameters.stake_subsidy_start_epoch > 0) {
+        // TODO: remove this in later upgrade.
+        if (self.parameters.stake_subsidy_start_epoch > 0) {
             self.parameters.stake_subsidy_start_epoch = 20;
+        };
+
+        // Accumulate the gas summary during safe_mode before processing any rewards:
+        let safe_mode_storage_rewards = balance::withdraw_all(&mut self.safe_mode_storage_rewards);
+        balance::join(&mut storage_reward, safe_mode_storage_rewards);
+        let safe_mode_computation_rewards = balance::withdraw_all(&mut self.safe_mode_computation_rewards);
+        balance::join(&mut computation_reward, safe_mode_computation_rewards);
+        storage_rebate_amount = storage_rebate_amount + self.safe_mode_storage_rebates;
+        self.safe_mode_storage_rebates = 0;
+        non_refundable_storage_fee_amount = non_refundable_storage_fee_amount + self.safe_mode_non_refundable_storage_fee;
+        self.safe_mode_non_refundable_storage_fee = 0;
+
+        let total_validators_stake = validator_set::total_stake(&self.validators);
+        let storage_fund_balance = storage_fund::total_balance(&self.storage_fund);
+        let total_stake = storage_fund_balance + total_validators_stake;
+
+        let storage_charge = balance::value(&storage_reward);
+        let computation_charge = balance::value(&computation_reward);
+
+        // Include stake subsidy in the rewards given out to validators and stakers.
+        // Delay distributing any stake subsidies until after `stake_subsidy_start_epoch`.
+        // And if this epoch is shorter than the regular epoch duration, don't distribute any stake subsidy.
+        let stake_subsidy =
+            if (tx_context::epoch(ctx) >= self.parameters.stake_subsidy_start_epoch  &&
+                epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
+                {
+                    stake_subsidy::advance_epoch(&mut self.stake_subsidy)
+                } else {
+                balance::zero()
             };
 
-            // Accumulate the gas summary during safe_mode before processing any rewards:
-            let safe_mode_storage_rewards = self.safe_mode_storage_rewards.withdraw_all();
-            storage_reward.join(safe_mode_storage_rewards);
-            let safe_mode_computation_rewards = self.safe_mode_computation_rewards.withdraw_all();
-            computation_reward.join(safe_mode_computation_rewards);
-            storage_rebate_amount = storage_rebate_amount + self.safe_mode_storage_rebates;
-            self.safe_mode_storage_rebates = 0;
-            non_refundable_storage_fee_amount = non_refundable_storage_fee_amount + self.safe_mode_non_refundable_storage_fee;
-            self.safe_mode_non_refundable_storage_fee = 0;
+        let stake_subsidy_amount = balance::value(&stake_subsidy);
+        balance::join(&mut computation_reward, stake_subsidy);
 
-            let total_validators_stake = self.validators.total_stake();
-            let storage_fund_balance = self.storage_fund.total_balance();
-            let total_stake = storage_fund_balance + total_validators_stake;
+        let total_stake_u128 = (total_stake as u128);
+        let computation_charge_u128 = (computation_charge as u128);
 
-            let storage_charge = storage_reward.value();
-            let computation_charge = computation_reward.value();
-
-            // Include stake subsidy in the rewards given out to validators and stakers.
-            // Delay distributing any stake subsidies until after `stake_subsidy_start_epoch`.
-            // And if this epoch is shorter than the regular epoch duration, don't distribute any stake subsidy.
-            let stake_subsidy =
-            if (ctx.epoch() >= self.parameters.stake_subsidy_start_epoch  &&
-            epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
-            {
-            self.stake_subsidy.advance_epoch()
-            } else {
-            balance::zero()
-            };
-
-            let stake_subsidy_amount = stake_subsidy.value();
-            computation_reward.join(stake_subsidy);
-
-            let total_stake_u128 = total_stake as u128;
-            let computation_charge_u128 = computation_charge as u128;
-
-            let storage_fund_reward_amount = storage_fund_balance as u128 * computation_charge_u128 / total_stake_u128;
-            let mut storage_fund_reward = computation_reward.split(storage_fund_reward_amount as u64);
-            let storage_fund_reinvestment_amount =
+        let storage_fund_reward_amount = (storage_fund_balance as u128) * computation_charge_u128 / total_stake_u128;
+        let mut storage_fund_reward = balance::split(&mut computation_reward, (storage_fund_reward_amount as u64));
+        let storage_fund_reinvestment_amount =
             storage_fund_reward_amount * (storage_fund_reinvest_rate as u128) / BASIS_POINT_DENOMINATOR;
-            let storage_fund_reinvestment = storage_fund_reward.split(
-            storage_fund_reinvestment_amount as u64,
-            );
+        let storage_fund_reinvestment = balance::split(
+            &mut storage_fund_reward,
+            (storage_fund_reinvestment_amount as u64),
+        );
 
-            self.epoch = self.epoch + 1;
-            // Sanity check to make sure we are advancing to the right epoch.
-            assert!(new_epoch == self.epoch, EAdvancedToWrongEpoch);
+        self.epoch = self.epoch + 1;
+        // Sanity check to make sure we are advancing to the right epoch.
+        assert!(new_epoch == self.epoch, EAdvancedToWrongEpoch);
 
-            let computation_reward_amount_before_distribution = computation_reward.value();
-            let storage_fund_reward_amount_before_distribution = storage_fund_reward.value();
+        let computation_reward_amount_before_distribution = balance::value(&computation_reward);
+        let storage_fund_reward_amount_before_distribution = balance::value(&storage_fund_reward);
 
-            self.validators.advance_epoch(
+        validator_set::advance_epoch(
+            &mut self.validators,
             &mut computation_reward,
             &mut storage_fund_reward,
             &mut self.validator_report_records,
@@ -933,57 +936,58 @@ module sui_system::sui_system_state_inner {
             self.parameters.validator_low_stake_grace_period,
             stable_rate,
             ctx,
+        );
+
+        let new_total_stake = validator_set::total_stake(&self.validators);
+
+        let computation_reward_amount_after_distribution = balance::value(&computation_reward);
+        let storage_fund_reward_amount_after_distribution = balance::value(&storage_fund_reward);
+        let computation_reward_distributed = computation_reward_amount_before_distribution - computation_reward_amount_after_distribution;
+        let storage_fund_reward_distributed = storage_fund_reward_amount_before_distribution - storage_fund_reward_amount_after_distribution;
+
+        self.protocol_version = next_protocol_version;
+
+        // Derive the reference gas price for the new epoch
+        self.reference_gas_price = validator_set::derive_reference_gas_price(&self.validators);
+        // Because of precision issues with integer divisions, we expect that there will be some
+        // remaining balance in `storage_fund_reward` and `computation_reward`.
+        // All of these go to the storage fund.
+        let mut leftover_staking_rewards = storage_fund_reward;
+        balance::join(&mut leftover_staking_rewards, computation_reward);
+        let leftover_storage_fund_inflow = balance::value(&leftover_staking_rewards);
+
+        let refunded_storage_rebate =
+            storage_fund::advance_epoch(
+                &mut self.storage_fund,
+                storage_reward,
+                storage_fund_reinvestment,
+                leftover_staking_rewards,
+                storage_rebate_amount,
+                non_refundable_storage_fee_amount,
             );
 
-            let new_total_stake = self.validators.total_stake();
-
-            let computation_reward_amount_after_distribution = computation_reward.value();
-            let storage_fund_reward_amount_after_distribution = storage_fund_reward.value();
-            let computation_reward_distributed = computation_reward_amount_before_distribution - computation_reward_amount_after_distribution;
-            let storage_fund_reward_distributed = storage_fund_reward_amount_before_distribution - storage_fund_reward_amount_after_distribution;
-
-            self.protocol_version = next_protocol_version;
-
-            // Derive the reference gas price for the new epoch
-            self.reference_gas_price = self.validators.derive_reference_gas_price();
-            // Because of precision issues with integer divisions, we expect that there will be some
-            // remaining balance in `storage_fund_reward` and `computation_reward`.
-            // All of these go to the storage fund.
-            let mut leftover_staking_rewards = storage_fund_reward;
-            leftover_staking_rewards.join(computation_reward);
-            let leftover_storage_fund_inflow = leftover_staking_rewards.value();
-
-            let refunded_storage_rebate =
-            self.storage_fund.advance_epoch(
-            storage_reward,
-            storage_fund_reinvestment,
-            leftover_staking_rewards,
-            storage_rebate_amount,
-            non_refundable_storage_fee_amount,
-            );
-
-            event::emit(
+        event::emit(
             SystemEpochInfoEvent {
-            epoch: self.epoch,
-            protocol_version: self.protocol_version,
-            reference_gas_price: self.reference_gas_price,
-            total_stake: new_total_stake,
-            storage_charge,
-            storage_fund_reinvestment: storage_fund_reinvestment_amount as u64,
-            storage_rebate: storage_rebate_amount,
-            storage_fund_balance: self.storage_fund.total_balance(),
-            stake_subsidy_amount,
-            total_gas_fees: computation_charge,
-            total_stake_rewards_distributed: computation_reward_distributed + storage_fund_reward_distributed,
-            leftover_storage_fund_inflow,
-            stable_rate,
-        }
+                epoch: self.epoch,
+                protocol_version: self.protocol_version,
+                reference_gas_price: self.reference_gas_price,
+                total_stake: new_total_stake,
+                storage_charge,
+                storage_fund_reinvestment: (storage_fund_reinvestment_amount as u64),
+                storage_rebate: storage_rebate_amount,
+                storage_fund_balance: storage_fund::total_balance(&self.storage_fund),
+                stake_subsidy_amount,
+                total_gas_fees: computation_charge,
+                total_stake_rewards_distributed: computation_reward_distributed + storage_fund_reward_distributed,
+                leftover_storage_fund_inflow,
+                stable_rate,
+            }
         );
         self.safe_mode = false;
         // Double check that the gas from safe mode has been processed.
         assert!(self.safe_mode_storage_rebates == 0
-            && self.safe_mode_storage_rewards.value() == 0
-            && self.safe_mode_computation_rewards.value() == 0, ESafeModeGasNotProcessed);
+            && balance::value(&self.safe_mode_storage_rewards) == 0
+            && balance::value(&self.safe_mode_computation_rewards) == 0, ESafeModeGasNotProcessed);
 
         // Return the storage rebate split from storage fund that's already refunded to the transaction senders.
         // This will be burnt at the last step of epoch change programmable transaction.
