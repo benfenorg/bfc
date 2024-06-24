@@ -8,7 +8,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
-    use std::debug;
+    //use std::debug;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
     use sui::clock::{Self};
@@ -261,7 +261,7 @@ module bfc_system::bfc_system_tests {
                 50000_000_000_000 * 5 * 6 * 6 // brl
         );
 
-        debug::print(&total);
+        //debug::print(&total);
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
