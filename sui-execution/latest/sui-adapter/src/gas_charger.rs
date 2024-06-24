@@ -111,6 +111,22 @@ pub mod checked {
             self.gas_status.summary()
         }
 
+        pub fn is_pay_with_stable_coin(&self,temporary_store: &TemporaryStore<'_>) -> bool {
+            for (id,version,_) in self.gas_coins.iter()  {
+                let obj_result = temporary_store.get_input_sui_obj(id,version.clone());
+                if obj_result.is_err() {
+                    continue;
+                }
+                let obj = obj_result.unwrap();
+                if let Data::Move(move_obj) = &obj.data{
+                    return move_obj.type_().is_stable_gas_coin();
+                } else {
+                    continue
+                }
+            }
+            false
+        }
+
         // This function is called when the transaction is about to be executed.
         // It will smash all gas coins into a single one and set the logical gas coin
         // to be the first one in the list.

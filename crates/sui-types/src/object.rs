@@ -16,7 +16,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
-use tracing::error;
 use tracing::log::info;
 
 use crate::balance::Balance;
@@ -37,9 +36,6 @@ use crate::{
 };
 use sui_protocol_config::ProtocolConfig;
 use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
-use crate::gas::GasCostSummary;
-use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
-use crate::stable_coin::stable::checked::STABLE;
 use crate::stable_coin::StableCoin;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
@@ -396,7 +392,7 @@ impl MoveObject {
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
 
-    pub fn get_total_stable_coin(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
+    pub fn get_total_stable_coin(&self,) -> Result<u64, SuiError> {
         Ok(Coin::from_bcs_bytes(self.contents())
             .expect("failed to deserialize coin")
             .balance
@@ -956,11 +952,11 @@ impl Object {
             })
     }
 
-    pub fn get_total_stable_coin_with_rebate(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<(u64,u64), SuiError> {
+    pub fn get_total_stable_coin_with_rebate(&self,) -> Result<(u64,u64), SuiError> {
         Ok(match &self.data {
             Data::Move(m) => {
                 if m.type_.is_stable_gas_coin() {
-                    (m.get_total_stable_coin(layout_resolver)?,self.storage_rebate)
+                    (m.get_total_stable_coin()?,self.storage_rebate)
                 }else {
                     Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
                 }

@@ -878,7 +878,7 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
-    fn get_input_sui_obj(
+    pub fn get_input_sui_obj(
         &self,
         id: &ObjectID,
         expected_version: SequenceNumber,
@@ -909,7 +909,6 @@ impl<'backing> TemporaryStore<'backing> {
         &self,
         id: &ObjectID,
         expected_version: SequenceNumber,
-        layout_resolver: &mut impl LayoutResolver,
     ) -> Result<(u64,u64), ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
@@ -921,7 +920,7 @@ impl<'backing> TemporaryStore<'backing> {
                     obj.version(),
                 );
             }
-            obj.get_total_stable_coin_with_rebate(layout_resolver).map_err(|e| {
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for input with \
                          type {:?}: {e:#?}",
@@ -935,7 +934,7 @@ impl<'backing> TemporaryStore<'backing> {
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            obj.get_total_stable_coin_with_rebate(layout_resolver).map_err(|e| {
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
@@ -1001,6 +1000,7 @@ impl<'backing> TemporaryStore<'backing> {
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
         do_expensive_checks: bool,
+        pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;
@@ -1014,31 +1014,27 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_stable_gas = 0;
         let mut total_output_stable_gas = 0;
 
-        let mut input_rebate_stable = 0;
-        let mut output_rebate_stable = 0;
-
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
-                if do_expensive_checks && gas_summary.gas_pay_with_stable_coin(){
+                if do_expensive_checks && pay_with_stable_gas{
                     let obj = self.get_input_sui_obj(&id,version)?;
                     if obj.is_stable_gas_coin() {
-                        let (stable_coin,rebate) = self.get_input_stable_with_rebate(&id, version, layout_resolver)?;
+                        let (stable_coin,rebate) = self.get_input_stable_with_rebate(&id, version)?;
                         total_input_stable_gas += stable_coin;
-                        input_rebate_stable += rebate;
                         total_input_sui += rebate;
                     } else {
                         total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
                     }
-                } else if do_expensive_checks && !gas_summary.gas_pay_with_stable_coin() {
+                } else if do_expensive_checks && !pay_with_stable_gas {
                     total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
                 }
             }
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;
-                if do_expensive_checks && gas_summary.gas_pay_with_stable_coin() {
+                if do_expensive_checks && pay_with_stable_gas {
                     if object.is_stable_gas_coin() {
-                        total_output_stable_gas += object.get_total_stable_coin_with_rebate(layout_resolver).map_err(|e| {
+                        total_output_stable_gas += object.get_total_stable_coin_with_rebate().map_err(|e| {
                             make_invariant_violation!(
                             "Failed looking up output Stable Coin in SUI conservation checking for \
                              mutated type {:?}: {e:#?}",
@@ -1046,7 +1042,6 @@ impl<'backing> TemporaryStore<'backing> {
                         )
                         })?.0;
                         total_output_sui += object.storage_rebate;
-                        output_rebate_stable += object.storage_rebate;
                     } else {
                         total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
                             make_invariant_violation!(
@@ -1056,7 +1051,7 @@ impl<'backing> TemporaryStore<'backing> {
                         )
                         })?;
                     }
-                } else if do_expensive_checks && !gas_summary.gas_pay_with_stable_coin() {
+                } else if do_expensive_checks && !pay_with_stable_gas {
                     total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
                         make_invariant_violation!(
                             "Failed looking up output SUI in SUI conservation checking for \
@@ -1071,15 +1066,13 @@ impl<'backing> TemporaryStore<'backing> {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
             // both computation costs and storage rebate inflow are
-            // println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?},{input_rebate_stable} {output_rebate_stable}",
-            //          total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
 
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
                 total_input_sui += epoch_fees;
                 total_output_sui += epoch_rebates;
             }
 
-            if gas_summary.gas_pay_with_stable_coin() {
+            if pay_with_stable_gas {
                 total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
                 total_output_sui +=  gas_summary.non_refundable_storage_fee;
                 let stable_amount=
@@ -1093,36 +1086,31 @@ impl<'backing> TemporaryStore<'backing> {
                 }else {
                     total_output_sui-total_input_sui
                 };
-                // println!("stable_amount is {:?},sui_amount is {:?}",stable_amount,sui_amount);
 
                 if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
                     return Err(ExecutionError::invariant_violation(
-                        format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                                total_input_sui,
-                                total_output_sui))
+                        format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
+                                stable_amount,
+                                gas_summary.storage_gas_usage_abs_improved()))
                     );
                 }
 
-                // println!("sui amount is {sui_amount},gas_summary.net_gas_usage().abs() is {:?}",gas_summary.net_gas_usage().abs());
                 if sui_amount != gas_summary.storage_gas_usage_abs() {
                     return Err(ExecutionError::invariant_violation(
-                        format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                                total_input_sui,
-                                total_output_sui))
+                        format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
+                                sui_amount,
+                                gas_summary.storage_gas_usage_abs()))
                     );
                 }
 
             } else {
                 total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-                // println!("total_input_sui is {:?}, total_output_sui is {:?},total_input_stable_gas is {:?},total_output_stable_gas is {:?}",
-                //          total_input_sui,total_output_sui,total_input_stable_gas,total_output_stable_gas);
                 if total_input_sui != total_output_sui {
                     return Err(ExecutionError::invariant_violation(
                         format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
                                 total_input_sui,
                                 total_output_sui))
                     );
-                    //return Ok(());
                 }
             }
         }
