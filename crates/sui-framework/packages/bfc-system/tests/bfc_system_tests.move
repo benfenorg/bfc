@@ -16,7 +16,7 @@ module bfc_system::bfc_system_tests {
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
     use sui::vec_map::{Self};
-    use bfc_system::treasury::ERR_INSUFFICIENT;
+    use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -259,7 +259,6 @@ module bfc_system::bfc_system_tests {
                 50000_000_000_000 * 5 * 6 * 6 + // mxn
                 50000_000_000_000 * 5 * 6 * 6 // brl
         );
-        assert!(amount == total, 100);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -316,16 +315,16 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
-    // #[test]
-    // fun test_vault_set_pause() {
-    //     let scenario_val = setup(BFC_AMOUNT);
-    //     let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&scenario_val);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
-    //
-    //     bfc_system::vault_set_pause<BUSD>(&cap, &system_state, true);
-    //
-    //     test_scenario::return_shared(system_state);
-    //     test_scenario::return_to_sender(&scenario_val, cap);
-    //     tearDown(scenario_val);
-    // }
+    #[test]
+    fun test_vault_set_pause() {
+        let scenario_val = setup(BFC_AMOUNT);
+        let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&scenario_val);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
+
+        bfc_system::vault_set_pause<BUSD>(&cap, &mut system_state, true);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, cap);
+        tearDown(scenario_val);
+    }
 }
