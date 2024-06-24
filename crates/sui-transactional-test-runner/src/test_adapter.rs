@@ -94,7 +94,7 @@ use sui_types::{
     programmable_transaction_builder::ProgrammableTransactionBuilder, SUI_FRAMEWORK_PACKAGE_ID
 };
 use sui_types::{utils::to_sender_signed_transaction, SUI_SYSTEM_PACKAGE_ID};
-use sui_types::{DEEPBOOK_ADDRESS, SUI_DENY_LIST_OBJECT_ID};
+use sui_types::SUI_DENY_LIST_OBJECT_ID;
 use sui_types::{DEEPBOOK_PACKAGE_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
 use tempfile::{tempdir, NamedTempFile};
 

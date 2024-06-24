@@ -12,6 +12,7 @@ title: Module `0xc8::vault`
 -  [Struct `FlashSwapReceipt`](#0xc8_vault_FlashSwapReceipt)
 -  [Constants](#@Constants_0)
 -  [Function `create_vault`](#0xc8_vault_create_vault)
+-  [Function `set_pause`](#0xc8_vault_set_pause)
 -  [Function `init_positions`](#0xc8_vault_init_positions)
 -  [Function `open_position`](#0xc8_vault_open_position)
 -  [Function `close_position`](#0xc8_vault_close_position)
@@ -45,6 +46,7 @@ title: Module `0xc8::vault`
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
 -  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
+-  [Function `get_last_rebalance_vault_state`](#0xc8_vault_get_last_rebalance_vault_state)
 -  [Function `bfc_required`](#0xc8_vault_bfc_required)
 -  [Function `min_liquidity_rate`](#0xc8_vault_min_liquidity_rate)
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
@@ -255,6 +257,12 @@ title: Module `0xc8::vault`
 </dd>
 <dt>
 <code>state: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>last_rebalance_state: u8</code>
 </dt>
 <dd>
 
@@ -805,6 +813,34 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 </details>
 
+<a name="0xc8_vault_set_pause"></a>
+
+## Function `set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _pause: bool,
+) {
+    _vault.is_pause = _pause;
+    event::set_pause(<a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _pause);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_init_positions"></a>
 
 ## Function `init_positions`
@@ -1077,12 +1113,7 @@ open <code>position_number</code> positions
         tick_upper,
         _delta_liquidity,
     );
-    <b>let</b> <b>mut</b> is_in = <b>false</b>;
-    <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_lte">i32::lte</a>(tick_lower, _vault.current_tick_index)) {
-        is_in = <a href="../bfc-system/i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper);
-    };
-
-    <b>if</b> (is_in) {
+    <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_gt">i32::gt</a>(_vault.current_tick_index, tick_lower) && <a href="../bfc-system/i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
         _vault.liquidity = _vault.liquidity - _delta_liquidity;
     };
 
@@ -1699,9 +1730,8 @@ open <code>position_number</code> positions
     <b>let</b> <b>mut</b> swap_result = <a href="../bfc-system/vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
     <b>let</b> <b>mut</b> next_score = <a href="../bfc-system/tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
     <b>let</b> <b>mut</b> remaining_amount = _amount;
-    <b>let</b> <b>mut</b> current_sqrt_price = _vault.current_sqrt_price;
-    swap_result.vault_sqrt_price = current_sqrt_price;
-    <b>while</b> (remaining_amount &gt; 0 && current_sqrt_price != _sqrt_price_limit) {
+    swap_result.vault_sqrt_price = _vault.current_sqrt_price;
+    <b>while</b> (remaining_amount &gt; 0 && _vault.current_sqrt_price != _sqrt_price_limit) {
         <b>assert</b>!(!<a href="../bfc-system/option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="../bfc-system/vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
         <b>let</b> (<a href="../bfc-system/tick.md#0xc8_tick">tick</a>, tick_score) = <a href="../bfc-system/tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
             &_vault.tick_manager,
@@ -1752,7 +1782,6 @@ open <code>position_number</code> positions
                 _vault.current_tick_index = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
             }
         };
-        current_sqrt_price = _vault.current_sqrt_price;
     };
     swap_result
 }
@@ -1946,6 +1975,7 @@ vault info
         vault_id: <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         position_number: _vault.position_number,
         state: _vault.state,
+        last_rebalance_state: _vault.last_rebalance_state,
         state_counter: _vault.state_counter,
         max_counter_times: _vault.max_counter_times,
         last_sqrt_price: _vault.last_sqrt_price,
@@ -2118,6 +2148,30 @@ vault info
 
 </details>
 
+<a name="0xc8_vault_get_last_rebalance_vault_state"></a>
+
+## Function `get_last_rebalance_vault_state`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b>  <a href="../bfc-system/vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8 {
+    _vault.last_rebalance_state
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_vault_bfc_required"></a>
 
 ## Function `bfc_required`
@@ -2246,23 +2300,37 @@ State checker
         <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            // reset counter = 0  & set state = down
-            _vault.state_counter = 0;
-            _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
+            <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+                // reset counter = 1  & set state = down
+                _vault.state_counter = 1;
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
+            } <b>else</b> {
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
+                    _vault.max_counter_times
+                } <b>else</b> {
+                    0
+                };
+            }
         }
     } <b>else</b> <b>if</b> (price &gt; last_price) {
         // up
         <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            // reset counter = 0  & set state = up
-            _vault.state_counter = 0;
-            _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
+            <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+                // reset counter = 1  & set state = up
+                _vault.state_counter = 1;
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
+            } <b>else</b> {
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
+                    _vault.max_counter_times
+                } <b>else</b> {
+                    0
+                };
+            }
         }
-    } <b>else</b> {
-        // equal
-        _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-        _vault.state_counter = 0;
     };
 
     _vault.last_sqrt_price = price;
@@ -2301,11 +2369,9 @@ State checker
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt;)
 {
     <b>let</b> <b>mut</b> position_index = 1u64;
-    <b>let</b> position_number = (_vault.position_number <b>as</b> u64);
     <b>let</b> <b>mut</b> balance0 = <a href="../sui-framework/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
     <b>let</b> <b>mut</b> balance1 = <a href="../sui-framework/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
-    <b>let</b> spacing_times = _vault.spacing_times;
-    <b>while</b> (position_index &lt;= position_number) {
+    <b>while</b> (position_index &lt;= (_vault.position_number <b>as</b> u64)) {
         <b>let</b> <a href="../bfc-system/position.md#0xc8_position">position</a> = <a href="../bfc-system/position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         <b>let</b> liquidity_delta = <a href="../bfc-system/position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="../bfc-system/position.md#0xc8_position">position</a>);
         <b>if</b> (liquidity_delta != 0) {
@@ -2316,6 +2382,8 @@ State checker
         <a href="../bfc-system/position.md#0xc8_position_close_position">position::close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         position_index = position_index + 1;
     };
+    <a href="../bfc-system/tick.md#0xc8_tick_rebuild_ticks">tick::rebuild_ticks</a>(&<b>mut</b> _vault.tick_manager, _ctx);
+    <b>let</b> spacing_times = _vault.spacing_times;
     <b>let</b> ticks = <a href="../bfc-system/vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
     (balance0, balance1, ticks)
 }

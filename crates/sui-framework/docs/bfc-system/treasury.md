@@ -4,9 +4,11 @@ title: Module `0xc8::treasury`
 
 
 
+-  [Resource `TreasuryPauseCap`](#0xc8_treasury_TreasuryPauseCap)
 -  [Resource `Treasury`](#0xc8_treasury_Treasury)
 -  [Constants](#@Constants_0)
 -  [Function `create_treasury`](#0xc8_treasury_create_treasury)
+-  [Function `create_treasury_pause_cap`](#0xc8_treasury_create_treasury_pause_cap)
 -  [Function `index`](#0xc8_treasury_index)
 -  [Function `get_balance`](#0xc8_treasury_get_balance)
 -  [Function `check_vault`](#0xc8_treasury_check_vault)
@@ -14,6 +16,9 @@ title: Module `0xc8::treasury`
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
+-  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
+-  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
+-  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
 -  [Function `create_vault`](#0xc8_treasury_create_vault)
 -  [Function `init_vault_with_positions`](#0xc8_treasury_init_vault_with_positions)
 -  [Function `create_vault_internal`](#0xc8_treasury_create_vault_internal)
@@ -66,11 +71,40 @@ title: Module `0xc8::treasury`
 <b>use</b> <a href="../bfc-system/event.md#0xc8_event">0xc8::event</a>;
 <b>use</b> <a href="../bfc-system/i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="../bfc-system/mgg.md#0xc8_mgg">0xc8::mgg</a>;
+<b>use</b> <a href="../bfc-system/position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="../bfc-system/tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="../bfc-system/tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
 <b>use</b> <a href="../bfc-system/vault.md#0xc8_vault">0xc8::vault</a>;
 </code></pre>
 
 
+
+<a name="0xc8_treasury_TreasuryPauseCap"></a>
+
+## Resource `TreasuryPauseCap`
+
+
+
+<pre><code><b>struct</b> <a href="../bfc-system/treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a> <b>has</b> store, key
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
 
 <a name="0xc8_treasury_Treasury"></a>
 
@@ -229,6 +263,30 @@ title: Module `0xc8::treasury`
     <b>let</b> treasury_id = <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(&<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
     event::init_treasury(treasury_id);
     <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_create_treasury_pause_cap"></a>
+
+## Function `create_treasury_pause_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_create_treasury_pause_cap">create_treasury_pause_cap</a>(admin: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_create_treasury_pause_cap">create_treasury_pause_cap</a>(admin: <b>address</b>, ctx: &<b>mut</b> TxContext) {
+    <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(<a href="../bfc-system/treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a> { id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx) }, admin);
 }
 </code></pre>
 
@@ -411,6 +469,85 @@ title: Module `0xc8::treasury`
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_vault_info">vault_info</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>): VaultInfo {
     <a href="../bfc-system/vault.md#0xc8_vault_vault_info">vault::vault_info</a>(
+        <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(_: &<a href="../bfc-system/treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, _treasury: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(_: &<a href="../bfc-system/treasury.md#0xc8_treasury_TreasuryPauseCap">TreasuryPauseCap</a>, _treasury: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>, _pause: bool) {
+    <a href="../bfc-system/vault.md#0xc8_vault_set_pause">vault::set_pause</a>(
+        <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;()),
+        _pause,
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_fetch_ticks"></a>
+
+## Function `fetch_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Tick&gt; {
+    <a href="../bfc-system/vault.md#0xc8_vault_fetch_ticks">vault::fetch_ticks</a>(
+        <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_fetch_positions"></a>
+
+## Function `fetch_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Position&gt; {
+    <a href="../bfc-system/vault.md#0xc8_vault_fetch_positions">vault::fetch_positions</a>(
         <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
     )
 }

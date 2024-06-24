@@ -1,5 +1,7 @@
 module bfc_system::bfc_system {
     use std::ascii;
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
@@ -36,6 +38,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
+    use bfc_system::treasury::TreasuryPauseCap;
 
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
@@ -289,6 +292,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
+    /// X treasury rebalance
+    public fun rebalance(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+    }
+
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,
@@ -338,6 +351,16 @@ module bfc_system::bfc_system {
     public fun vault_info<StableCoinType>(wrapper: &BfcSystemState): VaultInfo {
         let inner_state = load_system_state(wrapper);
         bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
+    }
+
+    public fun vault_ticks<StableCoinType>(wrapper: &BfcSystemState): vector<Tick> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_ticks<StableCoinType>(inner_state)
+    }
+
+    public fun vault_positions<StableCoinType>(wrapper: &BfcSystemState): vector<Position> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_positions<StableCoinType>(inner_state)
     }
 
     public fun total_supply<StableCoinType>(wrapper: &BfcSystemState): u64 {
@@ -390,6 +413,14 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
+    public entry fun vault_set_pause<StableCoinType>(
+        cap: &TreasuryPauseCap,
+        wrapper: &mut BfcSystemState,
+        pause: bool
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::vault_set_pause<StableCoinType>(cap, inner_state, pause)
+    }
 
     public entry fun set_voting_delay(
         self: &mut BfcSystemState,

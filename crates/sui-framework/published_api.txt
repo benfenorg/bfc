@@ -4072,6 +4072,9 @@ Tick
 create_tick_manager
 	public(package) fun
 	0xc8::tick
+rebuild_ticks
+	public(package) fun
+	0xc8::tick
 sqrt_price
 	public fun
 	0xc8::tick
@@ -4279,6 +4282,9 @@ InitTreasuryPoolEvent
 CreateVaultEvent
 	public struct
 	0xc8::event
+PauseEvent
+	public struct
+	0xc8::event
 SwapEvent
 	public struct
 	0xc8::event
@@ -4310,6 +4316,9 @@ rebalance
 	public(package) fun
 	0xc8::event
 update_state
+	public(package) fun
+	0xc8::event
+set_pause
 	public(package) fun
 	0xc8::event
 div_mod
@@ -4388,6 +4397,9 @@ FlashSwapReceipt
 	public struct
 	0xc8::vault
 create_vault
+	public(package) fun
+	0xc8::vault
+set_pause
 	public(package) fun
 	0xc8::vault
 init_positions
@@ -4487,6 +4499,9 @@ get_liquidity
 	public fun
 	0xc8::vault
 get_vault_state
+	public fun
+	0xc8::vault
+get_last_rebalance_vault_state
 	public fun
 	0xc8::vault
 bfc_required
@@ -4627,31 +4642,16 @@ new
 transfer
 	public entry fun
 	0xc8::bgbp
-TreasuryPool
+TreasuryPauseCap
 	public struct
-	0xc8::treasury_pool
-WithdrawEvent
-	public struct
-	0xc8::treasury_pool
-DepositEvent
-	public struct
-	0xc8::treasury_pool
-create_treasury_pool
-	public(package) fun
-	0xc8::treasury_pool
-deposit_to_treasury_pool
-	public(package) fun
-	0xc8::treasury_pool
-withdraw_to_treasury
-	public(package) fun
-	0xc8::treasury_pool
-get_balance
-	public fun
-	0xc8::treasury_pool
+	0xc8::treasury
 Treasury
 	public struct
 	0xc8::treasury
 create_treasury
+	public(package) fun
+	0xc8::treasury
+create_treasury_pause_cap
 	public(package) fun
 	0xc8::treasury
 index
@@ -4673,6 +4673,15 @@ borrow_mut_vault
 	public(package) fun
 	0xc8::treasury
 vault_info
+	public fun
+	0xc8::treasury
+vault_set_pause
+	public(package) fun
+	0xc8::treasury
+fetch_ticks
+	public fun
+	0xc8::treasury
+fetch_positions
 	public fun
 	0xc8::treasury
 create_vault
@@ -4732,6 +4741,27 @@ one_coin_bfc_required
 one_coin_exchange_rate
 	fun
 	0xc8::treasury
+TreasuryPool
+	public struct
+	0xc8::treasury_pool
+WithdrawEvent
+	public struct
+	0xc8::treasury_pool
+DepositEvent
+	public struct
+	0xc8::treasury_pool
+create_treasury_pool
+	public(package) fun
+	0xc8::treasury_pool
+deposit_to_treasury_pool
+	public(package) fun
+	0xc8::treasury_pool
+withdraw_to_treasury
+	public(package) fun
+	0xc8::treasury_pool
+get_balance
+	public fun
+	0xc8::treasury_pool
 BfcSystemStateInner
 	public struct
 	0xc8::bfc_system_state_inner
@@ -4810,7 +4840,16 @@ get_all_stable_rate
 vault_info
 	public fun
 	0xc8::bfc_system_state_inner
+vault_ticks
+	public fun
+	0xc8::bfc_system_state_inner
+vault_positions
+	public fun
+	0xc8::bfc_system_state_inner
 get_total_supply
+	public fun
+	0xc8::bfc_system_state_inner
+vault_set_pause
 	public fun
 	0xc8::bfc_system_state_inner
 bfc_system_parameters
@@ -4942,6 +4981,9 @@ withdraw_voting
 create_voting_bfc
 	public entry fun
 	0xc8::bfc_system
+rebalance
+	public fun
+	0xc8::bfc_system
 swap_bfc_to_stablecoin
 	public entry fun
 	0xc8::bfc_system
@@ -4955,6 +4997,12 @@ get_bfc_by_stablecoin
 	public fun
 	0xc8::bfc_system
 vault_info
+	public fun
+	0xc8::bfc_system
+vault_ticks
+	public fun
+	0xc8::bfc_system
+vault_positions
 	public fun
 	0xc8::bfc_system
 total_supply
@@ -4983,6 +5031,9 @@ deposit_to_treasury_pool
 	0xc8::bfc_system
 deposit_to_treasury_pool_no_entry
 	public fun
+	0xc8::bfc_system
+vault_set_pause
+	public entry fun
 	0xc8::bfc_system
 set_voting_delay
 	public entry fun

@@ -8,6 +8,7 @@ title: Module `0xc8::tick`
 -  [Struct `Tick`](#0xc8_tick_Tick)
 -  [Constants](#@Constants_0)
 -  [Function `create_tick_manager`](#0xc8_tick_create_tick_manager)
+-  [Function `rebuild_ticks`](#0xc8_tick_rebuild_ticks)
 -  [Function `sqrt_price`](#0xc8_tick_sqrt_price)
 -  [Function `liquidity_net`](#0xc8_tick_liquidity_net)
 -  [Function `tick_index`](#0xc8_tick_tick_index)
@@ -25,7 +26,8 @@ title: Module `0xc8::tick`
 -  [Function `get_ticks`](#0xc8_tick_get_ticks)
 
 
-<pre><code><b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<pre><code><b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
+<b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../bfc-system/i128.md#0xc8_i128">0xc8::i128</a>;
 <b>use</b> <a href="../bfc-system/i32.md#0xc8_i32">0xc8::i32</a>;
 <b>use</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128">0xc8::math_u128</a>;
@@ -119,6 +121,15 @@ title: Module `0xc8::tick`
 ## Constants
 
 
+<a name="0xc8_tick_ERR_TICKS_REBUILD_NOT_EMPTY"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bfc-system/tick.md#0xc8_tick_ERR_TICKS_REBUILD_NOT_EMPTY">ERR_TICKS_REBUILD_NOT_EMPTY</a>: u64 = 404;
+</code></pre>
+
+
+
 <a name="0xc8_tick_ERR_TICK_EXCEED_TWICE_MAXIMUM"></a>
 
 
@@ -179,6 +190,48 @@ title: Module `0xc8::tick`
         tick_spacing: _tick_spacing,
         ticks: <a href="../bfc-system/skip_list.md#0xc8_skip_list_new">skip_list::new</a>(16, 2, _ts, _ctx),
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_tick_rebuild_ticks"></a>
+
+## Function `rebuild_ticks`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/tick.md#0xc8_tick_rebuild_ticks">rebuild_ticks</a>(_tick_manager: &<b>mut</b> <a href="../bfc-system/tick.md#0xc8_tick_TickManager">tick::TickManager</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/tick.md#0xc8_tick_rebuild_ticks">rebuild_ticks</a>(_tick_manager: &<b>mut</b> <a href="../bfc-system/tick.md#0xc8_tick_TickManager">TickManager</a>, _ctx: &<b>mut</b> TxContext) {
+    <b>let</b> _ticks = &_tick_manager.ticks;
+    <b>let</b> <b>mut</b> scores = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;u64&gt;();
+    <b>if</b> (<a href="../bfc-system/skip_list.md#0xc8_skip_list_length">skip_list::length</a>(_ticks) != 0) {
+        <b>let</b> <b>mut</b> next_score = &<a href="../bfc-system/skip_list.md#0xc8_skip_list_head">skip_list::head</a>(_ticks);
+        <b>while</b> (is_some(next_score)) {
+            <b>let</b> score = <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(next_score);
+            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> scores, score);
+            <b>let</b> node = <a href="../bfc-system/skip_list.md#0xc8_skip_list_borrow_node">skip_list::borrow_node</a>(
+                _ticks,
+                score,
+            );
+            next_score = &<a href="../bfc-system/skip_list.md#0xc8_skip_list_next_score">skip_list::next_score</a>(node);
+        };
+    };
+    <b>while</b> (!<a href="../move-stdlib/vector.md#0x1_vector_is_empty">vector::is_empty</a>(&scores)) {
+        <b>let</b> score = <a href="../move-stdlib/vector.md#0x1_vector_pop_back">vector::pop_back</a>(&<b>mut</b> scores);
+        <a href="../bfc-system/skip_list.md#0xc8_skip_list_remove">skip_list::remove</a>&lt;<a href="../bfc-system/tick.md#0xc8_tick_Tick">Tick</a>&gt;(&<b>mut</b> _tick_manager.ticks, score);
+    };
+    <b>assert</b>!(<a href="../bfc-system/skip_list.md#0xc8_skip_list_is_empty">skip_list::is_empty</a>(&_tick_manager.ticks), <a href="../bfc-system/tick.md#0xc8_tick_ERR_TICKS_REBUILD_NOT_EMPTY">ERR_TICKS_REBUILD_NOT_EMPTY</a>);
 }
 </code></pre>
 
@@ -570,8 +623,11 @@ add/remove liquidity
     <b>let</b> tick_lower_score = <a href="../bfc-system/tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_lower_index);
     <b>let</b> tick_upper_score = <a href="../bfc-system/tick.md#0xc8_tick_tick_score">tick_score</a>(_tick_upper_index);
     <b>assert</b>!(
-        <a href="../bfc-system/skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_lower_score) &&
-            <a href="../bfc-system/skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_upper_score),
+        <a href="../bfc-system/skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_lower_score),
+        <a href="../bfc-system/tick.md#0xc8_tick_ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY">ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY</a>
+    );
+    <b>assert</b>!(
+        <a href="../bfc-system/skip_list.md#0xc8_skip_list_contains">skip_list::contains</a>(&_tick_manager.ticks, tick_upper_score),
         <a href="../bfc-system/tick.md#0xc8_tick_ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY">ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY</a>
     );
     <b>let</b> lower_tick = <a href="../bfc-system/skip_list.md#0xc8_skip_list_borrow_mut">skip_list::borrow_mut</a>(&<b>mut</b> _tick_manager.ticks, tick_lower_score);
@@ -580,10 +636,11 @@ add/remove liquidity
         _current_tick_index,
         _liquidity_delta,
         <b>false</b>,
-        <b>false</b>
+        <b>true</b>
     );
-    <b>let</b> <b>mut</b> is_liquidity_changed = lower_tick.liquidity_gross != _liquidity_delta;
-    <b>if</b> (is_liquidity_changed && lower_tick.liquidity_gross == 0 && _current_tick_index != _tick_upper_index) {
+    <b>let</b> tick_bound = <a href="../bfc-system/tick_math.md#0xc8_tick_math_tick_bound">tick_math::tick_bound</a>();
+    <b>let</b> lower_tick_bound= <a href="../bfc-system/i32.md#0xc8_i32_neg_from">i32::neg_from</a>(tick_bound - tick_bound % _tick_manager.tick_spacing);
+    <b>if</b> (lower_tick.liquidity_gross == 0 && !<a href="../bfc-system/i32.md#0xc8_i32_eq">i32::eq</a>(_tick_lower_index, lower_tick_bound)) {
         <a href="../bfc-system/skip_list.md#0xc8_skip_list_remove">skip_list::remove</a>(&<b>mut</b> _tick_manager.ticks, tick_lower_score);
     };
     <b>let</b> upper_tick = <a href="../bfc-system/skip_list.md#0xc8_skip_list_borrow_mut">skip_list::borrow_mut</a>(&<b>mut</b> _tick_manager.ticks, tick_upper_score);
@@ -592,10 +649,10 @@ add/remove liquidity
         _current_tick_index,
         _liquidity_delta,
         <b>false</b>,
-        <b>true</b>
+        <b>false</b>
     );
-    is_liquidity_changed = upper_tick.liquidity_gross != _liquidity_delta;
-    <b>if</b> (is_liquidity_changed && upper_tick.liquidity_gross == 0 && _current_tick_index != _tick_lower_index) {
+    <b>let</b> upper_tick_bound = <a href="../bfc-system/i32.md#0xc8_i32_from">i32::from</a>(tick_bound - tick_bound % _tick_manager.tick_spacing);
+    <b>if</b> (upper_tick.liquidity_gross == 0 && !<a href="../bfc-system/i32.md#0xc8_i32_eq">i32::eq</a>(_tick_upper_index, upper_tick_bound)) {
         <a href="../bfc-system/skip_list.md#0xc8_skip_list_remove">skip_list::remove</a>(&<b>mut</b> _tick_manager.ticks, tick_upper_score);
     };
 }

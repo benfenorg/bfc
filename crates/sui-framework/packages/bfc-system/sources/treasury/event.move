@@ -31,6 +31,11 @@ module bfc_system::event {
         index: u64
     }
 
+    public struct PauseEvent has copy, drop {
+        vault: ID,
+        is_pause: bool
+    }
+
     // Swap
     public struct SwapEvent has copy, drop {
         atob: bool,
@@ -153,6 +158,15 @@ module bfc_system::event {
                 last_sqrt_price,
                 state,
                 state_counter,
+            }
+        )
+    }
+
+    public(package) fun set_pause(vault_id: ID, is_pause: bool) {
+        emit(
+            PauseEvent {
+                vault: vault_id,
+                is_pause
             }
         )
     }

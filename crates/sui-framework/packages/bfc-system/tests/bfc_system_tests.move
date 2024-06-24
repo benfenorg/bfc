@@ -3,6 +3,8 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::vector;
+    use bfc_system::busd::BUSD;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -303,4 +305,27 @@ module bfc_system::bfc_system_tests {
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
+
+    #[test]
+    fun test_fetch_positions() {
+        let scenario_val = setup(BFC_AMOUNT);
+        let system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
+        let positons = bfc_system::vault_positions<BUSD>(&system_state);
+        assert!(vector::length(&positons) == 9, 300);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    // #[test]
+    // fun test_vault_set_pause() {
+    //     let scenario_val = setup(BFC_AMOUNT);
+    //     let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&scenario_val);
+    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
+    //
+    //     bfc_system::vault_set_pause<BUSD>(&cap, &system_state, true);
+    //
+    //     test_scenario::return_shared(system_state);
+    //     test_scenario::return_to_sender(&scenario_val, cap);
+    //     tearDown(scenario_val);
+    // }
 }

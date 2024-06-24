@@ -31,6 +31,8 @@ module bfc_system::treasury {
     use bfc_system::event;
     use bfc_system::tick_math;
     use bfc_system::vault::{Self, Vault, VaultInfo};
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
 
     // friend bfc_system::bfc_system_state_inner;
     // #[test_only]
@@ -51,6 +53,10 @@ module bfc_system::treasury {
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
+
+    public struct TreasuryPauseCap has key, store {
+        id: UID
+    }
 
     public struct Treasury has key, store {
         id: UID,
@@ -82,6 +88,11 @@ module bfc_system::treasury {
         let treasury_id = object::id(&treasury);
         event::init_treasury(treasury_id);
         treasury
+    }
+
+    // call in bfc_system
+    public(package) fun create_treasury_pause_cap(admin: address, ctx: &mut TxContext) {
+        transfer::transfer(TreasuryPauseCap { id: object::new(ctx) }, admin);
     }
 
     public fun index(_treasury: &Treasury): u64 {
@@ -127,6 +138,26 @@ module bfc_system::treasury {
             borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
         )
     }
+
+    public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
+        vault::set_pause(
+            borrow_mut_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>()),
+            _pause,
+        );
+    }
+
+    public fun fetch_ticks<StableCoinType>(_treasury: &Treasury): vector<Tick> {
+        vault::fetch_ticks(
+            borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
+        )
+    }
+
+    public fun fetch_positions<StableCoinType>(_treasury: &Treasury): vector<Position> {
+        vault::fetch_positions(
+            borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
+        )
+    }
+
 
     public(package) fun create_vault<StableCoinType>(
         _treasury: &mut Treasury,

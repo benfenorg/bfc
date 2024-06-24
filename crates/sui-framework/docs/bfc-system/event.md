@@ -7,6 +7,7 @@ title: Module `0xc8::event`
 -  [Struct `InitTreasuryEvent`](#0xc8_event_InitTreasuryEvent)
 -  [Struct `InitTreasuryPoolEvent`](#0xc8_event_InitTreasuryPoolEvent)
 -  [Struct `CreateVaultEvent`](#0xc8_event_CreateVaultEvent)
+-  [Struct `PauseEvent`](#0xc8_event_PauseEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
@@ -18,6 +19,7 @@ title: Module `0xc8::event`
 -  [Function `deposit`](#0xc8_event_deposit)
 -  [Function `rebalance`](#0xc8_event_rebalance)
 -  [Function `update_state`](#0xc8_event_update_state)
+-  [Function `set_pause`](#0xc8_event_set_pause)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -135,6 +137,39 @@ title: Module `0xc8::event`
 </dd>
 <dt>
 <code>index: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_PauseEvent"></a>
+
+## Struct `PauseEvent`
+
+
+
+<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bfc-system/vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>is_pause: bool</code>
 </dt>
 <dd>
 
@@ -559,6 +594,35 @@ title: Module `0xc8::event`
             last_sqrt_price,
             state,
             state_counter,
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_set_pause"></a>
+
+## Function `set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, is_pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: ID, is_pause: bool) {
+    emit(
+        <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> {
+            <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: vault_id,
+            is_pause
         }
     )
 }
