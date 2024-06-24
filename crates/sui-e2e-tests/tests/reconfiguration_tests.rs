@@ -997,7 +997,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 }
 
 #[sim_test]
-async fn test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
+async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();

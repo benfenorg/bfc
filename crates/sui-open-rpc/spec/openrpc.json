@@ -514,6 +514,22 @@
       ]
     },
     {
+      "name": "bfc_getBfcZkloginSalt",
+      "tags": [
+        {
+          "name": "Read API"
+        }
+      ],
+      "params": [],
+      "result": {
+        "name": "String",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      }
+    },
+    {
       "name": "bfc_getChainIdentifier",
       "tags": [
         {
