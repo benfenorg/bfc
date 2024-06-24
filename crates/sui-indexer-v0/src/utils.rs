@@ -349,7 +349,8 @@ pub mod validator_stake {
             stakes
                 .iter()
                 .flat_map(|x| {
-                    if let Some(_) = &x.stable_pool {
+                    vec![x.current_exchange_rates.rate()]
+                    // if let Some(_) = &x.stable_pool {
                         // let mut rates: Vec<f64> = pool
                         //     .coins
                         //     .iter()
@@ -358,10 +359,9 @@ pub mod validator_stake {
                         //     .collect();
                         // rates.push(x.current_exchange_rates.rate());
                         // rates
-                        vec![0f64]
-                    } else {
-                        vec![x.current_exchange_rates.rate()]
-                    }
+                    // } else {
+                    //     vec![x.current_exchange_rates.rate()]
+                    // }
                 })
                 .sum::<f64>()
                 / stakes.len() as f64
