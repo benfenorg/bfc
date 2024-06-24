@@ -197,6 +197,8 @@ mod checked {
         stable_rate: Option<u64>,
         /// Stable base points.
         base_points: Option<u64>,
+
+        has_adjust_computation_on_out_of_gas: bool,
     }
 
     impl SuiGasStatus {
@@ -230,6 +232,7 @@ mod checked {
                 cost_table,
                 stable_rate,
                 base_points,
+                has_adjust_computation_on_out_of_gas: false,
             }
         }
 
@@ -450,6 +453,7 @@ mod checked {
             self.storage_cost = 0;
             self.storage_rebate = 0;
             self.unmetered_storage_rebate = 0;
+            self.has_adjust_computation_on_out_of_gas = false;
         }
 
         fn charge_storage_read(&mut self, size: usize) -> Result<(), ExecutionError> {
@@ -528,6 +532,7 @@ mod checked {
             self.storage_rebate = 0;
             self.storage_cost = 0;
             self.computation_cost = self.gas_budget;
+            self.has_adjust_computation_on_out_of_gas = true;
         }
 
         fn stable_rate(&self) -> Option<u64> {
@@ -536,5 +541,10 @@ mod checked {
         fn base_points(&self) -> Option<u64> {
             self.base_points
         }
+
+        fn has_adjust_computation_on_out_of_gas(&self) -> bool {
+            self.has_adjust_computation_on_out_of_gas
+        }
+
     }
 }

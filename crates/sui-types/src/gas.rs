@@ -50,6 +50,7 @@ pub mod checked {
         fn adjust_computation_on_out_of_gas(&mut self);
         fn stable_rate(&self) -> Option<u64>;
         fn base_points(&self) -> Option<u64>;
+        fn has_adjust_computation_on_out_of_gas(&self) -> bool;
     }
 
     /// Version aware enum for gas status.
@@ -109,6 +110,12 @@ pub mod checked {
         pub fn check_gas_balance(&self, gas_objs: &[&Object], gas_budget: u64) -> UserInputResult {
             match self {
                 Self::V2(status) => status.check_gas_balance(gas_objs, gas_budget),
+            }
+        }
+
+        pub fn has_adjust_computation_on_out_of_gas(&self) ->bool {
+            return match self {
+                Self::V2(status) => status.has_adjust_computation_on_out_of_gas(),
             }
         }
     }
