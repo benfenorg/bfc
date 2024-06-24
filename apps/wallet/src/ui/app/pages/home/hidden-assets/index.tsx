@@ -1,16 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getObjectDisplay } from '@benfen/bfc.js';
-import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
-import { Check12, EyeClose16 } from '@mysten/icons';
-import { get, set } from 'idb-keyval';
-import { useEffect, useCallback, useState, useMemo } from 'react';
-import toast from 'react-hot-toast';
-import { Link } from 'react-router-dom';
-
-import { Link as InlineLink } from '../../../shared/Link';
-import { Text } from '../../../shared/text';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
@@ -19,6 +9,15 @@ import { NFTDisplayCard } from '_components/nft-display';
 import { ampli } from '_src/shared/analytics/ampli';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
+import { useMultiGetObjects } from '@mysten/core';
+import { Check12, EyeClose16 } from '@mysten/icons';
+import { get, set } from 'idb-keyval';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import toast from 'react-hot-toast';
+import { Link } from 'react-router-dom';
+
+import { Link as InlineLink } from '../../../shared/Link';
+import { Text } from '../../../shared/text';
 
 const HIDDEN_ASSET_IDS = 'hidden-asset-ids';
 
@@ -37,7 +36,7 @@ function HiddenNftsPage() {
 			data?.flatMap((data) => {
 				return {
 					data: data.data,
-					display: getObjectDisplay(data).data,
+					display: data.data?.display?.data,
 				};
 			}) || [];
 
@@ -177,15 +176,9 @@ function HiddenNftsPage() {
 							return (
 								<div className="flex justify-between items-center pt-2 pr-1" key={objectId}>
 									<Link
-										to={
-											isKioskOwnerToken(nft.data)
-												? `/kiosk?${new URLSearchParams({
-														kioskId: getKioskIdFromOwnerCap(nft.data!),
-												  })}`
-												: `/nft-details?${new URLSearchParams({
-														objectId,
-												  }).toString()}`
-										}
+										to={`/nft-details?${new URLSearchParams({
+											objectId,
+										}).toString()}`}
 										onClick={() => {
 											ampli.clickedCollectibleCard({
 												objectId,

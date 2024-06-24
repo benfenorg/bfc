@@ -12433,6 +12433,7 @@ dependencies = [
  "fastcrypto-zkp",
  "fs_extra",
  "futures",
+ "hex",
  "indexmap 2.1.0",
  "insta",
  "jsonrpsee",

@@ -1,13 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowUpRight16 } from '@mysten/icons';
-
-import { type ExplorerLinkConfig, useExplorerLink } from '../../hooks/useExplorerLink';
 import ExternalLink from '_components/external-link';
-
+import { ArrowUpRight16 } from '@mysten/icons';
 import type { ReactNode } from 'react';
 
+import { useExplorerLink, type ExplorerLinkConfig } from '../../hooks/useExplorerLink';
 import st from './ExplorerLink.module.scss';
 
 export type ExplorerLinkProps = ExplorerLinkConfig & {

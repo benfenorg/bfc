@@ -1,17 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { LedgerLogo17 as LedgerLogo } from '@mysten/icons';
-import { useState, type ReactNode } from 'react';
-import toast from 'react-hot-toast';
-import { useNavigate, useSearchParams } from 'react-router-dom';
-import { ConnectLedgerModal } from '../../components/ledger/ConnectLedgerModal';
-import { getLedgerConnectionErrorMessage } from '../../helpers/errorMessages';
-import { SocialButton } from '../../shared/SocialButton';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
 import Overlay from '_components/overlay';
 import { ampli } from '_src/shared/analytics/ampli';
+import { LedgerLogo17 as LedgerLogo } from '@mysten/icons';
+import { useState, type ReactNode } from 'react';
+import toast from 'react-hot-toast';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+
+import { ConnectLedgerModal } from '../../components/ledger/ConnectLedgerModal';
+import { getLedgerConnectionErrorMessage } from '../../helpers/errorMessages';
+import { SocialButton } from '../../shared/SocialButton';
 
 type AddAccountPageProps = {
 	showSocialSignInOptions?: boolean;

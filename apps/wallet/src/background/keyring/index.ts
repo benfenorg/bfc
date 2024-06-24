@@ -1,31 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
-import { fromB64 } from '@benfen/bfc.js/utils';
-import mitt from 'mitt';
-import { throttle } from 'throttle-debounce';
-
-import {
-	type Account,
-	isImportedOrDerivedAccount,
-	isQredoAccount,
-	isLedgerAccount,
-} from './Account';
-import { DerivedAccount } from './DerivedAccount';
-import { ImportedAccount } from './ImportedAccount';
-import { LedgerAccount, type SerializedLedgerAccount } from './LedgerAccount';
-import { QredoAccount } from './QredoAccount';
-import { VaultStorage } from './VaultStorage';
-import {
-	type AccountsPublicInfoUpdates,
-	getStoredAccountsPublicInfo,
-	updateAccountsPublicInfo,
-} from './accounts';
-import { getAllQredoConnections } from '../qredo/storage';
-import { getFromLocalStorage, setToLocalStorage } from '../storage-utils';
 import { createMessage } from '_messages';
+import type { Message } from '_messages';
+import type { ErrorPayload } from '_payloads';
 import { isKeyringPayload } from '_payloads/keyring';
+import type { KeyringPayload } from '_payloads/keyring';
 import { entropyToSerialized } from '_shared/utils/bip39';
 import Alarms from '_src/background/Alarms';
 import {
@@ -34,12 +14,31 @@ import {
 	AUTO_LOCK_TIMER_STORAGE_KEY,
 } from '_src/shared/constants';
 import { type Wallet } from '_src/shared/qredo-api';
+import type { ExportedKeypair } from '@benfen/bfc.js/cryptography';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { fromB64 } from '@benfen/bfc.js/utils';
+import mitt from 'mitt';
+import { throttle } from 'throttle-debounce';
 
 import type { UiConnection } from '../connections/UiConnection';
-import type { ExportedKeypair } from '@benfen/bfc.js/cryptography';
-import type { Message } from '_messages';
-import type { ErrorPayload } from '_payloads';
-import type { KeyringPayload } from '_payloads/keyring';
+import { getAllQredoConnections } from '../qredo/storage';
+import { getFromLocalStorage, setToLocalStorage } from '../storage-utils';
+import {
+	isImportedOrDerivedAccount,
+	isLedgerAccount,
+	isQredoAccount,
+	type Account,
+} from './Account';
+import {
+	getStoredAccountsPublicInfo,
+	updateAccountsPublicInfo,
+	type AccountsPublicInfoUpdates,
+} from './accounts';
+import { DerivedAccount } from './DerivedAccount';
+import { ImportedAccount } from './ImportedAccount';
+import { LedgerAccount, type SerializedLedgerAccount } from './LedgerAccount';
+import { QredoAccount } from './QredoAccount';
+import { VaultStorage } from './VaultStorage';
 
 /** The key for the extension's storage, that holds the index of the last derived account (zero based) */
 export const STORAGE_LAST_ACCOUNT_INDEX_KEY = 'last_account_index';

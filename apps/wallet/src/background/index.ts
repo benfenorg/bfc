@@ -1,21 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { lte, coerce } from 'semver';
-import Browser from 'webextension-polyfill';
-
-import Alarms, { CLEAN_UP_ALARM_NAME, LOCK_ALARM_NAME } from './Alarms';
-import NetworkEnv from './NetworkEnv';
-import Permissions from './Permissions';
-import Transactions from './Transactions';
-import { Connections } from './connections';
-import Keyring from './keyring';
-import { deleteAccountsPublicInfo, getStoredAccountsPublicInfo } from './keyring/accounts';
-import * as Qredo from './qredo';
-import { isSessionStorageSupported } from './storage-utils';
 import { openInNewTab } from '_shared/utils';
 import { MSG_CONNECT } from '_src/content-script/keep-bg-alive';
 import { growthbook, setAttributes } from '_src/shared/experimentation/features';
+import { coerce, lte } from 'semver';
+import Browser from 'webextension-polyfill';
+
+import Alarms, { CLEAN_UP_ALARM_NAME, LOCK_ALARM_NAME } from './Alarms';
+import { Connections } from './connections';
+import Keyring from './keyring';
+import { deleteAccountsPublicInfo, getStoredAccountsPublicInfo } from './keyring/accounts';
+import NetworkEnv from './NetworkEnv';
+import Permissions from './Permissions';
+import * as Qredo from './qredo';
+import { isSessionStorageSupported } from './storage-utils';
+import Transactions from './Transactions';
 
 growthbook.loadFeatures().catch(() => {
 	// silence the error

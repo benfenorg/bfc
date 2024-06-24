@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type CoinStruct, SUI_TYPE_ARG } from '@benfen/bfc.js';
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-
 import { parseAmount } from '_src/ui/app/helpers';
+import { type CoinStruct } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 
 interface Options {
 	coinType: string;

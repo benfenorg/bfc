@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BadgeLabel } from './BadgeLabel';
 import { AccountType } from '_src/background/keyring/Account';
+
+import { BadgeLabel } from './BadgeLabel';
 
 type AccountBadgeProps = {
 	accountType: AccountType;

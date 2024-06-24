@@ -56,10 +56,7 @@ export class QredoAccount
 		await this.onLocked(allowRead);
 	}
 
-	async passwordUnlock(password?: string): Promise<void> {
-		if (!password) {
-			throw new Error('Missing password to unlock the account');
-		}
+	async passwordUnlock(password: string): Promise<void> {
 		await (await this.#getQredoSource()).unlock(password);
 		await this.setEphemeralValue({ unlocked: true });
 		await this.onUnlocked();

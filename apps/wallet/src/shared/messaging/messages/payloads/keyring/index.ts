@@ -1,13 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SerializedSignature, type ExportedKeypair } from '@benfen/bfc.js/cryptography';
 import { isBasePayload } from '_payloads';
-import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
-import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
-
 import type { BasePayload, Payload } from '_payloads';
 import type { SerializedAccount } from '_src/background/keyring/Account';
+import { type AccountsPublicInfoUpdates } from '_src/background/keyring/accounts';
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
+import { type ExportedKeypair, type SerializedSignature } from '@benfen/bfc.js/cryptography';
 
 type MethodToPayloads = {
 	create: {

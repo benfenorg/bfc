@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress, SUI_TYPE_ARG } from '@benfen/bfc.js';
+import { Text } from '_src/ui/app/shared/text';
+import { formatAddress, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetCoinBalance, useResolveSuiNSName } from '@mysten/core';
 import { CheckFill16 } from '@mysten/icons';
 import cl from 'classnames';
 
 import { useCoinsReFetchingConfig } from '../../hooks';
-import { Text } from '_src/ui/app/shared/text';
 
 type LedgerAccountRowProps = {
 	isSelected: boolean;

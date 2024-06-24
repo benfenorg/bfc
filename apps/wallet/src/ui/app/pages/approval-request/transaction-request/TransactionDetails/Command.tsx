@@ -1,20 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Text } from '_src/ui/app/shared/text';
+import { TypeTagSerializer, type TypeTag } from '@benfen/bfc.js/bcs';
 import {
-	type TransactionType,
 	type MakeMoveVecTransaction,
 	type PublishTransaction,
-	TypeTagSerializer,
-	type TypeTag,
-} from '@benfen/bfc.js';
-import { type TransactionArgument } from '@benfen/bfc.js/transactions';
+	type TransactionArgument,
+	type TransactionType,
+} from '@benfen/bfc.js/transactions';
 import { formatAddress, normalizeSuiAddress, toB64 } from '@benfen/bfc.js/utils';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-
 import { useState } from 'react';
-
-import { Text } from '_src/ui/app/shared/text';
 
 function convertCommandArgumentToString(
 	arg:

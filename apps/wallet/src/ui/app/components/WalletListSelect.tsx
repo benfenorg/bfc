@@ -4,11 +4,11 @@
 import { cx } from 'class-variance-authority';
 import { useMemo, useState } from 'react';
 
-import { SummaryCard } from './SummaryCard';
-import { WalletListSelectItem, type WalletListSelectItemProps } from './WalletListSelectItem';
 import { useAccounts } from '../hooks/useAccounts';
 import { useDeriveNextAccountMutation } from '../hooks/useDeriveNextAccountMutation';
 import { Link } from '../shared/Link';
+import { SummaryCard } from './SummaryCard';
+import { WalletListSelectItem, type WalletListSelectItemProps } from './WalletListSelectItem';
 
 export type WalletListSelectProps = {
 	title: string;
@@ -101,7 +101,7 @@ export function WalletListSelect({
 								weight="medium"
 								text="New account"
 								disabled={disabled}
-								loading={deriveNextAccount.isLoading}
+								loading={deriveNextAccount.isPending}
 								onClick={async () => {
 									const newAccountAddress = await deriveNextAccount.mutateAsync();
 									setNewAccounts([...newAccounts, newAccountAddress]);

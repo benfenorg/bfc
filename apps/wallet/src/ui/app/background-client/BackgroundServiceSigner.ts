@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SuiClient } from '@benfen/bfc.js/client';
-import { WalletSigner } from '../WalletSigner';
+import type { SerializedSignature } from '@benfen/bfc.js/cryptography';
 
 import type { BackgroundClient } from '.';
-import type { SerializedSignature } from '@benfen/bfc.js/cryptography';
+import { WalletSigner } from '../WalletSigner';
 
 export class BackgroundServiceSigner extends WalletSigner {
 	readonly #address: string;

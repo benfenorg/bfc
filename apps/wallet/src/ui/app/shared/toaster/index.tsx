@@ -4,7 +4,7 @@
 import { useMenuIsOpen } from '_components/menu/hooks';
 import { useAppSelector } from '_hooks';
 import { getNavIsVisible } from '_redux/slices/app';
-import cl from 'clsx';
+import cl from 'classnames';
 import { Toaster as ToasterLib } from 'react-hot-toast';
 import { useLocation } from 'react-router-dom';
 
@@ -27,7 +27,7 @@ export function Toaster({ bottomNavEnabled }: ToasterProps) {
 			<ToasterLib
 				containerClassName={cl(
 					'!absolute !z-[99999] transition-all',
-					includeBottomNavSpace && 'mb-nav-height',
+					includeBottomNavSpace && 'mb-[var(--sizing-navigation-placeholder-height)]',
 					includeExtraBottomNavSpace && '!bottom-10',
 				)}
 				position="bottom-center"

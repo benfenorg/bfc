@@ -1,31 +1,30 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
+import { ampli } from '_src/shared/analytics/ampli';
+import { Button } from '_src/ui/app/shared/ButtonUI';
+import { Link } from '_src/ui/app/shared/Link';
+import { Text } from '_src/ui/app/shared/text';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import {
-	LockUnlocked16 as UnlockedLockIcon,
 	Spinner16 as SpinnerIcon,
 	ThumbUpStroke32 as ThumbUpIcon,
+	LockUnlocked16 as UnlockedLockIcon,
 } from '@mysten/icons';
 import { useCallback, useState } from 'react';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 import {
-	type SelectableLedgerAccount,
 	LedgerAccountList,
+	type SelectableLedgerAccount,
 } from '../../components/ledger/LedgerAccountList';
 import { useDeriveLedgerAccounts } from '../../components/ledger/useDeriveLedgerAccounts';
 import { useImportLedgerAccountsMutation } from '../../components/ledger/useImportLedgerAccountsMutation';
 import { useNextMenuUrl } from '../../components/menu/hooks';
 import Overlay from '../../components/overlay';
-import { getSuiApplicationErrorMessage } from '../../helpers/errorMessages';
 import { useAccounts } from '../../hooks/useAccounts';
-import { type SerializedLedgerAccount } from '_src/background/keyring/LedgerAccount';
-import { ampli } from '_src/shared/analytics/ampli';
-import { Button } from '_src/ui/app/shared/ButtonUI';
-import { Link } from '_src/ui/app/shared/Link';
-import { Text } from '_src/ui/app/shared/text';
 
 const numLedgerAccountsToDeriveByDefault = 10;
 
@@ -51,10 +50,6 @@ export function ImportLedgerAccountsPage() {
 			return ledgerAccounts.filter(
 				({ address }) => !existingAccounts.some((account) => account.address === address),
 			);
-		},
-		onError: (error) => {
-			toast.error(getSuiApplicationErrorMessage(error) || 'Something went wrong.');
-			navigate(closeRedirectUrl, { replace: true });
 		},
 	});
 
@@ -119,7 +114,7 @@ export function ImportLedgerAccountsPage() {
 		summaryCardBody = (
 			<div className="max-h-[272px] -mr-2 mt-1 pr-2 overflow-auto custom-scrollbar">
 				<LedgerAccountList
-					accounts={ledgerAccounts.map((ledgerAccount) => ({
+					accounts={(ledgerAccounts || []).map((ledgerAccount) => ({
 						...ledgerAccount,
 						isSelected: selectedLedgerAddresses.includes(ledgerAccount.address),
 					}))}
@@ -167,7 +162,7 @@ export function ImportLedgerAccountsPage() {
 						size="tall"
 						before={<UnlockedLockIcon />}
 						text="Unlock"
-						loading={importLedgerAccountsMutation.isLoading}
+						loading={importLedgerAccountsMutation.isPending}
 						disabled={isUnlockButtonDisabled}
 						onClick={() => importLedgerAccountsMutation.mutate(selectedLedgerAccounts)}
 					/>

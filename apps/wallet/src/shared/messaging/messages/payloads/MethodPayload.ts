@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ExportedKeypair, type SerializedSignature } from '@benfen/bfc.js/cryptography';
-import { isBasePayload } from './BasePayload';
 import { type AccountSourceSerializedUI } from '_src/background/account-sources/AccountSource';
 import { type SerializedUIAccount } from '_src/background/accounts/Account';
+import { type ZkLoginProvider } from '_src/background/accounts/zklogin/providers';
+import { type ExportedKeypair, type SerializedSignature } from '@benfen/bfc.js/cryptography';
 
-import { type ZkProvider } from '_src/background/accounts/zk/providers';
+import { isBasePayload } from './BasePayload';
 import type { Payload } from './Payload';
 
 export type UIAccessibleEntityType = 'accountSources' | 'accounts';
@@ -38,7 +38,7 @@ type MethodPayloads = {
 		  }
 		| {
 				type: 'zk';
-				provider: ZkProvider;
+				provider: ZkLoginProvider;
 		  };
 	accountsCreatedResponse: { accounts: SerializedUIAccount[] };
 	signData: { data: string; id: string };

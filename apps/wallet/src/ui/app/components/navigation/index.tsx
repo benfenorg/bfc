@@ -1,12 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useAppSelector } from '_hooks';
+import { getNavIsVisible } from '_redux/slices/app';
 import cl from 'classnames';
 import { memo } from 'react';
 import { NavLink } from 'react-router-dom';
-
-import { useAppSelector } from '_hooks';
-import { getNavIsVisible } from '_redux/slices/app';
 
 import st from './Navigation.module.scss';
 

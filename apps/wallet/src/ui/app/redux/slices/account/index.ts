@@ -1,23 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { KeyringPayload } from '_payloads/keyring';
+import type { RootState } from '_redux/RootReducer';
+import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
+import { ampli } from '_src/shared/analytics/ampli';
+import { persistableStorage } from '_src/shared/analytics/amplitude';
+import { persister, queryClient } from '_src/ui/app/helpers/queryClient';
+import type { AppThunkConfig } from '_store/thunk-extras';
 import {
 	createAsyncThunk,
 	createEntityAdapter,
 	createListenerMiddleware,
 	createSlice,
 } from '@reduxjs/toolkit';
-import Browser from 'webextension-polyfill';
-
-import { AccountType, type SerializedAccount } from '_src/background/keyring/Account';
-import { ampli } from '_src/shared/analytics/ampli';
-import { persistableStorage } from '_src/shared/analytics/amplitude';
-import { persister, queryClient } from '_src/ui/app/helpers/queryClient';
-
 import type { PayloadAction, Reducer } from '@reduxjs/toolkit';
-import type { KeyringPayload } from '_payloads/keyring';
-import type { RootState } from '_redux/RootReducer';
-import type { AppThunkConfig } from '_store/thunk-extras';
+import Browser from 'webextension-polyfill';
 
 export const createVault = createAsyncThunk<
 	void,

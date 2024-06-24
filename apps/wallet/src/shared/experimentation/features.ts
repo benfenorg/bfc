@@ -27,9 +27,6 @@ export enum FEATURES {
 	BULLSHARK_QUESTS_INTERSTITIAL = 'wallet-bullshark-interstitial',
 	WALLET_APPS_BANNER_CONFIG = 'wallet-apps-banner-config',
 	WALLET_INTERSTITIAL_CONFIG = 'wallet-interstitial-config',
-	WALLET_DEFI = 'wallet-defi',
-	WALLET_FEE_ADDRESS = 'wallet-fee-address',
-	DEEP_BOOK_CONFIGS = 'deep-book-configs',
 }
 
 export function setAttributes(network?: { apiEnv: API_ENV; customRPC?: string | null }) {

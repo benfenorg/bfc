@@ -1,7 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { toHEX } from '../bcs/src';
 import { mnemonicToSeedSync as bip39MnemonicToSeedSync } from '@scure/bip39';
+
+import { toHEX } from '../bcs/src/index.js';
 
 /**
  * Parse and validate a path that is compliant to SLIP-0010 in form m/44'/784'/{account_index}'/{change_index}'/{address_index}'.

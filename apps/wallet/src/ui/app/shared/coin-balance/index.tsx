@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Text } from '_app/shared/text';
 import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
-
-import { Text } from '_app/shared/text';
 
 //TODO create variant for different use cases like heading4, subtitle, bodySmall and different symbols color
 interface CoinBalanceProps {

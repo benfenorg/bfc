@@ -1,15 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import nacl from 'tweetnacl';
+
 import { fromB64 } from '../../bcs/src/index.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
-import { PublicKey, bytesEqual } from '../../cryptography/publickey.js';
+import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
+import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
 import type { SerializedSignature } from '../../cryptography/signature.js';
-import {
-	SIGNATURE_SCHEME_TO_FLAG,
-	parseSerializedSignature,
-} from '../../cryptography/signature.js';
-import nacl from 'tweetnacl';
+import { parseSerializedSignature } from '../../cryptography/signature.js';
 
 const PUBLIC_KEY_SIZE = 32;
 

@@ -79,10 +79,7 @@ export class LedgerAccount
 		return !(await this.getEphemeralValue())?.unlocked;
 	}
 
-	async passwordUnlock(password?: string): Promise<void> {
-		if (!password) {
-			throw new Error('Missing password to unlock the account');
-		}
+	async passwordUnlock(password: string): Promise<void> {
 		const { encrypted } = await this.getStoredData();
 		await decrypt<string>(password, encrypted);
 		await this.setEphemeralValue({ unlocked: true });

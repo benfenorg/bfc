@@ -103,7 +103,7 @@ async fn test_blocking_execution() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_fullnode_wal_log() -> Result<(), anyhow::Error> {
+async fn sim_test_fullnode_wal_log() -> Result<(), anyhow::Error> {
     #[cfg(msim)]
     {
         use sui_core::authority::{init_checkpoint_timeout_config, CheckpointTimeoutConfig};

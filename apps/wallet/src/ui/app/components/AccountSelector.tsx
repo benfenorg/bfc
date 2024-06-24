@@ -1,19 +1,19 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js';
+import { ampli } from '_src/shared/analytics/ampli';
+import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js/utils';
 import { Popover, Transition } from '@headlessui/react';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ChevronDown12, Copy12 } from '@mysten/icons';
 
-import { AccountList } from './AccountList';
 import { useAccounts } from '../hooks/useAccounts';
 import { useActiveAddress } from '../hooks/useActiveAddress';
 import { useBackgroundClient } from '../hooks/useBackgroundClient';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { ButtonConnectedTo } from '../shared/ButtonConnectedTo';
 import { Text } from '../shared/text';
-import { ampli } from '_src/shared/analytics/ampli';
+import { AccountList } from './AccountList';
 
 export function AccountSelector() {
 	const allAccounts = useAccounts();

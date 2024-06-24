@@ -2,15 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { API_ENV, type NetworkEnvType } from '_src/shared/api-env';
-import { fetchWithSentry } from '_src/shared/utils';
-import { type PublicKey } from '@mysten/sui.js/cryptography';
-import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import { type PublicKey } from '@benfen/bfc.js/cryptography';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import {
 	generateNonce,
 	generateRandomness,
 	getExtendedEphemeralPublicKey,
 	type getZkLoginSignature,
-} from '@mysten/zklogin';
+} from '@benfen/bfc.js/zklogin';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64url } from 'jose';
 import { v4 as uuidV4 } from 'uuid';
@@ -121,7 +120,7 @@ export async function zkLoginAuthenticate({
 const saltRegistryUrl = 'https://salt.api.mystenlabs.com';
 
 export async function fetchSalt(jwt: string): Promise<string> {
-	const response = await fetchWithSentry('fetchUserSalt', `${saltRegistryUrl}/get_salt`, {
+	const response = await fetch(`${saltRegistryUrl}/get_salt`, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -162,7 +161,7 @@ export async function createPartialZkLoginSignature({
 	const zkLoginProofsServerUrl = [API_ENV.mainnet, API_ENV.testNet].includes(network.env)
 		? zkLoginProofsServerUrlProd
 		: zkLoginProofsServerUrlDev;
-	const response = await fetchWithSentry('createZkLoginProofs', zkLoginProofsServerUrl, {
+	const response = await fetch(zkLoginProofsServerUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',

@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import rootReducer from '_redux/RootReducer';
 import { configureStore } from '@reduxjs/toolkit';
 
-import { thunkExtras } from './thunk-extras';
 import { amplitudePersistenceMiddleware } from '../slices/account';
-import rootReducer from '_redux/RootReducer';
+import { thunkExtras } from './thunk-extras';
 
 const store = configureStore({
 	reducer: rootReducer,

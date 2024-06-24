@@ -3,9 +3,8 @@
 
 import cl from 'classnames';
 import { memo } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 import { Link } from 'react-router-dom';
-
-import type { ReactNode, ButtonHTMLAttributes, AnchorHTMLAttributes } from 'react';
 
 import st from './Button.module.scss';
 

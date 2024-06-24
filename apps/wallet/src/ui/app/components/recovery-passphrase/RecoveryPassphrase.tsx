@@ -1,15 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { useState } from 'react';
-
-import { HideShowDisplayBox } from '_components/HideShowDisplayBox';
 import Alert from '_components/alert';
+import { HideShowDisplayBox } from '_components/HideShowDisplayBox';
 import { MenuLayout } from '_components/menu/content/MenuLayout';
 import { PasswordInputDialog } from '_components/menu/content/PasswordInputDialog';
 import { useNextMenuUrl } from '_components/menu/hooks';
 import { useAppDispatch } from '_hooks';
 import { loadEntropyFromKeyring } from '_redux/slices/account';
 import { entropyToMnemonic, toEntropy } from '_shared/utils/bip39';
+import { useState } from 'react';
 
 export function RecoveryPassphrase() {
 	const [passwordConfirmed, setPasswordConfirmed] = useState(false);

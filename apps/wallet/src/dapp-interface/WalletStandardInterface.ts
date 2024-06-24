@@ -1,60 +1,58 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { bfc2SuiAddress, sui2BfcAddress } from '@benfen/bfc.js';
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { toB64, fromB64 } from '@benfen/bfc.js/utils';
-import {
-	BFC_CHAINS,
-	ReadonlyWalletAccount,
-	BFC_DEVNET_CHAIN,
-	BFC_TESTNET_CHAIN,
-	BFC_LOCALNET_CHAIN,
-	type SuiFeatures,
-	type SuiSignAndExecuteTransactionBlockMethod,
-	type StandardConnectFeature,
-	type StandardConnectMethod,
-	type Wallet,
-	type StandardEventsFeature,
-	type StandardEventsOnMethod,
-	type StandardEventsListeners,
-	type SuiSignTransactionBlockMethod,
-	type SuiSignMessageMethod,
-	BFC_MAINNET_CHAIN,
-} from '@benfen/bfc.js/wallet-standard';
-import mitt, { type Emitter } from 'mitt';
-import { filter, map, type Observable } from 'rxjs';
-
-import { mapToPromise } from './utils';
 import { createMessage } from '_messages';
 import { WindowMessageStream } from '_messaging/WindowMessageStream';
+import type { BasePayload, Payload } from '_payloads';
+import type { GetAccount } from '_payloads/account/GetAccount';
+import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
+import type { SetNetworkPayload } from '_payloads/network';
 import {
+	ALL_PERMISSION_TYPES,
 	type AcquirePermissionsRequest,
 	type AcquirePermissionsResponse,
 	type HasPermissionsRequest,
 	type HasPermissionsResponse,
-	ALL_PERMISSION_TYPES,
 } from '_payloads/permissions';
+import type {
+	ExecuteTransactionRequest,
+	ExecuteTransactionResponse,
+	SignTransactionRequest,
+	SignTransactionResponse,
+	StakeRequest,
+} from '_payloads/transactions';
 import { API_ENV } from '_src/shared/api-env';
+import type { NetworkEnvType } from '_src/shared/api-env';
 import {
 	isQredoConnectPayload,
 	type QredoConnectPayload,
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
+import { isTransactionBlock } from '@benfen/bfc.js/transactions';
+import { bfc2SuiAddress, fromB64, sui2BfcAddress, toB64 } from '@benfen/bfc.js/utils';
+import {
+	BFC_CHAINS,
+	BFC_DEVNET_CHAIN,
+	BFC_LOCALNET_CHAIN,
+	BFC_MAINNET_CHAIN,
+	BFC_TESTNET_CHAIN,
+	ReadonlyWalletAccount,
+	type StandardConnectFeature,
+	type StandardConnectMethod,
+	type StandardEventsFeature,
+	type StandardEventsListeners,
+	type StandardEventsOnMethod,
+	type SuiFeatures,
+	type SuiSignAndExecuteTransactionBlockMethod,
+	type SuiSignMessageMethod,
+	type SuiSignTransactionBlockMethod,
+	type Wallet,
+} from '@benfen/bfc.js/wallet-standard';
+import mitt, { type Emitter } from 'mitt';
+import { filter, map, type Observable } from 'rxjs';
 
-import type { BasePayload, Payload } from '_payloads';
-import type { GetAccount } from '_payloads/account/GetAccount';
-import type { GetAccountResponse } from '_payloads/account/GetAccountResponse';
-import type { SetNetworkPayload } from '_payloads/network';
-import type {
-	StakeRequest,
-	ExecuteTransactionRequest,
-	ExecuteTransactionResponse,
-	SignTransactionRequest,
-	SignTransactionResponse,
-} from '_payloads/transactions';
-import type { NetworkEnvType } from '_src/shared/api-env';
+import { mapToPromise } from './utils';
 
 type WalletEventsMap = {
 	[E in keyof StandardEventsListeners]: Parameters<StandardEventsListeners[E]>[0];
@@ -242,7 +240,7 @@ export class SuiWallet implements Wallet {
 	};
 
 	#signTransactionBlock: SuiSignTransactionBlockMethod = async (input) => {
-		if (!TransactionBlock.is(input.transactionBlock)) {
+		if (!isTransactionBlock(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -264,7 +262,7 @@ export class SuiWallet implements Wallet {
 	};
 
 	#signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod = async (input) => {
-		if (!TransactionBlock.is(input.transactionBlock)) {
+		if (!isTransactionBlock(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);

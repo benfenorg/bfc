@@ -1,15 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js';
+import { type SerializedAccount } from '_src/background/keyring/Account';
+import { formatAddress, sui2BfcAddress } from '@benfen/bfc.js/utils';
 import { useResolveSuiNSName } from '@mysten/core';
 import { Check24, Copy12 } from '@mysten/icons';
 
-import { AccountBadge } from './AccountBadge';
 import { useActiveAddress } from '../hooks/useActiveAddress';
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { Text } from '../shared/text';
-import { type SerializedAccount } from '_src/background/keyring/Account';
+import { AccountBadge } from './AccountBadge';
 
 export type AccountItemProps = {
 	account: SerializedAccount;

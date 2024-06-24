@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getValidDAppUrl } from '_src/shared/utils';
 import { ArrowUpRight12 } from '@mysten/icons';
 import { cx } from 'class-variance-authority';
 
-import { AccountAddress } from './AccountAddress';
-import { Link } from '../shared/Link';
 import { Heading } from '../shared/heading';
+import { Link } from '../shared/Link';
 import { Text } from '../shared/text';
-import { getValidDAppUrl } from '_src/shared/utils';
+import { AccountAddress } from './AccountAddress';
 
 export type DAppInfoCardProps = {
 	name: string;

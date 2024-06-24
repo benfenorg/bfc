@@ -1,7 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type ExportedKeypair, type Keypair } from '@benfen/bfc.js/cryptography';
+import {
+	decodeSuiPrivateKey,
+	type Keypair,
+	type ExportedKeypair as LegacyExportedKeyPair,
+} from '@benfen/bfc.js/cryptography';
 import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import { Secp256k1Keypair } from '@benfen/bfc.js/keypairs/secp256k1';
 import { Secp256r1Keypair } from '@benfen/bfc.js/keypairs/secp256r1';
@@ -9,10 +13,25 @@ import { fromB64 } from '@benfen/bfc.js/utils';
 
 const PRIVATE_KEY_SIZE = 32;
 const LEGACY_PRIVATE_KEY_SIZE = 64;
-export function fromExportedKeypair(keypair: ExportedKeypair): Keypair {
-	const secretKey = fromB64(keypair.privateKey);
 
-	switch (keypair.schema) {
+export function fromExportedKeypair(
+	secret: LegacyExportedKeyPair | string,
+	legacySupport = false,
+): Keypair {
+	let schema;
+	let secretKey;
+	if (typeof secret === 'object') {
+		if (!legacySupport) {
+			throw new Error('Invalid type of secret key. A string value was expected.');
+		}
+		secretKey = fromB64(secret.privateKey);
+		schema = secret.schema;
+	} else {
+		const decoded = decodeSuiPrivateKey(secret);
+		schema = decoded.schema;
+		secretKey = decoded.secretKey;
+	}
+	switch (schema) {
 		case 'ED25519':
 			let pureSecretKey = secretKey;
 			if (secretKey.length === LEGACY_PRIVATE_KEY_SIZE) {
@@ -25,6 +44,6 @@ export function fromExportedKeypair(keypair: ExportedKeypair): Keypair {
 		case 'Secp256r1':
 			return Secp256r1Keypair.fromSecretKey(secretKey);
 		default:
-			throw new Error(`Invalid keypair schema ${keypair.schema}`);
+			throw new Error(`Invalid keypair schema ${schema}`);
 	}
 }

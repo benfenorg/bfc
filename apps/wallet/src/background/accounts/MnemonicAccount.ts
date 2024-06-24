@@ -1,16 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Keypair, type ExportedKeypair } from '@benfen/bfc.js/cryptography';
+import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
+import { type ExportedKeypair, type Keypair } from '@benfen/bfc.js/cryptography';
+
+import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
 import {
 	Account,
-	type SerializedAccount,
 	type PasswordUnlockableAccount,
+	type SerializedAccount,
 	type SerializedUIAccount,
 	type SigningAccount,
 } from './Account';
-import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
-import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
 
 export interface MnemonicSerializedAccount extends SerializedAccount {
 	type: 'mnemonic-derived';
@@ -63,6 +64,7 @@ export class MnemonicAccount
 			lastUnlockedOn: null,
 			selected: false,
 			nickname: null,
+			createdAt: Date.now(),
 		};
 	}
 
@@ -109,6 +111,7 @@ export class MnemonicAccount
 			selected,
 			nickname,
 			isPasswordUnlockable: true,
+			isKeyPairExportable: true,
 		};
 	}
 
