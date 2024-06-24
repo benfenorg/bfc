@@ -96,7 +96,7 @@ async fn sim_advance_epoch_tx_test() {
 }
 
 #[sim_test]
-async fn basic_reconfig_end_to_end_test() {
+async fn sim_basic_reconfig_end_to_end_test() {
     // TODO remove this sleep when this test passes consistently
     sleep(Duration::from_secs(1)).await;
     let test_cluster = TestClusterBuilder::new().build().await;
