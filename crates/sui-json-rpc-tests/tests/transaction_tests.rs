@@ -9,7 +9,6 @@ use sui_json_rpc_types::{
 };
 use sui_macros::sim_test;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::transaction::SenderSignedData;
 use test_cluster::TestClusterBuilder;
 
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
