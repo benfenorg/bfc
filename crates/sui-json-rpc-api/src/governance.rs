@@ -7,10 +7,8 @@ use jsonrpsee::proc_macros::rpc;
 use sui_json_rpc_types::{DelegatedStake, SuiCommittee, ValidatorApys};
 use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SuiAddress};
-use sui_types::dynamic_field::DynamicFieldInfo;
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
-use sui_types::proposal::Proposal;
 
 #[open_rpc(namespace = "bfcx", tag = "Governance Read API")]
 #[rpc(server, client, namespace = "bfcx")]
@@ -42,6 +40,10 @@ pub trait GovernanceReadApi {
     #[method(name = "getReferenceGasPrice")]
     async fn get_reference_gas_price(&self) -> RpcResult<BigInt<u64>>;
 
+    /// Return the rate of stable coin
+    #[method(name = "getStableRate")]
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>>;
+
     /// Return the validator APY
     #[method(name = "getValidatorsApy")]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys>;
@@ -50,6 +52,4 @@ pub trait GovernanceReadApi {
     // #[method(name = "getProposal")]
     // async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
 
-    // #[method(name = "getStablePools")]
-    // async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>>;
 }

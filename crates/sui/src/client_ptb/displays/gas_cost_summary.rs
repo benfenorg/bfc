@@ -3,26 +3,22 @@
 
 use crate::client_ptb::displays::Pretty;
 use std::fmt::{Display, Formatter};
-use sui_types::gas::GasCostSummary;
+use sui_json_rpc_types::SuiGasCostSummary;
 
-impl<'a> Display for Pretty<'a, GasCostSummary> {
+impl<'a> Display for Pretty<'a, SuiGasCostSummary> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let Pretty(gcs) = self;
-        let GasCostSummary {
+        let SuiGasCostSummary {
             computation_cost,
             storage_cost,
             storage_rebate,
             non_refundable_storage_fee,
-            base_point,
-            rate,
         } = gcs;
         let output = format!(
             "Gas Cost Summary:\n   \
                  Storage Cost: {storage_cost}\n   \
                  Computation Cost: {computation_cost}\n   \
                  Storage Rebate: {storage_rebate}\n   \
-                 Base Point: {base_point}\n   \
-                 Rate: {rate}\n   \
                  Non-refundable Storage Fee: {non_refundable_storage_fee}",
         );
         write!(f, "{}", output)

@@ -56,7 +56,6 @@ module sui_system::sui_system {
                                          // into storage fund, in basis point.
         _reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
-        _rate_vec : vector<u64>,
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         let self = load_system_state_mut(wrapper);

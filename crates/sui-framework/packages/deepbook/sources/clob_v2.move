@@ -333,7 +333,7 @@ module deepbook::clob_v2 {
         linked_table::destroy_empty(orders);
     }
 
-    public fun create_account(ctx: &mut TxContext): AccountCap {
+    fun create_account(ctx: &mut TxContext): AccountCap {
         mint_account_cap(ctx)
     }
 

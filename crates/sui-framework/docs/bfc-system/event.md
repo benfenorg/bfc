@@ -7,15 +7,19 @@ title: Module `0xc8::event`
 -  [Struct `InitTreasuryEvent`](#0xc8_event_InitTreasuryEvent)
 -  [Struct `InitTreasuryPoolEvent`](#0xc8_event_InitTreasuryPoolEvent)
 -  [Struct `CreateVaultEvent`](#0xc8_event_CreateVaultEvent)
+-  [Struct `PauseEvent`](#0xc8_event_PauseEvent)
 -  [Struct `SwapEvent`](#0xc8_event_SwapEvent)
 -  [Struct `DepositEvent`](#0xc8_event_DepositEvent)
 -  [Struct `UpdateStateEvent`](#0xc8_event_UpdateStateEvent)
+-  [Struct `RebalanceEvent`](#0xc8_event_RebalanceEvent)
 -  [Function `init_treasury`](#0xc8_event_init_treasury)
 -  [Function `init_treasury_pool`](#0xc8_event_init_treasury_pool)
 -  [Function `create_vault`](#0xc8_event_create_vault)
 -  [Function `swap`](#0xc8_event_swap)
 -  [Function `deposit`](#0xc8_event_deposit)
+-  [Function `rebalance`](#0xc8_event_rebalance)
 -  [Function `update_state`](#0xc8_event_update_state)
+-  [Function `set_pause`](#0xc8_event_set_pause)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -133,6 +137,39 @@ title: Module `0xc8::event`
 </dd>
 <dt>
 <code>index: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_PauseEvent"></a>
+
+## Struct `PauseEvent`
+
+
+
+<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bfc-system/vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>is_pause: bool</code>
 </dt>
 <dd>
 
@@ -273,6 +310,12 @@ title: Module `0xc8::event`
 
 <dl>
 <dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>current_sqrt_price: u128</code>
 </dt>
 <dd>
@@ -292,6 +335,33 @@ title: Module `0xc8::event`
 </dd>
 <dt>
 <code>state_counter: u32</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_event_RebalanceEvent"></a>
+
+## Struct `RebalanceEvent`
+
+
+
+<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -467,13 +537,41 @@ title: Module `0xc8::event`
 
 </details>
 
+<a name="0xc8_event_rebalance"></a>
+
+## Function `rebalance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_rebalance">rebalance</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_rebalance">rebalance</a>(coin_type: String) {
+    emit(
+        <a href="../bfc-system/event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> {
+            coin_type,
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_event_update_state"></a>
 
 ## Function `update_state`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_update_state">update_state</a>(current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_update_state">update_state</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
 </code></pre>
 
 
@@ -483,6 +581,7 @@ title: Module `0xc8::event`
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_update_state">update_state</a>(
+    coin_type: String,
     current_sqrt_price: u128,
     last_sqrt_price: u128,
     state: u8,
@@ -490,10 +589,40 @@ title: Module `0xc8::event`
 ) {
     emit(
         <a href="../bfc-system/event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
+            coin_type,
             current_sqrt_price,
             last_sqrt_price,
             state,
             state_counter,
+        }
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_event_set_pause"></a>
+
+## Function `set_pause`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, is_pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: ID, is_pause: bool) {
+    emit(
+        <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> {
+            <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: vault_id,
+            is_pause
         }
     )
 }

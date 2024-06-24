@@ -69,9 +69,6 @@ impl TransactionBlockKind {
                 native: rsu,
                 checkpoint_viewed_at,
             }),
-            K::ChangeBfcRound(changeBfcRound) => {
-                todo!("ChangeBfcRoundTransaction not implemented yet")
-            }
         }
     }
 }

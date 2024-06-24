@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::any::Any;
 use super::object_runtime::{ObjectRuntime, TransferResult};
 use crate::NativesCostTable;
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
@@ -17,7 +16,7 @@ use smallvec::smallvec;
 use std::collections::VecDeque;
 use sui_types::{base_types::SequenceNumber, object::Owner};
 
-const E_SHARED_NON_NEW_OBJECT: u64 = 0;
+//const E_SHARED_NON_NEW_OBJECT: u64 = 0;
 
 #[derive(Clone, Debug)]
 pub struct TransferInternalCostParams {

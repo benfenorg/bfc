@@ -24,10 +24,7 @@ use sui_core::{
         QuorumDriver, QuorumDriverHandler, QuorumDriverHandlerBuilder, QuorumDriverMetrics,
     },
 };
-use sui_json_rpc_types::{
-    SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects,
-    SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{SuiGasCostSummary, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
 use sui_network::{DEFAULT_CONNECT_TIMEOUT_SEC, DEFAULT_REQUEST_TIMEOUT_SEC};
 use sui_sdk::{SuiClient, SuiClientBuilder};
 use sui_types::base_types::ConciseableName;
@@ -55,7 +52,7 @@ use sui_types::{
     base_types::{AuthorityName, SuiAddress},
     sui_system_state::SuiSystemStateTrait,
 };
-use sui_types::{error::SuiError, gas::GasCostSummary};
+use sui_types::error::SuiError;
 use tokio::{
     task::JoinSet,
     time::{sleep, timeout},
@@ -175,13 +172,13 @@ impl ExecutionEffects {
         }
     }
 
-    pub fn gas_cost_summary(&self) -> GasCostSummary {
+    pub fn gas_cost_summary(&self) -> SuiGasCostSummary {
         match self {
             crate::ExecutionEffects::CertifiedTransactionEffects(a, _) => {
-                a.data().gas_cost_summary().clone()
+                SuiGasCostSummary::from(a.data().gas_cost_summary().clone())
             }
             crate::ExecutionEffects::SuiTransactionBlockEffects(b) => {
-                std::convert::Into::<GasCostSummary>::into(b.gas_cost_summary().clone())
+                b.gas_cost_summary().clone()
             }
         }
     }

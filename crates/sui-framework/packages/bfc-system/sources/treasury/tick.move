@@ -30,6 +30,7 @@ module bfc_system::tick {
     const ERR_TICK_EXCEED_U128_MAXIMUM: u64 = 401;
     const ERR_TICK_LIQUIDITY_INSUFFICIENT: u64 = 402;
     const ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY: u64 = 403;
+    const ERR_TICKS_REBUILD_NOT_EMPTY: u64 = 404;
 
     public struct TickManager has store {
         tick_spacing: u32,
@@ -55,6 +56,28 @@ module bfc_system::tick {
             tick_spacing: _tick_spacing,
             ticks: skip_list::new(16, 2, _ts, _ctx),
         }
+    }
+
+    public(package) fun rebuild_ticks(_tick_manager: &mut TickManager, _ctx: &mut TxContext) {
+        let _ticks = &_tick_manager.ticks;
+        let mut scores = vector::empty<u64>();
+        if (skip_list::length(_ticks) != 0) {
+            let mut next_score = &skip_list::head(_ticks);
+            while (is_some(next_score)) {
+                let score = option_u64::borrow(next_score);
+                vector::push_back(&mut scores, score);
+                let node = skip_list::borrow_node(
+                    _ticks,
+                    score,
+                );
+                next_score = &skip_list::next_score(node);
+            };
+        };
+        while (!vector::is_empty(&scores)) {
+            let score = vector::pop_back(&mut scores);
+            skip_list::remove<Tick>(&mut _tick_manager.ticks, score);
+        };
+        assert!(skip_list::is_empty(&_tick_manager.ticks), ERR_TICKS_REBUILD_NOT_EMPTY);
     }
 
     /// tick info
@@ -230,8 +253,11 @@ module bfc_system::tick {
         let tick_lower_score = tick_score(_tick_lower_index);
         let tick_upper_score = tick_score(_tick_upper_index);
         assert!(
-            skip_list::contains(&_tick_manager.ticks, tick_lower_score) &&
-                skip_list::contains(&_tick_manager.ticks, tick_upper_score),
+            skip_list::contains(&_tick_manager.ticks, tick_lower_score),
+            ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY
+        );
+        assert!(
+            skip_list::contains(&_tick_manager.ticks, tick_upper_score),
             ERR_TICK_RANGE_NOT_HAVE_LIQUIDITY
         );
         let lower_tick = skip_list::borrow_mut(&mut _tick_manager.ticks, tick_lower_score);
@@ -240,10 +266,11 @@ module bfc_system::tick {
             _current_tick_index,
             _liquidity_delta,
             false,
-            false
+            true
         );
-        let mut is_liquidity_changed = lower_tick.liquidity_gross != _liquidity_delta;
-        if (is_liquidity_changed && lower_tick.liquidity_gross == 0 && _current_tick_index != _tick_upper_index) {
+        let tick_bound = tick_math::tick_bound();
+        let lower_tick_bound= i32::neg_from(tick_bound - tick_bound % _tick_manager.tick_spacing);
+        if (lower_tick.liquidity_gross == 0 && !i32::eq(_tick_lower_index, lower_tick_bound)) {
             skip_list::remove(&mut _tick_manager.ticks, tick_lower_score);
         };
         let upper_tick = skip_list::borrow_mut(&mut _tick_manager.ticks, tick_upper_score);
@@ -252,10 +279,10 @@ module bfc_system::tick {
             _current_tick_index,
             _liquidity_delta,
             false,
-            true
+            false
         );
-        is_liquidity_changed = upper_tick.liquidity_gross != _liquidity_delta;
-        if (is_liquidity_changed && upper_tick.liquidity_gross == 0 && _current_tick_index != _tick_lower_index) {
+        let upper_tick_bound = i32::from(tick_bound - tick_bound % _tick_manager.tick_spacing);
+        if (upper_tick.liquidity_gross == 0 && !i32::eq(_tick_upper_index, upper_tick_bound)) {
             skip_list::remove(&mut _tick_manager.ticks, tick_upper_score);
         };
     }

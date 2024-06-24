@@ -278,6 +278,12 @@ impl WalletContext {
         Ok(gas_price)
     }
 
+    pub async fn get_stable_rate(&self, tag: String) -> Result<u64, anyhow::Error> {
+        let client = self.get_client().await?;
+        let rate = client.read_api().get_stable_rate(tag).await?;
+        Ok(rate)
+    }
+
     /// Sign a transaction with a key currently managed by the WalletContext
     pub fn sign_transaction(&self, data: &TransactionData) -> Transaction {
         let sig = self

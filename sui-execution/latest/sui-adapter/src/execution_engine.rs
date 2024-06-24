@@ -5,7 +5,6 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 mod checked {
-
     use move_binary_format::CompiledModule;
 
     use move_vm_runtime::move_vm::MoveVM;
@@ -13,18 +12,14 @@ mod checked {
         collections::{HashSet},
         sync::Arc,
     };
-    use std::collections::HashMap;
     use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::calculate_reward_rate;
+    use sui_types::gas::{calculate_reward_rate, calculate_add};
     use sui_types::gas_coin::GAS;
 
     use sui_types::balance::{
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     };
-    use sui_types::transaction::ChangeBfcRound;
-
-
     use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
@@ -73,12 +68,11 @@ mod checked {
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME},
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS,
-        SUI_SYSTEM_PACKAGE_ID,SUI_FRAMEWORK_PACKAGE_ID
+        SUI_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
     };
 
     use sui_types::{BFC_SYSTEM_PACKAGE_ID};
     use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
-    use sui_types::collection_types::VecMap;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -110,7 +104,6 @@ mod checked {
     //     certificate_deny_set.contains(transaction_digest)
     //         || get_denied_certificates().contains(transaction_digest)
     // }
-
     #[instrument(name = "tx_execute_to_effects", level = "debug", skip_all)]
     pub fn execute_transaction_to_effects<Mode: ExecutionMode>(
         store: &dyn BackingStore,
@@ -473,7 +466,7 @@ mod checked {
                 }
             }
         } // else, we're in the genesis transaction which mints the SUI supply, and hence does not satisfy SUI conservation, or
-          // we're in the non-production dev inspect mode which allows us to violate conservation
+        // we're in the non-production dev inspect mode which allows us to violate conservation
 
         result
     }
@@ -551,7 +544,7 @@ mod checked {
                             max_size: lim as u64,
                         },
                         "Written objects size crossed hard limit",
-                    ))
+                    ));
                 }
             };
         }
@@ -614,7 +607,7 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                .expect("ConsensusCommitPrologue cannot fail");
+                    .expect("ConsensusCommitPrologue cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ConsensusCommitPrologueV2(prologue) => {
@@ -627,7 +620,7 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                .expect("ConsensusCommitPrologueV2 cannot fail");
+                    .expect("ConsensusCommitPrologueV2 cannot fail");
                 Ok(Mode::empty_results())
             }
             TransactionKind::ProgrammableTransaction(pt) => {
@@ -640,18 +633,6 @@ mod checked {
                     gas_charger,
                     pt,
                 )
-            }
-            TransactionKind::ChangeBfcRound(change_round) => {
-                bfc_round(
-                    change_round,
-                    temporary_store,
-                    tx_ctx,
-                    move_vm,
-                    gas_charger,
-                    protocol_config,
-                    metrics,
-                )?;
-                Ok(Mode::empty_results())
             }
             TransactionKind::EndOfEpochTransaction(txns) => {
                 let mut builder = ProgrammableTransactionBuilder::new();
@@ -758,40 +739,17 @@ mod checked {
         (storage_rewards, computation_rewards)
     }
 
-    fn convert_rate_map(rate_map: &VecMap<String, u64>) -> Vec<u64> {
-        let mut temp_map = HashMap::<String, u64>::new();
-        for entity in &rate_map.contents {
-            temp_map.insert((*entity.key).to_string(), entity.value);
-        }
-        let mut rate_vec = Vec::new();
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::baud::BAUD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bbrl::BBRL").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bcad::BCAD").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bgbp::BGBP").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bidr::BIDR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::binr::BINR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bkrw::BKRW").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bmxn::BMXN").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::brub::BRUB").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bsar::BSAR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::btry::BTRY").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::bzar::BZAR").unwrap());
-        rate_vec.push(*temp_map.get("00000000000000000000000000000000000000000000000000000000000000c8::mgg::MGG").unwrap());
-        rate_vec
-    }
-
     pub fn construct_advance_epoch_pt(
+        obc_params: &ChangeObcRoundParams,
         mut builder: ProgrammableTransactionBuilder,
         params: &AdvanceEpochParams,
-        rate_map: &VecMap<String, u64>
+        is_safe_mode: bool,
+        discard: bool,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
+        // obc
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
-        let rate_vec: Vec<_> = convert_rate_map(rate_map);
         // Step 2: Advance the epoch.
         let mut arguments = vec![storage_rewards, computation_rewards];
         let call_arg_arguments = vec![
@@ -803,11 +761,10 @@ mod checked {
             CallArg::Pure(bcs::to_bytes(&params.storage_fund_reinvest_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.reward_slashing_rate).unwrap()),
             CallArg::Pure(bcs::to_bytes(&params.epoch_start_timestamp_ms).unwrap()),
-            CallArg::Pure(bcs::to_bytes(&rate_vec).unwrap()),
         ]
-        .into_iter()
-        .map(|a| builder.input(a))
-        .collect::<Result<_, _>>();
+            .into_iter()
+            .map(|a| builder.input(a))
+            .collect::<Result<_, _>>();
 
         assert_invariant!(
             call_arg_arguments.is_ok(),
@@ -888,42 +845,45 @@ mod checked {
     }
 
     pub fn construct_bfc_round_pt(
-        round_id: u64,
-        param: ChangeObcRoundParams,
-        reward_rate: u64,
-        storage_rebate: u64,
-        epoch_start_time: u64
-    ) -> Result<ProgrammableTransaction, ExecutionError> {
-        let mut builder = ProgrammableTransactionBuilder::new();
-        let mut arguments = vec![];
+        param: &ChangeObcRoundParams,
+        builder: &mut ProgrammableTransactionBuilder,
+        is_safe_mode: bool,
+        discard: bool,
+    ) -> Result<(), ExecutionError> {
+        if !is_safe_mode { // if safe mode skip judge dao vote result
+            let mut arguments = vec![];
+            let args = vec![
+                CallArg::BFC_SYSTEM_MUT,
+                CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
+            ].into_iter()
+                .map(|a| builder.input(a))
+                .collect::<Result<_, _>>();
 
-        let args = vec![
-            CallArg::BFC_SYSTEM_MUT,
-            CallArg::CLOCK_IMM,
-            CallArg::Pure(bcs::to_bytes(&round_id).unwrap()),
-            //CallArg::Pure(bcs::to_bytes(&epoch_start_time).unwrap()),
-        ] .into_iter()
-            .map(|a| builder.input(a))
-            .collect::<Result<_, _>>();
+            arguments.append(&mut args.unwrap());
 
-        arguments.append(&mut args.unwrap());
+            info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
-        info!("Call arguments to bfc round transaction: {:?}",round_id);
+            builder.programmable_move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                BFC_SYSTEM_MODULE_NAME.to_owned(),
+                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                vec![],
+                arguments,
+            );
+        }
+        if discard {
+            return Ok(());
+        }
 
-        builder.programmable_move_call(
-            BFC_SYSTEM_PACKAGE_ID,
-            BFC_SYSTEM_MODULE_NAME.to_owned(),
-            BFC_ROUND_FUNCTION_NAME.to_owned(),
-            vec![],
-            arguments,
-        );
-        for (type_tag,gas_cost_summary) in param.stable_gas_summarys {
+        for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
 
-            let charge_arg = builder
+            let stable_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(
-                        calculate_reward_rate(gas_cost_summary.gas_by_stable.computation_cost, reward_rate) + gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                    bcs::to_bytes(&calculate_add(
+                        calculate_reward_rate(
+                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate), gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards = builder.programmable_move_call(
@@ -931,14 +891,14 @@ mod checked {
                 BALANCE_MODULE_NAME.to_owned(),
                 BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![charge_arg],
+                vec![stable_charge_arg],
             );
 
-            //exchange stable coin to bfc
+            // Exchange stable coin to bfc
             let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-            let charge_arg = builder
+            let bfc_charge_arg = builder
                 .input(CallArg::Pure(
-                    bcs::to_bytes(&(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate) + gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                 ))
                 .unwrap();
             let rewards_bfc = builder.programmable_move_call(
@@ -946,10 +906,10 @@ mod checked {
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
                 STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
                 vec![type_tag.clone()],
-                vec![system_obj,rewards,charge_arg],
+                vec![system_obj, rewards, bfc_charge_arg],
             );
 
-            // Destroy the rewards.
+            // Destroy the rewards
             builder.programmable_move_call(
                 SUI_FRAMEWORK_PACKAGE_ID,
                 BALANCE_MODULE_NAME.to_owned(),
@@ -957,11 +917,11 @@ mod checked {
                 vec![GAS::type_tag()],
                 vec![rewards_bfc],
             );
-
         }
         let storage_rebate_arg = builder
             .input(CallArg::Pure(
-                bcs::to_bytes(&(storage_rebate+ param.bfc_computation_charge -calculate_reward_rate(param.bfc_computation_charge, reward_rate))).unwrap(),
+                bcs::to_bytes(&(
+                    param.storage_rebate)).unwrap(),
             ))
             .unwrap();
         let storage_rebate = builder.programmable_move_call(
@@ -978,50 +938,9 @@ mod checked {
             BFC_SYSTEM_MODULE_NAME.to_owned(),
             DEPOSIT_TO_TREASURY_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![system_obj,storage_rebate],
+            vec![system_obj, storage_rebate],
         );
 
-        Ok(builder.finish())
-    }
-
-    fn bfc_round(
-        _change_round: ChangeBfcRound,
-        _temporary_store: &mut TemporaryStore<'_>,
-        _tx_ctx: &mut TxContext,
-        _move_vm: &Arc<MoveVM>,
-        _gas_charger: &mut GasCharger,
-        _protocol_config: &ProtocolConfig,
-        _metrics: Arc<LimitsMetrics>,
-    ) -> Result<(), ExecutionError>{
-        // let _ = BfcRoundParams {
-        //     round_id:change_round.bfc_round
-        // };
-        // let advance_epoch_pt = construct_bfc_round_pt(change_round.bfc_round)?;
-        // let result = programmable_transactions::execution::execute::<execution_mode::System>(
-        //     protocol_config,
-        //     metrics.clone(),
-        //     move_vm,
-        //     temporary_store,
-        //     tx_ctx,
-        //     gas_charger,
-        //     advance_epoch_pt,
-        // );
-
-        // #[cfg(msim)]
-        // let _result = maybe_modify_result(result, change_round.bfc_round);
-
-        // if result.is_err() {
-        //     tracing::error!(
-        //     "Failed to execute advance epoch transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}.",
-        //     result.as_ref().err(),
-        //     temporary_store.objects(),
-        // );
-        //     temporary_store.drop_writes();
-        //     // Must reset the storage rebate since we are re-executing.
-        //     gas_charger.reset_storage_cost_and_rebate();
-        //
-        //     temporary_store.advance_bfc_round_mode(protocol_config);
-        // }
         Ok(())
     }
 
@@ -1035,58 +954,98 @@ mod checked {
         protocol_config: &ProtocolConfig,
         metrics: Arc<LimitsMetrics>,
     ) -> Result<(), ExecutionError> {
-        let (rate_map, reward_rate) = temporary_store.get_stable_rate_map_and_reward_rate();
         let mut storage_rebate = 0u64;
         let mut non_refundable_storage_fee = 0u64;
-        let mut storage_charge=0u64;
-        let mut computation_charge =0u64;
+
+        let mut storage_charge = 0u64;
+        let mut computation_charge = 0u64;
+        let mut deposit_computation_charge = 0u64;
+        let mut discard = false;
+
 
         info!("change epoch: {:?}",change_epoch);
-        for (_,gas_cost_summary) in &change_epoch.stable_gas_summarys {
-            storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
-            non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-            computation_charge += gas_cost_summary.gas_by_bfc.computation_cost-calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, reward_rate);
-            storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
+        let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
+        if rate_result.is_err() {
+            discard = true;
         }
 
-        let params = ChangeObcRoundParams {
+        let is_safe_mode = temporary_store.is_safe_mode();
+        let mut reward_rate = 0u64; // deposit all gas to treasury
+
+        match rate_result {
+            Ok((_, rate)) => {
+                reward_rate = rate;
+                for (_, gas_cost_summary) in &change_epoch.stable_gas_summarys {
+                    let computation_reward = calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, rate);
+
+                    // check u64 overflow
+                    if storage_rebate > u64::MAX - gas_cost_summary.gas_by_bfc.storage_rebate
+                        || non_refundable_storage_fee > u64::MAX - gas_cost_summary.gas_by_bfc.non_refundable_storage_fee
+                        || storage_charge > u64::MAX - gas_cost_summary.gas_by_bfc.storage_cost
+                        || computation_charge > u64::MAX - computation_reward
+                        || deposit_computation_charge > u64::MAX - (gas_cost_summary.gas_by_bfc.computation_cost - computation_reward)
+                    {
+                        storage_rebate = 0;
+                        non_refundable_storage_fee = 0;
+                        storage_charge = 0;
+                        computation_charge = 0;
+                        deposit_computation_charge = 0;
+
+                        discard = true;
+                        break;
+                    }
+
+                    storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
+                    non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
+                    computation_charge += computation_reward;
+                    deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
+                    storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
+                }
+            }
+            Err(e) => {
+                info!("Read reward_rate failed with err {:?}",e);
+                discard = true;
+            }
+        }
+        // check u64 overflow for advance_epoch_params
+        if !discard && (storage_charge > u64::MAX - change_epoch.bfc_storage_charge
+            || computation_charge > u64::MAX - change_epoch.bfc_computation_charge
+            || storage_rebate > u64::MAX - change_epoch.bfc_storage_rebate
+            || non_refundable_storage_fee > u64::MAX - change_epoch.bfc_non_refundable_storage_fee) {
+            storage_charge = 0;
+            computation_charge = 0;
+            storage_rebate = 0;
+            non_refundable_storage_fee = 0;
+
+            discard = true;
+        }
+
+        let obc_params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
-            bfc_computation_charge: change_epoch.bfc_computation_charge,
+            bfc_computation_charge: computation_charge,
+            bfc_deposit_computation_charge: deposit_computation_charge,
+            epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
+            reward_rate,
+            storage_rebate,
         };
-        let advance_epoch_pt = construct_bfc_round_pt(change_epoch.epoch, params, reward_rate, storage_rebate, change_epoch.epoch_start_timestamp_ms)?;
-        let result = programmable_transactions::execution::execute::<execution_mode::System>(
-            protocol_config,
-            metrics.clone(),
-            move_vm,
-            temporary_store,
-            tx_ctx,
-            gas_charger,
-            advance_epoch_pt,
-        );
-
-        if result.is_err() {
-            tracing::error!(
-            "Failed to execute change round transaction. Switching to safe mode. Error: {:?}. Input objects: {:?}. Tx data: {:?}",
-            result.as_ref().err(),
-            temporary_store.objects(),
-            change_epoch,
-            );
-        }
-
-        let params = AdvanceEpochParams {
+        let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
+        let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;
+        let advance_epoch_storage_rebate = change_epoch.bfc_storage_rebate + storage_rebate;
+        let advance_epoch_non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee;
+        let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
-            storage_charge: change_epoch.bfc_storage_charge+storage_charge,
-            computation_charge:  change_epoch.bfc_computation_charge- calculate_reward_rate(change_epoch.bfc_computation_charge, reward_rate) + computation_charge,
-            storage_rebate: change_epoch.bfc_storage_rebate+storage_rebate,
-            non_refundable_storage_fee: change_epoch.bfc_non_refundable_storage_fee+non_refundable_storage_fee,
+            storage_charge: advance_epoch_storage_charge,
+            computation_charge: advance_epoch_computation_charge,
+            storage_rebate: advance_epoch_storage_rebate,
+            non_refundable_storage_fee: advance_epoch_non_refundable_storage_fee,
             storage_fund_reinvest_rate: protocol_config.storage_fund_reinvest_rate(),
             reward_slashing_rate: protocol_config.reward_slashing_rate(),
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(builder, &params, &rate_map)?;
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1098,7 +1057,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-        let result = maybe_modify_result(result, change_epoch.epoch);
+            let result = maybe_modify_result(result, change_epoch.epoch);
 
         if result.is_err() {
             tracing::error!(
@@ -1110,6 +1069,10 @@ mod checked {
             temporary_store.drop_writes();
             // Must reset the storage rebate since we are re-executing.
             gas_charger.reset_storage_cost_and_rebate();
+            params.storage_charge = change_epoch.bfc_storage_charge;
+            params.computation_charge = change_epoch.bfc_computation_charge;
+            params.storage_rebate = change_epoch.bfc_storage_rebate;
+            params.non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee;
 
             if protocol_config.get_advance_epoch_start_time_in_safe_mode() {
                 temporary_store.advance_epoch_safe_mode(&params, protocol_config);
@@ -1125,7 +1088,7 @@ mod checked {
                     gas_charger,
                     advance_epoch_safe_mode_pt,
                 )
-                .expect("Advance epoch with safe mode must succeed");
+                    .expect("Advance epoch with safe mode must succeed");
             }
         }
 
@@ -1156,7 +1119,7 @@ mod checked {
                     gas_charger,
                     publish_pt,
                 )
-                .expect("System Package Publish must succeed");
+                    .expect("System Package Publish must succeed");
             } else {
                 let mut new_package = Object::new_system_package(
                     &deserialized_modules,

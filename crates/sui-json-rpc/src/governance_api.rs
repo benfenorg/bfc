@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::cmp::max;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::sync::Arc;
 
 use async_trait::async_trait;
@@ -21,7 +21,7 @@ use sui_json_rpc_types::{SuiCommittee, ValidatorApy, ValidatorApys};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::committee::EpochId;
-use sui_types::dynamic_field::{DynamicFieldInfo, get_dynamic_field_from_store};
+use sui_types::dynamic_field::get_dynamic_field_from_store;
 use sui_types::error::{SuiError, UserInputError};
 use sui_types::governance::StakedSui;
 use sui_types::id::ID;
@@ -66,11 +66,6 @@ impl GovernanceReadApi {
         let obj_id = ObjectID::from(owner);
         let obj = self.state.get_object_read(&obj_id)?.into_object()?;
         Ok(Proposal::try_from(&obj)?)
-    }
-
-    // todo, add a filter function to filter results if many dynamic_fields in state.
-    async fn get_stable_pools(&self, owner: SuiAddress) -> Result<Vec<(ObjectID, DynamicFieldInfo)>, Error> {
-        Ok(self.state.get_dynamic_fields(ObjectID::from(owner), None, 100).unwrap())
     }
 
     async fn get_stakes_by_ids(
@@ -277,6 +272,20 @@ impl GovernanceReadApiServer for GovernanceReadApi {
     // async fn get_stable_pools(&self, owner: SuiAddress) -> RpcResult<Vec<(ObjectID, DynamicFieldInfo)>> {
     //     with_tracing!(async move { self.get_stable_pools(owner).await })
     // }
+
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+        with_tracing!(async move {
+            let bfc_state = self.state.get_bfc_system_state()?;
+            let mut temp_map = HashMap::<String, u64>::new();
+            for entity in &bfc_state.inner_state().rate_map.contents {
+                temp_map.insert((*entity.key).to_string(), entity.value);
+            };
+           // Correctly handle the case where the tag is not found in temp_map
+        let rate = temp_map.get(&tag)
+            .ok_or_else(|| Error::from(anyhow::anyhow!("Rate not found for tag: {}", tag)))?;
+        Ok(BigInt::from(*rate))
+        })
+    }
 
     #[instrument(skip(self))]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {

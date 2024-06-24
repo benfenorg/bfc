@@ -20,6 +20,7 @@ pub mod checked {
         is_system_package,
         object::Data,
     };
+    use sui_types::execution_status::ExecutionFailureStatus;
     use tracing::{trace};
     use crate::temporary_store::TemporaryStore;
 
@@ -135,8 +136,18 @@ pub mod checked {
             if gas_coin_count == 1 {
                 return;
             }
-            let gas_coin_obj = temporary_store.objects().get(&gas_coin_id).unwrap();
-            let gas_coin_type = gas_coin_obj.coin_type_maybe().unwrap();
+            let mut primary_gas_object = temporary_store
+                .objects()
+                .get(&gas_coin_id)
+                // unwrap should be safe because we checked that this exists in `self.objects()` above
+                .unwrap_or_else(|| {
+                    panic!(
+                        "Invariant violation: gas coin not found in store in txn {}",
+                        self.tx_digest
+                    )
+                })
+                .clone();
+            let gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
 
 
             // sum the value of all gas coins
@@ -175,17 +186,7 @@ pub mod checked {
                 })
                 .iter()
                 .sum();
-            let mut primary_gas_object = temporary_store
-                .objects()
-                .get(&gas_coin_id)
-                // unwrap should be safe because we checked that this exists in `self.objects()` above
-                .unwrap_or_else(|| {
-                    panic!(
-                        "Invariant violation: gas coin not found in store in txn {}",
-                        self.tx_digest
-                    )
-                })
-                .clone();
+
             // delete all gas objects except the primary_gas_object
             for (id, _version, _digest) in &self.gas_coins[1..] {
                 debug_assert_ne!(*id, primary_gas_object.id());
@@ -314,8 +315,6 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
-                cost_summary.rate = 1;
-                cost_summary.base_point = 0;
 
                 let gas_used = cost_summary.net_gas_usage();
 
@@ -323,11 +322,23 @@ pub mod checked {
                 if gas_object.is_stable_gas_coin() {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
-                    let (rate, base_point) = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
-                    cost_summary.rate = rate;
-                    cost_summary.base_point = base_point;
-                    let stable_gas_used= calculate_stable_net_used_with_base_point(cost_summary.clone());
-                    deduct_gas(&mut gas_object, stable_gas_used);
+                    let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
+
+                    match result {
+                        Ok((rate, base_point)) => {
+                            cost_summary.rate = rate;
+                            cost_summary.base_point = base_point;
+                            let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
+                            deduct_gas(&mut gas_object, stable_gas_used);
+                        },
+                        Err(_) => {
+                            *execution_result = Err(ExecutionError::from_kind(
+                                ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
+                            ));
+                            self.reset(temporary_store);
+                            deduct_gas(&mut gas_object, gas_used);
+                        }
+                    }
                 }else {
                     deduct_gas(&mut gas_object, gas_used);
                 }

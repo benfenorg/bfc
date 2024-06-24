@@ -160,8 +160,14 @@ pub enum UserInputError {
     GasBudgetTooHigh { gas_budget: u64, max_budget: u64 },
     #[error("Gas budget: {:?} is lower than min: {:?}.", gas_budget, min_budget)]
     GasBudgetTooLow { gas_budget: u64, min_budget: u64 },
-    #[error("Gas coin type should be the same,{:?} and {:?} is differentt", coin_type, second_coin_type)]
+    #[error("Gas coin type should be the same,{:?} and {:?} is different", coin_type, second_coin_type)]
     GasCoinTypeMismatch { coin_type: String, second_coin_type: String },
+    #[error("Gas coin type missing")]
+    GasCoinTypeMissing,
+    #[error("Invalid gas coin type: {:?}.", coin_type)]
+    GasCoinInvalid{ coin_type: String },
+    #[error("Invalid gas coin type: {:?}.", coin_type)]
+    NoRateFoundInBfcSystem{ coin_type: String },
 
     #[error(
     "Balance of gas object {:?} is lower than the needed amount: {:?}.",
@@ -530,10 +536,14 @@ pub enum SuiError {
     #[serde(rename = "StorageMissingFieldError")]
     #[error("DEPRECATED")]
     DEPRECATED_StorageMissingFieldError,
+
     #[allow(non_camel_case_types)]
     #[serde(rename = "StorageCorruptedFieldError")]
     #[error("DEPRECATED")]
     DEPRECATED_StorageCorruptedFieldError,
+
+    #[error("Corrupted fields/data in storage error: {0}")]
+    StorageCorruptedFieldError(String),
 
     #[error("Authority Error: {error:?}")]
     GenericAuthorityError { error: String },
@@ -634,6 +644,9 @@ pub enum SuiError {
 
     #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
     SuiSystemStateReadError(String),
+
+    #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
+    BfcSystemStateReadError(String),
 
     #[error("Unexpected version error: {0}")]
     UnexpectedVersion(String),
@@ -826,6 +839,7 @@ impl SuiError {
             // limit / blocking of a client. It must be non-retryable otherwise
             // we will make the threat worse through automatic retries.
             SuiError::TooManyRequests => false,
+            SuiError::BfcSystemStateReadError { .. } => false,
 
             // For all un-categorized errors, return here with categorized = false.
             _ => return (false, false),

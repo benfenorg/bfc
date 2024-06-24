@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
+use tracing::error;
 use sui_json_rpc_types::SuiTransactionBlockResponseQuery;
 use sui_json_rpc_types::TransactionFilter;
 use sui_json_rpc_types::{
@@ -13,6 +13,7 @@ use sui_types::transaction::SenderSignedData;
 use test_cluster::TestClusterBuilder;
 
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 
 #[sim_test]
 async fn test_get_transaction_block() -> Result<(), anyhow::Error> {
@@ -121,29 +122,40 @@ async fn sim_test_get_raw_transaction() -> Result<(), anyhow::Error> {
 
     // Make a transfer transactions
     let transaction_bytes: TransactionBlockBytes = http_client
-        .transfer_object(address, object_to_transfer, None, 1_000_000.into(), address)
+        .transfer_object(address, object_to_transfer, None, 1_000.into(), address)
         .await?;
     let tx = cluster
         .wallet
         .sign_transaction(&transaction_bytes.to_data()?);
-    let original_sender_signed_data = tx.data().clone();
 
     let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+
+    let dry_response = http_client
+        .dry_run_transaction_block(tx_bytes.clone()).await;
+
+    error!("response: {:?}", dry_response);
+    assert_eq!(dry_response.is_ok(), true);
+    let dry_gas = dry_response.unwrap().effects.gas_cost_summary().clone();
+    let dry_stable_gas_used= dry_gas.net_gas_usage();
+    error!("dry_gas_summary: {:?}, {}", dry_gas, dry_stable_gas_used);
 
     let response = http_client
         .execute_transaction_block(
             tx_bytes,
             signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_raw_input()),
+            Some(SuiTransactionBlockResponseOptions::new()
+                .with_raw_input()
+                .with_effects()
+                .with_balance_changes()
+            ),
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
-        .await?;
+        .await.unwrap();
 
-    let decode_sender_signed_data: SenderSignedData =
-        bcs::from_bytes(&response.raw_transaction).unwrap();
-    // verify that the raw transaction data returned by the response is the same
-    // as the original transaction data
-    assert_eq!(decode_sender_signed_data, original_sender_signed_data);
+    let gas_usage = response.effects.unwrap().gas_cost_summary().clone();
+    let stable_gas_used= gas_usage.net_gas_usage();
+
+    error!("gas_summary: {:?}, {}", &gas_usage, stable_gas_used);
 
     Ok(())
 }

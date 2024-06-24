@@ -70,6 +70,7 @@ ChangeEpoch:
             - TYPENAME: TypeTag
             - TYPENAME: GasCostSummaryAdjusted
     - epoch_start_timestamp_ms: U64
+    - epoch_duration_ms: U64
     - system_packages:
         SEQ:
           TUPLE:
@@ -435,8 +436,11 @@ ExecutionFailureStatus:
     30:
       SuiMoveVerificationTimedout: UNIT
     31:
-      SharedObjectOperationNotAllowed: UNIT
+      StableCoinRateErr:
+        NEWTYPE: STR
     32:
+      SharedObjectOperationNotAllowed: UNIT
+    33:
       InputObjectDeleted: UNIT
 ExecutionStatus:
   ENUM:
@@ -997,10 +1001,7 @@ TransactionKind:
       ConsensusCommitPrologueV2:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologueV2
-    8:
-      ChangeBfcRound:
-        NEWTYPE:
-          TYPENAME: ChangeBfcRound
+
 TypeArgumentError:
   ENUM:
     0:

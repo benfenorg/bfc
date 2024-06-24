@@ -339,6 +339,10 @@ impl<T: R2D2Connection + 'static> GovernanceReadApiServer for GovernanceReadApi<
         )?))
     }
 
+    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+        todo!()
+    }
+
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {
         Ok(self.get_validators_apy().await?)
     }

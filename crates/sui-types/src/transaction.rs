@@ -4,7 +4,7 @@
 
 use super::{base_types::*, error::*};
 use crate::authenticator_state::ActiveJwk;
-use crate::committee::{EpochId, BfcRoundId, ProtocolVersion};
+use crate::committee::{EpochId, ProtocolVersion};
 //use crate::authenticator_state::ActiveJwk;
 use crate::committee::{Committee};
 use crate::crypto::{
@@ -188,18 +188,15 @@ pub struct ChangeEpoch {
     pub stable_gas_summarys:Vec<(TypeTag,GasCostSummaryAdjusted)>,
     /// Unix timestamp when epoch started
     pub epoch_start_timestamp_ms: u64,
+
+    pub epoch_duration_ms: u64,
+
     /// System packages (specifically framework and move stdlib) that are written before the new
     /// epoch starts. This tracks framework upgrades on chain. When executing the ChangeEpoch txn,
     /// the validator must write out the modules below.  Modules are provided with the version they
     /// will be upgraded to, their modules in serialized form (which include their package ID), and
     /// a list of their transitive dependencies.
     pub system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
-}
-
-
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
-pub struct ChangeBfcRound {
-    pub bfc_round: BfcRoundId,
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize, Deserialize)]
@@ -304,8 +301,6 @@ pub enum TransactionKind {
     RandomnessStateUpdate(RandomnessStateUpdate),
     // V2 ConsensusCommitPrologue also includes the digest of the current consensus output.
     ConsensusCommitPrologueV2(ConsensusCommitPrologueV2),
-    // .. more transaction types go here
-    ChangeBfcRound(ChangeBfcRound),
 }
 
 /// EndOfEpochTransactionKind
@@ -328,6 +323,7 @@ impl EndOfEpochTransactionKind {
         non_refundable_storage_fee: u64,
         stable_gas_summary_map : HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
+        epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
         let mut stable_gas_summarys= vec![];
@@ -347,6 +343,7 @@ impl EndOfEpochTransactionKind {
             bfc_non_refundable_storage_fee: non_refundable_storage_fee,
             stable_gas_summarys,
             epoch_start_timestamp_ms,
+            epoch_duration_ms,
             system_packages,
         })
     }
@@ -439,8 +436,7 @@ impl VersionedProtocolMessage for TransactionKind {
         match &self {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeBfcRound(_)=> Ok(()),
+            | TransactionKind::ConsensusCommitPrologue(_) => Ok(()),
             TransactionKind::ProgrammableTransaction(pt) => {
                 // NB: we don't use the `receiving_objects` method here since we don't want to check
                 // for any validity requirements such as duplicate receiving inputs at this point.
@@ -1223,7 +1219,6 @@ impl TransactionKind {
             TransactionKind::ChangeEpoch(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
-            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::ConsensusCommitPrologueV2(_)
             | TransactionKind::AuthenticatorStateUpdate(_)
             | TransactionKind::RandomnessStateUpdate(_)
@@ -1313,11 +1308,6 @@ impl TransactionKind {
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            Self::ChangeBfcRound(_) => {
-                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ, ];
-                Either::Right(Either::Right(objs.into_iter()))
-            }
             _ => Either::Right(Either::Right(vec![].into_iter())),
         }
     }
@@ -1332,7 +1322,6 @@ impl TransactionKind {
     pub fn receiving_objects(&self) -> Vec<ObjectRef> {
         match &self {
             TransactionKind::ChangeEpoch(_)
-            | TransactionKind::ChangeBfcRound(_)
             | TransactionKind::Genesis(_)
             | TransactionKind::ConsensusCommitPrologue(_)
             | TransactionKind::ConsensusCommitPrologueV2(_)
@@ -1369,21 +1358,6 @@ impl TransactionKind {
             }
             Self::ConsensusCommitPrologue(_) | Self::ConsensusCommitPrologueV2(_) => {
                 vec![InputObjectKind::SharedMoveObject {
-                    id: SUI_CLOCK_OBJECT_ID,
-                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                }]
-            }
-            Self::ChangeBfcRound(_)=>{
-                vec![InputObjectKind::SharedMoveObject {
-                    id: SUI_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
-                    id: BFC_SYSTEM_STATE_OBJECT_ID,
-                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                    mutable: true,
-                },InputObjectKind::SharedMoveObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -1442,7 +1416,6 @@ impl TransactionKind {
                 TransactionKind::ChangeEpoch(_)
                 | TransactionKind::Genesis(_)
                 | TransactionKind::ConsensusCommitPrologue(_)
-                | TransactionKind::ChangeBfcRound(_)
                 | TransactionKind::ConsensusCommitPrologueV2(_) => (),
                 TransactionKind::EndOfEpochTransaction(txns) => {
                     // The transaction should have been rejected earlier if the feature is not enabled.
@@ -1495,7 +1468,6 @@ impl TransactionKind {
                 Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
                 Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
                 Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-                Self::ChangeBfcRound(_) => "ChangeBfcRound",
                 Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
                 Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
                 Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
@@ -1517,9 +1489,6 @@ impl Display for TransactionKind {
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind : Genesis")?;
-            }
-            Self::ChangeBfcRound(_) => {
-                writeln!(writer, "Transaction Kind : ChangeBfcRound")?;
             }
             Self::ConsensusCommitPrologue(p) => {
                 writeln!(writer, "Transaction Kind : Consensus Commit Prologue")?;
@@ -1572,14 +1541,14 @@ pub enum TransactionData {
 }
 
 impl TransactionData {
-    pub fn is_change_bfc_round_tx(&self) -> bool {
+    pub fn is_system_txn(&self) -> bool {
         match self {
             Self::V1(txn_data) => {
                 match txn_data.kind {
-                    TransactionKind::ChangeBfcRound(_) => true,
+                    TransactionKind::Genesis(_) | TransactionKind::ChangeEpoch(_) | TransactionKind::ConsensusCommitPrologue(_) => true,
                     _ => {
                         false
-                    },
+                    }
                 }
             }
         }
@@ -1968,12 +1937,12 @@ impl TransactionData {
                 Owner::Immutable => {
                     return Err(anyhow::anyhow!(
                         "Upgrade capability is stored immutably and cannot be used for upgrades"
-                    ))
+                    ));
                 }
                 // If the capability is owned by an object, then the module defining the owning
                 // object gets to decide how the upgrade capability should be used.
                 Owner::ObjectOwner(_) => {
-                    return Err(anyhow::anyhow!("Upgrade capability controlled by object"))
+                    return Err(anyhow::anyhow!("Upgrade capability controlled by object"));
                 }
             };
             builder.obj(capability_arg).unwrap();
@@ -2094,7 +2063,6 @@ pub trait TransactionDataAPI {
 
     fn is_system_tx(&self) -> bool;
     fn is_genesis_tx(&self) -> bool;
-    fn is_change_bfc_round_tx(&self) -> bool;
 
     /// returns true if the transaction is one that is specially sequenced to run at the very end
     /// of the epoch
@@ -2234,10 +2202,6 @@ impl TransactionDataAPI for TransactionDataV1 {
             self.kind,
             TransactionKind::ChangeEpoch(_) | TransactionKind::EndOfEpochTransaction(_)
         )
-    }
-
-    fn is_change_bfc_round_tx(&self) -> bool {
-        matches!(self.kind, TransactionKind::ChangeBfcRound(_))
     }
 
     fn is_system_tx(&self) -> bool {
@@ -2624,6 +2588,7 @@ impl VerifiedTransaction {
         bfc_non_refundable_storage_fee: u64,
         stable_gas_summary_map:HashMap<TypeTag,GasCostSummaryAdjusted>,
         epoch_start_timestamp_ms: u64,
+        epoch_duration_ms: u64,
         system_packages: Vec<(SequenceNumber, Vec<Vec<u8>>, Vec<ObjectID>)>,
     ) -> Self {
         let mut stable_gas_summarys= vec![];
@@ -2643,19 +2608,10 @@ impl VerifiedTransaction {
             bfc_non_refundable_storage_fee,
             stable_gas_summarys,
             epoch_start_timestamp_ms,
+            epoch_duration_ms: epoch_duration_ms,
             system_packages,
         }
         .pipe(TransactionKind::ChangeEpoch)
-        .pipe(Self::new_system_transaction)
-    }
-
-    pub fn new_change_bfc_round(
-        round_id: BfcRoundId,
-    ) -> Self {
-        ChangeBfcRound {
-            bfc_round:round_id,
-        }
-            .pipe(TransactionKind::ChangeBfcRound)
             .pipe(Self::new_system_transaction)
     }
 

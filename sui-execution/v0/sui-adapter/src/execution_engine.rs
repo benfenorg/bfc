@@ -474,9 +474,6 @@ mod checked {
             TransactionKind::EndOfEpochTransaction(_) => {
                 panic!("EndOfEpochTransaction should not exist in execution layer v0");
             }
-            TransactionKind::ChangeBfcRound(_) => {
-                Ok(Mode::empty_results())
-            }
         }
     }
 

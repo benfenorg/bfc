@@ -32,3 +32,5 @@
 30: SuiMoveVerificationTimedout
 31: SharedObjectOperationNotAllowed
 32: InputObjectDeleted
+33: StableCoinRateErr
+

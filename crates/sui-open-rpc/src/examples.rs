@@ -15,12 +15,10 @@ use move_core_types::resolver::ModuleResolver;
 use rand::rngs::StdRng;
 use rand::{Rng, SeedableRng};
 use serde_json::json;
-
 use sui_json::SuiJsonValue;
 use sui_json_rpc::error::Error;
-use sui_json_rpc_types::DevInspectArgs;
 use sui_json_rpc_types::{
-    Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
+    SuiGasCostSummary, Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
     DevInspectResults, DynamicFieldPage, EventFilter, EventPage, MoveCallParams,
     MoveFunctionArgType, ObjectChange, ObjectValueKind::ByImmutableReference,
     ObjectValueKind::ByMutableReference, ObjectValueKind::ByValue, ObjectsPage, OwnedObjectRef,
@@ -36,7 +34,7 @@ use sui_json_rpc_types::{
     SuiTransactionBlockResponseQuery, TransactionBlockBytes, TransactionBlocksPage,
     TransactionFilter, TransferObjectParams,
 };
-use sui_json_rpc_types::{SuiTypeTag, ValidatorApy, ValidatorApys};
+use sui_json_rpc_types::{DevInspectArgs, SuiTypeTag, ValidatorApy, ValidatorApys};
 use sui_open_rpc::ExamplePairing;
 use sui_protocol_config::Chain;
 use sui_protocol_config::ProtocolConfig;
@@ -51,7 +49,6 @@ use sui_types::crypto::{get_key_pair_from_rng, AccountKeyPair, AggregateAuthorit
 use sui_types::digests::TransactionEventsDigest;
 use sui_types::dynamic_field::{DynamicFieldInfo, DynamicFieldName, DynamicFieldType};
 use sui_types::event::EventID;
-use sui_types::gas::GasCostSummary;
 use sui_types::gas_coin::GasCoin;
 use sui_types::messages_checkpoint::CheckpointDigest;
 use sui_types::object::MoveObject;
@@ -727,9 +724,7 @@ impl RpcExampleProvider {
                     status: SuiExecutionStatus::Success,
                     executed_epoch: 0,
                     modified_at_versions: vec![],
-                    gas_used: GasCostSummary {
-                        base_point: 0,
-                        rate:1,
+                    gas_used: SuiGasCostSummary {
                         computation_cost: 100,
                         storage_cost: 100,
                         storage_rebate: 10,

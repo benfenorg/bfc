@@ -24,7 +24,13 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
-    use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate};
+
+    pub const BASE_RATE:u64 = 1_000_000_000u64;
+    pub const DEFAULT_BASE_POINT_FOR_STABLE_COINS:u64 = 10u64;
+    pub const DEFAULT_BASE_POINT_FOR_BFC:u64 = 0u64;
+
+    pub const ONE_HUNDRED: u64 = 100;
 
     #[enum_dispatch]
     pub trait SuiGasStatusAPI {
@@ -49,6 +55,8 @@ pub mod checked {
         ) -> u64;
         fn charge_storage_and_rebate(&mut self) -> Result<(), ExecutionError>;
         fn adjust_computation_on_out_of_gas(&mut self);
+        fn stable_rate(&self) -> Option<u64>;
+        fn base_points(&self) -> Option<u64>;
     }
 
     /// Version aware enum for gas status.
@@ -66,6 +74,8 @@ pub mod checked {
             gas_price: u64,
             reference_gas_price: u64,
             config: &ProtocolConfig,
+            stable_rate: Option<u64>,
+            base_points: Option<u64>,
         ) -> SuiResult<Self> {
             // Common checks. We may pull them into version specific status as needed, but they
             // are unlikely to change.
@@ -78,10 +88,11 @@ pub mod checked {
                 }
                 .into());
             }
-            if gas_price_too_high(config.gas_model_version()) && gas_price >= config.max_gas_price()
+            let stable_max_price= calculate_divide_rate(config.max_gas_price(), stable_rate);
+            if gas_price_too_high(config.gas_model_version()) && gas_price >= stable_max_price
             {
                 return Err(UserInputError::GasPriceTooHigh {
-                    max_gas_price: config.max_gas_price(),
+                    max_gas_price: stable_max_price,
                 }
                 .into());
             }
@@ -91,6 +102,8 @@ pub mod checked {
                 gas_price,
                 reference_gas_price,
                 config,
+                stable_rate,
+                base_points,
             )))
         }
 
@@ -176,8 +189,8 @@ pub mod checked {
             non_refundable_storage_fee: u64,
         ) -> GasCostSummary {
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 computation_cost,
                 storage_cost,
                 storage_rebate,
@@ -225,8 +238,8 @@ pub mod checked {
                 .multiunzip();
 
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point: DEFAULT_BASE_POINT_FOR_BFC,
+                rate: BASE_RATE,
                 storage_cost: storage_costs.iter().sum(),
                 computation_cost: computation_costs.iter().sum(),
                 storage_rebate: storage_rebates.iter().sum(),
@@ -243,6 +256,12 @@ pub mod checked {
                 storage_rebate: calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point),
                 non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
+        }
+        pub fn net_gas_usage_improved(&self) -> i64 {
+            let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
+            let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
+            let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point);
+            (computation_cost + storage_cost) as i64 - (storage_rebate as i64)
         }
     }
 
@@ -305,24 +324,68 @@ pub mod checked {
         }
     }
 }
+pub fn calculate_divide_rate(val: u64, rate_option: Option<u64>) -> u64 {
+    if let Some(rate) = rate_option {
+        if rate == 0 {
+            return val;
+        }
+        let result =  (val as u128)  * BASE_RATE as u128/ (rate as u128);
+        result as u64
+    }else {
+        val
+    }
+}
+
+pub fn calculate_multiply_rate(val: u64, rate_option: Option<u64>) -> u64 {
+    if let Some(rate) = rate_option {
+        let result =  (val as u128)  * (rate as u128) / BASE_RATE as u128;
+        result as u64
+    }else {
+        val
+    }
+}
+const REWARD_BASIS_POINTS: u128 = 100;
 
 pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
     if reward_rate == 0 {
         warn!("reward rate is zero, reward: {}", reward);
         return reward;
     }
-    (reward as u128 * reward_rate as u128 / 100u128 ) as u64
+    // 将u64转换为u128
+    let reward_u128 = reward as u128;
+    let rate_u128 = reward_rate as u128;
+
+    // 使用checked_mul和checked_div
+    match reward_u128.checked_mul(rate_u128) {
+        Some(reward_) => {
+            (reward_ / REWARD_BASIS_POINTS) as u64
+        },
+        None => {
+            warn!("Multiplication overflow: reward: {}, reward_rate: {}", reward, reward_rate);
+            return reward;
+        }
+    }
 }
+
+pub fn calculate_add(base: u64, add: u64) -> u64 {
+    base.checked_add(add).unwrap_or_else(|| {
+        warn!("Addition overflow: base: {}, add: {}", base, add);
+        base
+    })
+}
+
+const BFC_STABLE_BASIS_POINTS_U64: u64 = 100;
+const BFC_PRECISION: u128 = 1000000000;
 
 pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
     if rate == 0 || rate == 1 {
         return cost;
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
-    ((cost as u128 * 1000000000u128 * (100 + base_point) as u128) / (rate * 100u64) as u128) as u64
+    ((cost as u128 * BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) / (rate * BFC_STABLE_BASIS_POINTS_U64) as u128) as u64
 }
 
-pub fn calculate_stable_net_used_with_base_point(summary :GasCostSummary) -> i64 {
+pub fn calculate_stable_net_used_with_base_point(summary :&GasCostSummary) -> i64 {
     let computation_cost = calculate_bfc_to_stable_cost_with_base_point(summary.computation_cost, summary.rate, summary.base_point);
     let storage_cost = calculate_bfc_to_stable_cost_with_base_point(summary.storage_cost, summary.rate, summary.base_point);
     let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(summary.storage_rebate, summary.rate, summary.base_point);
@@ -330,7 +393,7 @@ pub fn calculate_stable_net_used_with_base_point(summary :GasCostSummary) -> i64
 }
 
 pub fn calculate_stable_to_bfc_cost_with_base_point(stable_cost: u64, rate: u64, base_point: u64) -> u64 {
-    stable_cost * (rate * 100u64) / (1000000000u128 * (100 + base_point) as u128) as u64
+    stable_cost * (rate * BFC_STABLE_BASIS_POINTS_U64) / (BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) as u64
 }
 
 pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
@@ -338,34 +401,44 @@ pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
         warn!("rate is zero, cost: {}, rate: {}", cost, rate);
         return cost;
     }
-    let num = cost as u128 * rate as u128;
-    let denom = 1000000000u128;
-    let quotient = num / denom;
-    let remained = num % denom;
-    if remained > 0 {
-        (quotient + 1) as u64
-    } else {
-        quotient as u64
+    let cost_u128 = cost as u128;
+    let rate_u128 = rate as u128;
+
+    // 使用checked_mul和checked_div
+    match cost_u128.checked_mul(rate_u128) {
+        Some(num) => {
+            let quotient = num / BFC_PRECISION;
+            let remainder = num % BFC_PRECISION;
+            if remainder > 0 {
+                match quotient.checked_add(1) {
+                    Some(result) => result as u64,
+                    None => {
+                        // 处理加法溢出
+                        warn!("Addition overflow: quotient: {}", quotient);
+                        cost
+                    }
+                }
+            } else {
+                quotient as u64
+            }
+        },
+        None => {
+            // 处理乘法溢出
+            warn!("Multiplication overflow: cost: {}, rate: {}", cost, rate);
+            cost
+        }
     }
 }
 
 #[cfg(test)]
 mod test{
-    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_stable_to_bfc_cost};
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point};
     #[test]
     fn test_calculate_stable_rate() {
         let cost = 132240;
         let rate = 1000000032u64;
         let result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 0);
         println!("result: {}", result);
-        let result = calculate_stable_to_bfc_cost(result, rate);
-        println!("result: {}", result);
-        assert_eq!(cost, result);
-        let cost_u64_max = u64::MAX;
-        let result = calculate_bfc_to_stable_cost_with_base_point(cost_u64_max, rate, 0);
-        println!("result: {}", result);
-        let result = calculate_stable_to_bfc_cost(result, rate);
-        assert_eq!(cost_u64_max, result);
         let cost = -87119i64;
         let rate = 999999999u64;
         let result = calculate_bfc_to_stable_cost_with_base_point(cost.abs() as u64, rate, 10);

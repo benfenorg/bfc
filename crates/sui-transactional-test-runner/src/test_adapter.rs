@@ -55,7 +55,7 @@ use sui_graphql_rpc::config::ConnectionConfig;
 use sui_graphql_rpc::test_infra::cluster::ExecutorCluster;
 use sui_graphql_rpc::test_infra::cluster::{serve_executor, SnapshotLagConfig};
 use sui_json_rpc_api::QUERY_MAX_RESULT_LIMIT;
-use sui_json_rpc_types::{DevInspectResults, SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
+use sui_json_rpc_types::{DevInspectResults, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_protocol_config::{Chain, ProtocolConfig};
 use sui_storage::{
     key_value_store::TransactionKeyValueStore, key_value_store_metrics::KeyValueStoreMetrics,
@@ -85,7 +85,7 @@ use sui_types::{
 };
 use sui_types::{SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
-use sui_types::{gas::GasCostSummary, object::GAS_VALUE_FOR_TESTING};
+use sui_types::{object::GAS_VALUE_FOR_TESTING};
 use sui_types::{
     move_package::MovePackage,
     transaction::{Argument, CallArg},
@@ -94,7 +94,7 @@ use sui_types::{
     programmable_transaction_builder::ProgrammableTransactionBuilder, SUI_FRAMEWORK_PACKAGE_ID
 };
 use sui_types::{utils::to_sender_signed_transaction, SUI_SYSTEM_PACKAGE_ID};
-use sui_types::{DEEPBOOK_ADDRESS, SUI_DENY_LIST_OBJECT_ID};
+use sui_types::SUI_DENY_LIST_OBJECT_ID;
 use sui_types::{DEEPBOOK_PACKAGE_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
 use tempfile::{tempdir, NamedTempFile};
 
@@ -167,7 +167,7 @@ struct TxnSummary {
     unwrapped_then_deleted: Vec<ObjectID>,
     wrapped: Vec<ObjectID>,
     events: Vec<Event>,
-    gas_summary: GasCostSummary,
+    gas_summary: SuiGasCostSummary,
 }
 
 #[async_trait]
@@ -1460,7 +1460,7 @@ impl<'a> SuiTestAdapter {
                     .await?;
                 Ok(TxnSummary {
                     events,
-                    gas_summary: gas_summary.clone(),
+                    gas_summary: SuiGasCostSummary::from(gas_summary.clone()),
                     created: created_ids,
                     mutated: mutated_ids,
                     unwrapped: unwrapped_ids,
@@ -1837,13 +1837,13 @@ static NAMED_ADDRESSES: Lazy<BTreeMap<String, NumericalAddress>> = Lazy::new(|| 
             move_compiler::shared::NumberFormat::Hex,
         ),
     );
-    map.insert(
-        "deepbook".to_string(),
-        NumericalAddress::new(
-            DEEPBOOK_ADDRESS.into_bytes(),
-            move_compiler::shared::NumberFormat::Hex,
-        ),
-    );
+    // map.insert(
+    //     "deepbook".to_string(),
+    //     NumericalAddress::new(
+    //         DEEPBOOK_ADDRESS.into_bytes(),
+    //         move_compiler::shared::NumberFormat::Hex,
+    //     ),
+    // );
     map.insert(
         "bfc_system".to_string(),
         NumericalAddress::new(
@@ -1873,11 +1873,6 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
         buf.extend(["packages", "move-stdlib", "sources"]);
         buf.to_string_lossy().to_string()
     };
-    let deepbook_sources = {
-        let mut buf = sui_files.to_path_buf();
-        buf.extend(["packages", "deepbook", "sources"]);
-        buf.to_string_lossy().to_string()
-    };
     let bfc_system_sources = {
         let mut buf = sui_files.to_path_buf();
         buf.extend(["packages", "bfc-system", "sources"]);
@@ -1891,7 +1886,7 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     };
     let fully_compiled_res = move_compiler::construct_pre_compiled_lib(
         vec![PackagePaths {
-            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps, deepbook_sources],
+            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps,],
             name: Some(("sui-framework".into(), config)),
             named_address_map: NAMED_ADDRESSES.clone(),
         }],

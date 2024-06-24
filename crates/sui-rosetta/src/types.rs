@@ -409,7 +409,6 @@ pub enum OperationType {
     WithdrawStake,
     // All other Sui transaction types, readonly
     EpochChange,
-    BfcRoundChange,
     Genesis,
     ConsensusCommitPrologue,
     ProgrammableTransaction,
@@ -422,7 +421,6 @@ impl From<&SuiTransactionBlockKind> for OperationType {
     fn from(tx: &SuiTransactionBlockKind) -> Self {
         match tx {
             SuiTransactionBlockKind::ChangeEpoch(_) => OperationType::EpochChange,
-            SuiTransactionBlockKind::ChangeBfcRound(_) => OperationType::BfcRoundChange,
             SuiTransactionBlockKind::Genesis(_) => OperationType::Genesis,
             SuiTransactionBlockKind::ConsensusCommitPrologue(_)
             | SuiTransactionBlockKind::ConsensusCommitPrologueV2(_) => {

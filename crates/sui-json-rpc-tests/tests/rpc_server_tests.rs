@@ -35,7 +35,6 @@ use tokio::time::sleep;
 use tracing::info;
 use sui_simulator::telemetry_subscribers;
 use sui_types::dao::DaoRPC;
-use sui_types::proposal::Proposal;
 
 #[sim_test]
 async fn test_get_objects() -> Result<(), anyhow::Error> {

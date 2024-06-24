@@ -52,7 +52,7 @@ pub struct ProposalInfo{
     pub quorum_votes: u64,
     /// proposal action.
     pub action: BFCDaoAction,
-    version_id: u64,
+    pub version_id: u64,
     pub description: String,
 }
 
@@ -84,14 +84,14 @@ impl TryFrom<&Object> for Proposal {
         match &object.data {
             Data::Move(o) => {
                 return bcs::from_bytes(o.contents()).map_err(|err| SuiError::TypeError {
-                    error: format!("Unable to deserialize propodal object: {:?}", err),
+                    error: format!("Unable to deserialize proposal object: {:?}", err),
                 });
             }
             Data::Package(_) => {}
         }
 
         Err(SuiError::TypeError {
-            error: format!("Object type is not a propodal: {:?}", object),
+            error: format!("Object type is not a proposal: {:?}", object),
         })
     }
 }

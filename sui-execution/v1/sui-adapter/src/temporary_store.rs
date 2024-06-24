@@ -20,7 +20,7 @@ use sui_types::execution_config_utils::to_binary_config;
 use sui_types::execution_status::ExecutionStatus;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, PackageObject};
-use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams};
+use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams, get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::{
     base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
@@ -818,10 +818,35 @@ impl<'backing> TemporaryStore<'backing> {
             wrapper.advance_epoch_safe_mode(params, self.store.as_object_store(), protocol_config);
         self.mutate_child_object(old_object, new_object);
     }
-    pub fn get_stable_rate_map_and_reward_rate(&self) -> (VecMap<String, u64>, u64) {
-        let (wrapper, reward_rate) = get_stable_rate_and_reward_rate(self.store.as_object_store())
-            .expect("System stable rate map must exist");
-        (wrapper, reward_rate)
+    pub fn get_stable_rate_map_and_reward_rate(&self) -> Result<(VecMap<String, u64>, u64),SuiError> {
+        get_stable_rate_and_reward_rate(self.store.as_object_store())
+    }
+    pub fn is_safe_mode(& self) -> bool {
+        let sui_system_state_result = get_sui_system_state(self.store.as_object_store());
+        if let Ok(sui_system_state) = sui_system_state_result {
+            match sui_system_state {
+                SuiSystemState::V1(inner)=>{
+                    inner.safe_mode()
+                },
+                SuiSystemState::V2(inner)=>{
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestV1(inner) =>{
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestShallowV2(inner) => {
+                    inner.safe_mode()
+                }
+                #[cfg(msim)]
+                SuiSystemState::SimTestDeepV2(inner)=>{
+                    inner.safe_mode()
+                }
+            }
+        }else {
+            true
+        }
     }
 }
 

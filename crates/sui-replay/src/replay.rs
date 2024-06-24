@@ -695,7 +695,7 @@ impl LocalExec {
         let transaction_kind = override_transaction_kind.unwrap_or(tx_info.kind.clone());
         let certificate_deny_set = HashSet::new();
         let (inner_store, gas_status, effects, result) = if let Ok(gas_status) =
-            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config)
+            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config, None, None)
         {
             executor.execute_transaction_to_effects(
                 &self,
@@ -735,7 +735,7 @@ impl LocalExec {
                             epoch_start_timestamp,
                             CheckedInputObjects::new_for_replay(input_objects),
                             tx_info.gas.clone(),
-                            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config)?,
+                            SuiGasStatus::new(tx_info.gas_budget, tx_info.gas_price, rgp, protocol_config, None, None)?,
                             transaction_kind.clone(),
                             tx_info.sender,
                             *tx_digest,

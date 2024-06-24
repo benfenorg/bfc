@@ -167,11 +167,11 @@ pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT
 //     )
 // }
 
-const fn address_from_single_byte(b: u8) -> AccountAddress {
-    let mut addr = [0u8; AccountAddress::LENGTH];
-    addr[AccountAddress::LENGTH - 1] = b;
-    AccountAddress::new(addr)
-}
+// const fn address_from_single_byte(b: u8) -> AccountAddress {
+//     let mut addr = [0u8; AccountAddress::LENGTH];
+//     addr[AccountAddress::LENGTH - 1] = b;
+//     AccountAddress::new(addr)
+// }
 
 /// return 0x0...dee9
 //const fn deepbook_addr() -> AccountAddress {

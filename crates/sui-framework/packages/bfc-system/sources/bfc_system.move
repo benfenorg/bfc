@@ -1,5 +1,7 @@
 module bfc_system::bfc_system {
     use std::ascii;
+    use bfc_system::position::Position;
+    use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
     use bfc_system::voting_pool::VotingBfc;
     use sui::balance::{Balance, Supply};
@@ -36,6 +38,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
+    use bfc_system::treasury::TreasuryPauseCap;
 
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
@@ -61,7 +64,7 @@ module bfc_system::bfc_system {
 
     //spec module { pragma verify = false; }
 
-    public fun create(
+    public(package) fun create(
         id: UID,
         bfc_balance: Balance<BFC>,
         usd_supply: Supply<BUSD>,
@@ -122,7 +125,8 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
-    public fun bfc_round(
+    #[allow(unused_function)]
+    fun bfc_round(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
         round: u64,
@@ -135,7 +139,23 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, clock::timestamp_ms(clock));
     }
 
-    public fun inner_stablecoin_to_bfc<StableCoinType>(
+    #[test_only]
+    public fun bfc_round_test(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        round: u64,
+        epoch_start_time: u64,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::update_round(inner_state, round);
+        // X-treasury rebalance
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
+    }
+
+    #[allow(unused_function)]
+    fun inner_stablecoin_to_bfc<StableCoinType>(
         _self: &mut BfcSystemState,
         _balance: Balance<StableCoinType>,
         expect: u64,
@@ -179,6 +199,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_rate_map(inner)
     }
 
+    public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
+        let system_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
+    }
+
+    public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
+        let system_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::remove_action(system_state,key,action_id);
+    }
+
     public entry fun destroy_terminated_proposal(
         wrapper: &mut BfcSystemState,
         manager_key: &BFCDaoManageKey,
@@ -213,8 +243,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
-    #[test_only]
-    public fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
+    public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }
@@ -261,6 +290,16 @@ module bfc_system::bfc_system {
                                  ctx: &mut TxContext) {
         let system_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
+    }
+
+    /// X treasury rebalance
+    public fun rebalance(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
@@ -314,6 +353,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
     }
 
+    public fun vault_ticks<StableCoinType>(wrapper: &BfcSystemState): vector<Tick> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_ticks<StableCoinType>(inner_state)
+    }
+
+    public fun vault_positions<StableCoinType>(wrapper: &BfcSystemState): vector<Position> {
+        let inner_state = load_system_state(wrapper);
+        bfc_system_state_inner::vault_positions<StableCoinType>(inner_state)
+    }
+
     public fun total_supply<StableCoinType>(wrapper: &BfcSystemState): u64 {
         let inner_state = load_system_state(wrapper);
         bfc_system_state_inner::get_total_supply<StableCoinType>(inner_state)
@@ -364,6 +413,14 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
+    public entry fun vault_set_pause<StableCoinType>(
+        cap: &TreasuryPauseCap,
+        wrapper: &mut BfcSystemState,
+        pause: bool
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::vault_set_pause<StableCoinType>(cap, inner_state, pause)
+    }
 
     public entry fun set_voting_delay(
         self: &mut BfcSystemState,

@@ -7,7 +7,7 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use crate::error::{UserInputError, UserInputResult};
-    use crate::gas::{self, GasCostSummary, SuiGasStatusAPI};
+    use crate::gas::{self, BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, SuiGasStatusAPI};
     use crate::gas_model::gas_predicates::{cost_table_for_version, txn_base_cost_as_multiplier};
     use crate::gas_model::units_types::CostTable;
     use crate::transaction::ObjectReadResult;
@@ -110,13 +110,14 @@ mod checked {
     }
 
     impl SuiCostTable {
-        pub(crate) fn new(c: &ProtocolConfig, gas_price: u64) -> Self {
+        pub(crate) fn new(c: &ProtocolConfig, gas_price: u64, stable_rate: Option<u64>) -> Self {
             // gas_price here is the Reference Gas Price, however we may decide
             // to change it to be the price passed in the transaction
+            let stable_base_tx_cost_fixed = calculate_divide_rate(c.base_tx_cost_fixed(), stable_rate);
             let min_transaction_cost = if txn_base_cost_as_multiplier(c) {
-                c.base_tx_cost_fixed() * gas_price
+                stable_base_tx_cost_fixed * gas_price
             } else {
-                c.base_tx_cost_fixed()
+                stable_base_tx_cost_fixed
             };
             Self {
                 min_transaction_cost,
@@ -201,6 +202,10 @@ mod checked {
         unmetered_storage_rebate: u64,
         /// Rounding value to round up gas charges.
         gas_rounding_step: Option<u64>,
+        /// Stable rate for pay with stable gas coin.
+        stable_rate: Option<u64>,
+        /// Stable base points.
+        base_points: Option<u64>,
     }
 
     impl SuiGasStatus {
@@ -214,6 +219,8 @@ mod checked {
             rebate_rate: u64,
             gas_rounding_step: Option<u64>,
             cost_table: SuiCostTable,
+            stable_rate: Option<u64>,
+            base_points: Option<u64>,
         ) -> SuiGasStatus {
             let gas_rounding_step = gas_rounding_step.map(|val| val.max(1));
             SuiGasStatus {
@@ -229,6 +236,8 @@ mod checked {
                 unmetered_storage_rebate: 0,
                 gas_rounding_step,
                 cost_table,
+                stable_rate,
+                base_points,
             }
         }
 
@@ -237,15 +246,18 @@ mod checked {
             gas_price: u64,
             reference_gas_price: u64,
             config: &ProtocolConfig,
+            stable_rate: Option<u64>,
+            base_points: Option<u64>,
         ) -> SuiGasStatus {
             let storage_gas_price = config.storage_gas_price();
-            let max_computation_budget = config.max_gas_computation_bucket() * gas_price;
+            let stable_max_gas_computation_bucket = calculate_divide_rate(config.max_gas_computation_bucket(), stable_rate);
+            let max_computation_budget = stable_max_gas_computation_bucket * gas_price;
             let computation_budget = if gas_budget > max_computation_budget {
                 max_computation_budget
             } else {
                 gas_budget
             };
-            let sui_cost_table = SuiCostTable::new(config, gas_price);
+            let sui_cost_table = SuiCostTable::new(config, gas_price, stable_rate);
             let gas_rounding_step = config.gas_rounding_step_as_option();
             Self::new(
                 GasStatus::new(
@@ -262,6 +274,8 @@ mod checked {
                 config.storage_rebate_rate(),
                 gas_rounding_step,
                 sui_cost_table,
+                stable_rate,
+                base_points,
             )
         }
 
@@ -276,6 +290,8 @@ mod checked {
                 0,
                 None,
                 SuiCostTable::unmetered(),
+                None,
+                None
             )
         }
 
@@ -308,30 +324,37 @@ mod checked {
                 }
             }
 
+            let stable_max_budget = calculate_divide_rate(self.cost_table.max_gas_budget, self.stable_rate);
             // 2. Gas budget is between min and max budget allowed
-            if gas_budget > self.cost_table.max_gas_budget {
+            //error 2. Gas budget is between min and max budget allowed
+            if gas_budget > stable_max_budget {
                 return Err(UserInputError::GasBudgetTooHigh {
                     gas_budget,
-                    max_budget: self.cost_table.max_gas_budget,
+                    max_budget: stable_max_budget,
                 });
             }
+
+            let stable_min_budget = calculate_divide_rate(self.cost_table.min_transaction_cost, self.stable_rate);
             if gas_budget < self.cost_table.min_transaction_cost {
                 return Err(UserInputError::GasBudgetTooLow {
                     gas_budget,
-                    min_budget: self.cost_table.min_transaction_cost,
+                    min_budget: stable_min_budget,
                 });
             }
 
             //4. Gas Coin type should be same type for all gas objects
-            if gas_objs.len() >1 {
-                let obj1 = gas_objs[0].as_object().unwrap();
-                let gas_coin_type = obj1.coin_type_maybe().unwrap();
-                for gas_object in gas_objs {
-                    let obj2 = gas_object.as_object().unwrap();
-                    if obj2.coin_type_maybe().unwrap() != gas_coin_type {
+            if gas_objs.len() > 1 {
+                let first_gas_object = gas_objs[0].as_object().expect("object must be owned");
+                let gas_coin_type = first_gas_object.coin_type_maybe().ok_or(UserInputError::GasCoinTypeMissing)?;
+
+                for gas_object_ref in gas_objs {
+                    let gas_object = gas_object_ref.as_object().expect("object must be owned");
+                    let current_coin_type = gas_object.coin_type_maybe().ok_or(UserInputError::GasCoinTypeMissing)?;
+
+                    if current_coin_type != gas_coin_type {
                         return Err(UserInputError::GasCoinTypeMismatch {
-                            coin_type: obj1.coin_type_maybe().unwrap().to_canonical_string(true),
-                            second_coin_type: obj2.coin_type_maybe().unwrap().to_canonical_string(true),
+                            coin_type: current_coin_type.to_canonical_string(true),
+                            second_coin_type: gas_coin_type.to_canonical_string(true),
                         });
                     }
                 }
@@ -391,7 +414,20 @@ mod checked {
                 // cost a bucket value
                 bucket_cost * self.gas_price
             };
-            if self.gas_budget <= gas_used {
+            let base_points = if let Some(base) = self.base_points() {
+                base
+            }else {
+                DEFAULT_BASE_POINT_FOR_BFC
+            };
+            let rate = if let Some(rate) = self.stable_rate() {
+                rate
+            }else {
+                BASE_RATE
+            };
+
+            let stable_gas_used =calculate_bfc_to_stable_cost_with_base_point(gas_used, rate, base_points);
+
+            if self.gas_budget <= stable_gas_used {
                 self.computation_cost = self.gas_budget;
                 Err(ExecutionErrorKind::InsufficientGas.into())
             } else {
@@ -410,8 +446,8 @@ mod checked {
             assert!(sender_rebate <= storage_rebate);
             let non_refundable_storage_fee = storage_rebate - sender_rebate;
             GasCostSummary {
-                base_point:0,
-                rate:1,
+                base_point:DEFAULT_BASE_POINT_FOR_BFC,
+                rate:BASE_RATE,
                 computation_cost: self.computation_cost,
                 storage_cost: self.storage_cost(),
                 storage_rebate: sender_rebate,
@@ -511,9 +547,22 @@ mod checked {
                 // to whatever is the current amount charged so we are `Ok`
                 Ok(())
             } else {
-                let gas_left = self.gas_budget - self.computation_cost;
+                let base_points = if let Some(base) = self.base_points() {
+                    base
+                }else {
+                    DEFAULT_BASE_POINT_FOR_BFC
+                };
+                let (stable_gas_left, stable_rebate) = if let Some(rate) =  self.stable_rate() {
+                    let stable_storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost(), rate, base_points);
+                    let stable_sender_rebate = calculate_bfc_to_stable_cost_with_base_point(sender_rebate, rate, base_points);
+                    (self.gas_budget - calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, rate, base_points),
+                     stable_storage_cost - stable_sender_rebate)
+                }else {
+                    (self.gas_budget - self.computation_cost, self.storage_cost() - sender_rebate)
+                };
+
                 // we have to charge for storage and may go out of gas, check
-                if gas_left < storage_cost - sender_rebate {
+                if stable_gas_left < stable_rebate {
                     // Running out of gas would cause the temporary store to reset
                     // and zero storage and rebate.
                     // The remaining_gas will be 0 and we will charge all in computation
@@ -522,6 +571,13 @@ mod checked {
                     Ok(())
                 }
             }
+        }
+
+        fn stable_rate(&self) -> Option<u64> {
+            self.stable_rate
+        }
+        fn base_points(&self) -> Option<u64> {
+            self.base_points
         }
 
         fn adjust_computation_on_out_of_gas(&mut self) {

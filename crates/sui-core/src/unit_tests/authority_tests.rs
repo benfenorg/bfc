@@ -26,9 +26,8 @@ use std::collections::HashSet;
 use std::fs;
 use std::{convert::TryInto, env};
 
-use sui_json_rpc_types::{
-    SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTypeTag,
-};
+use sui_json_rpc_types::{SuiArgument, SuiExecutionResult, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI, SuiTypeTag};
+
 use sui_macros::sim_test;
 use sui_protocol_config::{
     Chain, PerObjectCongestionControlMode, ProtocolConfig, ProtocolVersion,
@@ -371,7 +370,7 @@ async fn test_dev_inspect_object_by_bytes() {
         .contents()
         .to_vec();
     // gas used should be the same
-    assert_eq!(effects.gas_cost_summary(), &dev_inspect_gas_summary);
+    assert_eq!(SuiGasCostSummary::from(effects.gas_cost_summary().clone()), dev_inspect_gas_summary);
 
     // use the created object directly, via its bytes
     let DevInspectResults {
@@ -517,14 +516,14 @@ async fn test_dev_inspect_dynamic_field() {
     let (test_object1_bytes, test_object2_bytes) = {
         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_object_id = ObjectID::random();
-        let (validator, fullnode, object_basics) =
+        let (validator, full_node, object_basics) =
             init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)])
                 .await;
         macro_rules! mk_obj {
             () => {{
                 let effects = call_move_(
                     &validator,
-                    Some(&fullnode),
+                    Some(&full_node),
                     &gas_object_id,
                     &sender,
                     &sender_key,
@@ -1098,7 +1097,7 @@ async fn test_dry_run_dev_inspect_dynamic_field_too_new() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS / 10,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);

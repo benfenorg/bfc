@@ -18,19 +18,25 @@ title: Module `0xc8::bfc_system`
 -  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
+-  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
+-  [Function `remove_action`](#0xc8_bfc_system_remove_action)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
 -  [Function `propose`](#0xc8_bfc_system_propose)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_create_bfcdao_action)
+-  [Function `judge_proposal_state`](#0xc8_bfc_system_judge_proposal_state)
 -  [Function `set_voting_period`](#0xc8_bfc_system_set_voting_period)
 -  [Function `set_voting_quorum_rate`](#0xc8_bfc_system_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_bfc_system_set_min_action_delay)
 -  [Function `withdraw_voting`](#0xc8_bfc_system_withdraw_voting)
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
+-  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
 -  [Function `swap_stablecoin_to_bfc`](#0xc8_bfc_system_swap_stablecoin_to_bfc)
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
 -  [Function `get_bfc_by_stablecoin`](#0xc8_bfc_system_get_bfc_by_stablecoin)
 -  [Function `vault_info`](#0xc8_bfc_system_vault_info)
+-  [Function `vault_ticks`](#0xc8_bfc_system_vault_ticks)
+-  [Function `vault_positions`](#0xc8_bfc_system_vault_positions)
 -  [Function `total_supply`](#0xc8_bfc_system_total_supply)
 -  [Function `get_bfc_exchange_rate`](#0xc8_bfc_system_get_bfc_exchange_rate)
 -  [Function `get_stablecoin_exchange_rate`](#0xc8_bfc_system_get_stablecoin_exchange_rate)
@@ -40,6 +46,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `deposit_to_treasury_inner`](#0xc8_bfc_system_deposit_to_treasury_inner)
 -  [Function `deposit_to_treasury_pool`](#0xc8_bfc_system_deposit_to_treasury_pool)
 -  [Function `deposit_to_treasury_pool_no_entry`](#0xc8_bfc_system_deposit_to_treasury_pool_no_entry)
+-  [Function `vault_set_pause`](#0xc8_bfc_system_vault_set_pause)
 -  [Function `set_voting_delay`](#0xc8_bfc_system_set_voting_delay)
 -  [Function `cast_vote`](#0xc8_bfc_system_cast_vote)
 -  [Function `change_vote`](#0xc8_bfc_system_change_vote)
@@ -80,6 +87,9 @@ title: Module `0xc8::bfc_system`
 <b>use</b> <a href="../bfc-system/busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="../bfc-system/bzar.md#0xc8_bzar">0xc8::bzar</a>;
 <b>use</b> <a href="../bfc-system/mgg.md#0xc8_mgg">0xc8::mgg</a>;
+<b>use</b> <a href="../bfc-system/position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="../bfc-system/tick.md#0xc8_tick">0xc8::tick</a>;
+<b>use</b> <a href="../bfc-system/treasury.md#0xc8_treasury">0xc8::treasury</a>;
 <b>use</b> <a href="../bfc-system/vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="../bfc-system/bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -190,7 +200,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_create">create</a>(id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, bfc_balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, usd_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, jpy_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bjpy.md#0xc8_bjpy_BJPY">bjpy::BJPY</a>&gt;, krw_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bkrw.md#0xc8_bkrw_BKRW">bkrw::BKRW</a>&gt;, aud_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/baud.md#0xc8_baud_BAUD">baud::BAUD</a>&gt;, ars_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bars.md#0xc8_bars_BARS">bars::BARS</a>&gt;, brl_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bbrl.md#0xc8_bbrl_BBRL">bbrl::BBRL</a>&gt;, cad_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bcad.md#0xc8_bcad_BCAD">bcad::BCAD</a>&gt;, eur_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/beur.md#0xc8_beur_BEUR">beur::BEUR</a>&gt;, gbp_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bgbp.md#0xc8_bgbp_BGBP">bgbp::BGBP</a>&gt;, idr_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bidr.md#0xc8_bidr_BIDR">bidr::BIDR</a>&gt;, inr_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/binr.md#0xc8_binr_BINR">binr::BINR</a>&gt;, rub_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/brub.md#0xc8_brub_BRUB">brub::BRUB</a>&gt;, sar_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bsar.md#0xc8_bsar_BSAR">bsar::BSAR</a>&gt;, try_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/btry.md#0xc8_btry_BTRY">btry::BTRY</a>&gt;, zar_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;, mxn_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bmxn.md#0xc8_bmxn_BMXN">bmxn::BMXN</a>&gt;, mgg_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/mgg.md#0xc8_mgg_MGG">mgg::MGG</a>&gt;, parameters: <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_create">create</a>(id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, bfc_balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, usd_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, jpy_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bjpy.md#0xc8_bjpy_BJPY">bjpy::BJPY</a>&gt;, krw_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bkrw.md#0xc8_bkrw_BKRW">bkrw::BKRW</a>&gt;, aud_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/baud.md#0xc8_baud_BAUD">baud::BAUD</a>&gt;, ars_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bars.md#0xc8_bars_BARS">bars::BARS</a>&gt;, brl_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bbrl.md#0xc8_bbrl_BBRL">bbrl::BBRL</a>&gt;, cad_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bcad.md#0xc8_bcad_BCAD">bcad::BCAD</a>&gt;, eur_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/beur.md#0xc8_beur_BEUR">beur::BEUR</a>&gt;, gbp_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bgbp.md#0xc8_bgbp_BGBP">bgbp::BGBP</a>&gt;, idr_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bidr.md#0xc8_bidr_BIDR">bidr::BIDR</a>&gt;, inr_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/binr.md#0xc8_binr_BINR">binr::BINR</a>&gt;, rub_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/brub.md#0xc8_brub_BRUB">brub::BRUB</a>&gt;, sar_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bsar.md#0xc8_bsar_BSAR">bsar::BSAR</a>&gt;, try_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/btry.md#0xc8_btry_BTRY">btry::BTRY</a>&gt;, zar_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;, mxn_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bmxn.md#0xc8_bmxn_BMXN">bmxn::BMXN</a>&gt;, mgg_supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/mgg.md#0xc8_mgg_MGG">mgg::MGG</a>&gt;, parameters: <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -199,7 +209,7 @@ title: Module `0xc8::bfc_system`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_create">create</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_create">create</a>(
     id: UID,
     bfc_balance: Balance&lt;BFC&gt;,
     usd_supply: Supply&lt;BUSD&gt;,
@@ -290,7 +300,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, round: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, round: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -299,7 +309,7 @@ title: Module `0xc8::bfc_system`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_bfc_round">bfc_round</a>(
     wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     round: u64,
@@ -323,7 +333,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(_self: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, expect: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(_self: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, expect: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -332,7 +342,7 @@ title: Module `0xc8::bfc_system`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(
     _self: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     _balance: Balance&lt;StableCoinType&gt;,
     expect: u64,
@@ -503,6 +513,56 @@ title: Module `0xc8::bfc_system`
 
 </details>
 
+<a name="0xc8_bfc_system_remove_propose"></a>
+
+## Function `remove_propose`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: &<a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, proposal_id: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>( wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,proposal_id: u64){
+    <b>let</b> system_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">bfc_system_state_inner::remove_proposal</a>(system_state,key,proposal_id);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_remove_action"></a>
+
+## Function `remove_action`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: &<a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, action_id: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>( wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,action_id: u64){
+    <b>let</b> system_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">bfc_system_state_inner::remove_action</a>(system_state,key,action_id);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_destroy_terminated_proposal"></a>
 
 ## Function `destroy_terminated_proposal`
@@ -590,6 +650,31 @@ title: Module `0xc8::bfc_system`
     ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_judge_proposal_state"></a>
+
+## Function `judge_proposal_state`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, current_time: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, current_time: u64) {
+    <b>let</b> system_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(system_state, current_time);
 }
 </code></pre>
 
@@ -729,6 +814,36 @@ title: Module `0xc8::bfc_system`
                              ctx: &<b>mut</b> TxContext) {
     <b>let</b> system_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">bfc_system_state_inner::create_voting_bfc</a>(system_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_rebalance"></a>
+
+## Function `rebalance`
+
+X treasury rebalance
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(
+    wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -880,6 +995,56 @@ X treasury  swap stablecoin to bfc
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_info">vault_info</a>&lt;StableCoinType&gt;(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): VaultInfo {
     <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_info">bfc_system_state_inner::vault_info</a>&lt;StableCoinType&gt;(inner_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_vault_ticks"></a>
+
+## Function `vault_ticks`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_ticks">vault_ticks</a>&lt;StableCoinType&gt;(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Tick&gt; {
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_ticks">bfc_system_state_inner::vault_ticks</a>&lt;StableCoinType&gt;(inner_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_vault_positions"></a>
+
+## Function `vault_positions`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/position.md#0xc8_position_Position">position::Position</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_positions">vault_positions</a>&lt;StableCoinType&gt;(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Position&gt; {
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_positions">bfc_system_state_inner::vault_positions</a>&lt;StableCoinType&gt;(inner_state)
 }
 </code></pre>
 
@@ -1110,6 +1275,35 @@ X treasury  swap stablecoin to bfc
     <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self);
     <b>let</b> <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>= <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, ctx);
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury_pool">bfc_system_state_inner::deposit_to_treasury_pool</a>(inner_state, <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_vault_set_pause"></a>
+
+## Function `vault_set_pause`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(cap: &<a href="../bfc-system/treasury.md#0xc8_treasury_TreasuryPauseCap">treasury::TreasuryPauseCap</a>, wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, pause: bool)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_vault_set_pause">vault_set_pause</a>&lt;StableCoinType&gt;(
+    cap: &TreasuryPauseCap,
+    wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    pause: bool
+) {
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause">bfc_system_state_inner::vault_set_pause</a>&lt;StableCoinType&gt;(cap, inner_state, pause)
 }
 </code></pre>
 

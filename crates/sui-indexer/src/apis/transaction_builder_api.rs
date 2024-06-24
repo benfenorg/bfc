@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use super::governance_api::GovernanceReadApi;
 use crate::indexer_reader::IndexerReader;
 use async_trait::async_trait;
 use diesel::r2d2::R2D2Connection;

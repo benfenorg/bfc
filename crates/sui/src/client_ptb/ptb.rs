@@ -21,14 +21,11 @@ use move_core_types::account_address::AccountAddress;
 use serde::Serialize;
 use shared_crypto::intent::Intent;
 use std::collections::BTreeSet;
-use sui_json_rpc_types::{
-    SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
 use sui_keys::keystore::AccountKeystore;
 use sui_sdk::{wallet_context::WalletContext, SuiClient};
 use sui_types::{
     digests::TransactionDigest,
-    gas::GasCostSummary,
     quorum_driver_types::ExecuteTransactionRequestType,
     transaction::{
         ProgrammableTransaction, SenderSignedData, Transaction, TransactionData,
@@ -52,7 +49,7 @@ pub struct PTBPreview<'a> {
 pub struct Summary {
     pub digest: TransactionDigest,
     pub status: SuiExecutionStatus,
-    pub gas_cost: GasCostSummary,
+    pub gas_cost: SuiGasCostSummary,
 }
 
 impl PTB {

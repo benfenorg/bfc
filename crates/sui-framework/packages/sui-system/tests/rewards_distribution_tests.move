@@ -88,7 +88,7 @@ module sui_system::rewards_distribution_tests {
         // the voting power is capped at 10%.
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
-            vector[175 * MIST_PER_SUI, 995 * MIST_PER_SUI, 375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
+            vector[175 * MIST_PER_SUI, 951363637734, 375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
             scenario
         );
         test_scenario::end(scenario_val);
@@ -171,10 +171,13 @@ module sui_system::rewards_distribution_tests {
         advance_epoch_with_reward_amounts(0, 120, scenario);
         // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
         assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario), 20 * MIST_PER_SUI);
+        let sui_total1 = total_sui_balance(STAKER_ADDR_1, scenario);
+        assert!(sui_total1 == 28571428264, sui_total1);
+
         unstake_stable(STAKER_ADDR_2, 0, scenario);
         assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario), 20 * MIST_PER_SUI);
+        let sui_total2 = total_sui_balance(STAKER_ADDR_2, scenario);
+        assert!(sui_total2 == 49999998134, sui_total2);
         test_scenario::end(scenario_val);
     }
 

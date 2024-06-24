@@ -6,7 +6,7 @@ use serde::{Deserialize, Serialize};
 use std::{collections::BTreeMap, path::PathBuf};
 use strum_macros::Display;
 use strum_macros::EnumString;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_json_rpc_types::{SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_swarm_config::genesis_config::{AccountConfig, DEFAULT_GAS_AMOUNT};
 use sui_test_transaction_builder::publish_basics_package_and_make_counter;
 use sui_test_transaction_builder::TestTransactionBuilder;
@@ -18,7 +18,6 @@ use sui_types::gas_coin::GAS;
 use sui_types::transaction::TransactionData;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 use sui_types::{
-    gas::GasCostSummary,
     transaction::{CallArg, ObjectArg},
 };
 use test_cluster::{TestCluster, TestClusterBuilder};
@@ -58,7 +57,7 @@ const TEST_DATA_DIR: &str = "tests/data/";
 
 #[tokio::test]
 async fn test_good_snapshot() -> Result<(), anyhow::Error> {
-    let mut common_costs_actual: BTreeMap<String, GasCostSummary> = BTreeMap::new();
+    let mut common_costs_actual: BTreeMap<String, SuiGasCostSummary> = BTreeMap::new();
 
     run_actual_costs().await?.iter().for_each(|(k, actual)| {
         common_costs_actual.insert(k.to_string(), actual.clone());
@@ -223,7 +222,7 @@ async fn create_txes(
 }
 
 async fn run_actual_costs(
-) -> Result<BTreeMap<CommonTransactionCosts, GasCostSummary>, anyhow::Error> {
+) -> Result<BTreeMap<CommonTransactionCosts, SuiGasCostSummary>, anyhow::Error> {
     let mut ret = BTreeMap::new();
     let test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {

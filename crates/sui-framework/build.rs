@@ -98,7 +98,7 @@ fn main() {
 }
 
 fn build_packages(
-    deepbook_path: PathBuf,
+    _deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
     bfc_system_path: PathBuf,
@@ -115,7 +115,7 @@ fn build_packages(
     debug_assert!(!config.test_mode);
 
     build_packages_with_move_config(
-        deepbook_path.clone(),
+        _deepbook_path.clone(),
         sui_system_path.clone(),
         sui_framework_path.clone(),
         bfc_system_path.clone(),
@@ -138,7 +138,7 @@ fn build_packages(
         ..Default::default()
     };
     build_packages_with_move_config(
-        deepbook_path,
+        _deepbook_path,
         sui_system_path,
         sui_framework_path,
         bfc_system_path,
@@ -154,12 +154,12 @@ fn build_packages(
 }
 
 fn build_packages_with_move_config(
-    deepbook_path: PathBuf,
+    _deepbook_path: PathBuf,
     sui_system_path: PathBuf,
     sui_framework_path: PathBuf,
     bfc_system_path: PathBuf,
     out_dir: PathBuf,
-    deepbook_dir: &str,
+    _deepbook_dir: &str,
     system_dir: &str,
     framework_dir: &str,
     stdlib_dir: &str,
@@ -192,17 +192,17 @@ fn build_packages_with_move_config(
         .build(sui_system_path)
         .unwrap();
 
-    let deepbook_pkg = BuildConfig {
-        config,
-        run_bytecode_verifier: true,
-        print_diags_to_stderr: false,
-    }
-        .build(deepbook_path)
-        .unwrap();
+    // let deepbook_pkg = BuildConfig {
+    //     config,
+    //     run_bytecode_verifier: true,
+    //     print_diags_to_stderr: false,
+    // }
+    //     .build(deepbook_path)
+    //     .unwrap();
 
     let sui_system = system_pkg.get_sui_system_modules();
     let sui_framework = framework_pkg.get_sui_framework_modules();
-    let deepbook = deepbook_pkg.get_deepbook_modules();
+    //let deepbook = deepbook_pkg.get_deepbook_modules();
     let move_stdlib = framework_pkg.get_stdlib_modules();
     let bfc_system = bfc_system_pkg.get_bfc_system_modules();
 
@@ -216,8 +216,6 @@ fn build_packages_with_move_config(
         serialize_modules_to_file(sui_system, &out_dir.join(system_dir)).unwrap();
     let sui_framework_members =
         serialize_modules_to_file(sui_framework, &out_dir.join(framework_dir)).unwrap();
-    let deepbook_members =
-        serialize_modules_to_file(deepbook, &out_dir.join(deepbook_dir)).unwrap();
     let stdlib_members = serialize_modules_to_file(move_stdlib, &out_dir.join(stdlib_dir)).unwrap();
     let bfc_system_members =
         serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
@@ -230,11 +228,11 @@ fn build_packages_with_move_config(
             std::fs::remove_dir_all(DOCS_DIR).unwrap();
         }
         let mut files_to_write = BTreeMap::new();
-        relocate_docs(
-            deepbook_dir,
-            &deepbook_pkg.package.compiled_docs.unwrap(),
-            &mut files_to_write,
-        );
+        // relocate_docs(
+        //     deepbook_dir,
+        //     &deepbook_pkg.package.compiled_docs.unwrap(),
+        //     &mut files_to_write,
+        // );
         relocate_docs(
             system_dir,
             &system_pkg.package.compiled_docs.unwrap(),
@@ -255,7 +253,7 @@ fn build_packages_with_move_config(
         let published_api = [
             sui_system_members.join("\n"),
             sui_framework_members.join("\n"),
-            deepbook_members.join("\n"),
+            //deepbook_members.join("\n"),
             bfc_system_members.join("\n"),
             stdlib_members.join("\n"),
         ]

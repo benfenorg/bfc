@@ -561,18 +561,6 @@ impl<C> ConsensusHandler<C> {
         VerifiedExecutableTransaction::new_system(transaction, self.epoch())
     }
 
-    #[allow(dead_code)]
-    fn bfc_round_transaction(
-        &self,
-        round: u64,
-    ) -> VerifiedExecutableTransaction {
-        let transaction = VerifiedTransaction::new_change_bfc_round(
-            round,
-        );
-        VerifiedExecutableTransaction::new_system(transaction, self.epoch())
-    }
-
-
     fn consensus_commit_prologue_v2_transaction(
         &self,
         round: u64,

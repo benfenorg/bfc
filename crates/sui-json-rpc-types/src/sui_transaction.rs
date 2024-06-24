@@ -27,7 +27,6 @@ use sui_types::base_types::{
     EpochId, ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 };
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, objects_id_to_bfc_address, sui_address_to_bfc_address};
-use sui_types::committee::BfcRoundId;
 use sui_types::crypto::SuiSignature;
 use sui_types::digests::{ConsensusCommitDigest, ObjectDigest, TransactionEventsDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI, TransactionEvents};
@@ -49,6 +48,8 @@ use sui_types::transaction::{
     InputObjectKind, ObjectArg, ProgrammableMoveCall, ProgrammableTransaction, SenderSignedData,
     TransactionData, TransactionDataAPI, TransactionKind, VersionedProtocolMessage,
 };
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
+
 use sui_types::type_resolver::LayoutResolver;
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use std::str::FromStr;
@@ -405,7 +406,6 @@ pub enum SuiTransactionBlockKind {
     EndOfEpochTransaction(SuiEndOfEpochTransaction),
     ConsensusCommitPrologueV2(SuiConsensusCommitPrologueV2),
     // .. more transaction types go here
-    ChangeBfcRound(SuiChangeBfcRound)
 }
 
 impl Display for SuiTransactionBlockKind {
@@ -419,10 +419,6 @@ impl Display for SuiTransactionBlockKind {
                 writeln!(writer, "Computation gas reward: {}", e.computation_charge)?;
                 writeln!(writer, "Storage rebate: {}", e.storage_rebate)?;
                 writeln!(writer, "Timestamp: {}", e.epoch_start_timestamp_ms)?;
-            }
-            Self::ChangeBfcRound(e) => {
-                writeln!(writer, "Transaction Kind : Epoch Bfc Round")?;
-                writeln!(writer, "New Bfc Round ID : {}", e.round)?;
             }
             Self::Genesis(_) => {
                 writeln!(writer, "Transaction Kind: Genesis Transaction")?;
@@ -464,9 +460,6 @@ impl Display for SuiTransactionBlockKind {
 impl SuiTransactionBlockKind {
     fn try_from(tx: TransactionKind, module_cache: &impl GetModule) -> Result<Self, anyhow::Error> {
         Ok(match tx {
-            TransactionKind::ChangeBfcRound(o) =>  Self::ChangeBfcRound(SuiChangeBfcRound {
-                round:o.bfc_round,
-            }),
             TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(e.into()),
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
@@ -544,11 +537,11 @@ impl SuiTransactionBlockKind {
     ) -> Result<Self, anyhow::Error> {
         Ok(match tx {
             TransactionKind::ChangeEpoch(e) => Self::ChangeEpoch(e.into()),
-            TransactionKind::ChangeBfcRound(o) => {
-                Self::ChangeBfcRound(SuiChangeBfcRound {
-                    round:o.bfc_round,
-                })
-            },
+            // TransactionKind::ChangeBfcRound(o) => {
+            //     Self::ChangeBfcRound(SuiChangeBfcRound {
+            //         round:o.bfc_round,
+            //     })
+            // },
             TransactionKind::Genesis(g) => Self::Genesis(SuiGenesisTransaction {
                 objects: g.objects.iter().map(GenesisObject::id).collect(),
             }),
@@ -633,7 +626,6 @@ impl SuiTransactionBlockKind {
     pub fn name(&self) -> &'static str {
         match self {
             Self::ChangeEpoch(_) => "ChangeEpoch",
-            Self::ChangeBfcRound(_) => "ChangeBfcRound",
             Self::Genesis(_) => "Genesis",
             Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
             Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
@@ -665,13 +657,6 @@ pub struct SuiChangeEpoch {
     pub epoch_start_timestamp_ms: u64,
 }
 
-#[serde_as]
-#[derive(Debug, Clone, Serialize, Deserialize, JsonSchema, PartialEq, Eq)]
-pub struct SuiChangeBfcRound {
-    #[schemars(with = "BigInt<u64>")]
-    #[serde_as(as = "BigInt<u64>")]
-    pub round: BfcRoundId,
-}
 impl From<ChangeEpoch> for SuiChangeEpoch {
     fn from(e: ChangeEpoch) -> Self {
         Self {
@@ -711,8 +696,8 @@ pub trait SuiTransactionBlockEffectsAPI {
     fn dependencies(&self) -> &[TransactionDigest];
     fn executed_epoch(&self) -> EpochId;
     fn transaction_digest(&self) -> &TransactionDigest;
-    fn gas_cost_summary(&self) -> &GasCostSummary;
-    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary;
+    fn gas_cost_summary(&self) -> &SuiGasCostSummary;
+    fn mut_gas_cost_summary(&mut self) -> &mut SuiGasCostSummary;
 
     /// Return an iterator of mutated objects, but excluding the gas object.
     fn mutated_excluding_gas(&self) -> Vec<OwnedObjectRef>;
@@ -734,6 +719,61 @@ pub struct SuiTransactionBlockEffectsModifiedAtVersions {
     sequence_number: SequenceNumber,
 }
 
+#[serde_as]
+#[derive(Eq, PartialEq, Clone, Debug, Default,Hash, Serialize, Deserialize, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiGasCostSummary {
+    /// Cost of computation/execution
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub computation_cost: u64,
+    /// Storage cost, it's the sum of all storage cost for all objects created or mutated.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub storage_cost: u64,
+    /// The amount of storage cost refunded to the user for all objects deleted or mutated in the
+    /// transaction.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub storage_rebate: u64,
+    /// The fee for the rebate. The portion of the storage rebate kept by the system.
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "Readable<BigInt<u64>, _>")]
+    pub non_refundable_storage_fee: u64,
+}
+
+impl SuiGasCostSummary {
+    pub fn from(
+        gas_cost_summary: GasCostSummary
+    ) -> Self {
+        Self{
+            computation_cost: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.computation_cost,gas_cost_summary.rate,gas_cost_summary.base_point),
+            storage_cost: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.storage_cost,gas_cost_summary.rate,gas_cost_summary.base_point),
+            storage_rebate: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.storage_rebate,gas_cost_summary.rate,gas_cost_summary.base_point),
+            non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(gas_cost_summary.non_refundable_storage_fee,gas_cost_summary.rate,gas_cost_summary.base_point),
+        }
+    }
+
+    pub fn gas_used(&self) -> u64 {
+        self.computation_cost + self.storage_cost
+    }
+
+    pub fn net_gas_usage(&self) -> i64 {
+        self.gas_used() as i64 - self.storage_rebate as i64
+    }
+
+}
+
+impl Display for SuiGasCostSummary {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "computation_cost: {}, storage_cost: {},  storage_rebate: {}, non_refundable_storage_fee: {}",
+            self.computation_cost, self.storage_cost, self.storage_rebate, self.non_refundable_storage_fee,
+        )
+    }
+}
+
 /// The response from processing a transaction or a certified transaction
 #[serde_as]
 #[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize, JsonSchema)]
@@ -745,7 +785,7 @@ pub struct SuiTransactionBlockEffectsV1 {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub executed_epoch: EpochId,
-    pub gas_used: GasCostSummary,
+    pub gas_used: SuiGasCostSummary,
     /// The version that every modified (mutated or deleted) object had before it was modified by
     /// this transaction.
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
@@ -833,11 +873,11 @@ impl SuiTransactionBlockEffectsAPI for SuiTransactionBlockEffectsV1 {
         &self.transaction_digest
     }
 
-    fn gas_cost_summary(&self) -> &GasCostSummary {
+    fn gas_cost_summary(&self) -> &SuiGasCostSummary {
         &self.gas_used
     }
 
-    fn mut_gas_cost_summary(&mut self) -> &mut GasCostSummary {
+    fn mut_gas_cost_summary(&mut self) -> &mut SuiGasCostSummary {
         &mut self.gas_used
     }
 
@@ -902,7 +942,7 @@ impl SuiTransactionBlockEffects {
             },
             executed_epoch: 0,
             modified_at_versions: vec![],
-            gas_used: GasCostSummary::default(),
+            gas_used: SuiGasCostSummary::default(),
             shared_objects: vec![],
             created: vec![],
             mutated: vec![],
@@ -934,7 +974,7 @@ impl TryFrom<TransactionEffects> for SuiTransactionBlockEffects {
                             }
                         })
                         .collect(),
-                    gas_used: effect.gas_cost_summary().into_rpc(),
+                    gas_used: SuiGasCostSummary::from(effect.gas_cost_summary().clone()),
                     shared_objects: to_sui_object_ref(
                         effect
                             .input_shared_objects()

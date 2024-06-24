@@ -86,7 +86,7 @@ module deepbook::critbit {
     // Return the previous leaf (key, index) of the input leaf.
     // Market sell orders consume liquidities by iterating through the leaves in descending order starting from the max leaf of the asks Critbit Tree.
     // This function provides the iterator for this procedure.
-    public fun previous_leaf<V: store>(tree: &CritbitTree<V>, key: u64): (u64, u64) {
+    public(package) fun previous_leaf<V: store>(tree: &CritbitTree<V>, key: u64): (u64, u64) {
         let (_, mut index) = find_leaf(tree, key);
         assert!(index != PARTITION_INDEX, ELeafNotExist);
         let mut ptr = MAX_U64 - index;
@@ -382,7 +382,7 @@ module deepbook::critbit {
     }
 
     #[test_only]
-    public fun new_leaf_for_test<V>(key: u64, value: V, parent: u64): Leaf<V> {
+    public(package) fun new_leaf_for_test<V>(key: u64, value: V, parent: u64): Leaf<V> {
         Leaf<V> {
             key,
             value,
@@ -391,7 +391,7 @@ module deepbook::critbit {
     }
 
     #[test_only]
-    public fun new_internal_node_for_test(mask: u64, parent: u64, left_child: u64, right_child: u64): InternalNode {
+    public(package) fun new_internal_node_for_test(mask: u64, parent: u64, left_child: u64, right_child: u64): InternalNode {
         InternalNode {
             mask,
             left_child,
@@ -401,7 +401,7 @@ module deepbook::critbit {
     }
 
     #[test_only]
-    public fun check_tree_struct<V: store> (
+    public(package) fun check_tree_struct<V: store> (
         tree: &CritbitTree<V>,
         internal_node_keys: &vector<u64>,
         internal_node: &vector<InternalNode>,
@@ -441,7 +441,7 @@ module deepbook::critbit {
     }
 
     #[test_only]
-    public fun check_empty_tree<V: store>(tree: &CritbitTree<V>) {
+    public(package) fun check_empty_tree<V: store>(tree: &CritbitTree<V>) {
         assert!(table::is_empty(&tree.leaves), 0);
         assert!(table::is_empty(&tree.internal_nodes), 0);
         assert!(tree.root == PARTITION_INDEX, 0);
