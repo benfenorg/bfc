@@ -1,17 +1,17 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useCallback, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-
-import StepOne from './steps/StepOne';
-import StepTwo from './steps/StepTwo';
 import { CardLayout } from '_app/shared/card-layout';
 import { useAppDispatch } from '_hooks';
 import { createVault, logout } from '_redux/slices/account';
 import { MAIN_UI_URL } from '_shared/utils';
 import { entropyToSerialized, mnemonicToEntropy } from '_shared/utils/bip39';
 import { ampli } from '_src/shared/analytics/ampli';
+import { useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import StepOne from './steps/StepOne';
+import StepTwo from './steps/StepTwo';
 
 const initialValues = {
 	mnemonic: Array.from({ length: 12 }, () => ''),

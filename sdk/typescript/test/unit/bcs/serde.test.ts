@@ -2,8 +2,9 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
-import { SUI_ADDRESS_LENGTH } from '../../../src/index.js';
+
 import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { SUI_ADDRESS_LENGTH } from '../../../src/utils/bfc-types.js';
 
 describe('BCS: Serde', () => {
 	it('should serialize primitives in both directions', () => {
@@ -82,17 +83,17 @@ describe('BCS: Serde', () => {
 
 		{
 			let value = ['0', '255', '100'];
-			expect(serde(bcs, 'vector<u8>', value).map((e) => e.toString(10))).toEqual(value);
+			expect(serde(bcs, 'vector<u8>', value).map((e: any) => e.toString(10))).toEqual(value);
 		}
 
 		{
 			let value = ['100000', '555555555', '1123123', '0', '1214124124214'];
-			expect(serde(bcs, 'vector<u64>', value).map((e) => e.toString(10))).toEqual(value);
+			expect(serde(bcs, 'vector<u64>', value).map((e: any) => e.toString(10))).toEqual(value);
 		}
 
 		{
 			let value = ['100000', '555555555', '1123123', '0', '1214124124214'];
-			expect(serde(bcs, 'vector<u128>', value).map((e) => e.toString(10))).toEqual(value);
+			expect(serde(bcs, 'vector<u128>', value).map((e: any) => e.toString(10))).toEqual(value);
 		}
 
 		{
@@ -180,7 +181,7 @@ describe('BCS: Serde', () => {
 	});
 });
 
-function serde(bcs: BCS, type, data) {
+function serde(bcs: BCS, type: any, data: any): any {
 	let ser = bcs.ser(type, data).toString('hex');
 	let de = bcs.de(type, ser, 'hex');
 	return de;

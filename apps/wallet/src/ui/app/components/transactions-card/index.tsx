@@ -1,24 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import {
-	getExecutionStatusError,
-	getExecutionStatusType,
-	getTransactionDigest,
-	getTransactionKindName,
-	getTransactionKind,
-	getTransactionSender,
-} from '@benfen/bfc.js';
-import { useTransactionSummary, getLabel } from '@mysten/core';
-import { Link } from 'react-router-dom';
-
-import { TxnTypeLabel } from './TxnActionLabel';
-import { TxnIcon } from './TxnIcon';
 import { DateCard } from '_app/shared/date-card';
 import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-
 import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { getLabel, useTransactionSummary } from '@mysten/core';
+import { Link } from 'react-router-dom';
+
+import { TxnTypeLabel } from './TxnActionLabel';
+import { TxnIcon } from './TxnIcon';
 
 export function TransactionCard({
 	txn,
@@ -27,9 +18,7 @@ export function TransactionCard({
 	txn: SuiTransactionBlockResponse;
 	address: string;
 }) {
-	const transaction = getTransactionKind(txn)!;
-	const executionStatus = getExecutionStatusType(txn);
-	getTransactionKindName(transaction);
+	const executionStatus = txn.effects?.status.status;
 
 	const recognizedPackagesList = useRecognizedPackages();
 
@@ -43,9 +32,9 @@ export function TransactionCard({
 
 	const recipientAddress = useGetTxnRecipientAddress({ txn, address });
 
-	const isSender = address === getTransactionSender(txn);
+	const isSender = address === txn.transaction?.data.sender;
 
-	const error = getExecutionStatusError(txn);
+	const error = txn.effects?.status.error;
 
 	// Transition label - depending on the transaction type and amount
 	// Epoch change without amount is delegation object
@@ -62,7 +51,7 @@ export function TransactionCard({
 		<Link
 			data-testid="link-to-txn"
 			to={`/receipt?${new URLSearchParams({
-				txdigest: getTransactionDigest(txn),
+				txdigest: txn.digest,
 			}).toString()}`}
 			className="flex items-center w-full gap-1.25 p-2.5 no-underline"
 		>

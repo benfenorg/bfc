@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { sui2BfcAddress } from '@benfen/bfc.js';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { sui2BfcAddress } from '@benfen/bfc.js/utils';
 import { useQuery } from '@tanstack/react-query';
 
 const defaultOptions = {

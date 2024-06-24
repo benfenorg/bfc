@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Text } from '_app/shared/text';
 import { cx } from 'class-variance-authority';
 import { AnimatePresence } from 'framer-motion';
 
 import { ValidatorLogo } from './ValidatorLogo';
-import { Text } from '_app/shared/text';
 
 type ValidatorListItemProp = {
 	selected?: boolean;

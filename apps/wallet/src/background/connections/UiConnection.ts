@@ -1,9 +1,33 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { createMessage } from '_messages';
+import type { Message } from '_messages';
+import type { PortChannelName } from '_messaging/PortChannelName';
+import { isBasePayload, type ErrorPayload } from '_payloads';
+import type { LoadedFeaturesPayload } from '_payloads/feature-gating';
+import type { KeyringPayload } from '_payloads/keyring';
+import { isSetNetworkPayload, type SetNetworkPayload } from '_payloads/network';
+import { isGetPermissionRequests, isPermissionResponse } from '_payloads/permissions';
+import type { Permission, PermissionRequests } from '_payloads/permissions';
+import { isDisconnectApp } from '_payloads/permissions/DisconnectApp';
+import type { UpdateActiveOrigin } from '_payloads/tabs/updateActiveOrigin';
+import type { ApprovalRequest } from '_payloads/transactions/ApprovalRequest';
+import { isGetTransactionRequests } from '_payloads/transactions/ui/GetTransactionRequests';
+import type { GetTransactionRequestsResponse } from '_payloads/transactions/ui/GetTransactionRequestsResponse';
+import { isTransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
+import Keyring from '_src/background/keyring';
+import Permissions from '_src/background/Permissions';
+import Tabs from '_src/background/Tabs';
+import Transactions from '_src/background/Transactions';
+import { growthbook } from '_src/shared/experimentation/features';
+import {
+	isQredoConnectPayload,
+	type QredoConnectPayload,
+} from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { BehaviorSubject, filter, switchMap, takeUntil } from 'rxjs';
+import type { Runtime } from 'webextension-polyfill';
 
-import { Connection } from './Connection';
 import NetworkEnv from '../NetworkEnv';
 import {
 	acceptQredoConnection,
@@ -11,32 +35,7 @@ import {
 	getUIQredoPendingRequest,
 	rejectQredoConnection,
 } from '../qredo';
-import { createMessage } from '_messages';
-import { type ErrorPayload, isBasePayload } from '_payloads';
-import { isSetNetworkPayload, type SetNetworkPayload } from '_payloads/network';
-import { isGetPermissionRequests, isPermissionResponse } from '_payloads/permissions';
-import { isDisconnectApp } from '_payloads/permissions/DisconnectApp';
-import { isGetTransactionRequests } from '_payloads/transactions/ui/GetTransactionRequests';
-import { isTransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
-import Permissions from '_src/background/Permissions';
-import Tabs from '_src/background/Tabs';
-import Transactions from '_src/background/Transactions';
-import Keyring from '_src/background/keyring';
-import { growthbook } from '_src/shared/experimentation/features';
-import {
-	type QredoConnectPayload,
-	isQredoConnectPayload,
-} from '_src/shared/messaging/messages/payloads/QredoConnect';
-
-import type { Message } from '_messages';
-import type { PortChannelName } from '_messaging/PortChannelName';
-import type { LoadedFeaturesPayload } from '_payloads/feature-gating';
-import type { KeyringPayload } from '_payloads/keyring';
-import type { Permission, PermissionRequests } from '_payloads/permissions';
-import type { UpdateActiveOrigin } from '_payloads/tabs/updateActiveOrigin';
-import type { ApprovalRequest } from '_payloads/transactions/ApprovalRequest';
-import type { GetTransactionRequestsResponse } from '_payloads/transactions/ui/GetTransactionRequestsResponse';
-import type { Runtime } from 'webextension-polyfill';
+import { Connection } from './Connection';
 
 export class UiConnection extends Connection {
 	public static readonly CHANNEL: PortChannelName = 'bfc_ui<->background';

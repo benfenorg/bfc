@@ -43,12 +43,9 @@
 			"_values/*": ["./src/ui/styles/values/*"],
 			"_utils": ["./src/ui/styles/utils"],
 			"_utils/*": ["./src/ui/styles/utils/*"],
-			"@benfen/bfc.js/transactions": ["../../sdk/typescript/src/builder/export.ts"],
 			"@benfen/bfc.js/*": ["../../sdk/typescript/src/*"],
 			"@benfen/bfc.js": ["../../sdk/typescript/src/"],
-			"@mysten/kiosk": ["../../sdk/kiosk/src/index.ts"],
-			"@mysten/ledgerjs-hw-app-sui": ["../../sdk/ledgerjs-hw-app-sui/src/Sui.ts"],
-			"@mysten/zklogin": ["../../sdk/zklogin/src/"]
+			"@mysten/ledgerjs-hw-app-sui": ["../../sdk/ledgerjs-hw-app-sui/src/Sui.ts"]
 		}
 	},
 	"include": ["../../src", "../../tests"],

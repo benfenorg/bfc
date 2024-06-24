@@ -1,7 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
+import { Text } from '_app/shared/text';
+import { ActiveCoinsCard } from '_components/active-coins-card';
+import Overlay from '_components/overlay';
+import { ampli } from '_src/shared/analytics/ampli';
+import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
+import { useSigner } from '_src/ui/app/hooks';
+import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
+import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
+import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { useCoinMetadata } from '@mysten/core';
-import { ArrowRight16, ArrowLeft16 } from '@mysten/icons';
+import { ArrowLeft16, ArrowRight16 } from '@mysten/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 import { toast } from 'react-hot-toast';
@@ -9,19 +20,8 @@ import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { PreviewTransfer } from './PreviewTransfer';
 import { SendTokenForm } from './SendTokenForm';
-import { createTokenTransferTransaction } from './utils/transaction';
-import { Button } from '_app/shared/ButtonUI';
-import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
-import { Text } from '_app/shared/text';
-import { ActiveCoinsCard } from '_components/active-coins-card';
-import Overlay from '_components/overlay';
-import { ampli } from '_src/shared/analytics/ampli';
-import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
-import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useSigner } from '_src/ui/app/hooks';
-import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
-import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
 import type { SubmitProps } from './SendTokenForm';
+import { createTokenTransferTransaction } from './utils/transaction';
 
 function TransferCoinPage() {
 	const [searchParams] = useSearchParams();
@@ -64,8 +64,8 @@ function TransferCoinPage() {
 			);
 		},
 		onSuccess: (response) => {
-			queryClient.invalidateQueries(['get-coins']);
-			queryClient.invalidateQueries(['coin-balance']);
+			queryClient.invalidateQueries({ queryKey: ['get-coins'] });
+			queryClient.invalidateQueries({ queryKey: ['coin-balance'] });
 
 			ampli.sentCoins({
 				coinType: coinType!,
@@ -129,7 +129,7 @@ function TransferCoinPage() {
 								text="Send Now"
 								disabled={coinType === null}
 								after={<ArrowRight16 />}
-								loading={executeTransfer.isLoading}
+								loading={executeTransfer.isPending}
 							/>
 						</Menu>
 					</BottomMenuLayout>

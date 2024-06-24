@@ -1,26 +1,27 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { createMessage, type Message } from '_src/shared/messaging/messages';
+import {
+	isMethodPayload,
+	type MethodPayload,
+} from '_src/shared/messaging/messages/payloads/MethodPayload';
+import { type WalletStatusChange } from '_src/shared/messaging/messages/payloads/wallet-status-change';
 import { fromB64 } from '@benfen/bfc.js/utils';
 import Dexie from 'dexie';
-import { isPasswordUnLockable, isSigningAccount, type SerializedAccount } from './Account';
-import { ImportedAccount } from './ImportedAccount';
-import { LedgerAccount } from './LedgerAccount';
-import { MnemonicAccount } from './MnemonicAccount';
-import { QredoAccount } from './QredoAccount';
-import { accountsEvents } from './events';
-import { ZkAccount } from './zk/ZkAccount';
+
 import { getAccountSourceByID } from '../account-sources';
 import { MnemonicAccountSource } from '../account-sources/MnemonicAccountSource';
 import { type UiConnection } from '../connections/UiConnection';
 import { backupDB, getDB } from '../db';
 import { makeUniqueKey } from '../storage-utils';
-import { createMessage, type Message } from '_src/shared/messaging/messages';
-import {
-	type MethodPayload,
-	isMethodPayload,
-} from '_src/shared/messaging/messages/payloads/MethodPayload';
-import { type WalletStatusChange } from '_src/shared/messaging/messages/payloads/wallet-status-change';
+import { isPasswordUnLockable, isSigningAccount, type SerializedAccount } from './Account';
+import { accountsEvents } from './events';
+import { ImportedAccount } from './ImportedAccount';
+import { LedgerAccount } from './LedgerAccount';
+import { MnemonicAccount } from './MnemonicAccount';
+import { QredoAccount } from './QredoAccount';
+import { ZkLoginAccount } from './zklogin/ZkLoginAccount';
 
 function toAccount(account: SerializedAccount) {
 	if (MnemonicAccount.isOfType(account)) {
@@ -35,8 +36,8 @@ function toAccount(account: SerializedAccount) {
 	if (QredoAccount.isOfType(account)) {
 		return new QredoAccount({ id: account.id, cachedData: account });
 	}
-	if (ZkAccount.isOfType(account)) {
-		return new ZkAccount({ id: account.id, cachedData: account });
+	if (ZkLoginAccount.isOfType(account)) {
+		return new ZkLoginAccount({ id: account.id, cachedData: account });
 	}
 	throw new Error(`Unknown account of type ${account.type}`);
 }
@@ -252,7 +253,7 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 				newSerializedAccounts.push(await LedgerAccount.createNew({ ...aLedgerAccount, password }));
 			}
 		} else if (type === 'zk') {
-			newSerializedAccounts.push(await ZkAccount.createNew(payload.args));
+			newSerializedAccounts.push(await ZkLoginAccount.createNew(payload.args));
 		} else {
 			throw new Error(`Unknown accounts type to create ${type}`);
 		}

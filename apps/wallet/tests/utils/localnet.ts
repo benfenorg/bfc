@@ -3,6 +3,7 @@
 
 // eslint-disable-next-line import/order
 import 'tsconfig-paths/register';
+
 import { requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';
 import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import * as bip39 from '@scure/bip39';

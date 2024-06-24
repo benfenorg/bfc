@@ -5,6 +5,8 @@
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
 use std::net::SocketAddr;
+use fastcrypto::hmac::{hkdf_sha3_256, HkdfIkm};
+use fastcrypto::traits::ToFromBytes;
 use sui_core::authority_client::AuthorityAPI;
 use sui_macros::sim_test;
 use sui_protocol_config::ProtocolConfig;
@@ -259,6 +261,53 @@ async fn sim_test_create_authenticator_state_object() {
                 .unwrap()
                 .expect("auth state object should exist");
         });
+    }
+}
+
+
+struct HkdfTestVector {
+    ikm: &'static str,
+    salt: &'static str,
+    info: &'static str,
+    expected_output: &'static str,
+}
+#[test]
+fn test_zklogin_salt_function(){
+    let test1 = HkdfTestVector {
+        ikm: "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+        salt: "000102030405060708090a0b0c",
+        info: "f0f1f2f3f4f5f6f7f8f9",
+        expected_output:
+        "0c5160501d65021deaf2c14f5abce04c5bd2635abceeba61c2edb6e8ed72674900557728f2c9f2c4c179",
+    };
+    let test2 = HkdfTestVector {
+        ikm: "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f202122232425262728292a2b2c2d2e2f303132333435363738393a3b3c3d3e3f404142434445464748494a4b4c4d4e4f",
+        salt: "606162636465666768696a6b6c6d6e6f707172737475767778797a7b7c7d7e7f808182838485868788898a8b8c8d8e8f909192939495969798999a9b9c9d9e9fa0a1a2a3a4a5a6a7a8a9aaabacadaeaf",
+        info: "b0b1b2b3b4b5b6b7b8b9babbbcbdbebfc0c1c2c3c4c5c6c7c8c9cacbcccdcecfd0d1d2d3d4d5d6d7d8d9dadbdcdddedfe0e1e2e3e4e5e6e7e8e9eaebecedeeeff0f1f2f3f4f5f6f7f8f9fafbfcfdfeff",
+        expected_output:
+        "3dc251e66c75da6560405ec5ac10e17d851eedfbfdc13feafbec16964c25d021bd971465a3e9c615f27769019e3f0407d84986fb0ba24e729c99834624baa21cb623dc0098f430d52e18bbdf694df4edd8b2",
+    };
+    let test3 = HkdfTestVector {
+        ikm: "0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b0b",
+        salt: "",
+        info: "",
+        expected_output:
+        "bc1342cdd75c05e8b0c3ae609ce4410684d197232875073499b30cdfe2de2853c1c1bed63d725e885e78",
+    };
+
+    for t in [test1, test2, test3] {
+        let ikm = hex::decode(t.ikm).unwrap();
+        let salt = hex::decode(t.salt).unwrap();
+        let info = hex::decode(t.info).unwrap();
+        let expected = hex::decode(t.expected_output).unwrap();
+        let okm = hkdf_sha3_256(
+            &HkdfIkm::from_bytes(ikm.as_ref()).unwrap(),
+            salt.as_ref(),
+            info.as_ref(),
+            expected.len(),
+        )
+            .unwrap();
+        assert_eq!(okm, expected);
     }
 }
 

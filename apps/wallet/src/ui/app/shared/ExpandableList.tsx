@@ -3,7 +3,7 @@
 
 import { ChevronDown14 } from '@mysten/icons';
 import clsx from 'classnames';
-import { type ReactNode, useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 
 import { Link } from './Link';
 import { Text } from './text';

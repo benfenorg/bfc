@@ -1,11 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowRight16, Check12 } from '@mysten/icons';
-import { Formik, Form, Field } from 'formik';
-import { useNavigate } from 'react-router-dom';
-
-import { createMnemonicValidation } from './validation';
 import { Button } from '_app/shared/ButtonUI';
 import { CardLayout } from '_app/shared/card-layout';
 import { Text } from '_app/shared/text';
@@ -15,6 +10,11 @@ import PasswordFields from '_pages/initialize/shared/password-fields';
 import { createVault } from '_redux/slices/account';
 import { ToS_LINK } from '_shared/constants';
 import { ampli } from '_src/shared/analytics/ampli';
+import { ArrowRight16, Check12 } from '@mysten/icons';
+import { Field, Form, Formik } from 'formik';
+import { useNavigate } from 'react-router-dom';
+
+import { createMnemonicValidation } from './validation';
 
 const CreatePage = () => {
 	const dispatch = useAppDispatch();

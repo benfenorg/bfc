@@ -3,7 +3,7 @@
 
 import { describe, expect, test } from 'vitest';
 
-import { computeZkLoginAddressFromSeed } from '../../../src/zklogin/address';
+import { computeZkLoginAddressFromSeed } from '../../../src/zklogin/helper/address';
 
 describe('zkLogin address', () => {
 	test('generates the correct address', () => {

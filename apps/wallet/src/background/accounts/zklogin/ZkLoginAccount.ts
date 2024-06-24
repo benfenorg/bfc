@@ -9,8 +9,8 @@ import {
 	toSerializedSignature,
 	type PublicKey,
 	type SerializedSignature,
-} from '@mysten/sui.js/cryptography';
-import { computeZkLoginAddress, genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
+} from '@benfen/bfc.js/cryptography';
+import { computeZkLoginAddress, genAddressSeed, getZkLoginSignature } from '@benfen/bfc.js/zklogin';
 import { blake2b } from '@noble/hashes/blake2b';
 import { decodeJwt } from 'jose';
 

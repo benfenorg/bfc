@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SerializedBcs } from '@mysten/bcs';
-
+import type { SerializedBcs } from '../bcs/index.js';
 import { bcs } from '../bcs/index.js';
 import type { TransactionBlockInput } from './Transactions.js';
 

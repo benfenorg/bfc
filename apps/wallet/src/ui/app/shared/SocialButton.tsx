@@ -3,11 +3,10 @@
 
 import { Text } from '_app/shared/text';
 import {
-	SocialFacebook24,
-	SocialGoogle24,
-	SocialKakao24,
-	SocialMicrosoft24,
-	SocialTwitch24,
+	SocialFacebook24 as FacebookLogo,
+	SocialGoogle24 as GoogleLogo,
+	SocialMicrosoft24 as MicrosoftLogo,
+	SocialTwitch24 as TwitchLogo,
 } from '@mysten/icons';
 import { cva, type VariantProps } from 'class-variance-authority';
 import { forwardRef, type FunctionComponent, type Ref, type SVGProps } from 'react';
@@ -22,9 +21,8 @@ const styles = cva(
 				microsoft:
 					'bg-white text-steel-dark border border-solid border-steel hover:border-steel-dark',
 				google: 'bg-white text-steel-dark border border-solid border-steel hover:border-steel-dark',
-				facebook: 'bg-facebook border-none text-white',
-				twitch: 'bg-twitch border-none text-white',
-				kakao: 'bg-kakao border-none text-black/85',
+				facebook: 'bg-[#1877F2] border-none text-white',
+				twitch: 'bg-[#6441A5] border-none text-white',
 			},
 		},
 	},
@@ -44,24 +42,20 @@ const socialSignInProviderInfo: Record<
 	{ icon: FunctionComponent<SVGProps<SVGSVGElement>>; label: string }
 > = {
 	microsoft: {
-		icon: SocialMicrosoft24,
+		icon: MicrosoftLogo,
 		label: 'Sign in with Microsoft',
 	},
 	google: {
-		icon: SocialGoogle24,
+		icon: GoogleLogo,
 		label: 'Sign in with Google',
 	},
 	facebook: {
-		icon: SocialFacebook24,
+		icon: FacebookLogo,
 		label: 'Sign in with Facebook',
 	},
 	twitch: {
-		icon: SocialTwitch24,
+		icon: TwitchLogo,
 		label: 'Sign in with Twitch',
-	},
-	kakao: {
-		icon: SocialKakao24,
-		label: 'Sign in with Kakao',
 	},
 };
 
@@ -78,9 +72,9 @@ export const SocialButton = forwardRef(
 				aria-label={showLabel ? undefined : label}
 				{...otherProps}
 			>
-				<IconComponent className="h-6 w-6" />
+				<IconComponent width={24} height={24} />
 				{showLabel && (
-					<Text variant="pBody" weight="semibold">
+					<Text variant="pBodySmall" weight="semibold">
 						{label}
 					</Text>
 				)}

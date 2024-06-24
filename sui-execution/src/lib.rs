@@ -23,6 +23,11 @@ mod v2;
 #[cfg(test)]
 mod tests;
 
+
+// 1-17 v0:  cfg.execution_version = Some(0);
+// 18-30 v1:  cfg.execution_version = Some(1);
+// 31-37 v2:  cfg.execution_version = Some(2);
+// >= 38 latest:  cfg.execution_version = Some(3);
 pub fn executor(
     protocol_config: &ProtocolConfig,
     silent: bool,

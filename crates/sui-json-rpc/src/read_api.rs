@@ -1058,6 +1058,12 @@ impl ReadApiServer for ReadApi {
     }
 
     #[instrument(skip(self))]
+    async fn get_bfc_zklogin_salt(&self) -> RpcResult<String>{
+        //todo: implement this
+        Ok("this_is_a_test_salt".to_string())
+    }
+
+    #[instrument(skip(self))]
     async fn get_protocol_config(
         &self,
         version: Option<BigInt<u64>>,

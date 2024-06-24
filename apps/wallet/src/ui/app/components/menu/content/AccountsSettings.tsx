@@ -1,15 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useNextMenuUrl } from '_components/menu/hooks';
+import { useAccounts } from '_src/ui/app/hooks/useAccounts';
+import { useDeriveNextAccountMutation } from '_src/ui/app/hooks/useDeriveNextAccountMutation';
+import { Button } from '_src/ui/app/shared/ButtonUI';
 import React from 'react';
 import { Outlet } from 'react-router-dom';
 
 import { Account } from './Account';
 import { MenuLayout } from './MenuLayout';
-import { useNextMenuUrl } from '_components/menu/hooks';
-import { useAccounts } from '_src/ui/app/hooks/useAccounts';
-import { useDeriveNextAccountMutation } from '_src/ui/app/hooks/useDeriveNextAccountMutation';
-import { Button } from '_src/ui/app/shared/ButtonUI';
 
 export function AccountsSettings() {
 	const backUrl = useNextMenuUrl(true, '/');
@@ -42,7 +42,7 @@ export function AccountsSettings() {
 					variant="account"
 					size="tall"
 					text="Create New Account"
-					loading={createAccountMutation.isLoading}
+					loading={createAccountMutation.isPending}
 					onClick={() => createAccountMutation.mutate()}
 					before={
 						<svg

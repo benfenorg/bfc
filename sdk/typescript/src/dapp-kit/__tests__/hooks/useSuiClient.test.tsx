@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { renderHook } from '@testing-library/react';
+
+import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
 import { useSuiClient } from '../../index.js';
-import { SuiClient, getFullnodeUrl } from '../../../client/index.js';
 import { createSuiClientContextWrapper } from '../test-utils.js';
 
 describe('useSuiClient', () => {

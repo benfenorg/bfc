@@ -1,13 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSearchParams, useNavigate, Navigate } from 'react-router-dom';
-
-import { DelegationDetailCard } from './DelegationDetailCard';
-import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
 import Overlay from '_components/overlay';
+import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
+
+import { useActiveAddress } from '../../hooks/useActiveAddress';
+import { useGetDelegatedStake } from '../useGetDelegatedStake';
+import { DelegationDetailCard } from './DelegationDetailCard';
 
 export function DelegationDetail() {
 	const [searchParams] = useSearchParams();

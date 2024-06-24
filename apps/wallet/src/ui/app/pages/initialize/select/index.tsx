@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { ampli } from '_src/shared/analytics/ampli';
 import { Add16, Download16 } from '@mysten/icons';
 import { Link } from 'react-router-dom';
-
-import { ampli } from '_src/shared/analytics/ampli';
 
 const selections = [
 	{

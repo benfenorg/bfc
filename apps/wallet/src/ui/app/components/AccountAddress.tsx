@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@benfen/bfc.js';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { useResolveSuiNSName } from '@mysten/core';
 import { Copy12 } from '@mysten/icons';
 

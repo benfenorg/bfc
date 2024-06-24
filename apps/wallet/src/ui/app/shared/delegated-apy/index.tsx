@@ -1,12 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { roundFloat, useGetValidatorsApy, useGetSystemState } from '@mysten/core';
-import { useMemo } from 'react';
-
 import { Text } from '_app/shared/text';
 import { IconTooltip } from '_app/shared/tooltip';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
+import { roundFloat, useGetSystemState, useGetValidatorsApy } from '@mysten/core';
+import { useMemo } from 'react';
 
 const APY_DECIMALS = 3;
 

@@ -1,22 +1,23 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type Serializable } from '_src/shared/cryptography/keystore';
 import {
-	type SerializedSignature,
 	toSerializedSignature,
 	type Keypair,
+	type SerializedSignature,
 } from '@benfen/bfc.js/cryptography';
 import { blake2b } from '@noble/hashes/blake2b';
-import { accountsEvents } from './events';
+
 import { getDB } from '../db';
 import {
 	clearEphemeralValue,
 	getEphemeralValue,
 	setEphemeralValue,
 } from '../session-ephemeral-values';
-import { type Serializable } from '_src/shared/cryptography/keystore';
+import { accountsEvents } from './events';
 
-export type AccountType = 'mnemonic-derived' | 'imported' | 'ledger' | 'qredo' | 'zk';
+export type AccountType = 'mnemonic-derived' | 'imported' | 'ledger' | 'qredo' | 'zkLogin';
 
 export abstract class Account<
 	T extends SerializedAccount = SerializedAccount,
@@ -77,7 +78,7 @@ export abstract class Account<
 		return toSerializedSignature({
 			signature,
 			signatureScheme,
-			pubKey: pubkey,
+			publicKey: pubkey,
 		});
 	}
 
@@ -128,6 +129,7 @@ export interface SerializedAccount {
 	 */
 	readonly selected: boolean;
 	readonly nickname: string | null;
+	readonly createdAt: number;
 }
 
 export interface SerializedUIAccount {
@@ -151,6 +153,7 @@ export interface SerializedUIAccount {
 	readonly selected: boolean;
 	readonly nickname: string | null;
 	readonly isPasswordUnlockable: boolean;
+	readonly isKeyPairExportable: boolean;
 }
 
 export interface PasswordUnlockableAccount {

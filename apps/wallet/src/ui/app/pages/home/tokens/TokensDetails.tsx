@@ -1,15 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SUI_TYPE_ARG, Coin, type CoinBalance as CoinBalanceType } from '@benfen/bfc.js';
-import { useGetCoinBalance, useGetAllBalances } from '@mysten/core';
-import { Unpin16, Pin16 } from '@mysten/icons';
-import { useMemo } from 'react';
-import { Link } from 'react-router-dom';
-
-import { TokenLink } from './TokenLink';
-import { TokenList } from './TokenList';
-import CoinBalance from './coin-balance';
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import { Text } from '_app/shared/text';
 import Alert from '_components/alert';
@@ -21,8 +12,18 @@ import { API_ENV } from '_src/shared/api-env';
 import { AccountSelector } from '_src/ui/app/components/AccountSelector';
 import { usePinnedCoinTypes } from '_src/ui/app/hooks/usePinnedCoinTypes';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import PageTitle from '_src/ui/app/shared/PageTitle';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
+import PageTitle from '_src/ui/app/shared/PageTitle';
+import { type CoinBalance as CoinBalanceType } from '@benfen/bfc.js/client';
+import { parseStructTag, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useCoinMetadata, useGetAllBalances, useGetCoinBalance } from '@mysten/core';
+import { Pin16, Unpin16 } from '@mysten/icons';
+import { useMemo } from 'react';
+import { Link } from 'react-router-dom';
+
+import CoinBalance from './coin-balance';
+import { TokenLink } from './TokenLink';
+import { TokenList } from './TokenList';
 
 type TokenDetailsProps = {
 	coinType?: string;
@@ -154,6 +155,23 @@ function MyTokens() {
 	);
 }
 
+function getMostNestedName(parsed: ReturnType<typeof parseStructTag>) {
+	if (parsed.typeParams.length === 0) {
+		return parsed.name;
+	}
+
+	if (typeof parsed.typeParams[0] === 'string') {
+		return parsed.typeParams[0];
+	}
+
+	return getMostNestedName(parsed.typeParams[0]);
+}
+
+function getFallbackSymbol(coinType: string) {
+	const parsed = parseStructTag(coinType);
+	return getMostNestedName(parsed);
+}
+
 function TokenDetails({ coinType }: TokenDetailsProps) {
 	const activeCoinType = coinType || SUI_TYPE_ARG;
 	const accountAddress = useActiveAddress();
@@ -166,8 +184,9 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 	} = useGetCoinBalance(activeCoinType, accountAddress, refetchInterval, staleTime);
 
 	const tokenBalance = coinBalance?.totalBalance || BigInt(0);
+	const { data: coinMetadata } = useCoinMetadata(activeCoinType);
+	const coinSymbol = coinMetadata ? coinMetadata.symbol : getFallbackSymbol(activeCoinType);
 
-	const coinSymbol = useMemo(() => Coin.getCoinSymbol(activeCoinType), [activeCoinType]);
 	// Avoid perpetual loading state when fetching and retry keeps failing add isFetched check
 	const isFirstTimeLoading = isLoading && !isFetched;
 

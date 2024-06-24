@@ -1,14 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { ArrowRight16, BenFenLogoDark, BenFenTextLight } from '@mysten/icons';
-
-import { Button } from '_app/shared/ButtonUI';
 import BottomMenuLayout, { Content } from '_app/shared/bottom-menu-layout';
+import { Button } from '_app/shared/ButtonUI';
 import Loading from '_components/loading';
 import { useInitializedGuard } from '_hooks';
 import PageLayout from '_pages/layout';
 import { ampli } from '_src/shared/analytics/ampli';
+import { ArrowRight16, BenFenLogoDark, BenFenTextLight } from '@mysten/icons';
 
 const VALUE_PROP = [
 	'Send, receive tokens and NFTs',

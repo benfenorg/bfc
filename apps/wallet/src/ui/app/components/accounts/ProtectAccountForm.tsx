@@ -1,17 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { Button } from '_app/shared/ButtonUI';
+import { ToS_LINK } from '_src/shared/constants';
 import { useZodForm } from '@mysten/core';
 import { type SubmitHandler } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
-import { Link } from '../../shared/Link';
+
 import { CheckboxField } from '../../shared/forms/CheckboxField';
 import { Form } from '../../shared/forms/Form';
 import { SelectField } from '../../shared/forms/SelectField';
 import { TextField } from '../../shared/forms/TextField';
-import { Button } from '_app/shared/ButtonUI';
-import { ToS_LINK } from '_src/shared/constants';
+import { Link } from '../../shared/Link';
 
 const LOCK_INTERVALS = ['Hour', 'Minute', 'Second'];
 

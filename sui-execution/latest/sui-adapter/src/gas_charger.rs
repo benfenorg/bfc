@@ -172,11 +172,7 @@ pub mod checked {
                             "Provided non-gas coin object as input for gas!",
                         ));
                     };
-                    if !move_obj.type_().is_gas_coin() {
-                        return Err(ExecutionError::invariant_violation(
-                            "Provided non-gas coin object as input for gas!",
-                        ));
-                    }
+
                     Ok(move_obj.get_coin_value_unsafe())
                 })
                 .collect::<Result<Vec<u64>, ExecutionError>>()

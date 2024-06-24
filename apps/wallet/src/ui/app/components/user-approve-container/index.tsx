@@ -3,12 +3,10 @@
 
 import cl from 'classnames';
 import { useCallback, useMemo, useState } from 'react';
+import type { ReactNode } from 'react';
 
 import { Button } from '../../shared/ButtonUI';
 import { DAppInfoCard } from '../DAppInfoCard';
-
-import type { ReactNode } from 'react';
-
 import st from './UserApproveContainer.module.scss';
 
 type UserApproveContainerProps = {
