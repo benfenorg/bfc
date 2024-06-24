@@ -38,9 +38,9 @@ use crate::{
 use sui_protocol_config::ProtocolConfig;
 use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
 use crate::gas::GasCostSummary;
-use crate::stable_coin::{StableCoin};
 use crate::gas::calculate_bfc_to_stable_cost_with_base_point;
 use crate::stable_coin::stable::checked::STABLE;
+use crate::stable_coin::StableCoin;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
 pub const OBJECT_START_VERSION: SequenceNumber = SequenceNumber::from_u64(1);

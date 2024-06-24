@@ -293,7 +293,7 @@ pub mod checked {
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                if gas_object.is_stable_gas_coin() {
+                if !self.gas_status.has_adjust_computation_on_out_of_gas() && gas_object.is_stable_gas_coin() {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());

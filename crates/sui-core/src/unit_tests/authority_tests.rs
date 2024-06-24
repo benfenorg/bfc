@@ -189,7 +189,7 @@ async fn construct_shared_object_transaction_with_sequence_number(
             }),
             CallArg::Pure(16u64.to_le_bytes().to_vec()),
         ],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -845,7 +845,7 @@ async fn test_paranoid_mode_with_natives() {
         sender,
         vec![gas_object_ref],
         builder.finish(),
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 10,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 10,
         rgp,
     );
 
@@ -1133,7 +1133,7 @@ async fn test_dry_run_dev_inspect_dynamic_field_too_new() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1186,7 +1186,7 @@ async fn test_dry_run_dev_inspect_max_gas_version() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1231,7 +1231,7 @@ async fn test_dry_run_with_stable_gas_coin() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -2255,7 +2255,7 @@ async fn test_missing_package() {
         vec![],
         gas_object_ref,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -2303,7 +2303,7 @@ async fn test_type_argument_dependencies() {
         vec![TypeTag::U64],
         gas1,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -2329,7 +2329,7 @@ async fn test_type_argument_dependencies() {
         }))],
         gas2,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -2355,7 +2355,7 @@ async fn test_type_argument_dependencies() {
         }))],
         gas3,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3099,7 +3099,7 @@ async fn test_invalid_mutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_MUT],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3139,7 +3139,7 @@ async fn test_valid_immutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_IMM],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3369,7 +3369,7 @@ async fn test_store_revert_wrap_move_call() {
             vec![],
             create_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3457,7 +3457,7 @@ async fn test_store_revert_unwrap_move_call() {
             vec![],
             wrap_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(wrapper_v0))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3563,7 +3563,7 @@ async fn create_and_retrieve_df_info(function: &IdentStr) -> (SuiAddress, Vec<Dy
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3712,7 +3712,7 @@ async fn test_store_revert_add_ofield() {
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3825,7 +3825,7 @@ async fn test_store_revert_remove_ofield() {
             vec![],
             add_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v1))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -4242,7 +4242,7 @@ pub async fn call_move_(
         *sender,
         vec![gas_object_ref],
         builder.finish(),
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 5,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 5,
         rgp,
     );
 
@@ -4537,7 +4537,7 @@ async fn make_test_transaction(
             }),
             CallArg::Pure(arg_value.to_le_bytes().to_vec()),
         ],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -5633,7 +5633,7 @@ async fn test_stable_dry_run_dev_inspect_max_gas_version() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -6491,7 +6491,7 @@ async fn test_stable_paranoid_mode_with_natives() {
         sender,
         vec![gas_object_ref],
         builder.finish(),
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 10,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 10,
         rgp,
     );
 
@@ -6648,7 +6648,7 @@ async fn test_stable_dry_run_dev_inspect_dynamic_field_too_new() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -6999,12 +6999,11 @@ async fn test_stable_handle_sponsored_transaction() {
     );
     let dual_signed_tx =
         to_sender_signed_transaction_with_multi_signers(data, vec![&sender_key, &sponsor_key]);
-    let dual_signed_tx = authority_state.verify_transaction(dual_signed_tx).unwrap();
-
-    authority_state
-        .handle_transaction(&epoch_store, dual_signed_tx.clone())
+    let signed_effects = send_and_confirm_transaction(&authority_state, dual_signed_tx)
         .await
-        .unwrap();
+        .unwrap()
+        .1;
+    signed_effects.into_data().status().unwrap();
 
     // Verify wrong gas owner gives error, using sender address
     let data = TransactionData::new_with_gas_data(
@@ -7672,7 +7671,7 @@ async fn test_stable_missing_package() {
         vec![],
         gas_object_ref,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -7720,18 +7719,16 @@ async fn test_stable_type_argument_dependencies() {
         vec![TypeTag::U64],
         gas1,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
     let transaction = to_sender_signed_transaction(data, &s1_key);
-    let transaction = authority_state.verify_transaction(transaction).unwrap();
-    authority_state
-        .handle_transaction(&epoch_store, transaction)
+    let signed_effects = send_and_confirm_transaction(&authority_state, transaction)
         .await
         .unwrap()
-        .status
-        .into_signed_for_testing();
+        .1;
+    signed_effects.into_data().status().unwrap();
     // obj type tag succeeds
     let data = TransactionData::new_move_call(
         s2,
@@ -7746,18 +7743,16 @@ async fn test_stable_type_argument_dependencies() {
         }))],
         gas2,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
     let transaction = to_sender_signed_transaction(data, &s2_key);
-    let transaction = authority_state.verify_transaction(transaction).unwrap();
-    authority_state
-        .handle_transaction(&epoch_store, transaction)
+    let signed_effects = send_and_confirm_transaction(&authority_state, transaction)
         .await
         .unwrap()
-        .status
-        .into_signed_for_testing();
+        .1;
+    signed_effects.into_data().status().unwrap();
     // missing package fails
     let data = TransactionData::new_move_call(
         s3,
@@ -7772,7 +7767,7 @@ async fn test_stable_type_argument_dependencies() {
         }))],
         gas3,
         vec![],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -8512,7 +8507,7 @@ async fn test_stable_invalid_mutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_MUT],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -8552,7 +8547,7 @@ async fn test_stable_valid_immutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_IMM],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -8757,7 +8752,7 @@ async fn test_stable_store_revert_wrap_move_call() {
             vec![],
             create_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -8845,7 +8840,7 @@ async fn test_stable_store_revert_unwrap_move_call() {
             vec![],
             wrap_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(wrapper_v0))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -8932,7 +8927,7 @@ async fn test_stable_store_revert_add_ofield() {
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -9045,7 +9040,7 @@ async fn test_stablestore_revert_remove_ofield() {
             vec![],
             add_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v1))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -9998,7 +9993,7 @@ async fn construct_stable_shared_object_transaction_with_sequence_number(
             }),
             CallArg::Pure(16u64.to_le_bytes().to_vec()),
         ],
-        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
