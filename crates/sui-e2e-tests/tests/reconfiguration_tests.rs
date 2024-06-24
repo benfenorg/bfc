@@ -934,8 +934,6 @@ async fn sim_test_bfc_dao_revoke_vote() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(90000)
         .build().await;
-async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
-    let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
