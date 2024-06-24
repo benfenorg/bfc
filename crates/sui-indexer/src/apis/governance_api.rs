@@ -339,7 +339,7 @@ impl<T: R2D2Connection + 'static> GovernanceReadApiServer for GovernanceReadApi<
         )?))
     }
 
-    async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
+    async fn get_stable_rate(&self, _tag: String) -> RpcResult<BigInt<u64>> {
         todo!()
     }
 
