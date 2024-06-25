@@ -27,18 +27,7 @@ use std::{
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
-    committee::EpochId,
-    error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode},
-    execution::DynamicallyLoadedObjectMetadata,
-    id::UID,
-    metrics::LimitsMetrics,
-    object::{MoveObject, Owner},
-    storage::ChildObjectResolver,
-    SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID,
-    SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
-};
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, BFC_SYSTEM_PACKAGE_ID, committee::EpochId, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::DynamicallyLoadedObjectMetadata, id::UID, metrics::LimitsMetrics, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
 
 pub enum ObjectEvent {
     /// Transfer to a new address or object. Or make it shared or immutable.
@@ -249,6 +238,7 @@ impl<'a> ObjectRuntime<'a> {
         //   child object
         let is_framework_obj = [
             SUI_SYSTEM_STATE_OBJECT_ID,
+            BFC_SYSTEM_PACKAGE_ID,
             SUI_CLOCK_OBJECT_ID,
             SUI_AUTHENTICATOR_STATE_OBJECT_ID,
             SUI_RANDOMNESS_STATE_OBJECT_ID,

@@ -26,7 +26,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_MAX_U256">MAX_U256</a>: u256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
+<pre><code><b>const</b> <a href="math_u256.md#0xc8_math_u256_MAX_U256">MAX_U256</a>: u256 = 115792089237316195423570985008687907853269984665640564039457584007913129639935;
 </code></pre>
 
 
@@ -37,7 +37,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_div_mod">div_mod</a>(num: u256, denom: u256): (u256, u256)
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_div_mod">div_mod</a>(num: u256, denom: u256): (u256, u256)
 </code></pre>
 
 
@@ -46,7 +46,7 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_div_mod">div_mod</a>(num: u256, denom: u256): (u256, u256) {
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_div_mod">div_mod</a>(num: u256, denom: u256): (u256, u256) {
     <b>let</b> p = num / denom;
     <b>let</b> r: u256 = num - (p * denom);
     (p, r)
@@ -63,7 +63,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_shlw">shlw</a>(n: u256): u256
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_shlw">shlw</a>(n: u256): u256
 </code></pre>
 
 
@@ -72,7 +72,7 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_shlw">shlw</a>(n: u256): u256 {
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_shlw">shlw</a>(n: u256): u256 {
     n &lt;&lt; 64
 }
 </code></pre>
@@ -87,7 +87,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_shrw">shrw</a>(n: u256): u256
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_shrw">shrw</a>(n: u256): u256
 </code></pre>
 
 
@@ -96,7 +96,7 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_shrw">shrw</a>(n: u256): u256 {
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_shrw">shrw</a>(n: u256): u256 {
     n &gt;&gt; 64
 }
 </code></pre>
@@ -111,7 +111,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_checked_shlw">checked_shlw</a>(n: u256): (u256, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_checked_shlw">checked_shlw</a>(n: u256): (u256, bool)
 </code></pre>
 
 
@@ -120,7 +120,7 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_checked_shlw">checked_shlw</a>(n: u256): (u256, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_checked_shlw">checked_shlw</a>(n: u256): (u256, bool) {
     <b>let</b> mask = 0xffffffffffffffff &lt;&lt; 192;
     <b>if</b> (n &gt; mask) {
         (0, <b>true</b>)
@@ -140,7 +140,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_div_round">div_round</a>(num: u256, denom: u256, round_up: bool): u256
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_div_round">div_round</a>(num: u256, denom: u256, round_up: bool): u256
 </code></pre>
 
 
@@ -149,7 +149,7 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_div_round">div_round</a>(num: u256, denom: u256, round_up: bool): u256 {
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_div_round">div_round</a>(num: u256, denom: u256, round_up: bool): u256 {
     <b>let</b> p = num / denom;
     <b>if</b> (round_up && ((p * denom) != num)) {
         p + 1
@@ -169,7 +169,7 @@ title: Module `0xc8::math_u256`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_add_check">add_check</a>(num1: u256, num2: u256): bool
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_add_check">add_check</a>(num1: u256, num2: u256): bool
 </code></pre>
 
 
@@ -178,8 +178,8 @@ title: Module `0xc8::math_u256`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_add_check">add_check</a>(num1: u256, num2: u256): bool {
-    (<a href="../bfc-system/math_u256.md#0xc8_math_u256_MAX_U256">MAX_U256</a> - num1 &gt;= num2)
+<pre><code><b>public</b> <b>fun</b> <a href="math_u256.md#0xc8_math_u256_add_check">add_check</a>(num1: u256, num2: u256): bool {
+    (<a href="math_u256.md#0xc8_math_u256_MAX_U256">MAX_U256</a> - num1 &gt;= num2)
 }
 </code></pre>
 

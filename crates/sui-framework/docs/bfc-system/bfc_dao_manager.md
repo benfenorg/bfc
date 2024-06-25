@@ -29,7 +29,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> <b>has</b> store, key
 </code></pre>
 
 
@@ -68,7 +68,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a> <b>has</b> store, key
 </code></pre>
 
 
@@ -104,7 +104,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_NOT_MATCH">ERROR_KEY_NOT_MATCH</a>: u64 = 1401;
+<pre><code><b>const</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_NOT_MATCH">ERROR_KEY_NOT_MATCH</a>: u64 = 1401;
 </code></pre>
 
 
@@ -113,7 +113,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_TYPE">ERROR_KEY_TYPE</a>: u64 = 1400;
+<pre><code><b>const</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_TYPE">ERROR_KEY_TYPE</a>: u64 = 1400;
 </code></pre>
 
 
@@ -122,7 +122,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_FREE_KEY">FREE_KEY</a>: u64 = 0;
+<pre><code><b>const</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_FREE_KEY">FREE_KEY</a>: u64 = 0;
 </code></pre>
 
 
@@ -131,7 +131,7 @@ title: Module `0xc8::bfc_dao_manager`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>: u64 = 1;
+<pre><code><b>const</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>: u64 = 1;
 </code></pre>
 
 
@@ -143,7 +143,7 @@ title: Module `0xc8::bfc_dao_manager`
 Create a new key.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_new">new</a>(sender: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_new">new</a>(sender: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -152,10 +152,10 @@ Create a new key.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_new">new</a>(sender: <b>address</b>, ctx: &<b>mut</b> TxContext)  {
-    <b>let</b> key = <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_new">new</a>(sender: <b>address</b>, ctx: &<b>mut</b> TxContext)  {
+    <b>let</b> key = <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
-        key_type: <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_FREE_KEY">FREE_KEY</a>,
+        key_type: <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_FREE_KEY">FREE_KEY</a>,
         amount: 0,
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(key, sender);
@@ -172,7 +172,7 @@ Create a new key.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>, payment: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>, payment: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -181,16 +181,16 @@ Create a new key.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_create_stake_key">create_stake_key</a>(sender: <b>address</b>,
                                     payment: Balance&lt;BFC&gt;,
                                     ctx: &<b>mut</b> TxContext)  {
-    <b>let</b> key = <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> {
+    <b>let</b> key = <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
-        key_type: <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>,
+        key_type: <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>,
         amount: <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&payment)
     };
 
-    <b>let</b> managerBfc = <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a> {
+    <b>let</b> managerBfc = <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
         principal: payment,
     };
@@ -212,7 +212,7 @@ Create a new key.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_unstake_key">unstake_key</a>(key: <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, token: <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">bfc_dao_manager::ManagerKeyBfc</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_unstake_key">unstake_key</a>(key: <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, token: <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">bfc_dao_manager::ManagerKeyBfc</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -221,20 +221,20 @@ Create a new key.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> (package) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_unstake_key">unstake_key</a>(key:<a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>, token: <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a>, ctx: &<b>mut</b> TxContext){
+<pre><code><b>public</b> (package) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_unstake_key">unstake_key</a>(key:<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>, token: <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a>, ctx: &<b>mut</b> TxContext){
 
-    <b>assert</b>!(key.key_type == <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>, <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_TYPE">ERROR_KEY_TYPE</a>);
-    <b>assert</b>!(key.amount == <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&token.principal), <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_NOT_MATCH">ERROR_KEY_NOT_MATCH</a>);
+    <b>assert</b>!(key.key_type == <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_STAKE_KEY">STAKE_KEY</a>, <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_TYPE">ERROR_KEY_TYPE</a>);
+    <b>assert</b>!(key.amount == <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&token.principal), <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ERROR_KEY_NOT_MATCH">ERROR_KEY_NOT_MATCH</a>);
 
     //convert proposal payment <b>to</b> voting_bfc
     <b>let</b> sender = <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx);
 
-    <b>let</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>{id:uid,
+    <b>let</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>{id:uid,
                         key_type: _key_type,
                         amount: _amount,}= key;
     <a href="../sui-framework/object.md#0x2_object_delete">object::delete</a>(uid);
 
-    <b>let</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a>{id:uid,
+    <b>let</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_ManagerKeyBfc">ManagerKeyBfc</a>{id:uid,
         principal:<a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>}= token;
 
     <a href="../sui-framework/object.md#0x2_object_delete">object::delete</a>(uid);
@@ -255,7 +255,7 @@ Create a new key.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_getKeyAddress">getKeyAddress</a>(key: &<a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>): <b>address</b>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_getKeyAddress">getKeyAddress</a>(key: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>): <b>address</b>
 </code></pre>
 
 
@@ -264,7 +264,7 @@ Create a new key.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_getKeyAddress">getKeyAddress</a>(key: &<a href="../bfc-system/bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>) : <b>address</b> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_getKeyAddress">getKeyAddress</a>(key: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">BFCDaoManageKey</a>) : <b>address</b> {
     <a href="../sui-framework/object.md#0x2_object_uid_to_address">object::uid_to_address</a>(&key.id)
 }
 </code></pre>

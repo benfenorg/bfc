@@ -21,17 +21,7 @@ use std::{
     sync::Arc,
 };
 use sui_protocol_config::{check_limit_by_meter, LimitThresholdCrossed, ProtocolConfig};
-use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress},
-    committee::EpochId,
-    error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode},
-    execution::DynamicallyLoadedObjectMetadata,
-    id::UID,
-    metrics::LimitsMetrics,
-    object::{MoveObject, Owner},
-    storage::ChildObjectResolver,
-    SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID,
-};
+use sui_types::{base_types::{MoveObjectType, ObjectID, SequenceNumber, SuiAddress}, BFC_SYSTEM_PACKAGE_ID, committee::EpochId, error::{ExecutionError, ExecutionErrorKind, VMMemoryLimitExceededSubStatusCode}, execution::DynamicallyLoadedObjectMetadata, id::UID, metrics::LimitsMetrics, object::{MoveObject, Owner}, storage::ChildObjectResolver, SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, SUI_SYSTEM_STATE_OBJECT_ID};
 
 pub(crate) mod object_store;
 
@@ -289,6 +279,7 @@ impl<'a> ObjectRuntime<'a> {
         //   child object
         let is_framework_obj = [
             SUI_SYSTEM_STATE_OBJECT_ID,
+            BFC_SYSTEM_PACKAGE_ID,
             SUI_CLOCK_OBJECT_ID,
             SUI_AUTHENTICATOR_STATE_OBJECT_ID,
         ]

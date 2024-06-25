@@ -27,7 +27,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> <b>has</b> <b>copy</b>, drop, store
+<pre><code><b>struct</b> <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> <b>has</b> <b>copy</b>, drop, store
 </code></pre>
 
 
@@ -63,7 +63,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>const</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>: u64 = 0;
+<pre><code><b>const</b> <a href="option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>: u64 = 0;
 </code></pre>
 
 
@@ -74,7 +74,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_some">some</a>(v: u64): <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_some">some</a>(v: u64): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
 </code></pre>
 
 
@@ -83,8 +83,8 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_some">some</a>(v: u64): <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
-    <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_some">some</a>(v: u64): <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
+    <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
         is_none: <b>false</b>,
         v
     }
@@ -101,7 +101,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_none">none</a>(): <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_none">none</a>(): <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>
 </code></pre>
 
 
@@ -110,8 +110,8 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_none">none</a>(): <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
-    <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_none">none</a>(): <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
+    <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a> {
         is_none: <b>true</b>,
         v: 0
     }
@@ -128,7 +128,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow">borrow</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_borrow">borrow</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): u64
 </code></pre>
 
 
@@ -137,8 +137,8 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow">borrow</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): u64 {
-    <b>assert</b>!(!opt.is_none, <a href="../bfc-system/option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_borrow">borrow</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): u64 {
+    <b>assert</b>!(!opt.is_none, <a href="option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>);
     opt.v
 }
 </code></pre>
@@ -153,7 +153,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow_mut">borrow_mut</a>(opt: &<b>mut</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): &<b>mut</b> u64
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_borrow_mut">borrow_mut</a>(opt: &<b>mut</b> <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): &<b>mut</b> u64
 </code></pre>
 
 
@@ -162,8 +162,8 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow_mut">borrow_mut</a>(opt: &<b>mut</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): &<b>mut</b> u64 {
-    <b>assert</b>!(!opt.is_none, <a href="../bfc-system/option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_borrow_mut">borrow_mut</a>(opt: &<b>mut</b> <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): &<b>mut</b> u64 {
+    <b>assert</b>!(!opt.is_none, <a href="option_u64.md#0xc8_option_u64_EOptionU64IsNone">EOptionU64IsNone</a>);
     &<b>mut</b> opt.v
 }
 </code></pre>
@@ -178,7 +178,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_swap_or_fill">swap_or_fill</a>(opt: &<b>mut</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, v: u64)
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_swap_or_fill">swap_or_fill</a>(opt: &<b>mut</b> <a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, v: u64)
 </code></pre>
 
 
@@ -187,7 +187,7 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_swap_or_fill">swap_or_fill</a>(opt: &<b>mut</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, v: u64) {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_swap_or_fill">swap_or_fill</a>(opt: &<b>mut</b> <a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, v: u64) {
     opt.is_none = <b>false</b>;
     opt.v = v;
 }
@@ -203,7 +203,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_some">is_some</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_some">is_some</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): bool
 </code></pre>
 
 
@@ -212,7 +212,7 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_some">is_some</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_some">is_some</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): bool {
     !opt.is_none
 }
 </code></pre>
@@ -227,7 +227,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_none">is_none</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_none">is_none</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>): bool
 </code></pre>
 
 
@@ -236,7 +236,7 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_none">is_none</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_none">is_none</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>): bool {
     opt.is_none
 }
 </code></pre>
@@ -251,7 +251,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_contains">contains</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, e_ref: u64): bool
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_contains">contains</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, e_ref: u64): bool
 </code></pre>
 
 
@@ -260,7 +260,7 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_contains">contains</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, e_ref: u64): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_contains">contains</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, e_ref: u64): bool {
     ((!opt.is_none) && (opt.v == e_ref))
 }
 </code></pre>
@@ -275,7 +275,7 @@ title: Module `0xc8::option_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_some_and_lte">is_some_and_lte</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, v: u64): bool
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_some_and_lte">is_some_and_lte</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">option_u64::OptionU64</a>, v: u64): bool
 </code></pre>
 
 
@@ -284,7 +284,7 @@ title: Module `0xc8::option_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64_is_some_and_lte">is_some_and_lte</a>(opt: &<a href="../bfc-system/option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, v: u64): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="option_u64.md#0xc8_option_u64_is_some_and_lte">is_some_and_lte</a>(opt: &<a href="option_u64.md#0xc8_option_u64_OptionU64">OptionU64</a>, v: u64): bool {
     (!opt.is_none) && (opt.v &lt;= v)
 }
 </code></pre>

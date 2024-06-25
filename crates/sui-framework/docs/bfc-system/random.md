@@ -22,7 +22,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/random.md#0xc8_random_Random">Random</a> <b>has</b> <b>copy</b>, drop, store
+<pre><code><b>struct</b> <a href="random.md#0xc8_random_Random">Random</a> <b>has</b> <b>copy</b>, drop, store
 </code></pre>
 
 
@@ -49,7 +49,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_new">new</a>(seed: u64): <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_new">new</a>(seed: u64): <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>
 </code></pre>
 
 
@@ -58,8 +58,8 @@ title: Module `0xc8::random`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_new">new</a>(seed: u64): <a href="../bfc-system/random.md#0xc8_random_Random">Random</a> {
-    <a href="../bfc-system/random.md#0xc8_random_Random">Random</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_new">new</a>(seed: u64): <a href="random.md#0xc8_random_Random">Random</a> {
+    <a href="random.md#0xc8_random_Random">Random</a> {
         seed
     }
 }
@@ -75,7 +75,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_seed">seed</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, seed: u64)
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_seed">seed</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, seed: u64)
 </code></pre>
 
 
@@ -84,7 +84,7 @@ title: Module `0xc8::random`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_seed">seed</a>(r: &<b>mut</b> <a href="../bfc-system/random.md#0xc8_random_Random">Random</a>, seed: u64) {
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_seed">seed</a>(r: &<b>mut</b> <a href="random.md#0xc8_random_Random">Random</a>, seed: u64) {
     r.seed = ((((r.seed <b>as</b> u128) + (seed <b>as</b> u128) & 0x0000000000000000ffffffffffffffff)) <b>as</b> u64)
 }
 </code></pre>
@@ -99,7 +99,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_rand_n">rand_n</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, n: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_rand_n">rand_n</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, n: u64): u64
 </code></pre>
 
 
@@ -108,7 +108,7 @@ title: Module `0xc8::random`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_rand_n">rand_n</a>(r: &<b>mut</b> <a href="../bfc-system/random.md#0xc8_random_Random">Random</a>, n: u64): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_rand_n">rand_n</a>(r: &<b>mut</b> <a href="random.md#0xc8_random_Random">Random</a>, n: u64): u64 {
     r.seed = ((((9223372036854775783u128 * ((r.seed <b>as</b> u128) + 999983)) &gt;&gt; 1) & 0x0000000000000000ffffffffffffffff) <b>as</b> u64);
     r.seed % n
 }
@@ -124,7 +124,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_rand">rand</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_rand">rand</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>): u64
 </code></pre>
 
 
@@ -133,7 +133,7 @@ title: Module `0xc8::random`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_rand">rand</a>(r: &<b>mut</b> <a href="../bfc-system/random.md#0xc8_random_Random">Random</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_rand">rand</a>(r: &<b>mut</b> <a href="random.md#0xc8_random_Random">Random</a>): u64 {
     r.seed = ((((9223372036854775783u128 * ((r.seed <b>as</b> u128)) + 999983) &gt;&gt; 1) & 0x0000000000000000ffffffffffffffff) <b>as</b> u64);
     r.seed
 }
@@ -149,7 +149,7 @@ title: Module `0xc8::random`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_seed_rand">seed_rand</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, seed: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_seed_rand">seed_rand</a>(r: &<b>mut</b> <a href="../sui-framework/random.md#0x2_random_Random">random::Random</a>, seed: u64): u64
 </code></pre>
 
 
@@ -158,7 +158,7 @@ title: Module `0xc8::random`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/random.md#0xc8_random_seed_rand">seed_rand</a>(r: &<b>mut</b> <a href="../bfc-system/random.md#0xc8_random_Random">Random</a>, seed: u64): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="random.md#0xc8_random_seed_rand">seed_rand</a>(r: &<b>mut</b> <a href="random.md#0xc8_random_Random">Random</a>, seed: u64): u64 {
 
 
     r.seed = ((((r.seed <b>as</b> u128) + (seed <b>as</b> u128) & 0x0000000000000000ffffffffffffffff)) <b>as</b> u64);

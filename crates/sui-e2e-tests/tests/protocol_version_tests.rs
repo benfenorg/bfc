@@ -432,6 +432,7 @@ mod sim_only_tests {
                 if let Owner::Shared { .. } = owner {
                     let is_framework_obj = [
                         SUI_SYSTEM_STATE_OBJECT_ID,
+                        BFC_SYSTEM_PACKAGE_ID,
                         SUI_CLOCK_OBJECT_ID,
                         SUI_AUTHENTICATOR_STATE_OBJECT_ID,
                         SUI_RANDOMNESS_STATE_OBJECT_ID,

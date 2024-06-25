@@ -35,7 +35,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_InitTreasuryEvent">InitTreasuryEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_InitTreasuryEvent">InitTreasuryEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -62,7 +62,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -89,7 +89,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -152,7 +152,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_PauseEvent">PauseEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -163,7 +163,7 @@ title: Module `0xc8::event`
 
 <dl>
 <dt>
-<code><a href="../bfc-system/vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
+<code><a href="vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
 </dt>
 <dd>
 
@@ -185,7 +185,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_SwapEvent">SwapEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_SwapEvent">SwapEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -202,7 +202,7 @@ title: Module `0xc8::event`
 
 </dd>
 <dt>
-<code><a href="../bfc-system/vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
+<code><a href="vault.md#0xc8_vault">vault</a>: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a></code>
 </dt>
 <dd>
 
@@ -272,7 +272,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -299,7 +299,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -350,7 +350,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>struct</b> <a href="../bfc-system/event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -377,7 +377,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_init_treasury">init_treasury</a>(vaults_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_init_treasury">init_treasury</a>(vaults_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>)
 </code></pre>
 
 
@@ -386,8 +386,8 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_init_treasury">init_treasury</a>(vaults_id: ID) {
-    emit(<a href="../bfc-system/event.md#0xc8_event_InitTreasuryEvent">InitTreasuryEvent</a> { vaults_id })
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_init_treasury">init_treasury</a>(vaults_id: ID) {
+    emit(<a href="event.md#0xc8_event_InitTreasuryEvent">InitTreasuryEvent</a> { vaults_id })
 }
 </code></pre>
 
@@ -401,7 +401,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>)
 </code></pre>
 
 
@@ -410,8 +410,8 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: ID) {
-    emit(<a href="../bfc-system/event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> { treasury_pool_id })
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_init_treasury_pool">init_treasury_pool</a>(treasury_pool_id: ID) {
+    emit(<a href="event.md#0xc8_event_InitTreasuryPoolEvent">InitTreasuryPoolEvent</a> { treasury_pool_id })
 }
 </code></pre>
 
@@ -425,7 +425,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_a: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_b: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, tick_spacing: u32, spacing_times: u32, index: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_a: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_b: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, tick_spacing: u32, spacing_times: u32, index: u64)
 </code></pre>
 
 
@@ -434,7 +434,7 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_create_vault">create_vault</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_create_vault">create_vault</a>(
     vault_id: ID,
     vault_key: String,
     coin_type_a: String,
@@ -443,7 +443,7 @@ title: Module `0xc8::event`
     spacing_times: u32,
     index: u64,
 ) {
-    emit(<a href="../bfc-system/event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> {
+    emit(<a href="event.md#0xc8_event_CreateVaultEvent">CreateVaultEvent</a> {
         vault_id,
         vault_key,
         coin_type_a,
@@ -465,7 +465,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_swap">swap</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, atob: bool, coin_type_in: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_out: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, atob: bool, coin_type_in: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, coin_type_out: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, amount_in: u64, amount_out: u64, vault_a_amount: u64, vault_b_amount: u64, before_sqrt_price: u128, after_sqrt_price: u128, steps: u64)
 </code></pre>
 
 
@@ -474,22 +474,22 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_swap">swap</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_swap">swap</a>(
     vault_id: ID,
     atob: bool, // <b>true</b> a-&gt;b <b>false</b> b-&gt;a
     coin_type_in: String,
     coin_type_out: String,
     amount_in: u64,
     amount_out: u64,
-    vault_a_amount: u64, // current <a href="../bfc-system/vault.md#0xc8_vault">vault</a> <a href="../sui-framework/balance.md#0x2_balance">balance</a>(A)
-    vault_b_amount: u64, // current <a href="../bfc-system/vault.md#0xc8_vault">vault</a> <a href="../sui-framework/balance.md#0x2_balance">balance</a>(B)
+    vault_a_amount: u64, // current <a href="vault.md#0xc8_vault">vault</a> <a href="../sui-framework/balance.md#0x2_balance">balance</a>(A)
+    vault_b_amount: u64, // current <a href="vault.md#0xc8_vault">vault</a> <a href="../sui-framework/balance.md#0x2_balance">balance</a>(B)
     before_sqrt_price: u128,
     after_sqrt_price: u128,
     steps: u64
 ) {
     emit(
-        <a href="../bfc-system/event.md#0xc8_event_SwapEvent">SwapEvent</a> {
-            <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: vault_id,
+        <a href="event.md#0xc8_event_SwapEvent">SwapEvent</a> {
+            <a href="vault.md#0xc8_vault">vault</a>: vault_id,
             atob,
             coin_type_in,
             coin_type_out,
@@ -515,7 +515,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_deposit">deposit</a>(amount: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64)
 </code></pre>
 
 
@@ -524,9 +524,9 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_deposit">deposit</a>(amount: u64) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_deposit">deposit</a>(amount: u64) {
     emit(
-        <a href="../bfc-system/event.md#0xc8_event_DepositEvent">DepositEvent</a> {
+        <a href="event.md#0xc8_event_DepositEvent">DepositEvent</a> {
             amount
         }
     )
@@ -543,7 +543,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_rebalance">rebalance</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_rebalance">rebalance</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -552,9 +552,9 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_rebalance">rebalance</a>(coin_type: String) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_rebalance">rebalance</a>(coin_type: String) {
     emit(
-        <a href="../bfc-system/event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> {
+        <a href="event.md#0xc8_event_RebalanceEvent">RebalanceEvent</a> {
             coin_type,
         }
     )
@@ -571,7 +571,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_update_state">update_state</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, current_sqrt_price: u128, last_sqrt_price: u128, state: u8, state_counter: u32)
 </code></pre>
 
 
@@ -580,7 +580,7 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_update_state">update_state</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_update_state">update_state</a>(
     coin_type: String,
     current_sqrt_price: u128,
     last_sqrt_price: u128,
@@ -588,7 +588,7 @@ title: Module `0xc8::event`
     state_counter: u32,
 ) {
     emit(
-        <a href="../bfc-system/event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
+        <a href="event.md#0xc8_event_UpdateStateEvent">UpdateStateEvent</a> {
             coin_type,
             current_sqrt_price,
             last_sqrt_price,
@@ -609,7 +609,7 @@ title: Module `0xc8::event`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, is_pause: bool)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="event.md#0xc8_event_set_pause">set_pause</a>(vault_id: <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, is_pause: bool)
 </code></pre>
 
 
@@ -618,10 +618,10 @@ title: Module `0xc8::event`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/event.md#0xc8_event_set_pause">set_pause</a>(vault_id: ID, is_pause: bool) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="event.md#0xc8_event_set_pause">set_pause</a>(vault_id: ID, is_pause: bool) {
     emit(
-        <a href="../bfc-system/event.md#0xc8_event_PauseEvent">PauseEvent</a> {
-            <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: vault_id,
+        <a href="event.md#0xc8_event_PauseEvent">PauseEvent</a> {
+            <a href="vault.md#0xc8_vault">vault</a>: vault_id,
             is_pause
         }
     )
