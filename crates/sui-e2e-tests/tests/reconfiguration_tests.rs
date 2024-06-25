@@ -1597,6 +1597,9 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+
+
+
 // This test just starts up a cluster that reconfigures itself under 0 load.
 #[cfg(msim)]
 #[sim_test]
@@ -2042,7 +2045,7 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
 
 #[cfg(msim)]
 #[sim_test]
-async fn bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error> {
+async fn sim_bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Error> {
     use sui_types::bfc_system_state::bfc_get_stable_rate_with_base_point_result_injection;
     const EPOCH_DURATION: u64 = 20000;
 
