@@ -315,7 +315,7 @@ fn test_zklogin_salt_function(){
 // validators.
 #[cfg(msim)]
 #[sim_test]
-async fn test_conflicting_jwks() {
+async fn sim_test_conflicting_jwks() {
     use futures::StreamExt;
     use std::collections::HashSet;
     use std::sync::{Arc, Mutex};

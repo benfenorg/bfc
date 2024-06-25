@@ -1761,7 +1761,7 @@ async fn test_validator_candidate_pool_read() {
 }
 
 #[sim_test]
-async fn test_inactive_validator_pool_read() {
+async fn sim_test_inactive_validator_pool_read() {
     let test_cluster = TestClusterBuilder::new()
         .with_num_validators(5)
         .build()
