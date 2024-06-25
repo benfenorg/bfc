@@ -121,7 +121,7 @@ async fn sim_test_get_raw_transaction() -> Result<(), anyhow::Error> {
 
     // Make a transfer transactions
     let transaction_bytes: TransactionBlockBytes = http_client
-        .transfer_object(address, object_to_transfer, None, 1_000.into(), address)
+        .transfer_object(address, object_to_transfer, None, 1_00000.into(), address)
         .await?;
     let tx = cluster
         .wallet
