@@ -10,6 +10,7 @@ use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
+use anyhow::format_err;
 use tracing::info;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::committee::EpochId;
@@ -900,6 +901,27 @@ impl<'backing> TemporaryStore<'backing> {
                 invariant_violation!(
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
+            };
+            Ok(obj.clone())
+        }
+    }
+
+    pub fn get_input_sui_obj_nopanic(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<Object, ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                return Err(ExecutionError::invariant_violation(format!("Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",expected_version,obj.version())));
+            }
+            Ok(obj.clone())
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                return Err(ExecutionError::invariant_violation(format!( "Failed looking up dynamic field {id} in SUI conservation checking")));
             };
             Ok(obj.clone())
         }
