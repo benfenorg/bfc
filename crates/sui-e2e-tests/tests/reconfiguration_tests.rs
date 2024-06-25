@@ -2090,7 +2090,7 @@ async fn sim_bfc_get_stable_rate_with_base_point_test() -> Result<(), anyhow::Er
 
 #[cfg(msim)]
 #[sim_test]
-async fn safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
+async fn sim_safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Error> {
     use sui_test_transaction_builder::make_staking_transaction;
     use sui_types::sui_system_state::advance_epoch_result_injection;
 
