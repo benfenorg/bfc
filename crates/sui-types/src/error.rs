@@ -166,7 +166,7 @@ pub enum UserInputError {
     GasCoinTypeMissing,
     #[error("Invalid gas coin type: {:?}.", coin_type)]
     GasCoinInvalid{ coin_type: String },
-    #[error("Invalid gas coin type: {:?}.", coin_type)]
+    #[error("Invalid gas coin type NoRateFoundInBfcSystem: {:?}.", coin_type)]
     NoRateFoundInBfcSystem{ coin_type: String },
 
     #[error(
