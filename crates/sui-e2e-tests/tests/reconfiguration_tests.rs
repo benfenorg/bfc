@@ -96,7 +96,7 @@ async fn sim_advance_epoch_tx_test() {
 }
 
 #[sim_test]
-async fn basic_reconfig_end_to_end_test() {
+async fn sim_basic_reconfig_end_to_end_test() {
     // TODO remove this sleep when this test passes consistently
     sleep(Duration::from_secs(1)).await;
     let test_cluster = TestClusterBuilder::new().build().await;
@@ -152,7 +152,7 @@ async fn sim_test_transaction_expiration() {
 // TODO: This test does not guarantee that tx would be reverted, and hence the code path
 // may not always be tested.
 #[sim_test]
-async fn reconfig_with_revert_end_to_end_test() {
+async fn sim_reconfig_with_revert_end_to_end_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let authorities = test_cluster.swarm.validator_node_handles();
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -930,8 +930,10 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 }
 
 #[sim_test]
-async fn sim_test_bfc_dao_revoke_vote()  -> Result<(), anyhow::Error>{
-    let cluster = TestClusterBuilder::new().build().await;
+async fn sim_test_bfc_dao_revoke_vote() -> Result<(), anyhow::Error> {
+    let cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(90000)
+        .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
 
@@ -1670,7 +1672,7 @@ async fn test_create_advance_epoch_tx_race() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_failing_validator() {
+async fn sim_test_reconfig_with_failing_validator() {
     sui_protocol_config::ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = Arc::new(
@@ -1833,7 +1835,7 @@ async fn test_inactive_validator_pool_read() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_committee_change_basic() {
+async fn sim_test_reconfig_with_committee_change_basic() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
 
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
@@ -3187,7 +3189,7 @@ async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) ->
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -3386,7 +3388,7 @@ fn get_staked_stable(object_change: Vec<ObjectChange>, stable_tag: TypeTag) -> O
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -3439,7 +3441,7 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)

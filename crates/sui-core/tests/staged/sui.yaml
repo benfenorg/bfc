@@ -52,9 +52,6 @@ CallArg:
       Object:
         NEWTYPE:
           TYPENAME: ObjectArg
-ChangeBfcRound:
-  STRUCT:
-    - bfc_round: U64
 ChangeEpoch:
   STRUCT:
     - epoch: U64
@@ -436,12 +433,12 @@ ExecutionFailureStatus:
     30:
       SuiMoveVerificationTimedout: UNIT
     31:
+      SharedObjectOperationNotAllowed: UNIT
+    32:
+      InputObjectDeleted: UNIT
+    33:
       StableCoinRateErr:
         NEWTYPE: STR
-    32:
-      SharedObjectOperationNotAllowed: UNIT
-    33:
-      InputObjectDeleted: UNIT
 ExecutionStatus:
   ENUM:
     0:
@@ -1001,7 +998,6 @@ TransactionKind:
       ConsensusCommitPrologueV2:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologueV2
-
 TypeArgumentError:
   ENUM:
     0:

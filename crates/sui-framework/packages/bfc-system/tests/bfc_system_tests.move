@@ -8,7 +8,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
-    use std::debug;
+    //use std::debug;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
     use sui::clock::{Self};
@@ -241,7 +241,7 @@ module bfc_system::bfc_system_tests {
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         assert!(amount == 0, 1);
         // basepoint = 1000 /  position = 9 / timeinterval=4h
-        let total = (
+        let _total = (
                 50000_000_000_000 * 5 * 6 * 6 + // usd
                 50000_000_000_000 * 5 * 6 * 6 + // mgg
                 50000_000_000_000 * 5 * 6 * 6 + // jpy
@@ -261,7 +261,7 @@ module bfc_system::bfc_system_tests {
                 50000_000_000_000 * 5 * 6 * 6 // brl
         );
 
-        debug::print(&total);
+        //debug::print(&total);
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }

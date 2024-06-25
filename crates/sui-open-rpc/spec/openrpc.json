@@ -103,8 +103,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -248,8 +246,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -453,8 +449,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -2155,8 +2149,6 @@
                 },
                 "executedEpoch": "0",
                 "gasUsed": {
-                  "basePoint": 0,
-                  "rate": 1,
                   "computationCost": "100",
                   "storageCost": "100",
                   "storageRebate": "10",
@@ -2536,8 +2528,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2654,8 +2644,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -2772,8 +2760,6 @@
                   },
                   "executedEpoch": "0",
                   "gasUsed": {
-                    "basePoint": 0,
-                    "rate": 1,
                     "computationCost": "100",
                     "storageCost": "100",
                     "storageRebate": "10",
@@ -3845,6 +3831,31 @@
           }
         }
       ]
+    },
+    {
+      "name": "bfcx_getStableRate",
+      "tags": [
+        {
+          "name": "Governance Read API"
+        }
+      ],
+      "description": "Return the rate of stable coin",
+      "params": [
+        {
+          "name": "tag",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
+      "result": {
+        "name": "BigInt<u64>",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/BigInt_for_uint64"
+        }
+      }
     },
     {
       "name": "bfcx_getStakes",
@@ -8953,6 +8964,49 @@
           }
         }
       },
+      "SuiGasCostSummary": {
+        "type": "object",
+        "required": [
+          "computationCost",
+          "nonRefundableStorageFee",
+          "storageCost",
+          "storageRebate"
+        ],
+        "properties": {
+          "computationCost": {
+            "description": "Cost of computation/execution",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "nonRefundableStorageFee": {
+            "description": "The fee for the rebate. The portion of the storage rebate kept by the system.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "storageCost": {
+            "description": "Storage cost, it's the sum of all storage cost for all objects created or mutated.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          },
+          "storageRebate": {
+            "description": "The amount of storage cost refunded to the user for all objects deleted or mutated in the transaction.",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BigInt_for_uint64"
+              }
+            ]
+          }
+        }
+      },
       "SuiJWK": {
         "type": "object",
         "required": [
@@ -10477,7 +10531,7 @@
                 ]
               },
               "gasUsed": {
-                "$ref": "#/components/schemas/GasCostSummary"
+                "$ref": "#/components/schemas/SuiGasCostSummary"
               },
               "messageVersion": {
                 "type": "string",
@@ -10786,24 +10840,6 @@
                 "type": "string",
                 "enum": [
                   "ConsensusCommitPrologueV2"
-                ]
-              },
-              "round": {
-                "$ref": "#/components/schemas/BigInt_for_uint64"
-              }
-            }
-          },
-          {
-            "type": "object",
-            "required": [
-              "kind",
-              "round"
-            ],
-            "properties": {
-              "kind": {
-                "type": "string",
-                "enum": [
-                  "ChangeBfcRound"
                 ]
               },
               "round": {
