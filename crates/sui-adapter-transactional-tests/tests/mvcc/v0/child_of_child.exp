@@ -4,11 +4,76 @@ init:
 A: object(0,0)
 
 task 1 'publish'. lines 8-69:
-Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: VMVerificationOrDeserializationError, source: Some(VMError { major_status: LINKER_ERROR, sub_status: None, message: Some("Cannot find ModuleId { address: sui, name: Identifier(\"bfc\") } in data cache"), exec_state: None, location: Undefined, indices: [], offsets: [] }), command: None } }
+Error: warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:10:23
+   │
+10 │     use std::option::{Self, Option};
+   │                       ^^^^ Unnecessary alias 'option' for module 'std::option'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:10:29
+   │
+10 │     use std::option::{Self, Option};
+   │                             ^^^^^^ Unnecessary alias 'Option' for module member 'std::option::Option'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:11:23
+   │
+11 │     use sui::object::{Self, UID};
+   │                       ^^^^ Unnecessary alias 'object' for module 'sui::object'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:11:29
+   │
+11 │     use sui::object::{Self, UID};
+   │                             ^^^ Unnecessary alias 'UID' for module member 'sui::object::UID'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+warning[W02021]: duplicate alias
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:12:26
+   │
+12 │     use sui::tx_context::TxContext;
+   │                          ^^^^^^^^^ Unnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default
+   │
+   = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+
+error[E01003]: invalid modifier
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:14:5
+   │
+14 │     struct Obj has key, store {
+   │     ^^^^^^ Invalid struct declaration. Internal struct declarations are not yet supported
+   │
+   = Visibility annotations are required on struct declarations from the Move 2024 edition onwards.
+
+error[E04024]: invalid usage of immutable variable
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:25:21
+   │
+23 │         let parent = Obj { id: object::new(ctx), value: 0 };
+   │             ------ To use the variable mutably, it must be declared 'mut', e.g. 'mut parent'
+24 │         let child = Obj { id: object::new(ctx), value: 0 };
+25 │         ofield::add(&mut parent.id, KEY, child);
+   │                     ^^^^^^^^^^^^^^ Invalid mutable borrow of immutable variable 'parent'
+
+error[E04024]: invalid usage of immutable variable
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:26:21
+   │
+22 │         let grand = Obj { id: object::new(ctx), value: 0 };
+   │             ----- To use the variable mutably, it must be declared 'mut', e.g. 'mut grand'
+   ·
+26 │         ofield::add(&mut grand.id, KEY, parent);
+   │                     ^^^^^^^^^^^^^ Invalid mutable borrow of immutable variable 'grand'
+
+
 
 task 2 'programmable'. lines 71-73:
-Error: Error checking transaction input objects: BFCObjectNotFound { object_id: "BFC000000000000000000000000000000000000000000000000000000000000000060e0", version: None }
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 3 'view-object'. lines 75-75:
 Error: task 3, lines 75-75. Unbound fake id 2,2
