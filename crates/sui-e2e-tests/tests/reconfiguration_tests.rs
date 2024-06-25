@@ -1672,7 +1672,7 @@ async fn test_create_advance_epoch_tx_race() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_failing_validator() {
+async fn sim_test_reconfig_with_failing_validator() {
     sui_protocol_config::ProtocolConfig::poison_get_for_min_version();
 
     let test_cluster = Arc::new(
@@ -1835,7 +1835,7 @@ async fn test_inactive_validator_pool_read() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_committee_change_basic() {
+async fn sim_test_reconfig_with_committee_change_basic() {
     // This test exercise the full flow of a validator joining the network, catch up and then leave.
 
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
