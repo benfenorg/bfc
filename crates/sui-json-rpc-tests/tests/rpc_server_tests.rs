@@ -1230,7 +1230,7 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
     let address = SuiAddress::from(proposal_id);
     info!("===========address: {}", address);
 
-    let http_client = cluster.rpc_client();
+    let _http_client = cluster.rpc_client();
 
     //todo : reopen afer indexer fix.
     //let result = http_client.get_proposal(address).await?;

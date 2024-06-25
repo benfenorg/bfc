@@ -4,7 +4,6 @@
 use std::collections::BTreeSet;
 use std::io::Read;
 use std::os::unix::prelude::FileExt;
-use std::str::FromStr;
 use std::{fmt::Write, fs::read_dir, path::PathBuf, str, thread, time::Duration};
 
 use expect_test::expect;
@@ -19,6 +18,7 @@ use sui_types::transaction::{
     TEST_ONLY_GAS_UNIT_FOR_PUBLISH, TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN,
     TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
 };
+use sui_types::{SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID};
 use tokio::time::sleep;
 
 use sui::{
@@ -779,6 +779,25 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         .config
         .keystore
         .add_key(None, SuiKeyPair::Ed25519(keypair))?;
+
+    let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
+    let args = vec![
+        SuiJsonValue::new(json!(bfc_system_address))?,
+        SuiJsonValue::new(json!(SUI_CLOCK_OBJECT_ID))?,
+    ];
+    //rebalance
+    let resp = SuiClientCommands::Call {
+        package: (*BFC_SYSTEM_PACKAGE_ID).into(),
+        module: "bfc_system".to_string(),
+        function: "rebalance".to_string(),
+        type_args: vec![],
+        args,
+        opts: OptsWithGas::for_testing(None, 1_000_000_000),
+        gas_price: None,
+    }
+        .execute(context)
+        .await?;
+    resp.print(true);
 
     let mut package_path = PathBuf::from(TEST_DATA_DIR);
     package_path.push("move_call_args_linter");

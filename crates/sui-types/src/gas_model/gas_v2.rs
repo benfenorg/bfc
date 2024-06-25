@@ -353,8 +353,8 @@ mod checked {
 
                     if current_coin_type != gas_coin_type {
                         return Err(UserInputError::GasCoinTypeMismatch {
-                            coin_type: current_coin_type.to_canonical_string(true),
-                            second_coin_type: gas_coin_type.to_canonical_string(true),
+                            coin_type: current_coin_type.to_canonical_string(false),
+                            second_coin_type: gas_coin_type.to_canonical_string(false),
                         });
                     }
                 }
