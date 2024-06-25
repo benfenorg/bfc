@@ -10,7 +10,6 @@ use move_core_types::resolver::{ModuleResolver, ResourceResolver};
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, HashSet};
 use std::sync::Arc;
-use anyhow::format_err;
 use tracing::info;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::committee::EpochId;
