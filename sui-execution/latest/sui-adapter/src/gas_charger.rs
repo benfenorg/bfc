@@ -326,6 +326,9 @@ pub mod checked {
                                 ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
                             ));
                             self.reset(temporary_store);
+                            cost_summary = self.gas_status.summary();
+                            let gas_used = cost_summary.net_gas_usage();
+
                             deduct_gas(&mut gas_object, gas_used);
                         }
                     }

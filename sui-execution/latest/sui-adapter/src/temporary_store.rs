@@ -1096,6 +1096,7 @@ impl<'backing> TemporaryStore<'backing> {
             if pay_with_stable_gas {
                 total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
                 total_output_sui +=  gas_summary.non_refundable_storage_fee;
+
                 let stable_amount=
                     if total_input_stable_gas>= total_output_stable_gas {
                         total_input_stable_gas-total_output_stable_gas
@@ -1123,7 +1124,6 @@ impl<'backing> TemporaryStore<'backing> {
                                 gas_summary.storage_gas_usage_abs()))
                     );
                 }
-
             } else {
                 total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
                 if total_input_sui != total_output_sui {
