@@ -159,6 +159,10 @@ pub struct StakeMetrics {
 
     /// Staking coins in the last epoch.
     pub staking_coins: Vec<StakeCoin>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_addresses: u64,
 }
 
 #[serde_as]

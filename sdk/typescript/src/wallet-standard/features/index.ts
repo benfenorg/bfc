@@ -11,6 +11,7 @@ import type { SuiSignTransactionBlockFeature } from './suiSignTransactionBlock.j
 import type { SuiSignAndExecuteTransactionBlockFeature } from './suiSignAndExecuteTransactionBlock.js';
 import type { SuiSignMessageFeature } from './suiSignMessage.js';
 import type { SuiSignPersonalMessageFeature } from './suiSignPersonalMessage.js';
+import type { BfcSwitchChainFeature } from './bfcSwitchChain.js';
 
 /**
  * Wallet Standard features that are unique to Sui, and that all Sui wallets are expected to implement.
@@ -18,6 +19,7 @@ import type { SuiSignPersonalMessageFeature } from './suiSignPersonalMessage.js'
 export type SuiFeatures = SuiSignTransactionBlockFeature &
 	SuiSignAndExecuteTransactionBlockFeature &
 	SuiSignPersonalMessageFeature &
+	BfcSwitchChainFeature &
 	// This deprecated feature should be removed once wallets update to the new method:
 	Partial<SuiSignMessageFeature>;
 
@@ -33,3 +35,4 @@ export * from './suiSignMessage.js';
 export * from './suiSignTransactionBlock.js';
 export * from './suiSignAndExecuteTransactionBlock.js';
 export * from './suiSignPersonalMessage.js';
+export * from './bfcSwitchChain.js';

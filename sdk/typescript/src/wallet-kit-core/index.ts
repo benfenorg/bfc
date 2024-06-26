@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
+	BfcSwitchChainInput,
+	BfcSwitchChainOutput,
 	StandardConnectInput,
 	SuiSignAndExecuteTransactionBlockInput,
 	SuiSignAndExecuteTransactionBlockOutput,
@@ -80,6 +82,7 @@ export interface WalletKitCore {
 			'chain' | 'account'
 		>,
 	) => Promise<SuiSignAndExecuteTransactionBlockOutput>;
+	switchChain: (input: BfcSwitchChainInput) => Promise<BfcSwitchChainOutput>;
 }
 
 export type SubscribeHandler = (state: WalletKitCoreState) => void;
@@ -126,6 +129,8 @@ function sortWallets(
 		...suiWallets.filter((wallet) => !preferredWallets.includes(wallet.name)),
 	];
 }
+
+let checkInterval = 0;
 
 export function createWalletKitCore({
 	preferredWallets = [SUI_WALLET_NAME],
@@ -192,6 +197,18 @@ export function createWalletKitCore({
 
 	registeredWallets.on('register', handleWalletsChanged);
 	registeredWallets.on('unregister', handleWalletsChanged);
+
+	if (checkInterval) {
+		clearInterval(checkInterval);
+	}
+	checkInterval = window.setInterval(() => {
+		const registered = registeredWallets.get();
+		const newWallets = registered.filter((wallet) => !wallets.includes(wallet));
+		if (newWallets.length > 0) {
+			handleWalletsChanged();
+			wallets = registered;
+		}
+	}, 100);
 
 	const walletKit: WalletKitCore = {
 		async autoconnect() {
@@ -373,6 +390,16 @@ export function createWalletKitCore({
 				account,
 				chain,
 			});
+		},
+
+		async switchChain(input) {
+			if (!internalState.currentWallet || !internalState.currentAccount) {
+				throw new Error(
+					'No wallet is currently connected, cannot call `signAndExecuteTransactionBlock`.',
+				);
+			}
+
+			return internalState.currentWallet.features['bfc:switchChain'].switchChain(input);
 		},
 	};
 
