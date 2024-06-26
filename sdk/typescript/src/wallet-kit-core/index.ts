@@ -2,6 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
+	BfcSwitchChainInput,
+	BfcSwitchChainOutput,
 	StandardConnectInput,
 	SuiSignAndExecuteTransactionBlockInput,
 	SuiSignAndExecuteTransactionBlockOutput,
@@ -80,6 +82,7 @@ export interface WalletKitCore {
 			'chain' | 'account'
 		>,
 	) => Promise<SuiSignAndExecuteTransactionBlockOutput>;
+	switchChain: (input: BfcSwitchChainInput) => Promise<BfcSwitchChainOutput>;
 }
 
 export type SubscribeHandler = (state: WalletKitCoreState) => void;
@@ -387,6 +390,16 @@ export function createWalletKitCore({
 				account,
 				chain,
 			});
+		},
+
+		async switchChain(input) {
+			if (!internalState.currentWallet || !internalState.currentAccount) {
+				throw new Error(
+					'No wallet is currently connected, cannot call `signAndExecuteTransactionBlock`.',
+				);
+			}
+
+			return internalState.currentWallet.features['bfc:switchChain'].switchChain(input);
 		},
 	};
 
