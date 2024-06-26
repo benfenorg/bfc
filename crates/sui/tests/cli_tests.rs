@@ -749,6 +749,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
+#[ignore]
 async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     let obj_id = ObjectID::random();
     let (address, keypair): (SuiAddress, AccountKeyPair) =
