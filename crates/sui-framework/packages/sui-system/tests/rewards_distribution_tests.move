@@ -17,7 +17,7 @@ module sui_system::rewards_distribution_tests {
         create_sui_system_state_for_testing,
         stake_with,
         total_sui_balance, unstake, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
-        total_busd_balance
+        total_busd_balance, advance_epoch_with_reward_amounts_with_stable_rate
     };
     use sui::test_utils::assert_eq;
     use sui::address;
@@ -164,20 +164,20 @@ module sui_system::rewards_distribution_tests {
             scenario);
 
         // Each pool gets 30 SUI.
-        advance_epoch_with_reward_amounts(0, 120, scenario);
+        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario,true);
         unstake_stable(STAKER_ADDR_1, 0, scenario);
         stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_1, 600, scenario);
         // Each pool gets 30 SUI.
-        advance_epoch_with_reward_amounts(0, 120, scenario);
+        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario,true);
         // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
         assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200 * MIST_PER_SUI);
         let sui_total1 = total_sui_balance(STAKER_ADDR_1, scenario);
-        assert!(sui_total1 == 28571428264, sui_total1);
+        assert!(sui_total1 == 20000000000, sui_total1);
 
         unstake_stable(STAKER_ADDR_2, 0, scenario);
         assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100 * MIST_PER_SUI);
         let sui_total2 = total_sui_balance(STAKER_ADDR_2, scenario);
-        assert!(sui_total2 == 49999998134, sui_total2);
+        assert!(sui_total2 == 20000000000, sui_total2);
         test_scenario::end(scenario_val);
     }
 
