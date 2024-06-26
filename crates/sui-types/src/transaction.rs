@@ -1544,12 +1544,7 @@ impl TransactionData {
     pub fn is_system_txn(&self) -> bool {
         match self {
             Self::V1(txn_data) => {
-                match txn_data.kind {
-                    TransactionKind::Genesis(_) | TransactionKind::ChangeEpoch(_) | TransactionKind::ConsensusCommitPrologue(_) => true,
-                    _ => {
-                        false
-                    }
-                }
+                txn_data.kind.is_system_tx()
             }
         }
     }

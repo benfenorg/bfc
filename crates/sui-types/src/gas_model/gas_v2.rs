@@ -335,7 +335,7 @@ mod checked {
             }
 
             let stable_min_budget = calculate_divide_rate(self.cost_table.min_transaction_cost, self.stable_rate);
-            if gas_budget < self.cost_table.min_transaction_cost {
+            if gas_budget < stable_min_budget {
                 return Err(UserInputError::GasBudgetTooLow {
                     gas_budget,
                     min_budget: stable_min_budget,

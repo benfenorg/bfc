@@ -1071,9 +1071,9 @@ impl<'a> MoveTestAdapter<'a> for SuiTestAdapter {
                     c.bench_function("benchmark_tx", |b| {
                         let tx = tx.clone();
                         let objects = objects.clone();
-                        b.iter(|| {
+                        b.iter(|| async {
                             self.executor
-                                .prepare_txn(tx.clone(), objects.clone())
+                                .prepare_txn(tx.clone(), objects.clone()).await
                                 .unwrap();
                         })
                     });

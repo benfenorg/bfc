@@ -1331,7 +1331,7 @@ impl AuthorityState {
             certificate,
             input_objects,
             epoch_store,
-        ) {
+        ).await {
             Err(e) => {
                 info!(name = ?self.name, ?digest, "Error preparing transaction: {e}");
                 tx_guard.release();
@@ -1566,7 +1566,7 @@ impl AuthorityState {
     /// locks are not held, etc. However, this is not entirely true, as a transient db read error
     /// may also cause this function to fail.
     #[instrument(level = "trace", skip_all)]
-    fn prepare_certificate(
+    async fn prepare_certificate(
         &self,
         _execution_guard: &ExecutionLockReadGuard<'_>,
         certificate: &VerifiedExecutableTransaction,
@@ -1587,13 +1587,18 @@ impl AuthorityState {
         tx_data.check_version_supported(epoch_store.protocol_config())?;
         tx_data.validity_check(epoch_store.protocol_config())?;
         // The cost of partially re-auditing a transaction before execution is tolerated.
+        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
+                self.get_stable_rate_and_base_points(tx_data.gas()).await?
+        }else {
+            (None, None)
+        };
         let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
             certificate,
             input_objects,
             epoch_store.protocol_config(),
             epoch_store.reference_gas_price(),
-            None,
-            None,
+            stable_rate,
+            base_point,
         )?;
 
         let owned_object_refs = input_objects.inner().filter_owned_objects();
@@ -1666,7 +1671,7 @@ impl AuthorityState {
         Ok((inner_temp_store, proposal_map, effects, execution_error_opt.err()))
     }
 
-    pub fn prepare_certificate_for_benchmark(
+    pub async fn prepare_certificate_for_benchmark(
         &self,
         certificate: &VerifiedExecutableTransaction,
         input_objects: InputObjects,
@@ -1680,7 +1685,7 @@ impl AuthorityState {
         let lock: RwLock<EpochId> = RwLock::new(epoch_store.epoch());
         let execution_guard = lock.try_read().unwrap();
 
-        self.prepare_certificate(&execution_guard, certificate, input_objects, epoch_store)
+        self.prepare_certificate(&execution_guard, certificate, input_objects, epoch_store).await
     }
 
     pub async fn dry_exec_transaction(
@@ -4751,7 +4756,7 @@ impl AuthorityState {
             .await?;
 
         let (temporary_store, proposal_map, effects, _) = self
-            .prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store)?;
+            .prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store).await?;
 
 
         if let Some(new_proposal_map) = proposal_map {

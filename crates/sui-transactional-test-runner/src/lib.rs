@@ -73,7 +73,7 @@ pub trait TransactionalAdapter: Send + Sync + ReadStore {
 
     async fn read_input_objects(&self, transaction: Transaction) -> SuiResult<InputObjects>;
 
-    fn prepare_txn(
+    async fn prepare_txn(
         &self,
         transaction: Transaction,
         input_objects: InputObjects,
@@ -145,7 +145,7 @@ impl TransactionalAdapter for ValidatorWithFullnode {
             .await
     }
 
-    fn prepare_txn(
+    async fn prepare_txn(
         &self,
         transaction: Transaction,
         input_objects: InputObjects,
@@ -160,7 +160,7 @@ impl TransactionalAdapter for ValidatorWithFullnode {
         let epoch_store = self.validator.load_epoch_store_one_call_per_task().clone();
         let (_,_, effects, error) =
             self.validator
-                .prepare_certificate_for_benchmark(&tx, input_objects, &epoch_store)?;
+                .prepare_certificate_for_benchmark(&tx, input_objects, &epoch_store).await?;
         Ok((effects, error))
     }
 
@@ -400,7 +400,7 @@ impl TransactionalAdapter for Simulacrum<StdRng, PersistedStore> {
         unimplemented!("read_input_objects not supported in simulator mode")
     }
 
-    fn prepare_txn(
+    async fn prepare_txn(
         &self,
         _transaction: Transaction,
         _input_objects: InputObjects,
