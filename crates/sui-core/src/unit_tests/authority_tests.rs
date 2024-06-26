@@ -1162,7 +1162,6 @@ async fn test_dry_run_dev_inspect_max_gas_version() {
 
 //test dry run with stable coin gas
 #[tokio::test]
-#[ignore]
 async fn test_dry_run_with_stable_gas_coin() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();

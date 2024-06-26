@@ -483,7 +483,6 @@ async fn test_tx_gas_balance_less_than_budget() {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     // This test does a native transfer with sufficient gas budget and balance.
     // It's expected to succeed. We check that gas was charged properly.
@@ -902,7 +901,6 @@ async fn test_publish_gas() -> anyhow::Result<()> {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_move_call_gas_stable_coin() -> SuiResult {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
@@ -920,7 +918,6 @@ async fn test_move_call_gas_stable_coin() -> SuiResult {
 }
 
 #[tokio::test]
-#[ignore]
 async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
