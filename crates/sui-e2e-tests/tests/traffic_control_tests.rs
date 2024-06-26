@@ -163,7 +163,7 @@ async fn test_validator_traffic_control_spam_delegated() -> Result<(), anyhow::E
     };
     // enable remote firewall delegation
     let firewall_config = RemoteFirewallConfig {
-        remote_fw_url: String::from("http://127.0.0.1:65000"),
+        remote_fw_url: String::from("http://127.0.0.1:65002"),
         delegate_spam_blocking: true,
         delegate_error_blocking: false,
         destination_port: 8080,
@@ -178,7 +178,7 @@ async fn test_validator_traffic_control_spam_delegated() -> Result<(), anyhow::E
         .set_network_config(network_config)
         .build()
         .await;
-    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65000).await
+    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65002).await
 }
 
 #[tokio::test]
@@ -194,7 +194,7 @@ async fn test_fullnode_traffic_control_spam_delegated() -> Result<(), anyhow::Er
     };
     // enable remote firewall delegation
     let firewall_config = RemoteFirewallConfig {
-        remote_fw_url: String::from("http://127.0.0.1:65000"),
+        remote_fw_url: String::from("http://127.0.0.1:65001"),
         delegate_spam_blocking: true,
         delegate_error_blocking: false,
         destination_port: 9000,
@@ -206,7 +206,7 @@ async fn test_fullnode_traffic_control_spam_delegated() -> Result<(), anyhow::Er
         .with_fullnode_fw_config(Some(firewall_config.clone()))
         .build()
         .await;
-    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65000).await
+    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65001).await
 }
 
 #[tokio::test]
