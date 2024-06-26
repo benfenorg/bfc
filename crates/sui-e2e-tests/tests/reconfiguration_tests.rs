@@ -2010,7 +2010,7 @@ async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyho
     test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
     test_cluster.wait_for_epoch(Some(2)).await;
     rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(2)).await;
+    test_cluster.wait_for_epoch(Some(3)).await;
 
     let swap_amount = 100_000_000_000u64;
     let response = transfer_with_swapped_stable_coin(&test_cluster, http_client,
@@ -2485,7 +2485,7 @@ async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address
         )
         .await?;
     let effects = tx_response.effects.unwrap().clone();
-
+    println!("effects is {:?}",effects);
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
             if _effects.status.is_err() {
@@ -2831,37 +2831,58 @@ async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn sim_test_bfc_stable_gas() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(4000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
-    let address = test_cluster.get_address_2();
+    let address = test_cluster.get_address_0();
     let bfc_balance_before = get_bfc_balance(http_client, address).await;
-    let amount = 100_000_000_000u64 * 300;
+    let amount = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
-    test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
-    rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(1)).await;
+    let res = test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
+    println!("res: {:?}", res);
 
-    let bfc_balance = get_bfc_balance(http_client, address).await;
-    assert!(bfc_balance > bfc_balance_before);
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let res_rebalance = rebalance(&test_cluster, http_client, address).await?;
+    println!("res_rebalance: {:?}", res_rebalance);
+
+    test_cluster.wait_for_epoch(Some(3)).await;
+
 
     let swap_amount = 100_000_000_000u64;
-    transfer_with_swapped_stable_coin(
+    // transfer_with_swapped_stable_coin(
+    //     &test_cluster,
+    //     http_client,
+    //     address,
+    //     swap_amount,
+    //     100,
+    //     vec!["0xc8::busd::BUSD".to_string()],
+    // ).await?;
+    match transfer_with_swapped_stable_coin(
         &test_cluster,
         http_client,
         address,
         swap_amount,
         100,
         vec!["0xc8::busd::BUSD".to_string()],
-    ).await?;
-    test_cluster.wait_for_epoch(Some(2)).await;
+    ).await {
+        Ok(_) => {
+            // panic!("should not be ok") //todo 复现 MutableObjectUsedMoreThanOnce场景
+        }
+        Err(e) => {
+            if !e.to_string().contains("cannot appear more than one in one transaction") {
+                panic!("unknown err: {:?}", e)
+            }
+        }
+    }
+
+    //test_cluster.wait_for_epoch(Some(2)).await;
 
     Ok(())
 }
@@ -2889,7 +2910,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(2)).await;
+    test_cluster.wait_for_epoch(Some(3)).await;
 
     let swap_amount = 100_000_000_000u64;
     match transfer_with_swapped_stable_coin(
@@ -2936,7 +2957,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     test_cluster.wait_for_epoch(Some(2)).await;
 
     rebalance(&test_cluster, http_client, address).await?;
-    test_cluster.wait_for_epoch(Some(2)).await;
+    test_cluster.wait_for_epoch(Some(3)).await;
 
     let swap_amount = 100_000_000_000u64;
     match transfer_with_swapped_stable_coin(

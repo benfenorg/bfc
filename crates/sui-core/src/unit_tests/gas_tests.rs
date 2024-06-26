@@ -940,6 +940,7 @@ async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
     let result = move_call_with_gas_objects(
         vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
         sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
+    println!("{:?}", result);
     assert!(result.status().is_ok());
     Ok(())
 }
@@ -1050,8 +1051,37 @@ async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddre
 
     let tx = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    println!("the response is {:?}",response);
     let effects = response.1.into_data();
     Ok(effects)
+}
+
+async fn move_call_rebalance(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+                             sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
+    let module = ident_str!("bfc_system").to_owned();
+    let function = ident_str!("rebalance").to_owned();
+    let args = vec![
+        CallArg::CLOCK_IMM,
+        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+    ];
+    let data = TransactionData::new_move_call(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        function.clone(),
+        Vec::new(),
+        gas_object.compute_object_reference(),
+        args.clone(),
+        *MAX_GAS_BUDGET,
+        rgp,
+    )
+        .unwrap();
+
+    let tx = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    println!("the response is {:?}",response);
+    let effects = response.1.into_data();
+    Ok(())
 }
 
 async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
@@ -1084,6 +1114,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
 
     let tx = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    println!("the response is {:?}",response);
     let effects = response.1.into_data();
     let created_object_ref = effects.created()[0].0;
     assert!(effects.status().is_ok());
