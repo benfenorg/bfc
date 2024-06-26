@@ -50,6 +50,7 @@ use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, Ed2551
 use sui_types::error::SuiObjectResponseError;
 use sui_types::{base_types::ObjectID, crypto::get_key_pair, gas_coin::GasCoin};
 use test_cluster::{TestCluster, TestClusterBuilder};
+use std::str::FromStr;
 
 const TEST_DATA_DIR: &str = "tests/data/";
 
@@ -749,7 +750,6 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-#[ignore]
 async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     let obj_id = ObjectID::random();
     let (address, keypair): (SuiAddress, AccountKeyPair) =
