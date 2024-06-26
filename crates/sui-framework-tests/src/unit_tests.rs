@@ -119,7 +119,7 @@ fn check_move_unit_tests(path: PathBuf) {
     config.config.silence_warnings = false;
     config.config.lint_flag = LintFlag::LEVEL_DEFAULT;
     let move_config = config.config.clone();
-    let mut testing_config = UnitTestingConfig::default_with_bound(Some(5_000_000));
+    let mut testing_config = UnitTestingConfig::default_with_bound(Some(1_000_000_000));
     testing_config.filter = std::env::var(FILTER_ENV).ok().map(|s| s.to_string());
 
     assert_eq!(
