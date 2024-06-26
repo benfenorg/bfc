@@ -1,21 +1,20 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import {
+	DryRunTransactionBlockResponse,
 	type SuiTransactionBlockResponse,
-	type DryRunTransactionBlockResponse,
 } from '@benfen/bfc.js/client';
-
 import { useMemo } from 'react';
 
 import { getBalanceChangeSummary } from '../utils/transaction/getBalanceChangeSummary';
-import {
-	SuiObjectChangeWithDisplay,
-	getObjectChangeSummary,
-} from '../utils/transaction/getObjectChangeSummary';
-import { getLabel } from '../utils/transaction/getLabel';
 import { getGasSummary } from '../utils/transaction/getGasSummary';
-import { useMultiGetObjects } from './useMultiGetObjects';
+import { getLabel } from '../utils/transaction/getLabel';
+import {
+	getObjectChangeSummary,
+	SuiObjectChangeWithDisplay,
+} from '../utils/transaction/getObjectChangeSummary';
 import { getObjectDisplayLookup } from '../utils/transaction/getObjectDisplayLookup';
+import { useMultiGetObjects } from './useMultiGetObjects';
 
 export function useTransactionSummary({
 	transaction,
@@ -73,7 +72,7 @@ export function useTransactionSummary({
 				balanceChanges: balanceChangeSummary,
 			};
 		}
-	}, [transaction, currentAddress, objectChangesWithDisplay, recognizedPackagesList]);
+	}, [transaction, objectChangesWithDisplay, recognizedPackagesList, currentAddress]);
 
 	return summary;
 }

@@ -6,7 +6,7 @@ import { useMemo } from 'react';
 
 export function useOwnedNFT(nftObjectId: string | null, address: string | null) {
 	const data = useGetObject(nftObjectId);
-	const { data: objectData, isLoading } = data;
+	const { data: objectData, isPending } = data;
 
 	const objectDetails = useMemo(() => {
 		if (!objectData || !objectData.data || !address) return null;
@@ -21,5 +21,5 @@ export function useOwnedNFT(nftObjectId: string | null, address: string | null) 
 		return data;
 	}, [address, objectData]);
 
-	return { ...data, isLoading: isLoading, data: objectDetails };
+	return { ...data, isPending: isPending, data: objectDetails };
 }

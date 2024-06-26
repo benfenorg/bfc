@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { PaginatedObjectsResponse, type SuiObjectDataFilter } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { type SuiObjectDataFilter } from '@benfen/bfc.js/client';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const MAX_OBJECTS_PER_REQ = 6;
@@ -13,9 +13,10 @@ export function useGetOwnedObjects(
 	maxObjectRequests = MAX_OBJECTS_PER_REQ,
 ) {
 	const client = useSuiClient();
-	return useInfiniteQuery(
-		['get-owned-objects', address, filter, maxObjectRequests],
-		({ pageParam }) =>
+	return useInfiniteQuery<PaginatedObjectsResponse>({
+		initialPageParam: null,
+		queryKey: ['get-owned-objects', address, filter, maxObjectRequests],
+		queryFn: ({ pageParam }) =>
 			client.getOwnedObjects({
 				owner: address!,
 				filter,
@@ -25,12 +26,11 @@ export function useGetOwnedObjects(
 					showDisplay: true,
 				},
 				limit: maxObjectRequests,
-				cursor: pageParam,
+				cursor: pageParam as string | null,
 			}),
-		{
-			staleTime: 10 * 1000,
-			enabled: !!address,
-			getNextPageParam: (lastPage) => (lastPage?.hasNextPage ? lastPage.nextCursor : null),
-		},
-	);
+
+		staleTime: 10 * 1000,
+		enabled: !!address,
+		getNextPageParam: ({ hasNextPage, nextCursor }) => (hasNextPage ? nextCursor : null),
+	});
 }

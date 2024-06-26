@@ -6,6 +6,7 @@ import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 
+import Banxa from './icons/Banxa.svg';
 import MoonPay from './icons/MoonPay.svg';
 import Transak from './icons/Transak.svg';
 import { type OnrampProvider } from './types';
@@ -25,6 +26,28 @@ const BACKEND_HOST =
 
 const ONRAMP_PROVIDER: OnrampProvider[] = [
 	{
+		key: 'banxa',
+		name: 'Banxa',
+		icon: Banxa,
+		checkSupported: async () => {
+			const isOn = await growthbook.getFeatureValue('wallet-onramp-banxa', false);
+			return isOn;
+		},
+		getUrl: async (address) => {
+			const params = new URLSearchParams({
+				coinType: 'SUI',
+				fiatType: 'USD',
+				fiatAmount: '100',
+				blockchain: 'SUI',
+				theme: 'dark',
+				walletAddress: address,
+				returnUrl: window.location.href,
+			});
+			const url = `https://suiwallet.banxa.com/?${params}`;
+			return url;
+		},
+	},
+	{
 		key: 'transak',
 		icon: Transak,
 		name: 'Transak',
@@ -39,7 +62,7 @@ const ONRAMP_PROVIDER: OnrampProvider[] = [
 				// If you want to test ETH values, you can use something like this:
 				// cryptoCurrencyCode: 'ETH',
 				// walletAddress: '0x000000000000000000000000000000000000dead',
-				cryptoCurrencyCode: 'BFC',
+				cryptoCurrencyCode: 'SUI',
 				walletAddress: address,
 				disableWalletAddressForm: 'true',
 				themeColor: '#6fbcf0',

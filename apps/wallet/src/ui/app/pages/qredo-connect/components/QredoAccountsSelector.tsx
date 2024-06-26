@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Wallet } from '_src/shared/qredo-api';
-import { Search14 } from '@mysten/icons';
+import { Search16 } from '@mysten/icons';
 import { useState } from 'react';
 
 import { QredoAccountItem } from './QredoAccountItem';
@@ -42,7 +42,7 @@ export function QredoAccountsSelector({
 					value={searchTerm}
 					placeholder="Search"
 				/>
-				<Search14 className="absolute w-4.5 h-4.5 right-3 pointer-events-none text-steel" />
+				<Search16 className="absolute w-4.5 h-4.5 right-3 pointer-events-none text-steel" />
 			</div>
 			<div className="divide-x-0 divide-y divide-gray-40 divide-solid">
 				{accounts

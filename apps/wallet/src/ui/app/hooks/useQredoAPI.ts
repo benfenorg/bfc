@@ -11,7 +11,7 @@ const API_INSTANCES: Record<string, QredoAPI> = {};
 
 export function useQredoAPI(qredoID?: string) {
 	const backgroundClient = useBackgroundClient();
-	const { data, isLoading, error } = useQredoInfo(qredoID ? { qredoID } : null);
+	const { data, isPending, error } = useQredoInfo(qredoID || null);
 	const [api, setAPI] = useState(() => (qredoID && API_INSTANCES[qredoID]) || null);
 	useEffect(() => {
 		if (data?.qredoInfo?.apiUrl && data?.qredoInfo?.accessToken && qredoID) {
@@ -21,13 +21,13 @@ export function useQredoAPI(qredoID?: string) {
 			} else if (!instance) {
 				API_INSTANCES[qredoID] = new QredoAPI(qredoID, data.qredoInfo.apiUrl, {
 					accessTokenRenewalFN: async (qredoID) =>
-						(await backgroundClient.getQredoConnectionInfo({ qredoID }, true)).qredoInfo
-							?.accessToken || null,
+						(await backgroundClient.getQredoConnectionInfo(qredoID, true)).qredoInfo?.accessToken ||
+						null,
 					accessToken: data.qredoInfo.accessToken,
 				});
 			}
 		}
 		setAPI((qredoID && API_INSTANCES[qredoID]) || null);
 	}, [backgroundClient, data?.qredoInfo?.apiUrl, data?.qredoInfo?.accessToken, qredoID]);
-	return [api, isLoading, error] as const;
+	return [api, isPending, error] as const;
 }

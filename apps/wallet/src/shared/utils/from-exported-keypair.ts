@@ -1,18 +1,25 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { type Keypair, type SignatureScheme } from '@benfen/bfc.js/cryptography';
 import {
 	decodeSuiPrivateKey,
-	type Keypair,
-	type ExportedKeypair as LegacyExportedKeyPair,
-} from '@benfen/bfc.js/cryptography';
+	LEGACY_PRIVATE_KEY_SIZE,
+	PRIVATE_KEY_SIZE,
+} from '@benfen/bfc.js/cryptography/keypair';
 import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import { Secp256k1Keypair } from '@benfen/bfc.js/keypairs/secp256k1';
 import { Secp256r1Keypair } from '@benfen/bfc.js/keypairs/secp256r1';
 import { fromB64 } from '@benfen/bfc.js/utils';
 
-const PRIVATE_KEY_SIZE = 32;
-const LEGACY_PRIVATE_KEY_SIZE = 64;
+/**
+ * Wallet stored data might contain imported accounts with their keys stored in the previous format.
+ * Using this type to type-check it.
+ */
+export type LegacyExportedKeyPair = {
+	schema: SignatureScheme;
+	privateKey: string;
+};
 
 export function fromExportedKeypair(
 	secret: LegacyExportedKeyPair | string,

@@ -13,10 +13,10 @@ export function CardItem({ title, children }: CardItemProps) {
 	return (
 		<div
 			className={
-				'p-2.5 flex flex-col flex-nowrap max-w-full gap-1.25 flex-1 justify-center items-center'
+				'flex flex-col flex-nowrap max-w-full py-3.5 px-2.5 gap-1.5 flex-1 justify-center items-center'
 			}
 		>
-			<Text variant="body" weight="normal" color="bfc-text2">
+			<Text variant="captionSmall" weight="semibold" color="steel-darker">
 				{title}
 			</Text>
 

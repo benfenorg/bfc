@@ -1,9 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { POPUP_HEIGHT, POPUP_WIDTH } from '_src/ui/app/wallet/constants';
 import { filter, fromEventPattern, share, take, takeWhile } from 'rxjs';
 import Browser from 'webextension-polyfill';
+
+const POPUP_WIDTH = 360;
+const POPUP_HEIGHT = 680;
 
 const windowRemovedStream = fromEventPattern<number>(
 	(handler) => Browser.windows.onRemoved.addListener(handler),
@@ -12,8 +14,7 @@ const windowRemovedStream = fromEventPattern<number>(
 
 // This is arbitrary across different operating systems, and unfortunately
 // there isn't a great way to tell how much extra height we need to tack on
-const windowHeightWithFrame = POPUP_HEIGHT + 39;
-const windowWidthWithFrame = POPUP_WIDTH + 16;
+const windowHeightWithFrame = POPUP_HEIGHT + 28;
 
 export class Window {
 	private _id: number | null = null;
@@ -28,7 +29,7 @@ export class Window {
 		const w = await Browser.windows.create({
 			url: this._url,
 			focused: true,
-			width: windowWidthWithFrame,
+			width: POPUP_WIDTH,
 			height: windowHeightWithFrame,
 			type: 'popup',
 			top: top,

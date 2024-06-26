@@ -90,11 +90,3 @@ export function toUtf8OrB64(message: string | Uint8Array) {
 		type,
 	};
 }
-
-export async function fetchWithError(name: string, ...params: Parameters<typeof fetch>) {
-	const response = await fetch(...params);
-	if (!response.ok) {
-		throw new Error(`Request failed with status ${response.status} (${response.statusText})`);
-	}
-	return response;
-}

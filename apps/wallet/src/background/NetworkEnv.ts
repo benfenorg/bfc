@@ -7,8 +7,6 @@ import { isValidUrl } from '_src/shared/utils';
 import mitt from 'mitt';
 import Browser from 'webextension-polyfill';
 
-export { type NetworkEnvType } from '_src/shared/api-env';
-
 class NetworkEnv {
 	#events = mitt<{ changed: NetworkEnvType }>();
 

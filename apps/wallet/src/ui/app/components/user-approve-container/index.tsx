@@ -1,13 +1,15 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import cl from 'classnames';
+import { type PermissionType } from '_src/shared/messaging/messages/payloads/permissions';
+import cn from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 import type { ReactNode } from 'react';
 
+import { useAccountByAddress } from '../../hooks/useAccountByAddress';
 import { Button } from '../../shared/ButtonUI';
+import { UnlockAccountButton } from '../accounts/UnlockAccountButton';
 import { DAppInfoCard } from '../DAppInfoCard';
-import st from './UserApproveContainer.module.scss';
 
 type UserApproveContainerProps = {
 	children: ReactNode | ReactNode[];
@@ -23,6 +25,8 @@ type UserApproveContainerProps = {
 	address?: string | null;
 	scrollable?: boolean;
 	blended?: boolean;
+	permissions?: PermissionType[];
+	checkAccountLock?: boolean;
 };
 
 export function UserApproveContainer({
@@ -37,8 +41,8 @@ export function UserApproveContainer({
 	isWarning,
 	addressHidden = false,
 	address,
-	scrollable,
-	blended = false,
+	permissions,
+	checkAccountLock,
 }: UserApproveContainerProps) {
 	const [submitting, setSubmitting] = useState(false);
 	const handleOnResponse = useCallback(
@@ -49,57 +53,51 @@ export function UserApproveContainer({
 		},
 		[onSubmit],
 	);
-
+	const { data: selectedAccount } = useAccountByAddress(address);
 	const parsedOrigin = useMemo(() => new URL(origin), [origin]);
-
 	return (
-		<div className={st.container}>
-			<div className={cl(st.scrollBody, { [st.scrollable]: scrollable })}>
+		<div className="flex flex-1 flex-col flex-nowrap h-full">
+			<div className="flex-1 pb-0 flex flex-col">
 				<DAppInfoCard
 					name={parsedOrigin.host}
 					url={origin}
+					permissions={permissions}
 					iconUrl={originFavIcon}
 					connectedAddress={!addressHidden && address ? address : undefined}
 				/>
-				<div className={cl(st.children, { [st.scrollable]: scrollable })}>{children}</div>
+				<div className="flex flex-1 flex-col px-6 bg-hero-darkest/5">{children}</div>
 			</div>
-			<div className={st.actionsContainer}>
-				<div className={cl(st.actions, isWarning && st.flipActions)}>
-					<Button
-						size="tall"
-						variant="warning"
-						onClick={() => {
-							handleOnResponse(false);
-						}}
-						disabled={submitting}
-						text={rejectTitle}
-						before={
-							<svg
-								xmlns="http://www.w3.org/2000/svg"
-								width="15"
-								height="14"
-								viewBox="0 0 15 14"
-								fill="none"
-							>
-								<path
-									d="M7.49993 6.17461L10.3874 3.28711L11.2123 4.11194L8.32476 6.99944L11.2123 9.88694L10.3874 10.7118L7.49993 7.82428L4.61243 10.7118L3.7876 9.88694L6.6751 6.99944L3.7876 4.11194L4.61243 3.28711L7.49993 6.17461Z"
-									fill="#EB362A"
-								/>
-							</svg>
-						}
-					/>
-					<Button
-						// recreate the button when changing the variant to avoid animating to the new styles
-						key={`approve_${isWarning}`}
-						size="tall"
-						variant={isWarning ? 'secondary' : 'primary'}
-						onClick={() => {
-							handleOnResponse(true);
-						}}
-						disabled={approveDisabled}
-						loading={submitting || approveLoading}
-						text={approveTitle}
-					/>
+			<div className="sticky bottom-0">
+				<div
+					className={cn('bg-hero-darkest/5 backdrop-blur-lg py-4 px-5 flex items-center gap-2.5', {
+						'flex-row-reverse': isWarning,
+					})}
+				>
+					{!checkAccountLock || !selectedAccount?.isLocked ? (
+						<>
+							<Button
+								size="tall"
+								variant="secondary"
+								onClick={() => {
+									handleOnResponse(false);
+								}}
+								disabled={submitting}
+								text={rejectTitle}
+							/>
+							<Button
+								size="tall"
+								variant={isWarning ? 'secondary' : 'primary'}
+								onClick={() => {
+									handleOnResponse(true);
+								}}
+								disabled={approveDisabled}
+								loading={submitting || approveLoading}
+								text={approveTitle}
+							/>
+						</>
+					) : (
+						<UnlockAccountButton account={selectedAccount} title="Unlock to Approve" />
+					)}
 				</div>
 			</div>
 		</div>

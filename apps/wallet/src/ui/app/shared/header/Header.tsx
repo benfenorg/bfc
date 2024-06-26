@@ -19,16 +19,14 @@ type HeaderProps = {
  */
 export function Header({ networkName, middleContent, rightContent }: HeaderProps) {
 	return (
-		<header className="grid grid-cols-header items-center gap-3 p-2.5 bg-bfc-card rounded-tl-xl rounded-tr-xl">
+		<header className="grid grid-cols-header items-center gap-3 px-3 py-2">
 			<div>
 				<Link to="/" className="no-underline text-gray-90">
-					<Logo />
+					<Logo networkName={networkName} />
 				</Link>
 			</div>
 			{middleContent && <div className="col-start-2 overflow-hidden">{middleContent}</div>}
-			{rightContent && (
-				<div className="col-start-3 mr-1 justify-self-end w-6 h-6">{rightContent}</div>
-			)}
+			{rightContent && <div className="col-start-3 mr-1 justify-self-end">{rightContent}</div>}
 		</header>
 	);
 }

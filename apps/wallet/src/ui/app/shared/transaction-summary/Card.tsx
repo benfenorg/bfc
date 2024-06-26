@@ -5,7 +5,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { type AnchorHTMLAttributes, type ElementType, type ReactNode } from 'react';
 
 const cardStyles = cva(
-	['bg-white relative flex flex-col pt-5 w-full rounded-lg border border-solid border-bfc-border'],
+	['bg-white relative flex flex-col p-4.5 w-full shadow-card-soft rounded-2xl'],
 	{
 		variants: {
 			as: {
@@ -27,7 +27,7 @@ type CardProps = Props & AnchorHTMLAttributes<HTMLAnchorElement>;
 
 export const SummaryCardFooter = ({ children }: { children: ReactNode }) => {
 	return (
-		<div className="h-10 px-2.5 rounded-b-lg flex justify-between items-center bg-bfc-card">
+		<div className="-mb-4.5 -mx-4.5 px-4 py-2 rounded-b-2xl flex justify-between items-center bg-sui/10 ">
 			{children}
 		</div>
 	);
@@ -38,8 +38,8 @@ export function Card({ as = 'div', heading, children, after, footer = null, ...p
 	return (
 		<Component className={cardStyles({ as })} {...props}>
 			{heading && (
-				<div className="flex items-center justify-between px-2.5">
-					<Heading variant="heading4" color="bfc-text1" weight="semibold">
+				<div className="flex items-center justify-between mb-4 last-of-type:mb-0">
+					<Heading variant="heading6" color="steel-darker">
 						{heading}
 					</Heading>
 					{after && <div>{after}</div>}

@@ -1,8 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useMemo } from 'react';
+
 import { getTotalGasUsed } from '../utils/transaction';
 
 export function useGetTransferAmount(txnData: SuiTransactionBlockResponse) {

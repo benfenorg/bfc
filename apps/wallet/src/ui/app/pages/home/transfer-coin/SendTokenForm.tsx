@@ -24,7 +24,6 @@ import {
 } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
-import cl from 'classnames';
 import { Field, Form, Formik, useFormikContext } from 'formik';
 import { useEffect, useMemo } from 'react';
 
@@ -74,7 +73,7 @@ function GasBudgetEstimation({
 	const { values, setFieldValue } = useFormikContext<FormValues>();
 	const suiNSEnabled = useSuiNSEnabled();
 
-	const rpc = useSuiClient();
+	const client = useSuiClient();
 	const { data: gasBudget } = useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [
@@ -94,7 +93,7 @@ function GasBudgetEstimation({
 
 			let to = values.to;
 			if (suiNSEnabled && isSuiNSName(values.to)) {
-				const address = await rpc.resolveNameServiceAddress({
+				const address = await client.resolveNameServiceAddress({
 					name: values.to,
 				});
 				if (!address) {
@@ -113,7 +112,7 @@ function GasBudgetEstimation({
 			});
 
 			tx.setSender(activeAddress);
-			await tx.build({ client: rpc });
+			await tx.build({ client });
 			return tx.blockData.gasConfig.budget;
 		},
 	});
@@ -126,13 +125,13 @@ function GasBudgetEstimation({
 	}, [formattedGas, setFieldValue, values.amount]);
 
 	return (
-		<div className="mt-1.25 flex w-full gap-2 justify-between">
-			<div className="grow">
-				<Text variant="body" color="bfc-text1" weight="normal">
+		<div className="px-2 my-2 flex w-full gap-2 justify-between">
+			<div className="flex gap-1">
+				<Text variant="body" color="gray-80" weight="medium">
 					Estimated Gas Fees
 				</Text>
 			</div>
-			<Text variant="body" color="bfc-text1" weight="normal">
+			<Text variant="body" color="gray-90" weight="medium">
 				{formattedGas ? formattedGas + ' ' + GAS_SYMBOL : '--'}
 			</Text>
 		</div>
@@ -148,12 +147,12 @@ export function SendTokenForm({
 	initialAmount = '',
 	initialTo = '',
 }: SendTokenFormProps) {
-	const rpc = useSuiClient();
+	const client = useSuiClient();
 	const activeAddress = useActiveAddress();
 	// Get all coins of the type
-	const { data: coinsData, isLoading: coinsIsLoading } = useGetAllCoins(coinType, activeAddress!);
+	const { data: coinsData, isPending: coinsIsPending } = useGetAllCoins(coinType, activeAddress!);
 
-	const { data: suiCoinsData, isLoading: suiCoinsIsLoading } = useGetAllCoins(
+	const { data: suiCoinsData, isPending: suiCoinsIsPending } = useGetAllCoins(
 		SUI_TYPE_ARG,
 		activeAddress!,
 	);
@@ -170,8 +169,8 @@ export function SendTokenForm({
 	const suiNSEnabled = useSuiNSEnabled();
 
 	const validationSchemaStepOne = useMemo(
-		() => createValidationSchemaStepOne(rpc, suiNSEnabled, coinBalance, symbol, coinDecimals),
-		[rpc, coinBalance, symbol, coinDecimals, suiNSEnabled],
+		() => createValidationSchemaStepOne(client, suiNSEnabled, coinBalance, symbol, coinDecimals),
+		[client, coinBalance, symbol, coinDecimals, suiNSEnabled],
 	);
 
 	// remove the comma from the token balance
@@ -181,7 +180,7 @@ export function SendTokenForm({
 	return (
 		<Loading
 			loading={
-				queryResult.isLoading || coinMetadata.isLoading || suiCoinsIsLoading || coinsIsLoading
+				queryResult.isPending || coinMetadata.isPending || suiCoinsIsPending || coinsIsPending
 			}
 		>
 			<Formik
@@ -203,7 +202,7 @@ export function SendTokenForm({
 						.map(({ coinObjectId }) => coinObjectId);
 
 					if (suiNSEnabled && isSuiNSName(to)) {
-						const address = await rpc.resolveNameServiceAddress({
+						const address = await client.resolveNameServiceAddress({
 							name: to,
 						});
 						if (!address) {
@@ -235,19 +234,17 @@ export function SendTokenForm({
 						suiBalance >
 							parseAmount(values.gasBudgetEst, coinDecimals) +
 								parseAmount(coinType === SUI_TYPE_ARG ? values.amount : '0', coinDecimals);
-					const actionDisabled =
-						parseAmount(values?.amount, coinDecimals) === coinBalance ||
-						queryResult.isLoading ||
-						!coinBalance;
 
 					return (
 						<BottomMenuLayout>
 							<Content>
 								<Form autoComplete="off" noValidate>
-									<div className="w-full flex flex-col flex-grow gap-1.25">
-										<Text variant="body" color="bfc-text2" weight="normal">
-											Select Coin Amount to Send
-										</Text>
+									<div className="w-full flex flex-col flex-grow">
+										<div className="px-2 mb-2.5">
+											<Text variant="caption" color="steel" weight="semibold">
+												Select Coin Amount to Send
+											</Text>
+										</div>
 
 										<InputWithAction
 											data-testid="coin-amount-input"
@@ -256,10 +253,6 @@ export function SendTokenForm({
 											placeholder="0.00"
 											prefix={values.isPayAllSui ? '~ ' : ''}
 											actionText="Max"
-											actionClass={cl('border border-solid rounded-[30px]', {
-												'border-bfc-text1': !actionDisabled,
-												'border-bfc-text3': actionDisabled,
-											})}
 											suffix={` ${symbol}`}
 											actionType="button"
 											allowNegative={false}
@@ -271,21 +264,27 @@ export function SendTokenForm({
 												await setFieldValue('amount', formattedTokenBalance);
 												validateField('amount');
 											}}
-											actionDisabled={actionDisabled}
+											actionDisabled={
+												parseAmount(values?.amount, coinDecimals) === coinBalance ||
+												queryResult.isPending ||
+												!coinBalance
+											}
 										/>
 									</div>
 									{!hasEnoughBalance && isValid ? (
-										<div>
-											<Alert>Insufficient BFC to cover transaction</Alert>
+										<div className="mt-3">
+											<Alert>Insufficient SUI to cover transaction</Alert>
 										</div>
 									) : null}
 
 									{coins ? <GasBudgetEstimation coinDecimals={coinDecimals} coins={coins} /> : null}
 
 									<div className="w-full flex gap-2.5 flex-col mt-7.5">
-										<Text variant="body" color="bfc-text2" weight="normal">
-											Enter Recipient Address
-										</Text>
+										<div className="px-2 tracking-wider">
+											<Text variant="caption" color="steel" weight="semibold">
+												Enter Recipient Address
+											</Text>
+										</div>
 										<div className="w-full flex relative items-center flex-col">
 											<Field component={AddressInput} name="to" placeholder="Enter Address" />
 										</div>

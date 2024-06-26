@@ -5,6 +5,7 @@ import { QredoAPI } from '_src/shared/qredo-api';
 import Dexie from 'dexie';
 
 import { getAccountSources } from '.';
+import { setupAutoLockAlarm } from '../auto-lock-accounts';
 import { backupDB, getDB } from '../db';
 import { type QredoConnectIdentity } from '../qredo/types';
 import { isSameQredoConnection } from '../qredo/utils';
@@ -69,6 +70,7 @@ export class QredoAccountSource extends AccountSource<QredoAccountSourceSerializ
 			service,
 			encrypted: await encrypt(password, decryptedData),
 			originFavIcon,
+			createdAt: Date.now(),
 		};
 		const allAccountSources = await getAccountSources();
 		for (const anAccountSource of allAccountSources) {
@@ -141,6 +143,7 @@ export class QredoAccountSource extends AccountSource<QredoAccountSourceSerializ
 			refreshToken,
 			accessToken: await this.#createAccessToken(refreshToken),
 		});
+		await setupAutoLockAlarm();
 		accountSourcesEvents.emit('accountSourceStatusUpdated', { accountSourceID: this.id });
 	}
 

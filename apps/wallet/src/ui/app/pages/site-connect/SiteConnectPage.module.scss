@@ -14,25 +14,26 @@
 }
 
 .warning-wrapper {
+	margin-bottom: 8px;
 	display: flex;
 	justify-content: space-around;
-	color: colors.$bfc-text1;
+	color: colors.$sui-steel-darker;
 }
 
 .warning-title {
+	@include utils.typography('Primary/Body-SB');
+
 	display: inline-block;
-	font-size: 16px;
-	font-weight: 600;
-	line-height: 22px;
-	color: #000;
+	margin-bottom: -1px;
+	padding-bottom: 8px;
 }
 
 .warning-message {
 	@include utils.typography('Primary/BodySmall-M');
 
-	margin-top: 20px;
-	color: colors.$bfc-text2;
+	color: colors.$gray-80;
 	background-color: colors.$white;
-	border-radius: 12px;
-	padding: 0 20px;
+	padding: 20px;
+	border-radius: 16px;
+	box-shadow: v.use(v.$shadows-message-content);
 }

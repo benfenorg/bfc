@@ -10,7 +10,6 @@ import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';
 
 import type { ContentScriptConnection } from './connections/ContentScriptConnection';
-import { type Account } from './keyring/Account';
 import Tabs from './Tabs';
 import { Window } from './Window';
 
@@ -228,7 +227,7 @@ class Permissions {
 		}
 	}
 
-	public async ensurePermissionAccountsUpdated(accounts: Account[]) {
+	public async ensurePermissionAccountsUpdated(accounts: { address: string }[]) {
 		const allPermissions = await this.getPermissions();
 		const availableAccountsIndex = accounts.reduce<Record<string, boolean>>((acc, { address }) => {
 			acc[address] = true;

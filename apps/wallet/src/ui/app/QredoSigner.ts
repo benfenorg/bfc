@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SerializedQredoAccount } from '_src/background/keyring/QredoAccount';
+import { type QredoSerializedUiAccount } from '_src/background/accounts/QredoAccount';
 import { API_ENV, networkNames } from '_src/shared/api-env';
 import {
 	type NetworkType,
@@ -33,14 +33,14 @@ export const API_ENV_TO_QREDO_NETWORK: Partial<Record<API_ENV, NetworkType>> = {
 	[API_ENV.devNet]: 'devnet',
 };
 export class QredoSigner extends WalletSigner {
-	#qredoAccount: SerializedQredoAccount;
+	#qredoAccount: QredoSerializedUiAccount;
 	#qredoAPI: QredoAPI;
 	#network: NetworkType | null;
 	#apiEnv: API_ENV;
 
 	constructor(
 		client: SuiClient,
-		account: SerializedQredoAccount,
+		account: QredoSerializedUiAccount,
 		qredoAPI: QredoAPI,
 		apiEnv: API_ENV,
 	) {

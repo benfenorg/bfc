@@ -6,9 +6,10 @@ import Loading from '_components/loading';
 import Overlay from '_components/overlay';
 import { ReceiptCard } from '_src/ui/app/components/receipt-card';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
+import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
 import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { Check24 } from '@mysten/icons';
+import { Check32 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
 import { Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
@@ -22,12 +23,12 @@ function ReceiptPage() {
 	// get tx results from url params
 	const transactionId = searchParams.get('txdigest');
 	const fromParam = searchParams.get('from');
-	const rpc = useSuiClient();
+	const client = useSuiClient();
 
-	const { data, isLoading, isError } = useQuery<SuiTransactionBlockResponse>({
+	const { data, isPending, isError } = useQuery<SuiTransactionBlockResponse>({
 		queryKey: ['transactions-by-id', transactionId],
 		queryFn: async () => {
-			return rpc.getTransactionBlock({
+			return client.getTransactionBlock({
 				digest: transactionId!,
 				options: {
 					showBalanceChanges: true,
@@ -41,7 +42,6 @@ function ReceiptPage() {
 		enabled: !!transactionId,
 		retry: 8,
 		initialData: location.state?.response,
-		retryDelay: (retryCount) => Math.min(1000 * 2 ** Math.floor(retryCount / 5), 30000),
 	});
 
 	const navigate = useNavigate();
@@ -63,18 +63,20 @@ function ReceiptPage() {
 		return 'Transaction Failed';
 	}, [/*activeAddress,*/ data]);
 
+	const isGuardLoading = useUnlockedGuard();
+
 	if (!transactionId || !activeAddress) {
 		return <Navigate to="/transactions" replace={true} />;
 	}
 
 	return (
-		<Loading loading={isLoading}>
+		<Loading loading={isPending || isGuardLoading}>
 			<Overlay
 				showModal={showModal}
 				setShowModal={setShowModal}
 				title={pageTitle}
 				closeOverlay={closeReceipt}
-				closeIcon={<Check24 className="text-white w-6 h-6" />}
+				closeIcon={<Check32 fill="currentColor" className="text-sui-light w-8 h-8" />}
 			>
 				{isError ? (
 					<div className="mb-2 h-fit">

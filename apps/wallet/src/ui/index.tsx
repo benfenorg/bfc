@@ -1,27 +1,29 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
-
 import '@fontsource-variable/inter';
 import '@fontsource-variable/red-hat-mono';
 
 import { ErrorBoundary } from '_components/error-boundary';
 import { initAppType } from '_redux/slices/app';
-import { getFromLocationSearch } from '_redux/slices/app/AppType';
-import { initAmplitude } from '_src/shared/analytics/amplitude';
+import { AppType, getFromLocationSearch } from '_redux/slices/app/AppType';
 import { setAttributes } from '_src/shared/experimentation/features';
 import store from '_store';
-import { api, thunkExtras } from '_store/thunk-extras';
+import { thunkExtras } from '_store/thunk-extras';
+import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
-import { RpcClientContext } from '@mysten/core';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import cn from 'clsx';
 import { Fragment, StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { Provider } from 'react-redux';
 import { HashRouter } from 'react-router-dom';
 
 import App from './app';
+import { walletApiProvider } from './app/ApiProvider';
+import { AccountsFormProvider } from './app/components/accounts/AccountsFormContext';
+import { UnlockAccountProvider } from './app/components/accounts/UnlockAccountContext';
+import { ZkLoginAccountWarningModal } from './app/components/accounts/ZkLoginAccountWaringModal';
 import { SuiLedgerClientProvider } from './app/components/ledger/SuiLedgerClientProvider';
 import { growthbook } from './app/experimentation/feature-gating';
 import { persister, queryClient } from './app/helpers/queryClient';
@@ -57,6 +59,7 @@ function renderApp() {
 
 function AppWrapper() {
 	const network = useAppSelector(({ app: { apiEnv, customRPC } }) => `${apiEnv}_${customRPC}`);
+	const isFullscreen = useAppSelector((state) => state.app.appType === AppType.fullscreen);
 	return (
 		<GrowthBookProvider growthbook={growthbook}>
 			<HashRouter>
@@ -76,13 +79,27 @@ function AppWrapper() {
 								},
 							}}
 						>
-							<RpcClientContext.Provider value={api.instance.fullNode}>
-								<SuiClientProvider networks={{ [api.apiEnv]: api.instance.fullNode }}>
-									<ErrorBoundary>
-										<App />
-									</ErrorBoundary>
-								</SuiClientProvider>
-							</RpcClientContext.Provider>
+							<SuiClientProvider
+								networks={{ [walletApiProvider.apiEnv]: walletApiProvider.instance.fullNode }}
+							>
+								<AccountsFormProvider>
+									<UnlockAccountProvider>
+										<div
+											className={cn(
+												'relative flex flex-col flex-nowrap items-center justify-center w-popup-width min-h-popup-minimum max-h-popup-height h-screen overflow-hidden',
+												isFullscreen && 'shadow-lg rounded-xl',
+											)}
+										>
+											<ErrorBoundary>
+												<App />
+												<ZkLoginAccountWarningModal />
+											</ErrorBoundary>
+											<div id="overlay-portal-container"></div>
+											<div id="toaster-portal-container"></div>
+										</div>
+									</UnlockAccountProvider>
+								</AccountsFormProvider>
+							</SuiClientProvider>
 						</PersistQueryClientProvider>
 					</Fragment>
 				</SuiLedgerClientProvider>
@@ -93,6 +110,5 @@ function AppWrapper() {
 
 (async () => {
 	await init();
-	initAmplitude();
 	renderApp();
 })();

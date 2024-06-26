@@ -7,14 +7,12 @@ import { expect, test } from './fixtures';
 import { createWallet } from './utils/auth';
 import { demoDappConnect } from './utils/dapp-connect';
 
-test.skip();
-
 function getInAppMessage(page: Page, id: string) {
 	return page.evaluate(
 		(anId) =>
 			new Promise((resolve, reject) => {
 				const callBackFN = (msg: MessageEvent) => {
-					if (msg.data.target === 'bfc_in-page' && msg.data.payload.id === anId) {
+					if (msg.data.target === 'sui_in-page' && msg.data.payload.id === anId) {
 						window.removeEventListener('message', callBackFN);
 						if (msg.data.payload.payload.error) {
 							reject(msg.data.payload);
@@ -83,7 +81,7 @@ test.describe('site to content script messages', () => {
 			await page.evaluate(
 				({ aPayload: payload, aLabel: label }) => {
 					window.postMessage({
-						target: 'bfc_content-script',
+						target: 'sui_content-script',
 						payload: {
 							id: label,
 							payload,

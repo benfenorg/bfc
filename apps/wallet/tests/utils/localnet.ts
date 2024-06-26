@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-// eslint-disable-next-line import/order
 import 'tsconfig-paths/register';
 
 import { requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';

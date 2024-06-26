@@ -3,15 +3,14 @@
 
 import { Text } from '_src/ui/app/shared/text';
 import { TypeTagSerializer, type TypeTag } from '@benfen/bfc.js/bcs';
-import {
-	type MakeMoveVecTransaction,
-	type PublishTransaction,
-	type TransactionArgument,
-	type TransactionType,
-} from '@benfen/bfc.js/transactions';
+import { type TransactionArgument, type Transactions } from '@benfen/bfc.js/transactions';
 import { formatAddress, normalizeSuiAddress, toB64 } from '@benfen/bfc.js/utils';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
 import { useState } from 'react';
+
+type TransactionType = ReturnType<(typeof Transactions)[keyof typeof Transactions]>;
+type MakeMoveVecTransaction = ReturnType<(typeof Transactions)['MakeMoveVec']>;
+type PublishTransaction = ReturnType<(typeof Transactions)['Publish']>;
 
 function convertCommandArgumentToString(
 	arg:
@@ -105,12 +104,12 @@ export function Command({ command }: CommandProps) {
 				<Text variant="body" weight="semibold" color="steel-darker">
 					{command.kind}
 				</Text>
-				<div className="h-px bg-bfc-card flex-1" />
-				<div className="text-bfc-text3">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
+				<div className="h-px bg-gray-40 flex-1" />
+				<div className="text-steel">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>
 			</button>
 
 			{expanded && (
-				<div className="mt-2 text-body font-medium text-bfc-text3">
+				<div className="mt-2 text-pBodySmall font-medium text-steel">
 					({convertCommandToString(command)})
 				</div>
 			)}

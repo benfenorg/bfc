@@ -9,6 +9,7 @@ import {
 } from '@benfen/bfc.js/cryptography';
 import { blake2b } from '@noble/hashes/blake2b';
 
+import { setupAutoLockAlarm } from '../auto-lock-accounts';
 import { getDB } from '../db';
 import {
 	clearEphemeralValue,
@@ -98,6 +99,7 @@ export abstract class Account<
 	}
 
 	protected async onUnlocked() {
+		await setupAutoLockAlarm();
 		await (await getDB()).accounts.update(this.id, { lastUnlockedOn: Date.now() });
 		accountsEvents.emit('accountStatusChanged', { accountID: this.id });
 	}
@@ -158,7 +160,7 @@ export interface SerializedUIAccount {
 
 export interface PasswordUnlockableAccount {
 	readonly unlockType: 'password';
-	passwordUnlock(password: string): Promise<void>;
+	passwordUnlock(password?: string): Promise<void>;
 	verifyPassword(password: string): Promise<void>;
 }
 
@@ -179,4 +181,17 @@ export interface SigningAccount {
 
 export function isSigningAccount(account: any): account is SigningAccount {
 	return 'signData' in account && 'canSign' in account && account.canSign === true;
+}
+
+export interface KeyPairExportableAccount {
+	readonly exportableKeyPair: true;
+	exportKeyPair(password: string): Promise<string>;
+}
+
+export function isKeyPairExportableAccount(account: any): account is KeyPairExportableAccount {
+	return (
+		'exportKeyPair' in account &&
+		'exportableKeyPair' in account &&
+		account.exportableKeyPair === true
+	);
 }

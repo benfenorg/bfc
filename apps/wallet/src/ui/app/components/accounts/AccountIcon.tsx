@@ -1,12 +1,21 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+
 import { type SerializedUIAccount } from '_src/background/accounts/Account';
 import { isZkLoginAccountSerializedUI } from '_src/background/accounts/zklogin/ZkLoginAccount';
-import { SocialGoogle24, SocialTwitch24, Sui } from '@mysten/icons';
+import {
+	LedgerLogo17,
+	LogoGoogle,
+	LogoQredo,
+	LogoTwitch,
+	SocialFacebook24,
+	SocialKakao24,
+	Sui,
+} from '@mysten/icons';
 
 function SuiIcon() {
 	return (
-		<div className="bg-sui-primaryBlue2023 rounded-full text-white h-4 w-4 flex items-center justify-center p-1">
+		<div className="bg-steel rounded-full text-white h-4 w-4 flex items-center justify-center p-1">
 			<Sui />
 		</div>
 	);
@@ -15,11 +24,14 @@ function SuiIcon() {
 function ProviderIcon({ provider }: { provider: string }) {
 	switch (provider) {
 		case 'google':
-			return <SocialGoogle24 />;
+			return <LogoGoogle className="h-4 w-4" />;
 		case 'twitch':
-			return <SocialTwitch24 />;
+			return <LogoTwitch className="h-4 w-4 text-twitch" />;
+		case 'facebook':
+			return <SocialFacebook24 className="h-4 w-4 text-facebook" />;
+		case 'kakao':
+			return <SocialKakao24 className="h-4 w-4" />;
 		default:
-			// default to Sui for now
 			return <SuiIcon />;
 	}
 }
@@ -27,6 +39,12 @@ function ProviderIcon({ provider }: { provider: string }) {
 export function AccountIcon({ account }: { account: SerializedUIAccount }) {
 	if (isZkLoginAccountSerializedUI(account)) {
 		return <ProviderIcon provider={account.provider} />;
+	}
+	if (account.type === 'qredo') {
+		return <LogoQredo className="h-4 w-4" />;
+	}
+	if (account.type === 'ledger') {
+		return <LedgerLogo17 className="h-4 w-4" />;
 	}
 	return <SuiIcon />;
 }

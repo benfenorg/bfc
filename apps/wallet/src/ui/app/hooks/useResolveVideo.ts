@@ -14,7 +14,6 @@ export function useResolveVideo(object?: SuiObjectResponse | null) {
 		object.data?.type ??
 		(object?.data?.content?.dataType === 'package' ? 'package' : object?.data?.content?.type) ??
 		null;
-
 	const isRecognized = objectType && recognizedPackages.includes(objectType.split('::')[0]);
 
 	if (!isRecognized) return null;

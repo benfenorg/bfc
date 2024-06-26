@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { X32 } from '@mysten/icons';
-import cl from 'classnames';
+import cl from 'clsx';
 import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 
@@ -18,6 +18,7 @@ type OverlayProps = {
 	closeOverlay?: () => void;
 	closeIcon?: ReactNode | null;
 	setShowModal?: (showModal: boolean) => void;
+	background?: 'bg-sui-lightest';
 };
 
 function Overlay({
@@ -26,7 +27,8 @@ function Overlay({
 	showModal,
 	closeOverlay,
 	setShowModal,
-	closeIcon = <X32 fill="currentColor" className="text-white w-6 h-6" />,
+	closeIcon = <X32 fill="currentColor" className="text-sui-light w-8 h-8" />,
+	background,
 }: OverlayProps) {
 	const closeModal = useCallback(
 		(e: React.MouseEvent<HTMLElement>) => {
@@ -46,19 +48,19 @@ function Overlay({
 				})}
 			>
 				{title && (
-					<div className="bg-bfc-card h-12 w-full">
+					<div className="bg-gray-40 h-12 w-full">
 						<div
 							data-testid="overlay-title"
-							className="text-bfc-text3 flex justify-center h-12 items-center text-heading4 font-semibold"
+							className="text-steel-darker bg-gray-40 flex justify-center h-12 items-center text-heading4 font-semibold"
 						>
 							{title}
 						</div>
 					</div>
 				)}
 				<div
-					className={st.content}
+					className={cl(st.content, background)}
 					style={{
-						height: title ? 'calc(100% - 108px)' : 'calc(100% - 60px)',
+						height: title ? 'calc(100% - 128px)' : 'calc(100% - 80px)',
 					}}
 				>
 					{children}

@@ -1,38 +1,42 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useActiveAddress } from '_app/hooks/useActiveAddress';
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
-import { Collapse } from '_app/shared/collapse';
+import { Collapsible } from '_app/shared/collapse';
 import { Text } from '_app/shared/text';
 import Loading from '_components/loading';
 import { parseAmount } from '_helpers';
 import { useCoinsReFetchingConfig } from '_hooks';
 import { Coin } from '_redux/slices/sui-objects/Coin';
 import { ampli } from '_src/shared/analytics/ampli';
-import { MIN_NUMBER_SUI_TO_STAKE } from '_src/shared/constants';
+import {
+	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
+	DELEGATED_STAKES_QUERY_STALE_TIME,
+	MIN_NUMBER_SUI_TO_STAKE,
+} from '_src/shared/constants';
+import { FEATURES } from '_src/shared/experimentation/features';
 import type { StakeObject } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { MIST_PER_SUI, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-import { Popover } from '@headlessui/react';
-import { useCoinMetadata, useGetAllBalances, useGetSystemState } from '@mysten/core';
+import { useFeatureIsOn } from '@growthbook/growthbook-react';
+import { useCoinMetadata, useGetDelegatedStake } from '@mysten/core';
 import { ArrowLeft16 } from '@mysten/icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik } from 'formik';
 import type { FormikHelpers } from 'formik';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo } from 'react';
 import { toast } from 'react-hot-toast';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import Alert from '../../components/alert';
 import { getSignerOperationErrorMessage } from '../../helpers/errorMessages';
+import { useActiveAccount } from '../../hooks/useActiveAccount';
 import { useQredoTransaction } from '../../hooks/useQredoTransaction';
 import { useSigner } from '../../hooks/useSigner';
 import { QredoActionIgnoredByUser } from '../../QredoSigner';
 import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
 import { getStakeSuiBySuiId } from '../getStakeSuiBySuiId';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
 import StakeForm from './StakeForm';
 import { UnStakeForm } from './UnstakeForm';
 import { createStakeTransaction, createUnstakeTransaction } from './utils/transaction';
@@ -46,26 +50,31 @@ const initialValues = {
 export type FormValues = typeof initialValues;
 
 function StakingCard() {
-	const suiClient = useSuiClient();
-	const [coinType, setCoinType] = useState(SUI_TYPE_ARG);
-
-	const accountAddress = useActiveAddress();
+	const coinType = SUI_TYPE_ARG;
+	const activeAccount = useActiveAccount();
+	const accountAddress = activeAccount?.address;
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-	const { data, isLoading: loadingSuiBalances } = useGetAllBalances(
-		accountAddress,
-		refetchInterval,
-		staleTime,
+	const { data: suiBalance, isPending: loadingSuiBalances } = useSuiClientQuery(
+		'getBalance',
+		{ coinType: SUI_TYPE_ARG, owner: accountAddress! },
+		{ refetchInterval, staleTime, enabled: !!accountAddress },
 	);
-
-	const coinData = data?.find((coin) => coin.coinType === coinType);
-	const coinBalance = BigInt(coinData?.totalBalance || 0);
+	const coinBalance = BigInt(suiBalance?.totalBalance || 0);
 	const [searchParams] = useSearchParams();
 	const validatorAddress = searchParams.get('address');
 	const stakeSuiIdParams = searchParams.get('staked');
 	const unstake = searchParams.get('unstake') === 'true';
-	const { data: allDelegation, isLoading } = useGetDelegatedStake(accountAddress || '');
+	const { data: allDelegation, isPending } = useGetDelegatedStake({
+		address: accountAddress || '',
+		staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
+		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
+	});
+	const effectsOnlySharedTransactions = useFeatureIsOn(
+		FEATURES.WALLET_EFFECTS_ONLY_SHARED_TRANSACTION as string,
+	);
 
-	const { data: system, isLoading: validatorsIsloading } = useGetSystemState();
+	const { data: system, isPending: validatorsisPending } =
+		useSuiClientQuery('getLatestSuiSystemState');
 
 	const totalTokenBalance = useMemo(() => {
 		if (!allDelegation) return 0n;
@@ -101,7 +110,7 @@ function StakingCard() {
 	}, [stakeData]);
 
 	const navigate = useNavigate();
-	const signer = useSigner();
+	const signer = useSigner(activeAccount);
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
 
 	const stakeToken = useMutation({
@@ -118,12 +127,13 @@ function StakingCard() {
 				throw new Error('Failed, missing required field');
 			}
 
-			const { data: coins } = await suiClient.getCoins({ owner: accountAddress!, coinType });
-			const transactionBlock = createStakeTransaction(amount, validatorAddress, coinType, coins);
+			const transactionBlock = createStakeTransaction(amount, validatorAddress);
 			return await signer.signAndExecuteTransactionBlock(
 				{
 					transactionBlock,
-					requestType: 'WaitForLocalExecution',
+					requestType: effectsOnlySharedTransactions
+						? 'WaitForEffectsCert'
+						: 'WaitForLocalExecution',
 					options: {
 						showInput: true,
 						showEffects: true,
@@ -151,7 +161,9 @@ function StakingCard() {
 			return await signer.signAndExecuteTransactionBlock(
 				{
 					transactionBlock,
-					requestType: 'WaitForLocalExecution',
+					requestType: effectsOnlySharedTransactions
+						? 'WaitForEffectsCert'
+						: 'WaitForLocalExecution',
 					options: {
 						showInput: true,
 						showEffects: true,
@@ -202,7 +214,7 @@ function StakingCard() {
 						queryKey: ['system', 'state'],
 					}),
 					queryClient.invalidateQueries({
-						queryKey: ['validator'],
+						queryKey: ['delegated-stakes'],
 					}),
 				]);
 				resetForm();
@@ -249,12 +261,12 @@ function StakingCard() {
 		],
 	);
 
-	if (!coinType || !validatorAddress || (!validatorsIsloading && !system)) {
+	if (!coinType || !validatorAddress || (!validatorsisPending && !system)) {
 		return <Navigate to="/" replace={true} />;
 	}
 	return (
 		<div className="flex flex-col flex-nowrap flex-grow w-full">
-			<Loading loading={isLoading || validatorsIsloading || loadingSuiBalances}>
+			<Loading loading={isPending || validatorsisPending || loadingSuiBalances}>
 				<Formik
 					initialValues={initialValues}
 					validationSchema={validationSchema}
@@ -264,31 +276,7 @@ function StakingCard() {
 					{({ isSubmitting, isValid, submitForm, errors, touched }) => (
 						<BottomMenuLayout>
 							<Content>
-								<Popover className="relative z-10 max-w-full px-5">
-									{({ close }) => (
-										<>
-											<Popover.Button className="cursor-pointer px-2 py-1 rounded border border-bfc-border outline-0 bg-white">
-												{coinType}
-											</Popover.Button>
-											<Popover.Panel className="absolute mt-2 flex flex-col items-center shadow border-bfc-border bg-white">
-												{data?.map((coin) => (
-													<button
-														key={coin.coinType}
-														className="w-full px-5 py-2 text-left hover:bg-bfc-hover"
-														onClick={() => {
-															setCoinType(coin.coinType);
-															close();
-														}}
-													>
-														{coin.coinType}
-													</button>
-												))}
-											</Popover.Panel>
-										</>
-									)}
-								</Popover>
-
-								<div className="my-5">
+								<div className="mb-4">
 									<ValidatorFormDetail validatorAddress={validatorAddress} unstake={unstake} />
 								</div>
 
@@ -310,20 +298,20 @@ function StakingCard() {
 								)}
 
 								{(unstake || touched.amount) && errors.amount ? (
-									<div className="mt-2.5 flex flex-col flex-nowrap">
+									<div className="mt-2 flex flex-col flex-nowrap">
 										<Alert>{errors.amount}</Alert>
 									</div>
 								) : null}
 
 								{!unstake && (
-									<div className="flex-1 mt-5">
-										<Collapse title="Staking Rewards" initialIsOpen>
-											<Text variant="body" color="bfc-text2" weight="normal">
-												Staked BFC starts counting as validator’s stake at the end of the Epoch in
+									<div className="flex-1 mt-7.5">
+										<Collapsible title="Staking Rewards" defaultOpen>
+											<Text variant="pSubtitle" color="steel-dark" weight="normal">
+												Staked SUI starts counting as validator’s stake at the end of the Epoch in
 												which it was staked. Rewards are earned separately for each Epoch and become
 												available at the end of each Epoch.
 											</Text>
-										</Collapse>
+										</Collapsible>
 									</div>
 								)}
 							</Content>

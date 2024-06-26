@@ -52,6 +52,7 @@ export function useCoinMetadata(coinType?: string | null) {
 			if (!coinType) {
 				throw new Error('Fetching coin metadata should be disabled when coin type is disabled.');
 			}
+
 			// Optimize the known case of SUI to avoid a network call:
 			if (coinType === SUI_TYPE_ARG) {
 				const metadata: CoinMetadata = {
@@ -59,9 +60,10 @@ export function useCoinMetadata(coinType?: string | null) {
 					decimals: 9,
 					description: '',
 					iconUrl: null,
-					name: 'BFC',
+					name: 'bfc',
 					symbol: 'BFC',
 				};
+
 				return metadata;
 			}
 
@@ -85,7 +87,7 @@ export function useCoinMetadata(coinType?: string | null) {
 		retry: false,
 		enabled: !!coinType,
 		staleTime: Infinity,
-		cacheTime: 24 * 60 * 60 * 1000,
+		gcTime: 24 * 60 * 60 * 1000,
 	});
 }
 
@@ -96,10 +98,10 @@ export function useFormatCoin(
 	coinType?: string | null,
 	format: CoinFormat = CoinFormat.ROUNDED,
 ): FormattedCoin {
+	const fallbackSymbol = useMemo(() => (coinType ? getCoinSymbol(coinType) ?? '' : ''), [coinType]);
+
 	const queryResult = useCoinMetadata(coinType);
 	const { isFetched, data } = queryResult;
-
-	const fallbackSymbol = useMemo(() => (coinType ? getCoinSymbol(coinType) ?? '' : ''), [coinType]);
 
 	const formatted = useMemo(() => {
 		if (typeof balance === 'undefined' || balance === null) return '';
@@ -112,6 +114,7 @@ export function useFormatCoin(
 	return [formatted, isFetched ? data?.symbol || fallbackSymbol : '', queryResult];
 }
 
+/** @deprecated use coin metadata instead */
 export function getCoinSymbol(coinTypeArg: string) {
 	return coinTypeArg.substring(coinTypeArg.lastIndexOf(':') + 1);
 }

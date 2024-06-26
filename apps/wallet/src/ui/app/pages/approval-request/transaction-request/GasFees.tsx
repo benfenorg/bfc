@@ -16,7 +16,7 @@ interface Props {
 
 export function GasFees({ sender, transaction }: Props) {
 	const { data: transactionData } = useTransactionData(sender, transaction);
-	const { data: gasBudget, isLoading, isError } = useTransactionGasBudget(sender, transaction);
+	const { data: gasBudget, isPending, isError } = useTransactionGasBudget(sender, transaction);
 	const isSponsored =
 		transactionData?.gasConfig.owner && transactionData.sender !== transactionData.gasConfig.owner;
 	return (
@@ -24,7 +24,7 @@ export function GasFees({ sender, transaction }: Props) {
 			header="Estimated Gas Fees"
 			badge={
 				isSponsored ? (
-					<div className="bg-white text-bfc-green px-1.5 py-0.5 text-body rounded-full font-medium uppercase">
+					<div className="bg-white text-success px-1.5 py-0.5 text-captionSmallExtra rounded-full font-medium uppercase">
 						Sponsored
 					</div>
 				) : null
@@ -33,7 +33,7 @@ export function GasFees({ sender, transaction }: Props) {
 		>
 			<DescriptionList>
 				<DescriptionItem title="You Pay">
-					{isLoading
+					{isPending
 						? 'Estimating...'
 						: isError
 						? 'Gas estimation failed'

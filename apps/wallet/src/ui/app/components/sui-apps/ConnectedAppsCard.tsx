@@ -68,11 +68,11 @@ function ConnectedDapps() {
 			</div>
 			<div className="my-4">
 				<Text variant="pBodySmall" color="gray-80" weight="normal">
-					Apps you have connected to through the BenFen Wallet in this browser.
+					Apps you have connected to through the Sui Wallet in this browser.
 				</Text>
 			</div>
 
-			<div className="mb-28 grid gap-3.75 grid-cols-2">
+			<div className="grid gap-3.75 grid-cols-2">
 				{connectedApps.length ? (
 					connectedApps.map((app) => <SuiApp key={app.permissionID} {...app} displayType="card" />)
 				) : (

@@ -1,19 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type QredoConnectIdentity } from '_src/background/qredo/types';
 import { useQuery } from '@tanstack/react-query';
 
 import { useBackgroundClient } from './useBackgroundClient';
 
-export function useQredoInfo(
-	filter: { qredoID: string } | { identity: QredoConnectIdentity } | null,
-) {
+export function useQredoInfo(qredoID: string | null) {
 	const backgroundClient = useBackgroundClient();
 	return useQuery({
-		queryKey: ['qredo', 'info', filter],
-		queryFn: async () => backgroundClient.getQredoConnectionInfo(filter!),
-		enabled: !!filter,
+		queryKey: ['qredo', 'info', qredoID],
+		queryFn: async () => backgroundClient.getQredoConnectionInfo(qredoID!),
+		enabled: !!qredoID,
 		staleTime: 0,
 		refetchInterval: 1000,
 		meta: { skipPersistedCache: true },

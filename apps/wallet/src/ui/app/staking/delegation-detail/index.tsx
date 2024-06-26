@@ -3,10 +3,12 @@
 
 import LoadingIndicator from '_components/loading/LoadingIndicator';
 import Overlay from '_components/overlay';
+import { useGetDelegatedStake } from '@mysten/core';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';
-import { useGetDelegatedStake } from '../useGetDelegatedStake';
+import { getDelegationDataByStakeId } from '../getDelegationByStakeId';
+import { ValidatorLogo } from '../validators/ValidatorLogo';
 import { DelegationDetailCard } from './DelegationDetailCard';
 
 export function DelegationDetail() {
@@ -15,13 +17,15 @@ export function DelegationDetail() {
 	const stakeIdParams = searchParams.get('staked');
 	const navigate = useNavigate();
 	const accountAddress = useActiveAddress();
-	const { isLoading } = useGetDelegatedStake(accountAddress || '');
+	const { data, isPending } = useGetDelegatedStake({
+		address: accountAddress || '',
+	});
 
 	if (!validatorAddressParams || !stakeIdParams) {
 		return <Navigate to={'/stake'} replace={true} />;
 	}
 
-	if (isLoading) {
+	if (isPending) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />
@@ -29,10 +33,21 @@ export function DelegationDetail() {
 		);
 	}
 
+	const delegationData = data ? getDelegationDataByStakeId(data, stakeIdParams) : null;
 	return (
 		<Overlay
 			showModal
-			title={<div className="flex items-center max-w-full px-4">Stake & Earn BFC</div>}
+			title={
+				<div className="flex items-center max-w-full px-4">
+					<ValidatorLogo
+						validatorAddress={validatorAddressParams}
+						isTitle
+						iconSize="sm"
+						size="body"
+						activeEpoch={delegationData?.stakeRequestEpoch}
+					/>
+				</div>
+			}
 			closeOverlay={() => navigate('/')}
 		>
 			<DelegationDetailCard validatorAddress={validatorAddressParams} stakedId={stakeIdParams} />

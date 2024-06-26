@@ -7,17 +7,21 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 
 const alertStyles = cva(
-	'rounded-lg text-body/[18px] font-normal flex flex-row flex-nowrap justify-start items-center p-2.5 gap-1.25',
+	'rounded-2xl text-pBodySmall font-medium flex flex-row flex-nowrap justify-start items-center gap-2',
 	{
 		variants: {
 			mode: {
-				warning: 'border-solid border bg-bfc-red_10p border-bfc-red text-bfc-red',
+				warning: 'border-solid border bg-warning-light border-warning-dark/20 text-warning-dark',
 				success: 'border-solid border bg-success-light border-success-dark/20 text-success-dark',
 				loading: 'bg-steel text-white border-warning-dark/20',
 				issue: 'border-solid border bg-issue-light border-issue-dark/20 text-issue-dark',
 			},
 			noBorder: {
 				true: '!border-transparent',
+			},
+			spacing: {
+				sm: 'px-1.5 py-0.5',
+				md: 'py-2 px-2.5',
 			},
 			rounded: {
 				lg: 'rounded-lg',
@@ -28,12 +32,14 @@ const alertStyles = cva(
 		defaultVariants: {
 			mode: 'issue',
 			rounded: '2xl',
+			spacing: 'md',
 		},
 	},
 );
 
 export interface AlertProps extends VariantProps<typeof alertStyles> {
 	children: ReactNode;
+	showIcon?: boolean;
 }
 
 const modeToIcon = {
@@ -43,10 +49,17 @@ const modeToIcon = {
 	loading: <LoadingIndicator color="inherit" />,
 };
 
-export default function Alert({ children, noBorder, rounded, mode = 'issue' }: AlertProps) {
+export default function Alert({
+	children,
+	noBorder,
+	rounded,
+	mode = 'issue',
+	showIcon = true,
+	spacing,
+}: AlertProps) {
 	return (
-		<div className={alertStyles({ noBorder, rounded, mode })}>
-			{(mode && modeToIcon[mode]) || null}
+		<div className={alertStyles({ noBorder, rounded, mode, spacing })}>
+			{(showIcon && mode && modeToIcon[mode]) || null}
 			<div className="break-words flex-1 text-left">{children}</div>
 		</div>
 	);

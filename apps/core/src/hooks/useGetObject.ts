@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { sui2BfcAddress } from '@benfen/bfc.js/utils';
+import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
 import { useQuery } from '@tanstack/react-query';
 
 const defaultOptions = {
@@ -16,7 +16,7 @@ const defaultOptions = {
 
 export function useGetObject(objectId?: string | null) {
 	const client = useSuiClient();
-	const normalizedObjId = objectId && sui2BfcAddress(objectId);
+	const normalizedObjId = objectId && normalizeSuiAddress(objectId);
 	return useQuery({
 		queryKey: ['object', normalizedObjId],
 		queryFn: () =>

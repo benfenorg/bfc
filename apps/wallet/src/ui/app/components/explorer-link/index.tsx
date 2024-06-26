@@ -2,11 +2,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import ExternalLink from '_components/external-link';
+import { formatAddress } from '@benfen/bfc.js/utils';
 import { ArrowUpRight16 } from '@mysten/icons';
 import type { ReactNode } from 'react';
 
 import { useExplorerLink, type ExplorerLinkConfig } from '../../hooks/useExplorerLink';
+import { Text } from '../../shared/text';
 import st from './ExplorerLink.module.scss';
+import { ExplorerLinkType } from './ExplorerLinkType';
 
 export type ExplorerLinkProps = ExplorerLinkConfig & {
 	track?: boolean;
@@ -35,6 +38,20 @@ function ExplorerLink({
 				{children} {showIcon && <ArrowUpRight16 className={st.explorerIcon} />}
 			</>
 		</ExternalLink>
+	);
+}
+
+export function AddressLink({ address }: { address: string }) {
+	return (
+		<ExplorerLink
+			type={ExplorerLinkType.address}
+			address={address}
+			className="text-hero-dark no-underline inline-block"
+		>
+			<Text variant="subtitle" weight="semibold" truncate mono>
+				{formatAddress(address)}
+			</Text>
+		</ExplorerLink>
 	);
 }
 

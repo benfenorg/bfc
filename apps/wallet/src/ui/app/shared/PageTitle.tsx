@@ -34,14 +34,14 @@ function PageTitle({ title = '', back, after }: PageTitleProps) {
 					<Button
 						to={typeof back === 'string' ? back : undefined}
 						onClick={backOnClick}
-						size="tiny"
+						size="xs"
 						before={<ArrowLeft16 className="text-base leading-none" />}
 						variant="plain"
 					/>
 				</div>
 			) : null}
 			<div className="flex items-center justify-center flex-1 overflow-hidden">
-				<Heading as="h6" variant="heading6" color="bfc-text1" truncate>
+				<Heading as="h6" variant="heading6" color="gray-90" truncate>
 					{title}
 				</Heading>
 			</div>

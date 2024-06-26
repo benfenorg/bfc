@@ -1,5 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
 import { Button } from '_app/shared/ButtonUI';
 import { Text } from '_app/shared/text';
@@ -7,9 +8,10 @@ import { ActiveCoinsCard } from '_components/active-coins-card';
 import Overlay from '_components/overlay';
 import { ampli } from '_src/shared/analytics/ampli';
 import { getSignerOperationErrorMessage } from '_src/ui/app/helpers/errorMessages';
-import { useSigner } from '_src/ui/app/hooks';
-import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
+import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
+import { useSigner } from '_src/ui/app/hooks/useSigner';
+import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
 import { useCoinMetadata } from '@mysten/core';
 import { ArrowLeft16, ArrowRight16 } from '@mysten/icons';
@@ -30,8 +32,9 @@ function TransferCoinPage() {
 	const [formData, setFormData] = useState<SubmitProps>();
 	const navigate = useNavigate();
 	const { data: coinMetadata } = useCoinMetadata(coinType);
-	const signer = useSigner();
-	const address = useActiveAddress();
+	const activeAccount = useActiveAccount();
+	const signer = useSigner(activeAccount);
+	const address = activeAccount?.address;
 	const queryClient = useQueryClient();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
 
@@ -91,6 +94,10 @@ function TransferCoinPage() {
 		},
 	});
 
+	if (useUnlockedGuard()) {
+		return null;
+	}
+
 	if (!coinType) {
 		return <Navigate to="/" replace={true} />;
 	}
@@ -101,7 +108,7 @@ function TransferCoinPage() {
 			title={showTransactionPreview ? 'Review & Send' : 'Send Coins'}
 			closeOverlay={() => navigate('/')}
 		>
-			<div className="flex flex-col w-full">
+			<div className="flex flex-col w-full h-full">
 				{showTransactionPreview && formData ? (
 					<BottomMenuLayout>
 						<Content>
@@ -135,10 +142,12 @@ function TransferCoinPage() {
 					</BottomMenuLayout>
 				) : (
 					<>
-						<div className="mb-7.5 flex flex-col gap-1.25">
-							<Text variant="body" color="bfc-text2" weight="normal">
-								Select all Coins
-							</Text>
+						<div className="mb-7 flex flex-col gap-2.5">
+							<div className="pl-1.5">
+								<Text variant="caption" color="steel" weight="semibold">
+									Select all Coins
+								</Text>
+							</div>
 							<ActiveCoinsCard activeCoinType={coinType} />
 						</div>
 

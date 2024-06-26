@@ -12,7 +12,6 @@ export default function useMediaUrl(objData: SuiParsedData | null) {
 		((objData?.dataType === 'moveObject' && objData) as {
 			fields: { url?: string; metadata?: { fields: { url: string } } };
 		}) || {};
-
 	return useMemo(() => {
 		if (fields) {
 			const mediaUrl = fields.url || fields.metadata?.fields.url;

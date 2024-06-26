@@ -4,7 +4,8 @@
 import { Text } from '_app/shared/text';
 import { IconTooltip } from '_app/shared/tooltip';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
-import { roundFloat, useGetSystemState, useGetValidatorsApy } from '@mysten/core';
+import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { roundFloat, useGetValidatorsApy } from '@mysten/core';
 import { useMemo } from 'react';
 
 const APY_DECIMALS = 3;
@@ -14,7 +15,7 @@ type DelegatedAPYProps = {
 };
 
 export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
-	const { data, isLoading } = useGetSystemState();
+	const { data, isPending } = useSuiClientQuery('getLatestSuiSystemState');
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
 	const averageNetworkAPY = useMemo(() => {
@@ -31,7 +32,7 @@ export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
 		return roundFloat(averageAPY || 0, APY_DECIMALS);
 	}, [data, rollingAverageApys, stakedValidators]);
 
-	if (isLoading) {
+	if (isPending) {
 		return (
 			<div className="p-2 w-full flex justify-center items-center h-full">
 				<LoadingIndicator />
@@ -53,7 +54,7 @@ export function DelegatedAPY({ stakedValidators }: DelegatedAPYProps) {
 					</Text>
 					<div className="text-steel items-baseline text-body flex">
 						<IconTooltip
-							tip="The average APY of all validators you are currently staking your BFC on."
+							tip="The average APY of all validators you are currently staking your SUI on."
 							placement="top"
 						/>
 					</div>

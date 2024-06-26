@@ -2,10 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Text } from '_src/ui/app/shared/text';
+import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { formatAddress, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
-import { useFormatCoin, useGetCoinBalance, useResolveSuiNSName } from '@mysten/core';
+import { useFormatCoin, useResolveSuiNSName } from '@mysten/core';
 import { CheckFill16 } from '@mysten/icons';
-import cl from 'classnames';
+import cl from 'clsx';
 
 import { useCoinsReFetchingConfig } from '../../hooks';
 
@@ -16,11 +17,17 @@ type LedgerAccountRowProps = {
 
 export function LedgerAccountRow({ isSelected, address }: LedgerAccountRowProps) {
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-	const { data: coinBalance } = useGetCoinBalance(
-		SUI_TYPE_ARG,
-		address,
-		refetchInterval,
-		staleTime,
+
+	const { data: coinBalance } = useSuiClientQuery(
+		'getBalance',
+		{
+			coinType: SUI_TYPE_ARG,
+			owner: address,
+		},
+		{
+			refetchInterval,
+			staleTime,
+		},
 	);
 	const { data: domainName } = useResolveSuiNSName(address);
 	const [totalAmount, totalAmountSymbol] = useFormatCoin(

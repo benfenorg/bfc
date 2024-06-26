@@ -9,7 +9,7 @@ import configCommon from './webpack.config.common';
 const configDev: Configuration = {
 	mode: 'development',
 	devtool: 'cheap-source-map',
-	plugins: [],
+	// plugins: [new ESLintPlugin({ extensions: ['ts', 'tsx', 'js', 'jsx'] })],
 	watchOptions: {
 		aggregateTimeout: 600,
 	},

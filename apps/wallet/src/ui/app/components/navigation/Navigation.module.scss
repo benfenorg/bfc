@@ -5,32 +5,87 @@
 .container {
 	display: flex;
 	flex-flow: row nowrap;
-	position: absolute;
-	align-items: stretch;
-	justify-content: stretch;
+	background-color: v.use(v.$colors-nav-background-color);
+	backdrop-filter: v.use(v.$colors-nav-background-filter);
+	position: sticky;
 	bottom: 0;
 	width: 100%;
+	align-items: center;
+	justify-content: stretch;
 	overflow: hidden;
-	transition: transform 300ms ease-in-out;
+	border: 1px solid rgb(111 188 240 / 1%);
+	transition:
+		max-height 300ms ease-in-out,
+		opacity 300ms ease-in-out;
 	opacity: 1;
+	flex-direction: column;
 	z-index: 40;
-	background-color: values.$colors-bfc-card;
+	max-height: 120px;
+	padding-top: 8px;
+}
+
+.nav-menu {
+	display: flex;
+	flex-flow: row nowrap;
+	align-items: center;
+	justify-content: stretch;
+	width: 100%;
+}
+
+.filter-tags {
+	display: flex;
+	gap: 8px;
+
+	.filter {
+		height: 25px;
+		background: colors.$white;
+		color: colors.$sui-steel-blue;
+		padding: 6px 10px;
+		border: 1px solid colors.$gray-60;
+		border-radius: 16px;
+		text-decoration: none;
+		display: flex;
+		align-items: center;
+
+		&.active {
+			background: v.use(v.$colors-nav-item-highlighted-color);
+			color: colors.$white;
+		}
+	}
 }
 
 .link {
 	display: flex;
 	flex-flow: column nowrap;
-	justify-content: center;
 	align-items: center;
-	gap: 2px;
+	padding: 6px;
 	text-decoration: none;
+	color: v.use(v.$colors-nav-item-color);
 	user-select: none;
 	flex-grow: 1;
-	border: none;
-	color: values.$colors-bfc-text3;
+	flex-basis: 80px;
+	height: 70px;
+	justify-content: space-between;
+	padding-bottom: 12px;
+	border-bottom: 2px solid;
+	border-bottom-color: transparent;
+
+	&:hover {
+		color: v.use(v.$colors-nav-item-highlighted-color);
+	}
+
 	&.active {
-		color: values.$colors-bfc-text1;
-		border-bottom: 2px solid values.$colors-bfc-text1;
+		color: v.use(v.$colors-nav-item-active-color);
+		border-bottom-color: v.use(v.$colors-nav-item-active-color);
+
+		&:hover {
+			color: v.use(v.$colors-nav-item-active-highlighted-color);
+			border-bottom-color: v.use(v.$colors-nav-item-active-highlighted-color);
+		}
+	}
+
+	&.disabled {
+		color: #c3c5c8;
 	}
 }
 
@@ -40,16 +95,21 @@
 }
 
 .title {
-	font-size: 12px;
-	line-height: 18px;
-	font-weight: 500;
+	font-size: 13px;
+	line-height: 12px;
+	font-weight: 600;
+
+	.active > & {
+		font-weight: 600;
+	}
 }
 
 .hidden {
-	transform: translateY(100%);
+	padding-top: 0;
+	max-height: 0;
 	opacity: 0;
 	transition:
-		transform 300ms ease-in-out,
+		max-height 300ms ease-in-out,
 		opacity 0ms ease-in 300ms;
 }
 

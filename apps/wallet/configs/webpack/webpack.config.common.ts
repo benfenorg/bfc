@@ -39,13 +39,12 @@ const SRC_ROOT = resolve(PROJECT_ROOT, 'src');
 const OUTPUT_ROOT = resolve(PROJECT_ROOT, 'dist');
 const TS_CONFIGS_ROOT = resolve(CONFIGS_ROOT, 'ts');
 const IS_DEV = process.env.NODE_ENV === 'development';
-// const IS_PROD = process.env.NODE_ENV === 'production';
 const TS_CONFIG_FILE = resolve(TS_CONFIGS_ROOT, `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`);
 const APP_NAME = WALLET_BETA
-	? 'BenFen Wallet (BETA)'
+	? 'Benfen Wallet (BETA)'
 	: IS_DEV
-	? 'BenFen Wallet (DEV)'
-	: 'BenFen Wallet';
+	? 'Benfen Wallet (DEV)'
+	: 'Benfen Wallet';
 
 function loadTsConfig(tsConfigFilePath: string) {
 	return new Promise<string>((res, rej) => {
@@ -187,6 +186,11 @@ const commonConfig: () => Promise<Configuration> = async () => {
 								...walletVersionDetails,
 								name: APP_NAME,
 								description: packageJson.description,
+								...(IS_DEV
+									? {
+											key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2HTQu/66edl64fM/SKDnHJmCz9SIYqM/QK7NM3vD1LTE2UNXzHX5Clj8geuoWAYS6HE/aFcd//qPnAh8TnPgqTS3IX+IbZsY/+kcokxIEWHly3eKEHWB32tQsGdJx6tgDzx8TRkFZEcCCdE4pFqQO68W3I/+8AQPosdd5fsIoF6OGKZ/i29mpGkYJSmMroCN5zYCQqvpjTBIkiTkI9TTjxmBid77pHyG4TsHz0wda4KxHV9ZtzZQXB4vexTku/Isczdtif7pDqFEDCAqEkpiGPyKoIuqrxc75IfpzIGFsIylycBr0fZellSsl2M6FM34R99/vUrGj5iWcjNmhYvZ8QIDAQAB',
+									  }
+									: undefined),
 							};
 							return JSON.stringify(manifestJson, null, 4);
 						},

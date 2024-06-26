@@ -22,11 +22,11 @@ export function PasswordInputField({ ...props }: PasswordInputProps) {
 				{...props}
 				{...field}
 				className={
-					'peer h-10 w-full text-bodySmall text-bfc-text1 flex items-center gap-5 bg-bfc-card px-2.5 border border-solid  border-bfc-border rounded-lg focus:bg-transparent focus:border-bfc-text1 placeholder-bfc-text3'
+					'peer h-11 w-full text-body text-steel-dark font-medium flex items-center gap-5 bg-white py-2.5 pr-0 pl-3 border border-solid  border-gray-45 rounded-2lg shadow-button focus:border-steel focus:shadow-none placeholder-gray-65'
 				}
 			/>
 			<IconComponent
-				className="absolute text-heading6 font-normal text-bfc-text1 cursor-pointer right-3"
+				className="absolute text-heading6 font-normal text-gray-60 cursor-pointer right-3 peer-focus:text-steel"
 				onClick={() => setPasswordShown(!passwordShown)}
 			/>
 		</div>

@@ -19,7 +19,6 @@ import type {
 	ExecuteTransactionResponse,
 	SignTransactionRequest,
 	SignTransactionResponse,
-	StakeRequest,
 } from '_payloads/transactions';
 import { API_ENV } from '_src/shared/api-env';
 import type { NetworkEnvType } from '_src/shared/api-env';
@@ -30,7 +29,7 @@ import {
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
 import { isTransactionBlock } from '@benfen/bfc.js/transactions';
-import { bfc2SuiAddress, fromB64, sui2BfcAddress, toB64 } from '@benfen/bfc.js/utils';
+import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 import {
 	BFC_CHAINS,
 	BFC_DEVNET_CHAIN,
@@ -46,6 +45,7 @@ import {
 	type SuiFeatures,
 	type SuiSignAndExecuteTransactionBlockMethod,
 	type SuiSignMessageMethod,
+	type SuiSignPersonalMessageMethod,
 	type SuiSignTransactionBlockMethod,
 	type Wallet,
 } from '@benfen/bfc.js/wallet-standard';
@@ -59,21 +59,22 @@ type WalletEventsMap = {
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'BenFen Wallet';
+const name = process.env.APP_NAME || 'Benfen Wallet';
 
-type StakeInput = { validatorAddress: string };
-type SuiWalletStakeFeature = {
-	'benfenWallet:stake': {
-		version: '0.0.1';
-		stake: (input: StakeInput) => Promise<void>;
-	};
-};
 export type QredoConnectInput = {
 	service: string;
 	apiUrl: string;
 	token: string;
-	organization: string;
-};
+} & (
+	| {
+			/** @deprecated renamed to workspace, please use that */
+			organization: string;
+	  }
+	| {
+			workspace: string;
+	  }
+);
+
 type QredoConnectFeature = {
 	'qredo:connect': {
 		version: '0.0.1';
@@ -116,7 +117,6 @@ export class SuiWallet implements Wallet {
 	get features(): StandardConnectFeature &
 		StandardEventsFeature &
 		SuiFeatures &
-		SuiWalletStakeFeature &
 		QredoConnectFeature {
 		return {
 			'standard:connect': {
@@ -135,24 +135,17 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				signAndExecuteTransactionBlock: this.#signAndExecuteTransactionBlock,
 			},
-			'benfenWallet:stake': {
-				version: '0.0.1',
-				stake: this.#stake,
-			},
 			'bfc:signMessage': {
 				version: '1.0.0',
 				signMessage: this.#signMessage,
 			},
+			'bfc:signPersonalMessage': {
+				version: '1.0.0',
+				signPersonalMessage: this.#signPersonalMessage,
+			},
 			'qredo:connect': {
 				version: '0.0.1',
 				qredoConnect: this.#qredoConnect,
-			},
-			'bfc:signPersonalMessage': {
-				version: '1.0.0',
-				signPersonalMessage: async () => {
-					// TODO: Implement
-					return { bytes: '', signature: '' };
-				},
 			},
 		};
 	}
@@ -163,9 +156,10 @@ export class SuiWallet implements Wallet {
 
 	#setAccounts(accounts: GetAccountResponse['accounts']) {
 		this.#accounts = accounts.map(
-			({ address, publicKey }) =>
+			({ address, publicKey, nickname }) =>
 				new ReadonlyWalletAccount({
-					address: sui2BfcAddress(address),
+					address,
+					label: nickname || undefined,
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
 					features: ['bfc:signAndExecuteTransaction'],
@@ -176,7 +170,7 @@ export class SuiWallet implements Wallet {
 	constructor() {
 		this.#events = mitt();
 		this.#accounts = [];
-		this.#messagesStream = new WindowMessageStream('bfc_in-page', 'bfc_content-script');
+		this.#messagesStream = new WindowMessageStream('sui_in-page', 'sui_content-script');
 		this.#messagesStream.messages.subscribe(({ payload }) => {
 			if (isWalletStatusChangePayload(payload)) {
 				const { network, accounts } = payload;
@@ -239,8 +233,12 @@ export class SuiWallet implements Wallet {
 		return { accounts: this.accounts };
 	};
 
-	#signTransactionBlock: SuiSignTransactionBlockMethod = async (input) => {
-		if (!isTransactionBlock(input.transactionBlock)) {
+	#signTransactionBlock: SuiSignTransactionBlockMethod = async ({
+		transactionBlock,
+		account,
+		...input
+	}) => {
+		if (!isTransactionBlock(transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
 			);
@@ -253,8 +251,8 @@ export class SuiWallet implements Wallet {
 					...input,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
-					transaction: input.transactionBlock.serialize(),
+					account: account?.address || this.#accounts[0]?.address || '',
+					transaction: transactionBlock.serialize(),
 				},
 			}),
 			(response) => response.result,
@@ -277,18 +275,11 @@ export class SuiWallet implements Wallet {
 					options: input.options,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: bfc2SuiAddress(input.account?.address || this.#accounts[0]?.address || ''),
+					account: input.account?.address || this.#accounts[0]?.address || '',
 				},
 			}),
 			(response) => response.result,
 		);
-	};
-
-	#stake = async (input: StakeInput) => {
-		this.#send<StakeRequest, void>({
-			type: 'stake-request',
-			validatorAddress: input.validatorAddress,
-		});
 	};
 
 	#signMessage: SuiSignMessageMethod = async ({ message, account }) => {
@@ -297,7 +288,7 @@ export class SuiWallet implements Wallet {
 				type: 'sign-message-request',
 				args: {
 					message: toB64(message),
-					accountAddress: bfc2SuiAddress(account.address),
+					accountAddress: account.address,
 				},
 			}),
 			(response) => {
@@ -305,6 +296,27 @@ export class SuiWallet implements Wallet {
 					throw new Error('Invalid sign message response');
 				}
 				return response.return;
+			},
+		);
+	};
+
+	#signPersonalMessage: SuiSignPersonalMessageMethod = async ({ message, account }) => {
+		return mapToPromise(
+			this.#send<SignMessageRequest, SignMessageRequest>({
+				type: 'sign-message-request',
+				args: {
+					message: toB64(message),
+					accountAddress: account.address,
+				},
+			}),
+			(response) => {
+				if (!response.return) {
+					throw new Error('Invalid sign message response');
+				}
+				return {
+					bytes: response.return.messageBytes,
+					signature: response.return.signature,
+				};
 			},
 		);
 	};

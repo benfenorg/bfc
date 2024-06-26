@@ -7,7 +7,6 @@ import { TxnAmount } from '_components/receipt-card/TxnAmount';
 import { parseAmount } from '_helpers';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
-import { Heading } from '_src/ui/app/shared/heading';
 import { useCoinMetadata } from '@mysten/core';
 
 export type PreviewTransferProps = {
@@ -30,7 +29,7 @@ export function PreviewTransfer({
 	const amountWithoutDecimals = parseAmount(amount, metadata?.decimals ?? 0);
 
 	return (
-		<div className="divide-y divide-solid divide-bfc-border divide-x-0 flex flex-col w-full [&>div]:pt-2.5 first:pt-0">
+		<div className="divide-y divide-solid divide-steel/20 divide-x-0 flex flex-col px-2.5 w-full">
 			<TxnAmount
 				amount={amountWithoutDecimals.toString()}
 				label="Sending"
@@ -39,21 +38,15 @@ export function PreviewTransfer({
 			/>
 			<TxnAddress address={accountAddress || ''} label="From" />
 			<TxnAddress address={to} label="To" />
-			<div className="h-10 flex w-full justify-between">
-				<div className="flex items-center">
-					<Text variant="body" color="bfc-text1" weight="normal">
+			<div className="pt-3.5 mb-5 flex w-full gap-2 justify-between">
+				<div className="flex gap-1">
+					<Text variant="body" color="gray-80" weight="medium">
 						Estimated Gas Fees
 					</Text>
 				</div>
-				<div className="flex items-center">
-					<Heading variant="heading3" color="bfc-text1" weight="bold">
-						{gasBudget}
-					</Heading>
-					&nbsp;
-					<Text variant="body" color="bfc-text1" weight="normal">
-						{GAS_SYMBOL}
-					</Text>
-				</div>
+				<Text variant="body" color="gray-90" weight="medium">
+					{gasBudget} {GAS_SYMBOL}
+				</Text>
 			</div>
 		</div>
 	);

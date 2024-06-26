@@ -32,7 +32,7 @@ export function createValidationSchema(
 					.test('min', `\${path} must be greater than 1 ${coinSymbol}`, (amount) =>
 						amount ? amount.shiftedBy(decimals).gte(minimumStake.toString()) : false,
 					)
-					.test('max', (amount: BigNumber | undefined, ctx) => {
+					.test('max', (amount, ctx) => {
 						const gasBudget = ctx.parent.gasBudget || 0n;
 						const availableBalance = coinBalance - gasBudget;
 						if (availableBalance < 0) {

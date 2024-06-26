@@ -24,7 +24,7 @@ function createPort(windowMsgStream: WindowMessageStream, currentMsg?: Message) 
 }
 
 export function setupMessagesProxy() {
-	const windowMsgStream = new WindowMessageStream('bfc_content-script', 'bfc_in-page');
+	const windowMsgStream = new WindowMessageStream('sui_content-script', 'sui_in-page');
 	windowMsgStream.messages.pipe(take(1)).subscribe((msg) => {
 		createPort(windowMsgStream, msg);
 	});

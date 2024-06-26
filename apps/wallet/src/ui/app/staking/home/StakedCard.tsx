@@ -4,6 +4,7 @@
 import { NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_REDEEMABLE } from '_src/shared/constants';
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
+import { IconTooltip } from '_src/ui/app/shared/tooltip';
 import { type StakeObject } from '@benfen/bfc.js/client';
 import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
@@ -43,16 +44,18 @@ export type DelegationObjectWithValidator = Extract<StakeObject, { estimatedRewa
 
 const cardStyle = cva(
 	[
-		'group flex no-underline flex-col gap-2.5 py-4 px-2.5 box-border w-full rounded-2xl border border-solid',
+		'group flex no-underline flex-col p-3.75 pr-2 py-3 box-border w-full rounded-2xl border border-solid h-36',
 	],
 	{
 		variants: {
 			variant: {
-				warmUp: '',
-				earning: '',
-				coolDown: '',
-				withDraw: '',
-				inActive: '',
+				warmUp:
+					'bg-white border border-gray-45 text-steel-dark hover:bg-sui/10 hover:border-sui/30',
+				earning:
+					'bg-white border border-gray-45 text-steel-dark hover:bg-sui/10 hover:border-sui/30',
+				coolDown: 'bg-warning-light border-transparent text-steel-darker hover:border-warning',
+				withDraw: 'bg-success-light border-transparent text-success-dark hover:border-success',
+				inActive: 'bg-issue-light border-transparent text-issue hover:border-issue',
 			},
 		},
 	},
@@ -78,17 +81,11 @@ function StakeCardContent({
 	return (
 		<div className={cardStyle({ variant })}>
 			{children}
-			<div className="flex flex-col">
-				<div className="text-body/[18px] font-normal text-bfc-text3">{statusLabel}</div>
-				<div className={cx('text-body/[18px] font-normal text-bfc-text3')}>
+			<div className="flex flex-col gap-1">
+				<div className="text-subtitle font-medium">{statusLabel}</div>
+				<div className={cx('text-bodySmall font-semibold', earnColor ? 'text-success-dark' : '')}>
 					{earningRewardEpoch && rewardEpochTime > 0 ? (
-						<CountDownTimer
-							timestamp={rewardEpochTime}
-							variant="body"
-							label="in"
-							color="bfc-text3"
-							weight="normal"
-						/>
+						<CountDownTimer timestamp={rewardEpochTime} variant="bodySmall" label="in" />
 					) : (
 						statusText
 					)}
@@ -156,7 +153,7 @@ export function StakeCard({
 				validator: validatorAddress,
 				staked: stakedSuiId,
 			}).toString()}`}
-			className="no-underline active:text-bfc-border hover:text-bfc-border visited:text-bfc-border"
+			className="no-underline"
 		>
 			<StakeCardContent
 				variant={STATUS_VARIANT[delegationState]}
@@ -165,7 +162,7 @@ export function StakeCard({
 				earnColor={isEarning}
 				earningRewardEpoch={Number(epochBeforeRewards)}
 			>
-				<div className="flex">
+				<div className="flex mb-1">
 					<ValidatorLogo
 						validatorAddress={validatorAddress}
 						size="subtitle"
@@ -173,14 +170,23 @@ export function StakeCard({
 						stacked
 						activeEpoch={delegationObject.stakeRequestEpoch}
 					/>
+
+					<div className="text-steel text-pBody opacity-0 group-hover:opacity-100">
+						<IconTooltip
+							tip="Object containing the delegated staked SUI tokens, owned by each delegator"
+							placement="top"
+						/>
+					</div>
 				</div>
-				<div className="flex-1 flex items-baseline gap-1.25">
-					<Text variant="body" weight="medium" color="bfc-text1">
-						{principalStaked}
-					</Text>
-					<Text variant="body" weight="medium" color="bfc-text2">
-						{symbol}
-					</Text>
+				<div className="flex-1">
+					<div className="flex items-baseline gap-1">
+						<Text variant="body" weight="semibold" color="gray-90">
+							{principalStaked}
+						</Text>
+						<Text variant="subtitle" weight="normal" color="gray-90">
+							{symbol}
+						</Text>
+					</div>
 				</div>
 			</StakeCardContent>
 		</Link>

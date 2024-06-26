@@ -11,7 +11,7 @@ import {
 } from './types';
 
 export function qredoConnectPageUrl(requestID: string) {
-	return `${Browser.runtime.getURL('ui.html')}#/dapp/qredo-connect/${encodeURIComponent(
+	return `${Browser.runtime.getURL('ui.html')}#/accounts/qredo-connect/${encodeURIComponent(
 		requestID,
 	)}`;
 }
@@ -45,7 +45,7 @@ export function validateInputOrThrow(input: QredoConnectInput) {
 		service,
 		apiUrl: apiUrl.toString(),
 		token,
-		organization: trimString(input.organization),
+		organization: trimString('organization' in input ? input.organization : input.workspace),
 	};
 }
 

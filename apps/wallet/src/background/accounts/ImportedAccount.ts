@@ -2,19 +2,22 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { decrypt, encrypt } from '_src/shared/cryptography/keystore';
-import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
-import { type ExportedKeypair } from '@benfen/bfc.js/cryptography';
+import {
+	fromExportedKeypair,
+	type LegacyExportedKeyPair,
+} from '_src/shared/utils/from-exported-keypair';
 
 import {
 	Account,
+	type KeyPairExportableAccount,
 	type PasswordUnlockableAccount,
 	type SerializedAccount,
 	type SerializedUIAccount,
 	type SigningAccount,
 } from './Account';
 
-type SessionStorageData = { keyPair: ExportedKeypair };
-type EncryptedData = { keyPair: ExportedKeypair };
+type SessionStorageData = { keyPair: LegacyExportedKeyPair | string };
+type EncryptedData = { keyPair: LegacyExportedKeyPair | string };
 
 export interface ImportedAccountSerialized extends SerializedAccount {
 	type: 'imported';
@@ -35,13 +38,14 @@ export function isImportedAccountSerializedUI(
 
 export class ImportedAccount
 	extends Account<ImportedAccountSerialized, SessionStorageData>
-	implements PasswordUnlockableAccount, SigningAccount
+	implements PasswordUnlockableAccount, SigningAccount, KeyPairExportableAccount
 {
 	readonly canSign = true;
 	readonly unlockType = 'password' as const;
+	readonly exportableKeyPair = true;
 
 	static async createNew(inputs: {
-		keyPair: ExportedKeypair;
+		keyPair: string;
 		password: string;
 	}): Promise<Omit<ImportedAccountSerialized, 'id'>> {
 		const keyPair = fromExportedKeypair(inputs.keyPair);
@@ -93,7 +97,10 @@ export class ImportedAccount
 		};
 	}
 
-	async passwordUnlock(password: string): Promise<void> {
+	async passwordUnlock(password?: string): Promise<void> {
+		if (!password) {
+			throw new Error('Missing password to unlock the account');
+		}
 		const { encrypted } = await this.getStoredData();
 		const { keyPair } = await decrypt<EncryptedData>(password, encrypted);
 		await this.setEphemeralValue({ keyPair });
@@ -113,10 +120,16 @@ export class ImportedAccount
 		return this.generateSignature(data, keyPair);
 	}
 
+	async exportKeyPair(password: string): Promise<string> {
+		const { encrypted } = await this.getStoredData();
+		const { keyPair } = await decrypt<EncryptedData>(password, encrypted);
+		return fromExportedKeypair(keyPair, true).getSecretKey();
+	}
+
 	async #getKeyPair() {
 		const ephemeralData = await this.getEphemeralValue();
 		if (ephemeralData) {
-			return fromExportedKeypair(ephemeralData.keyPair);
+			return fromExportedKeypair(ephemeralData.keyPair, true);
 		}
 		return null;
 	}

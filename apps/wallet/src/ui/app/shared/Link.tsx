@@ -10,6 +10,7 @@ const styles = cva(
 	[
 		'transition flex flex-nowrap items-center justify-center outline-none gap-1 w-full',
 		'bg-transparent p-0 border-none',
+		'active:opacity-70',
 		'disabled:opacity-40',
 		'cursor-pointer group',
 	],
@@ -31,22 +32,10 @@ const styles = cva(
 				],
 				suiDark: ['text-sui-dark'],
 				hero: ['text-hero hover:text-hero-dark focus:text-hero-dark disabled:text-hero-dark'],
-				'bfc-text1': [
-					'text-bfc-text1 hover:text-bfc-text1 focus:text-bfc-text1 disabled:text-bfc-text1',
-				],
-				'bfc-text2': [
-					'text-bfc-text2 hover:text-bfc-text2 focus:text-bfc-text2 disabled:text-bfc-text2',
-				],
-				'bfc-text3': [
-					'text-bfc-text3 hover:text-bfc-text3 focus:text-bfc-text3 disabled:text-bfc-text3',
-				],
-				'bfc-link':
-					'text-bfc-link hover:text-bfc-link-dark focus:text-bfc-link-dark disabled:text-bfc-link',
 			},
 			weight: {
 				semibold: 'font-semibold',
 				medium: 'font-medium',
-				normal: 'font-normal',
 			},
 			size: {
 				bodySmall: 'text-bodySmall',
@@ -64,6 +53,9 @@ const styles = cva(
 
 const iconStyles = cva(['transition flex'], {
 	variants: {
+		beforeColor: {
+			steelDarker: ['text-steel-darker'],
+		},
 		color: {
 			steelDark: [
 				'text-steel group-hover:text-steel-darker group-focus:text-steel-darker group-disabled:text-steel-dark',
@@ -80,10 +72,6 @@ const iconStyles = cva(['transition flex'], {
 			hero: [
 				'text-hero group-hover:text-hero-dark group-focus:text-hero-dark group-disabled:text-hero-dark',
 			],
-			'bfc-text1': ['text-bfc-text1'],
-			'bfc-text2': ['text-bfc-text2'],
-			'bfc-text3': ['text-bfc-text3'],
-			'bfc-link': 'text-bfc-link',
 		},
 	},
 });
@@ -101,11 +89,12 @@ export const Link = forwardRef(
 	(
 		{
 			before,
+			beforeColor,
 			after,
 			text,
 			color,
 			weight,
-			size = 'body',
+			size = 'bodySmall',
 			underline = 'none',
 			mono,
 			...otherProps
@@ -117,7 +106,11 @@ export const Link = forwardRef(
 			{...otherProps}
 			ref={ref}
 		>
-			{before ? <div className={iconStyles({ color })}>{before}</div> : null}
+			{before ? (
+				<div className={beforeColor ? iconStyles({ beforeColor }) : iconStyles({ color })}>
+					{before}
+				</div>
+			) : null}
 			{text ? <div className={'truncate leading-none'}>{text}</div> : null}
 			{after ? <div className={iconStyles({ color })}>{after}</div> : null}
 		</ButtonOrLink>

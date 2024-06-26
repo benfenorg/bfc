@@ -8,7 +8,7 @@ import { useFormatCoin } from '@mysten/core';
 import { useQuery } from '@tanstack/react-query';
 
 export function useTransactionData(sender?: string | null, transaction?: TransactionBlock | null) {
-	const rpc = useSuiClient();
+	const client = useSuiClient();
 	return useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: ['transaction-data', transaction?.serialize()],
@@ -18,7 +18,7 @@ export function useTransactionData(sender?: string | null, transaction?: Transac
 				clonedTransaction.setSenderIfNotSet(sender);
 			}
 			// Build the transaction to bytes, which will ensure that the transaction data is fully populated:
-			await clonedTransaction!.build({ client: rpc });
+			await clonedTransaction!.build({ client });
 			return clonedTransaction!.blockData;
 		},
 		enabled: !!transaction,
