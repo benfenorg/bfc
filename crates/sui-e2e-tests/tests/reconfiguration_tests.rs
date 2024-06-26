@@ -1978,7 +1978,6 @@ async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error>
 
 #[cfg(msim)]
 #[sim_test]
-#[ignore]
 async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyhow::Error> {
     use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
     const EPOCH_DURATION: u64 = 20000;
