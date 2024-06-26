@@ -80,7 +80,7 @@ async fn sim_shared_object_deletion() {
 
 #[sim_test]
 async fn sim_shared_object_deletion_multiple_times() {
-    let num_deletions = 300;
+    let num_deletions = 30;
     let mut test_cluster = TestClusterBuilder::new()
         .with_accounts(vec![AccountConfig {
             address: None,

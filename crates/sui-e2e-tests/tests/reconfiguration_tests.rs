@@ -1978,7 +1978,6 @@ async fn get_stable_rate_map_and_reward_rate_test() -> Result<(), anyhow::Error>
 
 #[cfg(msim)]
 #[sim_test]
-#[ignore]
 async fn get_stable_rate_map_and_reward_rate_with_gas_test() -> Result<(), anyhow::Error> {
     use sui_types::bfc_system_state::bfc_get_stable_rate_result_injection;
     const EPOCH_DURATION: u64 = 20000;
@@ -2740,7 +2739,6 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 }
 
 #[sim_test]
-#[ignore]
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
@@ -2799,7 +2797,6 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
 }
 
 #[sim_test]
-#[ignore]
 async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(4000)
