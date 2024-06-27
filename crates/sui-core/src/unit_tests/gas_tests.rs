@@ -141,7 +141,7 @@ where
 
     let gas_coins = make_gas_coins(sender, gas_amount, coin_num);
     let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
-    let authority_state = TestAuthorityBuilder::new().build().await;
+    let authority_state = TestAuthorityBuilder::new().with_reference_gas_price(100).build().await;
     for obj in gas_coins {
         authority_state.insert_genesis_object(obj).await;
     }
@@ -347,8 +347,8 @@ async fn test_oog_computation_storage_ok_multi_coins() -> SuiResult {
 // OOG for computation, OOG for minimal storage (e.g. computation is entire budget)
 #[tokio::test]
 async fn test_oog_computation_oog_storage_final_one_coin() -> SuiResult {
-    const GAS_PRICE: u64 = 500;
-    const MAX_UNIT_BUDGET: u64 = 5000_000;
+    const GAS_PRICE: u64 = 100;
+    const MAX_UNIT_BUDGET: u64 = 500_000;
     const BUDGET: u64 = MAX_UNIT_BUDGET * GAS_PRICE;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(

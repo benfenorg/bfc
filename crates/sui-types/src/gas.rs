@@ -88,11 +88,11 @@ pub mod checked {
                 }
                 .into());
             }
-            let stable_max_price= calculate_divide_rate(config.max_gas_price(), stable_rate);
-            if gas_price_too_high(config.gas_model_version()) && gas_price >= stable_max_price
+
+            if gas_price_too_high(config.gas_model_version()) && gas_price >= config.max_gas_price()
             {
                 return Err(UserInputError::GasPriceTooHigh {
-                    max_gas_price: stable_max_price,
+                    max_gas_price: config.max_gas_price(),
                 }
                 .into());
             }

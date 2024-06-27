@@ -16,12 +16,12 @@ pub enum GasUnit {}
 pub type Gas = GasQuantity<GasUnit>;
 
 impl ToUnit<InternalGasUnit> for GasUnit {
-    const MULTIPLIER: u64 = 1000;
+    const MULTIPLIER: u64 = 100;
 }
 
 impl ToUnitFractional<GasUnit> for InternalGasUnit {
     const NOMINATOR: u64 = 1;
-    const DENOMINATOR: u64 = 1000;
+    const DENOMINATOR: u64 = 100;
 }
 
 pub const INSTRUCTION_TIER_DEFAULT: u64 = 1;
