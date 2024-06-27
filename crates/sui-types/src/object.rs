@@ -391,6 +391,16 @@ impl MoveObject {
         let balances = self.get_coin_balances(layout_resolver)?;
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
+
+    pub fn get_total_stable_coin(&self,) -> Result<u64, SuiError> {
+        Ok(Coin::from_bcs_bytes(self.contents())
+            .expect("failed to deserialize coin")
+            .balance
+            .value())
+        // let balances = self.get_coin_balances(layout_resolver)?;
+        // tracing::error!("balances {:?}",balances);
+        // Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
+    }
 }
 
 // Helpers for extracting Coin<T> balances for all T
@@ -940,6 +950,19 @@ impl Object {
                 },
                 Data::Package(_) => self.storage_rebate,
             })
+    }
+
+    pub fn get_total_stable_coin_with_rebate(&self,) -> Result<(u64,u64), SuiError> {
+        Ok(match &self.data {
+            Data::Move(m) => {
+                if m.type_.is_stable_gas_coin() {
+                    (m.get_total_stable_coin()?,self.storage_rebate)
+                }else {
+                    Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
+                }
+            }
+            Data::Package(_) => Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?,
+        })
     }
 
     pub fn immutable_with_id_for_testing(id: ObjectID) -> Self {

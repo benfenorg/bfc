@@ -29,6 +29,7 @@ use sui_types::{base_types::{
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -877,6 +878,93 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
+    pub fn get_input_sui_obj(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<Object, ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                invariant_violation!(
+                    "Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",
+                    expected_version,
+                    obj.version(),
+                );
+            }
+            Ok(obj.clone())
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                invariant_violation!(
+                    "Failed looking up dynamic field {id} in SUI conservation checking"
+                );
+            };
+            Ok(obj.clone())
+        }
+    }
+
+    pub fn get_input_sui_obj_nopanic(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<Object, ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                return Err(ExecutionError::invariant_violation(format!("Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",expected_version,obj.version())));
+            }
+            Ok(obj.clone())
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                return Err(ExecutionError::invariant_violation(format!( "Failed looking up dynamic field {id} in SUI conservation checking")));
+            };
+            Ok(obj.clone())
+        }
+    }
+
+    fn get_input_stable_with_rebate(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<(u64,u64), ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                invariant_violation!(
+                    "Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",
+                    expected_version,
+                    obj.version(),
+                );
+            }
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+                make_invariant_violation!(
+                    "Failed looking up input SUI in SUI conservation checking for input with \
+                         type {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+            })
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                invariant_violation!(
+                    "Failed looking up dynamic field {id} in SUI conservation checking"
+                );
+            };
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+                make_invariant_violation!(
+                    "Failed looking up input SUI in SUI conservation checking for type \
+                         {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+            })
+        }
+    }
+
     /// Return the list of all modified objects, for each object, returns
     /// - Object ID,
     /// - Input: If the object existed prior to this transaction, include their version and storage_rebate,
@@ -933,6 +1021,7 @@ impl<'backing> TemporaryStore<'backing> {
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
         do_expensive_checks: bool,
+        pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;
@@ -942,16 +1031,48 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_rebate = 0;
         // total amount of SUI in storage rebate of output objects
         let mut total_output_rebate = 0;
+
+        let mut total_input_stable_gas = 0;
+        let mut total_output_stable_gas = 0;
+
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
-                if do_expensive_checks {
+                if do_expensive_checks && pay_with_stable_gas{
+                    let obj = self.get_input_sui_obj(&id,version)?;
+                    if obj.is_stable_gas_coin() {
+                        let (stable_coin,rebate) = self.get_input_stable_with_rebate(&id, version)?;
+                        total_input_stable_gas += stable_coin;
+                        total_input_sui += rebate;
+                    } else {
+                        total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
+                    }
+                } else if do_expensive_checks && !pay_with_stable_gas {
                     total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
                 }
             }
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;
-                if do_expensive_checks {
+                if do_expensive_checks && pay_with_stable_gas {
+                    if object.is_stable_gas_coin() {
+                        total_output_stable_gas += object.get_total_stable_coin_with_rebate().map_err(|e| {
+                            make_invariant_violation!(
+                            "Failed looking up output Stable Coin in SUI conservation checking for \
+                             mutated type {:?}: {e:#?}",
+                            object.struct_tag(),
+                        )
+                        })?.0;
+                        total_output_sui += object.storage_rebate;
+                    } else {
+                        total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
+                            make_invariant_violation!(
+                            "Failed looking up output SUI in SUI conservation checking for \
+                             mutated type {:?}: {e:#?}",
+                            object.struct_tag(),
+                        )
+                        })?;
+                    }
+                } else if do_expensive_checks && !pay_with_stable_gas {
                     total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
                         make_invariant_violation!(
                             "Failed looking up output SUI in SUI conservation checking for \
@@ -966,19 +1087,52 @@ impl<'backing> TemporaryStore<'backing> {
             // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
             // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
             // both computation costs and storage rebate inflow are
-            total_output_sui +=
-                gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
                 total_input_sui += epoch_fees;
                 total_output_sui += epoch_rebates;
             }
-            if total_input_sui != total_output_sui {
-                // return Err(ExecutionError::invariant_violation(
-                //     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
-                //             total_input_sui,
-                //             total_output_sui))
-                // );
-                //return  Ok(());
+
+            if pay_with_stable_gas {
+                total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
+                total_output_sui +=  gas_summary.non_refundable_storage_fee;
+
+                let stable_amount=
+                    if total_input_stable_gas>= total_output_stable_gas {
+                        total_input_stable_gas-total_output_stable_gas
+                    }else {
+                        total_output_stable_gas-total_input_stable_gas
+                    };
+                let sui_amount = if total_input_sui >= total_output_sui {
+                    total_input_sui-total_output_sui
+                }else {
+                    total_output_sui-total_input_sui
+                };
+
+                if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
+                                stable_amount,
+                                gas_summary.storage_gas_usage_abs_improved()))
+                    );
+                }
+
+                if sui_amount != gas_summary.storage_gas_usage_abs() {
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
+                                sui_amount,
+                                gas_summary.storage_gas_usage_abs()))
+                    );
+                }
+            } else {
+                total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+                if total_input_sui != total_output_sui {
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                                total_input_sui,
+                                total_output_sui))
+                    );
+                }
             }
         }
 
