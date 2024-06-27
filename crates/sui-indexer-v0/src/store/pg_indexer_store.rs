@@ -10,12 +10,12 @@ use async_trait::async_trait;
 use cached::proc_macro::once;
 use diesel::dsl::{count, max};
 use diesel::pg::PgConnection;
+use diesel::result::Error;
 use diesel::sql_types::{BigInt, VarChar};
 use diesel::upsert::excluded;
 use diesel::{ExpressionMethods, TextExpressionMethods};
 use diesel::{OptionalExtension, QueryableByName};
 use diesel::{QueryDsl, RunQueryDsl};
-use diesel::result::Error;
 use fastcrypto::hash::Digest;
 use fastcrypto::traits::ToFromBytes;
 use itertools::Itertools;
@@ -85,8 +85,9 @@ use crate::schema::{
     active_addresses, address_stakes, address_stats, addresses, changed_objects,
     checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes,
     epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities,
-    mining_nft_staking, mining_nfts, mining_nfts_view, move_calls, network_segment_metrics, objects, objects_history,
-    packages, price_history, recipients, system_states, transactions, validators,
+    mining_nft_staking, mining_nfts, mining_nfts_view, move_calls, network_segment_metrics,
+    objects, objects_history, packages, price_history, recipients, system_states, transactions,
+    validators,
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
@@ -1313,7 +1314,11 @@ impl PgIndexerStore {
         })
     }
 
-    fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
+    fn persist_mining_nft(
+        &self,
+        operation: MiningNFTOperation,
+        sequence_number: i64,
+    ) -> Result<(), IndexerError> {
         match operation {
             MiningNFTOperation::Creation(mining_nft) => {
                 transactional_blocking!(&self.blocking_cp, |conn| {
@@ -1322,7 +1327,8 @@ impl PgIndexerStore {
                         let before: Result<MiningNFT, Error> = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
                             .filter(mining_nfts::mining_started_at.eq(0))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn);
                         match before {
@@ -1343,18 +1349,20 @@ impl PgIndexerStore {
                     if mining_nft.power == 0 {
                         let prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         mining_nft.power = prev.power;
                         mining_nft.token_id = prev.token_id;
                     }
                     let before: Result<MiningNFT, Error> = mining_nfts::table
-                            .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .filter(mining_nfts::dsl::owner.eq(&mining_nft.owner))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
-                            .limit(1)
-                            .first(conn);
+                        .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
+                        .filter(mining_nfts::dsl::owner.eq(&mining_nft.owner))
+                        .order_by(mining_nfts::sequence_number.desc())
+                        .order_by(mining_nfts::id.desc())
+                        .limit(1)
+                        .first(conn);
                     match before {
                         Ok(mut nft) => {
                             nft.id = None;
@@ -1365,11 +1373,9 @@ impl PgIndexerStore {
                                 .on_conflict_do_nothing()
                                 .execute(conn)
                         }
-                        Err(_) => {
-                            diesel::insert_into(mining_nfts::table)
-                                .values(vec![mining_nft.clone()])
-                                .execute(conn)
-                        }
+                        Err(_) => diesel::insert_into(mining_nfts::table)
+                            .values(vec![mining_nft.clone()])
+                            .execute(conn),
                     }
                 })
                 .context("Failed to write mining NFTs to PostgresDB")?;
@@ -1380,7 +1386,8 @@ impl PgIndexerStore {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
@@ -1388,8 +1395,8 @@ impl PgIndexerStore {
                         prev.mining_ticket_id = Some(v.ticket_id.bytes.to_hex_literal());
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .execute(conn)?;
+                            .values(prev)
+                            .execute(conn)?;
                         diesel::insert_into(mining_nft_staking::table)
                             .values(vec![MiningNFTStaking {
                                 id: None,
@@ -1399,32 +1406,39 @@ impl PgIndexerStore {
                                 staked_at: v.timestamp as i64,
                                 unstaked_at: None,
                                 total_mint_bfc: 0,
-                                sequence_number: sequence_number,
+                                sequence_number,
                             }])
                             .execute(conn)
                     })
                     .context("Failed to handle staking event.")?;
                 }
-                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v) | crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
+                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v)
+                | crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
-                        prev.mint_duration = prev.mint_duration + v.timestamp as i64 - prev.mining_started_at;
+                        prev.mint_duration =
+                            prev.mint_duration + v.timestamp as i64 - prev.mining_started_at;
                         prev.mining_started_at = 0;
                         prev.mining_ticket_id = None;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)?;
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)?;
                         let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
-                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
-                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .filter(
+                                mining_nft_staking::dsl::ticket_id
+                                    .eq(v.ticket_id.bytes.to_hex_literal()),
+                            )
+                            .order_by(mining_nft_staking::sequence_number.desc())
+                            .order_by(mining_nft_staking::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev_staking.id = None;
@@ -1441,19 +1455,24 @@ impl PgIndexerStore {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
                         prev.total_mint_bfc = prev.total_mint_bfc + v.reward as i64;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)?;
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)?;
                         let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
-                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
-                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .filter(
+                                mining_nft_staking::dsl::ticket_id
+                                    .eq(v.ticket_id.bytes.to_hex_literal()),
+                            )
+                            .order_by(mining_nft_staking::sequence_number.desc())
+                            .order_by(mining_nft_staking::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev_staking.id = None;
@@ -1495,16 +1514,17 @@ impl PgIndexerStore {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
                             .filter(mining_nfts::dsl::transfered_at.eq(0))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
                         prev.miner_redeem = true;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)
                     })
                     .context("Failed to handle burn NFT event.")?;
                 }
@@ -1517,7 +1537,8 @@ impl PgIndexerStore {
         transactional_blocking!(&self.blocking_cp, |conn| {
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nfts_view;").execute(conn)?;
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nft_staking_view;").execute(conn)
-        }).context("Failed to refresh_mining_nft.")?;
+        })
+        .context("Failed to refresh_mining_nft.")?;
         Ok(())
     }
 
@@ -1536,7 +1557,9 @@ impl PgIndexerStore {
             if page > 1 {
                 query = query.offset(((page - 1) * limit) as i64);
             }
-            query = query.order_by(mining_nfts_view::id.desc()).limit(limit as i64);
+            query = query
+                .order_by(mining_nfts_view::id.desc())
+                .limit(limit as i64);
             let records: Vec<MiningNFT> = query.load(conn)?;
             Ok::<(usize, Vec<MiningNFT>), IndexerError>((count, records))
         })
@@ -1559,9 +1582,9 @@ impl PgIndexerStore {
         address: SuiAddress,
     ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError> {
         let mining_nfts: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
-            mining_nfts::dsl::mining_nfts
+            mining_nfts_view::dsl::mining_nfts_view
                 .filter(
-                    mining_nfts::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()),
+                    mining_nfts_view::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()),
                 )
                 .load(conn)
         })
@@ -1606,8 +1629,8 @@ impl PgIndexerStore {
         dt_timestamp_ms: i64,
     ) -> Result<Vec<MiningNFT>, IndexerError> {
         let pendings: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
-            mining_nfts::dsl::mining_nfts
-                .filter(mining_nfts::dsl::yesterday_dt_ms.ne(dt_timestamp_ms))
+            mining_nfts_view::dsl::mining_nfts_view
+                .filter(mining_nfts_view::dsl::yesterday_dt_ms.ne(dt_timestamp_ms))
                 .load(conn)
         })
         .context("Failed to load pending NFTs")?;
@@ -2285,6 +2308,7 @@ impl PgIndexerStore {
             total_stake: stake.total_stake as u64,
             accumulated_reward: stake.accumulated_reward as u64,
             staking_coins: stake_coins.into_iter().map(|x| x.into()).collect(),
+            total_addresses: get_staking_summary_cached(&self.blocking_cp)?.total_addresses as u64,
         })
     }
 
@@ -3261,7 +3285,11 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
+    async fn persist_mining_nft(
+        &self,
+        operation: MiningNFTOperation,
+        sequence_number: i64,
+    ) -> Result<(), IndexerError> {
         self.spawn_blocking(move |this| this.persist_mining_nft(operation, sequence_number))
             .await
     }
@@ -3893,6 +3921,18 @@ fn get_mining_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, 
         "SELECT
            COUNT(DISTINCT owner)::BIGINT AS total_addresses
         FROM mining_nfts WHERE mining_ticket_id is not null;"
+    )
+    .get_result::<MiningNFTSummary>(conn))?;
+    Ok(summary)
+}
+
+// Run this function only once every `time` seconds
+#[once(name = "STAKING_ADDRESS", time = 60, result = true)]
+fn get_staking_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, IndexerError> {
+    let summary = read_only_blocking!(cp, |conn| diesel::sql_query(
+        "SELECT
+           COUNT(DISTINCT staker_address)::BIGINT AS total_addresses
+        FROM address_stakes WHERE unstaking_epoch is null;"
     )
     .get_result::<MiningNFTSummary>(conn))?;
     Ok(summary)

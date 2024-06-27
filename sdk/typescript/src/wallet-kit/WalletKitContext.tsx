@@ -9,7 +9,6 @@ import type {
 	WalletKitCoreState,
 } from '../wallet-kit-core/index.js';
 import { createWalletKitCore } from '../wallet-kit-core/index.js';
-import { registerUnsafeBurnerWallet } from './UnsafeBurnerWallet.js';
 
 export const WalletKitContext = createContext<WalletKitCore | null>(null);
 
@@ -44,8 +43,6 @@ export function WalletKitProvider({
 
 	useEffect(() => {
 		if (!enableUnsafeBurner) return;
-
-		return registerUnsafeBurnerWallet();
 	}, [enableUnsafeBurner]);
 
 	// Automatically trigger the autoconnect logic when we mount, and whenever wallets change:
@@ -76,6 +73,7 @@ type UseWalletKit = WalletKitCoreState &
 		| 'signPersonalMessage'
 		| 'signTransactionBlock'
 		| 'signAndExecuteTransactionBlock'
+		| 'switchChain'
 	>;
 
 export function useWalletKit(): UseWalletKit {
@@ -96,6 +94,7 @@ export function useWalletKit(): UseWalletKit {
 			signTransactionBlock: walletKit.signTransactionBlock,
 			signAndExecuteTransactionBlock: walletKit.signAndExecuteTransactionBlock,
 			selectAccount: walletKit.selectAccount,
+			switchChain: walletKit.switchChain,
 			...state,
 		}),
 		[walletKit, state],
