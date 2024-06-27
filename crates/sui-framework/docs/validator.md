@@ -78,6 +78,7 @@
 -  [Function `pool_stable_token_exchange_rate_at_epoch`](#0x3_validator_pool_stable_token_exchange_rate_at_epoch)
 -  [Function `staking_pool_id`](#0x3_validator_staking_pool_id)
 -  [Function `stable_pool_id`](#0x3_validator_stable_pool_id)
+-  [Function `stable_pool`](#0x3_validator_stable_pool)
 -  [Function `all_stable_pool_id`](#0x3_validator_all_stable_pool_id)
 -  [Function `is_duplicate`](#0x3_validator_is_duplicate)
 -  [Function `is_equal_some_and_value`](#0x3_validator_is_equal_some_and_value)
@@ -105,6 +106,7 @@
 -  [Function `validate_metadata`](#0x3_validator_validate_metadata)
 -  [Function `validate_metadata_bcs`](#0x3_validator_validate_metadata_bcs)
 -  [Function `get_staking_pool_ref`](#0x3_validator_get_staking_pool_ref)
+-  [Function `get_stable_pool_ref`](#0x3_validator_get_stable_pool_ref)
 -  [Function `new_from_metadata`](#0x3_validator_new_from_metadata)
 -  [Function `rate_vec_map`](#0x3_validator_rate_vec_map)
 
@@ -2888,6 +2890,30 @@ Set the voting power of this validator, called only from validator_set.
 
 </details>
 
+<a name="0x3_validator_stable_pool"></a>
+
+## Function `stable_pool`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="stable_pool.md#0x3_stable_pool">stable_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): &<a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="stable_pool.md#0x3_stable_pool">stable_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): &StablePool&lt;STABLE&gt; {
+    <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_all_stable_pool_id"></a>
 
 ## Function `all_stable_pool_id`
@@ -3739,6 +3765,30 @@ Aborts if validator metadata is valid
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_staking_pool_ref">get_staking_pool_ref</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>) : &StakingPool {
     &self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_get_stable_pool_ref"></a>
+
+## Function `get_stable_pool_ref`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_ref">get_stable_pool_ref</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): &<a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_ref">get_stable_pool_ref</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>) : &StablePool&lt;STABLE&gt; {
+    <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools)
 }
 </code></pre>
 

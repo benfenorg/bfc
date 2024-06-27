@@ -27,7 +27,7 @@ module sui_system::sui_system_state_inner {
     use sui::bag::Bag;
     use sui::bag;
     use sui_system::stable_pool;
-    use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
     friend sui_system::genesis;
     friend sui_system::sui_system;
@@ -1102,6 +1102,14 @@ module sui_system::sui_system_state_inner {
     ): &Table<u64, PoolTokenExchangeRate>  {
         let validators = &mut self.validators;
         validator_set::pool_exchange_rates(validators, pool_id)
+    }
+
+    public(friend) fun pool_exchange_stable_rates<STABLE>(
+        self: &mut SuiSystemStateInnerV2,
+        pool_id: &ID
+    ): &Table<u64, PoolStableTokenExchangeRate>  {
+        let validators = &mut self.validators;
+        validator_set::pool_exchange_stable_rates<STABLE>(validators, pool_id)
     }
 
     public(friend) fun active_validator_addresses(self: &SuiSystemStateInnerV2): vector<address> {

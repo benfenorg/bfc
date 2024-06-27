@@ -79,7 +79,7 @@ module sui_system::sui_system {
     use sui::dynamic_field;
     use sui::vec_map;
     use sui::vec_map::VecMap;
-    use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
 
     #[test_only] use sui::balance;
@@ -596,6 +596,14 @@ module sui_system::sui_system {
     ): &Table<u64, PoolTokenExchangeRate>  {
         let self = load_system_state_mut(wrapper);
         sui_system_state_inner::pool_exchange_rates(self, pool_id)
+    }
+
+    public fun pool_exchange_stable_rates<STABLE>(
+        wrapper: &mut SuiSystemState,
+        pool_id: &ID
+    ): &Table<u64, PoolStableTokenExchangeRate>  {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::pool_exchange_stable_rates<STABLE>(self, pool_id)
     }
 
     /// Getter returning addresses of the currently active validators.

@@ -3,6 +3,7 @@
 
 #[test_only]
 module sui_system::governance_test_utils {
+    use std::address::length;
     use sui::address;
     use sui::balance;
     use sui::object;
@@ -24,7 +25,8 @@ module sui_system::governance_test_utils {
     use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
     use bfc_system::busd::BUSD;
     use sui::transfer;
-    use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool;
+    use sui_system::stable_pool::{StakedStable, StablePool};
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
     const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
@@ -344,6 +346,21 @@ module sui_system::governance_test_utils {
         };
     }
 
+    public fun assert_validator_self_stake_amounts_stable<STABLE>(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
+        let i = 0;
+        while (i < vector::length(&validator_addrs)) {
+            let validator_addr = *vector::borrow(&validator_addrs, i);
+            let amount = *vector::borrow(&stake_amounts, i);
+
+            test_scenario::next_tx(scenario, validator_addr);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let stake_plus_rewards = stake_plus_current_stable_rewards_for_validator<STABLE>(validator_addr, &mut system_state, scenario);
+            assert_eq(stake_plus_rewards, amount);
+            test_scenario::return_shared(system_state);
+            i = i + 1;
+        };
+    }
+
     public fun assert_validator_total_stake_amounts(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
         let i = 0;
         while (i < vector::length(&validator_addrs)) {
@@ -398,6 +415,12 @@ module sui_system::governance_test_utils {
         amount
     }
 
+    public fun stake_plus_current_stable_rewards_for_validator<STABLE>(addr: address, system_state: &mut SuiSystemState, scenario: &mut Scenario): u64 {
+        let validator_ref = validator_set::get_active_validator_ref(sui_system::validators(system_state), addr);
+        let amount = stake_plus_current_stable_rewards<STABLE>(addr, validator::get_stable_pool_ref<STABLE>(validator_ref), scenario);
+        amount
+    }
+
     public fun stake_plus_current_rewards(addr: address, staking_pool: &StakingPool, scenario: &mut Scenario): u64 {
         let sum = 0;
         test_scenario::next_tx(scenario, addr);
@@ -408,6 +431,23 @@ module sui_system::governance_test_utils {
             let staked_sui_id = vector::pop_back(&mut stake_ids);
             let staked_sui = test_scenario::take_from_sender_by_id<StakedBfc>(scenario, staked_sui_id);
             sum = sum + staking_pool::calculate_rewards(staking_pool, &staked_sui, current_epoch);
+            test_scenario::return_to_sender(scenario, staked_sui);
+        };
+        sum
+    }
+
+    public fun stake_plus_current_stable_rewards<STABLE>(addr: address, staking_pool: &StablePool<STABLE>, scenario: &mut Scenario): u64 {
+        let sum = 0;
+        test_scenario::next_tx(scenario, addr);
+        let stake_ids = test_scenario::ids_for_sender<StakedStable<STABLE>>(scenario);
+        assert!(vector::length(&stake_ids) > 0, 1);
+
+        let current_epoch = tx_context::epoch(test_scenario::ctx(scenario));
+
+        while (!vector::is_empty(&stake_ids)) {
+            let staked_sui_id = vector::pop_back(&mut stake_ids);
+            let staked_sui = test_scenario::take_from_sender_by_id<StakedStable<STABLE>>(scenario, staked_sui_id);
+            sum = sum + stable_pool::calculate_rewards(staking_pool, &staked_sui, current_epoch);
             test_scenario::return_to_sender(scenario, staked_sui);
         };
         sum
