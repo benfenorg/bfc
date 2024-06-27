@@ -488,12 +488,12 @@ async fn assert_traffic_control_spam_blocked(
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
             .request("bfc_executeTransactionBlock", params.clone())
             .await;
+        println!("traffic_control_spam_blocked response={:?}", &response);
         if let Err(err) = response {
             // TODO: fix validator blocking error handling such that the error message
             // is not misleading. The full error message currently is the following:
             //  Transaction execution failed due to issues with transaction inputs, please
             //  review the errors and try again: Too many requests.
-            println!("traffic_control_spam_blocked response={:?}", &response);
             assert!(
                 err.to_string().contains("Too many requests"),
                 "Error not due to spam policy"
