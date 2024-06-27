@@ -162,13 +162,18 @@ async fn test_validator_traffic_control_spam_delegated() -> Result<(), anyhow::E
         ..Default::default()
     };
     // enable remote firewall delegation
+    let drain_path = tempfile::tempdir().unwrap().into_path().join("drain1");
+    if drain_path.exists() {
+        std::fs::remove_file(&drain_path).unwrap();
+    }
+
     let firewall_config = RemoteFirewallConfig {
         remote_fw_url: String::from("http://127.0.0.1:65002"),
         delegate_spam_blocking: true,
         delegate_error_blocking: false,
         destination_port: 8080,
-        drain_path: tempfile::tempdir().unwrap().into_path().join("drain"),
-        drain_timeout_secs: 10,
+        drain_path,
+        drain_timeout_secs: 150,
     };
     let network_config = ConfigBuilder::new_with_temp_dir()
         .with_policy_config(Some(policy_config))
@@ -488,6 +493,7 @@ async fn assert_traffic_control_spam_blocked(
             // is not misleading. The full error message currently is the following:
             //  Transaction execution failed due to issues with transaction inputs, please
             //  review the errors and try again: Too many requests.
+            println!("traffic_control_spam_blocked response={:?}", &response);
             assert!(
                 err.to_string().contains("Too many requests"),
                 "Error not due to spam policy"
