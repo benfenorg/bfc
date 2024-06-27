@@ -5,7 +5,7 @@ A: object(0,0)
 
 task 1 'publish'. lines 8-69:
 Error: warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:10:23
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:10:23
    │
 10 │     use std::option::{Self, Option};
    │                       ^^^^ Unnecessary alias 'option' for module 'std::option'. This alias is provided by default
@@ -13,7 +13,7 @@ Error: warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:10:29
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:10:29
    │
 10 │     use std::option::{Self, Option};
    │                             ^^^^^^ Unnecessary alias 'Option' for module member 'std::option::Option'. This alias is provided by default
@@ -21,7 +21,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:11:23
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:11:23
    │
 11 │     use sui::object::{Self, UID};
    │                       ^^^^ Unnecessary alias 'object' for module 'sui::object'. This alias is provided by default
@@ -29,7 +29,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:11:29
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:11:29
    │
 11 │     use sui::object::{Self, UID};
    │                             ^^^ Unnecessary alias 'UID' for module member 'sui::object::UID'. This alias is provided by default
@@ -37,7 +37,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 warning[W02021]: duplicate alias
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:12:26
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:12:26
    │
 12 │     use sui::tx_context::TxContext;
    │                          ^^^^^^^^^ Unnecessary alias 'TxContext' for module member 'sui::tx_context::TxContext'. This alias is provided by default
@@ -45,7 +45,7 @@ warning[W02021]: duplicate alias
    = This warning can be suppressed with '#[allow(duplicate_alias)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
 
 error[E01003]: invalid modifier
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:14:5
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:14:5
    │
 14 │     struct Obj has key, store {
    │     ^^^^^^ Invalid struct declaration. Internal struct declarations are not yet supported
@@ -53,7 +53,7 @@ error[E01003]: invalid modifier
    = Visibility annotations are required on struct declarations from the Move 2024 edition onwards.
 
 error[E04024]: invalid usage of immutable variable
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:25:21
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:25:21
    │
 23 │         let parent = Obj { id: object::new(ctx), value: 0 };
    │             ------ To use the variable mutably, it must be declared 'mut', e.g. 'mut parent'
@@ -62,7 +62,7 @@ error[E04024]: invalid usage of immutable variable
    │                     ^^^^^^^^^^^^^^ Invalid mutable borrow of immutable variable 'parent'
 
 error[E04024]: invalid usage of immutable variable
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.5RbG4sFb/.tmpI119Il:26:21
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.Pplufi1f/.tmpI119Il:26:21
    │
 22 │         let grand = Obj { id: object::new(ctx), value: 0 };
    │             ----- To use the variable mutably, it must be declared 'mut', e.g. 'mut grand'
