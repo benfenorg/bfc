@@ -383,7 +383,8 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     // });
     ProtocolConfig::poison_get_for_min_version();
 
-    let start_version = 23u64;
+    let start_version = 44u64;
+
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(20000)
         .with_protocol_version(ProtocolVersion::new(start_version))
@@ -932,7 +933,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 #[sim_test]
 async fn sim_test_bfc_dao_revoke_vote() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(90000)
+        .with_epoch_duration_ms(150000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1272,7 +1273,7 @@ async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error> {
 #[sim_test]
 async fn sim_test_bfc_dao_change_vote() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(90000)
+        .with_epoch_duration_ms(150000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
