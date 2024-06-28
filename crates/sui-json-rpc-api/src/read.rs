@@ -157,7 +157,7 @@ pub trait ReadApi {
 
     #[method(name = "getBfcZkloginSalt")]
     async fn get_bfc_zklogin_salt(
-        &self,
+        &self, seed: String, iss: String, sub: String
     ) -> RpcResult<String>;
 
 

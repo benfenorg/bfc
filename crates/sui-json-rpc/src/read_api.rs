@@ -6,6 +6,8 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
+use fastcrypto::hmac::{hkdf_sha3_256, HkdfIkm};
+use fastcrypto::traits::ToFromBytes;
 use futures::future::join_all;
 use indexmap::map::IndexMap;
 use itertools::Itertools;
@@ -1058,9 +1060,17 @@ impl ReadApiServer for ReadApi {
     }
 
     #[instrument(skip(self))]
-    async fn get_bfc_zklogin_salt(&self) -> RpcResult<String>{
-        //todo: implement this
-        Ok("this_is_a_test_salt".to_string())
+    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
+        let seed = hex::decode(seed).unwrap();
+        let iss = hex::decode(iss).unwrap();
+        let sub = hex::decode(sub).unwrap();
+        let okm = hkdf_sha3_256(
+            &HkdfIkm::from_bytes(seed.as_ref()).unwrap(),
+            iss.as_ref(),
+            sub.as_ref(),
+            42,
+        ).unwrap();
+        Ok(String::from_utf8(okm).unwrap())
     }
 
     #[instrument(skip(self))]

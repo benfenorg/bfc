@@ -381,6 +381,10 @@ where
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         self.fullnode.get_inner_dao_info().await
     }
+
+    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
+        self.fullnode.get_bfc_zklogin_salt(seed, iss, sub).await
+    }
 }
 
 impl<S> SuiRpcModule for ReadApi<S>

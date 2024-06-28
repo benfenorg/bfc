@@ -300,6 +300,9 @@ fn test_zklogin_salt_function(){
         let salt = hex::decode(t.salt).unwrap();
         let info = hex::decode(t.info).unwrap();
         let expected = hex::decode(t.expected_output).unwrap();
+        // 密钥派生函数
+        // Extract（提取阶段）: 使用HMAC和给定的盐（salt）以及输入密钥材料（IKM - Input Key Material）来提取一个伪随机密钥（PRK）。
+        // Expand（扩展阶段）: 使用提取出的PRK，通过HMAC和一些额外的信息（如应用特定的信息，通常称为info），来生成所需的密钥材料。
         let okm = hkdf_sha3_256(
             &HkdfIkm::from_bytes(ikm.as_ref()).unwrap(),
             salt.as_ref(),
