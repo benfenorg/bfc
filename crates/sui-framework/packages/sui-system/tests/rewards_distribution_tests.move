@@ -278,7 +278,6 @@ module sui_system::rewards_distribution_tests {
         // Validator 2 amounts for 390 - 123.709 = 266.291 SUI
         assert_validator_non_self_stake_amounts(validator_addrs(), vector[142 * MIST_PER_SUI, 123709090909, 0, 0], scenario);
         assert_validator_self_stake_amounts(validator_addrs(), vector[148 * MIST_PER_SUI, 266290909091, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
-
         test_scenario::end(scenario_val);
     }
 
