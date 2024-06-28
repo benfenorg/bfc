@@ -1,22 +1,16 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::net::SocketAddr;
 use async_trait::async_trait;
 use fastcrypto::encoding::Base64;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
 
-use sui_json_rpc::api::{WriteApiClient, WriteApiServer};
+use sui_json_rpc_api::{WriteApiClient, WriteApiServer};
 use sui_json_rpc::SuiRpcModule;
-use sui_json_rpc_types::{
-    DevInspectResults,
-    DryRunTransactionBlockResponse,
-    // TODO(gegaowp): temp. disable fast-path
-    // SuiTransactionBlockEffectsAPI,
-    SuiTransactionBlockResponse,
-    SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{DevInspectArgs, DevInspectResults, DryRunTransactionBlockResponse, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
 use sui_open_rpc::Module;
 use sui_types::base_types::SuiAddress;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
@@ -98,15 +92,30 @@ where
         .into())
     }
 
+    async fn monitored_execute_transaction_block(
+        &self,
+        tx_bytes: Base64,
+        signatures: Vec<Base64>,
+        options: Option<SuiTransactionBlockResponseOptions>,
+        request_type: Option<ExecuteTransactionRequestType>,
+        _client_addr: Option<SocketAddr>,
+    ) -> RpcResult<SuiTransactionBlockResponse> {
+        // TODO(william) do we nee to do anything in terms of client IP tracking
+        // for indexer case?
+        self.execute_transaction_block(tx_bytes, signatures, options, request_type)
+            .await
+    }
+
     async fn dev_inspect_transaction_block(
         &self,
         sender_address: SuiAddress,
         tx_bytes: Base64,
         gas_price: Option<BigInt<u64>>,
         epoch: Option<BigInt<u64>>,
+        additional_args: Option<DevInspectArgs>,
     ) -> RpcResult<DevInspectResults> {
         self.fullnode
-            .dev_inspect_transaction_block(sender_address, tx_bytes, gas_price, epoch)
+            .dev_inspect_transaction_block(sender_address, tx_bytes, gas_price, epoch, additional_args,)
             .await
     }
 
@@ -127,6 +136,6 @@ where
     }
 
     fn rpc_doc_module() -> Module {
-        sui_json_rpc::api::WriteApiOpenRpc::module_doc()
+        sui_json_rpc_api::WriteApiOpenRpc::module_doc()
     }
 }

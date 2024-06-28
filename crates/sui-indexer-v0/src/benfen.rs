@@ -14,7 +14,7 @@ use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::ops::Div;
-use sui_json_rpc::api::{IndexerApiClient, ReadApiClient, WriteApiClient};
+use sui_json_rpc_api::{IndexerApiClient, ReadApiClient, WriteApiClient};
 use sui_json_rpc_types::DevInspectResults;
 use sui_json_rpc_types::NFTStakingOverview;
 use sui_json_rpc_types::SuiMiningNFTFutureReward;
@@ -123,7 +123,7 @@ async fn dev_inspect_tx<T: DeserializeOwned>(
 ) -> Result<T, IndexerError> {
     let tx = Base64::from_bytes(&bcs::to_bytes(tx)?);
     let results: DevInspectResults = http_client
-        .dev_inspect_transaction_block(AccountAddress::ZERO.into(), tx, None, None)
+        .dev_inspect_transaction_block(AccountAddress::ZERO.into(), tx, None, None, None)
         .await
         .map_err(|err| {
             IndexerError::FullNodeReadingError(

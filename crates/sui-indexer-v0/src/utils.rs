@@ -12,7 +12,7 @@ use sui_types::digests::ObjectDigest;
 use sui_types::effects::ObjectRemoveKind;
 use tracing::info;
 
-use sui_json_rpc::api::ReadApiClient;
+use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc::{get_balance_changes, ObjectProvider};
 use sui_json_rpc_types::{SuiGasCostSummary, SuiTransactionBlockResponseOptions};
 use sui_json_rpc_types::{

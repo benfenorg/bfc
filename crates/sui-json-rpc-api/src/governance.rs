@@ -9,6 +9,7 @@ use sui_open_rpc_macros::open_rpc;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::sui_serde::BigInt;
 use sui_types::sui_system_state::sui_system_state_summary::SuiSystemStateSummary;
+use sui_types::proposal::Proposal;
 
 #[open_rpc(namespace = "bfcx", tag = "Governance Read API")]
 #[rpc(server, client, namespace = "bfcx")]
@@ -48,8 +49,6 @@ pub trait GovernanceReadApi {
     #[method(name = "getValidatorsApy")]
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys>;
 
-    //todo: fix indexer to reopen these apis
-    // #[method(name = "getProposal")]
-    // async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
-
+    #[method(name = "getProposal")]
+    async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal>;
 }

@@ -6,7 +6,7 @@ use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
 
-use sui_json_rpc::api::{GovernanceReadApiClient, GovernanceReadApiServer};
+use sui_json_rpc_api::{GovernanceReadApiClient, GovernanceReadApiServer};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::SuiCommittee;
 use sui_json_rpc_types::{DelegatedStake, ValidatorApys};
@@ -70,6 +70,6 @@ impl SuiRpcModule for GovernanceReadApi {
     }
 
     fn rpc_doc_module() -> Module {
-        sui_json_rpc::api::GovernanceReadApiOpenRpc::module_doc()
+        sui_json_rpc_api::GovernanceReadApiOpenRpc::module_doc()
     }
 }

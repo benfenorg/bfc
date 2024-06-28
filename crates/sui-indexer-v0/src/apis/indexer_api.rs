@@ -13,7 +13,7 @@ use jsonrpsee::{RpcModule, SubscriptionSink};
 
 use move_core_types::identifier::Identifier;
 use sui_core::subscription_handler::SubscriptionHandler;
-use sui_json_rpc::api::{cap_page_limit, IndexerApiClient, IndexerApiServer};
+use sui_json_rpc_api::{cap_page_limit, IndexerApiClient, IndexerApiServer};
 use sui_json_rpc::indexer_api::spawn_subscription;
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
@@ -501,6 +501,6 @@ where
     }
 
     fn rpc_doc_module() -> Module {
-        sui_json_rpc::api::IndexerApiOpenRpc::module_doc()
+        sui_json_rpc_api::IndexerApiOpenRpc::module_doc()
     }
 }

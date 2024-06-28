@@ -16,10 +16,10 @@ use sui_json_rpc_types::{
 };
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
-use sui_types::error::SuiError;
 use sui_types::event::EventID;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::ObjectRead;
+use sui_types::storage::error::Error;
 use sui_types::storage::ObjectStore;
 use sui_types::TypeTag;
 
@@ -423,7 +423,7 @@ impl ObjectStore for CheckpointData {
     fn get_object(
         &self,
         object_id: &ObjectID,
-    ) -> Result<Option<sui_types::object::Object>, SuiError> {
+    ) -> Result<Option<sui_types::object::Object>, Error> {
         Ok(self
             .changed_objects
             .iter()
@@ -439,7 +439,7 @@ impl ObjectStore for CheckpointData {
         &self,
         object_id: &ObjectID,
         version: VersionNumber,
-    ) -> Result<Option<sui_types::object::Object>, SuiError> {
+    ) -> Result<Option<sui_types::object::Object>, Error> {
         Ok(self
             .changed_objects
             .iter()

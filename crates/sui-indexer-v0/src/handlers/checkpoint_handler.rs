@@ -25,7 +25,7 @@ use tracing::{error, info, warn};
 
 use mysten_metrics::spawn_monitored_task;
 use sui_core::subscription_handler::SubscriptionHandler;
-use sui_json_rpc::api::ReadApiClient;
+use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_types::{
     OwnedObjectRef, SuiGetPastObjectRequest, SuiObjectData, SuiObjectDataOptions, SuiRawData,
     SuiTransactionBlockDataAPI, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI,

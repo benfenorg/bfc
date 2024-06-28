@@ -31,7 +31,8 @@ use mysten_metrics::{spawn_monitored_task, RegistryService};
 use processors::processor_orchestrator::ProcessorOrchestrator;
 use store::IndexerStore;
 use sui_core::subscription_handler::SubscriptionHandler;
-use sui_json_rpc::{JsonRpcServerBuilder, ServerHandle, CLIENT_SDK_TYPE_HEADER};
+use sui_json_rpc::{JsonRpcServerBuilder, ServerHandle};
+use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
 use sui_sdk::{SuiClient, SuiClientBuilder};
 
 use crate::apis::MoveUtilsApi;
@@ -446,7 +447,7 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
     config: &IndexerConfig,
     custom_runtime: Option<Handle>,
 ) -> Result<ServerHandle, IndexerError> {
-    let mut builder = JsonRpcServerBuilder::new(env!("CARGO_PKG_VERSION"), prometheus_registry);
+    let mut builder = JsonRpcServerBuilder::new(env!("CARGO_PKG_VERSION"), prometheus_registry, None, None);
     let http_client = get_http_client(config.rpc_client_url.as_str())?;
 
     builder.register_module(ReadApi::new(
@@ -476,7 +477,7 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.rpc_server_port,
     );
     Ok(builder
-        .start(default_socket_addr, custom_runtime, None)
+        .start(default_socket_addr, custom_runtime, None, None)
         .await?)
 }
 

@@ -614,6 +614,7 @@ impl PgIndexerStore {
                 object_changes,
                 balance_changes,
                 errors: vec![],
+                raw_effects: vec![],
             },
             effects,
         ))
@@ -2285,6 +2286,7 @@ impl PgIndexerStore {
             total_stake: stake.total_stake as u64,
             accumulated_reward: stake.accumulated_reward as u64,
             staking_coins: stake_coins.into_iter().map(|x| x.into()).collect(),
+            total_addresses: get_staking_summary_cached(&self.blocking_cp)?.total_addresses as u64,
         })
     }
 
@@ -3893,6 +3895,18 @@ fn get_mining_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, 
         "SELECT
            COUNT(DISTINCT owner)::BIGINT AS total_addresses
         FROM mining_nfts WHERE mining_ticket_id is not null;"
+    )
+    .get_result::<MiningNFTSummary>(conn))?;
+    Ok(summary)
+}
+
+// Run this function only once every `time` seconds
+#[once(name = "STAKING_ADDRESS", time = 60, result = true)]
+fn get_staking_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, IndexerError> {
+    let summary = read_only_blocking!(cp, |conn| diesel::sql_query(
+        "SELECT
+           COUNT(DISTINCT staker_address)::BIGINT AS total_addresses
+        FROM address_stakes WHERE unstaking_epoch is null;"
     )
     .get_result::<MiningNFTSummary>(conn))?;
     Ok(summary)

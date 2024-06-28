@@ -15,9 +15,11 @@ use sui_types::base_types::AuthorityName;
 use sui_types::base_types::SuiAddress;
 use sui_types::base_types::{EpochId, ObjectID};
 use sui_types::committee::Committee;
+use sui_types::digests::TransactionDigest;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
-use sui_types::sui_serde::BigInt;
+use sui_types::sui_serde::{BigInt, SuiTypeTag};
 use sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSummary;
+use sui_types::TypeTag;
 
 use crate::Page;
 
@@ -156,6 +158,92 @@ pub struct NetworkOverview {
 }
 
 #[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Default)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeMetrics {
+    pub apy: f64,
+
+    /// Total staked BFC in last epoch.
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_stake: u64,
+
+    /// Accumulated rewarded BFC since the network started.
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub accumulated_reward: u64,
+
+    /// Staking coins in the last epoch.
+    pub staking_coins: Vec<StakeCoin>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub total_addresses: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeCoin {
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub coin_type: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub balance: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub bfc_value: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct IndexedStake {
+    pub staked_object_id: ObjectID,
+    pub validator: SuiAddress,
+    pub pool_id: ObjectID,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub coin_type: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub stake_activation_epoch: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub principal_amount: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub principal_bfc_value: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub staked_at_timestamp_ms: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub estimated_reward: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub unstaking_epoch: Option<u64>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub unstaking_amount: Option<u64>,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "Option<BigInt<u64>>")]
+    pub reward_amount: Option<u64>,
+}
+
+#[serde_as]
 #[derive(Serialize, Deserialize, Debug, JsonSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveCallMetrics {
@@ -278,7 +366,7 @@ pub struct NFTStakingOverview {
 
     pub nft_future_rewards: Vec<SuiMiningNFTFutureReward>,
     pub nft_future_profit_rates: Vec<SuiMiningNFTProfitRate>,
-    pub btc_past_profit_rates: Vec<SuiMiningNFTProfitRate>,
+    pub overall_profit_rates: Vec<SuiMiningNFTProfitRate>,
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
@@ -369,6 +457,7 @@ pub struct SuiOwnedMiningNFTOverview {
     pub num_of_staking_nfts: usize,
     pub total_nfts: usize,
     pub bfc_usd_price: f64,
+    pub profit_rate: f64,
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
@@ -393,5 +482,39 @@ pub struct SuiOwnedMiningNFTProfit {
 
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
+    pub cost_bfc: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
     pub dt_timestamp_ms: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+pub struct SuiMiningNFTLiquidity {
+    /// The transaction digest
+    pub transaction_digest: TransactionDigest,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub timestamp_ms: u64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub base_coin: TypeTag,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "SuiTypeTag")]
+    pub quote_coin: TypeTag,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub base_amount: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub quote_amount: u64,
+
+    pub price_upper: f64,
+    pub price_lower: f64,
 }
