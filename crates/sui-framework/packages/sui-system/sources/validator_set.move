@@ -112,6 +112,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
         stable_pool_token_exchange_rate: vector<PoolStableTokenExchangeRate>,
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -401,10 +402,11 @@ module sui_system::validator_set {
         validator.request_withdraw_stake(staked_sui, ctx)
     }
 
+    #[allow(unused_mut_parameter)]
     public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : (Balance<STABLE>, Balance<BFC>) {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let stable_rate_map = self.last_epoch_stable_rate;
@@ -520,7 +522,7 @@ module sui_system::validator_set {
 
         // Emit events after we have processed all the rewards distribution and pending stakes.
         emit_validator_epoch_events(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
-            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators);
+            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
         // Note that all their staged next epoch metadata will be effectuated below.
         process_pending_validators(self, new_epoch);
@@ -1343,6 +1345,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward_amounts: &vector<u64>,
         report_records: &VecMap<address, VecSet<address>>,
         slashed_validators: &vector<address>,
+        stable_rate: VecMap<ascii::String, u64>,
     ) {
         let num_validators = vs.length();
         let mut i = 0;
@@ -1359,22 +1362,23 @@ module sui_system::validator_set {
                 if (slashed_validators.contains(&validator_address)) 0
                 else 1;
 
-            event::emit(
-                ValidatorEpochInfoEventV2 {
-                    epoch: new_epoch,
-                    validator_address,
-                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
-                    reference_gas_survey_quote: v.gas_price(),
-                    stake: v.total_stake_amount(),
-                    voting_power: v.voting_power(),
-                    commission_rate: v.commission_rate(),
-                    pool_staking_reward: pool_staking_reward_amounts[i],
-                    storage_fund_staking_reward: storage_fund_staking_reward_amounts[i],
-                    pool_token_exchange_rate: v.pool_token_exchange_rate_at_epoch(new_epoch),
-                    tallying_rule_reporters,
-                    tallying_rule_global_score,
+        event::emit(
+            ValidatorEpochInfoEventV2 {
+                epoch: new_epoch,
+                validator_address,
+                reference_gas_survey_quote: validator::gas_price(v),
+                stake: validator::total_stake_with_all_stable(v, stable_rate),
+                voting_power: validator::voting_power(v),
+                commission_rate: validator::commission_rate(v),
+                pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
+                storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
+                pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
+                stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
+                last_epoch_stable_rate: stable_rate,
+                tallying_rule_reporters,
+                tallying_rule_global_score,
                 }
-            );
+        );
             i = i + 1;
         }
     }

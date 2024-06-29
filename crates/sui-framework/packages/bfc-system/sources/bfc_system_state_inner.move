@@ -331,9 +331,14 @@ module bfc_system::bfc_system_state_inner {
         ))
     }
 
-    /// X-treasury
     public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
         treasury::next_epoch_bfc_required(&self.treasury)
+    }
+
+    #[allow(unused_variable)]
+    public(package) fun bfc_required(self: &BfcSystemStateInner): u64 {
+        1
+        //todo:treasury::bfc_required(&self.treasury)
     }
 
     public fun treasury_balance(self: &BfcSystemStateInner): u64 {

@@ -547,7 +547,7 @@ module sui_system::sui_system_state_inner {
         }
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
-            self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &TxContext,
+            self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,
         ) : (Balance<STABLE>, Balance<BFC>) {
             assert!(
                 stable_pool::stake_activation_epoch(&staked_sui) <= tx_context::epoch(ctx),

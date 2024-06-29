@@ -376,6 +376,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_stablecoin_exchange_rate<StableCoinType>(system_state)
     }
 
+    public fun bfc_required(wrapper: &BfcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
+        bfc_system_state_inner::bfc_required(system_state)
+    }
+
     public fun next_epoch_bfc_required(wrapper: &BfcSystemState): u64 {
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::next_epoch_bfc_required(system_state)

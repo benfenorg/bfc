@@ -81,6 +81,7 @@ impl Compatibility {
         if old_module.address != new_module.address || old_module.name != new_module.name {
             struct_and_function_linking = false;
         }
+        println!("current module name is {:?}", old_module.name);
 
         // old module's structs are a subset of the new module's structs
         for (name, old_struct) in &old_module.structs {
@@ -88,6 +89,7 @@ impl Compatibility {
                 // Struct not present in new . Existing modules that depend on this struct will fail to link with the new version of the module.
                 // Also, struct layout cannot be guaranteed transitively, because after
                 // removing the struct, it could be re-added later with a different layout.
+                println!("checking=======old_struct: {:?}", old_struct);
                 struct_and_function_linking = false;
                 struct_layout = false;
                 break;
@@ -102,6 +104,7 @@ impl Compatibility {
                 &old_struct.type_parameters,
                 &new_struct.type_parameters,
             ) {
+                println!("checking========== struct abilities and parameters: {:?}", old_struct);
                 struct_and_function_linking = false;
             }
             if new_struct.fields != old_struct.fields {
@@ -130,10 +133,13 @@ impl Compatibility {
         // friend list. But for simplicity, we decided to go to the more restrictive form now and
         // we may revisit this in the future.
         for (name, old_func) in &old_module.functions {
+            println!("current checking name is {:?}", name);
             let Some(new_func) = new_module.functions.get(name) else {
                 if old_func.visibility == Visibility::Friend {
                     friend_linking = false;
                 } else if old_func.visibility != Visibility::Private {
+                    println!("checking========== struct private {:?}", old_func);
+
                     struct_and_function_linking = false;
                 } else if old_func.is_entry && self.check_private_entry_linking {
                     // This must be a private entry function. So set the link breakage if we're
@@ -146,6 +152,8 @@ impl Compatibility {
             // Check visibility compatibility
             match (old_func.visibility, new_func.visibility) {
                 (Visibility::Public, Visibility::Private | Visibility::Friend) => {
+                    println!("checking========== struct visibility {:?}", old_func);
+
                     struct_and_function_linking = false
                 }
                 (Visibility::Friend, Visibility::Private) => friend_linking = false,
@@ -171,6 +179,10 @@ impl Compatibility {
                     &new_func.type_parameters,
                 )
             {
+
+                println!("checking {:?}========== struct Check signature compatibility {:?}",name, old_func.parameters);
+
+
                 match old_func.visibility {
                     Visibility::Friend => friend_linking = false,
                     Visibility::Public => struct_and_function_linking = false,
@@ -196,22 +208,22 @@ impl Compatibility {
 
         if self.check_struct_and_pub_function_linking && !struct_and_function_linking {
             return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE,
+                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r1,
             ));
         }
         if self.check_struct_layout && !struct_layout {
             return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE,
+                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r2,
             ));
         }
         if self.check_friend_linking && !friend_linking {
             return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE,
+                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r3,
             ));
         }
         if self.check_private_entry_linking && !entry_linking {
             return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE,
+                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r4,
             ));
         }
 

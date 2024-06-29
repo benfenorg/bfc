@@ -2031,7 +2031,7 @@ Revoke some voting powers from vote on <code>proposal_id</code> of <code>propose
 Retrieve back my voted token voted for a proposal.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_unvote_votes">unvote_votes</a>(proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, vote: <a href="bfc_dao.md#0xc8_bfc_dao_Vote">bfc_dao::Vote</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_unvote_votes">unvote_votes</a>(proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, vote: <a href="bfc_dao.md#0xc8_bfc_dao_Vote">bfc_dao::Vote</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2044,7 +2044,7 @@ Retrieve back my voted token voted for a proposal.
     proposal: & <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
     vote: <a href="bfc_dao.md#0xc8_bfc_dao_Vote">Vote</a>,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
-    ctx: &TxContext,
+    ctx: &<b>mut</b> TxContext,
 ) {
     // only check state when proposal exists.
     // because proposal can be destroyed after it ends in <a href="bfc_dao.md#0xc8_bfc_dao_DEFEATED">DEFEATED</a> or <a href="bfc_dao.md#0xc8_bfc_dao_EXTRACTED">EXTRACTED</a> state.
@@ -3018,7 +3018,7 @@ set min action delay
 remove terminated proposal from proposer
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_destroy_terminated_proposal">destroy_terminated_proposal</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, proposal: &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_destroy_terminated_proposal">destroy_terminated_proposal</a>(dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">bfc_dao::Dao</a>, _: &<a href="bfc_dao_manager.md#0xc8_bfc_dao_manager_BFCDaoManageKey">bfc_dao_manager::BFCDaoManageKey</a>, proposal: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">bfc_dao::Proposal</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>)
 </code></pre>
 
 
@@ -3030,7 +3030,7 @@ remove terminated proposal from proposer
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_dao.md#0xc8_bfc_dao_destroy_terminated_proposal">destroy_terminated_proposal</a>(
     dao: &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Dao">Dao</a>,
     _: &BFCDaoManageKey,
-    proposal:  &<a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
+    proposal:  &<b>mut</b> <a href="bfc_dao.md#0xc8_bfc_dao_Proposal">Proposal</a>,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
 )  {
 

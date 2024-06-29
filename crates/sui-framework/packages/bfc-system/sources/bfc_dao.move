@@ -723,7 +723,7 @@ module bfc_system::bfc_dao {
         proposal: & Proposal,
         vote: Vote,
         clock: & Clock,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         // only check state when proposal exists.
         // because proposal can be destroyed after it ends in DEFEATED or EXTRACTED state.
@@ -1182,7 +1182,7 @@ module bfc_system::bfc_dao {
     public(package) fun destroy_terminated_proposal(
         dao: &mut Dao,
         _: &BFCDaoManageKey,
-        proposal:  &Proposal,
+        proposal:  &mut Proposal,
         clock: & Clock,
     )  {
 

@@ -4819,6 +4819,9 @@ get_stablecoin_exchange_rate
 next_epoch_bfc_required
 	public fun
 	0xc8::bfc_system_state_inner
+bfc_required
+	public(package) fun
+	0xc8::bfc_system_state_inner
 treasury_balance
 	public fun
 	0xc8::bfc_system_state_inner
@@ -5012,6 +5015,9 @@ get_bfc_exchange_rate
 	public fun
 	0xc8::bfc_system
 get_stablecoin_exchange_rate
+	public fun
+	0xc8::bfc_system
+bfc_required
 	public fun
 	0xc8::bfc_system
 next_epoch_bfc_required
