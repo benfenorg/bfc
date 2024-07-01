@@ -23,7 +23,7 @@ use tracing::info;
 
 pub use balance_changes::*;
 pub use object_changes::*;
-use sui_json_rpc_api::{
+pub use sui_json_rpc_api::{
     CLIENT_SDK_TYPE_HEADER, CLIENT_SDK_VERSION_HEADER, CLIENT_TARGET_API_VERSION_HEADER,
 };
 use sui_open_rpc::{Module, Project};

@@ -6,22 +6,22 @@ A: object(0,0)
 task 1 'publish'. lines 13-62:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 958360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 479180,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 64-64:
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'run'. lines 66-66:
 created: object(3,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'run'. lines 68-68:
 created: object(4,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 5 'view-object'. lines 70-70:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -85,17 +85,17 @@ Debug of error: SharedObjectOperationNotAllowed at command None
 task 13 'run'. lines 103-103:
 created: object(13,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 14 'run'. lines 105-105:
 created: object(14,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 15 'run'. lines 107-107:
 created: object(15,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 16 'view-object'. lines 109-109:
 Owner: Shared

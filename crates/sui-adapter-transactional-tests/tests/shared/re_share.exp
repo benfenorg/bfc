@@ -3,12 +3,12 @@ processed 6 tasks
 task 1 'publish'. lines 8-27:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 602680,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 301340,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 29-29:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'view-object'. lines 31-31:
 Owner: Shared
@@ -23,8 +23,8 @@ Contents: t2::o2::Obj2 {
 
 task 4 'run'. lines 33-33:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 252054, non_refundable_storage_fee: 2546
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 126027, non_refundable_storage_fee: 1273
 
 task 5 'run'. lines 35-35:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 252054, non_refundable_storage_fee: 2546
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 126027, non_refundable_storage_fee: 1273

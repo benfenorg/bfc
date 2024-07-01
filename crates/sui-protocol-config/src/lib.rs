@@ -1745,7 +1745,7 @@ impl ProtocolConfig {
                     // min gas budget is in MIST and an absolute value 2000MIST or 0.000002SUI
                     cfg.base_tx_cost_fixed = Some(2_000);
                     // storage gas price multiplier
-                    cfg.storage_gas_price = Some(76);
+                    cfg.storage_gas_price = Some(38);
                     cfg.feature_flags.loaded_child_objects_fixed = true;
                     // max size of written objects during a TXn
                     // this is a sum of all objects written during a TXn
@@ -1839,7 +1839,7 @@ impl ProtocolConfig {
                     // cfg.feature_flags.pack_digest_hash_modules = true;
                     cfg.feature_flags.txn_base_cost_as_multiplier = true;
                     // this is a multiplier of the gas price
-                    cfg.base_tx_cost_fixed = Some(1_000);
+                    cfg.base_tx_cost_fixed = Some(100);
                 }
                 19 => {
                     cfg.max_num_event_emit = Some(1024);

@@ -6,17 +6,17 @@ A: object(0,0)
 task 1 'publish'. lines 13-60:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 958360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 479180,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 62-62:
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'run'. lines 64-64:
 created: object(3,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'view-object'. lines 66-66:
 Owner: Shared
@@ -49,22 +49,22 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {
 task 6 'programmable'. lines 72-76:
 mutated: object(0,0), object(3,0)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 258826, non_refundable_storage_fee: 2614
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
 
 task 7 'run'. lines 78-78:
 created: object(7,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 8 'run'. lines 80-80:
 created: object(8,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 9 'run'. lines 82-82:
 created: object(9,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 10 'view-object'. lines 84-84:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -108,22 +108,22 @@ Contents: t2::o2::Obj2 {
 task 13 'programmable'. lines 91-95:
 mutated: object(0,0), object(9,0)
 deleted: object(7,0), object(8,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 510880, non_refundable_storage_fee: 5160
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 255440, non_refundable_storage_fee: 2580
 
 task 14 'run'. lines 97-97:
 created: object(14,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 15 'run'. lines 99-99:
 created: object(15,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 16 'run'. lines 101-101:
 created: object(16,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 17 'view-object'. lines 103-103:
 Owner: Shared
@@ -167,4 +167,4 @@ Contents: t2::o2::Obj2 {
 task 20 'programmable'. lines 110-112:
 mutated: object(0,0), object(16,0)
 deleted: object(14,0), object(15,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 510880, non_refundable_storage_fee: 5160
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 255440, non_refundable_storage_fee: 2580

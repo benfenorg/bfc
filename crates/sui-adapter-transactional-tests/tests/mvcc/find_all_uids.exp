@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-117:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1252480,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 626240,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 119-121:
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object(2,6), object(2,7), object(2,8)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1596000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 798000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 123-123:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -69,7 +69,7 @@ Contents: test::m::S {
 
 task 4 'programmable'. lines 125-126:
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object(2,6), object(2,7), object(2,8)
-gas summary: computation_cost: 1000000, storage_cost: 1596000,  storage_rebate: 1580040, non_refundable_storage_fee: 15960
+gas summary: computation_cost: 1000000, storage_cost: 798000,  storage_rebate: 790020, non_refundable_storage_fee: 7980
 
 task 5 'view-object'. lines 128-128:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -128,7 +128,7 @@ Contents: test::m::S {
 task 6 'programmable'. lines 130-131:
 mutated: object(0,0), object(2,8)
 deleted: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object(2,6), object(2,7)
-gas summary: computation_cost: 1000000, storage_cost: 422560,  storage_rebate: 1580040, non_refundable_storage_fee: 15960
+gas summary: computation_cost: 1000000, storage_cost: 211280,  storage_rebate: 790020, non_refundable_storage_fee: 7980
 
 task 7 'view-object'. lines 133-136:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -186,15 +186,15 @@ Contents: test::m::S {
 
 task 8 'programmable'. lines 138-139:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 500000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 500000, storage_cost: 211280,  storage_rebate: 144461, non_refundable_storage_fee: 1459
 
 task 9 'programmable'. lines 141-142:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 500000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 500000, storage_cost: 211280,  storage_rebate: 144461, non_refundable_storage_fee: 1459
 
 task 10 'programmable'. lines 144-148:
 mutated: object(_), object(2,8)
-gas summary: computation_cost: 500000, storage_cost: 422560,  storage_rebate: 288922, non_refundable_storage_fee: 2918
+gas summary: computation_cost: 500000, storage_cost: 211280,  storage_rebate: 144461, non_refundable_storage_fee: 1459
 
 task 11 'programmable'. lines 150-151:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 10, instruction: 12, function_name: Some("check_") }, 0) in command 0

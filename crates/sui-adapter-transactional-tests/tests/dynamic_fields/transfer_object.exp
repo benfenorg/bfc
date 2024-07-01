@@ -6,44 +6,44 @@ A: object(0,0)
 task 1 'publish'. lines 10-65:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 963680,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 481840,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 67-67:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 69-69:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'run'. lines 71-71:
 created: object(4,0), object(4,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 630040,  storage_rebate: 250549, non_refundable_storage_fee: 2531
+gas summary: computation_cost: 1000000, storage_cost: 315020,  storage_rebate: 125275, non_refundable_storage_fee: 1265
 
 task 5 'run'. lines 73-73:
 mutated: object(0,0), object(2,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 384560,  storage_rebate: 380714, non_refundable_storage_fee: 3846
+gas summary: computation_cost: 1000000, storage_cost: 192280,  storage_rebate: 190357, non_refundable_storage_fee: 1923
 
 task 6 'run'. lines 75-75:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 250549, non_refundable_storage_fee: 2531
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 125275, non_refundable_storage_fee: 1265
 
 task 7 'run'. lines 77-77:
 created: object(7,0)
 mutated: object(0,0), object(2,0), object(3,0), object(4,0)
 deleted: object(4,1)
-gas summary: computation_cost: 1000000, storage_cost: 752400,  storage_rebate: 744876, non_refundable_storage_fee: 7524
+gas summary: computation_cost: 1000000, storage_cost: 376200,  storage_rebate: 372438, non_refundable_storage_fee: 3762
 
 task 8 'run'. lines 79-79:
 mutated: object(0,0), object(3,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 384560,  storage_rebate: 380714, non_refundable_storage_fee: 3846
+gas summary: computation_cost: 1000000, storage_cost: 192280,  storage_rebate: 190357, non_refundable_storage_fee: 1923
 
 task 9 'run'. lines 81-81:
 mutated: object(0,0), object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 250549, non_refundable_storage_fee: 2531
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 125275, non_refundable_storage_fee: 1265
 
 task 10 'run'. lines 83-83:
 Error: Transaction Effects Status: Move Runtime Abort. Location: sui::dynamic_field::borrow_child_object_mut (function index 12) at offset 0, Abort Code: 1

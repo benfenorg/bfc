@@ -3,17 +3,17 @@ processed 7 tasks
 task 1 'publish'. lines 8-24:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 566200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 283100,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'publish'. lines 26-34:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 477280,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 238640,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'run'. lines 37-37:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'view-object'. lines 39-39:
 Owner: Shared

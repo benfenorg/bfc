@@ -11,7 +11,7 @@ use transaction_fuzzer::account_universe::P2PTransferGenGasPriceInRange;
 use transaction_fuzzer::config_fuzzer::run_rgp;
 
 proptest! {
-    #![proptest_config(ProptestConfig::with_cases(10))]
+    #![proptest_config(ProptestConfig::with_cases(20))]
     #[test]
     #[cfg_attr(msim, ignore)]
     fn fuzz_low_rgp_low_gas_price(

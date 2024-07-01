@@ -6,7 +6,7 @@ A: object(0,0)
 task 1 'publish'. lines 8-46:
 created: object(1,0), object(1,1), object(1,2), object(1,3), object(1,4), object(1,5), object(1,6)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2208560,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1104280,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'view-object'. lines 48-48:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -144,7 +144,7 @@ Contents: sui::coin::TreasuryCap<test::regulated_coin::REGULATED_COIN> {
 task 9 'run'. lines 63-65:
 created: object(9,0), object(9,1)
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000403, object(0,0), object(1,4)
-gas summary: computation_cost: 1000000, storage_cost: 1173440,  storage_rebate: 303970, non_refundable_storage_fee: 3070
+gas summary: computation_cost: 1000000, storage_cost: 586720,  storage_rebate: 151985, non_refundable_storage_fee: 1535
 
 task 10 'run'. lines 66-68:
 Error: Error checking transaction input objects: AddressDeniedForCoin { address: @A, coin_type: "object(1,1)::regulated_coin::REGULATED_COIN" }
@@ -152,8 +152,8 @@ Error: Error checking transaction input objects: AddressDeniedForCoin { address:
 task 11 'run'. lines 69-71:
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000403, object(0,0), object(1,4), object(9,1)
 deleted: object(9,0)
-gas summary: computation_cost: 1000000, storage_cost: 984200,  storage_rebate: 1161706, non_refundable_storage_fee: 11734
+gas summary: computation_cost: 1000000, storage_cost: 492100,  storage_rebate: 580853, non_refundable_storage_fee: 5867
 
 task 12 'run'. lines 72-72:
 mutated: object(0,0), object(1,0), object(1,2)
-gas summary: computation_cost: 1000000, storage_cost: 412680,  storage_rebate: 408553, non_refundable_storage_fee: 4127
+gas summary: computation_cost: 1000000, storage_cost: 206340,  storage_rebate: 204277, non_refundable_storage_fee: 2063

@@ -6,12 +6,12 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 9-77:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 997880,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 498940,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 79-79:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 376200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 188100,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 81-81:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -38,15 +38,15 @@ Contents: test::m::S {
 task 5 'programmable'. lines 85-87:
 mutated: object(0,0), object(2,0)
 deleted: object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 255360,  storage_rebate: 372438, non_refundable_storage_fee: 3762
+gas summary: computation_cost: 1000000, storage_cost: 127680,  storage_rebate: 186219, non_refundable_storage_fee: 1881
 
 task 6 'run'. lines 89-89:
 created: object(6,0), object(6,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 378480,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 189240,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 7 'view-object'. lines 91-91:
-Owner: Account Address ( BFC434af715142adec4bdf7227f522a3549bf8ee52d34b0c71c92ec44910e366325ad6a )
+Owner: Account Address ( BFC2125af07dadd747481e05040b9c152887e8ca2cda3b98fd0df8b7e0e74b389af95ba )
 Version: 4
 Contents: test::m::Cup<u64> {
     id: sui::object::UID {
@@ -70,12 +70,12 @@ Contents: test::m::Parent {
 task 9 'programmable'. lines 95-99:
 mutated: object(0,0), object(6,1)
 deleted: object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 255360,  storage_rebate: 374695, non_refundable_storage_fee: 3785
+gas summary: computation_cost: 1000000, storage_cost: 127680,  storage_rebate: 187348, non_refundable_storage_fee: 1892
 
 task 10 'run'. lines 101-101:
 created: object(10,0), object(10,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 376200,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 188100,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 11 'view-object'. lines 103-103:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -89,7 +89,7 @@ Contents: test::m::Parent {
 }
 
 task 12 'view-object'. lines 105-105:
-Owner: Account Address ( BFCa896096322e4346d8bf45098c1e7baca0ca41178ed262d96b9b0e04877683ef1a9dd )
+Owner: Account Address ( BFCe54000d066e980a3e7749b101edee05154fd814fb022b71fdd1405b0d7c299b19975 )
 Version: 6
 Contents: test::m::S {
     id: sui::object::UID {
@@ -110,7 +110,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 15 'run'. lines 119-119:
 created: object(15,0), object(15,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 379240,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 189620,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 16 'view-object'. lines 121-121:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -124,7 +124,7 @@ Contents: test::m::Parent {
 }
 
 task 17 'view-object'. lines 123-123:
-Owner: Account Address ( BFCae21d0233131f990f34d0ba88531ca7135c1b476f0ea8652f38ad194f053ace7c7fd )
+Owner: Account Address ( BFC7260fdcd82eb9b59a2d846bc997781ce357d0473f617c1ba8b5a679e0de3878d2dce )
 Version: 9
 Contents: test::m::Store {
     id: sui::object::UID {
@@ -141,4 +141,4 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 19 'programmable'. lines 130-134:
 mutated: object(0,0)
 deleted: object(15,0), object(15,1)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 375448, non_refundable_storage_fee: 3792
+gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 187724, non_refundable_storage_fee: 1896

@@ -3,12 +3,12 @@ processed 14 tasks
 task 1 'publish'. lines 6-63:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1089840,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 544920,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 65-65:
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 738720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 369360,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'view-object'. lines 67-67:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 69-69:
-Owner: Account Address ( BFCaf68c9cfc52fc36bb066588db86ad7682f9d7780cf96a395d2a14a265e0f355f041e )
+Owner: Account Address ( BFC8036a5232b3f3d453f8eef694c09b6c531d3ea38e1a8a14475c8750dfd483c70dc8e )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -33,7 +33,7 @@ Contents: tto::M1::B {
 }
 
 task 5 'view-object'. lines 71-71:
-Owner: Account Address ( BFCaf68c9cfc52fc36bb066588db86ad7682f9d7780cf96a395d2a14a265e0f355f041e )
+Owner: Account Address ( BFC8036a5232b3f3d453f8eef694c09b6c531d3ea38e1a8a14475c8750dfd483c70dc8e )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -44,7 +44,7 @@ Contents: tto::M1::B {
 }
 
 task 6 'view-object'. lines 73-73:
-Owner: Account Address ( BFCaf68c9cfc52fc36bb066588db86ad7682f9d7780cf96a395d2a14a265e0f355f041e )
+Owner: Account Address ( BFC8036a5232b3f3d453f8eef694c09b6c531d3ea38e1a8a14475c8750dfd483c70dc8e )
 Version: 3
 Contents: tto::M1::C {
     id: sui::object::UID {
@@ -55,7 +55,7 @@ Contents: tto::M1::C {
 }
 
 task 7 'view-object'. lines 75-77:
-Owner: Account Address ( BFCaf68c9cfc52fc36bb066588db86ad7682f9d7780cf96a395d2a14a265e0f355f041e )
+Owner: Account Address ( BFC8036a5232b3f3d453f8eef694c09b6c531d3ea38e1a8a14475c8750dfd483c70dc8e )
 Version: 3
 Contents: tto::M1::C {
     id: sui::object::UID {
@@ -67,11 +67,11 @@ Contents: tto::M1::C {
 
 task 8 'programmable'. lines 78-81:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 249797, non_refundable_storage_fee: 2523
+gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 124898, non_refundable_storage_fee: 1262
 
 task 9 'programmable'. lines 82-86:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 249797, non_refundable_storage_fee: 2523
+gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 124898, non_refundable_storage_fee: 1262
 
 task 10 'programmable'. lines 87-92:
 Error: Transaction Effects Status: Invalid command argument at 0. The type of the value does not match the expected type

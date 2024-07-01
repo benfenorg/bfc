@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 6-25:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 696920,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 348460,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 26-29:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 389880,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 194940,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 31-31:
 Owner: Account Address ( BFC00000000000000000000000000000000000000000000000000000000000070dd899a )
@@ -45,7 +45,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 6 'programmable'. lines 42-47:
 created: object(6,0), object(6,1), object(6,2), object(6,3)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 649040,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 324520,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 7 'view-object'. lines 49-49:
 Owner: Account Address ( BFC00000000000000000000000000000000000000000000000000000000000070dd899a )

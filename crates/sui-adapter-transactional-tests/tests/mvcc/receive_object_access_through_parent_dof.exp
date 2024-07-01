@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 6-76:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1282880,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 641440,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 78-78:
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4), object(2,5), object(2,6), object(2,7), object(2,8), object(2,9)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1906840,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 953420,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 80-80:
 Owner: Object ID: ( BFCfb4a31f360771b141fbdb7d38555b5e4563f0391fd433707391a64ad4a69f27372cf )
@@ -246,9 +246,9 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 14 'run'. lines 104-104:
 created: object(14,0)
 mutated: object(0,0), object(2,6), object(2,8)
-gas summary: computation_cost: 1000000, storage_cost: 633080,  storage_rebate: 383724, non_refundable_storage_fee: 3876
+gas summary: computation_cost: 1000000, storage_cost: 316540,  storage_rebate: 191862, non_refundable_storage_fee: 1938
 
 task 15 'run'. lines 106-106:
 created: object(15,0)
 mutated: object(0,0), object(2,8), object(2,9)
-gas summary: computation_cost: 1000000, storage_cost: 690840,  storage_rebate: 440906, non_refundable_storage_fee: 4454
+gas summary: computation_cost: 1000000, storage_cost: 345420,  storage_rebate: 220453, non_refundable_storage_fee: 2227

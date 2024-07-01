@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 6-28:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 695400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 347700,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 30-30:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 631560,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 315780,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 32-32:
 Owner: Object ID: ( BFC4910b5b648186adaab39c9fb8086da37d7aadc4c2500f39843794a55d5a30a408b1c )

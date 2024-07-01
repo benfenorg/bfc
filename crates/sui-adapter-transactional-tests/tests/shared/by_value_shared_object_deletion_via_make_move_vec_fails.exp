@@ -3,17 +3,17 @@ processed 22 tasks
 task 1 'publish'. lines 6-97:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1126320,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 563160,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 99-99:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'run'. lines 101-101:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 254600,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 127300,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'view-object'. lines 103-103:
 Owner: Shared
@@ -76,7 +76,7 @@ Debug of error: SharedObjectOperationNotAllowed at command None
 task 15 'run'. lines 157-157:
 created: object(15,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 16 'view-object'. lines 159-162:
 Owner: Shared

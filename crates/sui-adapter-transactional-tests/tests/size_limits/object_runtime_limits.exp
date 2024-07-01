@@ -6,17 +6,17 @@ A: object(0,0)
 task 1 'publish'. lines 7-26:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 614080,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 307040,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 28-28:
 created: 200
 mutated: 1
-gas summary: computation_cost: 4000000, storage_cost: 27034720,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 13517360,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 30-30:
 created: 2000
 mutated: 1
-gas summary: computation_cost: 61000000, storage_cost: 269170720,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 7000000, storage_cost: 134585360,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'run'. lines 32-32:
 Error: Transaction Effects Status: Move Primitive Runtime Error. Location: sui::dynamic_field::has_child_object (function index 14) at offset 0. Arithmetic error, stack overflow, max value depth, etc.

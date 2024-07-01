@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 9-18:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 572280,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 286140,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 20-24:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 495520,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 247760,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'programmable'. lines 26-29:
 Error: Transaction Effects Status: Invalid command argument at 0. Invalid argument to private entry function. These functions cannot take arguments from other Move functions

@@ -6,7 +6,7 @@ A: object(0,0)
 task 1 'publish'. lines 8-24:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 692360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 346180,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 26-31:
 Error: Transaction Effects Status: Unused result without the drop ability. Command result 2, return value 0

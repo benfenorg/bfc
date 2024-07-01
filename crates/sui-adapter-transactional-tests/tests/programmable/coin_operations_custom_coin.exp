@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-20:
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1093640,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 546820,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 22-24:
 created: object(2,0)
 mutated: object(0,0), object(1,2)
-gas summary: computation_cost: 1000000, storage_cost: 433200,  storage_rebate: 297950, non_refundable_storage_fee: 3010
+gas summary: computation_cost: 1000000, storage_cost: 216600,  storage_rebate: 148975, non_refundable_storage_fee: 1505
 
 task 3 'view-object'. lines 26-26:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -31,4 +31,4 @@ task 4 'programmable'. lines 28-34:
 created: object(4,0)
 mutated: object(0,0), object(1,2)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 433200,  storage_rebate: 428868, non_refundable_storage_fee: 4332
+gas summary: computation_cost: 1000000, storage_cost: 216600,  storage_rebate: 214434, non_refundable_storage_fee: 2166

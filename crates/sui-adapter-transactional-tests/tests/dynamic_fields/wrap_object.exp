@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-39:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 779760,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 389880,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 41-41:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 620920,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 43-43:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -30,10 +30,10 @@ Error: Error checking transaction input objects: InvalidChildObjectArgument { ch
 task 5 'run'. lines 48-48:
 created: object(5,0), object(5,1), object(5,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 6 'view-object'. lines 50-50:
-Owner: Object ID: ( BFC6209893cdfad519e221e9cea4bbb5231c8894f77449f1e63267c3509fff1d40388ad )
+Owner: Object ID: ( BFC401c98c0837e7bf57a0c64a4a4bab5c38a7878483103ad4e812e55a43371409e0cec )
 Version: 3
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -52,15 +52,15 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
 task 7 'run'. lines 52-52:
 mutated: object(0,0), object(5,1)
 deleted: object(5,0), object(5,2)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 614711, non_refundable_storage_fee: 6209
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 307355, non_refundable_storage_fee: 3105
 
 task 8 'run'. lines 55-55:
 created: object(8,0), object(8,1), object(8,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 620920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 9 'view-object'. lines 57-57:
-Owner: Object ID: ( BFC63d86bcd3ca708c9e87b3606504fa1e87e0f05d748963328e3dcc890bd30e29ad352 )
+Owner: Object ID: ( BFC42cd6e280396ab232734abf4c190f11eb78775cd0b79626949dea5ae980aea2167e9 )
 Version: 5
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -79,7 +79,7 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
 task 10 'run'. lines 59-59:
 mutated: object(0,0), object(8,0), object(8,1)
 deleted: object(8,2)
-gas summary: computation_cost: 1000000, storage_cost: 375440,  storage_rebate: 614711, non_refundable_storage_fee: 6209
+gas summary: computation_cost: 1000000, storage_cost: 187720,  storage_rebate: 307355, non_refundable_storage_fee: 3105
 
 task 11 'view-object'. lines 61-61:
 No object at id 8,2

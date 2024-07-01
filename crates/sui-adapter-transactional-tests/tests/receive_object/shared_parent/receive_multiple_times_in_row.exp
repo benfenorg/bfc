@@ -6,17 +6,17 @@ A: object(0,0)
 task 1 'publish'. lines 6-37:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 750120,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 375060,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 39-39:
 created: object(2,0), object(2,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 3 'run'. lines 41-41:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 4 'view-object'. lines 43-43:
 Owner: Shared
@@ -30,7 +30,7 @@ Contents: tto::M1::A {
 }
 
 task 5 'view-object'. lines 45-47:
-Owner: Account Address ( BFC280d52804fca21356aaeb8c736c85db2de41473ed2c0420011394236e4fae09f0ffd )
+Owner: Account Address ( BFC5898b5b6250e2d10ee260a3f1b8d2b5d96f26b3ed0c359ee6d43d4c3c4df1f7e1a7e )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -42,7 +42,7 @@ Contents: tto::M1::B {
 
 task 6 'run'. lines 48-48:
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 370181, non_refundable_storage_fee: 3739
+gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 185090, non_refundable_storage_fee: 1870
 
 task 7 'view-object'. lines 50-50:
 Owner: Shared
@@ -56,7 +56,7 @@ Contents: tto::M1::A {
 }
 
 task 8 'view-object'. lines 52-54:
-Owner: Account Address ( BFC280d52804fca21356aaeb8c736c85db2de41473ed2c0420011394236e4fae09f0ffd )
+Owner: Account Address ( BFC5898b5b6250e2d10ee260a3f1b8d2b5d96f26b3ed0c359ee6d43d4c3c4df1f7e1a7e )
 Version: 4
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -72,7 +72,7 @@ Debug of error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: 
 
 task 10 'run'. lines 58-60:
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 370181, non_refundable_storage_fee: 3739
+gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 185090, non_refundable_storage_fee: 1870
 
 task 11 'run'. lines 61-63:
 Error: Transaction Effects Status: Move Runtime Abort. Location: sui::transfer::receive_impl (function index 12) at offset 0, Abort Code: 3
@@ -80,4 +80,4 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 
 task 12 'run'. lines 64-64:
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 373920,  storage_rebate: 370181, non_refundable_storage_fee: 3739
+gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 185090, non_refundable_storage_fee: 1870
