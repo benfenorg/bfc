@@ -349,18 +349,19 @@ pub mod validator_stake {
             stakes
                 .iter()
                 .flat_map(|x| {
-                    if let Some(pool) = &x.stable_pool {
-                        let mut rates: Vec<f64> = pool
-                            .coins
-                            .iter()
-                            .filter(|(_, v)| v.balance > 0)
-                            .map(|(_, v)| v.current_exchange_rates.rate())
-                            .collect();
-                        rates.push(x.current_exchange_rates.rate());
-                        rates
-                    } else {
-                        vec![x.current_exchange_rates.rate()]
-                    }
+                    vec![x.current_exchange_rates.rate()]
+                    // if let Some(_) = &x.stable_pool {
+                        // let mut rates: Vec<f64> = pool
+                        //     .coins
+                        //     .iter()
+                        //     .filter(|(_, v)| v.balance > 0)
+                        //     .map(|(_, v)| v.current_exchange_rates.rate())
+                        //     .collect();
+                        // rates.push(x.current_exchange_rates.rate());
+                        // rates
+                    // } else {
+                    //     vec![x.current_exchange_rates.rate()]
+                    // }
                 })
                 .sum::<f64>()
                 / stakes.len() as f64
