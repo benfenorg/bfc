@@ -113,6 +113,7 @@
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bcs.md#0x1_bcs">0x1::bcs</a>;
+<b>use</b> <a href="">0x1::debug</a>;
 <b>use</b> <a href="">0x1::option</a>;
 <b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="">0x1::type_name</a>;
@@ -1473,6 +1474,11 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
     <b>let</b> bfc_reward = 0;
     <b>let</b> stable_total_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>();
     <b>let</b> all_stable_total_stake = <a href="validator.md#0x3_validator_get_stable_staking_total">get_stable_staking_total</a>(self, &<b>mut</b> stable_total_stake, stable_rate);
+    std::debug::print(&utf8(b"all_stable_total_stake"));
+    std::debug::print(&(all_stable_total_stake));
+    std::debug::print(&(total_reward));
+    std::debug::print(&utf8(b"end - all_stable_total_stake"));
+
     <b>if</b> (all_stable_total_stake &gt; 0) {
         //distribute for <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> pool
         <b>let</b> bfc_total_stake = <a href="validator.md#0x3_validator_stake_amount">stake_amount</a>(self);

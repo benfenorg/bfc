@@ -73,7 +73,9 @@
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
+<b>use</b> <a href="">0x1::debug</a>;
 <b>use</b> <a href="">0x1::option</a>;
+<b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">0x2::bfc</a>;
@@ -2237,12 +2239,22 @@ gas coins.
         (storage_fund_reinvestment_amount <b>as</b> u64),
     );
 
+    std::debug::print(&utf8(b"computation_charge_u128"));
+    std::debug::print(&(computation_charge_u128));
+    std::debug::print(&utf8(b"end-computation_charge_u128"));
+
+
     self.epoch = self.epoch + 1;
     // Sanity check <b>to</b> make sure we are advancing <b>to</b> the right epoch.
     <b>assert</b>!(new_epoch == self.epoch, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EAdvancedToWrongEpoch">EAdvancedToWrongEpoch</a>);
 
     <b>let</b> computation_reward_amount_before_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&computation_reward);
     <b>let</b> storage_fund_reward_amount_before_distribution = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&storage_fund_reward);
+
+    std::debug::print(&utf8(b"computation_reward_amount_before_distribution"));
+    std::debug::print(&(computation_reward_amount_before_distribution));
+    std::debug::print(&utf8(b"end-computation_reward_amount_before_distribution"));
+
 
     <a href="validator_set.md#0x3_validator_set_advance_epoch">validator_set::advance_epoch</a>(
         &<b>mut</b> self.validators,

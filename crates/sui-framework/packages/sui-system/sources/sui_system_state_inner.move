@@ -20,6 +20,7 @@ module sui_system::sui_system_state_inner {
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::{Self, VecSet};
     use std::option;
+    use std::string::utf8;
     use std::vector;
     use sui::pay;
     use sui::event;

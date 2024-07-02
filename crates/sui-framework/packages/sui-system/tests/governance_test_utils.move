@@ -13,18 +13,20 @@ module sui_system::governance_test_utils {
     use sui::test_utils::assert_eq;
     use sui::tx_context::{Self, TxContext};
     use sui_system::validator::{Self, Validator};
-    use sui_system::sui_system::{Self, SuiSystemState};
+    use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
     use sui_system::sui_system_state_inner;
     use sui_system::stake_subsidy;
     use sui::test_scenario::{Self, Scenario};
     use sui_system::validator_set;
     use std::option;
+    use std::type_name;
     use std::vector;
     use sui::test_utils;
     use sui::balance::Balance;
     use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
     use bfc_system::busd::BUSD;
     use sui::transfer;
+    use sui::vec_map;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StakedStable, StablePool};
 
@@ -402,6 +404,20 @@ module sui_system::governance_test_utils {
             test_scenario::next_tx(scenario, validator_addr);
             let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let non_self_stake_amount = sui_system::validator_stake_amount(&mut system_state, validator_addr) - stake_plus_current_rewards_for_validator(validator_addr, &mut system_state, scenario);
+            assert_eq(non_self_stake_amount, amount);
+            test_scenario::return_shared(system_state);
+            i = i + 1;
+        };
+    }
+
+    public fun assert_validator_non_self_stake_amounts_stable(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
+        let i = 0;
+        while (i < vector::length(&validator_addrs)) {
+            let validator_addr = *vector::borrow(&validator_addrs, i);
+            let amount = *vector::borrow(&stake_amounts, i);
+            test_scenario::next_tx(scenario, validator_addr);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let non_self_stake_amount = sui_system::validator_stake_amount_with_stable(&mut system_state, validator_addr) - stake_plus_current_stable_rewards_for_validator<BUSD>(validator_addr, &mut system_state, scenario);
             assert_eq(non_self_stake_amount, amount);
             test_scenario::return_shared(system_state);
             i = i + 1;

@@ -4,6 +4,7 @@
 module sui_system::validator_set {
     use std::ascii;
     use std::option::{Self, Option};
+    use std::string::utf8;
     use std::type_name;
     use std::vector;
 
@@ -1392,10 +1393,22 @@ module sui_system::validator_set {
             if (balance::value(&validator_reward) > 0) {
                 let validator_address = validator::sui_address(validator);
                 let rewards_stake = validator::request_add_stake(validator, validator_reward, validator_address, ctx);
+
+                std::debug::print(&utf8(b"validator_reward"));
+                std::debug::print(&(validator_address));
+                std::debug::print(&(rewards_stake));
+                std::debug::print(&utf8(b"end-validator_reward\n"));
+
                 transfer::public_transfer(rewards_stake, validator_address);
             } else {
                 balance::destroy_zero(validator_reward);
             };
+
+            std::debug::print(&utf8(b"deposit_stake_rewards"));
+            std::debug::print(&(validator::sui_address(validator)));
+            std::debug::print(&(staker_reward));
+            std::debug::print(&utf8(b"end- deposit_stake_rewards\n"));
+
 
             // Add rewards to stake staking pool to auto compound for stakers.
             validator::deposit_stake_rewards(validator, staker_reward, &stable_rate);

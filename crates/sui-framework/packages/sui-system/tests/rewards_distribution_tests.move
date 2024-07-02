@@ -3,8 +3,10 @@
 
 #[test_only]
 module sui_system::rewards_distribution_tests {
+    use std::string::utf8;
+    use std::type_name;
     use sui::test_scenario::{Self, Scenario};
-    use sui_system::sui_system::{Self, SuiSystemState};
+    use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
 
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui_system::governance_test_utils::{
@@ -19,12 +21,14 @@ module sui_system::rewards_distribution_tests {
         create_sui_system_state_for_testing,
         stake_with,
         total_sui_balance, unstake, assert_validator_total_stake_with_stable_amounts, stake_with_stable, unstake_stable,
-        total_busd_balance, assert_validator_self_stake_amounts_stable
+        total_busd_balance, assert_validator_self_stake_amounts_stable, assert_validator_non_self_stake_amounts_stable
     };
     use sui::test_utils::assert_eq;
     use std::vector;
     use sui::address;
+    use sui::vec_map;
     use bfc_system::busd::BUSD;
+    use sui_system::validator;
 
     const VALIDATOR_ADDR_1: address = @0x1;
     const VALIDATOR_ADDR_2: address = @0x2;
@@ -295,22 +299,32 @@ module sui_system::rewards_distribution_tests {
         set_commission_rate_and_advance_epoch(VALIDATOR_ADDR_2, 2000, scenario); // 50% commission
         advance_epoch_with_reward_amounts(0, 120, scenario);
         // V1: 230, V2: 330, V3: 330, V4: 430
+
+        //get stable rate
+        let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let stable_rate = get_stable_rate(&system_state);
+        let pool_key = type_name::into_string(type_name::get<BUSD>());
+        let rate = vec_map::get(&stable_rate, &pool_key);
+        test_scenario::return_shared(system_state);
+
+
         // 2 SUI, or 20 % of staker_2's rewards, goes to validator_2
-        assert_validator_non_self_stake_amounts(validator_addrs(), vector[115 * MIST_PER_SUI, 108 * MIST_PER_SUI, 0, 0], scenario);
-        assert_validator_self_stake_amounts(validator_addrs(), vector[115 * MIST_PER_SUI, 222 * MIST_PER_SUI, 330 * MIST_PER_SUI, 430 * MIST_PER_SUI], scenario);
+        assert_validator_non_self_stake_amounts_stable(validator_addrs(), vector[115 * MIST_PER_SUI, 108 * MIST_PER_SUI, 0, 0], scenario);
+        assert_validator_self_stake_amounts_stable<BUSD>(validator_addrs(), vector[115 * MIST_PER_SUI, 222 * MIST_PER_SUI, 330 * MIST_PER_SUI, 430 * MIST_PER_SUI], scenario);
 
         set_commission_rate_and_advance_epoch(VALIDATOR_ADDR_1, 1000, scenario); // 10% commission
 
         advance_epoch_with_reward_amounts(0, 240, scenario);
-        assert_validator_total_stake_amounts(validator_addrs(), vector[290 * MIST_PER_SUI, 390 * MIST_PER_SUI, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
+        assert_validator_total_stake_with_stable_amounts(validator_addrs(), vector[290 * MIST_PER_SUI, 390 * MIST_PER_SUI, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
 
         // Staker 1 rewards in the recent distribution is 0.9 x 30 = 27 SUI
         // Validator 1 rewards in the recent distribution is 60 - 27 = 33 SUI
 
         // Staker 2 amounts for 0.8 * 60 * (108 / 330) + 108 = 123.709 SUI
         // Validator 2 amounts for 390 - 123.709 = 266.291 SUI
-        assert_validator_non_self_stake_amounts(validator_addrs(), vector[142 * MIST_PER_SUI, 123709090909, 0, 0], scenario);
-        assert_validator_self_stake_amounts(validator_addrs(), vector[148 * MIST_PER_SUI, 266290909091, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
+        assert_validator_non_self_stake_amounts_stable(validator_addrs(), vector[142 * MIST_PER_SUI, 123709090909, 0, 0], scenario);
+        assert_validator_self_stake_amounts_stable<BUSD>(validator_addrs(), vector[148 * MIST_PER_SUI, 266290909091, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
+
 
         test_scenario::end(scenario_val);
     }
@@ -719,15 +733,72 @@ module sui_system::rewards_distribution_tests {
         set_up_sui_system_state();
         let scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
         let scenario = &mut scenario_val;
+        {
+            test_scenario::next_tx(scenario, @0x0);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            //get stable rate
+            let stable_rate = get_stable_rate(&system_state);
+            let pool_key = type_name::into_string(type_name::get<BUSD>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1), 100 * MIST_PER_SUI);
+            test_scenario::return_shared(system_state);
+        };
 
+        std::debug::print(&utf8(b"stake 220 busd"));
         stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 220, scenario);
+        {
+            test_scenario::next_tx(scenario, @0x0);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            //get stable rate
+            let stable_rate = get_stable_rate(&system_state);
+            let pool_key = type_name::into_string(type_name::get<BUSD>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1), (100) * MIST_PER_SUI);
+            test_scenario::return_shared(system_state);
+        };
 
+        std::debug::print(&utf8(b"reward 40 bfc"));
         advance_epoch_with_reward_amounts(0, 40, scenario);
+        {
+            test_scenario::next_tx(scenario, @0x0);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            //get stable rate
+            let stable_rate = get_stable_rate(&system_state);
+            let pool_key = type_name::into_string(type_name::get<BUSD>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+            std::debug::print(&utf8(b"advance_epoch_with_reward_amounts(0, 40, scenario);"));
+            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1),
+                (100+220+10) * MIST_PER_SUI);
+            test_scenario::return_shared(system_state);
+        };
 
+        std::debug::print(&utf8(b"stake 480 busd"));
         stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_1, 480, scenario);
+        {
+            test_scenario::next_tx(scenario, @0x0);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            //get stable rate
+            let stable_rate = get_stable_rate(&system_state);
+            let pool_key = type_name::into_string(type_name::get<BUSD>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1), (100+220+10) * MIST_PER_SUI);
+            test_scenario::return_shared(system_state);
+        };
 
         // Staker 1 gets 2/3 * 1/4 * 120 = 20 SUI here.
         advance_epoch_with_reward_amounts(0, 120, scenario);
+        {
+            test_scenario::next_tx(scenario, @0x0);
+            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            //get stable rate
+            let stable_rate = get_stable_rate(&system_state);
+            let pool_key = type_name::into_string(type_name::get<BUSD>());
+            let rate = vec_map::get(&stable_rate, &pool_key);
+
+            std::debug::print(&utf8(b"advance_epoch_with_reward_amounts(0, 120, scenario);"));
+            assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1), (100+220+10+480+30) * MIST_PER_SUI);
+            test_scenario::return_shared(system_state);
+        };
 
         stake_with_stable(STAKER_ADDR_1, VALIDATOR_ADDR_1, 130, scenario);
         stake_with_stable(STAKER_ADDR_3, VALIDATOR_ADDR_1, 390, scenario);
@@ -742,8 +813,18 @@ module sui_system::rewards_distribution_tests {
 
         test_scenario::next_tx(scenario, @0x0);
         let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        //get stable rate
+        let stable_rate = get_stable_rate(&system_state);
+        let pool_key = type_name::into_string(type_name::get<BUSD>());
+        let rate = vec_map::get(&stable_rate, &pool_key);
+
+
         // Check that we have the right amount of SUI in the staking pool.
-        assert_eq(sui_system::validator_stake_amount_with_stable(&mut system_state, VALIDATOR_ADDR_1), 140 * 23 * MIST_PER_SUI);
+        assert_eq(sui_system::validator_stake_amount_with_stable(
+            &mut system_state, VALIDATOR_ADDR_1),
+            (100+220+10+480+30+130+390+70+280+1400+110) * MIST_PER_SUI
+        );
+
         test_scenario::return_shared(system_state);
 
         // Withdraw all stakes at once.

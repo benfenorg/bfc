@@ -14,7 +14,7 @@ module sui_system::validator {
     use sui::object::{Self, ID};
     use std::option::{Option, Self};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
-    use std::string::{Self, String};
+    use std::string::{Self, String, utf8};
     use std::type_name;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -900,6 +900,10 @@ module sui_system::validator {
         stable_pool::stable_balance(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
+    public fun stable_rewards_pool<STABLE>(self: &Validator): u64 {
+        stable_pool::rewards_pool(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+
     /// Return the total amount staked with this validator
     public fun total_stake(self: &Validator): u64 {
         stake_amount(self)
@@ -907,7 +911,19 @@ module sui_system::validator {
 
     public fun total_stake_with_all_stable(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
         let total_stake = total_stake(self);
-        total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate);
+        if (self.metadata.sui_address == @0x1) {
+            std::debug::print(&utf8(b"total_stake_with_all_stable bfc"));
+            std::debug::print(&(total_stake));
+            std::debug::print(&(self.metadata.sui_address));
+        };
+
+        total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate) + stable_rewards_pool<BUSD>(self);
+        if (self.metadata.sui_address == @0x1) {
+            std::debug::print(&utf8(b"total_stake_with_all_stable busd"));
+            std::debug::print(&(total_stake));
+            std::debug::print(&(self.metadata.sui_address));
+        };
+
         total_stake = total_stake + total_stake_of_stable<BARS>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BAUD>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BBRL>(self, stable_rate);

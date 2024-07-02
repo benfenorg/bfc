@@ -192,7 +192,7 @@ module sui_system::stable_pool {
 
     /// Called at epoch advancement times to add rewards (in SUI) to the stable pool.
     public(friend) fun deposit_rewards<STABLE>(pool: &mut StablePool<STABLE>, rewards: Balance<BFC>, amount: u64) {
-        pool.stable_balance = pool.stable_balance + amount;
+        // pool.stable_balance = pool.stable_balance + amount;
         balance::join(&mut pool.rewards_pool, rewards);
     }
 
@@ -288,6 +288,8 @@ module sui_system::stable_pool {
     // ==== getters and misc utility functions ====
 
     public fun stable_balance<STABLE>(pool: &StablePool<STABLE>): u64 { pool.stable_balance }
+
+    public fun rewards_pool<STABLE>(pool: &StablePool<STABLE>): u64 { balance::value(&pool.rewards_pool) }
 
     public fun pool_id<STABLE>(staked_sui: &StakedStable<STABLE>): ID { staked_sui.pool_id }
 
