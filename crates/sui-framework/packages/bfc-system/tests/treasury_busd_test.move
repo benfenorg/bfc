@@ -4,7 +4,6 @@ module bfc_system::treasury_busd_test {
     use std::debug;
     use std::vector;
     use std::ascii::string;
-    use std::string;
     use bfc_system::clmm_math;
     use bfc_system::i32;
     use sui::coin::{Self, Coin};
@@ -319,6 +318,8 @@ module bfc_system::treasury_busd_test {
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
             let coin_bfc_1 = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            balance_busd_alice=coin::value(&coin_usd);
+            balance_bfc_alice=coin::value(&coin_bfc)+coin::value(&coin_bfc_1);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after redeem ..."));
                 debug::print(&coin_usd);
@@ -328,6 +329,28 @@ module bfc_system::treasury_busd_test {
             test_scenario::return_to_sender(&scenario_val, coin_usd);
             test_scenario::return_to_sender(&scenario_val, coin_bfc);
             test_scenario::return_to_sender(&scenario_val, coin_bfc_1);
+        };
+
+        // check total token after redeem
+        test_scenario::next_tx(&mut scenario_val,owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (balance_coin_busd,balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
+            balance_busd_vault=balance_coin_busd;
+            balance_bfc_vault=balance_coin_bfc;
+            let total_busd = balance_busd_alice+balance_busd_vault;
+            let total_bfc = balance_bfc_vault+balance_bfc_alice;
+            if (IS_DEBUG) {
+                debug::print(&string(b"current balance after mint ..."));
+                debug::print(&balance_coin_busd);
+                debug::print(&balance_coin_bfc);
+            };
+
+            assert!(total_busd == base_point, 107);
+            assert!(total_bfc == (base_point+total_amount_bfc), 108);
+            test_scenario::return_shared(t);
         };
 
         test_scenario::end(scenario_val);
