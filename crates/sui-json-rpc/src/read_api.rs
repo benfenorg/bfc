@@ -1070,7 +1070,7 @@ impl ReadApiServer for ReadApi {
             sub.as_ref(),
             42,
         ).unwrap();
-        Ok(String::from_utf8(okm).unwrap())
+        Ok(hex::encode(okm))
     }
 
     #[instrument(skip(self))]
