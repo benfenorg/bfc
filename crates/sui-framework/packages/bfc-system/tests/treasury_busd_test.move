@@ -4,6 +4,7 @@ module bfc_system::treasury_busd_test {
     use std::debug;
     use std::vector;
     use std::ascii::string;
+    use std::string;
     use bfc_system::clmm_math;
     use bfc_system::i32;
     use sui::coin::{Self, Coin};
@@ -15,7 +16,7 @@ module bfc_system::treasury_busd_test {
     use bfc_system::vault;
     use bfc_system::busd::{Self, BUSD};
 
-    const IS_DEBUG: bool = false;
+    const IS_DEBUG: bool = true;
 
     #[test]
     public fun test_treasury() {
@@ -178,10 +179,15 @@ module bfc_system::treasury_busd_test {
             let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
             let current_sqrt_price = vault::vault_current_sqrt_price(usd_vault);
             let l = vault::get_position_liquidity(usd_vault, position_index);
+            let (balance_coin_busd,balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
+            assert!(balance_coin_busd == balance_coin_bfc, 107);
             if (IS_DEBUG) {
                 debug::print(&string(b"current_sqrt_price before..."));
                 debug::print(&current_sqrt_price);
                 debug::print(&l);
+                debug::print(&string(b"current balance before ..."));
+                debug::print(&balance_coin_busd);
+                debug::print(&balance_coin_bfc);
             };
 
             test_scenario::return_shared(t);
@@ -189,7 +195,7 @@ module bfc_system::treasury_busd_test {
 
         // alice swap bfc-usd
         let alice = @0xA1;
-        let amount_bfc = 1_000_000_000u64;
+        let amount_bfc = 10_000_000_000u64;
         let total_amount_bfc = amount_bfc * 2;
         let min_amount = 0;
         test_scenario::next_tx(&mut scenario_val, alice);
@@ -219,11 +225,17 @@ module bfc_system::treasury_busd_test {
             clock::destroy_for_testing(clock);
         };
 
+        let balance_busd_alice=0;
+        let balance_bfc_alice=0;
+        let balance_busd_vault=0;
+        let balance_bfc_vault=0;
         // alice check balance
         test_scenario::next_tx(&mut scenario_val, alice);
         {
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let coin_bfc = test_scenario::take_from_sender<Coin<BFC>>(&scenario_val);
+            balance_busd_alice=coin::value(&coin_usd);
+            balance_bfc_alice=coin::value(&coin_bfc);
             if (IS_DEBUG) {
                 debug::print(&string(b"Alice balances after mint ..."));
                 debug::print(&coin_usd);
@@ -232,6 +244,28 @@ module bfc_system::treasury_busd_test {
             assert!(coin::value(&coin_usd) > 0, 301);
             test_scenario::return_to_sender(&scenario_val, coin_usd);
             test_scenario::return_to_sender(&scenario_val, coin_bfc);
+        };
+
+        // check total token after mint
+        test_scenario::next_tx(&mut scenario_val,owner);
+        {
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (balance_coin_busd,balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
+            balance_busd_vault=balance_coin_busd;
+            balance_bfc_vault=balance_coin_bfc;
+            let total_busd = balance_busd_alice+balance_busd_vault;
+            let total_bfc = balance_bfc_vault+balance_bfc_alice;
+            if (IS_DEBUG) {
+                debug::print(&string(b"current balance after mint ..."));
+                debug::print(&balance_coin_busd);
+                debug::print(&balance_coin_bfc);
+            };
+
+            assert!(total_busd == base_point, 107);
+            assert!(total_bfc == (base_point+total_amount_bfc), 108);
+            test_scenario::return_shared(t);
         };
 
         // check price after swap
