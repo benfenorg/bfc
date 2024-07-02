@@ -298,9 +298,10 @@ module sui_system::validator_set {
         );
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system` to add a new validator to `pending_active_validators`, which will be
     /// processed at the end of epoch.
-    public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_stake_amount: u64, ctx: &TxContext) {
+    public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_stake_amount: u64, ctx: &mut TxContext) {
         let validator_address = ctx.sender();
         assert!(
             self.validator_candidates.contains(validator_address),
@@ -328,13 +329,14 @@ module sui_system::validator_set {
         );
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system`, to remove a validator.
     /// The index of the validator is added to `pending_removals` and
     /// will be processed at the end of epoch.
     /// Only an active validator can request to be removed.
     public(package) fun request_remove_validator(
         self: &mut ValidatorSet,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         let validator_address = ctx.sender();
         let mut validator_index_opt = find_validator(&self.active_validators, validator_address);
@@ -378,6 +380,7 @@ module sui_system::validator_set {
         validator::request_add_stable_stake(validator, stake, tx_context::sender(ctx), ctx)
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system`, to withdraw some share of a stake from the validator. The share to withdraw
     /// is denoted by `principal_withdraw_amount`. One of two things occurs in this function:
     /// 1. If the `staked_sui` is staked with an active validator, the request is added to the validator's
@@ -387,7 +390,7 @@ module sui_system::validator_set {
     public(package) fun request_withdraw_stake(
         self: &mut ValidatorSet,
         staked_sui: StakedBfc,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
@@ -1093,7 +1096,7 @@ module sui_system::validator_set {
 
     /// Process all active validators' pending stake deposits and withdraws.
     fun process_pending_stakes_and_withdraws(
-        validators: &mut vector<Validator>, ctx: &TxContext
+        validators: &mut vector<Validator>, ctx: &mut TxContext
     ) {
         let length = validators.length();
         let mut i = 0;

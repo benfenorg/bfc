@@ -88,10 +88,10 @@ module bfc_system::test_utils {
         {
             // let bfc = balance::create_for_testing<BFC>(300000000_000_000_000);
             let mut t = test_scenario::take_shared<Treasury>(scenario_val);
-            let required_bfc = treasury::next_epoch_bfc_required(&t);
+            let required_bfc = treasury::bfc_required(&t);
             debug::print(&string(b"require bfc"));
             debug::print(&required_bfc);
-            let bfc = balance::create_for_testing<BFC>(required_bfc);
+            let bfc = balance::create_for_testing<BFC>(required_bfc * 2);
             treasury::deposit(&mut t, coin::from_balance(bfc, test_scenario::ctx(scenario_val)));
             test_scenario::return_shared(t);
         };
@@ -114,7 +114,7 @@ module bfc_system::test_utils {
         clock::increment_for_testing(&mut c, 3600 * 4 * 1000 + 1000);
 
         let mut t = test_scenario::take_shared<Treasury>(scenario_val);
-        treasury::rebalance(&mut t, 0, &c, test_scenario::ctx(scenario_val));
+        treasury::rebalance(&mut t, 0, false, &c, test_scenario::ctx(scenario_val));
 
         clock::destroy_for_testing(c);
         test_scenario::return_shared(t);

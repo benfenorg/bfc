@@ -123,6 +123,7 @@ module sui_system::stable_pool {
         staked_sui
     }
 
+    #[allow(unused_mut_parameter)]
     /// Request to withdraw the given stake plus rewards from a stable pool.
     /// Both the principal and corresponding rewards in SUI are withdrawn.
     /// A proportional amount of pool token withdraw is recorded and processed at epoch change time.
@@ -130,7 +131,7 @@ module sui_system::stable_pool {
         pool: &mut StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
         rate: u64,
-        ctx: &TxContext
+        ctx: &mut TxContext
     ) : (Balance<STABLE>, Balance<BFC>) {
         let (pool_token_withdraw_amount, principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
@@ -150,11 +151,12 @@ module sui_system::stable_pool {
         (principal_withdraw, rewards_withdraw)
     }
 
+    #[allow(unused_mut_parameter)]
     /// Withdraw the principal SUI stored in the StakedSui object, and calculate the corresponding amount of pool
     /// tokens using exchange rate at stable epoch.
     /// Returns values are amount of pool tokens withdrawn and withdrawn principal portion of SUI.
     public(package) fun withdraw_from_principal<STABLE>(
-        pool: &StablePool<STABLE>,
+        pool: &mut StablePool<STABLE>,
         staked_sui: StakedStable<STABLE>,
     ) : (u64, Balance<STABLE>) {
 
@@ -192,7 +194,8 @@ module sui_system::stable_pool {
         balance::join(&mut pool.rewards_pool, rewards);
     }
 
-    public(package) fun process_pending_stakes_and_withdraws<STABLE>(pool: &mut StablePool<STABLE>, ctx: &TxContext) {
+    #[allow(unused_mut_parameter)]
+    public(package) fun process_pending_stakes_and_withdraws<STABLE>(pool: &mut StablePool<STABLE>, ctx: &mut TxContext) {
         let new_epoch = tx_context::epoch(ctx) + 1;
         process_pending_stake_withdraw(pool);
         process_pending_stake(pool);

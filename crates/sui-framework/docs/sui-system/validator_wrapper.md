@@ -130,8 +130,8 @@ Destroy the wrapper and retrieve the inner validator object.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_destroy">destroy</a>(self: <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">ValidatorWrapper</a>): Validator {
-    <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(&self);
+<pre><code><b>public</b>(package) <b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_destroy">destroy</a>(<b>mut</b> self: <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">ValidatorWrapper</a>): Validator {
+    <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(&<b>mut</b> self);
     <b>let</b> <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">ValidatorWrapper</a> { inner } = self;
     <a href="../sui-framework/versioned.md#0x2_versioned_destroy">versioned::destroy</a>(inner)
 }
@@ -147,7 +147,7 @@ Destroy the wrapper and retrieve the inner validator object.
 
 
 
-<pre><code><b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(self: &<a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">validator_wrapper::ValidatorWrapper</a>)
+<pre><code><b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(self: &<b>mut</b> <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">validator_wrapper::ValidatorWrapper</a>)
 </code></pre>
 
 
@@ -156,7 +156,7 @@ Destroy the wrapper and retrieve the inner validator object.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(self: &<a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">ValidatorWrapper</a>) {
+<pre><code><b>fun</b> <a href="validator_wrapper.md#0x3_validator_wrapper_upgrade_to_latest">upgrade_to_latest</a>(self: &<b>mut</b> <a href="validator_wrapper.md#0x3_validator_wrapper_ValidatorWrapper">ValidatorWrapper</a>) {
     <b>let</b> version = <a href="validator_wrapper.md#0x3_validator_wrapper_version">version</a>(self);
     // TODO: When new versions are added, we need <b>to</b> explicitly upgrade here.
     <b>assert</b>!(version == 1, <a href="validator_wrapper.md#0x3_validator_wrapper_EInvalidVersion">EInvalidVersion</a>);

@@ -403,13 +403,14 @@ module sui_system::sui_system_state_inner {
         self.validators.request_remove_validator_candidate(ctx);
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by a validator candidate to add themselves to the active validator set beginning next epoch.
     /// Aborts if the validator is a duplicate with one of the pending or active validators, or if the amount of
     /// stake the validator has doesn't meet the min threshold, or if the number of new validators for the next
     /// epoch has already reached the maximum.
     public(package) fun request_add_validator(
         self: &mut SuiSystemStateInnerV2,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         assert!(
             self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,
@@ -419,6 +420,7 @@ module sui_system::sui_system_state_inner {
         self.validators.request_add_validator(self.parameters.min_validator_joining_stake, ctx);
     }
 
+    #[allow(unused_mut_parameter)]
     /// A validator can call this function to request a removal in the next epoch.
     /// We use the sender of `ctx` to look up the validator
     /// (i.e. sender must match the sui_address in the validator).
@@ -426,7 +428,7 @@ module sui_system::sui_system_state_inner {
     /// of the validator.
     public(package) fun request_remove_validator(
         self: &mut SuiSystemStateInnerV2,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         // Only check min validator condition if the current number of validators satisfy the constraint.
         // This is so that if we somehow already are in a state where we have less than min validators, it no longer matters
@@ -467,12 +469,13 @@ module sui_system::sui_system_state_inner {
         candidate.set_candidate_gas_price(verified_cap, new_gas_price)
     }
 
+    #[allow(unused_mut_parameter)]
     /// A validator can call this function to set a new commission rate, updated at the end of
     /// the epoch.
     public(package) fun request_set_commission_rate(
         self: &mut SuiSystemStateInnerV2,
         new_commission_rate: u64,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         self.validators.request_set_commission_rate(
             new_commission_rate,
@@ -480,11 +483,12 @@ module sui_system::sui_system_state_inner {
         )
     }
 
+    #[allow(unused_mut_parameter)]
     /// This function is used to set new commission rate for candidate validators
     public(package) fun set_candidate_validator_commission_rate(
         self: &mut SuiSystemStateInnerV2,
         new_commission_rate: u64,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
         candidate.set_candidate_commission_rate(new_commission_rate)
@@ -537,7 +541,7 @@ module sui_system::sui_system_state_inner {
         public(package) fun request_withdraw_stake(
             self: &mut SuiSystemStateInnerV2,
         staked_sui: StakedBfc,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
         ) : Balance<BFC> {
             assert!(
                 stake_activation_epoch(&staked_sui) <= ctx.epoch(),
@@ -1150,7 +1154,7 @@ module sui_system::sui_system_state_inner {
         public(package) fun request_add_validator_for_testing(
         self: &mut SuiSystemStateInnerV2,
         min_joining_stake_for_testing: u64,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
         ) {
         assert!(
         self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,

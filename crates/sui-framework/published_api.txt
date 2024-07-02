@@ -4717,7 +4717,7 @@ swap_internal
 deposit
 	public(package) fun
 	0xc8::treasury
-next_epoch_bfc_required
+bfc_required
 	public(package) fun
 	0xc8::treasury
 rebalance

@@ -24,7 +24,7 @@ pub mod checked {
     use serde::{Deserialize, Serialize};
     use serde_with::serde_as;
     use sui_protocol_config::ProtocolConfig;
-    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate};
+    use crate::gas::{calculate_bfc_to_stable_cost_with_base_point};
 
     pub const BASE_RATE:u64 = 1_000_000_000u64;
     pub const DEFAULT_BASE_POINT_FOR_STABLE_COINS:u64 = 10u64;

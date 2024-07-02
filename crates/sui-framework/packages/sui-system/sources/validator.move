@@ -443,11 +443,12 @@ module sui_system::validator {
         self.next_epoch_stake = self.next_epoch_stake + stake_amount;
     }
 
+    #[allow(unused_mut_parameter)]
     /// Request to withdraw stake from the validator's staking pool, processed at the end of the epoch.
     public(package) fun request_withdraw_stake(
         self: &mut Validator,
         staked_sui: StakedBfc,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : Balance<BFC> {
         let principal_amount = staking_pool::staked_sui_amount(&staked_sui);
         let stake_activation_epoch = staking_pool::stake_activation_epoch(&staked_sui);
@@ -470,11 +471,12 @@ module sui_system::validator {
         withdrawn_stake
     }
 
+    #[allow(unused_mut_parameter)]
     public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut Validator,
         staked_sui: StakedStable<STABLE>,
         rate: u64,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : (Balance<STABLE>, Balance<BFC>) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
@@ -723,12 +725,13 @@ module sui_system::validator {
 
 
     /// Process pending stakes and withdraws, called at the end of the epoch.
-    public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
+    public(package) fun process_pending_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
         self.staking_pool.process_pending_stakes_and_withdraws(ctx);
         assert!(stake_amount(self) == self.next_epoch_stake, EInvalidStakeAmount);
     }
 
-    public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &TxContext) {
+    #[allow(unused_mut_parameter)]
+    public(package) fun process_pending_all_stable_stakes_and_withdraws(self: &mut Validator, ctx: &mut TxContext) {
         process_pending_stable_stakes_and_withdraws<BUSD>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BARS>(self, ctx);
         process_pending_stable_stakes_and_withdraws<BAUD>(self, ctx);
@@ -748,7 +751,8 @@ module sui_system::validator {
         process_pending_stable_stakes_and_withdraws<MGG>(self, ctx);
     }
 
-    public(package) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &TxContext) {
+    #[allow(unused_mut_parameter)]
+    public(package) fun process_pending_stable_stakes_and_withdraws<STABLE>(self: &mut Validator, ctx: &mut TxContext) {
         let pool_key = type_name::into_string(type_name::get<STABLE>());
         let pool = bag::borrow_mut<ascii::String, StablePool<STABLE>>(&mut self.stable_pools, pool_key);
         stable_pool::process_pending_stakes_and_withdraws<STABLE>(pool, ctx);
