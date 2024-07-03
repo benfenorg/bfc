@@ -81,7 +81,7 @@ impl Compatibility {
         if old_module.address != new_module.address || old_module.name != new_module.name {
             struct_and_function_linking = false;
         }
-        println!("current module name is {:?}", old_module.name);
+        //println!("current module name is {:?}", old_module.name);
 
         // old module's structs are a subset of the new module's structs
         for (name, old_struct) in &old_module.structs {
@@ -133,7 +133,7 @@ impl Compatibility {
         // friend list. But for simplicity, we decided to go to the more restrictive form now and
         // we may revisit this in the future.
         for (name, old_func) in &old_module.functions {
-            println!("current checking name is {:?}", name);
+            //println!("current checking name is {:?}", name);
             let Some(new_func) = new_module.functions.get(name) else {
                 if old_func.visibility == Visibility::Friend {
                     friend_linking = false;

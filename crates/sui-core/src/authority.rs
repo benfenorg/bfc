@@ -4626,8 +4626,9 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let proposal_result = self.get_proposal_state(version + 1).await;
-        info!("===========protocol: {:?} detecting next version:{:?}", version, version+1);
+        let next_bfc_p_version = bfc_get_next_avail_protocol_version(version);
+        let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
+        info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
         if cfg!(feature="bfc_skip_dao_update") {
@@ -4783,6 +4784,9 @@ impl AuthorityState {
             effects.summary_for_debug()
         );
         epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
+
+        println!("===========epoch_store.record_checkpoint_builder_is_safe_mode_metric ====={:?}", system_obj.safe_mode());
+
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
         Ok((system_obj, effects))
@@ -5406,4 +5410,13 @@ impl NodeStateDump {
         let file = File::open(path)?;
         serde_json::from_reader(file).map_err(|e| anyhow::anyhow!(e))
     }
+}
+
+
+fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
+    if current_version == 24 {
+        //bfc protocol version start at 23, 24, 44,
+        return 44;
+    }
+    return current_version + 1;
 }
