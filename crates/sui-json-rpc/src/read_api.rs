@@ -1061,16 +1061,24 @@ impl ReadApiServer for ReadApi {
 
     #[instrument(skip(self))]
     async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
-        let seed = hex::decode(seed).unwrap();
-        let iss = hex::decode(iss).unwrap();
-        let sub = hex::decode(sub).unwrap();
+        let new_seed = if seed.len() % 2 == 0 {
+            seed
+        } else {
+            format!("{}0", seed)
+        };
+        let seed = hex::decode(&new_seed).unwrap();
+        let iss = hex::decode(&new_seed).unwrap();
+        let sub = hex::decode(&new_seed).unwrap();
         let okm = hkdf_sha3_256(
             &HkdfIkm::from_bytes(seed.as_ref()).unwrap(),
             iss.as_ref(),
             sub.as_ref(),
             42,
-        ).unwrap();
-        Ok(hex::encode(okm))
+        );
+        match okm {
+            Ok(r) => Ok(hex::encode(r)),
+            Err(e) => Ok(e.to_string()),
+        }
     }
 
     #[instrument(skip(self))]
