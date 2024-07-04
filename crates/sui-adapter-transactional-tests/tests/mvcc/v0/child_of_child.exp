@@ -5,7 +5,7 @@ A: object(0,0)
 
 task 1 'publish'. lines 8-69:
 Error: error[E04024]: invalid usage of immutable variable
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.2LYEboM5yI/.tmpI119Il:26:21
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpw7aoPQ:26:21
    │
 22 │         let  grand  = Obj { id: object::new(ctx), value: 0 };
    │              ----- To use the variable mutably, it must be declared 'mut', e.g. 'mut grand'
