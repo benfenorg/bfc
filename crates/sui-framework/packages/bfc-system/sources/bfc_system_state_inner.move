@@ -369,6 +369,25 @@ module bfc_system::bfc_system_state_inner {
         self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
+    public(friend) fun rebalance_stablecoin<StableCoinType>(
+        self: &mut BfcSystemStateInner,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let amount = treasury::bfc_required(&self.treasury);
+        if (amount > 0) {
+            let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
+            if (balance::value(&withdraw_balance) > 0) {
+                treasury::deposit(&mut self.treasury, coin::from_balance(withdraw_balance, ctx));
+            } else {
+                balance::destroy_zero(withdraw_balance);
+            };
+        };
+        let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
+        treasury::rebalance_stablecoin<StableCoinType>(&mut self.treasury, pool_balance, true, clock, ctx);
+        self.stable_rate = treasury::get_exchange_rates(&self.treasury);
+    }
+
     fun request_gas_balance(
         self: &mut BfcSystemStateInner,
         amount: u64,

@@ -293,6 +293,15 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance(inner_state, clock, ctx);
     }
 
+    public fun rebalance_stablecoin<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::rebalance_stablecoin<StableCoinType>(inner_state, clock, ctx);
+    }
+
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,

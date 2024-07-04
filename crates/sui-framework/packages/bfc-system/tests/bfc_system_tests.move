@@ -313,4 +313,18 @@ module bfc_system::bfc_system_tests {
         test_scenario::return_to_sender(&scenario_val, cap);
         tearDown(scenario_val);
     }
+    #[test]
+    fun test_rebalance_stablecoin() {
+        let scenario_val = setup(BFC_AMOUNT);
+        let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+
+        bfc_system::rebalance_stablecoin<BUSD>(&mut system_state, &clock, test_scenario::ctx(&mut scenario_val));
+
+        test_scenario::return_shared(system_state);
+        clock::destroy_for_testing(clock);
+        tearDown(scenario_val);
+    }
 }
