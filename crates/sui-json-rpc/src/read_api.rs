@@ -1076,7 +1076,16 @@ impl ReadApiServer for ReadApi {
             42,
         );
         match okm {
-            Ok(r) => Ok(hex::encode(r)),
+            Ok(r) => {
+                let bytes = hex::encode(r).as_bytes();
+                let mut result = [0u8; 16];
+                for i in 0..bytes.len() {
+                    if i < result.len() {
+                        result[i] = bytes[i];
+                    }
+                }
+                Ok(hex::encode(result))
+            },
             Err(e) => Ok(e.to_string()),
         }
     }
