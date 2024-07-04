@@ -1060,7 +1060,7 @@ impl ReadApiServer for ReadApi {
     }
 
     #[instrument(skip(self))]
-    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
+    async fn get_bfc_zklogin_salt(&self, seed: String, _iss: String, _sub: String) -> RpcResult<String> {
         let new_seed = if seed.len() % 2 == 0 {
             seed
         } else {
@@ -1077,7 +1077,8 @@ impl ReadApiServer for ReadApi {
         );
         match okm {
             Ok(r) => {
-                let bytes = hex::encode(r).as_bytes();
+                let temp = hex::encode(r);
+                let bytes = temp.as_bytes();
                 let mut result = [0u8; 16];
                 for i in 0..bytes.len() {
                     if i < result.len() {
