@@ -911,19 +911,7 @@ module sui_system::validator {
 
     public fun total_stake_with_all_stable(self: &Validator, stable_rate: VecMap<ascii::String, u64>): u64 {
         let total_stake = total_stake(self);
-        if (self.metadata.sui_address == @0x1) {
-            std::debug::print(&utf8(b"total_stake_with_all_stable bfc"));
-            std::debug::print(&(total_stake));
-            std::debug::print(&(self.metadata.sui_address));
-        };
-
-        total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate) + stable_rewards_pool<BUSD>(self);
-        if (self.metadata.sui_address == @0x1) {
-            std::debug::print(&utf8(b"total_stake_with_all_stable busd"));
-            std::debug::print(&(total_stake));
-            std::debug::print(&(self.metadata.sui_address));
-        };
-
+        total_stake = total_stake + total_stake_of_stable<BUSD>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BARS>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BAUD>(self, stable_rate);
         total_stake = total_stake + total_stake_of_stable<BBRL>(self, stable_rate);

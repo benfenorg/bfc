@@ -64,6 +64,7 @@
 -  [Function `total_stake_amount`](#0x3_validator_total_stake_amount)
 -  [Function `stake_amount`](#0x3_validator_stake_amount)
 -  [Function `stable_stake_amount`](#0x3_validator_stable_stake_amount)
+-  [Function `stable_rewards_pool`](#0x3_validator_stable_rewards_pool)
 -  [Function `total_stake`](#0x3_validator_total_stake)
 -  [Function `total_stake_with_all_stable`](#0x3_validator_total_stake_with_all_stable)
 -  [Function `total_stake_for_reward`](#0x3_validator_total_stake_for_reward)
@@ -1474,11 +1475,6 @@ Deposit stakes rewards into the validator's staking pool, called at the end of t
     <b>let</b> bfc_reward = 0;
     <b>let</b> stable_total_stake = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>();
     <b>let</b> all_stable_total_stake = <a href="validator.md#0x3_validator_get_stable_staking_total">get_stable_staking_total</a>(self, &<b>mut</b> stable_total_stake, stable_rate);
-    std::debug::print(&utf8(b"all_stable_total_stake"));
-    std::debug::print(&(all_stable_total_stake));
-    std::debug::print(&(total_reward));
-    std::debug::print(&utf8(b"end - all_stable_total_stake"));
-
     <b>if</b> (all_stable_total_stake &gt; 0) {
         //distribute for <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a> pool
         <b>let</b> bfc_total_stake = <a href="validator.md#0x3_validator_stake_amount">stake_amount</a>(self);
@@ -2500,6 +2496,30 @@ Returns true if the validator is preactive.
 
 </details>
 
+<a name="0x3_validator_stable_rewards_pool"></a>
+
+## Function `stable_rewards_pool`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_rewards_pool">stable_rewards_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_rewards_pool">stable_rewards_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_rewards_pool">stable_pool::rewards_pool</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_total_stake"></a>
 
 ## Function `total_stake`
@@ -2542,7 +2562,23 @@ Return the total amount staked with this validator
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_total_stake_with_all_stable">total_stake_with_all_stable</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>, stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;): u64 {
     <b>let</b> total_stake = <a href="validator.md#0x3_validator_total_stake">total_stake</a>(self);
-    total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BUSD&gt;(self, stable_rate);
+    <b>if</b> (self.metadata.sui_address == @0x1) {
+        std::debug::print(&utf8(b"total_stake_with_all_stable <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>"));
+        std::debug::print(&(total_stake));
+        std::debug::print(&(self.metadata.sui_address));
+    };
+
+    <b>let</b> s = <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BUSD&gt;(self, stable_rate);
+    std::debug::print(&utf8(b"<a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BUSD&gt;(self, stable_rate);"));
+    std::debug::print(&(s));
+
+    total_stake = total_stake + s + <a href="validator.md#0x3_validator_stable_rewards_pool">stable_rewards_pool</a>&lt;BUSD&gt;(self);
+    <b>if</b> (self.metadata.sui_address == @0x1) {
+        std::debug::print(&utf8(b"total_stake_with_all_stable <a href="../../../.././build/BfcSystem/docs/busd.md#0xc8_busd">busd</a>"));
+        std::debug::print(&(total_stake));
+        std::debug::print(&(self.metadata.sui_address));
+    };
+
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BARS&gt;(self, stable_rate);
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BAUD&gt;(self, stable_rate);
     total_stake = total_stake + <a href="validator.md#0x3_validator_total_stake_of_stable">total_stake_of_stable</a>&lt;BBRL&gt;(self, stable_rate);
@@ -2624,6 +2660,11 @@ Return the total amount staked with this validator
     <b>if</b> (stable_stake &gt; 0) {
         <b>let</b> pool_key = <a href="_into_string">type_name::into_string</a>(<a href="_get">type_name::get</a>&lt;STABLE&gt;());
         <b>let</b> rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key);
+
+        std::debug::print(&utf8(b"rate = <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_get">vec_map::get</a>(&stable_rate, &pool_key); <a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc">bfc</a>"));
+        std::debug::print(&(*rate));
+        std::debug::print(&(stable_rate));
+
         <b>let</b> total_stake = (stable_stake <b>as</b> u128) *  (*rate <b>as</b> u128) / (1000000000 <b>as</b> u128);
         (total_stake <b>as</b> u64)
     } <b>else</b> {

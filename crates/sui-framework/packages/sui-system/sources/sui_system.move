@@ -723,6 +723,16 @@ module sui_system::sui_system {
     }
 
     #[test_only]
+    public fun validator_stake_amount_with_stable_real_rate(
+        wrapper: &mut SuiSystemState,
+        validator_addr: address,
+    ): u64 {
+        let stable_rate = get_stable_rate(wrapper);
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, stable_rate)
+    }
+
+    #[test_only]
     /// Returns the staking pool id of a given validator.
     /// Aborts if `validator_addr` is not an active validator.
     public fun validator_staking_pool_id(wrapper: &mut SuiSystemState, validator_addr: address): ID {

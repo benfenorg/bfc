@@ -1239,9 +1239,6 @@ It does the following things:
         <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(storage_fund_reward),
     );
 
-    std::debug::print(&utf8(b"unadjusted_staking_reward_amounts"));
-    std::debug::print(&(unadjusted_staking_reward_amounts));
-
     // Use the tallying rule report records for the epoch <b>to</b> compute validators that will be
     // punished.
     <b>let</b> slashed_validators = <a href="validator_set.md#0x3_validator_set_compute_slashed_validators">compute_slashed_validators</a>(self, *validator_report_records);
@@ -1275,12 +1272,6 @@ It does the following things:
         total_storage_fund_reward_adjustment,
         individual_storage_fund_reward_adjustments
     );
-    std::debug::print(&utf8(b"adjusted_staking_reward_amounts"));
-    std::debug::print(&(adjusted_staking_reward_amounts));
-    std::debug::print(&utf8(b"end-adjusted_staking_reward_amounts"));
-
-
-
 
     // Distribute the rewards before adjusting stake so that we immediately start compounding
     // the rewards for validators and stakers.
@@ -3070,12 +3061,6 @@ The staking rewards are shared with the stakers while the storage fund ones are 
         // Validator takes a cut of the rewards <b>as</b> commission.
         <b>let</b> validator_commission_amount = (staking_reward_amount <b>as</b> u128) * (<a href="validator.md#0x3_validator_commission_rate">validator::commission_rate</a>(<a href="validator.md#0x3_validator">validator</a>) <b>as</b> u128) / <a href="validator_set.md#0x3_validator_set_BASIS_POINT_DENOMINATOR">BASIS_POINT_DENOMINATOR</a>;
 
-        std::debug::print(&utf8(b"staking_reward_amount"));
-        std::debug::print(&(i+1));
-        std::debug::print(&(staking_reward_amount));
-        std::debug::print(&utf8(b"end-staking_reward_amount"));
-
-
         // The <a href="validator.md#0x3_validator">validator</a> reward = storage_fund_reward + commission.
         <b>let</b> validator_reward = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> staker_reward, (validator_commission_amount <b>as</b> u64));
 
@@ -3086,10 +3071,22 @@ The staking rewards are shared with the stakers while the storage fund ones are 
         <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&validator_reward) &gt; 0) {
             <b>let</b> validator_address = <a href="validator.md#0x3_validator_sui_address">validator::sui_address</a>(<a href="validator.md#0x3_validator">validator</a>);
             <b>let</b> rewards_stake = <a href="validator.md#0x3_validator_request_add_stake">validator::request_add_stake</a>(<a href="validator.md#0x3_validator">validator</a>, validator_reward, validator_address, ctx);
+
+            std::debug::print(&utf8(b"validator_reward"));
+            std::debug::print(&(validator_address));
+            std::debug::print(&(rewards_stake));
+            std::debug::print(&utf8(b"end-validator_reward\n"));
+
             <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(rewards_stake, validator_address);
         } <b>else</b> {
             <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(validator_reward);
         };
+
+        std::debug::print(&utf8(b"deposit_stake_rewards"));
+        std::debug::print(&(<a href="validator.md#0x3_validator_sui_address">validator::sui_address</a>(<a href="validator.md#0x3_validator">validator</a>)));
+        std::debug::print(&(staker_reward));
+        std::debug::print(&utf8(b"end- deposit_stake_rewards\n"));
+
 
         // Add rewards <b>to</b> stake staking pool <b>to</b> auto compound for stakers.
         <a href="validator.md#0x3_validator_deposit_stake_rewards">validator::deposit_stake_rewards</a>(<a href="validator.md#0x3_validator">validator</a>, staker_reward, &stable_rate);
