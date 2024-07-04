@@ -261,6 +261,14 @@ pub enum StatusCode {
     DUPLICATE_MODULE_NAME = 1095,
     // The sender is trying to publish a module that breaks the compatibility checks
     BACKWARD_INCOMPATIBLE_MODULE_UPDATE = 1096,
+    BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r1 = 10961,
+        BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r2 = 10962,
+    BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r3 = 10963,
+    BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r4 = 10964,
+    BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r5 = 10965,
+
+
+
     // The updated module introduces a cyclic dependency (i.e., A uses B and B also uses A)
     CYCLIC_MODULE_DEPENDENCY = 1097,
     NUMBER_OF_ARGUMENTS_MISMATCH = 1098,

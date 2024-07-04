@@ -52,7 +52,7 @@ module bfc_system::bfc_system_tests {
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
         let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
-        treasury::rebalance(&mut t, 0, &clock, test_scenario::ctx(&mut scenario_val));
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);

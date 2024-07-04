@@ -1524,6 +1524,9 @@ impl CheckpointBuilder {
         checkpoint: CheckpointSequenceNumber,
         // TODO: Check whether we must use anyhow::Result or can we use SuiResult.
     ) -> anyhow::Result<SuiSystemState> {
+
+        println!("=========augment_epoch_last_checkpoint===========");
+
         let (system_state, effects) = self
             .state
             .create_and_execute_advance_epoch_tx(

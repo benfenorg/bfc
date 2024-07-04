@@ -388,7 +388,7 @@ module bfc_system::treasury {
     }
 
     public(package) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
-        let min_amount = next_epoch_bfc_required(_treasury);
+        let min_amount = bfc_required(_treasury);
         let input = coin::into_balance(_coin_bfc);
         let input_amount = balance::value(&input);
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
@@ -400,26 +400,26 @@ module bfc_system::treasury {
     }
 
     /// Rebalance
-    public(package) fun next_epoch_bfc_required(_treasury: &Treasury): u64 {
-        let times_per_day = (3600 * 24 / _treasury.time_interval as u64);
+    public(package) fun bfc_required(_treasury: &Treasury): u64 {
+        let treasury_total_bfc_supply = _treasury.total_bfc_supply;
 
-        let total = one_coin_bfc_required<BUSD>(_treasury, times_per_day) +
-            one_coin_bfc_required<MGG>(_treasury, times_per_day) +
-            one_coin_bfc_required<BJPY>(_treasury, times_per_day) +
-            one_coin_bfc_required<BAUD>(_treasury, times_per_day) +
-            one_coin_bfc_required<BKRW>(_treasury, times_per_day) +
-            one_coin_bfc_required<BBRL>(_treasury, times_per_day) +
-            one_coin_bfc_required<BCAD>(_treasury, times_per_day) +
-            one_coin_bfc_required<BEUR>(_treasury, times_per_day) +
-            one_coin_bfc_required<BGBP>(_treasury, times_per_day) +
-            one_coin_bfc_required<BIDR>(_treasury, times_per_day) +
-            one_coin_bfc_required<BINR>(_treasury, times_per_day) +
-            one_coin_bfc_required<BRUB>(_treasury, times_per_day) +
-            one_coin_bfc_required<BSAR>(_treasury, times_per_day) +
-            one_coin_bfc_required<BTRY>(_treasury, times_per_day) +
-            one_coin_bfc_required<BZAR>(_treasury, times_per_day) +
-            one_coin_bfc_required<BMXN>(_treasury, times_per_day) +
-            one_coin_bfc_required<BARS>(_treasury, times_per_day);
+        let total = one_coin_bfc_required<BUSD>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<MGG>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BJPY>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BAUD>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BKRW>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BBRL>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BCAD>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BEUR>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BGBP>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BIDR>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BINR>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BRUB>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BSAR>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BTRY>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BZAR>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BMXN>(_treasury, treasury_total_bfc_supply) +
+            one_coin_bfc_required<BARS>(_treasury, treasury_total_bfc_supply);
 
         let get_treasury_balance = get_balance(_treasury);
         if (total > get_treasury_balance) {
@@ -432,7 +432,8 @@ module bfc_system::treasury {
     public(package) fun rebalance(
         _treasury: &mut Treasury,
         _pool_balance: u64,
-        clock: &Clock,
+        _update: bool,
+        _clock: &Clock,
         _ctx: &mut TxContext,
     ) {
         // check init
@@ -440,15 +441,15 @@ module bfc_system::treasury {
             return
         };
 
-        // check time_interval
-        let current_ts = clock::timestamp_ms(clock) / 1000;
+        let current_ts = clock::timestamp_ms(_clock) / 1000;
+
         if ((current_ts - _treasury.updated_at) < (_treasury.time_interval as u64)) {
             return
         };
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let bfc_in_vault = rebalance_internal(_treasury, true, _ctx);
+        let bfc_in_vault = rebalance_internal(_treasury, _update, _ctx);
         _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + balance::value(&_treasury.bfc_balance);
     }
 

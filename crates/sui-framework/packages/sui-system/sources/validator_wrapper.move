@@ -27,8 +27,8 @@ module sui_system::validator_wrapper {
     }
 
     /// Destroy the wrapper and retrieve the inner validator object.
-    public(package) fun destroy(self: ValidatorWrapper): Validator {
-        upgrade_to_latest(&self);
+    public(package) fun destroy(mut self: ValidatorWrapper): Validator {
+        upgrade_to_latest(&mut self);
         let ValidatorWrapper { inner } = self;
         versioned::destroy(inner)
     }
@@ -39,7 +39,8 @@ module sui_system::validator_wrapper {
         versioned::load_value(&self.inner)
     }
 
-    fun upgrade_to_latest(self: &ValidatorWrapper) {
+    #[allow(unused_mut_parameter)]
+    fun upgrade_to_latest(self: &mut ValidatorWrapper) {
         let version = version(self);
         // TODO: When new versions are added, we need to explicitly upgrade here.
         assert!(version == 1, EInvalidVersion);

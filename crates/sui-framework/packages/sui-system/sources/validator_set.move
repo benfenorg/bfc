@@ -112,6 +112,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward: u64,
         pool_token_exchange_rate: PoolTokenExchangeRate,
         stable_pool_token_exchange_rate: vector<PoolStableTokenExchangeRate>,
+        last_epoch_stable_rate: VecMap<ascii::String, u64>,
         tallying_rule_reporters: vector<address>,
         tallying_rule_global_score: u64,
     }
@@ -297,9 +298,10 @@ module sui_system::validator_set {
         );
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system` to add a new validator to `pending_active_validators`, which will be
     /// processed at the end of epoch.
-    public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_stake_amount: u64, ctx: &TxContext) {
+    public(package) fun request_add_validator(self: &mut ValidatorSet, min_joining_stake_amount: u64, ctx: &mut TxContext) {
         let validator_address = ctx.sender();
         assert!(
             self.validator_candidates.contains(validator_address),
@@ -327,13 +329,14 @@ module sui_system::validator_set {
         );
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system`, to remove a validator.
     /// The index of the validator is added to `pending_removals` and
     /// will be processed at the end of epoch.
     /// Only an active validator can request to be removed.
     public(package) fun request_remove_validator(
         self: &mut ValidatorSet,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) {
         let validator_address = ctx.sender();
         let mut validator_index_opt = find_validator(&self.active_validators, validator_address);
@@ -377,6 +380,7 @@ module sui_system::validator_set {
         validator::request_add_stable_stake(validator, stake, tx_context::sender(ctx), ctx)
     }
 
+    #[allow(unused_mut_parameter)]
     /// Called by `sui_system`, to withdraw some share of a stake from the validator. The share to withdraw
     /// is denoted by `principal_withdraw_amount`. One of two things occurs in this function:
     /// 1. If the `staked_sui` is staked with an active validator, the request is added to the validator's
@@ -386,7 +390,7 @@ module sui_system::validator_set {
     public(package) fun request_withdraw_stake(
         self: &mut ValidatorSet,
         staked_sui: StakedBfc,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : Balance<BFC> {
         let staking_pool_id = pool_id(&staked_sui);
         let validator =
@@ -401,10 +405,11 @@ module sui_system::validator_set {
         validator.request_withdraw_stake(staked_sui, ctx)
     }
 
+    #[allow(unused_mut_parameter)]
     public(package) fun request_withdraw_stable_stake<STABLE>(
         self: &mut ValidatorSet,
         staked_sui: StakedStable<STABLE>,
-        ctx: &TxContext,
+        ctx: &mut TxContext,
     ) : (Balance<STABLE>, Balance<BFC>) {
         let stable_pool_id = stable_pool_id(&staked_sui);
         let stable_rate_map = self.last_epoch_stable_rate;
@@ -520,7 +525,7 @@ module sui_system::validator_set {
 
         // Emit events after we have processed all the rewards distribution and pending stakes.
         emit_validator_epoch_events(new_epoch, &self.active_validators, &adjusted_staking_reward_amounts,
-            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators);
+            &adjusted_storage_fund_reward_amounts, validator_report_records, &slashed_validators, stable_rate);
 
         // Note that all their staged next epoch metadata will be effectuated below.
         process_pending_validators(self, new_epoch);
@@ -1091,7 +1096,7 @@ module sui_system::validator_set {
 
     /// Process all active validators' pending stake deposits and withdraws.
     fun process_pending_stakes_and_withdraws(
-        validators: &mut vector<Validator>, ctx: &TxContext
+        validators: &mut vector<Validator>, ctx: &mut TxContext
     ) {
         let length = validators.length();
         let mut i = 0;
@@ -1343,6 +1348,7 @@ module sui_system::validator_set {
         storage_fund_staking_reward_amounts: &vector<u64>,
         report_records: &VecMap<address, VecSet<address>>,
         slashed_validators: &vector<address>,
+        stable_rate: VecMap<ascii::String, u64>,
     ) {
         let num_validators = vs.length();
         let mut i = 0;
@@ -1359,22 +1365,23 @@ module sui_system::validator_set {
                 if (slashed_validators.contains(&validator_address)) 0
                 else 1;
 
-            event::emit(
-                ValidatorEpochInfoEventV2 {
-                    epoch: new_epoch,
-                    validator_address,
-                    stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
-                    reference_gas_survey_quote: v.gas_price(),
-                    stake: v.total_stake_amount(),
-                    voting_power: v.voting_power(),
-                    commission_rate: v.commission_rate(),
-                    pool_staking_reward: pool_staking_reward_amounts[i],
-                    storage_fund_staking_reward: storage_fund_staking_reward_amounts[i],
-                    pool_token_exchange_rate: v.pool_token_exchange_rate_at_epoch(new_epoch),
-                    tallying_rule_reporters,
-                    tallying_rule_global_score,
+        event::emit(
+            ValidatorEpochInfoEventV2 {
+                epoch: new_epoch,
+                validator_address,
+                reference_gas_survey_quote: validator::gas_price(v),
+                stake: validator::total_stake_with_all_stable(v, stable_rate),
+                voting_power: validator::voting_power(v),
+                commission_rate: validator::commission_rate(v),
+                pool_staking_reward: *vector::borrow(pool_staking_reward_amounts, i),
+                storage_fund_staking_reward: *vector::borrow(storage_fund_staking_reward_amounts, i),
+                pool_token_exchange_rate: validator::pool_token_exchange_rate_at_epoch(v, new_epoch),
+                stable_pool_token_exchange_rate: validator::pool_stable_token_exchange_rate_at_epoch(v, new_epoch),
+                last_epoch_stable_rate: stable_rate,
+                tallying_rule_reporters,
+                tallying_rule_global_score,
                 }
-            );
+        );
             i = i + 1;
         }
     }

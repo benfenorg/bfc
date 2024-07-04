@@ -328,6 +328,9 @@ struct FeatureFlags {
     #[serde(skip_serializing_if = "is_false")]
     end_of_epoch_transaction_supported: bool,
 
+    #[serde(skip_serializing_if = "is_false")]
+    bfc_authenticator_state_supported: bool,
+
     // Perform simple conservation checks keeping into account out of gas scenarios
     // while charging for storage.
     #[serde(skip_serializing_if = "is_false")]
@@ -1193,6 +1196,10 @@ impl ProtocolConfig {
 
     pub fn loaded_child_object_format_type(&self) -> bool {
         self.feature_flags.loaded_child_object_format_type
+    }
+
+    pub fn bfc_authenticator_state_supported(&self) -> bool {
+        self.feature_flags.bfc_authenticator_state_supported
     }
 
     pub fn end_of_epoch_transaction_supported(&self) -> bool {
@@ -2133,6 +2140,7 @@ impl ProtocolConfig {
                     cfg.bfc_system_state_open = Some(1);
                     // Enable consensus digest in consensus commit prologue on all networks..
                     cfg.feature_flags.include_consensus_digest_in_prologue = true;
+                    cfg.feature_flags.bfc_authenticator_state_supported = true;
                     // Switch between Narwhal and Mysticeti per epoch in tests, devnet and testnet.
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.consensus_choice = ConsensusChoice::SwapEachEpoch;

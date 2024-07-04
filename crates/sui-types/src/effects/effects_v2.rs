@@ -19,7 +19,7 @@ use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 #[cfg(debug_assertions)]
 use std::collections::HashSet;
-
+use crate::{SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID};
 /// The response from processing a transaction or a certified transaction
 #[derive(Eq, PartialEq, Clone, Debug, Serialize, Deserialize)]
 pub struct TransactionEffectsV2 {
@@ -469,8 +469,15 @@ impl TransactionEffectsV2 {
                     // unwrapped and then deleted Move object.
                 }
                 (ObjectIn::NotExist, ObjectOut::ObjectWrite((_, owner)), IDOperation::None) => {
+                    if [SUI_AUTHENTICATOR_STATE_OBJECT_ID,
+                        SUI_RANDOMNESS_STATE_OBJECT_ID,
+                        SUI_DENY_LIST_OBJECT_ID,
+                    ].contains(&id) {
+                        continue;
+                    }
                     // unwrapped Move object.
                     // It's not allowed to make an object shared after unwrapping.
+
                     assert!(!owner.is_shared());
                 }
                 (ObjectIn::NotExist, ObjectOut::ObjectWrite(..), IDOperation::Created) => {
