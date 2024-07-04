@@ -940,7 +940,7 @@ mod checked {
         let mut deposit_computation_charge = 0u64;
         let mut discard = false;
 
-        info!("change epoch: {:?}",change_epoch);
+        //info!("change epoch: {:?}",change_epoch);
 
         let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
         if rate_result.is_err() {

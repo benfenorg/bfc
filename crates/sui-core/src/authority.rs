@@ -4631,15 +4631,15 @@ impl AuthorityState {
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
-        if cfg!(feature="bfc_skip_dao_update") {
-            info!("===========msim test skip ========");
-        } else if proposal_result == false {
-            info!("=========skip system package update, proposal fail=======",);
-            next_epoch_system_packages.clear();
-            next_epoch_protocol_version = epoch_store.protocol_version();
-        } else {
-            info!("======= system package update, proposal success=======");
-        };
+        // if cfg!(feature="bfc_skip_dao_update") {
+        //     info!("===========msim test skip ========");
+        // } else if proposal_result == false {
+        //     info!("=========skip system package update, proposal fail=======",);
+        //     next_epoch_system_packages.clear();
+        //     next_epoch_protocol_version = epoch_store.protocol_version();
+        // } else {
+        //     info!("======= system package update, proposal success=======");
+        // };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version
@@ -4675,6 +4675,7 @@ impl AuthorityState {
             .protocol_config()
             .end_of_epoch_transaction_supported() && version != 1
         {
+            println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
@@ -4690,6 +4691,8 @@ impl AuthorityState {
 
             VerifiedTransaction::new_end_of_epoch_transaction(txns)
         } else {
+            println!("===========end_of_epoch_transaction_supported: using new_change_epoch======= running with new txns pushed");
+
             VerifiedTransaction::new_change_epoch(
                 next_epoch,
                 next_epoch_protocol_version,
