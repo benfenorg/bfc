@@ -328,12 +328,8 @@ struct FeatureFlags {
     #[serde(skip_serializing_if = "is_false")]
     end_of_epoch_transaction_supported: bool,
 
-<<<<<<< Updated upstream
     #[serde(skip_serializing_if = "is_false")]
     bfc_authenticator_state_supported: bool,
-=======
-    
->>>>>>> Stashed changes
 
     // Perform simple conservation checks keeping into account out of gas scenarios
     // while charging for storage.

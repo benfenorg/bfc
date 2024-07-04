@@ -4668,12 +4668,12 @@ impl AuthorityState {
             };
 
         let epoch_duration_ms = epoch_store.epoch_start_state().epoch_duration_ms();
-        let version = epoch_store
-            .protocol_config().execution_version_as_option().unwrap_or(0);
 
         let tx = if epoch_store
             .protocol_config()
-            .end_of_epoch_transaction_supported() && version != 1
+            .end_of_epoch_transaction_supported() && epoch_store
+            .protocol_config()
+            .bfc_authenticator_state_supported()
         {
             println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
