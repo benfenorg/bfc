@@ -3514,3 +3514,79 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
     assert!(r > 0);
     Ok(())
 }
+
+#[sim_test]
+async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
+
+
+    //telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000 * 100)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
+    // let pt = ProgrammableTransaction {
+    //     inputs: vec![
+    //         CallArg::BFC_SYSTEM_MUT
+    //     ],
+    //     commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+    //         package: BFC_SYSTEM_PACKAGE_ID,
+    //         module: Identifier::new("bfc_system").unwrap(),
+    //         function: Identifier::new("vault_info").unwrap(),
+    //         type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+    //         arguments: vec![Argument::Input(0)],
+    //     }))],
+    // };
+    // let r = dev_inspect_call_return_vault_info(&test_cluster, pt.clone()).await;
+    // tracing::error!("vault info {:?}",r);
+    let first_address = test_cluster.get_address_0();
+    tracing::error!("first_address {:?} bfc balance {:?}",first_address, get_bfc_balance(http_client, first_address).await);
+
+
+    let mut addresses = Vec::new();
+    for i in 0..100 {
+        let address = SuiAddress::random_for_testing_only();
+        addresses.push(address);
+        //airdrop 100 bfc
+        airdrop_bfc_for_address(&test_cluster, address).await;
+    }
+
+    tracing::error!("查询余额开始");
+    //get bfc balance
+    for address in addresses.clone() {
+        let balance = get_bfc_balance(http_client, address).await;
+        tracing::error!("before airdrop bfc balance {:?} {:?}",address,balance);
+    }
+    tracing::error!("查询余额结束");
+
+    //swap bfc to stablecoin
+    for address in addresses.clone() {
+        let objects = swap_bfc_to_stablecoin(&test_cluster, http_client, address, 1_000_000_000).await?;
+    }
+
+    // //get busd balance
+    // for address in addresses.clone() {
+    //     tracing::error!("BUSD balance {:?} {:?}",address,get_(http_client, address).await?;);
+    // }
+
+    //do rebalance
+    rebalance(&test_cluster, http_client, first_address).await?;
+    Ok(())
+}
+
+//transfer bfc for address
+async fn airdrop_bfc_for_address(test_cluster: &TestCluster, address: SuiAddress) {
+    //创建bfc
+    let amount = 3_000_000_000u64;
+    let tx = make_transfer_sui_transaction(&test_cluster.wallet,
+                                           Option::Some(address),
+                                           Option::Some(amount)).await;
+    test_cluster
+        .execute_transaction(tx.clone())
+        .await
+        .effects
+        .unwrap();
+}
