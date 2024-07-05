@@ -4,7 +4,7 @@
 import Overlay from '_components/overlay';
 import { useActiveAddress, useCoinsReFetchingConfig } from '_hooks';
 import { TokenRow } from '_pages/home/tokens/TokensDetails';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { Fragment } from 'react';
 import { useSearchParams } from 'react-router-dom';
 
@@ -15,7 +15,7 @@ function ToAsset({ coinType, onClick }: { coinType: string; onClick: (coinType: 
 
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 
-	const { data: coinBalance } = useSuiClientQuery(
+	const { data: coinBalance } = useBenfenClientQuery(
 		'getBalance',
 		{ coinType: coinType, owner: accountAddress! },
 		{ enabled: !!accountAddress, refetchInterval, staleTime },

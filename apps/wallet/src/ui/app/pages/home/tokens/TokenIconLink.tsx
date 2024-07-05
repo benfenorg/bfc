@@ -8,7 +8,7 @@ import {
 	DELEGATED_STAKES_QUERY_STALE_TIME,
 } from '_src/shared/constants';
 import { Text } from '_src/ui/app/shared/text';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetDelegatedStake } from '@mysten/core';
 import { WalletActionStake24 } from '@mysten/icons';
 import { useMemo } from 'react';
@@ -35,7 +35,7 @@ export function TokenIconLink({
 		);
 	}, [delegatedStake]);
 
-	const [formatted, symbol, queryResult] = useFormatCoin(totalActivePendingStake, SUI_TYPE_ARG);
+	const [formatted, symbol, queryResult] = useFormatCoin(totalActivePendingStake, BFC_TYPE_ARG);
 
 	return (
 		<LargeButton

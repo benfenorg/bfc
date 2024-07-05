@@ -1,14 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { BCS, getBenfenMoveConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils';
 
 describe('BCS: Aliases', () => {
 	it('should support type aliases', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = 'this is a string';
 
 		bcs.registerAlias('MyString', BCS.STRING);
@@ -16,7 +16,7 @@ describe('BCS: Aliases', () => {
 	});
 
 	it('should support recursive definitions in structs', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = { name: 'Billy' };
 
 		bcs.registerAlias('UserName', BCS.STRING);
@@ -24,7 +24,7 @@ describe('BCS: Aliases', () => {
 	});
 
 	it('should spot recursive definitions', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = 'this is a string';
 
 		bcs.registerAlias('MyString', BCS.STRING);

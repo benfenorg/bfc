@@ -1,22 +1,33 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { fromB58, toB64, toHEX } from '../bcs/src/index.js';
 import type { Signer } from '../cryptography/index.js';
 import type { TransactionBlock } from '../transactions/TransactionBlock.js';
 import { isTransactionBlock } from '../transactions/TransactionBlock.js';
+import { normalizeBenfenNSName } from '../utils/benfenns.js';
 import {
-	isValidSuiAddress,
-	isValidSuiObjectId,
+	isValidBenfenAddress,
+	isValidBenfenObjectId,
 	isValidTransactionDigest,
-	normalizeSuiAddress,
-} from '../utils/bfc-types.js';
-import { sui2BfcAddress } from '../utils/format.js';
-import { normalizeSuiNSName } from '../utils/suins.js';
-import { SuiHTTPTransport } from './http-transport.js';
-import type { SuiTransport } from './http-transport.js';
+	normalizeHexAddress,
+} from '../utils/bf-types.js';
+import { hex2BfcAddress } from '../utils/format.js';
+import { BenfenHTTPTransport } from './http-transport.js';
+import type { BenfenTransport } from './http-transport.js';
 import type {
 	AddressMetrics,
 	AllEpochsAddressMetrics,
+	BenfenEvent,
+	BenfenMoveFunctionArgType,
+	BenfenMoveNormalizedFunction,
+	BenfenMoveNormalizedModule,
+	BenfenMoveNormalizedModules,
+	BenfenMoveNormalizedStruct,
+	BenfenObjectResponse,
+	BenfenObjectResponseQuery,
+	BenfenSystemStateSummary,
+	BenfenTransactionBlockResponse,
+	BenfenTransactionBlockResponseQuery,
 	BfcDao,
 	Checkpoint,
 	CheckpointPage,
@@ -56,6 +67,7 @@ import type {
 	GetStakesParams,
 	GetTotalSupplyParams,
 	GetTransactionBlockParams,
+	GetZkloginSaltParams,
 	MoveCallMetrics,
 	MultiGetObjectsParams,
 	MultiGetTransactionBlocksParams,
@@ -74,17 +86,6 @@ import type {
 	ResolveNameServiceNamesParams,
 	SubscribeEventParams,
 	SubscribeTransactionParams,
-	SuiEvent,
-	SuiMoveFunctionArgType,
-	SuiMoveNormalizedFunction,
-	SuiMoveNormalizedModule,
-	SuiMoveNormalizedModules,
-	SuiMoveNormalizedStruct,
-	SuiObjectResponse,
-	SuiObjectResponseQuery,
-	SuiSystemStateSummary,
-	SuiTransactionBlockResponse,
-	SuiTransactionBlockResponseQuery,
 	TransactionEffects,
 	TryGetPastObjectParams,
 	Unsubscribe,
@@ -103,10 +104,10 @@ export interface OrderArguments {
 }
 
 /**
- * Configuration options for the SuiClient
+ * Configuration options for the BenfenClient
  * You must provide either a `url` or a `transport`
  */
-export type SuiClientOptions = NetworkOrTransport;
+export type BenfenClientOptions = NetworkOrTransport;
 
 export type NetworkOrTransport =
 	| {
@@ -114,34 +115,34 @@ export type NetworkOrTransport =
 			transport?: never;
 	  }
 	| {
-			transport: SuiTransport;
+			transport: BenfenTransport;
 			url?: never;
 	  };
 
-export const SUI_CLIENT_BRAND = Symbol.for('@mysten/SuiClient');
+export const BENFEN_CLIENT_BRAND = Symbol.for('@benfen/BenfenClient');
 
-export function isSuiClient(client: unknown): client is SuiClient {
+export function isBenfenClient(client: unknown): client is BenfenClient {
 	return (
 		typeof client === 'object' &&
 		client !== null &&
-		(client as { [SUI_CLIENT_BRAND]: unknown })[SUI_CLIENT_BRAND] === true
+		(client as { [BENFEN_CLIENT_BRAND]: unknown })[BENFEN_CLIENT_BRAND] === true
 	);
 }
 
-export class SuiClient {
-	protected transport: SuiTransport;
+export class BenfenClient {
+	protected transport: BenfenTransport;
 
-	get [SUI_CLIENT_BRAND]() {
+	get [BENFEN_CLIENT_BRAND]() {
 		return true;
 	}
 
 	/**
-	 * Establish a connection to a Sui RPC endpoint
+	 * Establish a connection to a Benfen RPC endpoint
 	 *
 	 * @param options configuration options for the API Client
 	 */
-	constructor(options: SuiClientOptions) {
-		this.transport = options.transport ?? new SuiHTTPTransport({ url: options.url });
+	constructor(options: BenfenClientOptions) {
+		this.transport = options.transport ?? new BenfenHTTPTransport({ url: options.url });
 	}
 
 	async getRpcApiVersion(): Promise<string | undefined> {
@@ -157,8 +158,8 @@ export class SuiClient {
 	 * Get all Coin<`coin_type`> objects owned by an address.
 	 */
 	async getCoins(input: GetCoinsParams): Promise<PaginatedCoins> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 
 		return await this.transport.request({
@@ -171,8 +172,8 @@ export class SuiClient {
 	 * Get all Coin objects owned by an address.
 	 */
 	async getAllCoins(input: GetAllCoinsParams): Promise<PaginatedCoins> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 
 		return await this.transport.request({
@@ -185,8 +186,8 @@ export class SuiClient {
 	 * Get the total coin balance for one coin type, owned by the address owner.
 	 */
 	async getBalance(input: GetBalanceParams): Promise<CoinBalance> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 		return await this.transport.request({
 			method: 'bfcx_getBalance',
@@ -198,8 +199,8 @@ export class SuiClient {
 	 * Get the total coin balance for all coin types, owned by the address owner.
 	 */
 	async getAllBalances(input: GetAllBalancesParams): Promise<CoinBalance[]> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 		return await this.transport.request({ method: 'bfcx_getAllBalances', params: [input.owner] });
 	}
@@ -238,7 +239,7 @@ export class SuiClient {
 	 */
 	async getMoveFunctionArgTypes(
 		input: GetMoveFunctionArgTypesParams,
-	): Promise<SuiMoveFunctionArgType[]> {
+	): Promise<BenfenMoveFunctionArgType[]> {
 		return await this.transport.request({
 			method: 'bfc_getMoveFunctionArgTypes',
 			params: [input.package, input.module, input.function],
@@ -251,7 +252,7 @@ export class SuiClient {
 	 */
 	async getNormalizedMoveModulesByPackage(
 		input: GetNormalizedMoveModulesByPackageParams,
-	): Promise<SuiMoveNormalizedModules> {
+	): Promise<BenfenMoveNormalizedModules> {
 		return await this.transport.request({
 			method: 'bfc_getNormalizedMoveModulesByPackage',
 			params: [input.package],
@@ -263,7 +264,7 @@ export class SuiClient {
 	 */
 	async getNormalizedMoveModule(
 		input: GetNormalizedMoveModuleParams,
-	): Promise<SuiMoveNormalizedModule> {
+	): Promise<BenfenMoveNormalizedModule> {
 		return await this.transport.request({
 			method: 'bfc_getNormalizedMoveModule',
 			params: [input.package, input.module],
@@ -275,7 +276,7 @@ export class SuiClient {
 	 */
 	async getNormalizedMoveFunction(
 		input: GetNormalizedMoveFunctionParams,
-	): Promise<SuiMoveNormalizedFunction> {
+	): Promise<BenfenMoveNormalizedFunction> {
 		return await this.transport.request({
 			method: 'bfc_getNormalizedMoveFunction',
 			params: [input.package, input.module, input.function],
@@ -287,7 +288,7 @@ export class SuiClient {
 	 */
 	async getNormalizedMoveStruct(
 		input: GetNormalizedMoveStructParams,
-	): Promise<SuiMoveNormalizedStruct> {
+	): Promise<BenfenMoveNormalizedStruct> {
 		return await this.transport.request({
 			method: 'bfc_getNormalizedMoveStruct',
 			params: [input.package, input.module, input.struct],
@@ -298,8 +299,8 @@ export class SuiClient {
 	 * Get all objects owned by an address
 	 */
 	async getOwnedObjects(input: GetOwnedObjectsParams): Promise<PaginatedObjectsResponse> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 
 		return await this.transport.request({
@@ -309,7 +310,7 @@ export class SuiClient {
 				{
 					filter: input.filter,
 					options: input.options,
-				} as SuiObjectResponseQuery,
+				} as BenfenObjectResponseQuery,
 				input.cursor,
 				input.limit,
 			],
@@ -319,9 +320,9 @@ export class SuiClient {
 	/**
 	 * Get details about an object
 	 */
-	async getObject(input: GetObjectParams): Promise<SuiObjectResponse> {
-		if (!input.id || !isValidSuiObjectId(sui2BfcAddress(input.id))) {
-			throw new Error('Invalid Sui Object id');
+	async getObject(input: GetObjectParams): Promise<BenfenObjectResponse> {
+		if (!input.id || !isValidBenfenObjectId(hex2BfcAddress(input.id))) {
+			throw new Error('Invalid Benfen Object id');
 		}
 		return await this.transport.request({
 			method: 'bfc_getObject',
@@ -339,10 +340,10 @@ export class SuiClient {
 	/**
 	 * Batch get details about a list of objects. If any of the object ids are duplicates the call will fail
 	 */
-	async multiGetObjects(input: MultiGetObjectsParams): Promise<SuiObjectResponse[]> {
+	async multiGetObjects(input: MultiGetObjectsParams): Promise<BenfenObjectResponse[]> {
 		input.ids.forEach((id) => {
-			if (!id || !isValidSuiObjectId(sui2BfcAddress(id))) {
-				throw new Error(`Invalid Sui Object id ${id}`);
+			if (!id || !isValidBenfenObjectId(hex2BfcAddress(id))) {
+				throw new Error(`Invalid Benfen Object id ${id}`);
 			}
 		});
 		const hasDuplicates = input.ids.length !== new Set(input.ids).size;
@@ -368,7 +369,7 @@ export class SuiClient {
 				{
 					filter: input.filter,
 					options: input.options,
-				} as SuiTransactionBlockResponseQuery,
+				} as BenfenTransactionBlockResponseQuery,
 				input.cursor,
 				input.limit,
 				(input.order || 'descending') === 'descending',
@@ -378,7 +379,7 @@ export class SuiClient {
 
 	async getTransactionBlock(
 		input: GetTransactionBlockParams,
-	): Promise<SuiTransactionBlockResponse> {
+	): Promise<BenfenTransactionBlockResponse> {
 		if (!isValidTransactionDigest(input.digest)) {
 			throw new Error('Invalid Transaction digest');
 		}
@@ -390,7 +391,7 @@ export class SuiClient {
 
 	async multiGetTransactionBlocks(
 		input: MultiGetTransactionBlocksParams,
-	): Promise<SuiTransactionBlockResponse[]> {
+	): Promise<BenfenTransactionBlockResponse[]> {
 		input.digests.forEach((d) => {
 			if (!isValidTransactionDigest(d)) {
 				throw new Error(`Invalid Transaction digest ${d}`);
@@ -410,7 +411,7 @@ export class SuiClient {
 
 	async executeTransactionBlock(
 		input: ExecuteTransactionBlockParams,
-	): Promise<SuiTransactionBlockResponse> {
+	): Promise<BenfenTransactionBlockResponse> {
 		return await this.transport.request({
 			method: 'bfc_executeTransactionBlock',
 			params: [
@@ -434,13 +435,13 @@ export class SuiClient {
 	} & Omit<
 		ExecuteTransactionBlockParams,
 		'transactionBlock' | 'signature'
-	>): Promise<SuiTransactionBlockResponse> {
+	>): Promise<BenfenTransactionBlockResponse> {
 		let transactionBytes;
 
 		if (transactionBlock instanceof Uint8Array) {
 			transactionBytes = transactionBlock;
 		} else {
-			transactionBlock.setSenderIfNotSet(signer.toSuiAddress());
+			transactionBlock.setSenderIfNotSet(signer.toHexAddress());
 			transactionBytes = await transactionBlock.build({ client: this });
 		}
 
@@ -480,8 +481,8 @@ export class SuiClient {
 	 * Return the delegated stakes for an address
 	 */
 	async getStakes(input: GetStakesParams): Promise<DelegatedStake[]> {
-		if (!input.owner || !isValidSuiAddress(normalizeSuiAddress(input.owner))) {
-			throw new Error('Invalid Sui address');
+		if (!input.owner || !isValidBenfenAddress(normalizeHexAddress(input.owner))) {
+			throw new Error('Invalid Benfen address');
 		}
 		return await this.transport.request({ method: 'bfcx_getStakes', params: [input.owner] });
 	}
@@ -490,21 +491,21 @@ export class SuiClient {
 	 * Return the delegated stakes queried by id.
 	 */
 	async getStakesByIds(input: GetStakesByIdsParams): Promise<DelegatedStake[]> {
-		input.stakedSuiIds.forEach((id) => {
-			if (!id || !isValidSuiObjectId(sui2BfcAddress(id))) {
-				throw new Error(`Invalid Sui Stake id ${id}`);
+		input.stakedBfcIds.forEach((id) => {
+			if (!id || !isValidBenfenObjectId(hex2BfcAddress(id))) {
+				throw new Error(`Invalid Bfc Stake id ${id}`);
 			}
 		});
 		return await this.transport.request({
 			method: 'bfcx_getStakesByIds',
-			params: [input.stakedSuiIds],
+			params: [input.stakedBfcIds],
 		});
 	}
 
 	/**
 	 * Return the latest system state content.
 	 */
-	async getLatestSuiSystemState(): Promise<SuiSystemStateSummary> {
+	async getLatestBenfeSystemState(): Promise<BenfenSystemStateSummary> {
 		return await this.transport.request({ method: 'bfcx_getLatestSuiSystemState', params: [] });
 	}
 	/**
@@ -559,7 +560,7 @@ export class SuiClient {
 	async subscribeEvent(
 		input: SubscribeEventParams & {
 			/** function to run when we receive a notification of a new event matching the filter */
-			onMessage: (event: SuiEvent) => void;
+			onMessage: (event: BenfenEvent) => void;
 		},
 	): Promise<Unsubscribe> {
 		return this.transport.subscribe({
@@ -635,8 +636,8 @@ export class SuiClient {
 	 * Return the list of dynamic field objects owned by an object
 	 */
 	async getDynamicFields(input: GetDynamicFieldsParams): Promise<DynamicFieldPage> {
-		if (!input.parentId || !isValidSuiObjectId(sui2BfcAddress(input.parentId))) {
-			throw new Error('Invalid Sui Object id');
+		if (!input.parentId || !isValidBenfenObjectId(hex2BfcAddress(input.parentId))) {
+			throw new Error('Invalid Benfen Object id');
 		}
 		return await this.transport.request({
 			method: 'bfcx_getDynamicFields',
@@ -647,7 +648,7 @@ export class SuiClient {
 	/**
 	 * Return the dynamic field object information for a specified object
 	 */
-	async getDynamicFieldObject(input: GetDynamicFieldObjectParams): Promise<SuiObjectResponse> {
+	async getDynamicFieldObject(input: GetDynamicFieldObjectParams): Promise<BenfenObjectResponse> {
 		return await this.transport.request({
 			method: 'bfcx_getDynamicFieldObject',
 			params: [input.parentId, input.name],
@@ -706,7 +707,7 @@ export class SuiClient {
 		input?: { descendingOrder?: boolean } & PaginationArguments<EpochMetricsPage['nextCursor']>,
 	): Promise<EpochMetricsPage> {
 		return await this.transport.request({
-			method: 'suix_getEpochMetrics',
+			method: 'bfcx_getEpochMetrics',
 			params: [input?.cursor, input?.limit, input?.descendingOrder],
 		});
 	}
@@ -755,7 +756,7 @@ export class SuiClient {
 		return await this.transport.request({ method: 'bfcx_getValidatorsApy', params: [] });
 	}
 
-	// TODO: Migrate this to `sui_getChainIdentifier` once it is widely available.
+	// TODO: Migrate this to `bfc_getChainIdentifier` once it is widely available.
 	async getChainIdentifier(): Promise<string> {
 		const checkpoint = await this.getCheckpoint({ id: '0' });
 		const bytes = fromB58(checkpoint.digest);
@@ -784,7 +785,7 @@ export class SuiClient {
 		return {
 			hasNextPage,
 			nextCursor,
-			data: data.map((name) => normalizeSuiNSName(name, format)),
+			data: data.map((name) => normalizeBenfenNSName(name, format)),
 		};
 	}
 
@@ -792,6 +793,13 @@ export class SuiClient {
 		return await this.transport.request({
 			method: 'bfc_getProtocolConfig',
 			params: [input?.version],
+		});
+	}
+
+	async getZkloginSalt({ seed, iss, sub }: GetZkloginSaltParams): Promise<string> {
+		return await this.transport.request({
+			method: 'bfc_getBfcZkloginSalt',
+			params: [seed, iss, sub],
 		});
 	}
 
@@ -813,7 +821,7 @@ export class SuiClient {
 		timeout?: number;
 		/** The amount of time to wait between checks for the transaction block. Defaults to 2 seconds. */
 		pollInterval?: number;
-	} & Parameters<SuiClient['getTransactionBlock']>[0]): Promise<SuiTransactionBlockResponse> {
+	} & Parameters<BenfenClient['getTransactionBlock']>[0]): Promise<BenfenTransactionBlockResponse> {
 		const timeoutSignal = AbortSignal.timeout(timeout);
 		const timeoutPromise = new Promise((_, reject) => {
 			timeoutSignal.addEventListener('abort', () => reject(timeoutSignal.reason));

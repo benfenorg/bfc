@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { decodeSuiPrivateKey } from '@benfen/bfc.js/cryptography/keypair';
+import { decodeBenfenPrivateKey } from '@benfen/bfc.js/cryptography/keypair';
 import { z } from 'zod';
 
 export const privateKeyValidation = z
@@ -10,7 +10,7 @@ export const privateKeyValidation = z
 	.nonempty('Private Key is required.')
 	.transform((privateKey, context) => {
 		try {
-			decodeSuiPrivateKey(privateKey);
+			decodeBenfenPrivateKey(privateKey);
 		} catch (error) {
 			context.addIssue({
 				code: 'custom',

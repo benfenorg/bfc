@@ -9,6 +9,6 @@ export function useGetSystemState() {
 	const rpc = useRpcClient();
 	return useQuery({
 		queryKey: ['system', 'state'],
-		queryFn: () => rpc.getLatestSuiSystemState(),
+		queryFn: () => rpc.getLatestBenfeSystemState(),
 	});
 }

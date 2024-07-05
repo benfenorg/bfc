@@ -1,7 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiEvent, SuiTransactionBlockKind, TransactionEffects } from '@benfen/bfc.js/client';
+import type {
+	BenfenEvent,
+	BenfenTransactionBlockKind,
+	TransactionEffects,
+} from '@benfen/bfc.js/client';
 
 type FormattedBalance = {
 	amount?: number | null;
@@ -10,9 +14,9 @@ type FormattedBalance = {
 }[];
 
 export function getAmount(
-	_txnData: SuiTransactionBlockKind,
+	_txnData: BenfenTransactionBlockKind,
 	_txnEffect: TransactionEffects,
-	_events: SuiEvent[],
+	_events: BenfenEvent[],
 ): FormattedBalance | null {
 	// TODO: Support programmable transactions:
 	return null;

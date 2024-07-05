@@ -18,7 +18,7 @@ function epochCacheKey(network: NetworkEnvType) {
 async function getCurrentEpochRequest(): Promise<EpochCacheInfo> {
 	const suiClient = await getActiveNetworkSuiClient();
 	const { epoch, epochDurationMs, epochStartTimestampMs } =
-		await suiClient.getLatestSuiSystemState();
+		await suiClient.getLatestBenfeSystemState();
 	return {
 		epoch: Number(epoch),
 		epochEndTimestamp: Number(epochStartTimestampMs) + Number(epochDurationMs),

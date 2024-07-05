@@ -1,11 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiObjectResponse } from '@benfen/bfc.js/client';
+import { type BenfenObjectResponse } from '@benfen/bfc.js/client';
 
 import { useRecognizedPackages } from './useRecognizedPackages';
 
-export function useResolveVideo(object?: SuiObjectResponse | null) {
+export function useResolveVideo(object?: BenfenObjectResponse | null) {
 	const recognizedPackages = useRecognizedPackages();
 
 	if (!object) return null;

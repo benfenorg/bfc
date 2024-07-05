@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
@@ -8,7 +8,7 @@ import {
 	fromB58,
 	fromB64,
 	fromHEX,
-	getSuiMoveConfig,
+	getBenfenMoveConfig,
 	toB58,
 	toB64,
 	toHEX,
@@ -16,7 +16,7 @@ import {
 
 describe('BCS: Encodings', () => {
 	it('should de/ser hex, base58 and base64', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		expect(bcs.de('u8', 'AA==', 'base64')).toEqual(0);
 		expect(bcs.de('u8', '00', 'hex')).toEqual(0);
@@ -31,7 +31,7 @@ describe('BCS: Encodings', () => {
 	});
 
 	it('should de/ser native encoding types', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		bcs.registerStructType('TestStruct', {
 			hex: BCS.HEX,

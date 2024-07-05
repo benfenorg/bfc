@@ -12,7 +12,7 @@ import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
@@ -31,7 +31,7 @@ export function TransferNFTForm({
 	objectType?: string | null;
 }) {
 	const activeAddress = useActiveAddress();
-	const rpc = useSuiClient();
+	const rpc = useBenfenClient();
 	const suiNSEnabled = useSuiNSEnabled();
 	const validationSchema = createValidationSchema(rpc, suiNSEnabled, activeAddress || '', objectId);
 	const activeAccount = useActiveAccount();

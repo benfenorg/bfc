@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SuiMoveNormalizedStruct } from '@benfen/bfc.js';
-import { normalizeSuiObjectId } from '@benfen/bfc.js/utils';
+import { normalizeBenfenObjectId } from '@benfen/bfc.js/utils';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 import { useRpcClient } from '../api/RpcClientContext';
@@ -20,7 +20,7 @@ export function useGetNormalizedMoveStruct(options: GetNormalizedMoveStructOptio
 		queryKey: ['normalized-struct', packageId, module, struct],
 		queryFn: () =>
 			rpc.getNormalizedMoveStruct({
-				package: normalizeSuiObjectId(packageId),
+				package: normalizeBenfenObjectId(packageId),
 				module,
 				struct,
 			}),

@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { expect, it } from 'vitest';
 
 import { bcs, toB58 } from '../../bcs/index.js';
-import { sui2BfcAddress } from '../../utils/format.js';
+import { hex2BfcAddress } from '../../utils/format.js';
 import type { MoveCallTransaction, TransferObjectsTransaction } from '../index.js';
 import { PROGRAMMABLE_CALL, TRANSACTION } from '../index.js';
 
@@ -62,21 +62,21 @@ it('can serialize Option<T> types using the legacy registry API', () => {
 
 function ref(): { objectId: string; version: string; digest: string } {
 	return {
-		objectId: sui2BfcAddress((Math.random() * 100000).toFixed(0).padEnd(64, '0')),
+		objectId: hex2BfcAddress((Math.random() * 100000).toFixed(0).padEnd(64, '0')),
 		version: String((Math.random() * 10000).toFixed(0)),
 		digest: toB58(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])),
 	};
 }
 
 it('can serialize transaction data with a programmable transaction', () => {
-	let sui = sui2BfcAddress('0x2');
+	let bf = hex2BfcAddress('0x2');
 	let txData = {
 		V1: {
-			sender: sui2BfcAddress('0xBAD'),
+			sender: hex2BfcAddress('0xBAD'),
 			expiration: { None: true },
 			gasData: {
 				payment: [ref()],
-				owner: sui,
+				owner: bf,
 				price: '1',
 				budget: '1000000',
 			},
@@ -111,8 +111,8 @@ it('can serialize transaction data with a programmable transaction', () => {
 					transactions: [
 						{
 							kind: 'MoveCall',
-							target: `${sui}::display::new`,
-							typeArguments: [`${sui}::capy::Capy`],
+							target: `${bf}::display::new`,
+							typeArguments: [`${bf}::capy::Capy`],
 							arguments: [
 								// publisher object
 								{ kind: 'Input', index: 0 },
@@ -120,8 +120,8 @@ it('can serialize transaction data with a programmable transaction', () => {
 						},
 						{
 							kind: 'MoveCall',
-							target: `${sui}::display::add_multiple`,
-							typeArguments: [`${sui}::capy::Capy`],
+							target: `${bf}::display::add_multiple`,
+							typeArguments: [`${bf}::capy::Capy`],
 							arguments: [
 								// result of the first transaction
 								{ kind: 'Result', index: 0 },
@@ -133,8 +133,8 @@ it('can serialize transaction data with a programmable transaction', () => {
 						},
 						{
 							kind: 'MoveCall',
-							target: `${sui}::display::update_version`,
-							typeArguments: [`${sui}::capy::Capy`],
+							target: `${bf}::display::update_version`,
+							typeArguments: [`${bf}::capy::Capy`],
 							arguments: [
 								// result of the first transaction again
 								{ kind: 'Result', index: 0 },

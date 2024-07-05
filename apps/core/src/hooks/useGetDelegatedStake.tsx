@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type { DelegatedStake } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 type UseGetDelegatedStakesOptions = {
@@ -10,7 +10,7 @@ type UseGetDelegatedStakesOptions = {
 } & Omit<UseQueryOptions<DelegatedStake[], Error>, 'queryKey' | 'queryFn'>;
 
 export function useGetDelegatedStake(options: UseGetDelegatedStakesOptions) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const { address, ...queryOptions } = options;
 
 	return useQuery({

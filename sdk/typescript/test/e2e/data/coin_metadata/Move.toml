@@ -4,7 +4,7 @@ version = "0.0.1"
 edition = "2024.beta"
 
 [dependencies]
-Sui = { local = "../../../../../../crates/bfc-framework/packages/sui-framework" }
+Bfc = { local = "../../../../../../crates/bfc-framework/packages/bfc-framework" }
 
 [addresses]
 coin_metadata =  "0x0"

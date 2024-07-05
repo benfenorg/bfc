@@ -1,11 +1,15 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { SuiClient, SuiObjectChangeCreated, SuiTransactionBlockResponse } from '../../src/client';
+import {
+	BenfenClient,
+	BenfenObjectChangeCreated,
+	BenfenTransactionBlockResponse,
+} from '../../src/client';
 import type { Keypair } from '../../src/cryptography';
-import { normalizeSuiObjectId, SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/utils';
+import { BFC_SYSTEM_STATE_OBJECT_ID, normalizeBenfenObjectId } from '../../src/utils';
 import {
 	DEFAULT_GAS_BUDGET,
 	DEFAULT_RECIPIENT,
@@ -20,12 +24,12 @@ import '../../src/transactions/TransactionBlockData';
 import { bcs } from '../../src/bcs';
 import { TransactionBlock } from '../../src/transactions';
 
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
+export const BFC_CLOCK_OBJECT_ID = normalizeBenfenObjectId('0x6');
 
 describe('Transaction Builders', () => {
 	let toolbox: TestToolbox;
 	let packageId: string;
-	let publishTxn: SuiTransactionBlockResponse;
+	let publishTxn: BenfenTransactionBlockResponse;
 	let sharedObjectId: string;
 
 	beforeAll(async () => {
@@ -82,13 +86,13 @@ describe('Transaction Builders', () => {
 			const coins = await toolbox.getGasObjectsOwnedByAddress();
 			const coin_2 = coins.data[2];
 
-			const [{ suiAddress: validatorAddress }] = await toolbox.getActiveValidators();
+			const [{ benfenAddress: validatorAddress }] = await toolbox.getActiveValidators();
 
 			const tx = new TransactionBlock();
 			tx.moveCall({
-				target: '0x3::sui_system::request_add_stake',
+				target: '0x3::bfc_system::request_add_stake',
 				arguments: [
-					tx.object(SUI_SYSTEM_STATE_OBJECT_ID),
+					tx.object(BFC_SYSTEM_STATE_OBJECT_ID),
 					tx.object(coin_2.coinObjectId),
 					tx.pure.address(validatorAddress),
 				],
@@ -154,7 +158,7 @@ describe('Transaction Builders', () => {
 		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::serializer_tests::use_clock`,
-			arguments: [tx.object(SUI_CLOCK_OBJECT_ID)],
+			arguments: [tx.object(BFC_CLOCK_OBJECT_ID)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
@@ -174,7 +178,7 @@ describe('Transaction Builders', () => {
 						'Immutable' !== a.owner &&
 						'AddressOwner' in a.owner &&
 						a.owner.AddressOwner === toolbox.address(),
-				) as SuiObjectChangeCreated
+				) as BenfenObjectChangeCreated
 			)?.objectId;
 
 			expect(capId).toBeTruthy();
@@ -213,8 +217,8 @@ describe('Transaction Builders', () => {
 	);
 });
 
-async function validateTransaction(client: SuiClient, signer: Keypair, tx: TransactionBlock) {
-	tx.setSenderIfNotSet(signer.getPublicKey().toSuiAddress());
+async function validateTransaction(client: BenfenClient, signer: Keypair, tx: TransactionBlock) {
+	tx.setSenderIfNotSet(signer.getPublicKey().toHexAddress());
 	const localDigest = await tx.getDigest({ client });
 	const result = await client.signAndExecuteTransactionBlock({
 		signer,

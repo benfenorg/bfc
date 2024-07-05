@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
@@ -51,14 +51,14 @@ export function useConnectWallet({
 
 				const connectResult = await wallet.features['standard:connect'].connect(connectArgs);
 				console.warn('connectResult', JSON.stringify(connectResult, null, 2));
-				const connectedSuiAccounts = connectResult.accounts.filter((account) =>
+				const connectedBenfenAccounts = connectResult.accounts.filter((account) =>
 					account.chains.some((chain) => chain.split(':')[0] === 'bfc'),
 				);
-				const selectedAccount = getSelectedAccount(connectedSuiAccounts, accountAddress);
+				const selectedAccount = getSelectedAccount(connectedBenfenAccounts, accountAddress);
 
-				setWalletConnected(wallet, connectedSuiAccounts, selectedAccount);
+				setWalletConnected(wallet, connectedBenfenAccounts, selectedAccount);
 
-				return { accounts: connectedSuiAccounts };
+				return { accounts: connectedBenfenAccounts };
 			} catch (error) {
 				setConnectionStatus('disconnected');
 				throw error;

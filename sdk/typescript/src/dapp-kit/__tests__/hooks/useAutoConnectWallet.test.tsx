@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { act, renderHook, waitFor } from '@testing-library/react';
@@ -7,7 +7,7 @@ import { useAutoConnectWallet } from '../../hooks/wallet/useAutoConnectWallet.js
 import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
 import { useCurrentWallet } from '../../hooks/wallet/useCurrentWallet.js';
 import { createMockAccount } from '../mocks/mockAccount.js';
-import { suiFeatures } from '../mocks/mockFeatures.js';
+import { benfenFeatures } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
 function withResolvers<T = any>() {
@@ -36,7 +36,7 @@ describe('useAutoConnectWallet', () => {
 		const { unregister, mockWallet } = registerMockWallet({
 			walletName: 'Mock Wallet 1',
 			accounts: [createMockAccount(), createMockAccount()],
-			features: suiFeatures,
+			features: benfenFeatures,
 		});
 
 		const wrapper = createWalletProviderContextWrapper({

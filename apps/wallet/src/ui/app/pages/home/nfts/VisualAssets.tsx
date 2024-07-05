@@ -6,13 +6,13 @@ import { ampli } from '_src/shared/analytics/ampli';
 import { useBuyNLargeAsset } from '_src/ui/app/components/buynlarge/useBuyNLargeAsset';
 import { NFTDisplayCard } from '_src/ui/app/components/nft-display';
 import { Button } from '_src/ui/app/shared/ButtonUI';
-import { type SuiObjectData } from '@benfen/bfc.js/client';
+import { type BenfenObjectData } from '@benfen/bfc.js/client';
 import { EyeClose16 } from '@mysten/icons';
 import { Link } from 'react-router-dom';
 
 import { useHiddenAssets } from '../hidden-assets/HiddenAssetsProvider';
 
-export default function VisualAssets({ items }: { items: SuiObjectData[] }) {
+export default function VisualAssets({ items }: { items: BenfenObjectData[] }) {
 	const { hideAsset } = useHiddenAssets();
 	const { objectType } = useBuyNLargeAsset();
 

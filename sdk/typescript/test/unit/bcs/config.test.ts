@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { BCS, getBenfenMoveConfig, getRustConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils';
 
 describe('BCS: Config', () => {
@@ -13,14 +13,14 @@ describe('BCS: Config', () => {
 		expect(serde(bcs, 'Vec<string>', value)).toEqual(value);
 	});
 
-	it('should work with Sui Move config', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+	it('should work with Benfen Move config', () => {
+		const bcs = new BCS(getBenfenMoveConfig());
 		let value = ['beep', 'boop', 'beep'];
 		expect(serde(bcs, 'vector<string>', value)).toEqual(value);
 	});
 
 	it('should fork config', () => {
-		const bcs_v1 = new BCS(getSuiMoveConfig());
+		const bcs_v1 = new BCS(getBenfenMoveConfig());
 		bcs_v1.registerStructType('User', { name: 'string' });
 
 		const bcs_v2 = new BCS(bcs_v1);

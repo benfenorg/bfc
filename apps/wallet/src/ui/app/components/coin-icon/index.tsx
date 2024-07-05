@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { ImageIcon } from '_app/shared/image-icon';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useCoinMetadata } from '@mysten/core';
 import { Sui, Unstaked } from '@mysten/icons';
 import { cva, type VariantProps } from 'class-variance-authority';
@@ -61,7 +61,7 @@ export interface CoinIconProps extends VariantProps<typeof imageStyle> {
 export function CoinIcon({ coinType, ...styleProps }: CoinIconProps) {
 	return (
 		<div className={imageStyle(styleProps)}>
-			{coinType === SUI_TYPE_ARG ? <SuiCoin /> : <NonSuiCoin coinType={coinType} />}
+			{coinType === BFC_TYPE_ARG ? <SuiCoin /> : <NonSuiCoin coinType={coinType} />}
 		</div>
 	);
 }

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Infer, Struct } from 'superstruct';
@@ -22,7 +22,7 @@ import type { TypeTag } from '../bcs/index.js';
 import { bcs } from '../bcs/index.js';
 import { fromB64 } from '../bcs/src/index.js';
 import { TypeTagSerializer } from '../bcs/type-tag-serializer.js';
-import { normalizeSuiObjectId } from '../utils/sui-types.js';
+import { normalizeBenfenObjectId } from '../utils/bf-types.js';
 import { Inputs } from './Inputs.js';
 import { create } from './utils.js';
 
@@ -108,8 +108,6 @@ export const PublishTransaction = object({
 });
 export type PublishTransaction = Infer<typeof PublishTransaction>;
 
-// Keep in sync with constants in
-// crates/bfc-framework/packages/sui-framework/sources/package.move
 export enum UpgradePolicy {
 	COMPATIBLE = 0,
 	ADDITIVE = 128,
@@ -209,7 +207,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+				dependencies: dependencies.map((dep) => normalizeBenfenObjectId(dep)),
 			},
 			PublishTransaction,
 		);
@@ -231,7 +229,7 @@ export const Transactions = {
 				modules: modules.map((module) =>
 					typeof module === 'string' ? Array.from(fromB64(module)) : module,
 				),
-				dependencies: dependencies.map((dep) => normalizeSuiObjectId(dep)),
+				dependencies: dependencies.map((dep) => normalizeBenfenObjectId(dep)),
 				packageId,
 				ticket,
 			},

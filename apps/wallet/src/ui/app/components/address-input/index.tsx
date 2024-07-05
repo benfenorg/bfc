@@ -3,8 +3,8 @@
 
 import { Text } from '_app/shared/text';
 import Alert from '_src/ui/app/components/alert';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { isValidSuiAddress } from '@benfen/bfc.js/utils';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { isValidBenfenAddress } from '@benfen/bfc.js/utils';
 import { QrCode, X12 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
 import { cx } from 'class-variance-authority';
@@ -33,12 +33,12 @@ export function AddressInput({
 }: AddressInputProps) {
 	const [field, meta] = useField(name);
 
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const { data: warningData } = useQuery({
 		queryKey: ['address-input-warning', field.value],
 		queryFn: async () => {
 			// We assume this validation will happen elsewhere:
-			if (!isValidSuiAddress(field.value)) {
+			if (!isValidBenfenAddress(field.value)) {
 				return null;
 			}
 

@@ -3,7 +3,7 @@
 
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
-import { type SuiSignTransactionBlockInput } from '@benfen/bfc.js/wallet-standard';
+import { type BenfenSignTransactionBlockInput } from '@benfen/bfc.js/wallet-standard';
 
 import { type TransactionDataType } from './ApprovalRequest';
 
@@ -19,7 +19,7 @@ export function isExecuteTransactionRequest(
 }
 
 export type SuiSignTransactionSerialized = Omit<
-	SuiSignTransactionBlockInput,
+	BenfenSignTransactionBlockInput,
 	'transactionBlock' | 'account'
 > & {
 	transaction: string;

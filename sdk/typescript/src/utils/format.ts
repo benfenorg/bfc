@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import sha256 from 'fast-sha256';
@@ -7,16 +7,16 @@ import { toHEX } from '../bcs/src/index.js';
 
 const ELLIPSIS = '\u{2026}';
 
-export function sui2BfcAddress(suiAddress: string): string {
-	if (/^BFC/i.test(suiAddress)) {
-		return suiAddress;
+export function hex2BfcAddress(hexAddress: string): string {
+	if (/^BFC/i.test(hexAddress)) {
+		return hexAddress;
 	}
-	const hex = suiAddress.replace(/^0x/, '').padStart(64, '0').toLowerCase();
+	const hex = hexAddress.replace(/^0x/, '').padStart(64, '0').toLowerCase();
 	const hash = toHEX(sha256(new TextEncoder().encode(hex)));
 	return `BFC${hex}${hash.slice(0, 4)}`;
 }
 
-export function bfc2SuiAddress(bfcAddress: string): string {
+export function bfc2HexAddress(bfcAddress: string): string {
 	if (bfcAddress.startsWith('0x') || !/^BFC/i.test(bfcAddress)) {
 		return bfcAddress;
 	}
@@ -26,7 +26,7 @@ export function bfc2SuiAddress(bfcAddress: string): string {
 export function formatAddress(address: string) {
 	let text = address;
 	if (!/^BFC/i.test(address)) {
-		text = sui2BfcAddress(address);
+		text = hex2BfcAddress(address);
 	}
 
 	return `${text.slice(0, 4)}${ELLIPSIS}${text.slice(-4)}`;

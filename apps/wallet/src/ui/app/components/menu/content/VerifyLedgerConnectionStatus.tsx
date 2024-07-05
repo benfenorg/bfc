@@ -60,7 +60,7 @@ export function VerifyLedgerConnectionStatus({
 							const suiLedgerClient = await connectToLedger();
 							const publicKeyResult = await suiLedgerClient.getPublicKey(derivationPath, true);
 							const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-							const suiAddress = publicKey.toSuiAddress();
+							const suiAddress = publicKey.toHexAddress();
 
 							setVerificationStatus(
 								accountAddress === suiAddress

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { secp256k1 } from '@noble/curves/secp256k1';
@@ -6,7 +6,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { describe, expect, it } from 'vitest';
 
 import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
-import { decodeSuiPrivateKey } from '../../../src/cryptography/keypair';
+import { decodeBenfenPrivateKey } from '../../../src/cryptography/keypair';
 import {
 	DEFAULT_SECP256K1_DERIVATION_PATH,
 	Secp256k1Keypair,
@@ -34,21 +34,20 @@ export const INVALID_SECP256K1_SECRET_KEY = Uint8Array.from(Array(PRIVATE_KEY_SI
 // Invalid public key with incorrect length
 export const INVALID_SECP256K1_PUBLIC_KEY = Uint8Array.from(Array(PRIVATE_KEY_SIZE).fill(1));
 
-// Test case generated against rust keytool cli. See https://github.com/MystenLabs/sui/blob/edd2cd31e0b05d336b1b03b6e79a67d8dd00d06b/crates/sui/src/unit_tests/keytool_tests.rs#L165
 const TEST_CASES = [
 	[
 		'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
-		'suiprivkey1qyqr6yvxdqkh32ep4pk9caqvphmk9epn6rhkczcrhaeermsyvwsg783y9am',
+		'benfenprivkey1qyqr6yvxdqkh32ep4pk9caqvphmk9epn6rhkczcrhaeermsyvwsg7z8g247',
 		'0x9e8f732575cc5386f8df3c784cd3ed1b53ce538da79926b2ad54dcc1197d2532',
 	],
 	[
 		'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
-		'suiprivkey1q8hexn5m2u36tx39ln5e22hfseadknp7d2qlkhe30ejy7fc6am5aqkqpqsj',
+		'benfenprivkey1q8hexn5m2u36tx39ln5e22hfseadknp7d2qlkhe30ejy7fc6am5aqnkd0ch',
 		'0x9fd5a804ed6b46d36949ff7434247f0fd594673973ece24aede6b86a7b5dae01',
 	],
 	[
 		'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
-		'suiprivkey1qxx6yf53jgxvsmccst8cuwnj0rx4k4uzvn9aalvag7ns0xf0g8j2x246jst',
+		'benfenprivkey1qxx6yf53jgxvsmccst8cuwnj0rx4k4uzvn9aalvag7ns0xf0g8j2x0rkacw',
 		'0x60287d7c38dee783c2ab1077216124011774be6b0764d62bd05f32c88979d5c5',
 	],
 ];
@@ -111,7 +110,7 @@ describe('secp256k1-keypair', () => {
 		const msgHash = sha256(signData);
 		const sig = keypair.signData(signData);
 
-		// Assert the signature is the same as the rust implementation. See https://github.com/MystenLabs/fastcrypto/blob/0436d6ef11684c291b75c930035cb24abbaf581e/fastcrypto/src/tests/secp256k1_tests.rs#L115
+		// Assert the signature is the same as the rust implementation.
 		expect(Buffer.from(sig).toString('hex')).toEqual(
 			'25d450f191f6d844bf5760c5c7b94bc67acc88be76398129d7f43abdef32dc7f7f1a65b7d65991347650f3dd3fa3b3a7f9892a0608521cbcf811ded433b31f8b',
 		);
@@ -134,12 +133,12 @@ describe('secp256k1-keypair', () => {
 		for (const t of TEST_CASES) {
 			// Keypair derived from mnemonic
 			const keypair = Secp256k1Keypair.deriveKeypair(t[0]);
-			expect(keypair.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(keypair.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Keypair derived from Bech32 string.
-			const parsed = decodeSuiPrivateKey(t[1]);
+			const parsed = decodeBenfenPrivateKey(t[1]);
 			const kp = Secp256k1Keypair.fromSecretKey(parsed.secretKey);
-			expect(kp.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(kp.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Exported keypair matches the Bech32 encoded secret key.
 			const exported = kp.export();
@@ -162,7 +161,7 @@ describe('secp256k1-keypair', () => {
 	it('signs TransactionBlocks', async () => {
 		const keypair = new Secp256k1Keypair();
 		const txb = new TransactionBlock();
-		txb.setSender(keypair.getPublicKey().toSuiAddress());
+		txb.setSender(keypair.getPublicKey().toHexAddress());
 		txb.setGasPrice(5);
 		txb.setGasBudget(100);
 		txb.setGasPayment([

@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { OwnedObjectRef, SuiClient } from '../../src/client';
+import { BenfenClient, OwnedObjectRef } from '../../src/client';
 import type { Keypair } from '../../src/cryptography';
 import { TransactionBlock } from '../../src/transactions';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
@@ -130,8 +130,8 @@ describe('Transfer to Object', () => {
 	});
 });
 
-async function validateTransaction(client: SuiClient, signer: Keypair, tx: TransactionBlock) {
-	tx.setSenderIfNotSet(signer.getPublicKey().toSuiAddress());
+async function validateTransaction(client: BenfenClient, signer: Keypair, tx: TransactionBlock) {
+	tx.setSenderIfNotSet(signer.getPublicKey().toHexAddress());
 	const localDigest = await tx.getDigest({ client });
 	const result = await client.signAndExecuteTransactionBlock({
 		signer,

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Emitter } from 'mitt';
@@ -8,6 +8,10 @@ import { bcs } from '../bcs/index.js';
 import { toB64 } from '../utils/index.js';
 import { BFC_MAINNET_CHAIN, getWallets, ReadonlyWalletAccount } from '../wallet-standard/index.js';
 import type {
+	BenfenSignPersonalMessageFeature,
+	BenfenSignPersonalMessageMethod,
+	BenfenSignTransactionBlockFeature,
+	BenfenSignTransactionBlockMethod,
 	StandardConnectFeature,
 	StandardConnectMethod,
 	StandardDisconnectFeature,
@@ -15,10 +19,6 @@ import type {
 	StandardEventsFeature,
 	StandardEventsListeners,
 	StandardEventsOnMethod,
-	SuiSignPersonalMessageFeature,
-	SuiSignPersonalMessageMethod,
-	SuiSignTransactionBlockFeature,
-	SuiSignTransactionBlockMethod,
 	Wallet,
 } from '../wallet-standard/index.js';
 import { DEFAULT_ZKSEND_ORIGIN, ZkSendPopup } from './channel/index.js';
@@ -60,8 +60,8 @@ export class ZkSendWallet implements Wallet {
 	get features(): StandardConnectFeature &
 		StandardDisconnectFeature &
 		StandardEventsFeature &
-		SuiSignTransactionBlockFeature &
-		SuiSignPersonalMessageFeature {
+		BenfenSignTransactionBlockFeature &
+		BenfenSignPersonalMessageFeature {
 		return {
 			'standard:connect': {
 				version: '1.0.0',
@@ -105,7 +105,10 @@ export class ZkSendWallet implements Wallet {
 		}
 	}
 
-	#signTransactionBlock: SuiSignTransactionBlockMethod = async ({ transactionBlock, account }) => {
+	#signTransactionBlock: BenfenSignTransactionBlockMethod = async ({
+		transactionBlock,
+		account,
+	}) => {
 		transactionBlock.setSenderIfNotSet(account.address);
 
 		const data = transactionBlock.serialize();
@@ -123,7 +126,7 @@ export class ZkSendWallet implements Wallet {
 		};
 	};
 
-	#signPersonalMessage: SuiSignPersonalMessageMethod = async ({ message, account }) => {
+	#signPersonalMessage: BenfenSignPersonalMessageMethod = async ({ message, account }) => {
 		const bytes = toB64(bcs.vector(bcs.u8()).serialize(message).toBytes());
 		const popup = new ZkSendPopup({ name: this.#name, origin: this.#origin });
 		const response = await popup.createRequest({

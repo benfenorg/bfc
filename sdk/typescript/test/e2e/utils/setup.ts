@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from 'child_process';
@@ -7,22 +7,22 @@ import { retry } from 'ts-retry-promise';
 import { expect } from 'vitest';
 import { WebSocket } from 'ws';
 
-import type { SuiObjectChangePublished } from '../../../src/client/index.js';
-import { getFullnodeUrl, SuiClient, SuiHTTPTransport } from '../../../src/client/index.js';
+import type { BenfenObjectChangePublished } from '../../../src/client/index.js';
+import { BenfenClient, BenfenHTTPTransport, getFullnodeUrl } from '../../../src/client/index.js';
 import type { Keypair } from '../../../src/cryptography/index.js';
 import {
 	FaucetRateLimitError,
 	getFaucetHost,
-	requestSuiFromFaucetV0,
+	requestBfcFromFaucetV0,
 } from '../../../src/faucet/index.js';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519/index.js';
 import { TransactionBlock, UpgradePolicy } from '../../../src/transactions/index.js';
-import { bfc2SuiAddress, SUI_TYPE_ARG, sui2BfcAddress } from '../../../src/utils/index.js';
+import { BFC_TYPE_ARG, bfc2HexAddress, hex2BfcAddress } from '../../../src/utils/index.js';
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
 const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
 
-const SUI_BIN = import.meta.env.VITE_SUI_BIN ?? 'cargo run --bin sui';
+const BFC_BIN = import.meta.env.VITE_BFC_BIN ?? 'cargo run --bin bfc';
 
 export const DEFAULT_RECIPIENT =
 	'0x0c567ffdf8162cb6d51af74be0199443b92e823d4ba6ced24de5c6c463797d46';
@@ -33,32 +33,32 @@ export const DEFAULT_SEND_AMOUNT = 1000;
 
 export class TestToolbox {
 	keypair: Ed25519Keypair;
-	client: SuiClient;
+	client: BenfenClient;
 
-	constructor(keypair: Ed25519Keypair, client: SuiClient) {
+	constructor(keypair: Ed25519Keypair, client: BenfenClient) {
 		this.keypair = keypair;
 		this.client = client;
 	}
 
 	address() {
-		return sui2BfcAddress(this.keypair.getPublicKey().toSuiAddress());
+		return hex2BfcAddress(this.keypair.getPublicKey().toHexAddress());
 	}
 
 	async getGasObjectsOwnedByAddress() {
 		return await this.client.getCoins({
 			owner: this.address(),
-			coinType: SUI_TYPE_ARG,
+			coinType: BFC_TYPE_ARG,
 		});
 	}
 
 	public async getActiveValidators() {
-		return (await this.client.getLatestSuiSystemState()).activeValidators;
+		return (await this.client.getLatestBenfeSystemState()).activeValidators;
 	}
 }
 
-export function getClient(url = DEFAULT_FULLNODE_URL): SuiClient {
-	return new SuiClient({
-		transport: new SuiHTTPTransport({
+export function getClient(url = DEFAULT_FULLNODE_URL): BenfenClient {
+	return new BenfenClient({
+		transport: new BenfenHTTPTransport({
 			url,
 			WebSocketConstructor: WebSocket as never,
 		}),
@@ -67,7 +67,7 @@ export function getClient(url = DEFAULT_FULLNODE_URL): SuiClient {
 
 export async function setup(options: { graphQLURL?: string; rpcURL?: string } = {}) {
 	const keypair = Ed25519Keypair.generate();
-	const address = keypair.getPublicKey().toSuiAddress();
+	const address = keypair.getPublicKey().toHexAddress();
 	return setupWithFundedAddress(keypair, address, options);
 }
 
@@ -77,7 +77,7 @@ export async function setupWithFundedAddress(
 	{ rpcURL }: { graphQLURL?: string; rpcURL?: string } = {},
 ) {
 	const client = getClient(rpcURL);
-	await retry(() => requestSuiFromFaucetV0({ host: DEFAULT_FAUCET_URL, recipient: address }), {
+	await retry(() => requestBfcFromFaucetV0({ host: DEFAULT_FAUCET_URL, recipient: address }), {
 		backoff: 'EXPONENTIAL',
 		// overall timeout in 60 seconds
 		timeout: 1000 * 60,
@@ -116,7 +116,7 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 
 	const { modules, dependencies } = JSON.parse(
 		execSync(
-			`${SUI_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
+			`${BFC_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
 			{ encoding: 'utf-8' },
 		),
 	);
@@ -142,10 +142,10 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 
 	expect(publishTxn.effects?.status.status).toEqual('success');
 
-	const packageId = bfc2SuiAddress(
+	const packageId = bfc2HexAddress(
 		((publishTxn.objectChanges?.filter(
 			(a) => a.type === 'published',
-		) as SuiObjectChangePublished[]) ?? [])[0].packageId,
+		) as BenfenObjectChangePublished[]) ?? [])[0].packageId,
 	).replace(/^(0x)(0+)/, '0x') as string;
 
 	expect(packageId).toBeTypeOf('string');
@@ -173,7 +173,7 @@ export async function upgradePackage(
 
 	const { modules, dependencies, digest } = JSON.parse(
 		execSync(
-			`${SUI_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
+			`${BFC_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
 			{ encoding: 'utf-8' },
 		),
 	);
@@ -215,12 +215,12 @@ export function getRandomAddresses(n: number): string[] {
 		.fill(null)
 		.map(() => {
 			const keypair = Ed25519Keypair.generate();
-			return keypair.getPublicKey().toSuiAddress();
+			return keypair.getPublicKey().toHexAddress();
 		});
 }
 
-export async function paySui(
-	client: SuiClient,
+export async function payBfc(
+	client: BenfenClient,
 	signer: Keypair,
 	numRecipients: number = 1,
 	recipients?: string[],
@@ -238,7 +238,7 @@ export async function paySui(
 		coinId ??
 		(
 			await client.getCoins({
-				owner: signer.getPublicKey().toSuiAddress(),
+				owner: signer.getPublicKey().toHexAddress(),
 				coinType: '0x2::bfc::BFC',
 			})
 		).data[0].coinObjectId;
@@ -260,8 +260,8 @@ export async function paySui(
 	return txn;
 }
 
-export async function executePaySuiNTimes(
-	client: SuiClient,
+export async function executePayBfcNTimes(
+	client: BenfenClient,
 	signer: Keypair,
 	nTimes: number,
 	numRecipientsPerTxn: number = 1,
@@ -271,7 +271,7 @@ export async function executePaySuiNTimes(
 	const txns = [];
 	for (let i = 0; i < nTimes; i++) {
 		// must await here to make sure the txns are executed in order
-		txns.push(await paySui(client, signer, numRecipientsPerTxn, recipients, amounts));
+		txns.push(await payBfc(client, signer, numRecipientsPerTxn, recipients, amounts));
 	}
 	return txns;
 }

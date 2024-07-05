@@ -1,17 +1,17 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './components/connect-modal/ConnectModal.js';
 export * from './components/ConnectButton.js';
-export * from './components/SuiClientProvider.js';
+export * from './components/BenfenClientProvider.js';
 export * from './components/WalletProvider.js';
 export * from './hooks/networkConfig.js';
-export * from './hooks/useResolveSuiNSNames.js';
-export * from './hooks/useSuiClient.js';
-export * from './hooks/useSuiClientInfiniteQuery.js';
-export * from './hooks/useSuiClientMutation.js';
-export * from './hooks/useSuiClientQuery.js';
-export * from './hooks/useSuiClientQueries.js';
+export * from './hooks/useResolveBenfenNSNames.js';
+export * from './hooks/useBenfenClient.js';
+export * from './hooks/useBenfenClientInfiniteQuery.js';
+export * from './hooks/useBenfenClientMutation.js';
+export * from './hooks/useBenfenClientQuery.js';
+export * from './hooks/useBenfenClientQueries.js';
 export * from './hooks/wallet/useAccounts.js';
 export * from './hooks/wallet/useAutoConnectWallet.js';
 export * from './hooks/wallet/useConnectWallet.js';
@@ -22,6 +22,7 @@ export * from './hooks/wallet/useSignAndExecuteTransactionBlock.js';
 export * from './hooks/wallet/useSignPersonalMessage.js';
 export * from './hooks/wallet/useSignTransactionBlock.js';
 export * from './hooks/wallet/useSwitchAccount.js';
+export * from './hooks/wallet/useSwitchChain.js';
 export * from './hooks/wallet/useWallets.js';
 export * from './themes/lightTheme.js';
 export * from './types.js';

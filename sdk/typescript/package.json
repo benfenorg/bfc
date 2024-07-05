@@ -2,7 +2,7 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
-	"version": "0.1.6",
+	"version": "0.2.0",
 	"license": "Apache-2.0",
 	"sideEffects": false,
 	"files": [
@@ -123,7 +123,6 @@
 		"test:dapp-kit:unit": "vitest run -c ./src/dapp-kit/vitest.config.ts",
 		"test:e2e": "wait-on http://127.0.0.1:9123 -l --timeout 180000 && vitest run e2e",
 		"test:e2e:nowait": "vitest run e2e",
-		"prepare:e2e": "docker-compose down && docker-compose up -d && cargo build --bin sui-test-validator --bin sui --profile dev && cross-env RUST_LOG=info,sui=error,anemo_tower=warn,consensus=off cargo run --bin sui-test-validator -- --with-indexer --pg-port 5435 --pg-db-name sui_indexer_v2 --graphql-host 127.0.0.1 --graphql-port 9125",
 		"prepublishOnly": "pnpm build",
 		"size": "size-limit",
 		"analyze": "size-limit --why",

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { blake2b } from '@noble/hashes/blake2b';
@@ -6,7 +6,7 @@ import { bytesToHex } from '@noble/hashes/utils';
 
 import { bcs } from '../bcs/index.js';
 import { toB64 } from '../bcs/src/index.js';
-import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/bfc-types.js';
+import { BENFEN_ADDRESS_LENGTH, normalizeHexAddress } from '../utils/bf-types.js';
 import type { SerializedSignature } from './index.js';
 import { IntentScope, messageWithIntent } from './intent.js';
 
@@ -55,12 +55,12 @@ export abstract class PublicKey {
 	}
 
 	/**
-	 * Return the Sui representation of the public key encoded in
-	 * base-64. A Sui public key is formed by the concatenation
+	 * Return the Benfen representation of the public key encoded in
+	 * base-64. A Benfen public key is formed by the concatenation
 	 * of the scheme flag with the raw bytes of the public key
 	 */
-	toSuiPublicKey(): string {
-		const bytes = this.toSuiBytes();
+	toBenfenPublicKey(): string {
+		const bytes = this.toBenfenBytes();
 		return toB64(bytes);
 	}
 
@@ -103,22 +103,22 @@ export abstract class PublicKey {
 	 * Returns the bytes representation of the public key
 	 * prefixed with the signature scheme flag
 	 */
-	toSuiBytes(): Uint8Array {
+	toBenfenBytes(): Uint8Array {
 		const rawBytes = this.toRawBytes();
-		const suiBytes = new Uint8Array(rawBytes.length + 1);
-		suiBytes.set([this.flag()]);
-		suiBytes.set(rawBytes, 1);
+		const benfenBytes = new Uint8Array(rawBytes.length + 1);
+		benfenBytes.set([this.flag()]);
+		benfenBytes.set(rawBytes, 1);
 
-		return suiBytes;
+		return benfenBytes;
 	}
 
 	/**
-	 * Return the Sui address associated with this Ed25519 public key
+	 * Return the Benfen address associated with this Ed25519 public key
 	 */
-	toSuiAddress(): string {
+	toHexAddress(): string {
 		// Each hex char represents half a byte, hence hex address doubles the length
-		return normalizeSuiAddress(
-			bytesToHex(blake2b(this.toSuiBytes(), { dkLen: 32 })).slice(0, SUI_ADDRESS_LENGTH * 2),
+		return normalizeHexAddress(
+			bytesToHex(blake2b(this.toBenfenBytes(), { dkLen: 32 })).slice(0, BENFEN_ADDRESS_LENGTH * 2),
 		);
 	}
 

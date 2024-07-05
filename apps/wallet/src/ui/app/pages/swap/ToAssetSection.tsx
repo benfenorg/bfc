@@ -9,7 +9,7 @@ import { SUI_CONVERSION_RATE, USDC_CONVERSION_RATE, type FormValues } from '_pag
 import { MaxSlippage, MaxSlippageModal } from '_pages/swap/MaxSlippage';
 import { getUSDCurrency, useSwapData } from '_pages/swap/utils';
 import { type BalanceChange } from '@benfen/bfc.js/client';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import BigNumber from 'bignumber.js';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
@@ -35,7 +35,7 @@ export function ToAssetSection({
 	error: Error | null;
 }) {
 	const [isSlippageModalOpen, setSlippageModalOpen] = useState(false);
-	const isAsk = activeCoinType === SUI_TYPE_ARG;
+	const isAsk = activeCoinType === BFC_TYPE_ARG;
 
 	const { formattedBaseBalance, formattedQuoteBalance, baseCoinMetadata, quoteCoinMetadata } =
 		useSwapData({
@@ -62,7 +62,7 @@ export function ToAssetSection({
 		.toNumber();
 
 	useEffect(() => {
-		const newToAsset = SUI_TYPE_ARG;
+		const newToAsset = BFC_TYPE_ARG;
 		setValue('toAssetType', newToAsset);
 	}, [isAsk, setValue]);
 

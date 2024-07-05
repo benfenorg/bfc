@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Infer } from 'superstruct';
@@ -6,9 +6,9 @@ import { array, bigint, boolean, integer, number, object, string, union } from '
 
 import { bcs, isSerializedBcs } from '../bcs/index.js';
 import type { SerializedBcs, SharedObjectRef } from '../bcs/index.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeHexAddress } from '../utils/bf-types.js';
 
-export const SuiObjectRef = object({
+export const BenfenObjectRef = object({
 	/** Base64 string representing the object digest */
 	digest: string(),
 	/** Hex code as string representing the object id */
@@ -16,10 +16,10 @@ export const SuiObjectRef = object({
 	/** Object version */
 	version: union([number(), string(), bigint()]),
 });
-export type SuiObjectRef = Infer<typeof SuiObjectRef>;
+export type BenfenObjectRef = Infer<typeof BenfenObjectRef>;
 
 const ObjectArg = union([
-	object({ ImmOrOwned: SuiObjectRef }),
+	object({ ImmOrOwned: BenfenObjectRef }),
 	object({
 		Shared: object({
 			objectId: string(),
@@ -27,7 +27,7 @@ const ObjectArg = union([
 			mutable: boolean(),
 		}),
 	}),
-	object({ Receiving: SuiObjectRef }),
+	object({ Receiving: BenfenObjectRef }),
 ]);
 
 export const PureCallArg = object({ Pure: array(integer()) });
@@ -56,13 +56,13 @@ function Pure(data: unknown, type?: string): PureCallArg {
 
 export const Inputs = {
 	Pure,
-	ObjectRef({ objectId, digest, version }: SuiObjectRef): ObjectCallArg {
+	ObjectRef({ objectId, digest, version }: BenfenObjectRef): ObjectCallArg {
 		return {
 			Object: {
 				ImmOrOwned: {
 					digest,
 					version,
-					objectId: normalizeSuiAddress(objectId),
+					objectId: normalizeHexAddress(objectId),
 				},
 			},
 		};
@@ -73,18 +73,18 @@ export const Inputs = {
 				Shared: {
 					mutable,
 					initialSharedVersion,
-					objectId: normalizeSuiAddress(objectId),
+					objectId: normalizeHexAddress(objectId),
 				},
 			},
 		};
 	},
-	ReceivingRef({ objectId, digest, version }: SuiObjectRef): ObjectCallArg {
+	ReceivingRef({ objectId, digest, version }: BenfenObjectRef): ObjectCallArg {
 		return {
 			Object: {
 				Receiving: {
 					digest,
 					version,
-					objectId: normalizeSuiAddress(objectId),
+					objectId: normalizeHexAddress(objectId),
 				},
 			},
 		};
@@ -93,17 +93,17 @@ export const Inputs = {
 
 export function getIdFromCallArg(arg: string | ObjectCallArg) {
 	if (typeof arg === 'string') {
-		return normalizeSuiAddress(arg);
+		return normalizeHexAddress(arg);
 	}
 	if ('ImmOrOwned' in arg.Object) {
-		return normalizeSuiAddress(arg.Object.ImmOrOwned.objectId);
+		return normalizeHexAddress(arg.Object.ImmOrOwned.objectId);
 	}
 
 	if ('Receiving' in arg.Object) {
-		return normalizeSuiAddress(arg.Object.Receiving.objectId);
+		return normalizeHexAddress(arg.Object.Receiving.objectId);
 	}
 
-	return normalizeSuiAddress(arg.Object.Shared.objectId);
+	return normalizeHexAddress(arg.Object.Shared.objectId);
 }
 
 export function getSharedObjectInput(arg: BuilderCallArg): SharedObjectRef | undefined {

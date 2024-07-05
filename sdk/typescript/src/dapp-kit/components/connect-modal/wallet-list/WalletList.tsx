@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { WalletWithRequiredFeatures } from '../../../../wallet-standard/index.js';
 import { useWallets } from '../../../hooks/wallet/useWallets.js';
 import { getWalletUniqueIdentifier } from '../../../utils/walletUtils.js';
-import { SuiIcon } from '../../icons/SuiIcon.js';
+import { BenfenIcon } from '../../icons/BenfenIcon.js';
 import * as styles from './WalletList.css.js';
 import { WalletListItem } from './WalletListItem.js';
 
@@ -31,7 +31,7 @@ export function WalletList({ selectedWalletName, onPlaceholderClick, onSelect }:
 			) : (
 				<WalletListItem
 					name="OpenBlock Wallet"
-					icon={<SuiIcon />}
+					icon={<BenfenIcon />}
 					onClick={onPlaceholderClick}
 					isSelected
 				/>

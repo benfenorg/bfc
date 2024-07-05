@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { blake2b } from '@noble/hashes/blake2b';
@@ -19,7 +19,7 @@ import {
 	MultiSigStruct,
 	parsePartialSignatures,
 } from '../../../src/multisig/publickey';
-import { normalizeSuiAddress } from '../../../src/utils/sui-types.js';
+import { normalizeHexAddress } from '../../../src/utils/bf-types.js';
 
 describe('Publickey', () => {
 	let k1: Ed25519Keypair,
@@ -235,7 +235,7 @@ describe('Publickey', () => {
 		]);
 	});
 
-	it('`toSuiAddress()` should return correct sui address associated with multisig publickey', async () => {
+	it('`toHexAddress()` should return correct benfen address associated with multisig publickey', async () => {
 		const multiSigPublicKey = MultiSigPublicKey.fromPublicKeys({
 			threshold: 3,
 			publicKeys: [
@@ -251,17 +251,17 @@ describe('Publickey', () => {
 		tmp.set(bcs.ser('u16', 3).toBytes(), 1);
 		let i = 3;
 		for (const { publicKey, weight } of multiSigPublicKey.getPublicKeys()) {
-			const bytes = publicKey.toSuiBytes();
+			const bytes = publicKey.toBenfenBytes();
 			tmp.set(bytes, i);
 			i += bytes.length;
 			tmp.set([weight], i++);
 		}
-		const multisigSuiAddress = normalizeSuiAddress(
+		const multisigBenfenAddress = normalizeHexAddress(
 			bytesToHex(blake2b(tmp.slice(0, i), { dkLen: 32 })),
 		);
 
-		expect(multiSigPublicKey.toSuiAddress()).toEqual(multisigSuiAddress);
-		expect(multiSigPublicKey.toSuiAddress()).toEqual(
+		expect(multiSigPublicKey.toHexAddress()).toEqual(multisigBenfenAddress);
+		expect(multiSigPublicKey.toHexAddress()).toEqual(
 			'0x8ee027fe556a3f6c0a23df64f090d2429fec0bb21f55594783476e81de2dec27',
 		);
 	});

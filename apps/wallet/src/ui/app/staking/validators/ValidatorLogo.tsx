@@ -4,7 +4,7 @@ import { Heading } from '_app/shared/heading';
 import { ImageIcon } from '_app/shared/image-icon';
 import { Text } from '_app/shared/text';
 import { Badge } from '_src/ui/app/shared/Badge';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { formatAddress } from '@benfen/bfc.js/utils';
 import cl from 'clsx';
 import { useMemo } from 'react';
@@ -30,13 +30,14 @@ export function ValidatorLogo({
 	showActiveStatus = false,
 	activeEpoch,
 }: ValidatorLogoProps) {
-	const { data, isPending } = useSuiClientQuery('getLatestSuiSystemState');
+	const { data, isPending } = useBenfenClientQuery('getLatestBenfeSystemState');
 
 	const validatorMeta = useMemo(() => {
 		if (!data) return null;
 
 		return (
-			data.activeValidators.find((validator) => validator.suiAddress === validatorAddress) || null
+			data.activeValidators.find((validator) => validator.benfenAddress === validatorAddress) ||
+			null
 		);
 	}, [validatorAddress, data]);
 

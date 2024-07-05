@@ -1,14 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { BCS, getBenfenMoveConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils';
 
 describe('BCS: Inline struct definitions', () => {
 	it('should de/serialize inline definition', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = {
 			t1: 'Adam',
 			t2: '1000',
@@ -29,13 +29,13 @@ describe('BCS: Inline struct definitions', () => {
 	});
 
 	it('should not contain a trace of the temp struct', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		expect(bcs.hasType('temp-struct')).toBe(false);
 	});
 
 	it('should avoid duplicate key', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		bcs.registerStructType('temp-struct', { a0: 'u8' });
 

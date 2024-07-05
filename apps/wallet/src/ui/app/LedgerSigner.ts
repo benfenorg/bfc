@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@benfen/bfc.js/client';
+import { type BenfenClient } from '@benfen/bfc.js/client';
 import {
 	toSerializedSignature,
 	type SerializedSignature,
@@ -21,7 +21,7 @@ export class LedgerSigner extends WalletSigner {
 	constructor(
 		connectToLedger: () => Promise<SuiLedgerClient>,
 		derivationPath: string,
-		client: SuiClient,
+		client: BenfenClient,
 	) {
 		super(client);
 		this.#connectToLedger = connectToLedger;
@@ -42,7 +42,7 @@ export class LedgerSigner extends WalletSigner {
 		const ledgerClient = await this.#initializeSuiLedgerClient();
 		const publicKeyResult = await ledgerClient.getPublicKey(this.#derivationPath);
 		const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-		return publicKey.toSuiAddress();
+		return publicKey.toHexAddress();
 	}
 
 	async getPublicKey(): Promise<Ed25519PublicKey> {
@@ -62,7 +62,7 @@ export class LedgerSigner extends WalletSigner {
 		});
 	}
 
-	connect(client: SuiClient) {
+	connect(client: BenfenClient) {
 		return new LedgerSigner(this.#connectToLedger, this.#derivationPath, client);
 	}
 }

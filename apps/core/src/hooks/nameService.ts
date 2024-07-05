@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useQuery } from '@tanstack/react-query';
 
@@ -18,7 +18,7 @@ export function useSuiNSEnabled() {
 }
 
 export function useResolveSuiNSAddress(name?: string | null, enabled?: boolean) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const enabledSuiNs = useSuiNSEnabled();
 
 	return useQuery({
@@ -35,7 +35,7 @@ export function useResolveSuiNSAddress(name?: string | null, enabled?: boolean) 
 }
 
 export function useResolveSuiNSName(address?: string | null) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const enabled = useSuiNSEnabled();
 
 	return useQuery({

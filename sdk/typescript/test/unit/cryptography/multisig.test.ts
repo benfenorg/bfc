@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -42,7 +42,7 @@ describe('Multisig scenarios', () => {
 		];
 
 		const txb = new TransactionBlock();
-		txb.setSender(k3.getPublicKey().toSuiAddress());
+		txb.setSender(k3.getPublicKey().toHexAddress());
 		txb.setGasPrice(5);
 		txb.setGasBudget(100);
 		txb.setGasPayment([
@@ -410,7 +410,7 @@ describe('Multisig address creation:', () => {
 			],
 			threshold: 1,
 		});
-		const multisigAddress = multisigPublicKey.toSuiAddress();
+		const multisigAddress = multisigPublicKey.toHexAddress();
 
 		expect(multisigAddress).toEqual(
 			'0x77a9fbf3c695d78dd83449a81a9e70aa79a77dbfd6fb72037bf09201c12052cd',
@@ -426,7 +426,7 @@ describe('Multisig address creation:', () => {
 			],
 			threshold: 1,
 		});
-		expect(publicKey.toSuiAddress()).toEqual(
+		expect(publicKey.toHexAddress()).toEqual(
 			'0xb9c0780a3943cde13a2409bf1a6f06ae60b0dff2b2f373260cf627aa4f43a588',
 		);
 		const data = new Uint8Array(

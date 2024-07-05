@@ -10,7 +10,7 @@ import {
 } from '_src/shared/constants';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import {
 	calculateStakeShare,
 	formatPercentageDisplay,
@@ -40,7 +40,7 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 		data: system,
 		isPending: loadingValidators,
 		isError: errorValidators,
-	} = useSuiClientQuery('getLatestSuiSystemState');
+	} = useBenfenClientQuery('getLatestBenfeSystemState');
 
 	const {
 		data: stakeData,
@@ -57,11 +57,11 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 
 	const validatorData = useMemo(() => {
 		if (!system) return null;
-		return system.activeValidators.find((av) => av.suiAddress === validatorAddress);
+		return system.activeValidators.find((av) => av.benfenAddress === validatorAddress);
 	}, [validatorAddress, system]);
 
 	//TODO: verify this is the correct validator stake balance
-	const totalValidatorStake = validatorData?.stakingPoolSuiBalance || 0;
+	const totalValidatorStake = validatorData?.stakingPoolBfcBalance || 0;
 
 	const totalStake = useMemo(() => {
 		if (!stakeData) return 0n;
@@ -73,7 +73,7 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 	const totalValidatorsStake = useMemo(() => {
 		if (!system) return 0;
 		return system.activeValidators.reduce(
-			(acc, curr) => (acc += BigInt(curr.stakingPoolSuiBalance)),
+			(acc, curr) => (acc += BigInt(curr.stakingPoolBfcBalance)),
 			0n,
 		);
 	}, [system]);
@@ -82,7 +82,7 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 		if (!system || !validatorData) return null;
 
 		return calculateStakeShare(
-			BigInt(validatorData.stakingPoolSuiBalance),
+			BigInt(validatorData.stakingPoolBfcBalance),
 			BigInt(totalValidatorsStake),
 		);
 	}, [system, totalValidatorsStake, validatorData]);

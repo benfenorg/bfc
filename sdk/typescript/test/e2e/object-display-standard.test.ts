@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { SuiObjectData } from '../../src/client';
-import { bfc2SuiAddress } from '../../src/utils/index.js';
+import { BenfenObjectData } from '../../src/client';
+import { bfc2HexAddress } from '../../src/utils/index.js';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Test Object Display Standard', () => {
@@ -25,7 +25,7 @@ describe('Test Object Display Standard', () => {
 				filter: { StructType: `${packageId}::boars::Boar` },
 			})
 		).data;
-		const data = resp[0].data as SuiObjectData;
+		const data = resp[0].data as BenfenObjectData;
 		const boarId = data.objectId;
 		const display = (
 			await toolbox.client.getObject({
@@ -36,9 +36,9 @@ describe('Test Object Display Standard', () => {
 		const expectedData = {
 			data: {
 				age: '10',
-				buyer: bfc2SuiAddress(toolbox.address()),
+				buyer: bfc2HexAddress(toolbox.address()),
 				creator: 'Chris',
-				description: `Unique Boar from the Boars collection with First Boar and ${bfc2SuiAddress(
+				description: `Unique Boar from the Boars collection with First Boar and ${bfc2HexAddress(
 					boarId,
 				)}`,
 				img_url: 'https://get-a-boar.com/first.png',

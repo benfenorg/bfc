@@ -3,7 +3,7 @@
 
 import 'tsconfig-paths/register';
 
-import { requestSuiFromFaucetV0 } from '@benfen/bfc.js/faucet';
+import { requestBfcFromFaucetV0 } from '@benfen/bfc.js/faucet';
 import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import * as bip39 from '@scure/bip39';
 import { wordlist } from '@scure/bip39/wordlists/english';
@@ -21,5 +21,5 @@ export async function generateKeypair() {
 const FAUCET_HOST = 'http://127.0.0.1:9123';
 
 export async function requestSuiFromFaucet(recipient: string) {
-	await requestSuiFromFaucetV0({ host: FAUCET_HOST, recipient });
+	await requestBfcFromFaucetV0({ host: FAUCET_HOST, recipient });
 }

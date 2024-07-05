@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
-import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
+import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
 import { TransactionBlock } from '../../../transactions/index.js';
 import {
 	WalletFeatureNotSupportedError,
@@ -12,7 +12,7 @@ import {
 } from '../../errors/walletErrors.js';
 import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
 import { useSignAndExecuteTransactionBlock } from '../../hooks/wallet/useSignAndExecuteTransactionBlock.js';
-import { suiFeatures } from '../mocks/mockFeatures.js';
+import { benfenFeatures } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
 describe('useSignAndExecuteTransactionBlock', () => {
@@ -58,15 +58,15 @@ describe('useSignAndExecuteTransactionBlock', () => {
 	test('signing and executing a transaction block from the currently connected account works successfully', async () => {
 		const { unregister, mockWallet } = registerMockWallet({
 			walletName: 'Mock Wallet 1',
-			features: suiFeatures,
+			features: benfenFeatures,
 		});
 
-		const suiClient = new SuiClient({ url: getFullnodeUrl('localnet') });
-		const executeTransactionBlock = vi.spyOn(suiClient, 'executeTransactionBlock');
+		const benfenClient = new BenfenClient({ url: getFullnodeUrl('localnet') });
+		const executeTransactionBlock = vi.spyOn(benfenClient, 'executeTransactionBlock');
 
 		executeTransactionBlock.mockReturnValueOnce(Promise.resolve({ digest: '123' }));
 
-		const wrapper = createWalletProviderContextWrapper({}, suiClient);
+		const wrapper = createWalletProviderContextWrapper({}, benfenClient);
 		const { result } = renderHook(
 			() => ({
 				connectWallet: useConnectWallet(),
@@ -98,7 +98,7 @@ describe('useSignAndExecuteTransactionBlock', () => {
 		expect(result.current.useSignAndExecuteTransactionBlock.data).toStrictEqual({
 			digest: '123',
 		});
-		expect(suiClient.executeTransactionBlock).toHaveBeenCalledWith({
+		expect(benfenClient.executeTransactionBlock).toHaveBeenCalledWith({
 			transactionBlock: 'abc',
 			signature: '123',
 		});

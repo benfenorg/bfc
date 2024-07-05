@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { FEATURES } from '_src/shared/experimentation/features';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useFeatureValue } from '@growthbook/growthbook-react';
 import { useQuery } from '@tanstack/react-query';
 
 export function useQueryTransactionsByAddress(address: string | null) {
-	const rpc = useSuiClient();
+	const rpc = useBenfenClient();
 	const refetchInterval = useFeatureValue(FEATURES.WALLET_ACTIVITY_REFETCH_INTERVAL, 20_000);
 
 	return useQuery({
@@ -39,7 +39,7 @@ export function useQueryTransactionsByAddress(address: string | null) {
 			]);
 
 			const inserted = new Map();
-			const uniqueList: SuiTransactionBlockResponse[] = [];
+			const uniqueList: BenfenTransactionBlockResponse[] = [];
 
 			[...txnIds.data, ...fromTxnIds.data]
 				.sort((a, b) => Number(b.timestampMs ?? 0) - Number(a.timestampMs ?? 0))

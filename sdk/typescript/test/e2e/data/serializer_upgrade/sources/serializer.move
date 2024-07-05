@@ -1,11 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen.
 // SPDX-License-Identifier: Apache-2.0
 
 module serializer::serializer_tests {
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer;
-    use sui::object::{Self, UID};
-    use sui::clock::Clock;
+    use bfc::tx_context::{Self, TxContext};
+    use bfc::transfer;
+    use bfc::object::{Self, UID};
+    use bfc::clock::Clock;
 
     public struct MutableShared has key {
         id: UID,

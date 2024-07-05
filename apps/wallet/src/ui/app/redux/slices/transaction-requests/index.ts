@@ -10,7 +10,7 @@ import {
 	type WalletSigner,
 } from '_src/ui/app/WalletSigner';
 import type { AppThunkConfig } from '_store/thunk-extras';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
 import { fromB64 } from '@benfen/bfc.js/utils';
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
@@ -28,7 +28,7 @@ export const respondToTransactionRequest = createAsyncThunk<
 	{
 		txRequestID: string;
 		approved: boolean;
-		txResponse: SuiTransactionBlockResponse | null;
+		txResponse: BenfenTransactionBlockResponse | null;
 	},
 	{
 		txRequestID: string;
@@ -49,7 +49,7 @@ export const respondToTransactionRequest = createAsyncThunk<
 			throw new Error(`TransactionRequest ${txRequestID} not found`);
 		}
 		let txSigned: SignedTransaction | undefined = undefined;
-		let txResult: SuiTransactionBlockResponse | SignedMessage | undefined = undefined;
+		let txResult: BenfenTransactionBlockResponse | SignedMessage | undefined = undefined;
 		let txResultError: string | undefined;
 		if (approved) {
 			try {

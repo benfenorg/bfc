@@ -1,34 +1,34 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ComponentProps } from 'react';
 
-import { getFullnodeUrl, SuiClient } from '../../client/index.js';
+import { BenfenClient, getFullnodeUrl } from '../../client/index.js';
 import { getWallets } from '../../wallet-standard/index.js';
 import type { IdentifierRecord, ReadonlyWalletAccount } from '../../wallet-standard/index.js';
-import { SuiClientProvider, WalletProvider } from '../index.js';
+import { BenfenClientProvider, WalletProvider } from '../index.js';
 import { createMockAccount } from './mocks/mockAccount.js';
 import { MockWallet } from './mocks/mockWallet.js';
 
-export function createSuiClientContextWrapper(client: SuiClient) {
-	return function SuiClientContextWrapper({ children }: { children: React.ReactNode }) {
-		return <SuiClientProvider networks={{ test: client }}>{children}</SuiClientProvider>;
+export function createBenfenClientContextWrapper(client: BenfenClient) {
+	return function BenfenClientContextWrapper({ children }: { children: React.ReactNode }) {
+		return <BenfenClientProvider networks={{ test: client }}>{children}</BenfenClientProvider>;
 	};
 }
 
 export function createWalletProviderContextWrapper(
 	providerProps: Omit<ComponentProps<typeof WalletProvider>, 'children'> = {},
-	suiClient: SuiClient = new SuiClient({ url: getFullnodeUrl('localnet') }),
+	benfenClient: BenfenClient = new BenfenClient({ url: getFullnodeUrl('localnet') }),
 ) {
 	const queryClient = new QueryClient();
 	return function WalletProviderContextWrapper({ children }: { children: React.ReactNode }) {
 		return (
-			<SuiClientProvider networks={{ test: suiClient }}>
+			<BenfenClientProvider networks={{ test: benfenClient }}>
 				<QueryClientProvider client={queryClient}>
 					<WalletProvider {...providerProps}>{children}</WalletProvider>;
 				</QueryClientProvider>
-			</SuiClientProvider>
+			</BenfenClientProvider>
 		);
 	};
 }

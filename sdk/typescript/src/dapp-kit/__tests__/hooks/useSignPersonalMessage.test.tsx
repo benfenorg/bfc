@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { act, renderHook, waitFor } from '@testing-library/react';
@@ -10,7 +10,7 @@ import {
 } from '../../errors/walletErrors.js';
 import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
 import { useSignPersonalMessage } from '../../hooks/wallet/useSignPersonalMessage.js';
-import { signMessageFeature, suiFeatures } from '../mocks/mockFeatures.js';
+import { benfenFeatures, signMessageFeature } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
 describe('useSignPersonalMessage', () => {
@@ -89,7 +89,7 @@ describe('useSignPersonalMessage', () => {
 	test('signing a personal message from the currently connected account works successfully', async () => {
 		const { unregister, mockWallet } = registerMockWallet({
 			walletName: 'Mock Wallet 1',
-			features: suiFeatures,
+			features: benfenFeatures,
 		});
 
 		const wrapper = createWalletProviderContextWrapper();

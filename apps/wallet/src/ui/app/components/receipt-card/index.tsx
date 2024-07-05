@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useTransactionSummary } from '@mysten/core';
 
 import { DateCard } from '../../shared/date-card';
@@ -14,7 +14,7 @@ import { StatusIcon } from './StatusIcon';
 import { UnStakeTxnCard } from './UnstakeTxnCard';
 
 type ReceiptCardProps = {
-	txn: SuiTransactionBlockResponse;
+	txn: BenfenTransactionBlockResponse;
 	activeAddress: string;
 };
 

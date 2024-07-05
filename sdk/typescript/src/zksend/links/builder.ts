@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { CoinStruct } from '../../client/index.js';
-import { getFullnodeUrl, SuiClient } from '../../client/index.js';
-import { decodeSuiPrivateKey } from '../../cryptography/index.js';
+import { BenfenClient, getFullnodeUrl } from '../../client/index.js';
+import { decodeBenfenPrivateKey } from '../../cryptography/index.js';
 import type { Keypair, Signer } from '../../cryptography/index.js';
 import { Ed25519Keypair } from '../../keypairs/ed25519/index.js';
 import type {
@@ -11,7 +11,7 @@ import type {
 	TransactionObjectInput,
 } from '../../transactions/index.js';
 import { TransactionBlock } from '../../transactions/index.js';
-import { normalizeStructTag, normalizeSuiAddress, SUI_TYPE_ARG, toB64 } from '../../utils/index.js';
+import { BFC_TYPE_ARG, normalizeHexAddress, normalizeStructTag, toB64 } from '../../utils/index.js';
 import type { ZkBagContractOptions } from './zk-bag.js';
 import { MAINNET_CONTRACT_IDS, ZkBag } from './zk-bag.js';
 
@@ -25,7 +25,7 @@ export interface ZkSendLinkBuilderOptions {
 	path?: string;
 	keypair?: Keypair;
 	network?: 'mainnet' | 'testnet';
-	client?: SuiClient;
+	client?: BenfenClient;
 	sender: string;
 	redirect?: ZkSendLinkRedirect;
 	contract?: ZkBagContractOptions | null;
@@ -37,7 +37,7 @@ const DEFAULT_ZK_SEND_LINK_OPTIONS = {
 	network: 'mainnet' as const,
 };
 
-const SUI_COIN_TYPE = normalizeStructTag(SUI_TYPE_ARG);
+const BFC_COIN_TYPE = normalizeStructTag(BFC_TYPE_ARG);
 
 export interface CreateZkSendLinkOptions {
 	transactionBlock?: TransactionBlock;
@@ -55,7 +55,7 @@ export class ZkSendLinkBuilder {
 	#host: string;
 	#path: string;
 	keypair: Keypair;
-	#client: SuiClient;
+	#client: BenfenClient;
 	#redirect?: ZkSendLinkRedirect;
 	#coinsByType = new Map<string, CoinStruct[]>();
 	#contract?: ZkBag<ZkBagContractOptions>;
@@ -65,7 +65,7 @@ export class ZkSendLinkBuilder {
 		path = DEFAULT_ZK_SEND_LINK_OPTIONS.path,
 		keypair = new Ed25519Keypair(),
 		network = DEFAULT_ZK_SEND_LINK_OPTIONS.network,
-		client = new SuiClient({ url: getFullnodeUrl(network) }),
+		client = new BenfenClient({ url: getFullnodeUrl(network) }),
 		sender,
 		redirect,
 		contract = network === 'mainnet' ? MAINNET_CONTRACT_IDS : undefined,
@@ -75,7 +75,7 @@ export class ZkSendLinkBuilder {
 		this.#redirect = redirect;
 		this.keypair = keypair;
 		this.#client = client;
-		this.sender = normalizeSuiAddress(sender);
+		this.sender = normalizeHexAddress(sender);
 
 		if (contract) {
 			this.#contract = new ZkBag(contract.packageId, contract);
@@ -83,7 +83,7 @@ export class ZkSendLinkBuilder {
 	}
 
 	addClaimableMist(amount: bigint) {
-		this.addClaimableBalance(SUI_COIN_TYPE, amount);
+		this.addClaimableBalance(BFC_COIN_TYPE, amount);
 	}
 
 	addClaimableBalance(coinType: string, amount: bigint) {
@@ -99,7 +99,7 @@ export class ZkSendLinkBuilder {
 		const link = new URL(this.#host);
 		link.pathname = this.#path;
 		link.hash = `${this.#contract ? '$' : ''}${toB64(
-			decodeSuiPrivateKey(this.keypair.getSecretKey()).secretKey,
+			decodeBenfenPrivateKey(this.keypair.getSecretKey()).secretKey,
 		)}`;
 
 		if (this.#redirect) {
@@ -180,10 +180,10 @@ export class ZkSendLinkBuilder {
 		txb.setSenderIfNotSet(this.sender);
 
 		for (const [coinType, amount] of this.balances) {
-			if (coinType === SUI_COIN_TYPE) {
-				const [sui] = txb.splitCoins(txb.gas, [amount]);
+			if (coinType === BFC_COIN_TYPE) {
+				const [bfc] = txb.splitCoins(txb.gas, [amount]);
 				refsWithType.push({
-					ref: sui,
+					ref: bfc,
 					type: `0x2::coin::Coin<${coinType}>`,
 				} as never);
 			} else {
@@ -221,7 +221,7 @@ export class ZkSendLinkBuilder {
 		// Ensure that gas amount ends in 987
 		const roundedGasAmount = gasWithBuffer - (gasWithBuffer % 1000n) - 13n;
 
-		const address = this.keypair.toSuiAddress();
+		const address = this.keypair.toHexAddress();
 		const objectsToTransfer = (await this.#objectsToTransfer(txb)).map((obj) => obj.ref);
 		const [gas] = txb.splitCoins(txb.gas, [roundedGasAmount]);
 		objectsToTransfer.push(gas);
@@ -236,7 +236,7 @@ export class ZkSendLinkBuilder {
 		const txb = new TransactionBlock();
 		txb.setSender(this.sender);
 		txb.setGasPayment([]);
-		txb.transferObjects([txb.gas], this.keypair.toSuiAddress());
+		txb.transferObjects([txb.gas], this.keypair.toHexAddress());
 
 		const idsToTransfer = [...this.objectIds];
 
@@ -253,7 +253,7 @@ export class ZkSendLinkBuilder {
 		if (idsToTransfer.length > 0) {
 			txb.transferObjects(
 				idsToTransfer.map((id) => txb.object(id)),
-				this.keypair.toSuiAddress(),
+				this.keypair.toHexAddress(),
 			);
 		}
 
@@ -286,12 +286,12 @@ export class ZkSendLinkBuilder {
 	static async createLinks({
 		links,
 		network = 'mainnet',
-		client = new SuiClient({ url: getFullnodeUrl(network) }),
+		client = new BenfenClient({ url: getFullnodeUrl(network) }),
 		transactionBlock = new TransactionBlock(),
 		contract: contractIds = MAINNET_CONTRACT_IDS,
 	}: {
 		transactionBlock?: TransactionBlock;
-		client?: SuiClient;
+		client?: BenfenClient;
 		network?: 'mainnet' | 'testnet';
 		links: ZkSendLinkBuilder[];
 		contract?: ZkBagContractOptions;
@@ -353,11 +353,11 @@ export class ZkSendLinkBuilder {
 		}
 
 		const mergedCoins = new Map<string, TransactionObjectArgument>([
-			[SUI_COIN_TYPE, transactionBlock.gas],
+			[BFC_COIN_TYPE, transactionBlock.gas],
 		]);
 
 		for (const [coinType, coins] of coinsByType) {
-			if (coinType === SUI_COIN_TYPE) {
+			if (coinType === BFC_COIN_TYPE) {
 				continue;
 			}
 
@@ -375,7 +375,7 @@ export class ZkSendLinkBuilder {
 		}
 
 		for (const link of links) {
-			const receiver = link.keypair.toSuiAddress();
+			const receiver = link.keypair.toHexAddress();
 			contract.new(transactionBlock, { arguments: [store, receiver] });
 
 			link.objectIds.forEach((id) => {
@@ -400,7 +400,7 @@ export class ZkSendLinkBuilder {
 			const splits = transactionBlock.splitCoins(merged, balances);
 			for (const [i, link] of linksWithCoin.entries()) {
 				contract.add(transactionBlock, {
-					arguments: [store, link.keypair.toSuiAddress(), splits[i]],
+					arguments: [store, link.keypair.toHexAddress(), splits[i]],
 					typeArguments: [`0x2::coin::Coin<${coinType}>`],
 				});
 			}

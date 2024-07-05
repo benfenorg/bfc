@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen.
 // SPDX-License-Identifier: Apache-2.0
 
 module tto::tto {
-    use sui::object::{Self, UID};
-    use sui::tx_context::{Self, TxContext};
-    use sui::transfer::{Self, Receiving};
+    use bfc::object::{Self, UID};
+    use bfc::tx_context::{Self, TxContext};
+    use bfc::transfer::{Self, Receiving};
 
     public struct A has key, store {
         id: UID,

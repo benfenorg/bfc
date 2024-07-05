@@ -1,18 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiObjectDataOptions, SuiObjectResponse } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { BenfenObjectDataOptions, BenfenObjectResponse } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery, UseQueryOptions } from '@tanstack/react-query';
 
 import { chunkArray } from '../utils/chunkArray';
 
 export function useMultiGetObjects(
 	ids: string[],
-	options: SuiObjectDataOptions,
-	queryOptions?: Omit<UseQueryOptions<SuiObjectResponse[]>, 'queryKey' | 'queryFn'>,
+	options: BenfenObjectDataOptions,
+	queryOptions?: Omit<UseQueryOptions<BenfenObjectResponse[]>, 'queryKey' | 'queryFn'>,
 ) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useQuery({
 		...queryOptions,
 		queryKey: ['multiGetObjects', ids],

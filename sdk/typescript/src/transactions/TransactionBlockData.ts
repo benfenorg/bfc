@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { Infer } from 'superstruct';
@@ -18,10 +18,10 @@ import {
 
 import { bcs } from '../bcs/index.js';
 import { toB58 } from '../bcs/src/index.js';
-import { bfc2SuiAddress } from '../utils/format.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeHexAddress } from '../utils/bf-types.js';
+import { bfc2HexAddress } from '../utils/format.js';
 import { hashTypedData } from './hash.js';
-import { BuilderCallArg, PureCallArg, SuiObjectRef } from './Inputs.js';
+import { BenfenObjectRef, BuilderCallArg, PureCallArg } from './Inputs.js';
 import { TransactionBlockInput, TransactionType } from './Transactions.js';
 import { create } from './utils.js';
 
@@ -46,7 +46,7 @@ const StringEncodedBigint = define<string | number | bigint>('StringEncodedBigin
 const GasConfig = object({
 	budget: optional(StringEncodedBigint),
 	price: optional(StringEncodedBigint),
-	payment: optional(array(SuiObjectRef)),
+	payment: optional(array(BenfenObjectRef)),
 	owner: optional(string()),
 });
 type GasConfig = Infer<typeof GasConfig>;
@@ -61,12 +61,12 @@ export const SerializedTransactionDataBuilder = object({
 });
 export type SerializedTransactionDataBuilder = Infer<typeof SerializedTransactionDataBuilder>;
 
-function prepareSuiAddress(address: string) {
+function prepareHexAddress(address: string) {
 	let value = address;
 	if (/^bfc/i.test(address)) {
-		value = bfc2SuiAddress(address);
+		value = bfc2HexAddress(address);
 	}
-	return normalizeSuiAddress(value).replace('0x', '');
+	return normalizeHexAddress(value).replace('0x', '');
 }
 
 export class TransactionBlockDataBuilder {
@@ -214,11 +214,11 @@ export class TransactionBlockDataBuilder {
 		}
 
 		const transactionData = {
-			sender: prepareSuiAddress(sender),
+			sender: prepareHexAddress(sender),
 			expiration: expiration ? expiration : { None: true },
 			gasData: {
 				payment: gasConfig.payment,
-				owner: prepareSuiAddress(this.gasConfig.owner ?? sender),
+				owner: prepareHexAddress(this.gasConfig.owner ?? sender),
 				price: BigInt(gasConfig.price),
 				budget: BigInt(gasConfig.budget),
 			},

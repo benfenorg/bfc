@@ -2,11 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getAmount } from '_helpers';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useMemo } from 'react';
 
 type Props = {
-	txn: SuiTransactionBlockResponse;
+	txn: BenfenTransactionBlockResponse;
 	address: string;
 };
 

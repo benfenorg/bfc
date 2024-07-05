@@ -1,20 +1,20 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PureArg } from '../../bcs/index.js';
 import { bcs } from '../../bcs/index.js';
-import { getFullnodeUrl, SuiClient } from '../../client/index.js';
-import type { CoinStruct, SuiTransaction } from '../../client/index.js';
+import { BenfenClient, getFullnodeUrl } from '../../client/index.js';
+import type { BenfenTransaction, CoinStruct } from '../../client/index.js';
 import type { Keypair } from '../../cryptography/index.js';
 import { Ed25519Keypair } from '../../keypairs/ed25519/index.js';
 import { TransactionBlock } from '../../transactions/index.js';
 import {
+	BFC_TYPE_ARG,
 	fromB64,
+	normalizeBenfenObjectId,
+	normalizeHexAddress,
 	normalizeStructTag,
-	normalizeSuiAddress,
-	normalizeSuiObjectId,
 	parseStructTag,
-	SUI_TYPE_ARG,
 	toB64,
 } from '../../utils/index.js';
 import type { ZkSendLinkBuilderOptions } from './builder.js';
@@ -31,13 +31,13 @@ const DEFAULT_ZK_SEND_LINK_OPTIONS = {
 	claimApi: 'https://zksend.com/api',
 };
 
-const SUI_COIN_TYPE = normalizeStructTag(SUI_TYPE_ARG);
-const SUI_COIN_OBJECT_TYPE = normalizeStructTag('0x2::coin::Coin<0x2::bfc::BFC>');
+const BFC_COIN_TYPE = normalizeStructTag(BFC_TYPE_ARG);
+const BFC_COIN_OBJECT_TYPE = normalizeStructTag('0x2::coin::Coin<0x2::bfc::BFC>');
 
 export type ZkSendLinkOptions = {
 	claimApi?: string;
 	keypair?: Keypair;
-	client?: SuiClient;
+	client?: BenfenClient;
 	network?: 'mainnet' | 'testnet';
 	host?: string;
 	path?: string;
@@ -62,7 +62,7 @@ export class ZkSendLink {
 	assets?: LinkAssets;
 	claimed?: boolean;
 
-	#client: SuiClient;
+	#client: BenfenClient;
 	#contract?: ZkBag<ZkBagContractOptions>;
 	#claimApi: string;
 	#network: 'mainnet' | 'testnet';
@@ -71,7 +71,7 @@ export class ZkSendLink {
 
 	// State for non-contract based links
 	#gasCoin?: CoinStruct;
-	#hasSui = false;
+	#hasBfc = false;
 	#ownedObjects: {
 		objectId: string;
 		version: string;
@@ -82,7 +82,7 @@ export class ZkSendLink {
 	constructor({
 		network = DEFAULT_ZK_SEND_LINK_OPTIONS.network,
 		claimApi = DEFAULT_ZK_SEND_LINK_OPTIONS.claimApi,
-		client = new SuiClient({ url: getFullnodeUrl(network) }),
+		client = new BenfenClient({ url: getFullnodeUrl(network) }),
 		keypair,
 		contract = network === 'mainnet' ? MAINNET_CONTRACT_IDS : null,
 		address,
@@ -96,7 +96,7 @@ export class ZkSendLink {
 
 		this.#client = client;
 		this.keypair = keypair;
-		this.address = address ?? keypair!.toSuiAddress();
+		this.address = address ?? keypair!.toHexAddress();
 		this.#claimApi = claimApi;
 		this.#network = network;
 		this.#host = host;
@@ -193,7 +193,7 @@ export class ZkSendLink {
 		const txb = this.createClaimTransaction(address);
 
 		const { digest } = await this.#executeSponsoredTransactionBlock(
-			await this.#createSponsoredTransactionBlock(txb, address, this.keypair.toSuiAddress()),
+			await this.#createSponsoredTransactionBlock(txb, address, this.keypair.toHexAddress()),
 			this.keypair,
 		);
 
@@ -217,7 +217,7 @@ export class ZkSendLink {
 		}
 
 		const txb = new TransactionBlock();
-		const sender = reclaim ? address : this.keypair!.toSuiAddress();
+		const sender = reclaim ? address : this.keypair!.toHexAddress();
 		txb.setSender(sender);
 
 		const store = txb.object(this.#contract.ids.bagStoreId);
@@ -288,7 +288,7 @@ export class ZkSendLink {
 			keypair: newLinkKp,
 		});
 
-		const to = txb.pure.address(newLinkKp.toSuiAddress());
+		const to = txb.pure.address(newLinkKp.toHexAddress());
 
 		this.#contract.update_receiver(txb, { arguments: [store, this.address, to] });
 
@@ -359,7 +359,7 @@ export class ZkSendLink {
 			const type = parseStructTag(normalizeStructTag(object.data.type));
 
 			if (
-				type.address === normalizeSuiAddress('0x2') &&
+				type.address === normalizeHexAddress('0x2') &&
 				type.module === 'coin' &&
 				type.name === 'Coin'
 			) {
@@ -418,7 +418,8 @@ export class ZkSendLink {
 		}
 
 		const transfer = txb.transaction.data.transaction.transactions.findLast(
-			(tx): tx is Extract<SuiTransaction, { TransferObjects: unknown }> => 'TransferObjects' in tx,
+			(tx): tx is Extract<BenfenTransaction, { TransferObjects: unknown }> =>
+				'TransferObjects' in tx,
 		);
 
 		if (!transfer) {
@@ -524,7 +525,7 @@ export class ZkSendLink {
 			digest: string;
 		}[] = [];
 
-		if (this.#ownedObjects.length === 0 && !this.#hasSui) {
+		if (this.#ownedObjects.length === 0 && !this.#hasBfc) {
 			return {
 				balances,
 				nfts,
@@ -532,12 +533,12 @@ export class ZkSendLink {
 			};
 		}
 
-		const address = new Ed25519Keypair().toSuiAddress();
-		const normalizedAddress = normalizeSuiAddress(address);
+		const address = new Ed25519Keypair().toHexAddress();
+		const normalizedAddress = normalizeHexAddress(address);
 
 		const txb = this.createClaimTransaction(normalizedAddress);
 
-		if (this.#gasCoin || !this.#hasSui) {
+		if (this.#gasCoin || !this.#hasBfc) {
 			txb.setGasPayment([]);
 		}
 
@@ -559,7 +560,7 @@ export class ZkSendLink {
 				const type = parseStructTag(objectChange.objectType);
 
 				if (
-					type.address === normalizeSuiAddress('0x2') &&
+					type.address === normalizeHexAddress('0x2') &&
 					type.module === 'coin' &&
 					type.name === 'Coin'
 				) {
@@ -588,7 +589,7 @@ export class ZkSendLink {
 		}
 
 		const txb = new TransactionBlock();
-		txb.setSender(this.keypair.toSuiAddress());
+		txb.setSender(this.keypair.toHexAddress());
 
 		const objectsToTransfer = this.#ownedObjects
 			.filter((object) => {
@@ -596,7 +597,7 @@ export class ZkSendLink {
 					if (object.objectId === this.#gasCoin.coinObjectId) {
 						return false;
 					}
-				} else if (object.type === SUI_COIN_OBJECT_TYPE) {
+				} else if (object.type === BFC_COIN_OBJECT_TYPE) {
 					return false;
 				}
 
@@ -640,7 +641,7 @@ export class ZkSendLink {
 			for (const object of ownedObjects.data) {
 				if (object.data) {
 					this.#ownedObjects.push({
-						objectId: normalizeSuiObjectId(object.data.objectId),
+						objectId: normalizeBenfenObjectId(object.data.objectId),
 						version: object.data.version,
 						digest: object.data.digest,
 						type: normalizeStructTag(object.data.type!),
@@ -650,11 +651,11 @@ export class ZkSendLink {
 		} while (nextCursor);
 
 		const coins = await this.#client.getCoins({
-			coinType: SUI_COIN_TYPE,
+			coinType: BFC_COIN_TYPE,
 			owner: this.address,
 		});
 
-		this.#hasSui = coins.data.length > 0;
+		this.#hasBfc = coins.data.length > 0;
 		this.#gasCoin = coins.data.find((coin) => BigInt(coin.balance) % 1000n === 987n);
 
 		const result = await this.#client.queryTransactionBlocks({
@@ -672,7 +673,7 @@ export class ZkSendLink {
 
 		this.creatorAddress = result.data[0]?.transaction?.data.sender;
 
-		if (this.#hasSui || this.#ownedObjects.length > 0) {
+		if (this.#hasBfc || this.#ownedObjects.length > 0) {
 			this.claimed = false;
 			this.assets = await this.#listNonContractClaimableAssets();
 		} else if (result.data[0]) {

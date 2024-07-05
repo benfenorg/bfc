@@ -3,7 +3,7 @@
 import { useActiveAccount } from '_app/hooks/useActiveAccount';
 import { useCoinsReFetchingConfig } from '_hooks';
 import { type BalanceChange } from '@benfen/bfc.js/client';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { roundFloat, useFormatCoin } from '@mysten/core';
 import BigNumber from 'bignumber.js';
 
@@ -18,17 +18,18 @@ export function useSwapData({
 	const activeAccountAddress = activeAccount?.address;
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 
-	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useSuiClientQuery(
+	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useBenfenClientQuery(
 		'getBalance',
 		{ coinType: baseCoinType, owner: activeAccountAddress! },
 		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
 	);
 
-	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } = useSuiClientQuery(
-		'getBalance',
-		{ coinType: quoteCoinType, owner: activeAccountAddress! },
-		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
-	);
+	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } =
+		useBenfenClientQuery(
+			'getBalance',
+			{ coinType: quoteCoinType, owner: activeAccountAddress! },
+			{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
+		);
 
 	const rawBaseBalance = baseCoinBalanceData?.totalBalance;
 	const rawQuoteBalance = quoteCoinBalanceData?.totalBalance;

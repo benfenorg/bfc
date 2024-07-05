@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { SuiObjectData } from '../../src/client/index.js';
-import { bfc2SuiAddress } from '../../src/utils/index.js';
+import { BenfenObjectData } from '../../src/client/index.js';
+import { bfc2HexAddress } from '../../src/utils/index.js';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Dynamic Fields Reading API', () => {
@@ -24,7 +24,7 @@ describe('Dynamic Fields Reading API', () => {
 				filter: { StructType: `${packageId}::dynamic_fields_test::Test` },
 			})
 			.then(function (objects) {
-				const data = objects.data[0].data as SuiObjectData;
+				const data = objects.data[0].data as BenfenObjectData;
 				parentObjectId = data.objectId;
 			});
 	});
@@ -64,11 +64,11 @@ describe('Dynamic Fields Reading API', () => {
 			const objName = data.name;
 
 			if (objName.type === '0x2::object::ID') {
-				objName.value = bfc2SuiAddress(objName.value as string);
+				objName.value = bfc2HexAddress(objName.value as string);
 			}
 
 			const object = await toolbox.client.getDynamicFieldObject({
-				parentId: bfc2SuiAddress(parentObjectId),
+				parentId: bfc2HexAddress(parentObjectId),
 				name: objName,
 			});
 

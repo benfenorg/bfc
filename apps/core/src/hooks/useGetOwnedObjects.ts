@@ -1,18 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { PaginatedObjectsResponse, type SuiObjectDataFilter } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { PaginatedObjectsResponse, type BenfenObjectDataFilter } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const MAX_OBJECTS_PER_REQ = 6;
 
 export function useGetOwnedObjects(
 	address?: string | null,
-	filter?: SuiObjectDataFilter,
+	filter?: BenfenObjectDataFilter,
 	maxObjectRequests = MAX_OBJECTS_PER_REQ,
 ) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useInfiniteQuery<PaginatedObjectsResponse>({
 		initialPageParam: null,
 		queryKey: ['get-owned-objects', address, filter, maxObjectRequests],

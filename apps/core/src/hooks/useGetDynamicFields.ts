@@ -2,19 +2,19 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { DynamicFieldPage } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { normalizeSuiAddress } from '@benfen/bfc.js/utils';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { normalizeHexAddress } from '@benfen/bfc.js/utils';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const MAX_PAGE_SIZE = 10;
 
 export function useGetDynamicFields(parentId: string, maxPageSize = MAX_PAGE_SIZE) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useInfiniteQuery<DynamicFieldPage>({
 		queryKey: ['dynamic-fields', { maxPageSize, parentId }],
 		queryFn: ({ pageParam = null }) =>
 			client.getDynamicFields({
-				parentId: normalizeSuiAddress(parentId),
+				parentId: normalizeHexAddress(parentId),
 				cursor: pageParam as string | null,
 				limit: maxPageSize,
 			}),

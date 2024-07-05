@@ -3,11 +3,11 @@
 
 import networkEnv from '_src/background/NetworkEnv';
 import { ENV_TO_API, type NetworkEnvType } from '_src/shared/api-env';
-import { SuiClient, SuiHTTPTransport } from '@benfen/bfc.js/client';
+import { BenfenClient, BenfenHTTPTransport } from '@benfen/bfc.js/client';
 
-const suiClientPerNetwork = new Map<string, SuiClient>();
+const suiClientPerNetwork = new Map<string, BenfenClient>();
 
-export function getSuiClient({ env, customRpcUrl }: NetworkEnvType): SuiClient {
+export function getSuiClient({ env, customRpcUrl }: NetworkEnvType): BenfenClient {
 	const key = `${env}_${customRpcUrl}`;
 	if (!suiClientPerNetwork.has(key)) {
 		const connection = customRpcUrl ? customRpcUrl : ENV_TO_API[env];
@@ -16,14 +16,14 @@ export function getSuiClient({ env, customRpcUrl }: NetworkEnvType): SuiClient {
 		}
 		suiClientPerNetwork.set(
 			key,
-			new SuiClient({
-				transport: new SuiHTTPTransport({ url: connection }),
+			new BenfenClient({
+				transport: new BenfenHTTPTransport({ url: connection }),
 			}),
 		);
 	}
 	return suiClientPerNetwork.get(key)!;
 }
 
-export async function getActiveNetworkSuiClient(): Promise<SuiClient> {
+export async function getActiveNetworkSuiClient(): Promise<BenfenClient> {
 	return getSuiClient(await networkEnv.getActiveNetwork());
 }

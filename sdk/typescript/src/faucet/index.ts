@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 export class FaucetRateLimitError extends Error {}
@@ -67,7 +67,7 @@ async function faucetRequest({ host, path, body, headers, method }: FaucetReques
 	}
 }
 
-export async function requestSuiFromFaucetV0(input: {
+export async function requestBfcFromFaucetV0(input: {
 	host: string;
 	recipient: string;
 	headers?: HeadersInit;
@@ -85,7 +85,7 @@ export async function requestSuiFromFaucetV0(input: {
 	});
 }
 
-export async function requestSuiFromFaucetV1(input: {
+export async function requestBfcFromFaucetV1(input: {
 	host: string;
 	recipient: string;
 	headers?: HeadersInit;

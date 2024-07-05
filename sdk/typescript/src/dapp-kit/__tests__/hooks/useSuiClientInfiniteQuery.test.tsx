@@ -1,17 +1,17 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
-import { useSuiClientInfiniteQuery } from '../../hooks/useSuiClientInfiniteQuery.js';
+import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
+import { useBenfenClientInfiniteQuery } from '../../hooks/useBenfenClientInfiniteQuery.js';
 import { createWalletProviderContextWrapper } from '../test-utils.js';
 
-describe('useSuiClientInfiniteQuery', () => {
+describe('useBenfenClientInfiniteQuery', () => {
 	it('should fetch data', async () => {
-		const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
-		const wrapper = createWalletProviderContextWrapper({}, suiClient);
+		const benfenClient = new BenfenClient({ url: getFullnodeUrl('mainnet') });
+		const wrapper = createWalletProviderContextWrapper({}, benfenClient);
 
-		const queryTransactionBlocks = vi.spyOn(suiClient, 'queryTransactionBlocks');
+		const queryTransactionBlocks = vi.spyOn(benfenClient, 'queryTransactionBlocks');
 
 		const pages = [
 			{
@@ -30,7 +30,7 @@ describe('useSuiClientInfiniteQuery', () => {
 
 		const { result } = renderHook(
 			() =>
-				useSuiClientInfiniteQuery('queryTransactionBlocks', {
+				useBenfenClientInfiniteQuery('queryTransactionBlocks', {
 					filter: {
 						FromAddress: '0x123',
 					},

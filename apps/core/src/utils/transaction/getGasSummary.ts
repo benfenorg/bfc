@@ -3,8 +3,8 @@
 import {
 	DryRunTransactionBlockResponse,
 	GasCostSummary,
-	SuiGasData,
-	SuiTransactionBlockResponse,
+	BenfenGasData,
+	BenfenTransactionBlockResponse,
 	TransactionEffects,
 } from '@benfen/bfc.js/client';
 
@@ -14,7 +14,7 @@ type Optional<T> = {
 
 export type GasSummaryType =
 	| (GasCostSummary &
-			Optional<SuiGasData> & {
+			Optional<BenfenGasData> & {
 				totalGas?: string;
 				owner?: string;
 				isSponsored: boolean;
@@ -23,7 +23,7 @@ export type GasSummaryType =
 	| null;
 
 export function getGasSummary(
-	transaction: SuiTransactionBlockResponse | DryRunTransactionBlockResponse,
+	transaction: BenfenTransactionBlockResponse | DryRunTransactionBlockResponse,
 ): GasSummaryType {
 	const { effects } = transaction;
 	if (!effects) return null;

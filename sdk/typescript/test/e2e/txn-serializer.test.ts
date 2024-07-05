@@ -1,19 +1,19 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
 import { SharedObjectRef } from '../../src/bcs';
-import { SuiTransactionBlockResponse } from '../../src/client';
+import { BenfenTransactionBlockResponse } from '../../src/client';
 import { BuilderCallArg, TransactionBlock } from '../../src/transactions';
 import { TransactionBlockDataBuilder } from '../../src/transactions/TransactionBlockData';
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/utils';
+import { BFC_SYSTEM_STATE_OBJECT_ID } from '../../src/utils';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Transaction Serialization and deserialization', () => {
 	let toolbox: TestToolbox;
 	let packageId: string;
-	let publishTxn: SuiTransactionBlockResponse;
+	let publishTxn: BenfenTransactionBlockResponse;
 	let sharedObjectId: string;
 
 	beforeAll(async () => {
@@ -48,14 +48,14 @@ describe('Transaction Serialization and deserialization', () => {
 	it.skip('Move Shared Object Call with mutable reference', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 
-		const [{ suiAddress: validatorAddress }] = await toolbox.getActiveValidators();
+		const [{ benfenAddress: validatorAddress }] = await toolbox.getActiveValidators();
 
 		const tx = new TransactionBlock();
 		const coin = coins.data[2];
 		tx.moveCall({
-			target: '0x3::sui_system::request_add_stake',
+			target: '0x3::bfc_system::request_add_stake',
 			arguments: [
-				tx.object(SUI_SYSTEM_STATE_OBJECT_ID),
+				tx.object(BFC_SYSTEM_STATE_OBJECT_ID),
 				tx.object(coin.coinObjectId),
 				tx.pure(validatorAddress),
 			],

@@ -1,13 +1,13 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { BCS, getBenfenMoveConfig } from '../../../src/bcs/src/index.js';
 
 describe('BCS: Generics', () => {
 	it('should handle generics', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		bcs.registerEnumType('base::Option<T>', {
 			none: null,
@@ -18,7 +18,7 @@ describe('BCS: Generics', () => {
 	});
 
 	it('should handle nested generics', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		bcs.registerEnumType('base::Option<T>', {
 			none: null,

@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import sha256 from 'fast-sha256';
 
 import type { MoveCallTransaction } from '../transactions/Transactions.js';
-import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/sui-types.js';
+import { BENFEN_ADDRESS_LENGTH, normalizeHexAddress } from '../utils/bf-types.js';
 import type { BcsType, BcsTypeOptions } from './src/index.js';
 import {
 	bcs,
@@ -12,7 +12,7 @@ import {
 	fromB58,
 	fromB64,
 	fromHEX,
-	getSuiMoveConfig,
+	getBenfenMoveConfig,
 	toB58,
 	toB64,
 	toHEX,
@@ -37,7 +37,7 @@ export type SharedObjectRef = {
 	mutable: boolean;
 };
 
-export type SuiObjectRef = {
+export type BenfenObjectRef = {
 	/** Base64 string representing the object digest */
 	objectId: string;
 	/** Object version */
@@ -50,9 +50,9 @@ export type SuiObjectRef = {
  * An object argument.
  */
 export type ObjectArg =
-	| { ImmOrOwned: SuiObjectRef }
+	| { ImmOrOwned: BenfenObjectRef }
 	| { Shared: SharedObjectRef }
-	| { Receiving: SuiObjectRef };
+	| { Receiving: BenfenObjectRef };
 
 /**
  * A pure argument.
@@ -99,7 +99,7 @@ export type StructTag = {
 };
 
 /**
- * Sui TypeTag object. A decoupled `0x...::module::Type<???>` parameter.
+ * Benfen TypeTag object. A decoupled `0x...::module::Type<???>` parameter.
  */
 export type TypeTag =
 	| { bool: null | true }
@@ -120,7 +120,7 @@ export type TypeTag =
  * The GasData to be used in the transaction.
  */
 export type GasData = {
-	payment: SuiObjectRef[];
+	payment: BenfenObjectRef[];
 	owner: string; // Gas Object's owner
 	price: number;
 	budget: number;
@@ -134,7 +134,7 @@ export type GasData = {
 export type TransactionExpiration = { None: null } | { Epoch: number };
 
 const bcsRegistry = new BcsRegistry({
-	...getSuiMoveConfig(),
+	...getBenfenMoveConfig(),
 	types: {
 		enums: {
 			'Option<T>': {
@@ -192,11 +192,11 @@ function enumKind<T extends object, Input extends object>(type: BcsType<T, Input
 	});
 }
 
-const Address = bcs.bytes(SUI_ADDRESS_LENGTH).transform({
+const Address = bcs.bytes(BENFEN_ADDRESS_LENGTH).transform({
 	input: (val: string | Uint8Array) =>
-		typeof val === 'string' ? fromHEX(normalizeSuiAddress(val)) : val,
+		typeof val === 'string' ? fromHEX(normalizeHexAddress(val)) : val,
 	output: (val) => {
-		const hex = toHEX(val).padStart(2 * SUI_ADDRESS_LENGTH, '0');
+		const hex = toHEX(val).padStart(2 * BENFEN_ADDRESS_LENGTH, '0');
 		const hash = toHEX(sha256(new TextEncoder().encode(hex)));
 		return `BFC${hex}${hash.slice(0, 4)}`;
 	},
@@ -208,7 +208,7 @@ const ObjectDigest = bcs.vector(bcs.u8()).transform({
 	output: (value) => toB58(new Uint8Array(value)),
 });
 
-const SuiObjectRef = bcs.struct('SuiObjectRef', {
+const BenfenObjectRef = bcs.struct('BenfenObjectRef', {
 	objectId: Address,
 	version: bcs.u64(),
 	digest: ObjectDigest,
@@ -221,9 +221,9 @@ const SharedObjectRef = bcs.struct('SharedObjectRef', {
 });
 
 const ObjectArg = bcs.enum('ObjectArg', {
-	ImmOrOwned: SuiObjectRef,
+	ImmOrOwned: BenfenObjectRef,
 	Shared: SharedObjectRef,
-	Receiving: SuiObjectRef,
+	Receiving: BenfenObjectRef,
 });
 
 const CallArg = bcs.enum('CallArg', {
@@ -272,7 +272,7 @@ const ProgrammableMoveCall = bcs
 			);
 
 			return {
-				package: normalizeSuiAddress(pkg),
+				package: normalizeHexAddress(pkg),
 				module,
 				function: fun,
 				type_arguments,
@@ -364,7 +364,7 @@ const StructTag = bcs.struct('StructTag', {
 });
 
 const GasData = bcs.struct('GasData', {
-	payment: bcs.vector(SuiObjectRef),
+	payment: bcs.vector(BenfenObjectRef),
 	owner: Address,
 	price: bcs.u64(),
 	budget: bcs.u64(),
@@ -393,7 +393,7 @@ const IntentVersion = bcs.enum('IntentVersion', {
 });
 
 const AppId = bcs.enum('AppId', {
-	Sui: null,
+	Benfen: null,
 });
 
 const Intent = bcs.struct('Intent', {
@@ -453,7 +453,7 @@ const SenderSignedData = bcs.vector(SenderSignedTransaction, {
 	name: 'SenderSignedData',
 });
 
-const suiBcs = {
+const benfenBcs = {
 	...bcs,
 	U8: bcs.u8(),
 	U16: bcs.u16(),
@@ -481,7 +481,7 @@ const suiBcs = {
 	SenderSignedTransaction,
 	SharedObjectRef,
 	StructTag,
-	SuiObjectRef,
+	BenfenObjectRef,
 	Transaction,
 	TransactionData,
 	TransactionDataV1,
@@ -525,7 +525,7 @@ bcsRegistry.registerBcsType('enumKind', (T) => enumKind(T));
 	SenderSignedData,
 	SharedObjectRef,
 	StructTag,
-	SuiObjectRef,
+	BenfenObjectRef,
 	Transaction,
 	TransactionData,
 	TransactionDataV1,
@@ -536,4 +536,4 @@ bcsRegistry.registerBcsType('enumKind', (T) => enumKind(T));
 	bcsRegistry.registerBcsType(type.name, () => type);
 });
 
-export { suiBcs as bcs, bcsRegistry };
+export { benfenBcs as bcs, bcsRegistry };

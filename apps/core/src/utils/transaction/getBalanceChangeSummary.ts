@@ -3,9 +3,9 @@
 import {
 	type DryRunTransactionBlockResponse,
 	type ObjectOwner,
-	type SuiTransactionBlockResponse,
+	type BenfenTransactionBlockResponse,
 } from '@benfen/bfc.js/client';
-import { normalizeSuiObjectId, parseStructTag } from '@benfen/bfc.js/utils';
+import { normalizeBenfenObjectId, parseStructTag } from '@benfen/bfc.js/utils';
 
 export type BalanceChange = {
 	coinType: string;
@@ -32,14 +32,14 @@ function getOwnerAddress(owner: ObjectOwner): string {
 }
 
 export const getBalanceChangeSummary = (
-	transaction: DryRunTransactionBlockResponse | SuiTransactionBlockResponse,
+	transaction: DryRunTransactionBlockResponse | BenfenTransactionBlockResponse,
 	recognizedPackagesList: string[],
 ) => {
 	const { balanceChanges, effects } = transaction;
 	if (!balanceChanges || !effects) return null;
 
 	const normalizedRecognizedPackages = recognizedPackagesList.map((itm) =>
-		normalizeSuiObjectId(itm),
+		normalizeBenfenObjectId(itm),
 	);
 	const balanceChangeByOwner = {};
 	return balanceChanges.reduce((acc, balanceChange) => {

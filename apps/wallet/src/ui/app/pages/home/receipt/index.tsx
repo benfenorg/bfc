@@ -7,8 +7,8 @@ import Overlay from '_components/overlay';
 import { ReceiptCard } from '_src/ui/app/components/receipt-card';
 import { useActiveAddress } from '_src/ui/app/hooks/useActiveAddress';
 import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { Check32 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
 import { useCallback, useMemo, useState } from 'react';
@@ -23,9 +23,9 @@ function ReceiptPage() {
 	// get tx results from url params
 	const transactionId = searchParams.get('txdigest');
 	const fromParam = searchParams.get('from');
-	const client = useSuiClient();
+	const client = useBenfenClient();
 
-	const { data, isPending, isError } = useQuery<SuiTransactionBlockResponse>({
+	const { data, isPending, isError } = useQuery<BenfenTransactionBlockResponse>({
 		queryKey: ['transactions-by-id', transactionId],
 		queryFn: async () => {
 			return client.getTransactionBlock({

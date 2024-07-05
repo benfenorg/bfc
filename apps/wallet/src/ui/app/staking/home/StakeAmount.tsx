@@ -3,7 +3,7 @@
 
 import { Heading } from '_app/shared/heading';
 import { Text } from '_app/shared/text';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
 
 //TODO unify StakeAmount and CoinBalance
@@ -14,7 +14,7 @@ interface StakeAmountProps {
 }
 
 export function StakeAmount({ balance, variant, isEarnedRewards }: StakeAmountProps) {
-	const [formatted, symbol] = useFormatCoin(balance, SUI_TYPE_ARG);
+	const [formatted, symbol] = useFormatCoin(balance, BFC_TYPE_ARG);
 	// Handle case of 0 balance
 	const zeroBalanceColor = !!balance;
 	const earnRewardColor = isEarnedRewards && (zeroBalanceColor ? 'success-dark' : 'gray-60');

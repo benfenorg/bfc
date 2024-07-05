@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin } from '@mysten/core';
 import { useQuery } from '@tanstack/react-query';
 
 export function useTransactionData(sender?: string | null, transaction?: TransactionBlock | null) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: ['transaction-data', transaction?.serialize()],
@@ -31,7 +31,7 @@ export function useTransactionGasBudget(
 ) {
 	const { data, ...rest } = useTransactionData(sender, transaction);
 
-	const [formattedGas] = useFormatCoin(data?.gasConfig.budget, SUI_TYPE_ARG);
+	const [formattedGas] = useFormatCoin(data?.gasConfig.budget, BFC_TYPE_ARG);
 
 	return {
 		data: formattedGas,

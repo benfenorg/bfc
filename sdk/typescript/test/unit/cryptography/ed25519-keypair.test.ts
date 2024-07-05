@@ -1,11 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import nacl from 'tweetnacl';
 import { describe, expect, it } from 'vitest';
 
 import { fromB64, toB58 } from '../../../src/bcs/index.js';
-import { decodeSuiPrivateKey } from '../../../src/cryptography/keypair';
+import { decodeBenfenPrivateKey } from '../../../src/cryptography/keypair';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
 import { TransactionBlock } from '../../../src/transactions';
 import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/verify';
@@ -13,21 +13,20 @@ import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/veri
 const VALID_SECRET_KEY = 'mdqVWeFekT7pqy5T49+tV12jO0m+ESW7ki4zSU9JiCg=';
 const PRIVATE_KEY_SIZE = 32;
 
-// Test case generated against rust keytool cli. See https://github.com/MystenLabs/sui/blob/edd2cd31e0b05d336b1b03b6e79a67d8dd00d06b/crates/sui/src/unit_tests/keytool_tests.rs#L165
 const TEST_CASES = [
 	[
 		'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
-		'suiprivkey1qrwsjvr6gwaxmsvxk4cfun99ra8uwxg3c9pl0nhle7xxpe4s80y05ctazer',
+		'benfenprivkey1qrwsjvr6gwaxmsvxk4cfun99ra8uwxg3c9pl0nhle7xxpe4s80y05aa3d3x',
 		'0xa2d14fad60c56049ecf75246a481934691214ce413e6a8ae2fe6834c173a6133',
 	],
 	[
 		'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
-		'suiprivkey1qzdvpa77ct272ultqcy20dkw78dysnfyg90fhcxkdm60el0qht9mvzlsh4j',
+		'benfenprivkey1qzdvpa77ct272ultqcy20dkw78dysnfyg90fhcxkdm60el0qht9mv8fucah',
 		'0x1ada6e6f3f3e4055096f606c746690f1108fcc2ca479055cc434a3e1d3f758aa',
 	],
 	[
 		'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
-		'suiprivkey1qqqscjyyr64jea849dfv9cukurqj2swx0m3rr4hr7sw955jy07tzgcde5ut',
+		'benfenprivkey1qqqscjyyr64jea849dfv9cukurqj2swx0m3rr4hr7sw955jy07tzgam4m5w',
 		'0xe69e896ca10f5a77732769803cc2b5707f0ab9d4407afb5e4b4464b89769af14',
 	],
 ];
@@ -51,12 +50,12 @@ describe('ed25519-keypair', () => {
 		for (const t of TEST_CASES) {
 			// Keypair derived from mnemonic.
 			const keypair = Ed25519Keypair.deriveKeypair(t[0]);
-			expect(keypair.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(keypair.getPublicKey().toHexAddress()).toEqual(t[2]);
 
-			// Decode Sui private key from Bech32 string
-			const parsed = decodeSuiPrivateKey(t[1]);
+			// Decode benfen private key from Bech32 string
+			const parsed = decodeBenfenPrivateKey(t[1]);
 			const kp = Ed25519Keypair.fromSecretKey(parsed.secretKey);
-			expect(kp.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(kp.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Exported keypair matches the Bech32 encoded secret key.
 			const exported = kp.export();
@@ -118,7 +117,7 @@ describe('ed25519-keypair', () => {
 	it('signs TransactionBlocks', async () => {
 		const keypair = new Ed25519Keypair();
 		const txb = new TransactionBlock();
-		txb.setSender(keypair.getPublicKey().toSuiAddress());
+		txb.setSender(keypair.getPublicKey().toHexAddress());
 		txb.setGasPrice(5);
 		txb.setGasBudget(100);
 		txb.setGasPayment([

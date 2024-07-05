@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { blake2b } from '@noble/hashes/blake2b';
@@ -14,8 +14,7 @@ import {
 import type { SignatureFlag, SignatureScheme } from '../cryptography/signature-scheme.js';
 import { parseSerializedSignature } from '../cryptography/signature.js';
 import type { SerializedSignature } from '../cryptography/signature.js';
-import type { SuiGraphQLClient } from '../graphql/client.js';
-import { normalizeSuiAddress } from '../utils/sui-types.js';
+import { normalizeHexAddress } from '../utils/bf-types.js';
 // eslint-disable-next-line import/no-cycle
 import { publicKeyFromRawBytes } from '../verify/index.js';
 import { toZkLoginPublicIdentifier } from '../zklogin/helper/publickey.js';
@@ -75,7 +74,6 @@ export class MultiSigPublicKey extends PublicKey {
 		 *  MultiSig public key as buffer or base-64 encoded string
 		 */
 		value: string | Uint8Array | MultiSigPublicKeyStruct,
-		options: { client?: SuiGraphQLClient } = {},
 	) {
 		super();
 
@@ -110,7 +108,7 @@ export class MultiSigPublicKey extends PublicKey {
 			}
 
 			return {
-				publicKey: publicKeyFromRawBytes(scheme, Uint8Array.from(bytes), options),
+				publicKey: publicKeyFromRawBytes(scheme, Uint8Array.from(bytes)),
 				weight,
 			};
 		});
@@ -172,9 +170,9 @@ export class MultiSigPublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the Sui address associated with this MultiSig public key
+	 * Return the Benfen address associated with this MultiSig public key
 	 */
-	override toSuiAddress(): string {
+	override toHexAddress(): string {
 		// max length = 1 flag byte + (max pk size + max weight size (u8)) * max signer size + 2 threshold bytes (u16)
 		const maxLength = 1 + (64 + 1) * MAX_SIGNER_IN_MULTISIG + 2;
 		const tmp = new Uint8Array(maxLength);
@@ -184,16 +182,16 @@ export class MultiSigPublicKey extends PublicKey {
 		// The initial value 3 ensures that following data will be after the flag byte and threshold bytes
 		let i = 3;
 		for (const { publicKey, weight } of this.publicKeys) {
-			const bytes = publicKey.toSuiBytes();
+			const bytes = publicKey.toBenfenBytes();
 			tmp.set(bytes, i);
 			i += bytes.length;
 			tmp.set([weight], i++);
 		}
-		return normalizeSuiAddress(bytesToHex(blake2b(tmp.slice(0, i), { dkLen: 32 })));
+		return normalizeHexAddress(bytesToHex(blake2b(tmp.slice(0, i), { dkLen: 32 })));
 	}
 
 	/**
-	 * Return the Sui address associated with this MultiSig public key
+	 * Return the Benfen address associated with this MultiSig public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['MultiSig'];
@@ -301,10 +299,7 @@ export class MultiSigPublicKey extends PublicKey {
 /**
  * Parse multisig structure into an array of individual signatures: signature scheme, the actual individual signature, public key and its weight.
  */
-export function parsePartialSignatures(
-	multisig: MultiSigStruct,
-	options: { client?: SuiGraphQLClient } = {},
-): ParsedPartialMultiSigSignature[] {
+export function parsePartialSignatures(multisig: MultiSigStruct): ParsedPartialMultiSigSignature[] {
 	let res: ParsedPartialMultiSigSignature[] = new Array(multisig.sigs.length);
 	for (let i = 0; i < multisig.sigs.length; i++) {
 		const [signatureScheme, signature] = Object.entries(multisig.sigs[i])[0] as [
@@ -319,7 +314,7 @@ export function parsePartialSignatures(
 			throw new Error('MultiSig is not supported inside MultiSig');
 		}
 
-		const publicKey = publicKeyFromRawBytes(signatureScheme, pkBytes, options);
+		const publicKey = publicKeyFromRawBytes(signatureScheme, pkBytes);
 
 		res[i] = {
 			signatureScheme,

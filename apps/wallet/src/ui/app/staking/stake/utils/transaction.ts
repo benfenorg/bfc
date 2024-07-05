@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { SUI_SYSTEM_STATE_OBJECT_ID } from '@benfen/bfc.js/utils';
+import { BFC_SYSTEM_STATE_OBJECT_ID } from '@benfen/bfc.js/utils';
 
 export function createStakeTransaction(amount: bigint, validator: string) {
 	const tx = new TransactionBlock();
@@ -11,7 +11,7 @@ export function createStakeTransaction(amount: bigint, validator: string) {
 		target: '0x3::sui_system::request_add_stake',
 		arguments: [
 			tx.sharedObjectRef({
-				objectId: SUI_SYSTEM_STATE_OBJECT_ID,
+				objectId: BFC_SYSTEM_STATE_OBJECT_ID,
 				initialSharedVersion: 1,
 				mutable: true,
 			}),
@@ -26,7 +26,7 @@ export function createUnstakeTransaction(stakedSuiId: string) {
 	const tx = new TransactionBlock();
 	tx.moveCall({
 		target: '0x3::sui_system::request_withdraw_stake',
-		arguments: [tx.object(SUI_SYSTEM_STATE_OBJECT_ID), tx.object(stakedSuiId)],
+		arguments: [tx.object(BFC_SYSTEM_STATE_OBJECT_ID), tx.object(stakedSuiId)],
 	});
 	return tx;
 }

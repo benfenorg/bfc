@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
@@ -7,30 +7,26 @@ import { toB64, toHEX } from '../../../src/bcs/index.js';
 import { Secp256k1PublicKey } from '../../../src/keypairs/secp256k1/publickey';
 import { INVALID_SECP256K1_PUBLIC_KEY, VALID_SECP256K1_PUBLIC_KEY } from './secp256k1-keypair.test';
 
-// Test case generated against CLI:
-// cargo build --bin sui
-// ../sui/target/debug/sui client new-address secp256k1
-// ../sui/target/debug/sui keytool list
 const TEST_CASES = [
 	{
 		rawPublicKey: 'AwTC3jVFRxXc3RJIFgoQcv486QdqwYa8vBp4bgSq0gsI',
-		suiPublicKey: 'AQMEwt41RUcV3N0SSBYKEHL+POkHasGGvLwaeG4EqtILCA==',
-		suiAddress: '0xcdce00b4326fb908fdac83c35bcfbda323bfcc0618b47c66ccafbdced850efaa',
+		benfenPublicKey: 'AQMEwt41RUcV3N0SSBYKEHL+POkHasGGvLwaeG4EqtILCA==',
+		benfenAddress: '0xcdce00b4326fb908fdac83c35bcfbda323bfcc0618b47c66ccafbdced850efaa',
 	},
 	{
 		rawPublicKey: 'A1F2CtldIGolO92Pm9yuxWXs5E07aX+6ZEHAnSuKOhii',
-		suiPublicKey: 'AQNRdgrZXSBqJTvdj5vcrsVl7ORNO2l/umRBwJ0rijoYog==',
-		suiAddress: '0xb588e58ed8967b6a6f9dbce76386283d374cf7389fb164189551257e32b023b2',
+		benfenPublicKey: 'AQNRdgrZXSBqJTvdj5vcrsVl7ORNO2l/umRBwJ0rijoYog==',
+		benfenAddress: '0xb588e58ed8967b6a6f9dbce76386283d374cf7389fb164189551257e32b023b2',
 	},
 	{
 		rawPublicKey: 'Ak5rsa5Od4T6YFN/V3VIhZ/azMMYPkUilKQwc+RiaId+',
-		suiPublicKey: 'AQJOa7GuTneE+mBTf1d1SIWf2szDGD5FIpSkMHPkYmiHfg==',
-		suiAddress: '0x694dd74af1e82b968822a82fb5e315f6d20e8697d5d03c0b15e0178c1a1fcfa0',
+		benfenPublicKey: 'AQJOa7GuTneE+mBTf1d1SIWf2szDGD5FIpSkMHPkYmiHfg==',
+		benfenAddress: '0x694dd74af1e82b968822a82fb5e315f6d20e8697d5d03c0b15e0178c1a1fcfa0',
 	},
 	{
 		rawPublicKey: 'A4XbJ3fLvV/8ONsnLHAW1nORKsoCYsHaXv9FK1beMtvY',
-		suiPublicKey: 'AQOF2yd3y71f/DjbJyxwFtZzkSrKAmLB2l7/RStW3jLb2A==',
-		suiAddress: '0x78acc6ca0003457737d755ade25a6f3a144e5e44ed6f8e6af4982c5cc75e55e7',
+		benfenPublicKey: 'AQOF2yd3y71f/DjbJyxwFtZzkSrKAmLB2l7/RStW3jLb2A==',
+		benfenAddress: '0x78acc6ca0003457737d755ade25a6f3a144e5e44ed6f8e6af4982c5cc75e55e7',
 	},
 ];
 
@@ -72,15 +68,15 @@ describe('Secp256k1PublicKey', () => {
 		expect(new Secp256k1PublicKey(key.toRawBytes()).equals(key)).toBe(true);
 	});
 
-	TEST_CASES.forEach(({ rawPublicKey, suiPublicKey, suiAddress }) => {
-		it(`toSuiAddress from base64 public key ${suiAddress}`, () => {
+	TEST_CASES.forEach(({ rawPublicKey, benfenPublicKey, benfenAddress }) => {
+		it(`toHexAddress from base64 public key ${benfenAddress}`, () => {
 			const key = new Secp256k1PublicKey(rawPublicKey);
-			expect(key.toSuiAddress()).toEqual(suiAddress);
+			expect(key.toHexAddress()).toEqual(benfenAddress);
 		});
 
-		it(`toSuiPublicKey from base64 public key ${suiAddress}`, () => {
+		it(`toBenfenPublicKey from base64 public key ${benfenAddress}`, () => {
 			const key = new Secp256k1PublicKey(rawPublicKey);
-			expect(key.toSuiPublicKey()).toEqual(suiPublicKey);
+			expect(key.toBenfenPublicKey()).toEqual(benfenPublicKey);
 		});
 	});
 });

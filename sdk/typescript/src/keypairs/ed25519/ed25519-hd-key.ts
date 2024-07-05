@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 // This is adapted from https://github.com/alepop/ed25519-hd-key replacing create-hmac

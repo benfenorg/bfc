@@ -1,21 +1,21 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import {
+	BENFEN_ADDRESS_LENGTH,
 	bfcDigitsToHumanReadable,
 	hexToString,
 	humanReadableToBfcDigits,
-	isValidSuiAddress,
-	isValidSuiObjectId,
+	isValidBenfenAddress,
+	isValidBenfenObjectId,
 	isValidTransactionDigest,
+	normalizeBenfenObjectId,
+	normalizeHexAddress,
 	normalizeStructTag,
-	normalizeSuiAddress,
-	normalizeSuiObjectId,
 	parseStructTag,
 	strToHex,
-	SUI_ADDRESS_LENGTH,
-} from './bfc-types.js';
-import { bfc2SuiAddress, formatAddress, formatDigest, sui2BfcAddress } from './format.js';
+} from './bf-types.js';
+import { bfc2HexAddress, formatAddress, formatDigest, hex2BfcAddress } from './format.js';
 
 export { fromB64, toB64, fromHEX, toHEX } from '../bcs/src/index.js';
 export { is, assert } from 'superstruct';
@@ -23,31 +23,31 @@ export { is, assert } from 'superstruct';
 export {
 	formatAddress,
 	formatDigest,
-	isValidSuiAddress,
-	isValidSuiObjectId,
+	isValidBenfenAddress,
+	isValidBenfenObjectId,
 	isValidTransactionDigest,
 	normalizeStructTag,
-	normalizeSuiAddress,
-	normalizeSuiObjectId,
+	normalizeHexAddress,
+	normalizeBenfenObjectId,
 	parseStructTag,
-	SUI_ADDRESS_LENGTH,
+	BENFEN_ADDRESS_LENGTH,
 	humanReadableToBfcDigits,
 	bfcDigitsToHumanReadable,
 	hexToString,
 	strToHex,
-	sui2BfcAddress,
-	bfc2SuiAddress,
+	hex2BfcAddress,
+	bfc2HexAddress,
 };
 
-export { isValidSuiNSName, normalizeSuiNSName } from './suins.js';
+export { isValidBenfenNSName, normalizeBenfenNSName } from './benfenns.js';
 
-export const SUI_DECIMALS = 9;
-export const MIST_PER_SUI = BigInt(1000000000);
+export const BFC_DECIMALS = 9;
+export const MIST_PER_BFC = BigInt(1000000000);
 
 export const MOVE_STDLIB_ADDRESS = '0x1';
-export const SUI_FRAMEWORK_ADDRESS = '0x2';
-export const SUI_SYSTEM_ADDRESS = '0x3';
-export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
-export const SUI_SYSTEM_MODULE_NAME = 'bfc_system';
-export const SUI_TYPE_ARG = `${SUI_FRAMEWORK_ADDRESS}::bfc::BFC`;
-export const SUI_SYSTEM_STATE_OBJECT_ID: string = sui2BfcAddress('0x5');
+export const BENFEN_FRAMEWORK_ADDRESS = '0x2';
+export const BENFEN_SYSTEM_ADDRESS = '0x3';
+export const BENFEN_CLOCK_OBJECT_ID = normalizeBenfenObjectId('0x6');
+export const BFC_SYSTEM_MODULE_NAME = 'bfc_system';
+export const BFC_TYPE_ARG = `${BENFEN_FRAMEWORK_ADDRESS}::bfc::BFC`;
+export const BFC_SYSTEM_STATE_OBJECT_ID: string = hex2BfcAddress('0x5');

@@ -1,7 +1,7 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { normalizeSuiAddress } from '../utils/bfc-types.js';
+import { normalizeHexAddress } from '../utils/bf-types.js';
 import type { TypeTag } from './index.js';
 import { splitGenericParameters } from './src/index.js';
 
@@ -38,7 +38,7 @@ export class TypeTagSerializer {
 
 		const structMatch = str.match(STRUCT_REGEX);
 		if (structMatch) {
-			const address = normalizeAddress ? normalizeSuiAddress(structMatch[1]) : structMatch[1];
+			const address = normalizeAddress ? normalizeHexAddress(structMatch[1]) : structMatch[1];
 			return {
 				struct: {
 					address,

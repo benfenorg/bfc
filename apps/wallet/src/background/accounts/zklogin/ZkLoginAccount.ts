@@ -4,6 +4,7 @@
 import networkEnv from '_src/background/NetworkEnv';
 import { type NetworkEnvType } from '_src/shared/api-env';
 import { deobfuscate, obfuscate } from '_src/shared/cryptography/keystore';
+import { getActiveNetworkSuiClient } from '_src/shared/sui-client';
 import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
 import {
 	toSerializedSignature,
@@ -24,7 +25,6 @@ import { getCurrentEpoch } from './current-epoch';
 import { type ZkLoginProvider } from './providers';
 import {
 	createPartialZkLoginSignature,
-	fetchSalt,
 	prepareZkLogin,
 	zkLoginAuthenticate,
 	type PartialZkLoginSignature,
@@ -108,7 +108,6 @@ export class ZkLoginAccount
 		provider: ZkLoginProvider;
 	}): Promise<Omit<ZkLoginAccountSerialized, 'id'>> {
 		const jwt = await zkLoginAuthenticate({ provider, prompt: true });
-		const salt = await fetchSalt(jwt);
 		const decodedJWT = decodeJwt(jwt);
 		if (!decodedJWT.sub || !decodedJWT.iss || !decodedJWT.aud) {
 			throw new Error('Missing jwt data');
@@ -129,6 +128,13 @@ export class ZkLoginAccount
 		};
 		const claimName = 'sub';
 		const claimValue = decodedJWT.sub;
+		const client = await getActiveNetworkSuiClient();
+		const salt = await client.getZkloginSalt({
+			seed: decodedJWT.sub,
+			sub: decodedJWT.sub,
+			iss: decodedJWT.iss,
+		});
+
 		return {
 			type: 'zkLogin',
 			address: computeZkLoginAddress({

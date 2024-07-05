@@ -5,7 +5,7 @@ import { DateCard } from '_app/shared/date-card';
 import { Text } from '_app/shared/text';
 import { useGetTxnRecipientAddress } from '_hooks';
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { getLabel, useTransactionSummary } from '@mysten/core';
 import { Link } from 'react-router-dom';
 
@@ -16,7 +16,7 @@ export function TransactionCard({
 	txn,
 	address,
 }: {
-	txn: SuiTransactionBlockResponse;
+	txn: BenfenTransactionBlockResponse;
 	address: string;
 }) {
 	const executionStatus = txn.effects?.status.status;

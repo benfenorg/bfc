@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { secp256r1 } from '@noble/curves/p256';
@@ -57,7 +57,7 @@ export class Secp256r1PublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the Sui address associated with this Secp256r1 public key
+	 * Return the Benfen address associated with this Secp256r1 public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['Secp256r1'];

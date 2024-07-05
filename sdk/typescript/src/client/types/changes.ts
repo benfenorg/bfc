@@ -1,11 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiObjectChange } from './generated.js';
+import type { BenfenObjectChange } from './generated.js';
 
-export type SuiObjectChangePublished = Extract<SuiObjectChange, { type: 'published' }>;
-export type SuiObjectChangeTransferred = Extract<SuiObjectChange, { type: 'transferred' }>;
-export type SuiObjectChangeMutated = Extract<SuiObjectChange, { type: 'mutated' }>;
-export type SuiObjectChangeDeleted = Extract<SuiObjectChange, { type: 'deleted' }>;
-export type SuiObjectChangeWrapped = Extract<SuiObjectChange, { type: 'wrapped' }>;
-export type SuiObjectChangeCreated = Extract<SuiObjectChange, { type: 'created' }>;
+export type BenfenObjectChangePublished = Extract<BenfenObjectChange, { type: 'published' }>;
+export type BenfenObjectChangeTransferred = Extract<BenfenObjectChange, { type: 'transferred' }>;
+export type BenfenObjectChangeMutated = Extract<BenfenObjectChange, { type: 'mutated' }>;
+export type BenfenObjectChangeDeleted = Extract<BenfenObjectChange, { type: 'deleted' }>;
+export type BenfenObjectChangeWrapped = Extract<BenfenObjectChange, { type: 'wrapped' }>;
+export type BenfenObjectChangeCreated = Extract<BenfenObjectChange, { type: 'created' }>;

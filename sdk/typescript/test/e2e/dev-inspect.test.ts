@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { SuiClient } from '../../src/client';
+import { BenfenClient } from '../../src/client';
 import { Keypair } from '../../src/cryptography';
 import { TransactionBlock } from '../../src/transactions';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
@@ -69,7 +69,7 @@ describe('Test dev inspect', () => {
 });
 
 async function validateDevInspectTransaction(
-	client: SuiClient,
+	client: BenfenClient,
 	signer: Keypair,
 	transactionBlock: TransactionBlock,
 	status: 'success' | 'failure',
@@ -77,7 +77,7 @@ async function validateDevInspectTransaction(
 ) {
 	const result = await client.devInspectTransactionBlock({
 		transactionBlock,
-		sender: signer.getPublicKey().toSuiAddress(),
+		sender: signer.getPublicKey().toHexAddress(),
 		gasPrice,
 	});
 	expect(result.effects.status.status).toEqual(status);

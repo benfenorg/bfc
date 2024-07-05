@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { MutationKey } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ export const walletMutationKeys = {
 	signTransactionBlock: formMutationKeyFn('sign-transaction-block'),
 	signAndExecuteTransactionBlock: formMutationKeyFn('sign-and-execute-transaction-block'),
 	switchAccount: formMutationKeyFn('switch-account'),
+	switchChain: formMutationKeyFn('switch-chain'),
 };
 
 function formMutationKeyFn(baseEntity: string) {

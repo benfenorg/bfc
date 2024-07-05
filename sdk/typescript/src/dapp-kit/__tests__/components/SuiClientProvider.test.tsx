@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { screen } from '@testing-library/dom';
@@ -6,46 +6,46 @@ import { render } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { useState } from 'react';
 
-import { SuiClient } from '../../../client/index.js';
-import { SuiClientProvider, useSuiClient, useSuiClientContext } from '../../index.js';
+import { BenfenClient } from '../../../client/index.js';
+import { BenfenClientProvider, useBenfenClient, useBenfenClientContext } from '../../index.js';
 
-describe('SuiClientProvider', () => {
+describe('BenfenClientProvider', () => {
 	it('renders without crashing', () => {
 		render(
-			<SuiClientProvider>
+			<BenfenClientProvider>
 				<div>Test</div>
-			</SuiClientProvider>,
+			</BenfenClientProvider>,
 		);
 		expect(screen.getByText('Test')).toBeInTheDocument();
 	});
 
-	it('provides a SuiClient instance to its children', () => {
+	it('provides a BenfenClient instance to its children', () => {
 		const ChildComponent = () => {
-			const client = useSuiClient();
-			expect(client).toBeInstanceOf(SuiClient);
+			const client = useBenfenClient();
+			expect(client).toBeInstanceOf(BenfenClient);
 			return <div>Test</div>;
 		};
 
 		render(
-			<SuiClientProvider>
+			<BenfenClientProvider>
 				<ChildComponent />
-			</SuiClientProvider>,
+			</BenfenClientProvider>,
 		);
 	});
 
-	it('can accept pre-configured SuiClients', () => {
-		const suiClient = new SuiClient({ url: 'http://localhost:8080' });
+	it('can accept pre-configured BenfenClients', () => {
+		const benfenClient = new BenfenClient({ url: 'http://localhost:8080' });
 		const ChildComponent = () => {
-			const client = useSuiClient();
-			expect(client).toBeInstanceOf(SuiClient);
-			expect(client).toBe(suiClient);
+			const client = useBenfenClient();
+			expect(client).toBeInstanceOf(BenfenClient);
+			expect(client).toBe(benfenClient);
 			return <div>Test</div>;
 		};
 
 		render(
-			<SuiClientProvider networks={{ localnet: suiClient }}>
+			<BenfenClientProvider networks={{ localnet: benfenClient }}>
 				<ChildComponent />
-			</SuiClientProvider>,
+			</BenfenClientProvider>,
 		);
 
 		expect(screen.getByText('Test')).toBeInTheDocument();
@@ -53,7 +53,7 @@ describe('SuiClientProvider', () => {
 
 	test('can create bfc clients with custom options', async () => {
 		function NetworkSelector() {
-			const ctx = useSuiClientContext();
+			const ctx = useBenfenClientContext();
 
 			return (
 				<div>
@@ -69,7 +69,7 @@ describe('SuiClientProvider', () => {
 			const [selectedNetwork, setSelectedNetwork] = useState<string>();
 
 			return (
-				<SuiClientProvider
+				<BenfenClientProvider
 					networks={{
 						a: {
 							url: 'http://localhost:8080',
@@ -82,12 +82,12 @@ describe('SuiClientProvider', () => {
 					}}
 					createClient={(name, { custom, ...config }) => {
 						custom(name);
-						return new SuiClient(config);
+						return new BenfenClient(config);
 					}}
 				>
 					<div>{`selected network: ${selectedNetwork}`}</div>
 					<NetworkSelector />
-				</SuiClientProvider>
+				</BenfenClientProvider>
 			);
 		}
 
@@ -104,7 +104,7 @@ describe('SuiClientProvider', () => {
 
 	test('controlled mode', async () => {
 		function NetworkSelector(props: { selectNetwork: (network: string) => void }) {
-			const ctx = useSuiClientContext();
+			const ctx = useBenfenClientContext();
 
 			return (
 				<div>
@@ -122,7 +122,7 @@ describe('SuiClientProvider', () => {
 			const [selectedNetwork, setSelectedNetwork] = useState<'a' | 'b'>('a');
 
 			return (
-				<SuiClientProvider
+				<BenfenClientProvider
 					networks={{
 						a: {
 							url: 'http://localhost:8080',
@@ -140,7 +140,7 @@ describe('SuiClientProvider', () => {
 							setSelectedNetwork(network as 'a' | 'b');
 						}}
 					/>
-				</SuiClientProvider>
+				</BenfenClientProvider>
 			);
 		}
 
@@ -157,7 +157,7 @@ describe('SuiClientProvider', () => {
 
 	test('onNetworkChange', async () => {
 		function NetworkSelector() {
-			const ctx = useSuiClientContext();
+			const ctx = useBenfenClientContext();
 
 			return (
 				<div>
@@ -175,7 +175,7 @@ describe('SuiClientProvider', () => {
 			const [selectedNetwork, setSelectedNetwork] = useState<string>('a');
 
 			return (
-				<SuiClientProvider
+				<BenfenClientProvider
 					networks={{
 						a: {
 							url: 'http://localhost:8080',
@@ -192,7 +192,7 @@ describe('SuiClientProvider', () => {
 					}}
 				>
 					<NetworkSelector />
-				</SuiClientProvider>
+				</BenfenClientProvider>
 			);
 		}
 

@@ -60,7 +60,7 @@ export class MnemonicAccount
 		return {
 			type: 'mnemonic-derived',
 			sourceID,
-			address: keyPair.getPublicKey().toSuiAddress(),
+			address: keyPair.getPublicKey().toHexAddress(),
 			derivationPath,
 			publicKey: keyPair.getPublicKey().toBase64(),
 			lastUnlockedOn: null,

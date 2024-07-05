@@ -4,7 +4,7 @@
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useActiveAddress } from '_src/ui/app/hooks';
-import { formatAddress, isValidSuiAddress } from '@benfen/bfc.js/utils';
+import { formatAddress, isValidBenfenAddress } from '@benfen/bfc.js/utils';
 
 import { Text } from '../text';
 import { SummaryCardFooter } from './Card';
@@ -17,7 +17,7 @@ export function OwnerFooter({ owner, ownerType }: { owner?: string; ownerType?: 
 	const display =
 		ownerType === 'Shared'
 			? 'Shared'
-			: isValidSuiAddress(owner)
+			: isValidBenfenAddress(owner)
 			? isOwner
 				? 'You'
 				: formatAddress(owner)

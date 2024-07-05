@@ -4,7 +4,7 @@
 import { parseAmount } from '_src/ui/app/helpers';
 import { type CoinStruct } from '@benfen/bfc.js/client';
 import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 
 interface Options {
 	coinType: string;
@@ -25,7 +25,7 @@ export function createTokenTransferTransaction({
 }: Options) {
 	const tx = new TransactionBlock();
 
-	if (isPayAllSui && coinType === SUI_TYPE_ARG) {
+	if (isPayAllSui && coinType === BFC_TYPE_ARG) {
 		tx.transferObjects([tx.gas], to);
 		tx.setGasPayment(
 			coins
@@ -43,7 +43,7 @@ export function createTokenTransferTransaction({
 	const bigIntAmount = parseAmount(amount, coinDecimals);
 	const [primaryCoin, ...mergeCoins] = coins.filter((coin) => coin.coinType === coinType);
 
-	if (coinType === SUI_TYPE_ARG) {
+	if (coinType === BFC_TYPE_ARG) {
 		const coin = tx.splitCoins(tx.gas, [bigIntAmount]);
 		tx.transferObjects([coin], to);
 	} else {

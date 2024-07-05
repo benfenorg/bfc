@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import nacl from 'tweetnacl';
@@ -56,7 +56,7 @@ export class Ed25519PublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the Sui address associated with this Ed25519 public key
+	 * Return the benfen address associated with this Ed25519 public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['ED25519'];

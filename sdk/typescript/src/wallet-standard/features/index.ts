@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
@@ -9,41 +9,44 @@ import type {
 	WalletWithFeatures,
 } from '@wallet-standard/core';
 
-import type { SuiSignAndExecuteTransactionBlockFeature } from './suiSignAndExecuteTransactionBlock.js';
-import type { SuiSignMessageFeature } from './suiSignMessage.js';
-import type { SuiSignPersonalMessageFeature } from './suiSignPersonalMessage.js';
-import type { SuiSignTransactionBlockFeature } from './suiSignTransactionBlock.js';
+import type { BenfenSignAndExecuteTransactionBlockFeature } from './bfcSignAndExecuteTransactionBlock.js';
+import type { BenfenSignMessageFeature } from './bfcSignMessage.js';
+import type { BenfenSignPersonalMessageFeature } from './bfcSignPersonalMessage.js';
+import type { BenfenSignTransactionBlockFeature } from './bfcSignTransactionBlock.js';
+import type { BfcSwitchChainFeature } from './bfcSwitchChain.js';
 
 /**
- * Wallet Standard features that are unique to Sui, and that all Sui wallets are expected to implement.
+ * Wallet Standard features that are unique to Benfen, and that all Benfen allets are expected to implement.
  */
-export type SuiFeatures = SuiSignTransactionBlockFeature &
-	SuiSignAndExecuteTransactionBlockFeature &
-	SuiSignPersonalMessageFeature &
+export type BenfenFeatures = BenfenSignTransactionBlockFeature &
+	BenfenSignAndExecuteTransactionBlockFeature &
+	BenfenSignPersonalMessageFeature &
+	BfcSwitchChainFeature &
 	// This deprecated feature should be removed once wallets update to the new method:
-	Partial<SuiSignMessageFeature>;
+	Partial<BenfenSignMessageFeature>;
 
-export type WalletWithSuiFeatures = WalletWithFeatures<
+export type WalletWithBenfenFeatures = WalletWithFeatures<
 	StandardConnectFeature &
 		StandardEventsFeature &
-		SuiFeatures &
+		BenfenFeatures &
 		// Disconnect is an optional feature:
 		Partial<StandardDisconnectFeature>
 >;
 
 /**
- * Represents a wallet with the absolute minimum feature set required to function in the Sui ecosystem.
+ * Represents a wallet with the absolute minimum feature set required to function in the Benfen ecosystem.
  */
 export type WalletWithRequiredFeatures = WalletWithFeatures<
 	MinimallyRequiredFeatures &
-		Partial<SuiFeatures> &
+		Partial<BenfenFeatures> &
 		Partial<StandardDisconnectFeature> &
 		IdentifierRecord<unknown>
 >;
 
 export type MinimallyRequiredFeatures = StandardConnectFeature & StandardEventsFeature;
 
-export * from './suiSignMessage.js';
-export * from './suiSignTransactionBlock.js';
-export * from './suiSignAndExecuteTransactionBlock.js';
-export * from './suiSignPersonalMessage.js';
+export * from './bfcSignMessage.js';
+export * from './bfcSignTransactionBlock.js';
+export * from './bfcSignAndExecuteTransactionBlock.js';
+export * from './bfcSignPersonalMessage.js';
+export * from './bfcSwitchChain.js';

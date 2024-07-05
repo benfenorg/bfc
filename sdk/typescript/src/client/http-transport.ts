@@ -1,8 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { PACKAGE_VERSION, TARGETED_RPC_VERSION } from '../version.js';
-import { JsonRpcError, SuiHTTPStatusError } from './errors.js';
+import { BenfenHTTPStatusError, JsonRpcError } from './errors.js';
 import type { WebsocketClientOptions } from './rpc-websocket-client.js';
 import { WebsocketClient } from './rpc-websocket-client.js';
 
@@ -11,7 +11,7 @@ import { WebsocketClient } from './rpc-websocket-client.js';
  */
 export type HttpHeaders = { [header: string]: string };
 
-interface SuiHTTPTransportOptions {
+interface BenfenHTTPTransportOptions {
 	fetch?: typeof fetch;
 	WebSocketConstructor?: typeof WebSocket;
 	url: string;
@@ -24,31 +24,33 @@ interface SuiHTTPTransportOptions {
 	};
 }
 
-export interface SuiTransportRequestOptions {
+export interface BenfenTransportRequestOptions {
 	method: string;
 	params: unknown[];
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 
-export interface SuiTransportSubscribeOptions<T> {
+export interface BenfenTransportSubscribeOptions<T> {
 	method: string;
 	unsubscribe: string;
 	params: unknown[];
 	onMessage: (event: T) => void;
 }
 
-export interface SuiTransport {
-	request<T = unknown>(input: SuiTransportRequestOptions): Promise<T>;
-	subscribe<T = unknown>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>>;
+export interface BenfenTransport {
+	request<T = unknown>(input: BenfenTransportRequestOptions): Promise<T>;
+	subscribe<T = unknown>(
+		input: BenfenTransportSubscribeOptions<T>,
+	): Promise<() => Promise<boolean>>;
 }
 
-export class SuiHTTPTransport implements SuiTransport {
+export class BenfenHTTPTransport implements BenfenTransport {
 	#requestId = 0;
-	#options: SuiHTTPTransportOptions;
+	#options: BenfenHTTPTransportOptions;
 	#websocketClient?: WebsocketClient;
 
-	constructor(options: SuiHTTPTransportOptions) {
+	constructor(options: BenfenHTTPTransportOptions) {
 		this.#options = options;
 	}
 
@@ -57,7 +59,7 @@ export class SuiHTTPTransport implements SuiTransport {
 
 		if (!fetch) {
 			throw new Error(
-				'The current environment does not support fetch, you can provide a fetch implementation in the options for SuiHTTPTransport.',
+				'The current environment does not support fetch, you can provide a fetch implementation in the options for BenfenHTTPTransport.',
 			);
 		}
 
@@ -69,7 +71,7 @@ export class SuiHTTPTransport implements SuiTransport {
 			const WebSocketConstructor = this.#options.WebSocketConstructor ?? globalThis.WebSocket;
 			if (!WebSocketConstructor) {
 				throw new Error(
-					'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for SuiHTTPTransport.',
+					'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for BenfenHTTPTransport.',
 				);
 			}
 
@@ -85,7 +87,7 @@ export class SuiHTTPTransport implements SuiTransport {
 		return this.#websocketClient;
 	}
 
-	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
+	async request<T>(input: BenfenTransportRequestOptions): Promise<T> {
 		this.#requestId += 1;
 
 		const res = await this.fetch(this.#options.rpc?.url ?? this.#options.url, {
@@ -106,7 +108,7 @@ export class SuiHTTPTransport implements SuiTransport {
 		});
 
 		if (!res.ok) {
-			throw new SuiHTTPStatusError(
+			throw new BenfenHTTPStatusError(
 				`Unexpected status code: ${res.status}`,
 				res.status,
 				res.statusText,
@@ -122,7 +124,7 @@ export class SuiHTTPTransport implements SuiTransport {
 		return data.result;
 	}
 
-	async subscribe<T>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
+	async subscribe<T>(input: BenfenTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
 		const unsubscribe = await this.#getWebsocketClient().subscribe(input);
 
 		return async () => !!(await unsubscribe());

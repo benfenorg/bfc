@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import {
 	DryRunTransactionBlockResponse,
-	type SuiTransactionBlockResponse,
+	type BenfenTransactionBlockResponse,
 } from '@benfen/bfc.js/client';
 import { useMemo } from 'react';
 
@@ -21,7 +21,7 @@ export function useTransactionSummary({
 	currentAddress,
 	recognizedPackagesList,
 }: {
-	transaction?: SuiTransactionBlockResponse | DryRunTransactionBlockResponse;
+	transaction?: BenfenTransactionBlockResponse | DryRunTransactionBlockResponse;
 	currentAddress?: string;
 	recognizedPackagesList: string[];
 }) {

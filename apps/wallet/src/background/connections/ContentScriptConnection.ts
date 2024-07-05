@@ -31,7 +31,7 @@ import {
 	type SignMessageRequest,
 } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import type { Runtime } from 'webextension-polyfill';
 
 import { getAccountsStatusData } from '../accounts';
@@ -94,7 +94,7 @@ export class ContentScriptConnection extends Connection {
 					createMessage<ExecuteTransactionResponse>(
 						{
 							type: 'execute-transaction-response',
-							result: result as SuiTransactionBlockResponse,
+							result: result as BenfenTransactionBlockResponse,
 						},
 						msg.id,
 					),

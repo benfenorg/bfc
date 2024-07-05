@@ -4,14 +4,14 @@
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type SuiSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
+import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
 
 export interface TransactionRequestResponse extends BasePayload {
 	type: 'transaction-request-response';
 	txID: string;
 	approved: boolean;
-	txResult?: SuiTransactionBlockResponse | SuiSignMessageOutput;
+	txResult?: BenfenTransactionBlockResponse | BenfenSignMessageOutput;
 	txResultError?: string;
 	txSigned?: SignedTransaction;
 }

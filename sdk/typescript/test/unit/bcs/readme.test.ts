@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -9,12 +9,12 @@
 import { describe, it } from 'vitest';
 
 import type { BcsWriter } from '../../../src/bcs/src/index.js';
-import { BCS, getRustConfig, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
-import { SUI_ADDRESS_LENGTH } from '../../../src/utils/bfc-types.js';
+import { BCS, getBenfenMoveConfig, getRustConfig } from '../../../src/bcs/src/index.js';
+import { BENFEN_ADDRESS_LENGTH } from '../../../src/utils/bf-types.js';
 
 describe('BCS: README Examples', () => {
 	it('quick start', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// registering types
 		bcs.registerAlias('UID', BCS.ADDRESS);
@@ -44,7 +44,7 @@ describe('BCS: README Examples', () => {
 	it('Example: All options used', () => {
 		const bcs = new BCS({
 			vectorType: 'vector<T>',
-			addressLength: SUI_ADDRESS_LENGTH,
+			addressLength: BENFEN_ADDRESS_LENGTH,
 			addressEncoding: 'hex',
 			genericSeparators: ['<', '>'],
 			types: {
@@ -65,7 +65,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('initialization', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// use bcs.ser() to serialize data
 		const val = [1, 2, 3, 4];
@@ -87,7 +87,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Primitive types', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// Integers
 		let _u8 = bcs.ser(BCS.U8, 100).toBytes();
@@ -115,7 +115,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Ser/de and Encoding', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// bcs.ser() returns an instance of BcsWriter which can be converted to bytes or a string
 		let bcsWriter: BcsWriter = bcs.ser(BCS.STRING, 'this is a string');
@@ -141,7 +141,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Alias', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// When registering alias simply specify a new name for the type
 		bcs.registerAlias('ObjectDigest', BCS.BASE58);
@@ -156,7 +156,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Struct', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// register a custom type (it becomes available for using)
 		bcs.registerStructType('Balance', {
@@ -182,7 +182,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Generics', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// Container -> the name of the type
 		// T -> type parameter which has to be passed in `ser()` or `de()` methods
@@ -221,7 +221,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Enum', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		bcs.registerEnumType('Option<T>', {
 			none: null,
@@ -257,7 +257,7 @@ describe('BCS: README Examples', () => {
 	});
 
 	it('Example: Inline Struct', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 
 		// Some value we want to serialize
 		const coin = {

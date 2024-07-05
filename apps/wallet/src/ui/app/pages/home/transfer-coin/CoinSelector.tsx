@@ -4,12 +4,12 @@
 import { ActiveCoinsCard } from '_components/active-coins-card';
 import Overlay from '_components/overlay';
 import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 
 function CoinsSelectorPage() {
 	const [searchParams] = useSearchParams();
-	const coinType = searchParams.get('type') || SUI_TYPE_ARG;
+	const coinType = searchParams.get('type') || BFC_TYPE_ARG;
 	const navigate = useNavigate();
 
 	if (useUnlockedGuard()) {

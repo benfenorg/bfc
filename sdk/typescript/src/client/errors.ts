@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 const CODE_TO_ERROR_TYPE: Record<number, string> = {
@@ -9,9 +9,9 @@ const CODE_TO_ERROR_TYPE: Record<number, string> = {
 	'-32603': 'InternalError',
 };
 
-export class SuiHTTPTransportError extends Error {}
+export class BenfenHTTPTransportError extends Error {}
 
-export class JsonRpcError extends SuiHTTPTransportError {
+export class JsonRpcError extends BenfenHTTPTransportError {
 	code: number;
 	type: string;
 
@@ -22,7 +22,7 @@ export class JsonRpcError extends SuiHTTPTransportError {
 	}
 }
 
-export class SuiHTTPStatusError extends SuiHTTPTransportError {
+export class BenfenHTTPStatusError extends BenfenHTTPTransportError {
 	status: number;
 	statusText: string;
 

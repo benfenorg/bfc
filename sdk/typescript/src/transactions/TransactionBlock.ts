@@ -1,23 +1,23 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { is, mask } from 'superstruct';
 
 import type { SerializedBcs } from '../bcs/index.js';
 import { bcs, fromB64, isSerializedBcs } from '../bcs/index.js';
-import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
+import type { BenfenClient, BenfenMoveNormalizedType, ProtocolConfig } from '../client/index.js';
 import type { SignatureWithBytes, Signer } from '../cryptography/index.js';
-import { sui2BfcAddress } from '../utils/format.js';
-import { SUI_TYPE_ARG } from '../utils/index.js';
-import { normalizeSuiAddress, normalizeSuiObjectId } from '../utils/sui-types.js';
+import { normalizeBenfenObjectId, normalizeHexAddress } from '../utils/bf-types.js';
+import { hex2BfcAddress } from '../utils/format.js';
+import { BFC_TYPE_ARG } from '../utils/index.js';
 import {
+	BenfenObjectRef,
 	BuilderCallArg,
 	getIdFromCallArg,
 	Inputs,
 	isMutableSharedObjectInput,
 	ObjectCallArg,
 	PureCallArg,
-	SuiObjectRef,
 } from './Inputs.js';
 import { createPure } from './pure.js';
 import { getPureSerializationType, isTxContext } from './serializer.js';
@@ -88,7 +88,7 @@ function createTransactionResult(index: number): TransactionResult {
 	}) as TransactionResult;
 }
 
-function isReceivingType(normalizedType: SuiMoveNormalizedType): boolean {
+function isReceivingType(normalizedType: BenfenMoveNormalizedType): boolean {
 	const tag = extractStructTag(normalizedType);
 	if (tag) {
 		return (
@@ -100,7 +100,7 @@ function isReceivingType(normalizedType: SuiMoveNormalizedType): boolean {
 	return false;
 }
 
-function expectClient(options: BuildOptions): SuiClient {
+function expectClient(options: BuildOptions): BenfenClient {
 	if (!options.client) {
 		throw new Error(
 			`No provider passed to Transaction#build, but transaction data was not sufficient to build offline.`,
@@ -110,7 +110,7 @@ function expectClient(options: BuildOptions): SuiClient {
 	return options.client;
 }
 
-const TRANSACTION_BRAND = Symbol.for('@mysten/transaction');
+const TRANSACTION_BRAND = Symbol.for('@benfen/transaction');
 
 const LIMITS = {
 	// The maximum gas that is allowed.
@@ -137,7 +137,7 @@ const chunk = <T>(arr: T[], size: number): T[][] =>
 	);
 
 interface BuildOptions {
-	client?: SuiClient;
+	client?: BenfenClient;
 	onlyTransactionKind?: boolean;
 	/** Define a protocol config to build against, instead of having it fetched from the provider at build time. */
 	protocolConfig?: ProtocolConfig;
@@ -218,8 +218,8 @@ export class TransactionBlock {
 	setGasOwner(owner: string) {
 		this.#blockData.gasConfig.owner = owner;
 	}
-	setGasPayment(payments: SuiObjectRef[]) {
-		this.#blockData.gasConfig.payment = payments.map((payment) => mask(payment, SuiObjectRef));
+	setGasPayment(payments: BenfenObjectRef[]) {
+		this.#blockData.gasConfig.payment = payments.map((payment) => mask(payment, BenfenObjectRef));
 	}
 
 	#blockData: TransactionBlockDataBuilder;
@@ -324,7 +324,7 @@ export class TransactionBlock {
 
 		return (
 			inserted ??
-			this.#input('object', typeof value === 'string' ? normalizeSuiAddress(value) : value)
+			this.#input('object', typeof value === 'string' ? normalizeHexAddress(value) : value)
 		);
 	}
 
@@ -531,7 +531,7 @@ export class TransactionBlock {
 	/** Derive transaction digest */
 	async getDigest(
 		options: {
-			client?: SuiClient;
+			client?: BenfenClient;
 		} = {},
 	): Promise<string> {
 		await this.#prepare(options);
@@ -570,7 +570,7 @@ export class TransactionBlock {
 
 		const bfcCoins = await expectClient(options).getCoins({
 			owner: gasOwner!,
-			coinType: SUI_TYPE_ARG,
+			coinType: BFC_TYPE_ARG,
 			limit: maxGasObjects,
 		});
 
@@ -584,8 +584,8 @@ export class TransactionBlock {
 						'ImmOrOwned' in input.value.Object
 					) {
 						return (
-							sui2BfcAddress(coin.coinObjectId) ===
-							sui2BfcAddress(input.value.Object.ImmOrOwned.objectId)
+							hex2BfcAddress(coin.coinObjectId) ===
+							hex2BfcAddress(input.value.Object.ImmOrOwned.objectId)
 						);
 					}
 
@@ -626,13 +626,13 @@ export class TransactionBlock {
 		const objectsToResolve: {
 			id: string;
 			input: TransactionBlockInput;
-			normalizedType?: SuiMoveNormalizedType;
+			normalizedType?: BenfenMoveNormalizedType;
 		}[] = [];
 
 		inputs.forEach((input) => {
 			if (input.type === 'object' && typeof input.value === 'string') {
 				// The input is a string that we need to resolve to an object reference:
-				objectsToResolve.push({ id: normalizeSuiAddress(input.value), input });
+				objectsToResolve.push({ id: normalizeHexAddress(input.value), input });
 				return;
 			}
 		});
@@ -681,7 +681,7 @@ export class TransactionBlock {
 					const [packageId, moduleName, functionName] = moveCall.target.split('::');
 
 					const normalized = await expectClient(options).getNormalizedMoveFunction({
-						package: normalizeSuiObjectId(packageId),
+						package: normalizeBenfenObjectId(packageId),
 						module: moduleName,
 						function: functionName,
 					});

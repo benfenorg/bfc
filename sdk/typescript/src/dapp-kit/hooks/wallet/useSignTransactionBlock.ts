@@ -1,12 +1,12 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
 import type {
-	SuiSignTransactionBlockInput,
-	SuiSignTransactionBlockOutput,
+	BenfenSignTransactionBlockInput,
+	BenfenSignTransactionBlockOutput,
 } from '../../../wallet-standard/index.js';
 import {
 	WalletFeatureNotSupportedError,
@@ -18,9 +18,9 @@ import type { PartialBy } from '../../types/utilityTypes.js';
 import { useCurrentAccount } from './useCurrentAccount.js';
 import { useCurrentWallet } from './useCurrentWallet.js';
 
-type UseSignTransactionBlockArgs = PartialBy<SuiSignTransactionBlockInput, 'account' | 'chain'>;
+type UseSignTransactionBlockArgs = PartialBy<BenfenSignTransactionBlockInput, 'account' | 'chain'>;
 
-type UseSignTransactionBlockResult = SuiSignTransactionBlockOutput;
+type UseSignTransactionBlockResult = BenfenSignTransactionBlockOutput;
 
 type UseSignTransactionBlockError =
 	| WalletFeatureNotSupportedError

@@ -4,7 +4,7 @@
 import { Text } from '_src/ui/app/shared/text';
 import { TypeTagSerializer, type TypeTag } from '@benfen/bfc.js/bcs';
 import { type TransactionArgument, type Transactions } from '@benfen/bfc.js/transactions';
-import { formatAddress, normalizeSuiAddress, toB64 } from '@benfen/bfc.js/utils';
+import { formatAddress, normalizeHexAddress, toB64 } from '@benfen/bfc.js/utils';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
 import { useState } from 'react';
 
@@ -72,7 +72,7 @@ function convertCommandToString({ kind, ...command }: TransactionType) {
 			if (key === 'target') {
 				const [packageId, moduleName, functionName] = value.split('::');
 				return [
-					`package: ${formatAddress(normalizeSuiAddress(packageId))}`,
+					`package: ${formatAddress(normalizeHexAddress(packageId))}`,
 					`module: ${moduleName}`,
 					`function: ${functionName}`,
 				].join(', ');

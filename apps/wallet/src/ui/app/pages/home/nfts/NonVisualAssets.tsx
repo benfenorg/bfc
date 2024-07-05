@@ -4,10 +4,10 @@
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { Text } from '_src/ui/app/shared/text';
-import { type SuiObjectData } from '@benfen/bfc.js/client';
+import { type BenfenObjectData } from '@benfen/bfc.js/client';
 import { formatAddress, parseStructTag } from '@benfen/bfc.js/utils';
 
-export default function NonVisualAssets({ items }: { items: SuiObjectData[] }) {
+export default function NonVisualAssets({ items }: { items: BenfenObjectData[] }) {
 	return (
 		<div className="flex flex-col items-center gap-4 w-full flex-1">
 			{items?.length ? (

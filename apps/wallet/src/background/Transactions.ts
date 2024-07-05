@@ -10,8 +10,8 @@ import { type SignMessageRequest } from '_payloads/transactions/SignMessage';
 import type { TransactionRequestResponse } from '_payloads/transactions/ui/TransactionRequestResponse';
 import type { ContentScriptConnection } from '_src/background/connections/ContentScriptConnection';
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type SuiSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenSignMessageOutput } from '@benfen/bfc.js/wallet-standard';
 import { filter, lastValueFrom, map, race, Subject, take } from 'rxjs';
 import { v4 as uuidV4 } from 'uuid';
 import Browser from 'webextension-polyfill';
@@ -41,7 +41,7 @@ class Transactions {
 					sign: SuiSignTransactionSerialized;
 			  },
 		connection: ContentScriptConnection,
-	): Promise<SuiTransactionBlockResponse | SignedTransaction> {
+	): Promise<BenfenTransactionBlockResponse | SignedTransaction> {
 		const { txResultError, txResult, txSigned } = await this.requestApproval(
 			tx ?? {
 				type: 'transaction',
@@ -70,7 +70,7 @@ class Transactions {
 	public async signMessage(
 		{ accountAddress, message }: Required<Pick<SignMessageRequest, 'args'>>['args'],
 		connection: ContentScriptConnection,
-	): Promise<SuiSignMessageOutput> {
+	): Promise<BenfenSignMessageOutput> {
 		const { txResult, txResultError } = await this.requestApproval(
 			{ type: 'sign-message', accountAddress, message },
 			connection.origin,

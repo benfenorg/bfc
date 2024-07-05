@@ -1,23 +1,23 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { renderHook } from '@testing-library/react';
 
-import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
-import { useSuiClient } from '../../index.js';
-import { createSuiClientContextWrapper } from '../test-utils.js';
+import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
+import { useBenfenClient } from '../../index.js';
+import { createBenfenClientContextWrapper } from '../test-utils.js';
 
-describe('useSuiClient', () => {
-	test('throws without a SuiClientContext', () => {
-		expect(() => renderHook(() => useSuiClient())).toThrowError(
-			'Could not find SuiClientContext. Ensure that you have set up the SuiClientProvider',
+describe('useBenfenClient', () => {
+	test('throws without a BenfenClientContext', () => {
+		expect(() => renderHook(() => useBenfenClient())).toThrowError(
+			'Could not find BenfenClientContext. Ensure that you have set up the BenfenClientProvider',
 		);
 	});
 
-	test('returns a SuiClient', () => {
-		const suiClient = new SuiClient({ url: getFullnodeUrl('localnet') });
-		const wrapper = createSuiClientContextWrapper(suiClient);
-		const { result } = renderHook(() => useSuiClient(), { wrapper });
+	test('returns a BenfenClient', () => {
+		const benfenClient = new BenfenClient({ url: getFullnodeUrl('localnet') });
+		const wrapper = createBenfenClientContextWrapper(benfenClient);
+		const { result } = renderHook(() => useBenfenClient(), { wrapper });
 
-		expect(result.current).toBe(suiClient);
+		expect(result.current).toBe(benfenClient);
 	});
 });

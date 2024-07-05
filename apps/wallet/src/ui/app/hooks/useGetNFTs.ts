@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiObjectData } from '@benfen/bfc.js/client';
+import { type BenfenObjectData } from '@benfen/bfc.js/client';
 import { hasDisplayData, useGetOwnedObjects } from '@mysten/core';
 import { useMemo } from 'react';
 
@@ -9,9 +9,9 @@ import { useBuyNLargeAsset } from '../components/buynlarge/useBuyNLargeAsset';
 import { useHiddenAssets } from '../pages/home/hidden-assets/HiddenAssetsProvider';
 
 type OwnedAssets = {
-	visual: SuiObjectData[];
-	other: SuiObjectData[];
-	hidden: SuiObjectData[];
+	visual: BenfenObjectData[];
+	other: BenfenObjectData[];
+	hidden: BenfenObjectData[];
 };
 
 export enum AssetFilterTypes {
@@ -52,10 +52,10 @@ export function useGetNFTs(address?: string | null) {
 			.flatMap((page) => page.data)
 			.filter((asset) => !hiddenAssetIds.includes(asset.data?.objectId!))
 			.reduce((acc, curr) => {
-				if (hasDisplayData(curr)) acc.visual.push(curr.data as SuiObjectData);
-				if (!hasDisplayData(curr)) acc.other.push(curr.data as SuiObjectData);
+				if (hasDisplayData(curr)) acc.visual.push(curr.data as BenfenObjectData);
+				if (!hasDisplayData(curr)) acc.other.push(curr.data as BenfenObjectData);
 				if (hiddenAssetIds.includes(curr.data?.objectId!))
-					acc.hidden.push(curr.data as SuiObjectData);
+					acc.hidden.push(curr.data as BenfenObjectData);
 				return acc;
 			}, ownedAssets);
 

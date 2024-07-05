@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
@@ -6,7 +6,7 @@ import clsx from 'clsx';
 
 import { formatAddress } from '../../utils/index.js';
 import type { WalletAccount } from '../../wallet-standard/index.js';
-import { useResolveSuiNSName } from '../hooks/useResolveSuiNSNames.js';
+import { useResolveBenfenNSName } from '../hooks/useResolveBenfenNSNames.js';
 import { useAccounts } from '../hooks/wallet/useAccounts.js';
 import { useDisconnectWallet } from '../hooks/wallet/useDisconnectWallet.js';
 import { useSwitchAccount } from '../hooks/wallet/useSwitchAccount.js';
@@ -24,7 +24,7 @@ type AccountDropdownMenuProps = {
 export function AccountDropdownMenu({ currentAccount }: AccountDropdownMenuProps) {
 	const { mutate: disconnectWallet } = useDisconnectWallet();
 
-	const { data: domain } = useResolveSuiNSName(
+	const { data: domain } = useResolveBenfenNSName(
 		currentAccount.label ? null : currentAccount.address,
 	);
 	const accounts = useAccounts();
@@ -73,7 +73,7 @@ export function AccountDropdownMenuItem({
 	active?: boolean;
 }) {
 	const { mutate: switchAccount } = useSwitchAccount();
-	const { data: domain } = useResolveSuiNSName(account.label ? null : account.address);
+	const { data: domain } = useResolveBenfenNSName(account.label ? null : account.address);
 
 	return (
 		<DropdownMenu.Item

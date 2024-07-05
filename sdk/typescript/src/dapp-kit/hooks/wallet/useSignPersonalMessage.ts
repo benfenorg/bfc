@@ -1,12 +1,12 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
 import type {
-	SuiSignPersonalMessageInput,
-	SuiSignPersonalMessageOutput,
+	BenfenSignPersonalMessageInput,
+	BenfenSignPersonalMessageOutput,
 } from '../../../wallet-standard/index.js';
 import {
 	WalletFeatureNotSupportedError,
@@ -18,9 +18,9 @@ import type { PartialBy } from '../../types/utilityTypes.js';
 import { useCurrentAccount } from './useCurrentAccount.js';
 import { useCurrentWallet } from './useCurrentWallet.js';
 
-type UseSignPersonalMessageArgs = PartialBy<SuiSignPersonalMessageInput, 'account'>;
+type UseSignPersonalMessageArgs = PartialBy<BenfenSignPersonalMessageInput, 'account'>;
 
-type UseSignPersonalMessageResult = SuiSignPersonalMessageOutput;
+type UseSignPersonalMessageResult = BenfenSignPersonalMessageOutput;
 
 type UseSignPersonalMessageError =
 	| WalletFeatureNotSupportedError

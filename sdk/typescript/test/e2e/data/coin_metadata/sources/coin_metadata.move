@@ -1,12 +1,12 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen.
 // SPDX-License-Identifier: Apache-2.0
 
 module coin_metadata::test {
     use std::option;
-    use sui::coin;
-    use sui::transfer;
-    use sui::url;
-    use sui::tx_context::{Self, TxContext};
+    use bfc::coin;
+    use bfc::transfer;
+    use bfc::url;
+    use bfc::tx_context::{Self, TxContext};
 
     public struct TEST has drop {}
 
@@ -17,7 +17,7 @@ module coin_metadata::test {
             b"TEST",
             b"Test Coin",
             b"Test coin metadata",
-            option::some(url::new_unsafe_from_bytes(b"http://sui.io")),
+            option::some(url::new_unsafe_from_bytes(b"http://bfc.io")),
             ctx
         );
 

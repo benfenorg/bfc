@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiJsonValue, SuiMoveNormalizedType } from '../client/index.js';
-import { MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS } from '../utils/index.js';
-import { isValidSuiAddress } from '../utils/sui-types.js';
+import type { BenfenJsonValue, BenfenMoveNormalizedType } from '../client/index.js';
+import { isValidBenfenAddress } from '../utils/bf-types.js';
+import { BENFEN_FRAMEWORK_ADDRESS, MOVE_STDLIB_ADDRESS } from '../utils/index.js';
 import { extractStructTag } from './utils.js';
 
 const OBJECT_MODULE_NAME = 'object';
@@ -18,8 +18,8 @@ const STD_UTF8_STRUCT_NAME = 'String';
 const STD_OPTION_MODULE_NAME = 'option';
 const STD_OPTION_STRUCT_NAME = 'Option';
 
-const RESOLVED_SUI_ID = {
-	address: SUI_FRAMEWORK_ADDRESS,
+const RESOLVED_BENFEN_ID = {
+	address: BENFEN_FRAMEWORK_ADDRESS,
 	module: OBJECT_MODULE_NAME,
 	name: ID_STRUCT_NAME,
 };
@@ -43,14 +43,14 @@ const RESOLVED_STD_OPTION = {
 const isSameStruct = (a: any, b: any) =>
 	a.address === b.address && a.module === b.module && a.name === b.name;
 
-export function isTxContext(param: SuiMoveNormalizedType): boolean {
+export function isTxContext(param: BenfenMoveNormalizedType): boolean {
 	const struct = extractStructTag(param)?.Struct;
 	return (
 		struct?.address === '0x2' && struct?.module === 'tx_context' && struct?.name === 'TxContext'
 	);
 }
 
-function expectType(typeName: string, argVal?: SuiJsonValue) {
+function expectType(typeName: string, argVal?: BenfenJsonValue) {
 	if (typeof argVal === 'undefined') {
 		return;
 	}
@@ -62,8 +62,8 @@ function expectType(typeName: string, argVal?: SuiJsonValue) {
 const allowedTypes = ['Address', 'Bool', 'U8', 'U16', 'U32', 'U64', 'U128', 'U256'];
 
 export function getPureSerializationType(
-	normalizedType: SuiMoveNormalizedType,
-	argVal: SuiJsonValue | undefined,
+	normalizedType: BenfenMoveNormalizedType,
+	argVal: BenfenJsonValue | undefined,
 ): string | undefined {
 	if (typeof normalizedType === 'string' && allowedTypes.includes(normalizedType)) {
 		if (normalizedType in ['U8', 'U16', 'U32', 'U64', 'U128', 'U256']) {
@@ -72,7 +72,7 @@ export function getPureSerializationType(
 			expectType('boolean', argVal);
 		} else if (normalizedType === 'Address') {
 			expectType('string', argVal);
-			if (argVal && !isValidSuiAddress(argVal as string)) {
+			if (argVal && !isValidBenfenAddress(argVal as string)) {
 				throw new Error('Invalid bfc Address');
 			}
 		}
@@ -108,10 +108,10 @@ export function getPureSerializationType(
 			return 'string';
 		} else if (isSameStruct(normalizedType.Struct, RESOLVED_UTF8_STR)) {
 			return 'utf8string';
-		} else if (isSameStruct(normalizedType.Struct, RESOLVED_SUI_ID)) {
+		} else if (isSameStruct(normalizedType.Struct, RESOLVED_BENFEN_ID)) {
 			return 'address';
 		} else if (isSameStruct(normalizedType.Struct, RESOLVED_STD_OPTION)) {
-			const optionToVec: SuiMoveNormalizedType = {
+			const optionToVec: BenfenMoveNormalizedType = {
 				Vector: normalizedType.Struct.typeArguments[0],
 			};
 			return getPureSerializationType(optionToVec, argVal);

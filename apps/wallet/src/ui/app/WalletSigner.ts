@@ -3,11 +3,11 @@
 
 import { bcs } from '@benfen/bfc.js/bcs';
 import {
+	type BenfenClient,
+	type BenfenTransactionBlockResponse,
+	type BenfenTransactionBlockResponseOptions,
 	type DryRunTransactionBlockResponse,
 	type ExecuteTransactionRequestType,
-	type SuiClient,
-	type SuiTransactionBlockResponse,
-	type SuiTransactionBlockResponseOptions,
 } from '@benfen/bfc.js/client';
 import { IntentScope, messageWithIntent } from '@benfen/bfc.js/cryptography';
 import { isTransactionBlock, type TransactionBlock } from '@benfen/bfc.js/transactions';
@@ -24,9 +24,9 @@ export type SignedMessage = {
 };
 
 export abstract class WalletSigner {
-	client: SuiClient;
+	client: BenfenClient;
 
-	constructor(client: SuiClient) {
+	constructor(client: BenfenClient) {
 		this.client = client;
 	}
 
@@ -91,11 +91,11 @@ export abstract class WalletSigner {
 	async signAndExecuteTransactionBlock(
 		input: {
 			transactionBlock: Uint8Array | TransactionBlock;
-			options?: SuiTransactionBlockResponseOptions;
+			options?: BenfenTransactionBlockResponseOptions;
 			requestType?: ExecuteTransactionRequestType;
 		},
 		clientIdentifier?: string,
-	): Promise<SuiTransactionBlockResponse> {
+	): Promise<BenfenTransactionBlockResponse> {
 		const bytes = await this.prepareTransactionBlock(input.transactionBlock);
 		const signed = await this.signTransactionBlock({
 			transactionBlock: bytes,

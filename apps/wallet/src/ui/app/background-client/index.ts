@@ -30,7 +30,7 @@ import {
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { type SignedMessage, type SignedTransaction } from '_src/ui/app/WalletSigner';
 import type { AppDispatch } from '_store';
-import { type SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { type SerializedSignature } from '@benfen/bfc.js/cryptography';
 import { toB64 } from '@benfen/bfc.js/utils';
 import { type QueryKey } from '@tanstack/react-query';
@@ -96,7 +96,7 @@ export class BackgroundClient {
 	public sendTransactionRequestResponse(
 		txID: string,
 		approved: boolean,
-		txResult?: SuiTransactionBlockResponse | SignedMessage,
+		txResult?: BenfenTransactionBlockResponse | SignedMessage,
 		txResultError?: string,
 		txSigned?: SignedTransaction,
 	) {

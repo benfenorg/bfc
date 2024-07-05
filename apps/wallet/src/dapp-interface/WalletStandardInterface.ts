@@ -29,7 +29,7 @@ import {
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
 import { isTransactionBlock } from '@benfen/bfc.js/transactions';
-import { fromB64, toB64 } from '@benfen/bfc.js/utils';
+import { bfc2HexAddress, fromB64, hex2BfcAddress, toB64 } from '@benfen/bfc.js/utils';
 import {
 	BFC_CHAINS,
 	BFC_DEVNET_CHAIN,
@@ -37,16 +37,16 @@ import {
 	BFC_MAINNET_CHAIN,
 	BFC_TESTNET_CHAIN,
 	ReadonlyWalletAccount,
+	type BenfenFeatures,
+	type BenfenSignAndExecuteTransactionBlockMethod,
+	type BenfenSignMessageMethod,
+	type BenfenSignPersonalMessageMethod,
+	type BenfenSignTransactionBlockMethod,
 	type StandardConnectFeature,
 	type StandardConnectMethod,
 	type StandardEventsFeature,
 	type StandardEventsListeners,
 	type StandardEventsOnMethod,
-	type SuiFeatures,
-	type SuiSignAndExecuteTransactionBlockMethod,
-	type SuiSignMessageMethod,
-	type SuiSignPersonalMessageMethod,
-	type SuiSignTransactionBlockMethod,
 	type Wallet,
 } from '@benfen/bfc.js/wallet-standard';
 import mitt, { type Emitter } from 'mitt';
@@ -116,7 +116,7 @@ export class SuiWallet implements Wallet {
 
 	get features(): StandardConnectFeature &
 		StandardEventsFeature &
-		SuiFeatures &
+		BenfenFeatures &
 		QredoConnectFeature {
 		return {
 			'standard:connect': {
@@ -143,6 +143,12 @@ export class SuiWallet implements Wallet {
 				version: '1.0.0',
 				signPersonalMessage: this.#signPersonalMessage,
 			},
+			'bfc:switchChain': {
+				version: '1.0.0',
+				switchChain: async () => {
+					return '';
+				},
+			},
 			'qredo:connect': {
 				version: '0.0.1',
 				qredoConnect: this.#qredoConnect,
@@ -158,7 +164,7 @@ export class SuiWallet implements Wallet {
 		this.#accounts = accounts.map(
 			({ address, publicKey, nickname }) =>
 				new ReadonlyWalletAccount({
-					address,
+					address: hex2BfcAddress(address),
 					label: nickname || undefined,
 					publicKey: publicKey ? fromB64(publicKey) : new Uint8Array(),
 					chains: this.#activeChain ? [this.#activeChain] : [],
@@ -233,7 +239,7 @@ export class SuiWallet implements Wallet {
 		return { accounts: this.accounts };
 	};
 
-	#signTransactionBlock: SuiSignTransactionBlockMethod = async ({
+	#signTransactionBlock: BenfenSignTransactionBlockMethod = async ({
 		transactionBlock,
 		account,
 		...input
@@ -251,7 +257,7 @@ export class SuiWallet implements Wallet {
 					...input,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: account?.address || this.#accounts[0]?.address || '',
+					account: bfc2HexAddress(account?.address || this.#accounts[0]?.address || ''),
 					transaction: transactionBlock.serialize(),
 				},
 			}),
@@ -259,7 +265,7 @@ export class SuiWallet implements Wallet {
 		);
 	};
 
-	#signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod = async (input) => {
+	#signAndExecuteTransactionBlock: BenfenSignAndExecuteTransactionBlockMethod = async (input) => {
 		if (!isTransactionBlock(input.transactionBlock)) {
 			throw new Error(
 				'Unexpect transaction format found. Ensure that you are using the `Transaction` class.',
@@ -275,20 +281,20 @@ export class SuiWallet implements Wallet {
 					options: input.options,
 					// account might be undefined if previous version of adapters is used
 					// in that case use the first account address
-					account: input.account?.address || this.#accounts[0]?.address || '',
+					account: bfc2HexAddress(input.account?.address || this.#accounts[0]?.address || ''),
 				},
 			}),
 			(response) => response.result,
 		);
 	};
 
-	#signMessage: SuiSignMessageMethod = async ({ message, account }) => {
+	#signMessage: BenfenSignMessageMethod = async ({ message, account }) => {
 		return mapToPromise(
 			this.#send<SignMessageRequest, SignMessageRequest>({
 				type: 'sign-message-request',
 				args: {
 					message: toB64(message),
-					accountAddress: account.address,
+					accountAddress: bfc2HexAddress(account.address),
 				},
 			}),
 			(response) => {
@@ -300,13 +306,13 @@ export class SuiWallet implements Wallet {
 		);
 	};
 
-	#signPersonalMessage: SuiSignPersonalMessageMethod = async ({ message, account }) => {
+	#signPersonalMessage: BenfenSignPersonalMessageMethod = async ({ message, account }) => {
 		return mapToPromise(
 			this.#send<SignMessageRequest, SignMessageRequest>({
 				type: 'sign-message-request',
 				args: {
 					message: toB64(message),
-					accountAddress: account.address,
+					accountAddress: bfc2HexAddress(account.address),
 				},
 			}),
 			(response) => {

@@ -1,17 +1,17 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import type { IdentifierString } from '@wallet-standard/core';
 
-/** Sui Devnet */
+/** Benfen Devnet */
 export const BFC_DEVNET_CHAIN = 'bfc:devnet';
 
-/** Sui Testnet */
+/** Benfen Testnet */
 export const BFC_TESTNET_CHAIN = 'bfc:testnet';
 
-/** Sui Localnet */
+/** Benfen Localnet */
 export const BFC_LOCALNET_CHAIN = 'bfc:localnet';
 
-/** Sui Mainnet */
+/** Benfen Mainnet */
 export const BFC_MAINNET_CHAIN = 'bfc:mainnet';
 
 export const BFC_CHAINS = [
@@ -28,7 +28,7 @@ export type BfcChain =
 	| typeof BFC_MAINNET_CHAIN;
 
 /**
- * Utility that returns whether or not a chain identifier is a valid Sui chain.
+ * Utility that returns whether or not a chain identifier is a valid Benfen chain.
  * @param chain a chain identifier in the form of `${string}:{$string}`
  */
 export function isBfcChain(chain: IdentifierString): chain is BfcChain {

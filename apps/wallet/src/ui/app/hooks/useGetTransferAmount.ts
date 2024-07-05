@@ -2,15 +2,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { getAmount } from '_helpers';
-import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useMemo } from 'react';
 
 export function useGetTransferAmount({
 	txn,
 	activeAddress,
 }: {
-	txn: SuiTransactionBlockResponse;
+	txn: BenfenTransactionBlockResponse;
 	activeAddress: string;
 }) {
 	const { effects, events } = txn;
@@ -22,7 +22,7 @@ export function useGetTransferAmount({
 			({ amount, coinType, recipientAddress }) => {
 				return {
 					amount: amount || 0,
-					coinType: coinType || SUI_TYPE_ARG,
+					coinType: coinType || BFC_TYPE_ARG,
 					receiverAddress: recipientAddress,
 				};
 			},

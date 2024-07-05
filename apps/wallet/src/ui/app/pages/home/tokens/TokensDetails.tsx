@@ -25,8 +25,8 @@ import { usePinnedCoinTypes } from '_src/ui/app/hooks/usePinnedCoinTypes';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import PageTitle from '_src/ui/app/shared/PageTitle';
 import { type CoinBalance as CoinBalanceType } from '@benfen/bfc.js/client';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
-import { formatAddress, parseStructTag, SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { BFC_TYPE_ARG, formatAddress, parseStructTag } from '@benfen/bfc.js/utils';
 import { useFeature } from '@growthbook/growthbook-react';
 import {
 	useAppsBackend,
@@ -303,7 +303,7 @@ function getFallbackSymbol(coinType: string) {
 function TokenDetails({ coinType }: TokenDetailsProps) {
 	const isDefiWalletEnabled = useIsWalletDefiEnabled();
 	const [interstitialDismissed, setInterstitialDismissed] = useState<boolean>(false);
-	const activeCoinType = coinType || SUI_TYPE_ARG;
+	const activeCoinType = coinType || BFC_TYPE_ARG;
 	const activeAccount = useActiveAccount();
 	const activeAccountAddress = activeAccount?.address;
 	const { data: domainName } = useResolveSuiNSName(activeAccountAddress);
@@ -313,7 +313,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 		isError,
 		isPending,
 		isFetched,
-	} = useSuiClientQuery(
+	} = useBenfenClientQuery(
 		'getBalance',
 		{ coinType: activeCoinType, owner: activeAccountAddress! },
 		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
@@ -338,7 +338,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 		data: coinBalances,
 		isPending: coinBalancesLoading,
 		isFetched: coinBalancesFetched,
-	} = useSuiClientQuery(
+	} = useBenfenClientQuery(
 		'getAllBalances',
 		{ owner: activeAccountAddress! },
 		{
@@ -391,7 +391,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 			/>
 		);
 	}
-	const accountHasSui = coinBalances?.some(({ coinType }) => coinType === SUI_TYPE_ARG);
+	const accountHasSui = coinBalances?.some(({ coinType }) => coinType === BFC_TYPE_ARG);
 
 	if (!activeAccountAddress) {
 		return null;
@@ -467,7 +467,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 												primary={!accountHasSui}
 												center
 												to="/onramp"
-												disabled={(coinType && coinType !== SUI_TYPE_ARG) || !providers?.length}
+												disabled={(coinType && coinType !== BFC_TYPE_ARG) || !providers?.length}
 											>
 												Buy
 											</LargeButton>

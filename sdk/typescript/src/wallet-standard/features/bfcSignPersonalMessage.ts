@@ -1,36 +1,36 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { WalletAccount } from '@wallet-standard/core';
 
 /** The latest API version of the signPersonalMessage API. */
-export type SuiSignPersonalMessageVersion = '1.0.0';
+export type BenfenSignPersonalMessageVersion = '1.0.0';
 
 /**
  * A Wallet Standard feature for signing a personal message, and returning the
  * message bytes that were signed, and message signature.
  */
-export type SuiSignPersonalMessageFeature = {
+export type BenfenSignPersonalMessageFeature = {
 	/** Namespace for the feature. */
 	'bfc:signPersonalMessage': {
 		/** Version of the feature API. */
-		version: SuiSignPersonalMessageVersion;
-		signPersonalMessage: SuiSignPersonalMessageMethod;
+		version: BenfenSignPersonalMessageVersion;
+		signPersonalMessage: BenfenSignPersonalMessageMethod;
 	};
 };
 
-export type SuiSignPersonalMessageMethod = (
-	input: SuiSignPersonalMessageInput,
-) => Promise<SuiSignPersonalMessageOutput>;
+export type BenfenSignPersonalMessageMethod = (
+	input: BenfenSignPersonalMessageInput,
+) => Promise<BenfenSignPersonalMessageOutput>;
 
 /** Input for signing personal messages. */
-export interface SuiSignPersonalMessageInput {
+export interface BenfenSignPersonalMessageInput {
 	message: Uint8Array;
 	account: WalletAccount;
 }
 
 /** Output of signing personal messages. */
-export interface SuiSignPersonalMessageOutput extends SignedPersonalMessage {}
+export interface BenfenSignPersonalMessageOutput extends SignedPersonalMessage {}
 
 export interface SignedPersonalMessage {
 	bytes: string;

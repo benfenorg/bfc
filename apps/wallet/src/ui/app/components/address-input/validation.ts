@@ -1,14 +1,14 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type SuiClient } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
-import { isValidSuiAddress } from '@benfen/bfc.js/utils';
+import { type BenfenClient } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { isValidBenfenAddress } from '@benfen/bfc.js/utils';
 import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
 
-export function createSuiAddressValidation(client: SuiClient, suiNSEnabled: boolean) {
+export function createSuiAddressValidation(client: BenfenClient, suiNSEnabled: boolean) {
 	const resolveCache = new Map<string, boolean>();
 
 	return Yup.string()
@@ -30,13 +30,13 @@ export function createSuiAddressValidation(client: SuiClient, suiNSEnabled: bool
 				return !!address;
 			}
 
-			return isValidSuiAddress(value);
+			return isValidBenfenAddress(value);
 		})
 		.label("Recipient's address");
 }
 
 export function useSuiAddressValidation() {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const suiNSEnabled = useSuiNSEnabled();
 
 	return useMemo(() => {

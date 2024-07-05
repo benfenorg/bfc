@@ -44,7 +44,7 @@ async function deriveAccountsFromLedger(
 	for (const derivationPath of derivationPaths) {
 		const publicKeyResult = await suiLedgerClient.getPublicKey(derivationPath);
 		const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-		const suiAddress = publicKey.toSuiAddress();
+		const suiAddress = publicKey.toHexAddress();
 		ledgerAccounts.push({
 			type: 'ledger',
 			address: suiAddress,

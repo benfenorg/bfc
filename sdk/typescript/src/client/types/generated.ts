@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -92,7 +92,7 @@ export type CompressedSignature =
 	| {
 			Secp256r1: string;
 	  };
-export type SuiParsedData =
+export type BenfenParsedData =
 	| {
 			dataType: 'moveObject';
 			fields: MoveStruct;
@@ -123,9 +123,9 @@ export interface DevInspectResults {
 	/** Execution error from executing the transactions */
 	error?: string | null;
 	/** Events that likely would be generated if the transaction is actually run. */
-	events: SuiEvent[];
+	events: BenfenEvent[];
 	/** Execution results (including return values) from executing the transactions */
-	results?: SuiExecutionResult[] | null;
+	results?: BenfenExecutionResult[] | null;
 }
 export interface DisplayFieldsResponse {
 	data?: {
@@ -136,9 +136,9 @@ export interface DisplayFieldsResponse {
 export interface DryRunTransactionBlockResponse {
 	balanceChanges: BalanceChange[];
 	effects: TransactionEffects;
-	events: SuiEvent[];
+	events: BenfenEvent[];
 	input: TransactionBlockData;
-	objectChanges: SuiObjectChange[];
+	objectChanges: BenfenObjectChange[];
 }
 export interface DynamicFieldInfo {
 	bcsName: string;
@@ -176,7 +176,7 @@ export interface EndOfEpochData {
 	 */
 	nextEpochProtocolVersion: string;
 }
-export interface SuiEvent {
+export interface BenfenEvent {
 	/** Base 58 encoded bcs bytes of the move event */
 	bcs: string;
 	/**
@@ -189,7 +189,7 @@ export interface SuiEvent {
 	packageId: string;
 	/** Parsed json value of the event */
 	parsedJson: unknown;
-	/** Sender's Sui address. */
+	/** Sender's Benfen address. */
 	sender: string;
 	/** UTC timestamp in milliseconds since epoch (1/1/1970) */
 	timestampMs?: string | null;
@@ -198,7 +198,7 @@ export interface SuiEvent {
 	/** Move event type. */
 	type: string;
 }
-export type SuiEventFilter =
+export type BenfenEventFilter =
 	/** Query by sender address. */
 	| {
 			Sender: string;
@@ -243,19 +243,19 @@ export type SuiEventFilter =
 			};
 	  }
 	| {
-			All: SuiEventFilter[];
+			All: BenfenEventFilter[];
 	  }
 	| {
-			Any: SuiEventFilter[];
+			Any: BenfenEventFilter[];
 	  }
 	| {
-			And: [SuiEventFilter, SuiEventFilter];
+			And: [BenfenEventFilter, BenfenEventFilter];
 	  }
 	| {
-			Or: [SuiEventFilter, SuiEventFilter];
+			Or: [BenfenEventFilter, BenfenEventFilter];
 	  };
 /**
- * Unique ID of a Sui Event, the ID is a combination of tx seq number and event seq number, the ID is
+ * Unique ID of a Benfen Event, the ID is a combination of tx seq number and event seq number, the ID is
  * local to this particular fullnode and will be different from other fullnode.
  */
 export interface EventId {
@@ -299,10 +299,10 @@ export interface GasCostSummary {
 	 */
 	storageRebate: string;
 }
-export interface SuiGasData {
+export interface BenfenGasData {
 	budget: string;
 	owner: string;
-	payment: SuiObjectRef[];
+	payment: BenfenObjectRef[];
 	price: string;
 }
 export interface GetPastObjectRequest {
@@ -316,7 +316,7 @@ export type InputObjectKind =
 			MovePackage: string;
 	  }
 	| {
-			ImmOrOwnedMoveObject: SuiObjectRef;
+			ImmOrOwnedMoveObject: BenfenObjectRef;
 	  }
 	| {
 			SharedMoveObject: {
@@ -339,7 +339,7 @@ export interface MoveCallParams {
 	packageObjectId: string;
 	typeArguments?: string[];
 }
-export type SuiMoveFunctionArgType =
+export type BenfenMoveFunctionArgType =
 	| 'Pure'
 	| {
 			Object: ObjectValueKind;
@@ -420,7 +420,7 @@ export interface MultiSigPublicKeyLegacy {
  * ObjectChange are derived from the object mutations in the TransactionEffect to provide richer object
  * information.
  */
-export type SuiObjectChange =
+export type BenfenObjectChange =
 	/** Module published */
 	| {
 			digest: string;
@@ -471,44 +471,44 @@ export type SuiObjectChange =
 			type: 'created';
 			version: string;
 	  };
-export interface SuiObjectData {
+export interface BenfenObjectData {
 	/**
 	 * Move object content or package content in BCS, default to be None unless
-	 * SuiObjectDataOptions.showBcs is set to true
+	 * BenfenObjectDataOptions.showBcs is set to true
 	 */
 	bcs?: RawData | null;
 	/**
-	 * Move object content or package content, default to be None unless SuiObjectDataOptions.showContent
+	 * Move object content or package content, default to be None unless BenfenObjectDataOptions.showContent
 	 * is set to true
 	 */
-	content?: SuiParsedData | null;
+	content?: BenfenParsedData | null;
 	/** Base64 string representing the object digest */
 	digest: string;
 	/**
 	 * The Display metadata for frontend UI rendering, default to be None unless
-	 * SuiObjectDataOptions.showContent is set to true This can also be None if the struct type does not
-	 * have Display defined See more details in <https://forums.sui.io/t/nft-object-display-proposal/4872>
+	 * BenfenObjectDataOptions.showContent is set to true This can also be None if the struct type does not
+	 * have Display defined
 	 */
 	display?: DisplayFieldsResponse | null;
 	objectId: string;
-	/** The owner of this object. Default to be None unless SuiObjectDataOptions.showOwner is set to true */
+	/** The owner of this object. Default to be None unless BenfenObjectDataOptions.showOwner is set to true */
 	owner?: ObjectOwner | null;
 	/**
 	 * The digest of the transaction that created or last mutated this object. Default to be None unless
-	 * SuiObjectDataOptions.showPreviousTransaction is set to true
+	 * BenfenObjectDataOptions.showPreviousTransaction is set to true
 	 */
 	previousTransaction?: string | null;
 	/**
-	 * The amount of SUI we would rebate if this object gets deleted. This number is re-calculated each
+	 * The amount of BFC we would rebate if this object gets deleted. This number is re-calculated each
 	 * time the object is mutated based on the present storage gas price.
 	 */
 	storageRebate?: string | null;
-	/** The type of the object. Default to be None unless SuiObjectDataOptions.showType is set to true */
+	/** The type of the object. Default to be None unless BenfenObjectDataOptions.showType is set to true */
 	type?: string | null;
 	/** Object version. */
 	version: string;
 }
-export interface SuiObjectDataOptions {
+export interface BenfenObjectDataOptions {
 	/** Whether to show the content in BCS format. Default to be False */
 	showBcs?: boolean;
 	/**
@@ -530,7 +530,7 @@ export interface SuiObjectDataOptions {
 export type ObjectRead =
 	/** The object exists and is found with this version */
 	| {
-			details: SuiObjectData;
+			details: BenfenObjectData;
 			status: 'VersionFound';
 	  } /** The object does not exist */
 	| {
@@ -538,7 +538,7 @@ export type ObjectRead =
 			status: 'ObjectNotExists';
 	  } /** The object is found to be deleted with this version */
 	| {
-			details: SuiObjectRef;
+			details: BenfenObjectRef;
 			status: 'ObjectDeleted';
 	  } /** The object exists but not found with this version */
 	| {
@@ -553,7 +553,7 @@ export type ObjectRead =
 			};
 			status: 'VersionTooHigh';
 	  };
-export interface SuiObjectRef {
+export interface BenfenObjectRef {
 	/** Base64 string representing the object digest */
 	digest: string;
 	/** Hex code as string representing the object id */
@@ -585,16 +585,16 @@ export type ObjectResponseError =
 			code: 'displayError';
 			error: string;
 	  };
-export interface SuiObjectResponseQuery {
+export interface BenfenObjectResponseQuery {
 	/** If None, no filter will be applied */
-	filter?: SuiObjectDataFilter | null;
+	filter?: BenfenObjectDataFilter | null;
 	/** config which fields to include in the response, by default only digest is included */
-	options?: SuiObjectDataOptions | null;
+	options?: BenfenObjectDataOptions | null;
 }
 export type ObjectValueKind = 'ByImmutableReference' | 'ByMutableReference' | 'ByValue';
 export interface OwnedObjectRef {
 	owner: ObjectOwner;
-	reference: SuiObjectRef;
+	reference: BenfenObjectRef;
 }
 export type ObjectOwner =
 	/** Object is exclusively owned by a single address, and is mutable. */
@@ -602,7 +602,7 @@ export type ObjectOwner =
 			AddressOwner: string;
 	  } /**
 	 * Object is exclusively owned by a single object, and is mutable. The object ID is converted to
-	 * SuiAddress as SuiAddress is universal.
+	 * BenfenAddress as BenfenAddress is universal.
 	 */
 	| {
 			ObjectOwner: string;
@@ -650,7 +650,7 @@ export interface PaginatedDynamicFieldInfos {
  * item.
  */
 export interface PaginatedEvents {
-	data: SuiEvent[];
+	data: BenfenEvent[];
 	hasNextPage: boolean;
 	nextCursor?: EventId | null;
 }
@@ -670,7 +670,7 @@ export interface PaginatedStrings {
  * item.
  */
 export interface PaginatedObjectsResponse {
-	data: SuiObjectResponse[];
+	data: BenfenObjectResponse[];
 	hasNextPage: boolean;
 	nextCursor?: string | null;
 }
@@ -680,7 +680,7 @@ export interface PaginatedObjectsResponse {
  * item.
  */
 export interface PaginatedTransactionResponse {
-	data: SuiTransactionBlockResponse[];
+	data: BenfenTransactionBlockResponse[];
 	hasNextPage: boolean;
 	nextCursor?: string | null;
 }
@@ -744,29 +744,29 @@ export type RawData =
 	  };
 export type Signature =
 	| {
-			Ed25519SuiSignature: string;
+			Ed25519BenfenSignature: string;
 	  }
 	| {
-			Secp256k1SuiSignature: string;
+			Secp256k1BenfenSignature: string;
 	  }
 	| {
-			Secp256r1SuiSignature: string;
+			Secp256r1BenfenSignature: string;
 	  };
 export type StakeObject =
 	| {
 			principal: string;
 			stakeActiveEpoch: string;
 			stakeRequestEpoch: string;
-			/** ID of the StakedSui receipt object. */
-			stakedSuiId: string;
+			/** ID of the StakedBfc receipt object. */
+			stakedBfcId: string;
 			status: 'Pending';
 	  }
 	| {
 			principal: string;
 			stakeActiveEpoch: string;
 			stakeRequestEpoch: string;
-			/** ID of the StakedSui receipt object. */
-			stakedSuiId: string;
+			/** ID of the StakedBfc receipt object. */
+			stakedBfcId: string;
 			estimatedReward: string;
 			status: 'Active';
 	  }
@@ -774,17 +774,17 @@ export type StakeObject =
 			principal: string;
 			stakeActiveEpoch: string;
 			stakeRequestEpoch: string;
-			/** ID of the StakedSui receipt object. */
-			stakedSuiId: string;
+			/** ID of the StakedBfc receipt object. */
+			stakedBfcId: string;
 			status: 'Unstaked';
 	  };
-export interface SuiActiveJwk {
+export interface BenfenActiveJwk {
 	epoch: string;
-	jwk: SuiJWK;
-	jwk_id: SuiJwkId;
+	jwk: BenfenJWK;
+	jwk_id: BenfenJwkId;
 }
 /** An argument to a transaction in a programmable transaction block */
-export type SuiArgument =
+export type BenfenArgument =
 	| 'GasCoin' /** One of the input objects or primitive values (from `ProgrammableTransactionBlock` inputs) */
 	| {
 			Input: number;
@@ -798,10 +798,10 @@ export type SuiArgument =
 	| {
 			NestedResult: [number, number];
 	  };
-export interface SuiAuthenticatorStateExpire {
+export interface BenfenAuthenticatorStateExpire {
 	min_epoch: string;
 }
-export type SuiCallArg =
+export type BenfenCallArg =
 	| {
 			type: 'object';
 			digest: string;
@@ -828,7 +828,7 @@ export type SuiCallArg =
 			value: unknown;
 			valueType?: string | null;
 	  };
-export interface SuiChangeEpoch {
+export interface BenfenChangeEpoch {
 	computation_charge: string;
 	epoch: string;
 	epoch_start_timestamp_ms: string;
@@ -849,67 +849,67 @@ export interface CoinMetadata {
 	/** Symbol for the token */
 	symbol: string;
 }
-export type SuiEndOfEpochTransactionKind =
+export type BenfenEndOfEpochTransactionKind =
 	| 'AuthenticatorStateCreate'
 	| {
-			ChangeEpoch: SuiChangeEpoch;
+			ChangeEpoch: BenfenChangeEpoch;
 	  }
 	| {
-			AuthenticatorStateExpire: SuiAuthenticatorStateExpire;
+			AuthenticatorStateExpire: BenfenAuthenticatorStateExpire;
 	  };
-export interface SuiExecutionResult {
+export interface BenfenExecutionResult {
 	/** The value of any arguments that were mutably borrowed. Non-mut borrowed values are not included */
-	mutableReferenceOutputs?: [SuiArgument, number[], string][];
+	mutableReferenceOutputs?: [BenfenArgument, number[], string][];
 	/** The return values from the transaction */
 	returnValues?: [number[], string][];
 }
-export interface SuiJWK {
+export interface BenfenJWK {
 	alg: string;
 	e: string;
 	kty: string;
 	n: string;
 }
-export interface SuiJwkId {
+export interface BenfenJwkId {
 	iss: string;
 	kid: string;
 }
-export type SuiMoveAbility = 'Copy' | 'Drop' | 'Store' | 'Key';
-export interface SuiMoveAbilitySet {
-	abilities: SuiMoveAbility[];
+export type BenfenMoveAbility = 'Copy' | 'Drop' | 'Store' | 'Key';
+export interface BenfenMoveAbilitySet {
+	abilities: BenfenMoveAbility[];
 }
-export interface SuiMoveModuleId {
+export interface BenfenMoveModuleId {
 	address: string;
 	name: string;
 }
-export interface SuiMoveNormalizedField {
+export interface BenfenMoveNormalizedField {
 	name: string;
-	type: SuiMoveNormalizedType;
+	type: BenfenMoveNormalizedType;
 }
-export interface SuiMoveNormalizedFunction {
+export interface BenfenMoveNormalizedFunction {
 	isEntry: boolean;
-	parameters: SuiMoveNormalizedType[];
-	return: SuiMoveNormalizedType[];
-	typeParameters: SuiMoveAbilitySet[];
-	visibility: SuiMoveVisibility;
+	parameters: BenfenMoveNormalizedType[];
+	return: BenfenMoveNormalizedType[];
+	typeParameters: BenfenMoveAbilitySet[];
+	visibility: BenfenMoveVisibility;
 }
-export interface SuiMoveNormalizedModule {
+export interface BenfenMoveNormalizedModule {
 	address: string;
 	exposedFunctions: {
-		[key: string]: SuiMoveNormalizedFunction;
+		[key: string]: BenfenMoveNormalizedFunction;
 	};
 	fileFormatVersion: number;
-	friends: SuiMoveModuleId[];
+	friends: BenfenMoveModuleId[];
 	name: string;
 	structs: {
-		[key: string]: SuiMoveNormalizedStruct;
+		[key: string]: BenfenMoveNormalizedStruct;
 	};
 }
-export interface SuiMoveNormalizedStruct {
-	abilities: SuiMoveAbilitySet;
-	fields: SuiMoveNormalizedField[];
-	typeParameters: SuiMoveStructTypeParameter[];
+export interface BenfenMoveNormalizedStruct {
+	abilities: BenfenMoveAbilitySet;
+	fields: BenfenMoveNormalizedField[];
+	typeParameters: BenfenMoveStructTypeParameter[];
 }
-export type SuiMoveNormalizedType =
+export type BenfenMoveNormalizedType =
 	| 'Bool'
 	| 'U8'
 	| 'U16'
@@ -924,35 +924,35 @@ export type SuiMoveNormalizedType =
 				address: string;
 				module: string;
 				name: string;
-				typeArguments: SuiMoveNormalizedType[];
+				typeArguments: BenfenMoveNormalizedType[];
 			};
 	  }
 	| {
-			Vector: SuiMoveNormalizedType;
+			Vector: BenfenMoveNormalizedType;
 	  }
 	| {
 			TypeParameter: number;
 	  }
 	| {
-			Reference: SuiMoveNormalizedType;
+			Reference: BenfenMoveNormalizedType;
 	  }
 	| {
-			MutableReference: SuiMoveNormalizedType;
+			MutableReference: BenfenMoveNormalizedType;
 	  };
-export interface SuiMoveStructTypeParameter {
-	constraints: SuiMoveAbilitySet;
+export interface BenfenMoveStructTypeParameter {
+	constraints: BenfenMoveAbilitySet;
 	isPhantom: boolean;
 }
-export type SuiMoveVisibility = 'Private' | 'Public' | 'Friend';
-export type SuiObjectDataFilter =
+export type BenfenMoveVisibility = 'Private' | 'Public' | 'Friend';
+export type BenfenObjectDataFilter =
 	| {
-			MatchAll: SuiObjectDataFilter[];
+			MatchAll: BenfenObjectDataFilter[];
 	  }
 	| {
-			MatchAny: SuiObjectDataFilter[];
+			MatchAny: BenfenObjectDataFilter[];
 	  }
 	| {
-			MatchNone: SuiObjectDataFilter[];
+			MatchNone: BenfenObjectDataFilter[];
 	  } /** Query by type a specified Package. */
 	| {
 			Package: string;
@@ -983,17 +983,17 @@ export type SuiObjectDataFilter =
 	| {
 			Version: string;
 	  };
-export interface SuiObjectResponse {
-	data?: SuiObjectData | null;
+export interface BenfenObjectResponse {
+	data?: BenfenObjectData | null;
 	error?: ObjectResponseError | null;
 }
 /**
  * The transaction for calling a Move function, either an entry function or a public function (which
  * cannot return references).
  */
-export interface MoveCallSuiTransaction {
+export interface MoveCallBenfenTransaction {
 	/** The arguments to the function. */
-	arguments?: SuiArgument[];
+	arguments?: BenfenArgument[];
 	/** The function to be called. */
 	function: string;
 	/** The specific module in the package containing the function. */
@@ -1004,13 +1004,13 @@ export interface MoveCallSuiTransaction {
 	type_arguments?: string[];
 }
 /**
- * This is the JSON-RPC type for the SUI system state object. It flattens all fields to make them
- * top-level fields such that it as minimum dependencies to the internal data structures of the SUI
+ * This is the JSON-RPC type for the BENFEN system state object. It flattens all fields to make them
+ * top-level fields such that it as minimum dependencies to the internal data structures of the Benfen
  * system state type.
  */
-export interface SuiSystemStateSummary {
+export interface BenfenSystemStateSummary {
 	/** The list of active validators in the current epoch. */
-	activeValidators: SuiValidatorSummary[];
+	activeValidators: BenfenValidatorSummary[];
 	/** Map storing the number of epochs for which each validator has been below the low stake threshold. */
 	atRiskValidators: [string, string][];
 	/** The current epoch ID, starting from 0. */
@@ -1057,7 +1057,7 @@ export interface SuiSystemStateSummary {
 	safeModeStorageRebates: string;
 	/** Amount of storage rewards accumulated (and not yet distributed) during safe mode. */
 	safeModeStorageRewards: string;
-	/** Balance of SUI set aside for stake subsidies that will be drawn down over time. */
+	/** Balance of BFC set aside for stake subsidies that will be drawn down over time. */
 	stakeSubsidyBalance: string;
 	/** The amount of stake subsidy to be drawn down per epoch. This amount decays and decreases over time. */
 	stakeSubsidyCurrentDistributionAmount: string;
@@ -1075,7 +1075,7 @@ export interface SuiSystemStateSummary {
 	stakeSubsidyPeriodLength: string;
 	/** The starting epoch in which stake subsidies start being paid out */
 	stakeSubsidyStartEpoch: string;
-	/** ID of the object that maps from staking pool's ID to the sui address of a validator. */
+	/** ID of the object that maps from staking pool's ID to the BENFEN address of a validator. */
 	stakingPoolMappingsId: string;
 	/** Number of staking pool mappings. */
 	stakingPoolMappingsSize: string;
@@ -1117,26 +1117,26 @@ export interface SuiSystemStateSummary {
 	validatorVeryLowStakeThreshold: string;
 }
 /** A single transaction in a programmable transaction block. */
-export type SuiTransaction =
+export type BenfenTransaction =
 	/** A call to either an entry or a public Move function */
 	| {
-			MoveCall: MoveCallSuiTransaction;
+			MoveCall: MoveCallBenfenTransaction;
 	  } /**
 	 * `(Vec<forall T:key+store. T>, address)` It sends n-objects to the specified address. These objects
 	 * must have store (public transfer) and either the previous owner must be an address or the object
 	 * must be newly created.
 	 */
 	| {
-			TransferObjects: [SuiArgument[], SuiArgument];
+			TransferObjects: [BenfenArgument[], BenfenArgument];
 	  } /**
 	 * `(&mut Coin<T>, Vec<u64>)` -> `Vec<Coin<T>>` It splits off some amounts into a new coins with those
 	 * amounts
 	 */
 	| {
-			SplitCoins: [SuiArgument, SuiArgument[]];
+			SplitCoins: [BenfenArgument, BenfenArgument[]];
 	  } /** `(&mut Coin<T>, Vec<Coin<T>>)` It merges n-coins into the first coin */
 	| {
-			MergeCoins: [SuiArgument, SuiArgument[]];
+			MergeCoins: [BenfenArgument, BenfenArgument[]];
 	  } /**
 	 * Publishes a Move package. It takes the package bytes and a list of the package's transitive
 	 * dependencies to link against on-chain.
@@ -1145,20 +1145,20 @@ export type SuiTransaction =
 			Publish: string[];
 	  } /** Upgrades a Move package */
 	| {
-			Upgrade: [string[], string, SuiArgument];
+			Upgrade: [string[], string, BenfenArgument];
 	  } /**
 	 * `forall T: Vec<T> -> vector<T>` Given n-values of the same type, it constructs a vector. For non
 	 * objects or an empty vector, the type tag must be specified.
 	 */
 	| {
-			MakeMoveVec: [string | null, SuiArgument[]];
+			MakeMoveVec: [string | null, BenfenArgument[]];
 	  };
-export type SuiTransactionBlockBuilderMode = 'Commit' | 'DevInspect';
+export type BenfenTransactionBlockBuilderMode = 'Commit' | 'DevInspect';
 /**
- * This is the JSON-RPC type for the SUI validator. It flattens all inner structures to top-level
+ * This is the JSON-RPC type for the BENFEN validator. It flattens all inner structures to top-level
  * fields so that they are decoupled from the internal definitions.
  */
-export interface SuiValidatorSummary {
+export interface BenfenValidatorSummary {
 	commissionRate: string;
 	description: string;
 	/** ID of the exchange rate table object. */
@@ -1188,7 +1188,7 @@ export interface SuiValidatorSummary {
 	/** Pending stake amount for this epoch. */
 	pendingStake: string;
 	/** Pending stake withdrawn during the current epoch, emptied at epoch boundaries. */
-	pendingTotalSuiWithdraw: string;
+	pendingTotalBfcWithdraw: string;
 	/** Total number of pool tokens issued by the pool. */
 	poolTokenBalance: string;
 	primaryAddress: string;
@@ -1203,9 +1203,9 @@ export interface SuiValidatorSummary {
 	stakingPoolDeactivationEpoch?: string | null;
 	/** ID of the staking pool object. */
 	stakingPoolId: string;
-	/** The total number of SUI tokens in this pool. */
-	stakingPoolSuiBalance: string;
-	suiAddress: string;
+	/** The total number of BFC tokens in this pool. */
+	stakingPoolBfcBalance: string;
+	benfenAddress: string;
 	votingPower: string;
 	workerAddress: string;
 	workerPubkeyBytes: string;
@@ -1213,23 +1213,23 @@ export interface SuiValidatorSummary {
 export interface CoinSupply {
 	value: string;
 }
-export interface SuiTransactionBlock {
+export interface BenfenTransactionBlock {
 	data: TransactionBlockData;
 	txSignatures: string[];
 }
 export interface TransactionBlockBytes {
 	/** the gas objects to be used */
-	gas: SuiObjectRef[];
+	gas: BenfenObjectRef[];
 	/** objects to be used in this transaction */
 	inputObjects: InputObjectKind[];
 	/** BCS serialized transaction data bytes without its type tag, as base-64 encoded string. */
 	txBytes: string;
 }
 export type TransactionBlockData = {
-	gasData: SuiGasData;
+	gasData: BenfenGasData;
 	messageVersion: 'v1';
 	sender: string;
-	transaction: SuiTransactionBlockKind;
+	transaction: BenfenTransactionBlockKind;
 };
 export type TransactionEffects =
 	/** The response from processing a transaction or a certified transaction */
@@ -1237,7 +1237,7 @@ export type TransactionEffects =
 		/** ObjectRef and owner of new objects created. */
 		created?: OwnedObjectRef[];
 		/** Object Refs of objects now deleted (the old refs). */
-		deleted?: SuiObjectRef[];
+		deleted?: BenfenObjectRef[];
 		/** The set of transaction digests this transaction depends on. */
 		dependencies?: string[];
 		/**
@@ -1265,7 +1265,7 @@ export type TransactionEffects =
 		 * The object references of the shared objects used in this transaction. Empty if no shared objects
 		 * were used.
 		 */
-		sharedObjects?: SuiObjectRef[];
+		sharedObjects?: BenfenObjectRef[];
 		/** The status of the execution */
 		status: ExecutionStatus;
 		/** The transaction digest */
@@ -1276,15 +1276,15 @@ export type TransactionEffects =
 		 */
 		unwrapped?: OwnedObjectRef[];
 		/** Object refs of objects previously wrapped in other objects but now deleted. */
-		unwrappedThenDeleted?: SuiObjectRef[];
+		unwrappedThenDeleted?: BenfenObjectRef[];
 		/** Object refs of objects now wrapped in other objects. */
-		wrapped?: SuiObjectRef[];
+		wrapped?: BenfenObjectRef[];
 	};
 export interface TransactionBlockEffectsModifiedAtVersions {
 	objectId: string;
 	sequenceNumber: string;
 }
-export type SuiTransactionBlockKind =
+export type BenfenTransactionBlockKind =
 	/** A system transaction that will update epoch information on-chain. */
 	| {
 			computation_charge: string;
@@ -1306,25 +1306,25 @@ export type SuiTransactionBlockKind =
 	  } /** A series of transactions where the results of one transaction can be used in future transactions */
 	| {
 			/** Input objects or primitive values */
-			inputs: SuiCallArg[];
+			inputs: BenfenCallArg[];
 			kind: 'ProgrammableTransaction';
 			/**
 			 * The transactions to be executed sequentially. A failure in any transaction will result in the
 			 * failure of the entire programmable transaction block.
 			 */
-			transactions: SuiTransaction[];
+			transactions: BenfenTransaction[];
 	  } /** A transaction which updates global authenticator state */
 	| {
 			epoch: string;
 			kind: 'AuthenticatorStateUpdate';
-			new_active_jwks: SuiActiveJwk[];
+			new_active_jwks: BenfenActiveJwk[];
 			round: string;
 	  } /** The transaction which occurs only at the end of the epoch */
 	| {
 			kind: 'EndOfEpochTransaction';
-			transactions: SuiEndOfEpochTransactionKind[];
+			transactions: BenfenEndOfEpochTransactionKind[];
 	  };
-export interface SuiTransactionBlockResponse {
+export interface BenfenTransactionBlockResponse {
 	balanceChanges?: BalanceChange[] | null;
 	/**
 	 * The checkpoint number when this transaction was included and hence finalized. This is only returned
@@ -1335,8 +1335,8 @@ export interface SuiTransactionBlockResponse {
 	digest: string;
 	effects?: TransactionEffects | null;
 	errors?: string[];
-	events?: SuiEvent[] | null;
-	objectChanges?: SuiObjectChange[] | null;
+	events?: BenfenEvent[] | null;
+	objectChanges?: BenfenObjectChange[] | null;
 	/**
 	 * BCS encoded [SenderSignedData] that includes input object references returns empty array if
 	 * `show_raw_transaction` is false
@@ -1344,9 +1344,9 @@ export interface SuiTransactionBlockResponse {
 	rawTransaction?: string;
 	timestampMs?: string | null;
 	/** Transaction input data */
-	transaction?: SuiTransactionBlock | null;
+	transaction?: BenfenTransactionBlock | null;
 }
-export interface SuiTransactionBlockResponseOptions {
+export interface BenfenTransactionBlockResponseOptions {
 	/** Whether to show balance_changes. Default to be False */
 	showBalanceChanges?: boolean;
 	/** Whether to show transaction effects. Default to be False */
@@ -1360,11 +1360,11 @@ export interface SuiTransactionBlockResponseOptions {
 	/** Whether to show bcs-encoded transaction input data */
 	showRawInput?: boolean;
 }
-export interface SuiTransactionBlockResponseQuery {
+export interface BenfenTransactionBlockResponseQuery {
 	/** If None, no filter will be applied */
 	filter?: TransactionFilter | null;
 	/** config which fields to include in the response, by default only digest is included */
-	options?: SuiTransactionBlockResponseOptions | null;
+	options?: BenfenTransactionBlockResponseOptions | null;
 }
 export type TransactionFilter =
 	/** Query by checkpoint. */

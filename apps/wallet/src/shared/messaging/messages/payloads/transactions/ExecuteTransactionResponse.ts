@@ -3,12 +3,12 @@
 
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
-import type { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type SuiSignTransactionBlockOutput } from '@benfen/bfc.js/wallet-standard';
+import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type BenfenSignTransactionBlockOutput } from '@benfen/bfc.js/wallet-standard';
 
 export interface ExecuteTransactionResponse extends BasePayload {
 	type: 'execute-transaction-response';
-	result: SuiTransactionBlockResponse;
+	result: BenfenTransactionBlockResponse;
 }
 
 export function isExecuteTransactionResponse(
@@ -19,7 +19,7 @@ export function isExecuteTransactionResponse(
 
 export interface SignTransactionResponse extends BasePayload {
 	type: 'sign-transaction-response';
-	result: SuiSignTransactionBlockOutput;
+	result: BenfenSignTransactionBlockOutput;
 }
 
 export function isSignTransactionResponse(payload: Payload): payload is SignTransactionResponse {

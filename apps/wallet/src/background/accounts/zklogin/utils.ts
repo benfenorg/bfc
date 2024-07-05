@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { API_ENV, type NetworkEnvType } from '_src/shared/api-env';
+import { type NetworkEnvType } from '_src/shared/api-env';
 import { type PublicKey } from '@benfen/bfc.js/cryptography';
 import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
 import {
@@ -117,20 +117,6 @@ export async function zkLoginAuthenticate({
 	return jwt;
 }
 
-const saltRegistryUrl = 'https://salt.api.mystenlabs.com';
-
-export async function fetchSalt(jwt: string): Promise<string> {
-	const response = await fetch(`${saltRegistryUrl}/get_salt`, {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Request-Id': uuidV4(),
-		},
-		body: JSON.stringify({ token: jwt }),
-	});
-	return (await response.json()).salt;
-}
-
 type WalletInputs = {
 	jwt: string;
 	ephemeralPublicKey: PublicKey;
@@ -146,8 +132,7 @@ export type PartialZkLoginSignature = Omit<
 	'addressSeed'
 >;
 
-const zkLoginProofsServerUrlDev = 'https://prover-dev.mystenlabs.com/v1';
-const zkLoginProofsServerUrlProd = 'https://prover.mystenlabs.com/v1';
+const zkLoginProofsServerUrl = 'https://zkproverdev.openblock.vip/v1';
 
 export async function createPartialZkLoginSignature({
 	jwt,
@@ -156,11 +141,7 @@ export async function createPartialZkLoginSignature({
 	maxEpoch,
 	userSalt,
 	keyClaimName = 'sub',
-	network,
 }: WalletInputs): Promise<PartialZkLoginSignature> {
-	const zkLoginProofsServerUrl = [API_ENV.mainnet, API_ENV.testNet].includes(network.env)
-		? zkLoginProofsServerUrlProd
-		: zkLoginProofsServerUrlDev;
 	const response = await fetch(zkLoginProofsServerUrl, {
 		method: 'POST',
 		headers: {

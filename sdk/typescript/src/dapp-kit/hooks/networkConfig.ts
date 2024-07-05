@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiClientOptions } from '../../client/index.js';
-import { useSuiClientContext } from './useSuiClient.js';
+import type { BenfenClientOptions } from '../../client/index.js';
+import { useBenfenClientContext } from './useBenfenClient.js';
 
-export type NetworkConfig<T extends object = object> = SuiClientOptions & {
+export type NetworkConfig<T extends object = object> = BenfenClientOptions & {
 	variables?: T;
 };
 
@@ -14,7 +14,7 @@ export function createNetworkConfig<
 	Variables extends object = NonNullable<Config['variables']>,
 >(networkConfig: T) {
 	function useNetworkConfig(): Config {
-		const { config } = useSuiClientContext();
+		const { config } = useBenfenClientContext();
 
 		if (!config) {
 			throw new Error('No network config found');

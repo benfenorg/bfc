@@ -7,7 +7,7 @@ import { Text } from '_app/shared/text';
 import Alert from '_components/alert';
 import LoadingIndicator from '_components/loading/LoadingIndicator';
 import { ampli } from '_src/shared/analytics/ampli';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { calculateStakeShare, formatPercentageDisplay, useGetValidatorsApy } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
 import cl from 'clsx';
@@ -34,7 +34,7 @@ export function SelectValidatorCard() {
 	const [selectedValidator, setSelectedValidator] = useState<Validator | null>(null);
 	const [sortKey, setSortKey] = useState<SortKeys | null>(null);
 	const [sortAscending, setSortAscending] = useState(true);
-	const { data, isPending, isError } = useSuiClientQuery('getLatestSuiSystemState');
+	const { data, isPending, isError } = useBenfenClientQuery('getLatestBenfeSystemState');
 
 	const { data: rollingAverageApys } = useGetValidatorsApy();
 
@@ -52,7 +52,7 @@ export function SelectValidatorCard() {
 	const totalStake = useMemo(() => {
 		if (!data) return 0;
 		return data.activeValidators.reduce(
-			(acc, curr) => (acc += BigInt(curr.stakingPoolSuiBalance)),
+			(acc, curr) => (acc += BigInt(curr.stakingPoolBfcBalance)),
 			0n,
 		);
 	}, [data]);
@@ -63,14 +63,16 @@ export function SelectValidatorCard() {
 	);
 	const validatorList = useMemo(() => {
 		const sortedAsc = validatorsRandomOrder.map((validator) => {
-			const { apy, isApyApproxZero } = rollingAverageApys?.[validator.suiAddress] ?? { apy: null };
+			const { apy, isApyApproxZero } = rollingAverageApys?.[validator.benfenAddress] ?? {
+				apy: null,
+			};
 			return {
 				name: validator.name,
-				address: validator.suiAddress,
+				address: validator.benfenAddress,
 				apy,
 				isApyApproxZero,
 				stakeShare: calculateStakeShare(
-					BigInt(validator.stakingPoolSuiBalance),
+					BigInt(validator.stakingPoolBfcBalance),
 					BigInt(totalStake),
 				),
 			};

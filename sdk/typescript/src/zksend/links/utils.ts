@@ -1,13 +1,13 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
+	BenfenObjectChange,
+	BenfenTransactionBlockResponse,
 	ObjectOwner,
-	SuiObjectChange,
-	SuiTransactionBlockResponse,
 } from '../../client/index.js';
 import type { TransactionBlock } from '../../transactions/index.js';
-import { normalizeStructTag, normalizeSuiAddress, parseStructTag } from '../../utils/index.js';
+import { normalizeHexAddress, normalizeStructTag, parseStructTag } from '../../utils/index.js';
 
 // eslint-disable-next-line import/no-cycle
 
@@ -77,11 +77,11 @@ export function getAssetsFromTxnBlock({
 	address,
 	isSent,
 }: {
-	transactionBlock: SuiTransactionBlockResponse;
+	transactionBlock: BenfenTransactionBlockResponse;
 	address: string;
 	isSent: boolean;
 }): LinkAssets {
-	const normalizedAddress = normalizeSuiAddress(address);
+	const normalizedAddress = normalizeHexAddress(address);
 	const balances: {
 		coinType: string;
 		amount: bigint;
@@ -116,7 +116,7 @@ export function getAssetsFromTxnBlock({
 			const type = parseStructTag(change.objectType);
 
 			if (
-				type.address === normalizeSuiAddress('0x2') &&
+				type.address === normalizeHexAddress('0x2') &&
 				type.module === 'coin' &&
 				type.name === 'Coin'
 			) {
@@ -146,7 +146,7 @@ export function getAssetsFromTxnBlock({
 	};
 }
 
-function getObjectOwnerFromObjectChange(objectChange: SuiObjectChange, isSent: boolean) {
+function getObjectOwnerFromObjectChange(objectChange: BenfenObjectChange, isSent: boolean) {
 	if (isSent) {
 		return 'owner' in objectChange ? objectChange.owner : null;
 	}
@@ -154,7 +154,7 @@ function getObjectOwnerFromObjectChange(objectChange: SuiObjectChange, isSent: b
 	return 'recipient' in objectChange ? objectChange.recipient : null;
 }
 
-function isObjectOwner(objectChange: SuiObjectChange, address: string, isSent: boolean) {
+function isObjectOwner(objectChange: BenfenObjectChange, address: string, isSent: boolean) {
 	const owner = getObjectOwnerFromObjectChange(objectChange, isSent);
 
 	if (isSent) {
@@ -165,9 +165,9 @@ function isObjectOwner(objectChange: SuiObjectChange, address: string, isSent: b
 }
 
 export function ownedAfterChange(
-	objectChange: SuiObjectChange,
+	objectChange: BenfenObjectChange,
 	address: string,
-): objectChange is Extract<SuiObjectChange, { type: 'created' | 'transferred' | 'mutated' }> {
+): objectChange is Extract<BenfenObjectChange, { type: 'created' | 'transferred' | 'mutated' }> {
 	if (objectChange.type === 'transferred' && isOwner(objectChange.recipient, address)) {
 		return true;
 	}
@@ -187,6 +187,6 @@ export function isOwner(owner: ObjectOwner, address: string): owner is { Address
 		owner &&
 		typeof owner === 'object' &&
 		'AddressOwner' in owner &&
-		normalizeSuiAddress(owner.AddressOwner) === address
+		normalizeHexAddress(owner.AddressOwner) === address
 	);
 }

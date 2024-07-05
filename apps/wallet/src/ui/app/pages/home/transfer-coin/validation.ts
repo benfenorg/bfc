@@ -3,11 +3,11 @@
 
 import { createSuiAddressValidation } from '_components/address-input/validation';
 import { createTokenValidation } from '_src/shared/validation';
-import { type SuiClient } from '@benfen/bfc.js/client';
+import { type BenfenClient } from '@benfen/bfc.js/client';
 import * as Yup from 'yup';
 
 export function createValidationSchemaStepOne(
-	client: SuiClient,
+	client: BenfenClient,
 	suiNSEnabled: boolean,
 	...args: Parameters<typeof createTokenValidation>
 ) {

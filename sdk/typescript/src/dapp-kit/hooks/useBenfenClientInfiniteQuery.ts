@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
@@ -8,9 +8,9 @@ import type {
 } from '@tanstack/react-query';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
-import type { SuiClient } from '../../client/index.js';
+import type { BenfenClient } from '../../client/index.js';
 import type { PartialBy } from '../types/utilityTypes.js';
-import { useSuiClientContext } from './useSuiClient.js';
+import { useBenfenClientContext } from './useBenfenClient.js';
 
 interface PaginatedResult {
 	data?: unknown;
@@ -18,12 +18,14 @@ interface PaginatedResult {
 	hasNextPage: boolean;
 }
 
-export type SuiRpcPaginatedMethodName = {
-	[K in keyof SuiClient]: SuiClient[K] extends (input: any) => Promise<PaginatedResult> ? K : never;
-}[keyof SuiClient];
+export type BenfenRpcPaginatedMethodName = {
+	[K in keyof BenfenClient]: BenfenClient[K] extends (input: any) => Promise<PaginatedResult>
+		? K
+		: never;
+}[keyof BenfenClient];
 
-export type SuiRpcPaginatedMethods = {
-	[K in SuiRpcPaginatedMethodName]: SuiClient[K] extends (
+export type BenfenRpcPaginatedMethods = {
+	[K in BenfenRpcPaginatedMethodName]: BenfenClient[K] extends (
 		input: infer Params,
 	) => Promise<
 		infer Result extends { hasNextPage?: boolean | null; nextCursor?: infer Cursor | null }
@@ -37,16 +39,16 @@ export type SuiRpcPaginatedMethods = {
 		: never;
 };
 
-export type UseSuiClientInfiniteQueryOptions<
-	T extends keyof SuiRpcPaginatedMethods,
+export type UseBenfenClientInfiniteQueryOptions<
+	T extends keyof BenfenRpcPaginatedMethods,
 	TData,
 > = PartialBy<
 	Omit<
 		UseInfiniteQueryOptions<
-			SuiRpcPaginatedMethods[T]['result'],
+			BenfenRpcPaginatedMethods[T]['result'],
 			Error,
 			TData,
-			SuiRpcPaginatedMethods[T]['result'],
+			BenfenRpcPaginatedMethods[T]['result'],
 			unknown[]
 		>,
 		'queryFn' | 'initialPageParam' | 'getNextPageParam'
@@ -54,27 +56,27 @@ export type UseSuiClientInfiniteQueryOptions<
 	'queryKey'
 >;
 
-export function useSuiClientInfiniteQuery<
-	T extends keyof SuiRpcPaginatedMethods,
-	TData = InfiniteData<SuiRpcPaginatedMethods[T]['result']>,
+export function useBenfenClientInfiniteQuery<
+	T extends keyof BenfenRpcPaginatedMethods,
+	TData = InfiniteData<BenfenRpcPaginatedMethods[T]['result']>,
 >(
 	method: T,
-	params: SuiRpcPaginatedMethods[T]['params'],
+	params: BenfenRpcPaginatedMethods[T]['params'],
 	{
 		queryKey = [],
 		enabled = !!params,
 		...options
-	}: UseSuiClientInfiniteQueryOptions<T, TData> = {},
+	}: UseBenfenClientInfiniteQueryOptions<T, TData> = {},
 ): UseInfiniteQueryResult<TData, Error> {
-	const suiContext = useSuiClientContext();
+	const benfenContext = useBenfenClientContext();
 
 	return useInfiniteQuery({
 		...options,
 		initialPageParam: null,
-		queryKey: [suiContext.network, method, params, ...queryKey],
+		queryKey: [benfenContext.network, method, params, ...queryKey],
 		enabled,
 		queryFn: ({ pageParam }) =>
-			suiContext.client[method]({
+			benfenContext.client[method]({
 				...(params ?? {}),
 				cursor: pageParam,
 			} as never),

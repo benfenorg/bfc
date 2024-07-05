@@ -3,7 +3,7 @@
 
 import { type Keypair, type SignatureScheme } from '@benfen/bfc.js/cryptography';
 import {
-	decodeSuiPrivateKey,
+	decodeBenfenPrivateKey,
 	LEGACY_PRIVATE_KEY_SIZE,
 	PRIVATE_KEY_SIZE,
 } from '@benfen/bfc.js/cryptography/keypair';
@@ -34,7 +34,7 @@ export function fromExportedKeypair(
 		secretKey = fromB64(secret.privateKey);
 		schema = secret.schema;
 	} else {
-		const decoded = decodeSuiPrivateKey(secret);
+		const decoded = decodeBenfenPrivateKey(secret);
 		schema = decoded.schema;
 		secretKey = decoded.secretKey;
 	}

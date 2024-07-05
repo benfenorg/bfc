@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-import { SuiTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useMemo } from 'react';
 
 import { getTotalGasUsed } from '../utils/transaction';
 
-export function useGetTransferAmount(txnData: SuiTransactionBlockResponse) {
+export function useGetTransferAmount(txnData: BenfenTransactionBlockResponse) {
 	const { balanceChanges } = txnData;
 	const sender = txnData.transaction?.data.sender;
 	const gas = txnData.effects && getTotalGasUsed(txnData.effects);
@@ -24,7 +24,7 @@ export function useGetTransferAmount(txnData: SuiTransactionBlockResponse) {
 								? owner.ObjectOwner
 								: '',
 						amount:
-							coinType === SUI_TYPE_ARG && BigInt(amount) < 0n
+							coinType === BFC_TYPE_ARG && BigInt(amount) < 0n
 								? BigInt(amount) + BigInt(gas ?? 0n)
 								: BigInt(amount),
 				  }))

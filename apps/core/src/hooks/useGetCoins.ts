@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { PaginatedCoins } from '@benfen/bfc.js/client';
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useInfiniteQuery } from '@tanstack/react-query';
 
 const MAX_COINS_PER_REQUEST = 10;
@@ -12,7 +12,7 @@ export function useGetCoins(
 	address?: string | null,
 	maxCoinsPerRequest = MAX_COINS_PER_REQUEST,
 ) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useInfiniteQuery<PaginatedCoins>({
 		queryKey: ['get-coins', address, coinType, maxCoinsPerRequest],
 		initialPageParam: null,

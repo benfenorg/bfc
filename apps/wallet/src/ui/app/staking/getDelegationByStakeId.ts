@@ -10,7 +10,7 @@ export const getDelegationDataByStakeId = (
 ) => {
 	let stake = null;
 	for (const { stakes } of delegationsStake) {
-		stake = stakes.find(({ stakedSuiId }) => stakedSuiId === stakeSuiId) || null;
+		stake = stakes.find(({ stakedBfcId }) => stakedBfcId === stakeSuiId) || null;
 		if (stake) return stake;
 	}
 

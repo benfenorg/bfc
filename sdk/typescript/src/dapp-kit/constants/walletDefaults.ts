@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { WalletWithRequiredFeatures } from '../../wallet-standard/index.js';
 import { createInMemoryStore } from '../utils/stateStorage.js';
 
-export const SUI_WALLET_NAME = 'Benfen Wallet';
+export const BENFEN_WALLET_NAME = 'Benfen Wallet';
 
 export const DEFAULT_STORAGE =
 	typeof window !== 'undefined' && window.localStorage ? localStorage : createInMemoryStore();
@@ -15,4 +15,4 @@ export const DEFAULT_REQUIRED_FEATURES: (keyof WalletWithRequiredFeatures['featu
 	'bfc:signTransactionBlock',
 ];
 
-export const DEFAULT_PREFERRED_WALLETS = [SUI_WALLET_NAME];
+export const DEFAULT_PREFERRED_WALLETS = [BENFEN_WALLET_NAME];

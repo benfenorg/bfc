@@ -1,14 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, it } from 'vitest';
 
-import { BCS, getSuiMoveConfig } from '../../../src/bcs/src/index.js';
+import { BCS, getBenfenMoveConfig } from '../../../src/bcs/src/index.js';
 import { serde } from './utils';
 
 describe('BCS: Nested temp object', () => {
 	it('should support object as a type', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = { name: { boop: 'beep', beep: '100' } };
 
 		bcs.registerStructType('Beep', {
@@ -22,7 +22,7 @@ describe('BCS: Nested temp object', () => {
 	});
 
 	it('should support enum invariant as an object', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = {
 			user: {
 				name: 'Bob',
@@ -42,7 +42,7 @@ describe('BCS: Nested temp object', () => {
 	});
 
 	it('should support a nested schema', () => {
-		const bcs = new BCS(getSuiMoveConfig());
+		const bcs = new BCS(getBenfenMoveConfig());
 		const value = {
 			some: {
 				account: {

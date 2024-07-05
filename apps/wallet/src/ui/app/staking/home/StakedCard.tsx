@@ -6,7 +6,7 @@ import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
 import { type StakeObject } from '@benfen/bfc.js/client';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
 import { cva, cx, type VariantProps } from 'class-variance-authority';
 import type { ReactNode } from 'react';
@@ -108,7 +108,7 @@ export function StakeCard({
 	currentEpoch,
 	inactiveValidator = false,
 }: StakeCardProps) {
-	const { stakedSuiId, principal, stakeRequestEpoch, estimatedReward, validatorAddress } =
+	const { stakedBfcId, principal, stakeRequestEpoch, estimatedReward, validatorAddress } =
 		delegationObject;
 
 	// TODO: Once two step withdraw is available, add cool down and withdraw now logic
@@ -128,9 +128,9 @@ export function StakeCard({
 	// For inactive validator, show principal + rewards
 	const [principalStaked, symbol] = useFormatCoin(
 		inactiveValidator ? principal + rewards : principal,
-		SUI_TYPE_ARG,
+		BFC_TYPE_ARG,
 	);
-	const [rewardsStaked] = useFormatCoin(rewards, SUI_TYPE_ARG);
+	const [rewardsStaked] = useFormatCoin(rewards, BFC_TYPE_ARG);
 	const isEarning = delegationState === StakeState.EARNING && rewards > 0n;
 
 	// Applicable only for warm up
@@ -151,7 +151,7 @@ export function StakeCard({
 			data-testid="stake-card"
 			to={`/stake/delegation-detail?${new URLSearchParams({
 				validator: validatorAddress,
-				staked: stakedSuiId,
+				staked: stakedBfcId,
 			}).toString()}`}
 			className="no-underline"
 		>

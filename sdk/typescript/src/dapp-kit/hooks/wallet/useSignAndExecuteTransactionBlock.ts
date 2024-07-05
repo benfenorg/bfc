@@ -1,12 +1,12 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
 import type {
-	SuiSignAndExecuteTransactionBlockInput,
-	SuiSignAndExecuteTransactionBlockOutput,
+	BenfenSignAndExecuteTransactionBlockInput,
+	BenfenSignAndExecuteTransactionBlockOutput,
 } from '../../../wallet-standard/index.js';
 import { walletMutationKeys } from '../../constants/walletMutationKeys.js';
 import {
@@ -15,16 +15,16 @@ import {
 	WalletNotConnectedError,
 } from '../../errors/walletErrors.js';
 import type { PartialBy } from '../../types/utilityTypes.js';
-import { useSuiClient } from '../useSuiClient.js';
+import { useBenfenClient } from '../useBenfenClient.js';
 import { useCurrentAccount } from './useCurrentAccount.js';
 import { useCurrentWallet } from './useCurrentWallet.js';
 
 type UseSignAndExecuteTransactionBlockArgs = PartialBy<
-	SuiSignAndExecuteTransactionBlockInput,
+	BenfenSignAndExecuteTransactionBlockInput,
 	'account' | 'chain'
 >;
 
-type UseSignAndExecuteTransactionBlockResult = SuiSignAndExecuteTransactionBlockOutput;
+type UseSignAndExecuteTransactionBlockResult = BenfenSignAndExecuteTransactionBlockOutput;
 
 type UseSignAndExecuteTransactionBlockError =
 	| WalletFeatureNotSupportedError
@@ -58,7 +58,7 @@ export function useSignAndExecuteTransactionBlock({
 > {
 	const { currentWallet } = useCurrentWallet();
 	const currentAccount = useCurrentAccount();
-	const client = useSuiClient();
+	const client = useBenfenClient();
 
 	return useMutation({
 		mutationKey: walletMutationKeys.signAndExecuteTransactionBlock(mutationKey),

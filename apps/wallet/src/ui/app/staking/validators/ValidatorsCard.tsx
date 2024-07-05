@@ -13,7 +13,7 @@ import {
 	DELEGATED_STAKES_QUERY_STALE_TIME,
 } from '_src/shared/constants';
 import type { StakeObject } from '@benfen/bfc.js/client';
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { useGetDelegatedStake } from '@mysten/core';
 import { Plus12 } from '@mysten/icons';
 import { useMemo } from 'react';
@@ -36,7 +36,7 @@ export function ValidatorsCard() {
 		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
 	});
 
-	const { data: system } = useSuiClientQuery('getLatestSuiSystemState');
+	const { data: system } = useBenfenClientQuery('getLatestBenfeSystemState');
 	const activeValidators = system?.activeValidators;
 
 	// Total active stake for all Staked validators
@@ -121,7 +121,7 @@ export function ValidatorsCard() {
 										<StakeCard
 											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
-											key={delegation.stakedSuiId}
+											key={delegation.stakedBfcId}
 											inactiveValidator
 										/>
 									))}
@@ -155,7 +155,7 @@ export function ValidatorsCard() {
 										<StakeCard
 											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
-											key={delegation.stakedSuiId}
+											key={delegation.stakedBfcId}
 										/>
 									))}
 						</div>

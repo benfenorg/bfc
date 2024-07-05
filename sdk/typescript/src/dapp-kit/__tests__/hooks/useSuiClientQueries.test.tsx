@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { getFullnodeUrl, SuiClient } from '../../../client/index.js';
-import { useSuiClientQueries } from '../../hooks/useSuiClientQueries.js';
+import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
+import { useBenfenClientQueries } from '../../hooks/useBenfenClientQueries.js';
 import { createWalletProviderContextWrapper } from '../test-utils.js';
 
 const MOCK_GET_All_BALANCE_RESULT_DATA = [
@@ -20,19 +20,19 @@ const MOCK_QUERY_TRANSACTION_BLOCK_RESULT_DATA = {
 	nextCursor: 'page2',
 };
 
-describe('useSuiClientQueries', () => {
-	const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
-	const wrapper = createWalletProviderContextWrapper({}, suiClient);
+describe('useBenfenClientQueries', () => {
+	const benfenClient = new BenfenClient({ url: getFullnodeUrl('mainnet') });
+	const wrapper = createWalletProviderContextWrapper({}, benfenClient);
 	test('should fetch data', async () => {
-		const getAllBalances = vi.spyOn(suiClient, 'getAllBalances');
-		const queryTransactionBlocks = vi.spyOn(suiClient, 'queryTransactionBlocks');
+		const getAllBalances = vi.spyOn(benfenClient, 'getAllBalances');
+		const queryTransactionBlocks = vi.spyOn(benfenClient, 'queryTransactionBlocks');
 
 		getAllBalances.mockResolvedValueOnce(MOCK_GET_All_BALANCE_RESULT_DATA);
 		queryTransactionBlocks.mockResolvedValueOnce(MOCK_QUERY_TRANSACTION_BLOCK_RESULT_DATA);
 
 		const { result } = renderHook(
 			() =>
-				useSuiClientQueries({
+				useBenfenClientQueries({
 					queries: [
 						{
 							method: 'getAllBalances',
@@ -86,15 +86,15 @@ describe('useSuiClientQueries', () => {
 		expect(result.current[1].data).toEqual(MOCK_QUERY_TRANSACTION_BLOCK_RESULT_DATA);
 	});
 	test('should fetch data with combine function', async () => {
-		const getAllBalances = vi.spyOn(suiClient, 'getAllBalances');
-		const queryTransactionBlocks = vi.spyOn(suiClient, 'queryTransactionBlocks');
+		const getAllBalances = vi.spyOn(benfenClient, 'getAllBalances');
+		const queryTransactionBlocks = vi.spyOn(benfenClient, 'queryTransactionBlocks');
 
 		getAllBalances.mockResolvedValueOnce(MOCK_GET_All_BALANCE_RESULT_DATA);
 		queryTransactionBlocks.mockResolvedValueOnce(MOCK_QUERY_TRANSACTION_BLOCK_RESULT_DATA);
 
 		const { result } = renderHook(
 			() =>
-				useSuiClientQueries({
+				useBenfenClientQueries({
 					queries: [
 						{
 							method: 'getAllBalances',

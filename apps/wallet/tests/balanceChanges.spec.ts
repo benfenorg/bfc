@@ -51,10 +51,10 @@ test('request SUI from local faucet', async ({ page, extensionUrl }) => {
 
 test('send 20 SUI to an address', async ({ page, extensionUrl }) => {
 	const receivedKeypair = await generateKeypairFromMnemonic(receivedAddressMnemonic.join(' '));
-	const receivedAddress = receivedKeypair.getPublicKey().toSuiAddress();
+	const receivedAddress = receivedKeypair.getPublicKey().toHexAddress();
 
 	const originKeypair = await generateKeypairFromMnemonic(currentWalletMnemonic.join(' '));
-	const originAddress = originKeypair.getPublicKey().toSuiAddress();
+	const originAddress = originKeypair.getPublicKey().toHexAddress();
 
 	await importWallet(page, extensionUrl, currentWalletMnemonic);
 	await page.getByRole('navigation').getByRole('link', { name: 'Home' }).click();
@@ -78,7 +78,7 @@ test('send 20 SUI to an address', async ({ page, extensionUrl }) => {
 
 test('check balance changes in Activity', async ({ page, extensionUrl }) => {
 	const originKeypair = await generateKeypairFromMnemonic(currentWalletMnemonic.join(' '));
-	const originAddress = originKeypair.getPublicKey().toSuiAddress();
+	const originAddress = originKeypair.getPublicKey().toHexAddress();
 
 	await importWallet(page, extensionUrl, currentWalletMnemonic);
 	await page.getByRole('navigation').getByRole('link', { name: 'Home' }).click();

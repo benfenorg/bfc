@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 
 import { useActiveAddress } from '../../hooks';
 import { useConfig } from './useConfig';
@@ -9,7 +9,7 @@ import { useConfig } from './useConfig';
 export function useBuyNLargeAsset() {
 	const config = useConfig();
 	const address = useActiveAddress();
-	const { data } = useSuiClientQuery(
+	const { data } = useBenfenClientQuery(
 		'getOwnedObjects',
 		{
 			owner: address ?? '',

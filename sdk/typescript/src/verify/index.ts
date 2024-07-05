@@ -1,9 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { PublicKey, SerializedSignature, SignatureScheme } from '../cryptography/index.js';
 import { parseSerializedSignature } from '../cryptography/index.js';
-import type { SuiGraphQLClient } from '../graphql/client.js';
 import { Ed25519PublicKey } from '../keypairs/ed25519/publickey.js';
 import { Secp256k1PublicKey } from '../keypairs/secp256k1/publickey.js';
 import { Secp256r1PublicKey } from '../keypairs/secp256r1/publickey.js';
@@ -27,9 +26,8 @@ export async function verifySignature(
 export async function verifyPersonalMessage(
 	message: Uint8Array,
 	signature: SerializedSignature,
-	options: { client?: SuiGraphQLClient } = {},
 ): Promise<PublicKey> {
-	const parsedSignature = parseSignature(signature, options);
+	const parsedSignature = parseSignature(signature);
 
 	if (
 		!(await parsedSignature.publicKey.verifyPersonalMessage(
@@ -61,10 +59,7 @@ export async function verifyTransactionBlock(
 	return parsedSignature.publicKey;
 }
 
-function parseSignature(
-	signature: SerializedSignature,
-	options: { client?: SuiGraphQLClient } = {},
-) {
+function parseSignature(signature: SerializedSignature) {
 	const parsedSignature = parseSerializedSignature(signature);
 
 	if (parsedSignature.signatureScheme === 'MultiSig') {
@@ -77,7 +72,6 @@ function parseSignature(
 	const publicKey = publicKeyFromRawBytes(
 		parsedSignature.signatureScheme,
 		parsedSignature.publicKey,
-		options,
 	);
 	return {
 		...parsedSignature,
@@ -88,7 +82,6 @@ function parseSignature(
 export function publicKeyFromRawBytes(
 	signatureScheme: SignatureScheme,
 	bytes: Uint8Array,
-	options: { client?: SuiGraphQLClient } = {},
 ): PublicKey {
 	switch (signatureScheme) {
 		case 'ED25519':
@@ -100,7 +93,7 @@ export function publicKeyFromRawBytes(
 		case 'MultiSig':
 			return new MultiSigPublicKey(bytes);
 		case 'ZkLogin':
-			return new ZkLoginPublicIdentifier(bytes, options);
+			return new ZkLoginPublicIdentifier(bytes);
 		default:
 			throw new Error(`Unsupported signature scheme ${signatureScheme}`);
 	}

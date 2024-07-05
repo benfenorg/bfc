@@ -10,7 +10,7 @@ import { AppType, getFromLocationSearch } from '_redux/slices/app/AppType';
 import { setAttributes } from '_src/shared/experimentation/features';
 import store from '_store';
 import { thunkExtras } from '_store/thunk-extras';
-import { SuiClientProvider } from '@benfen/bfc.js/dapp-kit';
+import { BenfenClientProvider } from '@benfen/bfc.js/dapp-kit';
 import { GrowthBookProvider } from '@growthbook/growthbook-react';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import cn from 'clsx';
@@ -79,7 +79,7 @@ function AppWrapper() {
 								},
 							}}
 						>
-							<SuiClientProvider
+							<BenfenClientProvider
 								networks={{ [walletApiProvider.apiEnv]: walletApiProvider.instance.fullNode }}
 							>
 								<AccountsFormProvider>
@@ -99,7 +99,7 @@ function AppWrapper() {
 										</div>
 									</UnlockAccountProvider>
 								</AccountsFormProvider>
-							</SuiClientProvider>
+							</BenfenClientProvider>
 						</PersistQueryClientProvider>
 					</Fragment>
 				</SuiLedgerClientProvider>

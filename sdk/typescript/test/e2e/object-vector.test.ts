@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeEach, describe, expect, it } from 'vitest';
 
 import { TransactionBlock } from '../../src/transactions';
-import { SUI_FRAMEWORK_ADDRESS } from '../../src/utils';
+import { BENFEN_FRAMEWORK_ADDRESS } from '../../src/utils';
 import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Test Move call with a vector of objects as input', () => {
@@ -79,7 +79,7 @@ describe('Test Move call with a vector of objects as input', () => {
 			objects: [coinIDs[1], tx.object(coinIDs[2])],
 		});
 		tx.moveCall({
-			target: `${SUI_FRAMEWORK_ADDRESS}::pay::join_vec`,
+			target: `${BENFEN_FRAMEWORK_ADDRESS}::pay::join_vec`,
 			typeArguments: ['0x2::bfc::BFC'],
 			arguments: [tx.object(coinIDs[0]), vec],
 		});

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -19,10 +19,10 @@ describe('CoinRead API', () => {
 	});
 
 	it('Get coins with/without type', async () => {
-		const suiCoins = await toolbox.client.getCoins({
+		const bfcCoins = await toolbox.client.getCoins({
 			owner: toolbox.address(),
 		});
-		expect(suiCoins.data.length).toEqual(5);
+		expect(bfcCoins.data.length).toEqual(5);
 
 		const testCoins = await toolbox.client.getCoins({
 			owner: publishToolbox.address(),
@@ -43,21 +43,21 @@ describe('CoinRead API', () => {
 		expect(publisherAllCoins.hasNextPage).toEqual(false);
 
 		//test paging with limit
-		const someSuiCoins = await toolbox.client.getCoins({
+		const someBfcCoins = await toolbox.client.getCoins({
 			owner: toolbox.address(),
 			limit: 3,
 		});
-		expect(someSuiCoins.data.length).toEqual(3);
-		expect(someSuiCoins.nextCursor).toBeTruthy();
+		expect(someBfcCoins.data.length).toEqual(3);
+		expect(someBfcCoins.nextCursor).toBeTruthy();
 	});
 
 	it('Get balance with/without type', async () => {
-		const suiBalance = await toolbox.client.getBalance({
+		const bfcBalance = await toolbox.client.getBalance({
 			owner: toolbox.address(),
 		});
-		expect(suiBalance.coinType).toEqual('0x2::bfc::BFC');
-		expect(suiBalance.coinObjectCount).toEqual(5);
-		expect(Number(suiBalance.totalBalance)).toBeGreaterThan(0);
+		expect(bfcBalance.coinType).toEqual('0x2::bfc::BFC');
+		expect(bfcBalance.coinObjectCount).toEqual(5);
+		expect(Number(bfcBalance.totalBalance)).toBeGreaterThan(0);
 
 		const testBalance = await toolbox.client.getBalance({
 			owner: publishToolbox.address(),

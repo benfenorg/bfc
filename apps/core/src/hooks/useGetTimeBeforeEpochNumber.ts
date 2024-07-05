@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClientQuery } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 
 // Get time between current epoch and specified epoch
 // Get the period between the current epoch and next epoch
 export function useGetTimeBeforeEpochNumber(epoch: number) {
-	const data = useSuiClientQuery('getLatestSuiSystemState');
+	const data = useBenfenClientQuery('getLatestBenfeSystemState');
 	// Current epoch
 	const currentEpoch = Number(data.data?.epoch || 0);
 	const currentEpochStartTime = Number(data.data?.epochStartTimestampMs || 0);

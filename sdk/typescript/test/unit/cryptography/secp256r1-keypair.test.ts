@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { secp256r1 } from '@noble/curves/p256';
@@ -6,7 +6,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { describe, expect, it } from 'vitest';
 
 import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
-import { decodeSuiPrivateKey, PRIVATE_KEY_SIZE } from '../../../src/cryptography/keypair';
+import { decodeBenfenPrivateKey, PRIVATE_KEY_SIZE } from '../../../src/cryptography/keypair';
 import {
 	DEFAULT_SECP256R1_DERIVATION_PATH,
 	Secp256r1Keypair,
@@ -31,21 +31,20 @@ export const INVALID_SECP256R1_SECRET_KEY = Uint8Array.from(Array(PRIVATE_KEY_SI
 // Invalid public key with incorrect length
 export const INVALID_SECP256R1_PUBLIC_KEY = Uint8Array.from(Array(PRIVATE_KEY_SIZE).fill(1));
 
-// Test case generated against rust keytool cli. See https://github.com/MystenLabs/sui/blob/edd2cd31e0b05d336b1b03b6e79a67d8dd00d06b/crates/sui/src/unit_tests/keytool_tests.rs#L165
 const TEST_CASES = [
 	[
 		'act wing dilemma glory episode region allow mad tourist humble muffin oblige',
-		'suiprivkey1qgj6vet4rstf2p00j860xctkg4fyqqq5hxgu4mm0eg60fq787ujnqs5wc8q',
+		'benfenprivkey1qgj6vet4rstf2p00j860xctkg4fyqqq5hxgu4mm0eg60fq787ujnq4zzh09',
 		'0x4a822457f1970468d38dae8e63fb60eefdaa497d74d781f581ea2d137ec36f3a',
 	],
 	[
 		'flag rebel cabbage captain minimum purpose long already valley horn enrich salt',
-		'suiprivkey1qgmgr6dza8slgxn0rcxcy47xeas9l565cc5q440ngdzr575rc2356gzlq7a',
+		'benfenprivkey1qgmgr6dza8slgxn0rcxcy47xeas9l565cc5q440ngdzr575rc2356d5n0kc',
 		'0xcd43ecb9dd32249ff5748f5e4d51855b01c9b1b8bbe7f8638bb8ab4cb463b920',
 	],
 	[
 		'area renew bar language pudding trial small host remind supreme cabbage era',
-		'suiprivkey1qt2gsye4dyn0lxey0ht6d5f2ada7ew9044a49y2f3mymy2uf0hr55jmfze3',
+		'benfenprivkey1qt2gsye4dyn0lxey0ht6d5f2ada7ew9044a49y2f3mymy2uf0hr55hd9d35',
 		'0x0d9047b7e7b698cc09c955ea97b0c68c2be7fb3aebeb59edcc84b1fb87e0f28e',
 	],
 ];
@@ -128,12 +127,12 @@ describe('secp256r1-keypair', () => {
 		for (const t of TEST_CASES) {
 			// Keypair derived from mnemonic
 			const keypair = Secp256r1Keypair.deriveKeypair(t[0]);
-			expect(keypair.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(keypair.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Keypair derived from Bech32 string.
-			const parsed = decodeSuiPrivateKey(t[1]);
+			const parsed = decodeBenfenPrivateKey(t[1]);
 			const kp = Secp256r1Keypair.fromSecretKey(parsed.secretKey);
-			expect(kp.getPublicKey().toSuiAddress()).toEqual(t[2]);
+			expect(kp.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Exported keypair matches the Bech32 encoded secret key.
 			const exported = kp.export();
@@ -156,7 +155,7 @@ describe('secp256r1-keypair', () => {
 	it('signs TransactionBlocks', async () => {
 		const keypair = new Secp256r1Keypair();
 		const txb = new TransactionBlock();
-		txb.setSender(keypair.getPublicKey().toSuiAddress());
+		txb.setSender(keypair.getPublicKey().toHexAddress());
 		txb.setGasPrice(5);
 		txb.setGasBudget(100);
 		txb.setGasPayment([

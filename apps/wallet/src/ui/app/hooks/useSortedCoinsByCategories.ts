@@ -4,12 +4,12 @@
 import { usePinnedCoinTypes } from '_app/hooks/usePinnedCoinTypes';
 import { useRecognizedPackages } from '_app/hooks/useRecognizedPackages';
 import { type CoinBalance as CoinBalanceType } from '@benfen/bfc.js/client';
-import { SUI_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useMemo } from 'react';
 
 function sortCoins(balances: CoinBalanceType[]) {
 	return balances.sort((a, b) => {
-		if (a.coinType === SUI_TYPE_ARG) {
+		if (a.coinType === BFC_TYPE_ARG) {
 			return -1;
 		}
 

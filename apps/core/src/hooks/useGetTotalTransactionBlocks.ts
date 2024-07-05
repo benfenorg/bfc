@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useSuiClient } from '@benfen/bfc.js/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useQuery } from '@tanstack/react-query';
 
 const defaultOptions = {
@@ -10,7 +10,7 @@ const defaultOptions = {
 	retry: 5,
 };
 export function useGetTotalTransactionBlocks(options = defaultOptions) {
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	return useQuery({
 		queryKey: ['home', 'transaction-count'],
 		queryFn: () => client.getTotalTransactionBlocks(),
