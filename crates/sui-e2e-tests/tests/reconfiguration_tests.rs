@@ -19,9 +19,9 @@ use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveVal
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
+use sui_swarm_config::genesis_config::{AccountConfig, GenesisConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
-use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use sui_types::base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -46,6 +46,8 @@ use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
 use move_core_types::parser::parse_struct_tag;
+use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, SuiKeyPair};
+use sui_types::object::{GAS_VALUE_FOR_TESTING, Object};
 use sui_types::sui_serde::BigInt;
 
 
@@ -3589,4 +3591,41 @@ async fn airdrop_bfc_for_address(test_cluster: &TestCluster, address: SuiAddress
         .await
         .effects
         .unwrap();
+}
+
+const ACCOUNT_NUM: usize = 20;
+const GAS_OBJECT_COUNT: usize = 3;
+
+const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000_000_000;
+
+#[sim_test]
+async fn sim_test_init_address_num() -> Result<(), anyhow::Error> {
+
+    let mut config = GenesisConfig::for_local_testing();
+    config.accounts.clear();
+    config.accounts.push(AccountConfig {
+        address: None,
+        gas_amounts: vec![500],
+    });
+    config.accounts.push(AccountConfig {
+        address: None,
+        gas_amounts: vec![500],
+    });
+    config.accounts.push(AccountConfig {
+        address: None,
+        gas_amounts: vec![500],
+    });
+
+    let mut test_cluster = TestClusterBuilder::new()
+        .set_genesis_config(config)
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+
+    let http_client = test_cluster.rpc_client();
+    let sender = test_cluster.get_address_0();
+    rebalance(&test_cluster, http_client, sender).await?;
+    tracing::error!("test_cluster addresses {:?}",test_cluster.wallet.get_addresses().len());
+    Ok(())
 }
