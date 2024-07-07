@@ -402,17 +402,9 @@ module bfc_system::treasury {
 
     public(friend) fun deposit_with_one_stablecoin<StableCoinType>(
         _treasury: &mut Treasury,
-        _coin_bfc: Coin<BFC>,
-        _ctx: &mut TxContext
+        _coin_bfc: Coin<BFC>
     ) {
-        let treasury_total_bfc_supply = _treasury.total_bfc_supply;
-        let total = one_coin_bfc_required<StableCoinType>(_treasury, treasury_total_bfc_supply);
-        let get_treasury_balance = get_balance(_treasury);
-        let min_amount = if (total > get_treasury_balance) {
-            total - get_treasury_balance
-        } else {
-            0
-        };
+        let min_amount = bfc_required_with_one_stablecoin<StableCoinType>(_treasury);
         let input = coin::into_balance(_coin_bfc);
         let input_amount = balance::value(&input);
         assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
@@ -441,6 +433,18 @@ module bfc_system::treasury {
             one_coin_bfc_required<BMXN>(_treasury, treasury_total_bfc_supply) +
             one_coin_bfc_required<BARS>(_treasury, treasury_total_bfc_supply);
 
+        let get_treasury_balance = get_balance(_treasury);
+        if (total > get_treasury_balance) {
+            total - get_treasury_balance
+        } else {
+            0
+        }
+    }
+
+    /// Rebalance
+    public(friend) fun bfc_required_with_one_stablecoin<StableCoinType>(_treasury: &Treasury): u64 {
+        let treasury_total_bfc_supply = _treasury.total_bfc_supply;
+        let total = one_coin_bfc_required<StableCoinType>(_treasury, treasury_total_bfc_supply);
         let get_treasury_balance = get_balance(_treasury);
         if (total > get_treasury_balance) {
             total - get_treasury_balance
@@ -592,7 +596,7 @@ module bfc_system::treasury {
         )
     }
 
-    fun one_coin_bfc_required<StableCoinType>(
+    public(friend) fun one_coin_bfc_required<StableCoinType>(
         _treasury: &Treasury,
         _treasury_total_bfc_supply: u64
     ): u64 {
@@ -604,7 +608,7 @@ module bfc_system::treasury {
         }
     }
 
-    fun one_coin_exchange_rate<StableCoinType>(
+    public(friend) fun one_coin_exchange_rate<StableCoinType>(
         _treasury: &Treasury,
         _rate_map: &mut VecMap<String, u64>,
         _amount: u64
@@ -612,6 +616,9 @@ module bfc_system::treasury {
         let key = get_vault_key<StableCoinType>();
         if (!dynamic_field::exists_(&_treasury.id, key)) {
             return
+        };
+        if (vec_map::contains(_rate_map, &key)) {
+            vec_map::remove(_rate_map, &key);
         };
         vec_map::insert(
             _rate_map,

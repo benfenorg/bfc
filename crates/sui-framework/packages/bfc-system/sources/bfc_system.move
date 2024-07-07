@@ -385,6 +385,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::bfc_required(system_state)
     }
 
+    public fun bfc_required_with_one_stablecoin<StableCoinType>(wrapper: &BfcSystemState): u64 {
+        let system_state = load_system_state(wrapper);
+        bfc_system_state_inner::bfc_required_with_one_stablecoin<StableCoinType>(system_state)
+    }
+
     public fun treasury_balance(wrapper: &BfcSystemState): u64 {
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::treasury_balance(system_state)
