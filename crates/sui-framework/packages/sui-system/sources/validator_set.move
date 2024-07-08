@@ -4,7 +4,6 @@
 module sui_system::validator_set {
     use std::ascii;
     use std::option::{Self, Option};
-    use std::string::utf8;
     use std::type_name;
     use std::vector;
 
@@ -574,6 +573,7 @@ module sui_system::validator_set {
             very_low_stake_threshold,
             low_stake_grace_period,
             validator_report_records,
+            stable_rate,
             ctx
         );
 
@@ -592,6 +592,7 @@ module sui_system::validator_set {
         very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
+        stable_rate: VecMap<ascii::String, u64>,
         ctx: &mut TxContext
     ) {
         // Iterate through all the active validators, record their low stake status, and kick them out if the condition is met.
@@ -600,7 +601,7 @@ module sui_system::validator_set {
             i = i - 1;
             let validator_ref = vector::borrow(&self.active_validators, i);
             let validator_address = validator::sui_address(validator_ref);
-            let stake = validator::total_stake_amount(validator_ref);
+            let stake = validator::total_stake_with_all_stable(validator_ref, stable_rate);
             if (stake >= low_stake_threshold) {
                 // The validator is safe. We remove their entry from the at_risk map if there exists one.
                 if (vec_map::contains(&self.at_risk_validators, &validator_address)) {

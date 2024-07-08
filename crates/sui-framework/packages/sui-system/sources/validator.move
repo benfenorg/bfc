@@ -5,7 +5,6 @@ module sui_system::validator {
     use std::ascii;
     use std::vector;
     use std::bcs;
-    use std::debug::print;
 
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
@@ -14,7 +13,7 @@ module sui_system::validator {
     use sui::object::{Self, ID};
     use std::option::{Option, Self};
     use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc};
-    use std::string::{Self, String, utf8};
+    use std::string::{Self, String};
     use std::type_name;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -974,8 +973,16 @@ module sui_system::validator {
         staking_pool::pending_stake_amount(&self.staking_pool)
     }
 
+    public fun pending_stake_stable_amount<STABLE>(self: &Validator): u64 {
+        stable_pool::pending_stake_amount(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+
     public fun pending_stake_withdraw_amount(self: &Validator): u64 {
         staking_pool::pending_stake_withdraw_amount(&self.staking_pool)
+    }
+
+    public fun pending_stake_withdraw_stable_amount<STABLE>(self: &Validator): u64 {
+        stable_pool::pending_stake_withdraw_amount(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
     public fun gas_price(self: &Validator): u64 {
