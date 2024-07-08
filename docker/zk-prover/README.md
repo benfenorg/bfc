@@ -10,16 +10,28 @@
 ## Download the Groth16 proving key zkey file
 * if your machine does not have [git-lfs](https://git-lfs.com/) installed, you must install it first
 * download zkey file
+
+devnet
+```shell
+sudo mkdir -p /opt/software/
+cd /opt/software/
+sudo wget -O - https://raw.githubusercontent.com/sui-foundation/zklogin-ceremony-contributions/main/download-test-zkey.sh | bash
+```
+
+testnet+mainnet
 ```shell
 sudo mkdir -p /opt/software/
 cd /opt/software/
 sudo wget -O - https://raw.githubusercontent.com/sui-foundation/zklogin-ceremony-contributions/main/download-main-zkey.sh | bash
 ```
 
+
 ## Start your zk prover
 
 Run the following command to start the zk prover in Docker:
 
+* dev env: use [docker-compose-dev.yaml](docker-compose-dev.yaml)
+* production env: use [docker-compose.yaml](docker-compose.yaml)
 ```shell
 docker compose up -d
 ```
