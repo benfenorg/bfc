@@ -9,6 +9,7 @@ pub struct VaultInfo {
     pub vault_id: ID,
     pub position_number: u32,
     pub state: u8,
+    pub last_rebalance_state: u8,
     pub state_counter: u32,
     pub max_counter_times: u32,
     pub last_sqrt_price: u128,
@@ -24,6 +25,6 @@ pub struct VaultInfo {
     pub is_pause: bool,
     pub index: u64,
     pub base_point: u64,
-    pub bfc_accrued_consume: u64,
+    pub coin_market_cap: u64,
     pub last_bfc_rebalance_amount: u64,
 }

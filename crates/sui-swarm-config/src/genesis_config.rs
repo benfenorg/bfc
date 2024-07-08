@@ -278,6 +278,21 @@ impl GenesisConfig {
         }
     }
 
+    pub fn custom_genesis_with_gas(num_accounts: usize, num_objects_per_account: usize,gas_amount:u64) -> Self {
+        let mut accounts = Vec::new();
+        for _ in 0..num_accounts {
+            accounts.push(AccountConfig {
+                address: None,
+                gas_amounts: vec![gas_amount; num_objects_per_account],
+            })
+        }
+
+        Self {
+            accounts,
+            ..Default::default()
+        }
+    }
+
     pub fn custom_genesis_with_addresses(
         addresses: Vec<SuiAddress>,
         num_objects_per_account: usize,

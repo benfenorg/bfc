@@ -49,7 +49,7 @@ use move_core_types::parser::parse_struct_tag;
 use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, SuiKeyPair};
 use sui_types::object::{GAS_VALUE_FOR_TESTING, Object};
 use sui_types::sui_serde::BigInt;
-
+use sui_types::vault::VaultInfo;
 
 #[sim_test]
 async fn sim_advance_epoch_tx_test() {
@@ -3433,6 +3433,27 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
     bcs::from_bytes(&return_).unwrap()
 }
 
+async fn dev_inspect_call_return_vault_info(cluster: &TestCluster, pt: ProgrammableTransaction) -> VaultInfo
+{
+    let client = cluster.rpc_client();
+    let sender = cluster.get_address_0();
+    let txn = TransactionKind::programmable(pt);
+    let response = client
+        .dev_inspect_transaction_block(
+            sender,
+            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
+            /* gas_price */ None,
+            /* epoch_id */ None,
+        )
+        .await
+        .unwrap();
+
+    let results = response.results.unwrap();
+    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
+
+    bcs::from_bytes(&return_).unwrap()
+}
+
 #[sim_test]
 async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
@@ -3517,66 +3538,68 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+const ACCOUNT_NUM: usize = 300;
+const GAS_OBJECT_COUNT: usize = 3;
+
+const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000;
+
 #[sim_test]
 async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
 
 
     //telemetry_subscribers::init_for_testing();
-    let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000 * 100)
-        .with_num_validators(5)
+    let config = GenesisConfig::custom_genesis_with_gas(ACCOUNT_NUM, GAS_OBJECT_COUNT, DEFAULT_GAS_AMOUNT);
+    let mut test_cluster = TestClusterBuilder::new()
+        .set_genesis_config(config)
+        .with_epoch_duration_ms(1000*30)
+        .with_num_validators(3)
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
     let sender = test_cluster.get_address_0();
     rebalance(&test_cluster, http_client, sender).await?;
-    // let pt = ProgrammableTransaction {
-    //     inputs: vec![
-    //         CallArg::BFC_SYSTEM_MUT
-    //     ],
-    //     commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
-    //         package: BFC_SYSTEM_PACKAGE_ID,
-    //         module: Identifier::new("bfc_system").unwrap(),
-    //         function: Identifier::new("vault_info").unwrap(),
-    //         type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
-    //         arguments: vec![Argument::Input(0)],
-    //     }))],
-    // };
-    // let r = dev_inspect_call_return_vault_info(&test_cluster, pt.clone()).await;
-    // tracing::error!("vault info {:?}",r);
+    let vault_info = get_vault_info(&test_cluster).await?;
+    tracing::error!("vault info {:?}",vault_info);
     let first_address = test_cluster.get_address_0();
     tracing::error!("first_address {:?} bfc balance {:?}",first_address, get_bfc_balance(http_client, first_address).await);
-
-
-    let mut addresses = Vec::new();
-    for i in 0..100 {
-        let address = SuiAddress::random_for_testing_only();
-        addresses.push(address);
-        //airdrop 100 bfc
-        airdrop_bfc_for_address(&test_cluster, address).await;
-    }
-
-    tracing::error!("查询余额开始");
-    //get bfc balance
-    for address in addresses.clone() {
-        let balance = get_bfc_balance(http_client, address).await;
-        tracing::error!("before airdrop bfc balance {:?} {:?}",address,balance);
-    }
-    tracing::error!("查询余额结束");
-
+    let mut addresses = test_cluster.wallet.get_addresses();
     //swap bfc to stablecoin
     for address in addresses.clone() {
-        let objects = swap_bfc_to_stablecoin(&test_cluster, http_client, address, 1_000_000_000).await?;
+        swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10_000_000_000).await?;
     }
-
-    // //get busd balance
-    // for address in addresses.clone() {
-    //     tracing::error!("BUSD balance {:?} {:?}",address,get_(http_client, address).await?;);
-    // }
-
+    let last_address = addresses.last().unwrap();
+    let balance_busd = get_busd_balance(http_client, *last_address).await?;
+    tracing::error!("BUSD balance {:?} {:?}",last_address, balance_busd);
     //do rebalance
     rebalance(&test_cluster, http_client, first_address).await?;
     Ok(())
+}
+
+async fn get_vault_info(test_cluster: &TestCluster) -> Result<VaultInfo, Error> {
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::BFC_SYSTEM_MUT
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: BFC_SYSTEM_PACKAGE_ID,
+            module: Identifier::new("bfc_system").unwrap(),
+            function: Identifier::new("vault_info").unwrap(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            arguments: vec![Argument::Input(0)],
+        }))],
+    };
+    let rs= dev_inspect_call_return_vault_info(&test_cluster, pt).await;
+    Ok(rs)
+}
+
+async fn get_busd_balance(http_client: &HttpClient, address: SuiAddress) -> Result<u64,Error> {
+    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
+    assert!(busd_response_vec.len() >= 1);
+    let total_balance = busd_response_vec.iter().map(|obj| {
+        let busd_data = obj.data.as_ref().unwrap();
+        get_balance(busd_data)
+    }).sum();
+    Ok(total_balance)
 }
 
 //transfer bfc for address
@@ -3591,41 +3614,4 @@ async fn airdrop_bfc_for_address(test_cluster: &TestCluster, address: SuiAddress
         .await
         .effects
         .unwrap();
-}
-
-const ACCOUNT_NUM: usize = 20;
-const GAS_OBJECT_COUNT: usize = 3;
-
-const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000_000_000;
-
-#[sim_test]
-async fn sim_test_init_address_num() -> Result<(), anyhow::Error> {
-
-    let mut config = GenesisConfig::for_local_testing();
-    config.accounts.clear();
-    config.accounts.push(AccountConfig {
-        address: None,
-        gas_amounts: vec![500],
-    });
-    config.accounts.push(AccountConfig {
-        address: None,
-        gas_amounts: vec![500],
-    });
-    config.accounts.push(AccountConfig {
-        address: None,
-        gas_amounts: vec![500],
-    });
-
-    let mut test_cluster = TestClusterBuilder::new()
-        .set_genesis_config(config)
-        .with_epoch_duration_ms(1000)
-        .with_num_validators(5)
-        .build()
-        .await;
-
-    let http_client = test_cluster.rpc_client();
-    let sender = test_cluster.get_address_0();
-    rebalance(&test_cluster, http_client, sender).await?;
-    tracing::error!("test_cluster addresses {:?}",test_cluster.wallet.get_addresses().len());
-    Ok(())
 }
