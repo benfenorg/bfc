@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 export const ToS_LINK = 'https://mystenlabs.com/legal#suiwallettermsofservice';

@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 export const SUI_CONVERSION_RATE = 6;
 export const USDC_CONVERSION_RATE = 9;

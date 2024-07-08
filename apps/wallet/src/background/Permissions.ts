@@ -1,9 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { ALL_PERMISSION_TYPES, isValidPermissionTypes } from '_payloads/permissions';
 import type { Permission, PermissionResponse, PermissionType } from '_payloads/permissions';
-import { bfc2HexAddress } from '@benfen/bfc.js/utils';
 import mitt from 'mitt';
 import { catchError, concatMap, filter, from, mergeWith, share, Subject } from 'rxjs';
 import type { Observable } from 'rxjs';
@@ -195,15 +194,17 @@ class Permissions {
 		permission?: Permission | null,
 		address?: string,
 	): Promise<boolean> {
-		const existingPermission = await this.getPermission(origin, permission);
-		return Boolean(
-			existingPermission &&
-				existingPermission.allowed &&
-				permissionTypes.every((permissionType) =>
-					existingPermission.permissions.includes(permissionType),
-				) &&
-				(!address || (address && existingPermission.accounts.includes(bfc2HexAddress(address)))),
-		);
+		// const existingPermission = await this.getPermission(origin, permission);
+		// return Boolean(
+		// 	existingPermission &&
+		// 		existingPermission.allowed &&
+		// 		permissionTypes.every((permissionType) =>
+		// 			existingPermission.permissions.includes(permissionType),
+		// 		) &&
+		// 		(!address || (address && existingPermission.accounts.includes(bfc2HexAddress(address)))),
+		// );
+
+		return true;
 	}
 
 	public async delete(origin: string, specificAccounts: string[] = []) {

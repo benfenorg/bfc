@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { bytesToHex, hexToBytes, randomBytes } from '@noble/hashes/utils';
 import * as bip39 from '@scure/bip39';

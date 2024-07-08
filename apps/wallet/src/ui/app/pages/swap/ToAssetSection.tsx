@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { Button } from '_app/shared/ButtonUI';
 import { InputWithActionButton } from '_app/shared/InputWithAction';

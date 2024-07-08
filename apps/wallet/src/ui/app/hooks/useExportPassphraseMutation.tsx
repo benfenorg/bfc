@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { type MethodPayload } from '_src/shared/messaging/messages/payloads/MethodPayload';

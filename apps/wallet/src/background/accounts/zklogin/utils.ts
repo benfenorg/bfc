@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { type NetworkEnvType } from '_src/shared/api-env';
@@ -132,7 +132,8 @@ export type PartialZkLoginSignature = Omit<
 	'addressSeed'
 >;
 
-const zkLoginProofsServerUrl = 'https://zkproverdev.openblock.vip/v1';
+// const zkLoginProofsServerUrl = 'https://zkproverdev.openblock.vip/v1';
+const zkLoginProofsServerUrl = 'https://zkproverdev1.openblock.vip/v1';
 
 export async function createPartialZkLoginSignature({
 	jwt,
