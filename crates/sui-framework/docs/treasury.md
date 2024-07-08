@@ -31,8 +31,10 @@
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
 -  [Function `deposit`](#0xc8_treasury_deposit)
+-  [Function `deposit_with_one_stablecoin`](#0xc8_treasury_deposit_with_one_stablecoin)
 -  [Function `bfc_required`](#0xc8_treasury_bfc_required)
--  [Function `rebalance_stablecoin`](#0xc8_treasury_rebalance_stablecoin)
+-  [Function `bfc_required_with_one_stablecoin`](#0xc8_treasury_bfc_required_with_one_stablecoin)
+-  [Function `rebalance_with_one_stablecoin`](#0xc8_treasury_rebalance_with_one_stablecoin)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
 -  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
@@ -1019,6 +1021,37 @@ Internal swap
 
 </details>
 
+<a name="0xc8_treasury_deposit_with_one_stablecoin"></a>
+
+## Function `deposit_with_one_stablecoin`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit_with_one_stablecoin">deposit_with_one_stablecoin</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_bfc: <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../../../.././build/Sui/docs/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit_with_one_stablecoin">deposit_with_one_stablecoin</a>&lt;StableCoinType&gt;(
+    _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    _coin_bfc: Coin&lt;BFC&gt;
+) {
+    <b>let</b> min_amount = <a href="treasury.md#0xc8_treasury_bfc_required_with_one_stablecoin">bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(_treasury);
+    <b>let</b> input = <a href="../../../.././build/Sui/docs/coin.md#0x2_coin_into_balance">coin::into_balance</a>(_coin_bfc);
+    <b>let</b> input_amount = <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&input);
+    <b>assert</b>!(input_amount &gt;= min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _treasury.bfc_balance, input);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_treasury_bfc_required"></a>
 
 ## Function `bfc_required`
@@ -1069,13 +1102,14 @@ Rebalance
 
 </details>
 
-<a name="0xc8_treasury_rebalance_stablecoin"></a>
+<a name="0xc8_treasury_bfc_required_with_one_stablecoin"></a>
 
-## Function `rebalance_stablecoin`
+## Function `bfc_required_with_one_stablecoin`
+
+Rebalance
 
 
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_stablecoin">rebalance_stablecoin</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, _update: bool, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_bfc_required_with_one_stablecoin">bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): u64
 </code></pre>
 
 
@@ -1084,7 +1118,38 @@ Rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_stablecoin">rebalance_stablecoin</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_bfc_required_with_one_stablecoin">bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
+    <b>let</b> treasury_total_bfc_supply = _treasury.total_bfc_supply;
+    <b>let</b> total = <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(_treasury, treasury_total_bfc_supply);
+    <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
+    <b>if</b> (total &gt; get_treasury_balance) {
+        total - get_treasury_balance
+    } <b>else</b> {
+        0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_rebalance_with_one_stablecoin"></a>
+
+## Function `rebalance_with_one_stablecoin`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_with_one_stablecoin">rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _pool_balance: u64, _update: bool, _clock: &<a href="../../../.././build/Sui/docs/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_rebalance_with_one_stablecoin">rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _pool_balance: u64,
     _update: bool,
@@ -1123,7 +1188,6 @@ Rebalance
     bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BTRY&gt;(_treasury, _update, key != <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BTRY&gt;(), _ctx);
     bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BZAR&gt;(_treasury, _update, key != <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BZAR&gt;(), _ctx);
     bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BMXN&gt;(_treasury, _update, key != <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BMXN&gt;(), _ctx);
-
     _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&_treasury.bfc_balance);
 }
 </code></pre>
@@ -1331,6 +1395,7 @@ Rebalance
         &<b>mut</b> _treasury.id,
         key,
     );
+
     <b>if</b> (_return_amount) {
         <b>return</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">vault::last_bfc_rebalance_amount</a>(mut_v);
     };
@@ -1361,7 +1426,7 @@ Rebalance
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _treasury_total_bfc_supply: u64): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _treasury_total_bfc_supply: u64): u64
 </code></pre>
 
 
@@ -1370,7 +1435,7 @@ Rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;StableCoinType&gt;(
     _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _treasury_total_bfc_supply: u64
 ): u64 {
@@ -1393,7 +1458,7 @@ Rebalance
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _rate_map: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, _amount: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _rate_map: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, _amount: u64)
 </code></pre>
 
 
@@ -1402,7 +1467,7 @@ Rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;StableCoinType&gt;(
     _treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     _rate_map: &<b>mut</b> VecMap&lt;String, u64&gt;,
     _amount: u64
@@ -1410,6 +1475,9 @@ Rebalance
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
     <b>if</b> (!<a href="../../../.././build/Sui/docs/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, key)) {
         <b>return</b>
+    };
+    <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(_rate_map, &key)) {
+        <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_remove">vec_map::remove</a>(_rate_map, &key);
     };
     <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(
         _rate_map,
