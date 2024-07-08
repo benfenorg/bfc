@@ -2601,12 +2601,13 @@ async fn swap_bfc_to_stablecoin_with_tag(
     Ok(())
 }
 
-async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress) -> Result<(), anyhow::Error> {
-    let gas_objects = http_client
-        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_options(
-            SuiObjectDataOptions::full_content()
-        )), None, None).await?.data;
-    let gas = gas_objects.last().unwrap().object().unwrap();
+async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,amount:u64) -> Result<(), anyhow::Error> {
+    let bfc_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await.unwrap();
+    let gas = bfc_response_vec.last().unwrap().object().unwrap();
+
+    let mut balance = get_balance(gas);
+    tracing::error!("balance is {:?} objid {:?}",balance,gas.object_id);
+
     let usd_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     let coin = usd_objects.first().unwrap().object().unwrap();
 
@@ -2619,7 +2620,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&coin.object_id.to_string())?,
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
-        SuiJsonValue::new(json!("80000000000"))?,
+        SuiJsonValue::new(json!(&amount.to_string()))?,
         SuiJsonValue::new(json!("0"))?,
         SuiJsonValue::new(json!("1709622441776884"))?,
     ];
@@ -2633,7 +2634,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
             vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             Some(gas.object_id),
-            1_000_000_000.into(),
+            balance.into(),
             None,
         )
         .await?;
@@ -2720,7 +2721,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 
     let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_before_bfc_objects_length = bfc_objects.len();
-    swap_stablecoin_to_bfc(&test_cluster, http_client, address).await?;
+    swap_stablecoin_to_bfc(&test_cluster, http_client, address,80_000_000_000).await?;
     bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_after_bfc_objects_length = bfc_objects.len();
     assert!(swap_after_bfc_objects_length > swap_before_bfc_objects_length);
@@ -3538,7 +3539,7 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-const ACCOUNT_NUM: usize = 300;
+const ACCOUNT_NUM: usize = 2000;
 const GAS_OBJECT_COUNT: usize = 3;
 
 const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000;
@@ -3551,7 +3552,7 @@ async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
     let config = GenesisConfig::custom_genesis_with_gas(ACCOUNT_NUM, GAS_OBJECT_COUNT, DEFAULT_GAS_AMOUNT);
     let mut test_cluster = TestClusterBuilder::new()
         .set_genesis_config(config)
-        .with_epoch_duration_ms(1000*30)
+        .with_epoch_duration_ms(1000*300)
         .with_num_validators(3)
         .build()
         .await;
@@ -3561,15 +3562,21 @@ async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
     let vault_info = get_vault_info(&test_cluster).await?;
     tracing::error!("vault info {:?}",vault_info);
     let first_address = test_cluster.get_address_0();
-    tracing::error!("first_address {:?} bfc balance {:?}",first_address, get_bfc_balance(http_client, first_address).await);
+    let bfc_balance = get_bfc_balance(http_client, first_address).await;
+    assert!(bfc_balance > 0);
     let mut addresses = test_cluster.wallet.get_addresses();
     //swap bfc to stablecoin
-    for address in addresses.clone() {
+    for address in test_cluster.wallet.get_addresses() {
         swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10_000_000_000).await?;
     }
     let last_address = addresses.last().unwrap();
     let balance_busd = get_busd_balance(http_client, *last_address).await?;
-    tracing::error!("BUSD balance {:?} {:?}",last_address, balance_busd);
+   assert!(balance_busd > 0);
+    let bfc_balance = get_bfc_balance(http_client, first_address).await;
+    assert!(bfc_balance > 1_000_000_000);
+    for address in addresses {
+        swap_stablecoin_to_bfc(&test_cluster, http_client, address, 500_000_000).await?;
+    }
     //do rebalance
     rebalance(&test_cluster, http_client, first_address).await?;
     Ok(())
