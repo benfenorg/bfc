@@ -81,9 +81,7 @@
 
 
 <pre><code><b>use</b> <a href="">0x1::ascii</a>;
-<b>use</b> <a href="">0x1::debug</a>;
 <b>use</b> <a href="">0x1::option</a>;
-<b>use</b> <a href="">0x1::string</a>;
 <b>use</b> <a href="">0x1::type_name</a>;
 <b>use</b> <a href="">0x1::vector</a>;
 <b>use</b> <a href="../../../.././build/Sui/docs/bag.md#0x2_bag">0x2::bag</a>;
@@ -3071,22 +3069,10 @@ The staking rewards are shared with the stakers while the storage fund ones are 
         <b>if</b> (<a href="../../../.././build/Sui/docs/balance.md#0x2_balance_value">balance::value</a>(&validator_reward) &gt; 0) {
             <b>let</b> validator_address = <a href="validator.md#0x3_validator_sui_address">validator::sui_address</a>(<a href="validator.md#0x3_validator">validator</a>);
             <b>let</b> rewards_stake = <a href="validator.md#0x3_validator_request_add_stake">validator::request_add_stake</a>(<a href="validator.md#0x3_validator">validator</a>, validator_reward, validator_address, ctx);
-
-            std::debug::print(&utf8(b"validator_reward"));
-            std::debug::print(&(validator_address));
-            std::debug::print(&(rewards_stake));
-            std::debug::print(&utf8(b"end-validator_reward\n"));
-
             <a href="../../../.././build/Sui/docs/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(rewards_stake, validator_address);
         } <b>else</b> {
             <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(validator_reward);
         };
-
-        std::debug::print(&utf8(b"deposit_stake_rewards"));
-        std::debug::print(&(<a href="validator.md#0x3_validator_sui_address">validator::sui_address</a>(<a href="validator.md#0x3_validator">validator</a>)));
-        std::debug::print(&(staker_reward));
-        std::debug::print(&utf8(b"end- deposit_stake_rewards\n"));
-
 
         // Add rewards <b>to</b> stake staking pool <b>to</b> auto compound for stakers.
         <a href="validator.md#0x3_validator_deposit_stake_rewards">validator::deposit_stake_rewards</a>(<a href="validator.md#0x3_validator">validator</a>, staker_reward, &stable_rate);

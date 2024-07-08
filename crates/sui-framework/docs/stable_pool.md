@@ -632,7 +632,7 @@ Called at epoch advancement times to add rewards (in SUI) to the stable pool.
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="stable_pool.md#0x3_stable_pool_deposit_rewards">deposit_rewards</a>&lt;STABLE&gt;(pool: &<b>mut</b> <a href="stable_pool.md#0x3_stable_pool_StablePool">StablePool</a>&lt;STABLE&gt;, rewards: Balance&lt;BFC&gt;, amount: u64) {
-    // pool.stable_balance = pool.stable_balance + amount;
+    pool.stable_balance = pool.stable_balance + amount;
     <a href="../../../.././build/Sui/docs/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> pool.rewards_pool, rewards);
 }
 </code></pre>

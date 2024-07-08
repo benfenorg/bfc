@@ -507,8 +507,8 @@ module sui_system::stake_tests {
 
         // Validator unstakes now.
         assert_eq(total_sui_balance(VALIDATOR_ADDR_1, scenario), 0);
-        unstake(VALIDATOR_ADDR_1, 0, scenario);
-        if (should_distribute_rewards) unstake(VALIDATOR_ADDR_1, 0, scenario);
+        unstake_stable(VALIDATOR_ADDR_1, 0, scenario);
+        if (should_distribute_rewards) unstake_stable(VALIDATOR_ADDR_1, 0, scenario);
 
         // Make sure have all of their stake. NB there is no epoch change. This is immediate.
         assert_eq(total_sui_balance(VALIDATOR_ADDR_1, scenario), 100 * MIST_PER_SUI + reward_amt + validator_reward_amt);
