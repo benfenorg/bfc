@@ -8,6 +8,7 @@ use serde::Serialize;
 use sui_keys::keystore::{AccountKeystore, Keystore};
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::base_types::SuiAddress;
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
 
 /// An address or an alias associated with a key in the wallet
 /// This is used to distinguish between an address or an alias,
@@ -58,6 +59,14 @@ pub fn get_identity_address_from_keystore(
 ) -> Result<SuiAddress, Error> {
     match input {
         KeyIdentity::Address(x) => Ok(x),
-        KeyIdentity::Alias(x) => Ok(*keystore.get_address_by_alias(x)?),
+        KeyIdentity::Alias(x) => {
+            if x.len()>40 && (x.starts_with("BFC") || x.starts_with("bfc")){
+                let evm_str = convert_to_evm_address(x);
+                Ok(SuiAddress::from_str(&evm_str)?)
+            }
+            else {
+                Ok(*keystore.get_address_by_alias(x)?)
+            }
+        },
     }
 }
