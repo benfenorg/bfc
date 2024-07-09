@@ -1409,7 +1409,7 @@ pub struct SuiGasData {
 
 impl Display for SuiGasData {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        writeln!(f, "Gas Owner: {}", self.owner)?;
+        writeln!(f, "Gas Owner: {}", sui_address_to_bfc_address(self.owner))?;
         writeln!(f, "Gas Budget: {} MIST", self.budget)?;
         writeln!(f, "Gas Price: {} MIST", self.price)?;
         writeln!(f, "Gas Payment:")?;
@@ -1490,7 +1490,7 @@ impl Display for SuiTransactionBlockData {
                 writeln!(f, "Gas Owner: {}", sui_address_to_bfc_address(data.gas_data.owner))?;
                 writeln!(f, "Gas Price: {}", data.gas_data.price)?;
                 writeln!(f, "Gas Budget: {}", data.gas_data.budget)?;
-                writeln!(f, "Sender: {}", data.sender)?;
+                writeln!(f, "Sender: {}", sui_address_to_bfc_address(data.sender))?;
                 writeln!(f, "{}", self.gas_data())?;
                 writeln!(f, "{}", data.transaction)
             }
