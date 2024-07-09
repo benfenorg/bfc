@@ -40,7 +40,7 @@ use sui_json_rpc_types::{
     SuiObjectResponseQuery, SuiParsedData, SuiRawData, SuiTransactionBlockEffectsAPI,
     SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
-use sui_types::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
+use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, sui_address_to_bfc_address};
 use sui_keys::keystore::AccountKeystore;
 use sui_move_build::{
     build_from_resolution_graph, check_invalid_dependencies, check_unpublished_dependencies,
@@ -2294,7 +2294,10 @@ impl Display for SuiClientCommandResult {
                     } else {
                         "".to_string()
                     };
-                    builder.push_record([alias.to_string(), address.to_string(), active_address]);
+
+                    let bfc_address = convert_to_bfc_address(address.to_string().as_str());
+
+                    builder.push_record([alias.to_string(), bfc_address.to_string(), active_address]);
                 }
                 let mut table = builder.build();
                 let style = TableStyle::rounded();
