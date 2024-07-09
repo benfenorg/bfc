@@ -236,7 +236,7 @@ pub enum SuiClientCommands {
 
     /// Execute a Signed Transaction. This is useful when the user prefers to sign elsewhere and use this command to execute.
     ExecuteSignedTx {
-        /// BCS serialized transaction data bytes without its type tag, as base64 encoded string. This is the output of sui client command using --serialize-unsigned-transaction.
+        /// BCS serialized transaction data bytes without its type tag, as base64 encoded string. This is the output of bfc client command using --serialize-unsigned-transaction.
         #[clap(long)]
         tx_bytes: String,
 
@@ -246,7 +246,7 @@ pub enum SuiClientCommands {
     },
     /// Execute a combined serialized SenderSignedData string.
     ExecuteCombinedSignedTx {
-        /// BCS serialized sender signed data, as base64 encoded string. This is the output of sui client command using --serialize-signed-transaction.
+        /// BCS serialized sender signed data, as base64 encoded string. This is the output of bfc client command using --serialize-signed-transaction.
         #[clap(long)]
         signed_tx_bytes: String,
     },
@@ -315,7 +315,7 @@ pub enum SuiClientCommands {
     #[clap(name = "objects")]
     Objects {
         /// Address owning the object. If no address is provided, it will show all
-        /// objects owned by `sui client active-address`.
+        /// objects owned by `bfc client active-address`.
         #[clap(name = "owner_address")]
         address: Option<KeyIdentity>,
     },
@@ -636,13 +636,13 @@ pub struct Opts {
     pub dry_run: bool,
     /// Instead of executing the transaction, serialize the bcs bytes of the unsigned transaction data
     /// (TransactionData) using base64 encoding, and print out the string <TX_BYTES>. The string can
-    /// be used to execute transaction with `sui client execute-signed-tx --tx-bytes <TX_BYTES>`.
+    /// be used to execute transaction with `bfc client execute-signed-tx --tx-bytes <TX_BYTES>`.
     #[arg(long, required = false)]
     pub serialize_unsigned_transaction: bool,
     /// Instead of executing the transaction, serialize the bcs bytes of the signed transaction data
     /// (SenderSignedData) using base64 encoding, and print out the string <SIGNED_TX_BYTES>. The
     /// string can be used to execute transaction with
-    /// `sui client execute-combined-signed-tx --signed-tx-bytes <SIGNED_TX_BYTES>`.
+    /// `bfc client execute-combined-signed-tx --signed-tx-bytes <SIGNED_TX_BYTES>`.
     #[arg(long, required = false)]
     pub serialize_signed_transaction: bool,
 }
@@ -875,7 +875,7 @@ impl SuiClientCommands {
                 }
                 let sui_type_tag = canonicalize_type(SUI_COIN_TYPE)?;
 
-                // show SUI first
+                // show bfc first
                 let ordered_coins_sui_first = coins_by_type
                     .remove(&sui_type_tag)
                     .into_iter()
@@ -1031,7 +1031,7 @@ impl SuiClientCommands {
                             In order to fix this and publish the package without `--test`, \
                             remove any non-test dependencies on test-only code.\n\
                             You can ensure all test-only dependencies have been removed by \
-                            compiling the package normally with `sui move build`."
+                            compiling the package normally with `bfc move build`."
                                 .to_string(),
                     }
                     .into());
@@ -1802,7 +1802,7 @@ impl SuiClientCommands {
                         let network = match env.rpc.as_str() {
                             SUI_DEVNET_URL => "https://faucet.devnet.sui.io/v1/gas",
                             SUI_TESTNET_URL => "https://faucet.testnet.sui.io/v1/gas",
-                            // TODO when using sui-test-validator, and 5003 when using sui start
+                            // TODO when using sui-test-validator, and 5003 when using bfc start
                             SUI_LOCAL_NETWORK_URL => "http://127.0.0.1:9123/gas",
                             _ => bail!("Cannot recognize the active network. Please provide the gas faucet full URL.")
                         };
@@ -2004,7 +2004,7 @@ impl SuiClientCommands {
                     .map_err(|_| anyhow!("Invalid Base64 encoding"))?
                     .to_vec()
                     .map_err(|_| anyhow!("Invalid Base64 encoding"))?
-                ).map_err(|_| anyhow!("Failed to parse tx bytes, check if it matches the output of sui client commands with --serialize-unsigned-transaction"))?;
+                ).map_err(|_| anyhow!("Failed to parse tx bytes, check if it matches the output of bfc client commands with --serialize-unsigned-transaction"))?;
 
                 let mut sigs = Vec::new();
                 for sig in signatures {
@@ -2029,7 +2029,7 @@ impl SuiClientCommands {
                         .map_err(|_| anyhow!("Invalid Base64 encoding"))?
                         .to_vec()
                         .map_err(|_| anyhow!("Invalid Base64 encoding"))?
-                ).map_err(|_| anyhow!("Failed to parse SenderSignedData bytes, check if it matches the output of sui client commands with --serialize-signed-transaction"))?;
+                ).map_err(|_| anyhow!("Failed to parse SenderSignedData bytes, check if it matches the output of bfc client commands with --serialize-signed-transaction"))?;
                 let transaction = Envelope::<SenderSignedData, EmptySignInfo>::new(data);
                 let response = context.execute_transaction_may_fail(transaction).await?;
                 SuiClientCommandResult::ExecuteSignedTx(response)
@@ -2340,7 +2340,7 @@ impl Display for SuiClientCommandResult {
                 }
 
                 let mut builder = TableBuilder::default();
-                builder.set_header(vec!["gasCoinId", "mistBalance (MIST)", "suiBalance (SUI)"]);
+                builder.set_header(vec!["gasCoinId", "mistBalance (MIST)", "bfcBalance (BFC)"]);
                 for coin in &gas_coins {
                     builder.push_record(vec![
                         objects_id_to_bfc_address(coin.gas_coin_id),
@@ -2902,7 +2902,7 @@ pub struct ObjectsOutput {
 impl ObjectsOutput {
     fn from(obj: SuiObjectResponse) -> Result<Self, anyhow::Error> {
         let obj = obj.into_object()?;
-        // this replicates the object type display as in the sui explorer
+        // this replicates the object type display as in the bfc explorer
         let object_type = match obj.type_ {
             Some(sui_types::base_types::ObjectType::Struct(x)) => {
                 let address = x.address().to_string();
@@ -3027,7 +3027,7 @@ pub async fn request_tokens_from_faucet(
     if let Some(err) = faucet_resp.error {
         bail!("Faucet request was unsuccessful: {err}")
     } else {
-        println!("Request successful. It can take up to 1 minute to get the coin. Run sui client gas to check your gas coins.");
+        println!("Request successful. It can take up to 1 minute to get the coin. Run bfc client gas to check your gas coins.");
     }
     Ok(())
 }

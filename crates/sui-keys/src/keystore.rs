@@ -438,8 +438,8 @@ impl FileBasedKeystore {
     pub fn save_keystore(&self) -> Result<(), anyhow::Error> {
         println!(
             "Keys saved as Base64 with 33 bytes `flag || privkey` ($BASE64_STR).
-        To see Bech32 format encoding, use `sui keytool export $SUI_ADDRESS` where
-        $SUI_ADDRESS can be found with `sui keytool list`. Or use `sui keytool convert $BASE64_STR`."
+        To see Bech32 format encoding, use `bfc keytool export $BFC_ADDRESS` where
+        $BFC_ADDRESS can be found with `bfc keytool list`. Or use `bfc keytool convert $BASE64_STR`."
         );
 
         if let Some(path) = &self.path {
