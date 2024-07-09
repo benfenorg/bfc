@@ -1607,7 +1607,7 @@ mod tests {
         for gas in gases.iter().take(gases.len() - 1) {
             SuiClientCommands::TransferBfc {
                 to: KeyIdentity::Address(destination_address),
-                sui_coin_object_id: *gas.id(),
+                bfc_coin_object_id: *gas.id(),
                 amount: None,
                 opts: Opts::for_testing(50_000_000),
             }
@@ -1675,7 +1675,7 @@ mod tests {
         for gas in gases {
             SuiClientCommands::TransferBfc {
                 to: KeyIdentity::Address(destination_address),
-                sui_coin_object_id: *gas.id(),
+                bfc_coin_object_id: *gas.id(),
                 amount: None,
                 opts: Opts::for_testing(50_000_000),
             }

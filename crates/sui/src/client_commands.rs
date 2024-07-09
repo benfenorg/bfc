@@ -470,7 +470,7 @@ pub enum SuiClientCommands {
         /// Bfc coin object to transfer, ID in 20 bytes Hex string. This is also the gas object.
         /// ID of the coin to transfer. This is also the gas object.
         #[clap(long)]
-        sui_coin_object_id: ObjectID,
+        bfc_coin_object_id: ObjectID,
 
         /// The amount to transfer, if not specified, the entire coin object will be transferred.
         #[clap(long)]
@@ -1417,7 +1417,7 @@ impl SuiClientCommands {
 
             SuiClientCommands::TransferBfc {
                 to,
-                sui_coin_object_id: object_id,
+                bfc_coin_object_id: object_id,
                 amount,
                 opts,
             } => {

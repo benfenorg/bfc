@@ -2912,7 +2912,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
 
     SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address1),
-        sui_coin_object_id: coin,
+        bfc_coin_object_id: coin,
         amount: Some(1),
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -2926,7 +2926,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
 
     SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address1),
-        sui_coin_object_id: coin,
+        bfc_coin_object_id: coin,
         amount: Some(1),
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -2941,7 +2941,7 @@ async fn test_serialize_tx() -> Result<(), anyhow::Error> {
     // use alias for transfer
     SuiClientCommands::TransferBfc {
         to: KeyIdentity::Alias(alias1),
-        sui_coin_object_id: coin,
+        bfc_coin_object_id: coin,
         amount: Some(1),
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
@@ -3261,7 +3261,7 @@ async fn test_dry_run() -> Result<(), anyhow::Error> {
     // === TRANSFER SUI === //
     let transfer_sui_dry_run = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(SuiAddress::random_for_testing_only()),
-        sui_coin_object_id: object_to_send,
+        bfc_coin_object_id: object_to_send,
         amount: Some(1),
         opts: Opts::for_testing_dry_run(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
     }
@@ -3665,7 +3665,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     let amount = 1000;
     let transfer_sui = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address2),
-        sui_coin_object_id: object_id1,
+        bfc_coin_object_id: object_id1,
         amount: Some(amount),
         opts: Opts::for_testing(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
     }
@@ -3706,7 +3706,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     // transfer the whole object by not passing an amount
     let transfer_sui = SuiClientCommands::TransferBfc {
         to: recipient1.clone(),
-        sui_coin_object_id: object_id1,
+        bfc_coin_object_id: object_id1,
         amount: None,
         opts: Opts::for_testing(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
     }
@@ -3760,7 +3760,7 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
 
     let transfer_sui_cmd = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address2),
-        sui_coin_object_id: object_id1,
+        bfc_coin_object_id: object_id1,
         amount: Some(amount),
         opts: Opts {
             gas_budget: None,
