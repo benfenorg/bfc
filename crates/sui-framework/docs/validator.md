@@ -72,7 +72,9 @@
 -  [Function `voting_power`](#0x3_validator_voting_power)
 -  [Function `set_voting_power`](#0x3_validator_set_voting_power)
 -  [Function `pending_stake_amount`](#0x3_validator_pending_stake_amount)
+-  [Function `pending_stake_stable_amount`](#0x3_validator_pending_stake_stable_amount)
 -  [Function `pending_stake_withdraw_amount`](#0x3_validator_pending_stake_withdraw_amount)
+-  [Function `pending_stake_withdraw_stable_amount`](#0x3_validator_pending_stake_withdraw_stable_amount)
 -  [Function `gas_price`](#0x3_validator_gas_price)
 -  [Function `commission_rate`](#0x3_validator_commission_rate)
 -  [Function `pool_token_exchange_rate_at_epoch`](#0x3_validator_pool_token_exchange_rate_at_epoch)
@@ -2729,6 +2731,30 @@ Set the voting power of this validator, called only from validator_set.
 
 </details>
 
+<a name="0x3_validator_pending_stake_stable_amount"></a>
+
+## Function `pending_stake_stable_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_stable_amount">pending_stake_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_stable_amount">pending_stake_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_pending_stake_amount">stable_pool::pending_stake_amount</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_pending_stake_withdraw_amount"></a>
 
 ## Function `pending_stake_withdraw_amount`
@@ -2746,6 +2772,30 @@ Set the voting power of this validator, called only from validator_set.
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_amount">pending_stake_withdraw_amount</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
     <a href="staking_pool.md#0x3_staking_pool_pending_stake_withdraw_amount">staking_pool::pending_stake_withdraw_amount</a>(&self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_pending_stake_withdraw_stable_amount"></a>
+
+## Function `pending_stake_withdraw_stable_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_stable_amount">pending_stake_withdraw_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_stable_amount">pending_stake_withdraw_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_pending_stake_withdraw_amount">stable_pool::pending_stake_withdraw_amount</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
 }
 </code></pre>
 

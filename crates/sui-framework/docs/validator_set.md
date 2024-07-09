@@ -1303,6 +1303,7 @@ It does the following things:
         very_low_stake_threshold,
         low_stake_grace_period,
         validator_report_records,
+        stable_rate,
         ctx
     );
 
@@ -1326,7 +1327,7 @@ It does the following things:
 
 
 
-<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_update_and_process_low_stake_departures">update_and_process_low_stake_departures</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, low_stake_threshold: u64, very_low_stake_threshold: u64, low_stake_grace_period: u64, validator_report_records: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="validator_set.md#0x3_validator_set_update_and_process_low_stake_departures">update_and_process_low_stake_departures</a>(self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">validator_set::ValidatorSet</a>, low_stake_threshold: u64, very_low_stake_threshold: u64, low_stake_grace_period: u64, validator_report_records: &<b>mut</b> <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<b>address</b>, <a href="../../../.././build/Sui/docs/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;, stable_rate: <a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="_String">ascii::String</a>, u64&gt;, ctx: &<b>mut</b> <a href="../../../.././build/Sui/docs/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1341,6 +1342,7 @@ It does the following things:
     very_low_stake_threshold: u64,
     low_stake_grace_period: u64,
     validator_report_records: &<b>mut</b> VecMap&lt;<b>address</b>, VecSet&lt;<b>address</b>&gt;&gt;,
+    stable_rate: VecMap&lt;<a href="_String">ascii::String</a>, u64&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
     // Iterate through all the active validators, record their low stake status, and kick them out <b>if</b> the condition is met.
@@ -1349,7 +1351,7 @@ It does the following things:
         i = i - 1;
         <b>let</b> validator_ref = <a href="_borrow">vector::borrow</a>(&self.active_validators, i);
         <b>let</b> validator_address = <a href="validator.md#0x3_validator_sui_address">validator::sui_address</a>(validator_ref);
-        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_amount">validator::total_stake_amount</a>(validator_ref);
+        <b>let</b> stake = <a href="validator.md#0x3_validator_total_stake_with_all_stable">validator::total_stake_with_all_stable</a>(validator_ref, stable_rate);
         <b>if</b> (stake &gt;= low_stake_threshold) {
             // The <a href="validator.md#0x3_validator">validator</a> is safe. We remove their entry from the at_risk map <b>if</b> there <b>exists</b> one.
             <b>if</b> (<a href="../../../.././build/Sui/docs/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.at_risk_validators, &validator_address)) {
