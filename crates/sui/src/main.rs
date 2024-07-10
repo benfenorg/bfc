@@ -51,7 +51,7 @@ async fn main() {
     let _guard = match args.command {
         SuiCommand::Console { .. } | SuiCommand::KeyTool { .. } | SuiCommand::Move { .. } => {
             telemetry_subscribers::TelemetryConfig::new()
-                .with_log_level("error")
+                .with_log_level("info")
                 .with_env()
                 .init()
         }
@@ -60,7 +60,7 @@ async fn main() {
             cmd: Some(ReplayBatch { .. }),
             ..
         } => telemetry_subscribers::TelemetryConfig::new()
-            .with_log_level("error")
+            .with_log_level("info")
             .with_env()
             .init(),
 
@@ -71,7 +71,7 @@ async fn main() {
             ..
         } => {
             let mut config = telemetry_subscribers::TelemetryConfig::new()
-                .with_log_level("error")
+                .with_log_level("info")
                 .with_env();
             if gas_info {
                 config = config.with_trace_target("replay_gas_info");
@@ -93,7 +93,7 @@ async fn main() {
         }
 
         _ => telemetry_subscribers::TelemetryConfig::new()
-            .with_log_level("error")
+            .with_log_level("info")
             .with_env()
             .init(),
     };
