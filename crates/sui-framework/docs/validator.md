@@ -64,6 +64,7 @@
 -  [Function `total_stake_amount`](#0x3_validator_total_stake_amount)
 -  [Function `stake_amount`](#0x3_validator_stake_amount)
 -  [Function `stable_stake_amount`](#0x3_validator_stable_stake_amount)
+-  [Function `stable_rewards_pool`](#0x3_validator_stable_rewards_pool)
 -  [Function `total_stake`](#0x3_validator_total_stake)
 -  [Function `total_stake_with_all_stable`](#0x3_validator_total_stake_with_all_stable)
 -  [Function `total_stake_for_reward`](#0x3_validator_total_stake_for_reward)
@@ -71,13 +72,16 @@
 -  [Function `voting_power`](#0x3_validator_voting_power)
 -  [Function `set_voting_power`](#0x3_validator_set_voting_power)
 -  [Function `pending_stake_amount`](#0x3_validator_pending_stake_amount)
+-  [Function `pending_stake_stable_amount`](#0x3_validator_pending_stake_stable_amount)
 -  [Function `pending_stake_withdraw_amount`](#0x3_validator_pending_stake_withdraw_amount)
+-  [Function `pending_stake_withdraw_stable_amount`](#0x3_validator_pending_stake_withdraw_stable_amount)
 -  [Function `gas_price`](#0x3_validator_gas_price)
 -  [Function `commission_rate`](#0x3_validator_commission_rate)
 -  [Function `pool_token_exchange_rate_at_epoch`](#0x3_validator_pool_token_exchange_rate_at_epoch)
 -  [Function `pool_stable_token_exchange_rate_at_epoch`](#0x3_validator_pool_stable_token_exchange_rate_at_epoch)
 -  [Function `staking_pool_id`](#0x3_validator_staking_pool_id)
 -  [Function `stable_pool_id`](#0x3_validator_stable_pool_id)
+-  [Function `stable_pool`](#0x3_validator_stable_pool)
 -  [Function `all_stable_pool_id`](#0x3_validator_all_stable_pool_id)
 -  [Function `is_duplicate`](#0x3_validator_is_duplicate)
 -  [Function `is_equal_some_and_value`](#0x3_validator_is_equal_some_and_value)
@@ -105,6 +109,7 @@
 -  [Function `validate_metadata`](#0x3_validator_validate_metadata)
 -  [Function `validate_metadata_bcs`](#0x3_validator_validate_metadata_bcs)
 -  [Function `get_staking_pool_ref`](#0x3_validator_get_staking_pool_ref)
+-  [Function `get_stable_pool_ref`](#0x3_validator_get_stable_pool_ref)
 -  [Function `new_from_metadata`](#0x3_validator_new_from_metadata)
 -  [Function `rate_vec_map`](#0x3_validator_rate_vec_map)
 
@@ -2492,6 +2497,30 @@ Returns true if the validator is preactive.
 
 </details>
 
+<a name="0x3_validator_stable_rewards_pool"></a>
+
+## Function `stable_rewards_pool`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_rewards_pool">stable_rewards_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_rewards_pool">stable_rewards_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_rewards_pool">stable_pool::rewards_pool</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_total_stake"></a>
 
 ## Function `total_stake`
@@ -2702,6 +2731,30 @@ Set the voting power of this validator, called only from validator_set.
 
 </details>
 
+<a name="0x3_validator_pending_stake_stable_amount"></a>
+
+## Function `pending_stake_stable_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_stable_amount">pending_stake_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_stable_amount">pending_stake_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_pending_stake_amount">stable_pool::pending_stake_amount</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x3_validator_pending_stake_withdraw_amount"></a>
 
 ## Function `pending_stake_withdraw_amount`
@@ -2719,6 +2772,30 @@ Set the voting power of this validator, called only from validator_set.
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_amount">pending_stake_withdraw_amount</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
     <a href="staking_pool.md#0x3_staking_pool_pending_stake_withdraw_amount">staking_pool::pending_stake_withdraw_amount</a>(&self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_pending_stake_withdraw_stable_amount"></a>
+
+## Function `pending_stake_withdraw_stable_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_stable_amount">pending_stake_withdraw_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_pending_stake_withdraw_stable_amount">pending_stake_withdraw_stable_amount</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): u64 {
+    <a href="stable_pool.md#0x3_stable_pool_pending_stake_withdraw_amount">stable_pool::pending_stake_withdraw_amount</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
 }
 </code></pre>
 
@@ -2881,6 +2958,30 @@ Set the voting power of this validator, called only from validator_set.
 
 <pre><code><b>public</b> <b>fun</b> <a href="validator.md#0x3_validator_stable_pool_id">stable_pool_id</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): ID {
     <a href="../../../.././build/Sui/docs/object.md#0x2_object_id">object::id</a>(<a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_stable_pool"></a>
+
+## Function `stable_pool`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="stable_pool.md#0x3_stable_pool">stable_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): &<a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="stable_pool.md#0x3_stable_pool">stable_pool</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>): &StablePool&lt;STABLE&gt; {
+    <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools)
 }
 </code></pre>
 
@@ -3739,6 +3840,30 @@ Aborts if validator metadata is valid
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_staking_pool_ref">get_staking_pool_ref</a>(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>) : &StakingPool {
     &self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_validator_get_stable_pool_ref"></a>
+
+## Function `get_stable_pool_ref`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_ref">get_stable_pool_ref</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">validator::Validator</a>): &<a href="stable_pool.md#0x3_stable_pool_StablePool">stable_pool::StablePool</a>&lt;STABLE&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="validator.md#0x3_validator_get_stable_pool_ref">get_stable_pool_ref</a>&lt;STABLE&gt;(self: &<a href="validator.md#0x3_validator_Validator">Validator</a>) : &StablePool&lt;STABLE&gt; {
+    <a href="validator.md#0x3_validator_get_stable_pool">get_stable_pool</a>&lt;STABLE&gt;(&self.stable_pools)
 }
 </code></pre>
 

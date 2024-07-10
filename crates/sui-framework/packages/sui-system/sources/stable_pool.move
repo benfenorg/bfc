@@ -289,6 +289,8 @@ module sui_system::stable_pool {
 
     public fun stable_balance<STABLE>(pool: &StablePool<STABLE>): u64 { pool.stable_balance }
 
+    public fun rewards_pool<STABLE>(pool: &StablePool<STABLE>): u64 { balance::value(&pool.rewards_pool) }
+
     public fun pool_id<STABLE>(staked_sui: &StakedStable<STABLE>): ID { staked_sui.pool_id }
 
     public fun staked_sui_amount<STABLE>(staked_sui: &StakedStable<STABLE>): u64 { balance::value(&staked_sui.principal) }
