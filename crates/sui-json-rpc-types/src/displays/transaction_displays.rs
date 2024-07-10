@@ -3,6 +3,7 @@
 
 use crate::displays::Pretty;
 use std::fmt::{Display, Formatter};
+use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 
 use crate::{
     SuiArgument, SuiCallArg, SuiCommand, SuiObjectArg, SuiProgrammableMoveCall,
@@ -37,7 +38,7 @@ impl<'a> Display for Pretty<'a, SuiProgrammableTransactionBlock> {
                     SuiCallArg::Object(SuiObjectArg::ImmOrOwnedObject { object_id, .. }) => {
                         builder.push_record(vec![format!(
                             "{i:<3} Imm/Owned Object ID: {}",
-                            object_id
+                            objects_id_to_bfc_address(*object_id)
                         )]);
                     }
                     SuiCallArg::Object(SuiObjectArg::SharedObject { object_id, .. }) => {

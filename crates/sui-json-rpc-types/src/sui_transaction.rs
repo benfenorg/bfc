@@ -1017,7 +1017,7 @@ fn owned_objref_string(obj: &OwnedObjectRef) -> String {
 fn objref_string(obj: &SuiObjectRef) -> String {
     format!(
         " ┌──\n │ ID: {} \n │ Version: {} \n │ Digest: {}\n └──",
-        obj.object_id,
+        objects_id_to_bfc_address((*obj.object_id).into()),
         u64::from(obj.version),
         obj.digest
     )
