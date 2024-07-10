@@ -19,7 +19,7 @@ use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveVal
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use sui_swarm_config::genesis_config::{AccountConfig, GenesisConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
+use sui_swarm_config::genesis_config::{GenesisConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
