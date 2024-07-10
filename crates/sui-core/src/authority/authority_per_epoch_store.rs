@@ -869,8 +869,8 @@ impl AuthorityPerEpochStore {
             ProtocolConfig::get_for_version(protocol_version, chain_identifier.chain());
 
 
-        println!("=======protocol_version: {:?}", protocol_version);
-        println!("=======protocol_config: {:?}", protocol_config);
+        //println!("=======protocol_version: {:?}", protocol_version);
+        //println!("=======protocol_config: {:?}", protocol_config);
         let execution_component = ExecutionComponents::new(
             &protocol_config,
             execution_cache.clone(),

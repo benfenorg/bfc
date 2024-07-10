@@ -435,7 +435,7 @@ pub struct SerializedSig {
 #[derive(Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SignData {
-    sui_address: SuiAddress,
+    bfc_address: SuiAddress,
     // Base64 encoded string of serialized transaction data.
     raw_tx_data: String,
     // Intent struct used, see [struct Intent] for field definitions.
@@ -447,7 +447,7 @@ pub struct SignData {
     digest: String,
     // Base64 encoded `flag || signature || pubkey` for a complete
     // serialized Bfc signature to be send for executing the transaction.
-    sui_signature: String,
+    bfc_signature: String,
 }
 
 #[derive(Serialize)]
@@ -893,12 +893,12 @@ impl KeyToolCommand {
 
 
                 CommandOutput::Sign(SignData {
-                    sui_address,
+                    bfc_address: sui_address,
                     raw_tx_data: data,
                     intent: intent_clone,
                     raw_intent_msg,
                     digest: Base64::encode(digest),
-                    sui_signature: sui_signature.encode_base64(),
+                    bfc_signature: sui_signature.encode_base64(),
                 })
             }
 
@@ -1316,18 +1316,18 @@ impl Display for CommandOutput {
                     .to_string();
 
                 let mut builder = Builder::default();
-                let bfc_address = sui_address_to_bfc_address(data.sui_address);
+                let bfc_address = sui_address_to_bfc_address(data.bfc_address);
                 builder
                     .set_header([
-                        "suiSignature",
+                        "bfcSignature",
                         "digest",
                         "rawIntentMsg",
                         "intent",
                         "rawTxData",
-                        "suiAddress",
+                        "bfcAddress",
                     ])
                     .push_record([
-                        &data.sui_signature,
+                        &data.bfc_signature,
                         &data.digest,
                         &data.raw_intent_msg,
                         &intent_table,
