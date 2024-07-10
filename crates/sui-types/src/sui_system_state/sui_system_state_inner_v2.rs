@@ -221,8 +221,8 @@ impl SuiSystemStateTrait for SuiSystemStateInnerV2 {
                         },
                     inactive_validators_pool_mappings:
                         Table {
-                            id: inactive_validators_pool_mappings_id,
-                            size: inactive_validators_pool_mappings_size,
+                            id: _inactive_validators_pool_mappings_id,
+                            size: _inactive_validators_pool_mappings_size,
                         },
                     validator_candidates:
                         Table {
