@@ -21,7 +21,7 @@ use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{AccountConfig, GenesisConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
-use sui_types::base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress};
+use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
@@ -46,8 +46,6 @@ use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
 use move_core_types::parser::parse_struct_tag;
-use sui_types::crypto::{AccountKeyPair, deterministic_random_account_key, SuiKeyPair};
-use sui_types::object::{GAS_VALUE_FOR_TESTING, Object};
 use sui_types::sui_serde::BigInt;
 use sui_types::vault::VaultInfo;
 
@@ -2605,7 +2603,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
     let bfc_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await.unwrap();
     let gas = bfc_response_vec.last().unwrap().object().unwrap();
 
-    let mut balance = get_balance(gas);
+    let balance = get_balance(gas);
     tracing::error!("balance is {:?} objid {:?}",balance,gas.object_id);
 
     let usd_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
@@ -3550,7 +3548,7 @@ async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
 
     //telemetry_subscribers::init_for_testing();
     let config = GenesisConfig::custom_genesis_with_gas(ACCOUNT_NUM, GAS_OBJECT_COUNT, DEFAULT_GAS_AMOUNT);
-    let mut test_cluster = TestClusterBuilder::new()
+    let test_cluster = TestClusterBuilder::new()
         .set_genesis_config(config)
         .with_epoch_duration_ms(1000*300)
         .with_num_validators(3)
@@ -3564,7 +3562,7 @@ async fn sim_test_vault_info() -> Result<(), anyhow::Error> {
     let first_address = test_cluster.get_address_0();
     let bfc_balance = get_bfc_balance(http_client, first_address).await;
     assert!(bfc_balance > 0);
-    let mut addresses = test_cluster.wallet.get_addresses();
+    let addresses = test_cluster.wallet.get_addresses();
     //swap bfc to stablecoin
     for address in test_cluster.wallet.get_addresses() {
         swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10_000_000_000).await?;

@@ -896,6 +896,25 @@ async fn test_move_call_gas_stable_coin() -> SuiResult {
 
     Ok(())
 }
+#[tokio::test]
+async fn test_move_call_storage() -> SuiResult {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+    let gas_object_id_stable = ObjectID::random();
+    let (authority_state, _package_object_ref) =
+        init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
+    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    // publish move module
+    let package =
+        publish_move_random_package(&authority_state, &sender, &sender_key, &gas_object_id).await;
+
+    let package_object = authority_state.get_object(&package).await?.unwrap();
+    let pkg_ref = package_object.compute_object_reference();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+    move_call_heavy_storage_object(stable_gas_object, gas_object_id_stable, sender,sender_key,rgp, pkg_ref, authority_state).await?;
+    Ok(())
+}
+
 
 #[tokio::test]
 async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
@@ -1064,6 +1083,91 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
 
     let tx = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    let effects = response.1.into_data();
+    let created_object_ref = effects.created()[0].0;
+    assert!(effects.status().is_ok());
+    let gas_cost = effects.gas_cost_summary();
+    assert!(gas_cost.storage_cost > 0);
+    assert_eq!(gas_cost.storage_rebate, 0);
+    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_used = if !gas_object.is_stable_gas_coin() {
+        gas_cost.net_gas_usage() as u64
+    } else {
+        gas_cost.net_gas_usage_improved() as u64
+    };
+    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_used;
+    assert_eq!(
+        GasCoin::try_from(&gas_object)?.value(),
+        expected_gas_balance,
+    );
+
+    // This is the total amount of storage cost paid. We will use this
+    // to check if we get back the same amount of rebate latter.
+    let prev_storage_cost = gas_cost.storage_cost;
+
+    // Execute object deletion, and make sure we have storage rebate.
+    let data = TransactionData::new_move_call(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        ident_str!("delete").to_owned(),
+        vec![],
+        gas_object.compute_object_reference(),
+        vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(
+            created_object_ref,
+        ))],
+        gas_budget,
+        rgp,
+    )
+        .unwrap();
+
+    let transaction = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, transaction).await?;
+    let effects = response.1.into_data();
+    assert!(effects.status().is_ok());
+    let gas_cost = effects.gas_cost_summary();
+    // storage_cost should be less than rebate because for object deletion, we only
+    // rebate without charging.
+    assert!(gas_cost.storage_cost > 0 && gas_cost.storage_cost < gas_cost.storage_rebate);
+    // Check that we have storage rebate is less or equal to the previous one + non refundable
+    assert_eq!(
+        gas_cost.storage_rebate + gas_cost.non_refundable_storage_fee,
+        prev_storage_cost
+    );
+    Ok(())
+}
+
+async fn move_call_heavy_storage_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+                                   sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
+    let module = ident_str!("move_random").to_owned();
+    let function = ident_str!("storage_heavy").to_owned();
+    let args = vec![
+        CallArg::Pure(160u64.to_le_bytes().to_vec()),
+        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+    ];
+
+    let gas_budget = if gas_object.is_stable_gas_coin() {
+        4999500000
+    } else {
+        *MAX_GAS_BUDGET
+    };
+
+    let data = TransactionData::new_move_call(
+        sender,
+        package_object_ref.0,
+        module.clone(),
+        function.clone(),
+        Vec::new(),
+        gas_object.compute_object_reference(),
+        args.clone(),
+        gas_budget,
+        rgp,
+    )
+        .unwrap();
+
+    let tx = to_sender_signed_transaction(data, &sender_key);
+    let response = send_and_confirm_transaction(&authority_state, tx).await?;
+    println!("effect: {:?}",response.1);
     let effects = response.1.into_data();
     let created_object_ref = effects.created()[0].0;
     assert!(effects.status().is_ok());
