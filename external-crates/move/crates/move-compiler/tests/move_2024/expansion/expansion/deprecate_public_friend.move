@@ -1,3 +1,3 @@
 module a::m {
-    public(package) fun foo() {}
+    public(friend) fun foo() {}
 }

@@ -35,7 +35,7 @@ module a::m {
         fin + x
     }
 
-    public(package) fun t1() {}
+    public(friend) fun t1() {}
 
     public(
         friend) fun t2() {}

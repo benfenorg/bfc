@@ -1,5 +1,5 @@
 module a::m {
-    public(package) use fun foo as S.g;
+    public(friend) use fun foo as S.g;
     public(package) use fun foo as S.h;
     public struct S {}
     fun foo(s: &S) {

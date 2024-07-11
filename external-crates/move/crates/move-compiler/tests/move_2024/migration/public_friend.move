@@ -2,7 +2,7 @@ module a::m {
 
     public( friend ) fun t0() {}
 
-    public(package) fun t1() {}
+    public(friend) fun t1() {}
 
     public(
         friend) fun t2() {}

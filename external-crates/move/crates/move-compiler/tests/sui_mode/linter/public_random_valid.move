@@ -10,7 +10,7 @@ module a::test {
     #[allow(lint(public_random))]
     public fun allow_public_random(_r: &Random, _rg: &RandomGenerator) {}
 
-    public(package) fun public_friend_fn(_r: &Random, _rg: &RandomGenerator) {}
+    public(friend) fun public_friend_fn(_r: &Random, _rg: &RandomGenerator) {}
 
     fun private_fn(_r: &Random, _rg: &RandomGenerator) {}
 

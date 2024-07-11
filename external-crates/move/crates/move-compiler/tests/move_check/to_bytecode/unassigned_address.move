@@ -8,7 +8,7 @@ module Ex {}
 module A::M {
     struct S {}
     friend A::N;
-    public(package) fun foo(_: address): S { S{} }
+    public(friend) fun foo(_: address): S { S{} }
 }
 
 module A::N {

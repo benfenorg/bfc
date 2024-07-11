@@ -10,7 +10,7 @@ module X {
 
 module Y {
     friend 0x2::M;
-    public(package) fun f_friend() {}
+    public(friend) fun f_friend() {}
 }
 
 module M {
@@ -18,7 +18,7 @@ module M {
     use 0x2::Y;
 
     public fun f_public() {}
-    public(package) fun f_friend() {}
+    public(friend) fun f_friend() {}
     public entry fun f_script() {}
     fun f_private() {}
 

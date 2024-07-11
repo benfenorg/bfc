@@ -1,7 +1,7 @@
 address 0x42 {
 module X {
     public fun f_public() {}
-    public(package) fun f_friend() {}
+    public(friend) fun f_friend() {}
     fun f_private() {}
 }
 
@@ -41,7 +41,7 @@ module M {
         0
     };
     public fun f_public() {}
-    public(package) fun f_friend() {}
+    public(friend) fun f_friend() {}
     fun f_private() {}
 }
 }
