@@ -6,11 +6,10 @@
 //# init --addresses test=0x0 --accounts A
 
 //# publish
-
 module test::m {
     //use std::option::{Self, Option};
     //use sui::object::{Self, UID};
-    use std::debug;
+    //use std::debug;
     //use sui::tx_context::TxContext;
     use sui::dynamic_object_field as ofield;
 
@@ -26,7 +25,7 @@ module test::m {
     // new
 
     public fun new(ctx: &mut TxContext): Obj {
-        let mut  grand = Obj { id: object::new(ctx), value: 0 };
+        let  mut grand = Obj { id: object::new(ctx), value: 0 };
         let  mut parent  = Obj { id: object::new(ctx), value: 0 };
         let child = Obj { id: object::new(ctx), value: 0 };
 
@@ -64,7 +63,7 @@ module test::m {
     // check
 
     public fun check(grand: &Obj, v1: u64, v2: u64, v3: Option<u64>) {
-        debug::print(grand);
+        //debug::print(grand);
         assert!(grand.value == v1, 0);
         let parent: &Obj = ofield::borrow(&grand.id, KEY);
         assert!(parent.value == v2, 0);

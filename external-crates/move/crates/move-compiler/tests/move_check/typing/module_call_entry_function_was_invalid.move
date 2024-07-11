@@ -7,7 +7,7 @@ module X {
     friend 0x2::M;
     fun f_private() {}
     public entry fun f_script() {}
-    public(package) fun f_friend() {}
+    public(friend) fun f_friend() {}
 }
 
 module M {
@@ -16,11 +16,11 @@ module M {
     public entry fun f_script_call_script() { X::f_script() }
 
     fun f_private_call_script() { X::f_script() }
-    public(package) fun f_friend_call_script() { X::f_script() }
+    public(friend) fun f_friend_call_script() { X::f_script() }
     public fun f_public_call_script() { X::f_script() }
 
     fun f_private_call_self_script() { f_script_call_script() }
-    public(package) fun f_friend_call_self_script() { f_script_call_script() }
+    public(friend) fun f_friend_call_self_script() { f_script_call_script() }
     public fun f_public_call_self_script() { f_script_call_script() }
 
     public entry fun f_script_call_private() { X::f_private() }

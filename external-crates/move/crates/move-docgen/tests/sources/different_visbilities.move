@@ -4,7 +4,7 @@ module TestViz {
     public fun this_is_a_public_fun() { }
 
     // /// This is a public friend function
-    // public(package) fun this_is_a_public_friend_fun() {}
+    // public(friend) fun this_is_a_public_friend_fun() {}
 
     /// This is a public entry function
     public entry fun this_is_a_public_script_fun() {}

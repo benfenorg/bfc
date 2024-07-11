@@ -6,7 +6,7 @@ module M::Mod {
     struct S {}
 
     friend M::M;
-    public(package) fun foo() {}
+    public(friend) fun foo() {}
 }
 
 module M::M {

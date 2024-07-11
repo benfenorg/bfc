@@ -6,7 +6,7 @@ module A {
 module M {
     friend A;
 
-    public(package) fun m() {
+    public(friend) fun m() {
         use 0x42::A;
         A::a()
     }

@@ -7,7 +7,7 @@ module M {
     use 0x42::A::a;
     friend a;
 
-    public(package) fun m() {
+    public(friend) fun m() {
         a()
     }
 }
