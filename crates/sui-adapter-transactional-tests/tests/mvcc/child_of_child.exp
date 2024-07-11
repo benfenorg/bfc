@@ -3,50 +3,81 @@ processed 14 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 8-71:
-Error: error[E04024]: invalid usage of immutable variable
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/tmp.vYE8Mtva1O/.tmpI119Il:27:21
-   │
-23 │         let  grand = Obj { id: object::new(ctx), value: 0 };
-   │              ----- To use the variable mutably, it must be declared 'mut', e.g. 'mut grand'
-   ·
-27 │         ofield::add(&mut grand.id, KEY, parent);
-   │                     ^^^^^^^^^^^^^ Invalid mutable borrow of immutable variable 'grand'
+task 1 'publish'. lines 8-78:
+created: object(1,0)
+mutated: object(0,1)
+gas summary: computation_cost: 1000000, storage_cost: 490960,  storage_rebate: 0, non_refundable_storage_fee: 0
 
+task 2 'programmable'. lines 80-82:
+created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
+mutated: object(0,0)
+gas summary: computation_cost: 1000000, storage_cost: 503500,  storage_rebate: 0, non_refundable_storage_fee: 0
 
+task 3 'view-object'. lines 84-84:
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 2
+Contents: test::m::Obj {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 0u64,
+}
 
-task 2 'programmable'. lines 73-75:
-Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
+task 4 'programmable'. lines 86-87:
+mutated: object(0,0), object(2,2), object(2,3), object(2,4)
+gas summary: computation_cost: 1000000, storage_cost: 258020,  storage_rebate: 255440, non_refundable_storage_fee: 2580
 
-task 3 'view-object'. lines 77-77:
-Error: task 3, lines 77-77. Unbound fake id 2,2
+task 5 'view-object'. lines 89-89:
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 3
+Contents: test::m::Obj {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 1u64,
+}
 
-task 4 'programmable'. lines 79-80:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 6 'programmable'. lines 91-92:
+mutated: object(0,0), object(2,2)
+deleted: object(2,1), object(2,3)
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 313375, non_refundable_storage_fee: 3165
 
-task 5 'view-object'. lines 82-82:
-Error: task 5, lines 82-82. Unbound fake id 2,2
+task 7 'view-object'. lines 94-97:
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+Version: 4
+Contents: test::m::Obj {
+    id: sui::object::UID {
+        id: sui::object::ID {
+            bytes: fake(2,2),
+        },
+    },
+    value: 1u64,
+}
 
-task 6 'programmable'. lines 84-85:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 8 'programmable'. lines 99-100:
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 7 'view-object'. lines 87-90:
-Error: task 7, lines 87-87. Unbound fake id 2,2
+task 9 'programmable'. lines 102-103:
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 8 'programmable'. lines 92-93:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 10 'programmable'. lines 105-109:
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 9 'programmable'. lines 95-96:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 11 'programmable'. lines 111-112:
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
 
-task 10 'programmable'. lines 98-102:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 12 'programmable'. lines 114-115:
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
 
-task 11 'programmable'. lines 104-105:
-Error: INVALID TEST. Unknown object, object(2,2)
-
-task 12 'programmable'. lines 107-108:
-Error: INVALID TEST. Unknown object, object(2,2)
-
-task 13 'programmable'. lines 110-111:
-Error: INVALID TEST. Unknown object, object(2,2)
+task 13 'programmable'. lines 117-118:
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
