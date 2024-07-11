@@ -19,16 +19,19 @@ module test::m {
     }
 
     const KEY: u64 = 0;
+    const KEY_2: u64 = 1;
 
     //////////////////////////////////////////////////////////////
     // new
 
     public fun new(ctx: &mut TxContext): Obj {
-        let  grand  = Obj { id: object::new(ctx), value: 0 };
+        let mut grand  = Obj { id: object::new(ctx), value: 0 };
         let mut parent = Obj { id: object::new(ctx), value: 0 };
         let child = Obj { id: object::new(ctx), value: 0 };
         ofield::add(&mut parent.id, KEY, child);
         ofield::add(&mut grand.id, KEY, parent);
+
+
         grand
     }
 
