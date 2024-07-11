@@ -88,7 +88,7 @@ pub async fn perform_zk_login_test_tx(
         jwt_randomness,
         kp_bigint,
         &user_salt,
-        "https://prover-dev.mystenlabs.com/v1",
+        "https://zkproverdev1.openblock.vip/v1",
     )
     .await
     .map_err(|e| anyhow!("Failed to get proof {e}"))?;
