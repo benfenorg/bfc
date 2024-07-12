@@ -1767,7 +1767,7 @@ async fn test_package_publish_nonexistent_dependency() -> Result<(), anyhow::Err
 }
 
 #[sim_test]
-async fn test_package_publish_test_flag() -> Result<(), anyhow::Error> {
+async fn sim_test_package_publish_test_flag() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1800,7 +1800,7 @@ async fn test_package_publish_test_flag() -> Result<(), anyhow::Error> {
     let expect = expect![[r#"
         Err(
             ModulePublishFailure {
-                error: "The `publish` subcommand should not be used with the `--test` flag\n\nCode in published packages must not depend on test code.\nIn order to fix this and publish the package without `--test`, remove any non-test dependencies on test-only code.\nYou can ensure all test-only dependencies have been removed by compiling the package normally with `sui move build`.",
+                error: "The `publish` subcommand should not be used with the `--test` flag\n\nCode in published packages must not depend on test code.\nIn order to fix this and publish the package without `--test`, remove any non-test dependencies on test-only code.\nYou can ensure all test-only dependencies have been removed by compiling the package normally with `bfc move build`.",
             },
         )
     "#]];
