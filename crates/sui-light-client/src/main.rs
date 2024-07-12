@@ -612,6 +612,12 @@ mod tests {
     async fn test_checkpoint_all_good() {
         let (committee, full_checkpoint) = read_data().await;
 
+        let all_data = full_checkpoint.transactions.clone();
+        for data in all_data {
+            let tid = data.transaction.digest();
+            println!("TID: {}", tid);
+        }
+
         extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,

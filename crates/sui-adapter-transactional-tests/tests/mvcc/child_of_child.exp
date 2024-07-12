@@ -3,17 +3,17 @@ processed 14 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 8-78:
+task 1 'publish'. lines 8-77:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 490960,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 480700,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 2 'programmable'. lines 80-82:
+task 2 'programmable'. lines 79-81:
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
 mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 503500,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 3 'view-object'. lines 84-84:
+task 3 'view-object'. lines 83-83:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: test::m::Obj {
@@ -25,11 +25,11 @@ Contents: test::m::Obj {
     value: 0u64,
 }
 
-task 4 'programmable'. lines 86-87:
+task 4 'programmable'. lines 85-86:
 mutated: object(0,0), object(2,2), object(2,3), object(2,4)
 gas summary: computation_cost: 1000000, storage_cost: 258020,  storage_rebate: 255440, non_refundable_storage_fee: 2580
 
-task 5 'view-object'. lines 89-89:
+task 5 'view-object'. lines 88-88:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: test::m::Obj {
@@ -41,12 +41,12 @@ Contents: test::m::Obj {
     value: 1u64,
 }
 
-task 6 'programmable'. lines 91-92:
+task 6 'programmable'. lines 90-91:
 mutated: object(0,0), object(2,2)
-deleted: object(2,1), object(2,3)
+deleted: object(2,1), object(2,4)
 gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 313375, non_refundable_storage_fee: 3165
 
-task 7 'view-object'. lines 94-97:
+task 7 'view-object'. lines 93-96:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: test::m::Obj {
@@ -58,26 +58,26 @@ Contents: test::m::Obj {
     value: 1u64,
 }
 
-task 8 'programmable'. lines 99-100:
+task 8 'programmable'. lines 98-99:
 mutated: object(_), object(2,2)
 gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 9 'programmable'. lines 102-103:
+task 9 'programmable'. lines 101-102:
 mutated: object(_), object(2,2)
 gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 10 'programmable'. lines 105-109:
+task 10 'programmable'. lines 104-108:
 mutated: object(_), object(2,2)
 gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
-task 11 'programmable'. lines 111-112:
-Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
-Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
+task 11 'programmable'. lines 110-111:
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 10, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 10, function_name: Some("check") }, 0) in command 0
 
-task 12 'programmable'. lines 114-115:
+task 12 'programmable'. lines 113-114:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
 Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
 
-task 13 'programmable'. lines 117-118:
-Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
-Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0
+task 13 'programmable'. lines 116-117:
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 10, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 10, function_name: Some("check") }, 0) in command 0
