@@ -168,6 +168,7 @@ members = [
     "crates/typed-store-derive",
     "crates/typed-store-error",
     "crates/x",
+    "crates/sui-simple-rpc",
     "narwhal/config",
     "narwhal/crypto",
     "narwhal/executor",
@@ -657,6 +658,8 @@ typed-store = { path = "crates/typed-store" }
 typed-store-derive = { path = "crates/typed-store-derive" }
 typed-store-error = { path = "crates/typed-store-error" }
 x = { path = "crates/x" }
+sui-simple-rpc = { path = "crates/sui-simple-rpc" }
+
 
 consensus-config = { path = "consensus/config" }
 consensus-core = { path = "consensus/core" }

@@ -6,7 +6,7 @@ use fastcrypto::ed25519::Ed25519KeyPair;
 use fastcrypto::encoding::{Base64, Encoding};
 use fastcrypto::jwt_utils::parse_and_validate_jwt;
 use fastcrypto::traits::{EncodeDecodeBase64, KeyPair};
-use fastcrypto_zkp::bn254::utils::get_proof;
+use fastcrypto_zkp::bn254::utils::{get_proof, GetSaltResponse};
 use fastcrypto_zkp::bn254::utils::{gen_address_seed, get_salt, get_zk_login_address};
 use fastcrypto_zkp::bn254::zk_login::ZkLoginInputs;
 use rand::rngs::StdRng;
@@ -19,6 +19,8 @@ use std::io;
 use std::io::Write;
 use std::thread::sleep;
 use std::time::Duration;
+use fastcrypto::error::FastCryptoError;
+use serde::{Deserialize, Serialize};
 use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
 use sui_keys::keystore::{AccountKeystore, Keystore};
 use sui_sdk::SuiClientBuilder;
@@ -65,6 +67,32 @@ pub(crate) async fn request_tokens_from_faucet(
     Ok(())
 }
 
+
+#[derive(Deserialize, Serialize, Debug)]
+pub struct GenerateSaltResponse {
+    pub result: String,
+}
+
+/// Call the salt server for the given parameter and return the salt.
+pub async fn generate_salt(jwt_token: &str, salt_url: &str) -> Result<String, FastCryptoError> {
+    let client = Client::new();
+    let body = json!({ "jwt": jwt_token });
+    let response = client
+        .post(salt_url)
+        .json(&body)
+        .header("Content-Type", "application/json")
+        .send()
+        .await
+        .map_err(|_| FastCryptoError::InvalidInput)?;
+    let full_bytes = response
+        .bytes()
+        .await
+        .map_err(|_| FastCryptoError::InvalidInput)?;
+    let res: GenerateSaltResponse =
+        serde_json::from_slice(&full_bytes).map_err(|_| FastCryptoError::InvalidInput)?;
+    Ok(res.result)
+}
+
 /// A helper function that performs a zklogin test transaction based on the provided parameters.
 pub async fn perform_zk_login_test_tx(
     parsed_token: &str,
@@ -78,7 +106,7 @@ pub async fn perform_zk_login_test_tx(
     sign_with_sk: bool, // if true, submit tx with the traditional sig, otherwise submit with zklogin sig.
 ) -> Result<String, anyhow::Error> {
     let (gas_url, fullnode_url) = get_config(network);
-    let user_salt = get_salt(parsed_token, "https://salt.api.mystenlabs.com/get_salt")
+    let user_salt = generate_salt(parsed_token, "https://saltdev.openblock.vip/generate_salt")
         .await
         .unwrap_or("129390038577185583942388216820280642146".to_string());
     println!("User salt: {user_salt}");
@@ -88,7 +116,7 @@ pub async fn perform_zk_login_test_tx(
         jwt_randomness,
         kp_bigint,
         &user_salt,
-        "https://prover-dev.mystenlabs.com/v1",
+        "https://zkproverdev1.openblock.vip/v1",
     )
     .await
     .map_err(|e| anyhow!("Failed to get proof {e}"))?;
@@ -191,6 +219,7 @@ fn get_config(network: &str) -> (&str, &str) {
             "https://faucet.devnet.sui.io/gas",
             "https://rpc.devnet.sui.io:443",
         ),
+        // TODO 9123 when using sui-test-validator, 5003 when using bfc start
         "localnet" => ("http://127.0.0.1:9123/gas", "http://127.0.0.1:9000"),
         _ => panic!("Invalid network"),
     }

@@ -1017,7 +1017,7 @@ impl KeyToolCommand {
                     &jwt_randomness,
                     &kp_bigint,
                     user_salt,
-                    "https://prover-dev.mystenlabs.com/v1",
+                    "https://zkproverdev1.openblock.vip/v1",
                 )
                 .await
                 .unwrap();
@@ -1083,8 +1083,8 @@ impl KeyToolCommand {
                     OIDCProvider::Google,
                     &eph_pk_bytes,
                     max_epoch,
-                    "25769832374-famecqrhe2gkebt5fvqms2263046lj96.apps.googleusercontent.com",
-                    "https://sui.io/",
+                    "158998245923-0hkn0ei9lg5o1s2m5pu1mrlv6822584h.apps.googleusercontent.com",
+                    "https://www.benfen.org/",
                     &jwt_randomness,
                 )?;
                 let url_2 = get_oidc_url(
