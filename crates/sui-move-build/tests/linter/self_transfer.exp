@@ -1,52 +1,909 @@
-warning[Lint W01001]: non-composable transfer to sender
-   ┌─ tests/linter/self_transfer.move:23:9
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/vec_set.move:34:31
    │
-22 │     public fun public_transfer_bad(ctx: &mut TxContext) {
-   │                ------------------- Returning an object from a function, allows a caller to use the object and enables composability via programmable transactions.
-23 │         transfer::public_transfer(S1 { id: object::new(ctx), }, tx_context::sender(ctx))
-   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   │         │                                                       │
-   │         │                                                       Transaction sender address coming from here
-   │         Transfer of an object to transaction sender address in function public_transfer_bad
-   │
-   = This warning can be suppressed with '#[lint_allow(self_transfer)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+34 │         assert!(!self.contains(&key), EKeyAlreadyExists);
+   │                -              ^ Expected ')'
+   │                │               
+   │                To match this '('
 
-warning[Lint W01001]: non-composable transfer to sender
-   ┌─ tests/linter/self_transfer.move:27:9
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object_bag_tests.move:22:17
    │
-26 │     public fun private_transfer_bad(ctx: &mut TxContext) {
-   │                -------------------- Returning an object from a function, allows a caller to use the object and enables composability via programmable transactions.
-27 │         transfer::transfer(S1 { id: object::new(ctx), }, tx_context::sender(ctx))
-   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   │         │                                                │
-   │         │                                                Transaction sender address coming from here
-   │         Transfer of an object to transaction sender address in function private_transfer_bad
-   │
-   = This warning can be suppressed with '#[lint_allow(self_transfer)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+22 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
 
-warning[Lint W01001]: non-composable transfer to sender
-   ┌─ tests/linter/self_transfer.move:31:9
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/deny_list.move:43:5
    │
-30 │     public fun private_transfer_no_store_bad(ctx: &mut TxContext) {
-   │                ----------------------------- Returning an object from a function, allows a caller to use the object and enables composability via programmable transactions.
-31 │         transfer::transfer(S2 { id: object::new(ctx), }, tx_context::sender(ctx))
-   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-   │         │                                                │
-   │         │                                                Transaction sender address coming from here
-   │         Transfer of an object to transaction sender address in function private_transfer_no_store_bad
-   │
-   = This warning can be suppressed with '#[lint_allow(self_transfer)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+43 │     public(package) fun add(
+   │     ^^^^^^^^^^^^^^^ Invalid visibility modifier. Consider removing it or using 'public' or 'public(friend)'
 
-warning[Lint W01001]: non-composable transfer to sender
-   ┌─ tests/linter/self_transfer.move:39:9
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/string.move:54:25
    │
-36 │     public fun transfer_through_assigns_bad(ctx: &mut TxContext) {
-   │                ---------------------------- Returning an object from a function, allows a caller to use the object and enables composability via programmable transactions.
-37 │         let sender = tx_context::sender(ctx);
-   │                      ----------------------- Transaction sender address coming from here
-38 │         let another_sender = sender;
-39 │         transfer::public_transfer(S1 { id: object::new(ctx), }, another_sender)
-   │         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Transfer of an object to transaction sender address in function transfer_through_assigns_bad
+54 │         s.bytes.is_empty()
+   │                         ^
+   │                         │
+   │                         Unexpected '('
+   │                         Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/poseidon.move:25:18
    │
-   = This warning can be suppressed with '#[lint_allow(self_transfer)]' applied to the 'module' or module member ('const', 'fun', or 'struct')
+25 │         let (mut i, mut b, l) = (0, vector[], data.length());
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/zklogin_verified_issuer.move:38:18
+   │
+38 │         id.delete();
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object_bag.move:94:18
+   │
+94 │         id.delete()
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/package.move:13:12
+   │
+13 │     public use fun burn_publisher as Publisher.burn;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object_table_tests.move:17:17
+   │
+17 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/borrow.move:36:39
+   │
+36 │         let value = self.value.extract();
+   │                                       ^
+   │                                       │
+   │                                       Unexpected '('
+   │                                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/priority_queue.move:25:33
+   │
+25 │     public fun new<T: drop>(mut entries: vector<Entry<T>>) : PriorityQueue<T> {
+   │                                 ^^^^^^^
+   │                                 │
+   │                                 Unexpected 'entries'
+   │                                 Expected ':'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object_table.move:86:18
+   │
+86 │         id.delete()
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/url.move:22:40
+   │
+22 │         let url = bytes.to_ascii_string();
+   │                                        ^
+   │                                        │
+   │                                        Unexpected '('
+   │                                        Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bit_vector.move:23:17
+   │
+23 │         let mut counter = 0;
+   │                 ^^^^^^^
+   │                 │
+   │                 Unexpected 'counter'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/authenticator_state_tests.move:23:17
+   │
+23 │         let mut scenario = test_scenario::begin(@0x0);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bag.move:110:18
+    │
+110 │         id.delete()
+    │                  ^
+    │                  │
+    │                  Unexpected '('
+    │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/group_ops.move:35:5
+   │
+35 │     public(package) fun from_bytes<G>(type_: u8, bytes: &vector<u8>, is_trusted: bool): Element<G> {
+   │     ^^^^^^^^^^^^^^^ Invalid visibility modifier. Consider removing it or using 'public' or 'public(friend)'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bfc.move:45:17
+   │
+45 │         let mut supply = coin::treasury_into_supply(treasury);
+   │                 ^^^^^^
+   │                 │
+   │                 Unexpected 'supply'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/balance_tests.move:10:12
+   │
+10 │     public use fun sui::coin::from_balance as Balance.into_coin;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_marketplace_ext.move:42:33
+   │
+42 │         assert!(kiosk.has_access(cap), ENotOwner);
+   │                -                ^ Expected ')'
+   │                │                 
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/zklogin_verified_id.move:54:18
+   │
+54 │         id.delete();
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/transfer_policy.move:121:36
+    │
+121 │         let policy_id = id.to_inner();
+    │                                    ^
+    │                                    │
+    │                                    Unexpected '('
+    │                                    Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/vector.move:10:12
+   │
+10 │     public use fun std::string::utf8 as vector.to_string;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/string_tests.move:13:40
+   │
+13 │         let s = sparkle_heart.to_string();
+   │                                        ^
+   │                                        │
+   │                                        Unexpected '('
+   │                                        Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/ecdsa_k1_tests.move:98:35
+   │
+98 │     fun ecrecover_eth_address(mut sig: vector<u8>, msg: vector<u8>): vector<u8> {
+   │                                   ^^^
+   │                                   │
+   │                                   Unexpected 'sig'
+   │                                   Expected ':'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/type_name.move:56:39
+   │
+56 │         let bytes = self.name.as_bytes();
+   │                                       ^
+   │                                       │
+   │                                       Unexpected '('
+   │                                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/versioned_tests.move:10:17
+   │
+10 │         let mut ctx = tx_context::dummy();
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'ctx'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/transfer_policy_tests.move:34:31
+   │
+34 │         policy.confirm_request(request);
+   │                               ^
+   │                               │
+   │                               Unexpected '('
+   │                               Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/coin.move:16:12
+   │
+16 │     public use fun sui::pay::split_vec as Coin.split_vec;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_test_utils.move:43:30
+   │
+43 │         let id = uid.to_inner();
+   │                              ^
+   │                              │
+   │                              Unexpected '('
+   │                              Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/bit_vector_tests.move:12:17
+   │
+12 │         let mut bitvector = bit_vector::new(k);
+   │                 ^^^^^^^^^
+   │                 │
+   │                 Unexpected 'bitvector'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/royalty_policy_tests.move:51:36
+   │
+51 │         let amount = (paid as u128 * (config.amount_bp as u128) / 10_000) as u64;
+   │                                    ^
+   │                                    │
+   │                                    Unexpected '*'
+   │                                    Expected ')'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/fixed_point32_tests.move:36:26
+   │
+36 │         assert!(x.is_zero(), 0);
+   │                -         ^ Expected ')'
+   │                │          
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/id_tests.move:14:17
+   │
+14 │         let mut ctx = tx_context::dummy();
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'ctx'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/random_tests.move:16:17
+   │
+16 │         let mut scenario = test_scenario::begin(@0x0);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/table_vec.move:25:17
+   │
+25 │         let mut t = empty(ctx);
+   │                 ^
+   │                 │
+   │                 Unexpected 't'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/ascii_tests.move:12:17
+   │
+12 │         let mut i = 0;
+   │                 ^
+   │                 │
+   │                 Unexpected 'i'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/versioned.move:30:17
+   │
+30 │         let mut self = Versioned {
+   │                 ^^^^
+   │                 │
+   │                 Unexpected 'self'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_locked_test.move:14:18
+   │
+14 │         let (mut policy, policy_cap) = test::get_policy(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_treasury_cap_tests.move:17:18
+   │
+17 │         let (mut policy, cap) = test::get_policy(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/address_tests.move:22:17
+   │
+22 │         let mut ctx = tx_context::dummy();
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'ctx'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/authenticator_state.move:98:30
+   │
+98 │         let a_bytes = a.bytes();
+   │                              ^
+   │                              │
+   │                              Unexpected '('
+   │                              Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/pay.move:14:48
+   │
+14 │         transfer::public_transfer(c, ctx.sender())
+   │                                  -             ^ Expected ')'
+   │                                  │              
+   │                                  To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/linked_table_tests.move:15:17
+   │
+15 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/prover_tests.move:29:18
+   │
+29 │         id.delete();
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/display_tests.move:86:32
+   │
+86 │         let len = fields.length();
+   │                                ^
+   │                                │
+   │                                Unexpected '('
+   │                                Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/linked_table.move:63:47
+   │
+63 │         let old_head = table.head.swap_or_fill(k);
+   │                                               ^
+   │                                               │
+   │                                               Unexpected '('
+   │                                               Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/vec_set_tests.move:11:17
+   │
+11 │         let mut m = vec_set::empty();
+   │                 ^
+   │                 │
+   │                 Unexpected 'm'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/fixed_commission.move:47:32
+   │
+47 │         let paid = request.paid();
+   │                                ^
+   │                                │
+   │                                Unexpected '('
+   │                                Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_tests.move:19:18
+   │
+19 │         let (mut kiosk, owner_cap) = test::get_kiosk(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/test_random.move:36:18
+   │
+36 │         let (mut i, mut output) = (0, vector[]);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/pay_tests.move:17:17
+   │
+17 │         let mut scenario = test_scenario::begin(TEST_SENDER_ADDR);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/test_scenario_tests.move:24:17
+   │
+24 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dynamic_field_tests.move:12:17
+   │
+12 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_test_utils.move:37:39
+   │
+37 │         policy.burn_policy_for_testing(cap)
+   │                                       ^
+   │                                       │
+   │                                       Unexpected '('
+   │                                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_request_tests.move:19:18
+   │
+19 │         let (mut policy, cap) = test::get_policy(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/hex.move:17:18
+   │
+17 │         let (mut i, mut r, l) = (0, vector[], bytes.length());
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01001]: invalid character
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/random.move:278:60
+    │
+278 │     /// Shuffle a vector using the random generator (Fisher–Yates/Knuth shuffle).
+    │                                                            ^ Invalid character '–' found when reading file. Only ASCII printable characters, tabs (\t), lf (\n) and crlf (\r\n) are permitted.
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/witness_policy_tests.move:66:18
+   │
+66 │         let (mut policy, cap) = test::prepare(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+  ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/tx_context_tests.move:9:17
+  │
+9 │         let mut ctx = tx_context::dummy();
+  │                 ^^^
+  │                 │
+  │                 Unexpected 'ctx'
+  │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dynamic_field.move:44:44
+   │
+44 │         let object_addr = object.to_address();
+   │                                            ^
+   │                                            │
+   │                                            Unexpected '('
+   │                                            Expected ';'
+
+error[E01002]: unexpected token
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/test_scenario.move:117:39
+    │
+117 │         let epoch = scenario.ctx.epoch();
+    │                                       ^
+    │                                       │
+    │                                       Unexpected '('
+    │                                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/table_tests.move:12:17
+   │
+12 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/table_vec_tests.move:13:17
+   │
+13 │         let mut scenario = test_scenario::begin(TEST_SENDER_ADDR);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dynamic_object_field_tests.move:29:17
+   │
+29 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/option.move:31:23
+   │
+31 │         t.vec.is_empty()
+   │                       ^
+   │                       │
+   │                       Unexpected '('
+   │                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/zklogin_verified_issuer_tests.move:12:59
+   │
+12 │         let iss = b"https://accounts.google.com".to_string();
+   │                                                           ^
+   │                                                           │
+   │                                                           Unexpected '('
+   │                                                           Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/package_tests.move:20:17
+   │
+20 │         let mut scenario = test_scenario::begin(@0x1);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/vec_map.move:45:31
+   │
+45 │         assert!(!self.contains(&key), EKeyAlreadyExists);
+   │                -              ^ Expected ')'
+   │                │               
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_config_tests.move:21:18
+   │
+21 │         let (mut policy, cap) = test::get_policy(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/item_locked_policy.move:28:32
+   │
+28 │         let item = request.item();
+   │                                ^
+   │                                │
+   │                                Unexpected '('
+   │                                Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/address.move:12:12
+   │
+12 │     public use fun sui::object::id_from_address as address.to_id;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_actions_tests.move:23:31
+   │
+23 │         assert!(request.action() == token::transfer_action(), 0);
+   │                -              ^ Expected ')'
+   │                │               
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bls12381_tests.move:94:27
+   │
+94 │     fun drand_message(mut prev_sig: vector<u8>, mut round: u64): vector<u8> {
+   │                           ^^^^^^^^
+   │                           │
+   │                           Unexpected 'prev_sig'
+   │                           Expected ':'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/math_tests.move:38:17
+   │
+38 │         let mut i = 0;
+   │                 ^
+   │                 │
+   │                 Unexpected 'i'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bag_tests.move:12:17
+   │
+12 │         let mut scenario = test_scenario::begin(sender);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/coin_tests.move:18:17
+   │
+18 │         let mut scenario = test_scenario::begin(TEST_ADDR);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/table.move:93:18
+   │
+93 │         id.delete()
+   │                  ^
+   │                  │
+   │                  Unexpected '('
+   │                  Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk.move:97:12
+   │
+97 │     public use fun kiosk_owner_cap_for as KioskOwnerCap.kiosk;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_extension.move:109:32
+    │
+109 │         assert!(self.has_access(cap), ENotOwner);
+    │                -               ^ Expected ')'
+    │                │                
+    │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/math.move:35:24
+   │
+35 │     public fun pow(mut base: u64, mut exponent: u8): u64 {
+   │                        ^^^^
+   │                        │
+   │                        Unexpected 'base'
+   │                        Expected ':'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dynamic_object_field.move:35:42
+   │
+35 │         add_child_object(field.to_address(), value);
+   │                         -                ^ Expected ')'
+   │                         │                 
+   │                         To match this '('
+
+error[E01002]: unexpected token
+    ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/transfer.move:108:39
+    │
+108 │         receive_impl(parent.to_address(), id, version)
+    │                     -                 ^ Expected ')'
+    │                     │                  
+    │                     To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/vector_tests.move:23:34
+   │
+23 │         assert!(&vector[0].length() == 1, 0);
+   │                -                 ^ Expected ')'
+   │                │                  
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/clock.move:38:27
+   │
+38 │         assert!(ctx.sender() == @0x0, ENotSystemAddress);
+   │                -          ^ Expected ')'
+   │                │           
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object.move:10:12
+   │
+10 │     public use fun id_to_address as ID.to_address;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bls12381.move:67:17
+   │
+67 │         let mut bytes = SCALAR_ZERO_BYTES;
+   │                 ^^^^^
+   │                 │
+   │                 Unexpected 'bytes'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/groth16_tests.move:12:17
+   │
+12 │         let mut arr = groth16::pvk_to_bytes(groth16::prepare_verifying_key(&bls12381(), &vk));
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'arr'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/verifier_tests.move:18:17
+   │
+18 │         let mut scenario = test_scenario::begin(admin);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token_public_actions_tests.move:15:17
+   │
+15 │         let mut token = test::mint(100, ctx);
+   │                 ^^^^^
+   │                 │
+   │                 Unexpected 'token'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/option_tests.move:13:29
+   │
+13 │         assert!(none.is_none(), 0);
+   │                -            ^ Expected ')'
+   │                │             
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/ascii.move:10:12
+   │
+10 │     public use fun std::string::from_ascii as String.to_string;
+   │            ^^^
+   │            │
+   │            Unexpected 'use'
+   │            Expected a module member: 'spec', 'use', 'friend', 'const', 'fun', or 'struct'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/object_tests.move:14:17
+   │
+14 │         let mut ctx = tx_context::dummy();
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'ctx'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/test_utils.move:22:47
+   │
+22 │         std::debug::print(&str.to_ascii_string())
+   │                          -                    ^ Expected ')'
+   │                          │                     
+   │                          To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/clock_tests.move:10:17
+   │
+10 │         let mut ctx = tx_context::dummy();
+   │                 ^^^
+   │                 │
+   │                 Unexpected 'ctx'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/test_random_tests.move:12:17
+   │
+12 │         let mut i = 0;
+   │                 ^
+   │                 │
+   │                 Unexpected 'i'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/vec_map_tests.move:11:17
+   │
+11 │         let mut m = vec_map::empty();
+   │                 ^
+   │                 │
+   │                 Unexpected 'm'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/zklogin_verified_id_tests.move:13:39
+   │
+13 │         let kc_name = b"sub".to_string();
+   │                                       ^
+   │                                       │
+   │                                       Unexpected '('
+   │                                       Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/tx_context.move:88:31
+   │
+88 │         assert!(tx_hash.length() == TX_HASH_LENGTH, EBadTxHashLength);
+   │                -              ^ Expected ')'
+   │                │               
+   │                To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/kiosk_borrow_tests.move:17:18
+   │
+17 │         let (mut kiosk, cap) = utils::get_kiosk(ctx);
+   │             -    ^ Expected ')'
+   │             │     
+   │             To match this '('
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/coin_balance_tests.move:14:17
+   │
+14 │         let mut scenario = test_scenario::begin(@0x1);
+   │                 ^^^^^^^^
+   │                 │
+   │                 Unexpected 'scenario'
+   │                 Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/url_tests.move:13:54
+   │
+13 │         let url_str = x"414243454647".to_ascii_string();
+   │                                                      ^
+   │                                                      │
+   │                                                      Unexpected '('
+   │                                                      Expected ';'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/bcs.move:61:24
+   │
+61 │     public fun new(mut bytes: vector<u8>): BCS {
+   │                        ^^^^^
+   │                        │
+   │                        Unexpected 'bytes'
+   │                        Expected ':'
+
+error[E01001]: invalid character
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/token.move:71:71
+   │
+71 │     public struct TokenPolicyCap<phantom T> has key, store { id: UID, `for`: ID }
+   │                                                                       ^ Invalid character: '`'
+
+error[E01002]: unexpected token
+   ┌─ ../sui-framework/packages/sui-framework/build/Sui/sources/dependencies/MoveStdlib/fixed_point32.move:41:36
+   │
+41 │         let unscaled_product = val as u128 * (multiplier.value as u128);
+   │                                    ^^
+   │                                    │
+   │                                    Unexpected 'as'
+   │                                    Expected ';'
 
