@@ -514,7 +514,29 @@
           "name": "Read API"
         }
       ],
-      "params": [],
+      "params": [
+        {
+          "name": "seed",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "iss",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        },
+        {
+          "name": "sub",
+          "required": true,
+          "schema": {
+            "type": "string"
+          }
+        }
+      ],
       "result": {
         "name": "String",
         "required": true,
@@ -1414,6 +1436,7 @@
                 "advance_to_highest_supported_protocol_version": false,
                 "allow_receiving_object_id": false,
                 "ban_entry_init": false,
+                "bfc_authenticator_state_supported": false,
                 "commit_root_state_digest": false,
                 "consensus_order_end_of_epoch_last": true,
                 "disable_invariant_violation_check_in_swap_loc": false,
@@ -1966,7 +1989,7 @@
                   "u64": "500"
                 },
                 "storage_gas_price": {
-                  "u64": "76"
+                  "u64": "38"
                 },
                 "storage_rebate_rate": {
                   "u64": "9900"
@@ -3804,6 +3827,30 @@
           }
         }
       ]
+    },
+    {
+      "name": "bfcx_getProposal",
+      "tags": [
+        {
+          "name": "Governance Read API"
+        }
+      ],
+      "params": [
+        {
+          "name": "owner",
+          "required": true,
+          "schema": {
+            "$ref": "#/components/schemas/SuiAddress"
+          }
+        }
+      ],
+      "result": {
+        "name": "Proposal",
+        "required": true,
+        "schema": {
+          "$ref": "#/components/schemas/Proposal"
+        }
+      }
     },
     {
       "name": "bfcx_getReferenceGasPrice",
@@ -8082,6 +8129,26 @@
                 "type": "null"
               }
             ]
+          }
+        }
+      },
+      "Proposal": {
+        "type": "object",
+        "required": [
+          "id",
+          "proposal"
+        ],
+        "properties": {
+          "id": {
+            "description": "id of the proposal",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UID"
+              }
+            ]
+          },
+          "proposal": {
+            "$ref": "#/components/schemas/ProposalInfo"
           }
         }
       },
