@@ -7,4 +7,4 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 1 'publish'. lines 28-50:
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 490960,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 245480,  storage_rebate: 64706, non_refundable_storage_fee: 654

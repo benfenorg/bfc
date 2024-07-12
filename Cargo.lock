@@ -10253,6 +10253,7 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bcs",
+ "fastcrypto",
  "hex",
  "hyper",
  "jsonrpsee",

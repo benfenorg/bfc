@@ -29,7 +29,7 @@ use sui_types::base_types_bfc::bfc_address_util::{sui_address_to_bfc_address, ob
 const GAS_UNIT_PRICE: u64 = 2;
 const DEFAULT_TRANSFER_AMOUNT: u64 = 1;
 const P2P_COMPUTE_GAS_USAGE: u64 = 1000;
-const P2P_SUCCESS_STORAGE_USAGE: u64 = 261440;
+const P2P_SUCCESS_STORAGE_USAGE: u64 = 130720;
 const P2P_FAILURE_STORAGE_USAGE: u64 = 130720;
 const INSUFFICIENT_GAS_UNITS_THRESHOLD: u64 = 2;
 

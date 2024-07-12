@@ -145,7 +145,7 @@ impl GasStatus {
         }
     }
 
-    const INTERNAL_UNIT_MULTIPLIER: u64 = 100;
+    const INTERNAL_UNIT_MULTIPLIER: u64 = 1000;
 
     fn to_internal_units(val: u64) -> InternalGas {
         InternalGas::new(val * Self::INTERNAL_UNIT_MULTIPLIER)

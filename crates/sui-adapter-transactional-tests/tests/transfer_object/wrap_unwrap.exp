@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-41:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 654360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 327180,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 43-43:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 251560,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 45-45:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -22,7 +22,7 @@ task 4 'run'. lines 47-47:
 created: object(4,0)
 mutated: object(0,0)
 wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 275880,  storage_rebate: 249044, non_refundable_storage_fee: 2516
+gas summary: computation_cost: 1000000, storage_cost: 137940,  storage_rebate: 124522, non_refundable_storage_fee: 1258
 
 task 5 'view-object'. lines 49-49:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -33,7 +33,7 @@ task 6 'run'. lines 51-51:
 mutated: object(0,0)
 unwrapped: object(2,0)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 251560,  storage_rebate: 273121, non_refundable_storage_fee: 2759
+gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 136561, non_refundable_storage_fee: 1379
 
 task 7 'view-object'. lines 53-53:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )

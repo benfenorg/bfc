@@ -6,27 +6,27 @@ A: object(0,0)
 task 1 'publish'. lines 10-84:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 1054880,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 527440,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 86-86:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 253080,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 126540,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 88-88:
 created: object(3,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 456760,  storage_rebate: 250549, non_refundable_storage_fee: 2531
+gas summary: computation_cost: 1000000, storage_cost: 228380,  storage_rebate: 125275, non_refundable_storage_fee: 1265
 
 task 4 'run'. lines 90-90:
 mutated: object(0,0), object(2,0), object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 456760,  storage_rebate: 452192, non_refundable_storage_fee: 4568
+gas summary: computation_cost: 1000000, storage_cost: 228380,  storage_rebate: 226096, non_refundable_storage_fee: 2284
 
 task 5 'run'. lines 92-92:
 created: object(5,0)
 mutated: object(0,0)
 wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 280440,  storage_rebate: 250549, non_refundable_storage_fee: 2531
+gas summary: computation_cost: 1000000, storage_cost: 140220,  storage_rebate: 125275, non_refundable_storage_fee: 1265
 
 task 6 'view-object'. lines 94-94:
 Owner: Object ID: ( BFC062510bdc247ce486b8b70c260cf7b21c5fdd623d8e4ec9fb6e9987a4e1a6ec82054 )
@@ -35,13 +35,13 @@ Contents: sui::dynamic_field::Field<u64, a::m::Counter> {id: sui::object::UID {i
 
 task 7 'run'. lines 96-96:
 mutated: object(0,0), object(5,0)
-gas summary: computation_cost: 1000000, storage_cost: 280440,  storage_rebate: 277636, non_refundable_storage_fee: 2804
+gas summary: computation_cost: 1000000, storage_cost: 140220,  storage_rebate: 138818, non_refundable_storage_fee: 1402
 
 task 8 'run'. lines 98-98:
 mutated: object(0,0)
 deleted: object(5,0)
 unwrapped_then_deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 277636, non_refundable_storage_fee: 2804
+gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 138818, non_refundable_storage_fee: 1402
 
 task 9 'view-object'. lines 100-100:
 Owner: Object ID: ( BFC062510bdc247ce486b8b70c260cf7b21c5fdd623d8e4ec9fb6e9987a4e1a6ec82054 )

@@ -1548,7 +1548,7 @@ async fn test_stable_native_transfer_sufficient_gas() -> SuiResult {
 
 #[tokio::test]
 async fn test_stable_native_transfer_gas_price_is_used() {
-    let max_budget = 500;
+    let max_budget = 5000;
     let result =
         execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
     let effects = result

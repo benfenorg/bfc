@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-71:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 975840,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 487920,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 73-75:
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1007000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 503500,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 77-77:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -20,7 +20,7 @@ Contents: test::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2
 
 task 4 'programmable'. lines 79-80:
 mutated: object(0,0), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 516040,  storage_rebate: 510880, non_refundable_storage_fee: 5160
+gas summary: computation_cost: 1000000, storage_cost: 258020,  storage_rebate: 255440, non_refundable_storage_fee: 2580
 
 task 5 'view-object'. lines 82-82:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -30,7 +30,7 @@ Contents: test::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2
 task 6 'programmable'. lines 84-85:
 mutated: object(0,0), object(2,2)
 deleted: object(2,0), object(2,3)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 626749, non_refundable_storage_fee: 6331
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 313375, non_refundable_storage_fee: 3165
 
 task 7 'view-object'. lines 87-90:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -39,15 +39,15 @@ Contents: test::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2
 
 task 8 'programmable'. lines 92-93:
 mutated: object(_), object(2,2)
-gas summary: computation_cost: 500000, storage_cost: 259160,  storage_rebate: 127156, non_refundable_storage_fee: 1284
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
 task 9 'programmable'. lines 95-96:
 mutated: object(_), object(2,2)
-gas summary: computation_cost: 500000, storage_cost: 259160,  storage_rebate: 127156, non_refundable_storage_fee: 1284
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
 task 10 'programmable'. lines 98-102:
 mutated: object(_), object(2,2)
-gas summary: computation_cost: 500000, storage_cost: 259160,  storage_rebate: 127156, non_refundable_storage_fee: 1284
+gas summary: computation_cost: 500000, storage_cost: 129580,  storage_rebate: 63578, non_refundable_storage_fee: 642
 
 task 11 'programmable'. lines 104-105:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 3, instruction: 12, function_name: Some("check") }, 0) in command 0

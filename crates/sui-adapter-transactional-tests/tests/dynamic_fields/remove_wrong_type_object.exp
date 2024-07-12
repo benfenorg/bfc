@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 10-36:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 701480,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 350740,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 38-38:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 620920,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 40-40:
 Error: Transaction Effects Status: Move Runtime Abort. Location: sui::dynamic_field::remove_child_object (function index 13) at offset 0, Abort Code: 2

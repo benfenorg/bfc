@@ -6,20 +6,20 @@ P1: object(0,0), P2: object(0,1)
 task 1 'publish'. lines 8-55:
 created: object(1,0)
 mutated: object(0,3)
-gas summary: computation_cost: 1000000, storage_cost: 775200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 387600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 57-59:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 251560,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'programmable'. lines 61-62:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 251560,  storage_rebate: 249044, non_refundable_storage_fee: 2516
+gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 124522, non_refundable_storage_fee: 1258
 
 task 4 'programmable'. lines 64-65:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 251560,  storage_rebate: 249044, non_refundable_storage_fee: 2516
+gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 124522, non_refundable_storage_fee: 1258
 
 task 5 'view-object'. lines 67-70:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -29,7 +29,7 @@ Contents: test::m::A {id: sui::object::UID {id: sui::object::ID {bytes: fake(2,0
 task 6 'programmable'. lines 72-74:
 created: object(6,0), object(6,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 398240,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 199120,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 7 'view-object'. lines 76-76:
 Owner: Object ID: ( BFC9a8cc422ec707269846fc523e86ddf10ce99b298f5c286c5b68671166e593c5b4a4a )
@@ -38,7 +38,7 @@ Contents: sui::dynamic_field::Field<u64, u64> {id: sui::object::UID {id: sui::ob
 
 task 8 'programmable'. lines 78-79:
 mutated: object(0,1), object(6,0), object(6,1)
-gas summary: computation_cost: 1000000, storage_cost: 398240,  storage_rebate: 394258, non_refundable_storage_fee: 3982
+gas summary: computation_cost: 1000000, storage_cost: 199120,  storage_rebate: 197129, non_refundable_storage_fee: 1991
 
 task 9 'view-object'. lines 81-85:
 Owner: Object ID: ( BFC9a8cc422ec707269846fc523e86ddf10ce99b298f5c286c5b68671166e593c5b4a4a )
@@ -49,13 +49,13 @@ task 10 'programmable'. lines 87-92:
 created: object(10,0)
 mutated: object(_), object(2,0)
 wrapped: object(6,1)
-gas summary: computation_cost: 500000, storage_cost: 444600,  storage_rebate: 239263, non_refundable_storage_fee: 2417
+gas summary: computation_cost: 500000, storage_cost: 222300,  storage_rebate: 119632, non_refundable_storage_fee: 1208
 
 task 11 'programmable'. lines 94-98:
 created: object(10,0)
 mutated: object(_), object(2,0)
 wrapped: object(6,1)
-gas summary: computation_cost: 500000, storage_cost: 444600,  storage_rebate: 239263, non_refundable_storage_fee: 2417
+gas summary: computation_cost: 500000, storage_cost: 222300,  storage_rebate: 119632, non_refundable_storage_fee: 1208
 
 task 12 'programmable'. lines 100-104:
 Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: test, name: Identifier("m") }, function: 4, instruction: 13, function_name: Some("check") }, 0) in command 1

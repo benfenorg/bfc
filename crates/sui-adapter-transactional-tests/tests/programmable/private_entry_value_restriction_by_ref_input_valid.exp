@@ -6,18 +6,18 @@ A: object(0,0)
 task 1 'publish'. lines 9-25:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 582160,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 291080,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 27-29:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'programmable'. lines 31-38:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 252320,  storage_rebate: 249797, non_refundable_storage_fee: 2523
+gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 124898, non_refundable_storage_fee: 1262
 
 task 4 'programmable'. lines 40-45:
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 261440,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654

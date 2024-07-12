@@ -6,21 +6,21 @@ A: object(0,0)
 task 1 'publish'. lines 8-18:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 467400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 233700,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'publish'. lines 20-23:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 539600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 269800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'publish'. lines 25-28:
 created: object(3,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 376200,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 188100,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 5 'programmable'. lines 36-41:
 Error: Transaction Effects Status: Invalid package upgrade. Digest in upgrade ticket and computed digest disagree
-Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: PackageUpgradeError { upgrade_error: DigestDoesNotMatch { digest: [127, 112, 245, 238, 218, 245, 196, 135, 237, 39, 176, 155, 89, 55, 161, 255, 79, 50, 183, 171, 51, 169, 221, 49, 204, 29, 251, 12, 181, 179, 121, 141] } }, source: None, command: Some(2) } }
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: PackageUpgradeError { upgrade_error: DigestDoesNotMatch { digest: [129, 120, 43, 41, 44, 76, 207, 34, 162, 14, 160, 157, 252, 110, 45, 26, 71, 231, 129, 203, 85, 90, 185, 252, 99, 77, 29, 78, 220, 27, 149, 83] } }, source: None, command: Some(2) } }
 
 task 6 'programmable'. lines 43-45:
 Error: Transaction Effects Status: Move Runtime Abort. Location: p::n::bar (function index 0) at offset 6, Abort Code: 0

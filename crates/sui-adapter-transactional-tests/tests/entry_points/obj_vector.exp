@@ -6,39 +6,39 @@ A: object(0,0)
 task 1 'publish'. lines 8-116:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 1296560,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 648280,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 118-118:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 120-124:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 4 'run'. lines 126-126:
 mutated: object(0,0)
 deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 256568, non_refundable_storage_fee: 2592
+gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 128284, non_refundable_storage_fee: 1296
 
 task 5 'run'. lines 128-128:
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 6 'run'. lines 130-130:
 created: object(6,0), object(6,1)
 mutated: object(0,0), object(5,0)
-gas summary: computation_cost: 1000000, storage_cost: 633080,  storage_rebate: 256568, non_refundable_storage_fee: 2592
+gas summary: computation_cost: 1000000, storage_cost: 316540,  storage_rebate: 128284, non_refundable_storage_fee: 1296
 
 task 7 'run'. lines 132-136:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x9258a7054eeccd0cd2254e54c9393c97e65ec35070e8d142f837637bc5d43777, parent_id: 0x02e645f1eb353f606c96ea85a1d83e8d432dc11828679904f6ab37b3a0e1211f }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x029e77cd1d91f1466c79933893a87262b8300d2afafbee9ad0433c0e09a78986, parent_id: 0xd2b54f4a00b0de36293aa18a453ce036b64a32dcef7cf16de39eb044a92f0ec4 }
 
 task 8 'run'. lines 138-138:
 created: object(8,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 264480,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 132240,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 9 'run'. lines 140-143:
 Error: Transaction Effects Status: Invalid command argument at 0. The type of the value does not match the expected type
@@ -47,12 +47,12 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 10 'run'. lines 145-145:
 created: object(10,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 264480,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 132240,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 11 'run'. lines 147-147:
 created: object(11,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 12 'run'. lines 149-152:
 Error: Transaction Effects Status: Invalid command argument at 1. The type of the value does not match the expected type
@@ -61,7 +61,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 13 'run'. lines 154-154:
 created: object(13,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 14 'run'. lines 156-159:
 Error: Transaction Effects Status: Invalid command argument at 0. Immutable and shared objects cannot be passed by-value.
@@ -70,7 +70,7 @@ Cannot return execution error with shared objects. Debug of error: CommandArgume
 task 15 'run'. lines 161-161:
 created: object(15,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 16 'run'. lines 163-166:
 Error: Transaction Effects Status: Invalid command argument at 0. Invalid usage of value. Mutably borrowed values require unique usage. Immutably borrowed values cannot be taken or borrowed mutably. Taken values cannot be used again.
@@ -79,7 +79,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 17 'run'. lines 168-168:
 created: object(17,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 259160,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 64706, non_refundable_storage_fee: 654
 
 task 18 'run'. lines 170-170:
 Error: Transaction Effects Status: Invalid command argument at 0. Invalid usage of value. Mutably borrowed values require unique usage. Immutably borrowed values cannot be taken or borrowed mutably. Taken values cannot be used again.

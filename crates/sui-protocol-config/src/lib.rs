@@ -1002,7 +1002,7 @@ impl ProtocolConfig {
             max_move_package_size: Some(100 * 1024),
             max_tx_gas: Some(100_000_000),
             max_gas_price: Some(10_000),
-            max_gas_computation_bucket: Some(500_000),
+            max_gas_computation_bucket: Some(5_000_000),
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
             max_function_parameters: Some(128),
@@ -1256,7 +1256,7 @@ impl ProtocolConfig {
                     // min gas budget is in MIST and an absolute value 2000MIST or 0.000002SUI
                     cfg.base_tx_cost_fixed = Some(2_000);
                     // storage gas price multiplier
-                    cfg.storage_gas_price = Some(76);
+                    cfg.storage_gas_price = Some(38);
                     cfg.feature_flags.loaded_child_objects_fixed = true;
                     // max size of written objects during a TXn
                     cfg.max_size_written_objects = Some(5 * 1000 * 1000);
@@ -1305,8 +1305,8 @@ impl ProtocolConfig {
                         .advance_to_highest_supported_protocol_version = true;
                 }
                 10 => {
-                    cfg.max_verifier_meter_ticks_per_function = Some(17_000_000);
-                    cfg.max_meter_ticks_per_module = Some(17_000_000);
+                    cfg.max_verifier_meter_ticks_per_function = Some(20_000_000);
+                    cfg.max_meter_ticks_per_module = Some(20_000_000);
                 }
                 11 => {
                     cfg.max_move_value_depth = Some(128);
@@ -1424,10 +1424,6 @@ impl ProtocolConfig {
 
 // Setters for tests
 impl ProtocolConfig {
-    pub fn set_gas_rounding_step(&mut self, gas_rounding_step: Option<u64>) {
-        self.gas_rounding_step = gas_rounding_step
-    }
-
     pub fn set_package_upgrades_for_testing(&mut self, val: bool) {
         self.feature_flags.package_upgrades = val
     }

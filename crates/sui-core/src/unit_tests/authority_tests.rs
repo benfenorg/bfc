@@ -1242,6 +1242,50 @@ async fn test_dry_run_with_stable_gas_coin() {
 }
 
 #[tokio::test]
+async fn test_dry_run_with_two_gas_coin() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let (validator, fullnode) = init_state_validator_with_fullnode().await;
+    let (validator, object_basics) = publish_object_basics(validator).await;
+    let (fullnode, _object_basics) = publish_object_basics(fullnode).await;
+    let gas1_id = ObjectID::random();
+    let gas2_id = ObjectID::random();
+    let gas1_object = Object::with_id_owner_gas_for_testing(gas1_id, sender, 1);
+    let gas2_object = Object::with_id_owner_gas_for_testing(gas2_id, sender, 1000000000);
+    validator.insert_genesis_object(gas1_object.clone()).await;
+    validator.insert_genesis_object(gas2_object.clone()).await;
+    fullnode.insert_genesis_object(gas1_object.clone()).await;
+    fullnode.insert_genesis_object(gas2_object.clone()).await;
+    let rgp = fullnode.reference_gas_price_for_testing().unwrap();
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Pure(bcs::to_bytes(&(32_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&sender).unwrap()),
+        ],
+        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
+            package: object_basics.0,
+            module: Identifier::new("object_basics").unwrap(),
+            function: Identifier::new("create").unwrap(),
+            type_arguments: vec![],
+            arguments: vec![Argument::Input(0), Argument::Input(1)],
+        }))],
+    };
+    // dry run
+    let data = TransactionData::new_programmable(
+        sender,
+        vec![gas1_object.compute_object_reference(), gas2_object.compute_object_reference()],
+        pt,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp,
+    );
+    let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
+    let digest = *transaction.digest();
+    let DryRunTransactionBlockResponse { effects, .. } =
+        fullnode.dry_exec_transaction(data, digest).await.unwrap().0;
+    println!("{:?}", effects);
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
+#[tokio::test]
 async fn test_handle_transfer_transaction_bad_signature() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let recipient = dbg_addr(2);
