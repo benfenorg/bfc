@@ -122,6 +122,9 @@ fn create_rust_service(path: &Path) -> Result<()> {
         .get_file("src/main.rs")
         .context("getting main.rs file from boilerplate")
         .unwrap();
+
+
+
     let main_body = main_rs.contents();
     let cargo_body =
         std::str::from_utf8(cargo_toml.contents()).context("decoding cargo toml body")?;

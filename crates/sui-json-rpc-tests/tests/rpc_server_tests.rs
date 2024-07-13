@@ -1242,7 +1242,7 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
 
 
 #[sim_test]
-async fn test_get_dao() -> Result<(), anyhow::Error> {
+async fn sim_test_get_dao() -> Result<(), anyhow::Error> {
     telemetry_subscribers::init_for_testing();
     info!("=================");
     let cluster = TestClusterBuilder::new()
