@@ -901,6 +901,9 @@ importers:
       '@suchipi/femver':
         specifier: ^1.0.0
         version: 1.0.0
+      '@tanstack/react-query':
+        specifier: '*'
+        version: 5.45.0(react@18.2.0)
       '@vanilla-extract/css':
         specifier: ^1.15.3
         version: 1.15.3
@@ -989,9 +992,6 @@ importers:
       '@size-limit/preset-small-lib':
         specifier: ^8.2.6
         version: 8.2.6(size-limit@8.2.6)
-      '@tanstack/react-query':
-        specifier: ^5.0.0
-        version: 5.45.0(react@18.2.0)
       '@testing-library/dom':
         specifier: ^9.3.1
         version: 9.3.1
@@ -9751,6 +9751,7 @@ packages:
 
   /@tanstack/query-core@5.45.0:
     resolution: {integrity: sha512-RVfIZQmFUTdjhSAAblvueimfngYyfN6HlwaJUPK71PKd7yi43Vs1S/rdimmZedPWX/WGppcq/U1HOj7O7FwYxw==}
+    dev: false
 
   /@tanstack/query-persist-client-core@4.36.1:
     resolution: {integrity: sha512-eocgCeI7D7TRv1IUUBMfVwOI0wdSmMkBIbkKhqEdTrnUHUQEeOaYac8oeZk2cumAWJdycu6P/wB+WqGynTnzXg==}
@@ -9774,6 +9775,7 @@ packages:
     dependencies:
       '@tanstack/query-core': 5.45.0
       react: 18.2.0
+    dev: false
 
   /@testing-library/dom@9.3.1:
     resolution: {integrity: sha512-0DGPd9AR3+iDTjGoMpxIkAsUihHZ3Ai6CneU6bRRrffXMgzCdlNk43jTrD2/5LT6CBb3MWTP8v510JzYtahD2w==}

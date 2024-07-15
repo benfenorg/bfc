@@ -4,7 +4,6 @@
 import networkEnv from '_src/background/NetworkEnv';
 import { type NetworkEnvType } from '_src/shared/api-env';
 import { deobfuscate, obfuscate } from '_src/shared/cryptography/keystore';
-import { getActiveNetworkSuiClient } from '_src/shared/sui-client';
 import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
 import {
 	toSerializedSignature,
@@ -25,6 +24,7 @@ import { getCurrentEpoch } from './current-epoch';
 import { type ZkLoginProvider } from './providers';
 import {
 	createPartialZkLoginSignature,
+	getSalt,
 	prepareZkLogin,
 	zkLoginAuthenticate,
 	type PartialZkLoginSignature,
@@ -128,12 +128,7 @@ export class ZkLoginAccount
 		};
 		const claimName = 'sub';
 		const claimValue = decodedJWT.sub;
-		const client = await getActiveNetworkSuiClient();
-		const salt = await client.getZkloginSalt({
-			seed: decodedJWT.sub,
-			sub: decodedJWT.sub,
-			iss: decodedJWT.iss,
-		});
+		const salt = await getSalt(jwt);
 
 		return {
 			type: 'zkLogin',

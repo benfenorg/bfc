@@ -1,8 +1,6 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-export * from './components/connect-modal/ConnectModal.js';
-export * from './components/ConnectButton.js';
 export * from './components/BenfenClientProvider.js';
 export * from './components/WalletProvider.js';
 export * from './hooks/networkConfig.js';

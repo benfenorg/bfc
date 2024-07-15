@@ -132,7 +132,6 @@ export type PartialZkLoginSignature = Omit<
 	'addressSeed'
 >;
 
-// const zkLoginProofsServerUrl = 'https://zkproverdev.openblock.vip/v1';
 const zkLoginProofsServerUrl = 'https://zkproverdev1.openblock.vip/v1';
 
 export async function createPartialZkLoginSignature({
@@ -159,4 +158,17 @@ export async function createPartialZkLoginSignature({
 		}),
 	});
 	return response.json();
+}
+
+export async function getSalt(jwt: string): Promise<string> {
+	const result = await fetch('https://saltdev.openblock.vip/generate_salt', {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Request-Id': uuidV4(),
+		},
+		body: JSON.stringify({ jwt }),
+	});
+	const json = await result.json();
+	return json.result;
 }

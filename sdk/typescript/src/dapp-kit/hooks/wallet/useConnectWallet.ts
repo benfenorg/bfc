@@ -50,7 +50,6 @@ export function useConnectWallet({
 				setConnectionStatus('connecting');
 
 				const connectResult = await wallet.features['standard:connect'].connect(connectArgs);
-				console.warn('connectResult', JSON.stringify(connectResult, null, 2));
 				const connectedBenfenAccounts = connectResult.accounts.filter((account) =>
 					account.chains.some((chain) => chain.split(':')[0] === 'bfc'),
 				);

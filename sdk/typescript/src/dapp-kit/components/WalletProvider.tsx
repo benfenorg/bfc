@@ -19,14 +19,9 @@ import { WalletContext } from '../contexts/walletContext.js';
 import { useAutoConnectWallet } from '../hooks/wallet/useAutoConnectWallet.js';
 import { useWalletPropertiesChanged } from '../hooks/wallet/useWalletPropertiesChanged.js';
 import { useWalletsChanged } from '../hooks/wallet/useWalletsChanged.js';
-import type { ZkSendWalletConfig } from '../hooks/wallet/useZkSendWallet.js';
-import { useZkSendWallet } from '../hooks/wallet/useZkSendWallet.js';
-import { lightTheme } from '../themes/lightTheme.js';
-import type { Theme } from '../themes/themeContract.js';
 import { createInMemoryStore } from '../utils/stateStorage.js';
 import { getRegisteredWallets } from '../utils/walletUtils.js';
 import { createWalletStore } from '../walletStore.js';
-import { InjectedThemeStyles } from './styling/InjectedThemeStyles.js';
 
 export type WalletProviderProps = {
 	/** A list of wallets that are sorted to the top of the wallet list, if they are available to connect to. By default, wallets are sorted by the order they are loaded in. */
@@ -38,17 +33,11 @@ export type WalletProviderProps = {
 	/** Enables automatically reconnecting to the most recently used wallet account upon mounting. */
 	autoConnect?: boolean;
 
-	/** Enables the zkSend wallet */
-	zkSend?: ZkSendWalletConfig;
-
 	/** Configures how the most recently connected to wallet account is stored. Set to `null` to disable persisting state entirely. Defaults to using localStorage if it is available. */
 	storage?: StateStorage | null;
 
 	/** The key to use to store the most recently connected wallet account. */
 	storageKey?: string;
-
-	/** The theme to use for styling UI components. Defaults to using the light theme. */
-	theme?: Theme | null;
 
 	children: ReactNode;
 };
@@ -61,8 +50,6 @@ export function WalletProvider({
 	storage = DEFAULT_STORAGE,
 	storageKey = DEFAULT_STORAGE_KEY,
 	autoConnect = false,
-	zkSend,
-	theme = lightTheme,
 	children,
 }: WalletProviderProps) {
 	const storeRef = useRef(
@@ -79,10 +66,7 @@ export function WalletProvider({
 			<WalletConnectionManager
 				preferredWallets={preferredWallets}
 				requiredFeatures={requiredFeatures}
-				zkSend={zkSend}
 			>
-				{/* TODO: We ideally don't want to inject styles if people aren't using the UI components */}
-				{theme ? <InjectedThemeStyles theme={theme} /> : null}
 				{children}
 			</WalletConnectionManager>
 		</WalletContext.Provider>
@@ -91,18 +75,16 @@ export function WalletProvider({
 
 type WalletConnectionManagerProps = Pick<
 	WalletProviderProps,
-	'preferredWallets' | 'requiredFeatures' | 'zkSend' | 'children'
+	'preferredWallets' | 'requiredFeatures' | 'children'
 >;
 
 function WalletConnectionManager({
 	preferredWallets = DEFAULT_PREFERRED_WALLETS,
 	requiredFeatures = DEFAULT_REQUIRED_FEATURES,
-	zkSend,
 	children,
 }: WalletConnectionManagerProps) {
 	useWalletsChanged(preferredWallets, requiredFeatures);
 	useWalletPropertiesChanged();
-	useZkSendWallet(zkSend);
 	useAutoConnectWallet();
 
 	return children;

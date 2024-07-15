@@ -67,7 +67,6 @@ import type {
 	GetStakesParams,
 	GetTotalSupplyParams,
 	GetTransactionBlockParams,
-	GetZkloginSaltParams,
 	MoveCallMetrics,
 	MultiGetObjectsParams,
 	MultiGetTransactionBlocksParams,
@@ -793,13 +792,6 @@ export class BenfenClient {
 		return await this.transport.request({
 			method: 'bfc_getProtocolConfig',
 			params: [input?.version],
-		});
-	}
-
-	async getZkloginSalt({ seed, iss, sub }: GetZkloginSaltParams): Promise<string> {
-		return await this.transport.request({
-			method: 'bfc_getBfcZkloginSalt',
-			params: [seed, iss, sub],
 		});
 	}
 

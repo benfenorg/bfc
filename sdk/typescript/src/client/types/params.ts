@@ -569,9 +569,3 @@ export interface UnsafeTransferBfcParams {
 	/** the amount to be split out and transferred */
 	amount?: string | null | undefined;
 }
-
-export interface GetZkloginSaltParams {
-	seed: string;
-	iss: string;
-	sub: string;
-}
