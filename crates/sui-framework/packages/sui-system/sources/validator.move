@@ -33,7 +33,7 @@ module sui_system::validator {
     use sui::url::Url;
     use sui::url;
     use sui::event;
-    use sui::bag::{Bag, length};
+    use sui::bag::Bag;
     use sui::bag;
     use sui::vec_map;
     use sui::vec_map::VecMap;

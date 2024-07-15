@@ -302,7 +302,7 @@ module sui_system::validator_set {
             validator_wrapper::create_v1(validator, ctx),
         );
 
-        let j = 0;
+        let mut j = 0;
         while (j < id_len) {
         let id = vector::borrow(&id_vec, j);
         table::add(
@@ -719,7 +719,7 @@ module sui_system::validator_set {
 	validator.get_staking_pool_ref().exchange_rates()
     }
 
-    public(friend) fun pool_exchange_stable_rates<STABLE>(
+    public(package) fun pool_exchange_stable_rates<STABLE>(
             self: &mut ValidatorSet, pool_id: &ID
     ) : &Table<u64, PoolStableTokenExchangeRate> {
         let validator =
@@ -1065,7 +1065,7 @@ module sui_system::validator_set {
             validator_pool_id,
             validator_wrapper::create_v1(validator, ctx),
         );
-        let j = 0;
+        let mut j = 0;
         while (j < id_len) {
             let id = vector::borrow(&id_vec, j);
             table::add(

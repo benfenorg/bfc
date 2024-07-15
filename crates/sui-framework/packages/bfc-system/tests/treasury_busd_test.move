@@ -1,28 +1,28 @@
 #[test_only]
-#[allow(unused_mut_ref)]
 module bfc_system::treasury_busd_test {
     use sui::test_scenario::{Self, Scenario};
     use std::debug;
+    use std::vector;
     use std::ascii::string;
+    use std::debug::print;
     use bfc_system::clmm_math;
     use bfc_system::i32;
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use std::debug::print;
     use sui::bfc::BFC;
     use sui::clock;
+    use sui::kiosk::owner;
+    use sui::transfer;
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::vault;
     use bfc_system::busd::{Self, BUSD};
-    use sui::kiosk::owner;
-
 
     const IS_DEBUG: bool = true;
 
     #[test]
     public fun test_treasury() {
         let owner = @0x0;
-        let mut scenario_val = test_scenario::begin(owner);
+        let scenario_val = test_scenario::begin(owner);
 
         //create treasury
         test_scenario::next_tx(&mut scenario_val, owner);
@@ -54,8 +54,8 @@ module bfc_system::treasury_busd_test {
         // create vault
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
             let usd_supply = busd::new(test_scenario::ctx(&mut scenario_val));
             treasury::create_vault<BUSD>(
@@ -77,7 +77,7 @@ module bfc_system::treasury_busd_test {
         // init positions
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let usd_vault_key = treasury::get_vault_key<BUSD>();
             let mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
             let ticks = vault::init_positions<BUSD>(
@@ -120,10 +120,10 @@ module bfc_system::treasury_busd_test {
         test_scenario::next_tx(&mut scenario_val, owner);
         {
             let position_index = 2;
-            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let usd_vault_key = treasury::get_vault_key<BUSD>();
             let usd_mut_vault = treasury::borrow_mut_vault<BUSD>(&mut t, usd_vault_key);
-            let upper =  i32::from(1);
+            let upper = i32::from(1);
             let lower = i32::sub(upper, i32::from(2));
             let (liquidity, amount_a, amount_b) = clmm_math::get_liquidity_by_amount(
                 lower,
@@ -204,9 +204,9 @@ module bfc_system::treasury_busd_test {
         let min_amount = 0;
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let input_bfc = balance::create_for_testing<BFC>(total_amount_bfc);
             let coin_bfc = coin::from_balance(
                 input_bfc,
@@ -253,23 +253,23 @@ module bfc_system::treasury_busd_test {
         // check total token after mint
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-        let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-        let usd_vault_key = treasury::get_vault_key<BUSD>();
-        let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
-        let (balance_coin_busd, balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
-        balance_busd_vault = balance_coin_busd;
-        balance_bfc_vault = balance_coin_bfc;
-        let total_busd = balance_busd_alice + balance_busd_vault;
-        let total_bfc = balance_bfc_vault + balance_bfc_alice;
-        if (IS_DEBUG) {
-        debug::print(&string(b"current balance after mint ..."));
-        debug::print(&balance_coin_busd);
-        debug::print(&balance_coin_bfc);
-        };
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (balance_coin_busd, balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
+            balance_busd_vault = balance_coin_busd;
+            balance_bfc_vault = balance_coin_bfc;
+            let total_busd = balance_busd_alice + balance_busd_vault;
+            let total_bfc = balance_bfc_vault + balance_bfc_alice;
+            if (IS_DEBUG) {
+                debug::print(&string(b"current balance after mint ..."));
+                debug::print(&balance_coin_busd);
+                debug::print(&balance_coin_bfc);
+            };
 
-        assert!(total_busd == base_point, 107);
-        assert!(total_bfc == (base_point + total_amount_bfc), 108);
-        test_scenario::return_shared(t);
+            assert!(total_busd == base_point, 107);
+            assert!(total_bfc == (base_point + total_amount_bfc), 108);
+            test_scenario::return_shared(t);
         };
 
         // check price after swap
@@ -294,9 +294,9 @@ module bfc_system::treasury_busd_test {
         // alice swap usd-bfc
         test_scenario::next_tx(&mut scenario_val, alice);
         {
-            let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+            let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
             clock::increment_for_testing(&mut clock, 360000);
-            let mut t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
             let coin_usd = test_scenario::take_from_sender<Coin<BUSD>>(&scenario_val);
             let amount = coin::value(&coin_usd) / 2;
             let min_amount: u64 = 0;
@@ -335,26 +335,27 @@ module bfc_system::treasury_busd_test {
             test_scenario::return_to_sender(&scenario_val, coin_bfc);
             test_scenario::return_to_sender(&scenario_val, coin_bfc_1);
         };
+
         // check total token after redeem
         test_scenario::next_tx(&mut scenario_val, owner);
         {
-        let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
-        let usd_vault_key = treasury::get_vault_key<BUSD>();
-        let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
-        let (balance_coin_busd, balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
-        balance_busd_vault = balance_coin_busd;
-        balance_bfc_vault = balance_coin_bfc;
-        let total_busd = balance_busd_alice + balance_busd_vault;
-        let total_bfc = balance_bfc_vault + balance_bfc_alice;
-        if (IS_DEBUG) {
-        debug::print(&string(b"current balance after mint ..."));
-        debug::print(&balance_coin_busd);
-        debug::print(&balance_coin_bfc);
-        };
+            let t = test_scenario::take_shared<Treasury>(&mut scenario_val);
+            let usd_vault_key = treasury::get_vault_key<BUSD>();
+            let usd_vault = treasury::borrow_vault<BUSD>(&t, usd_vault_key);
+            let (balance_coin_busd, balance_coin_bfc) = vault::balances<BUSD>(usd_vault);
+            balance_busd_vault = balance_coin_busd;
+            balance_bfc_vault = balance_coin_bfc;
+            let total_busd = balance_busd_alice + balance_busd_vault;
+            let total_bfc = balance_bfc_vault + balance_bfc_alice;
+            if (IS_DEBUG) {
+                debug::print(&string(b"current balance after mint ..."));
+                debug::print(&balance_coin_busd);
+                debug::print(&balance_coin_bfc);
+            };
 
-        assert!(total_busd == base_point, 107);
-        assert!(total_bfc == (base_point + total_amount_bfc), 108);
-        test_scenario::return_shared(t);
+            assert!(total_busd == base_point, 107);
+            assert!(total_bfc == (base_point + total_amount_bfc), 108);
+            test_scenario::return_shared(t);
         };
 
         test_scenario::end(scenario_val);
@@ -576,6 +577,7 @@ module bfc_system::treasury_busd_test {
 
         test_scenario::end(scenario_val);
     }
+
     #[test]
     #[expected_failure(abort_code = bfc_system::vault::ERR_TICK_INDEX_OPTION_IS_NONE)]
     public fun test_busd_out_of_liquidity() {
@@ -661,6 +663,8 @@ module bfc_system::treasury_busd_test {
 
         test_scenario::end(scenario_val);
     }
+
+
 }
 
 

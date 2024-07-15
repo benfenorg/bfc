@@ -53,7 +53,6 @@ module sui_system::sui_system {
     use sui_system::staking_pool::PoolTokenExchangeRate;
     use bfc_system::bfc_system;
     use sui::dynamic_field;
-    use sui::object::ID;
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 

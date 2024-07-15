@@ -82,6 +82,7 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `update_validator_next_epoch_network_pubkey`](#0x3_sui_system_update_validator_next_epoch_network_pubkey)
 -  [Function `update_candidate_validator_network_pubkey`](#0x3_sui_system_update_candidate_validator_network_pubkey)
 -  [Function `pool_exchange_rates`](#0x3_sui_system_pool_exchange_rates)
+-  [Function `pool_exchange_stable_rates`](#0x3_sui_system_pool_exchange_stable_rates)
 -  [Function `active_validator_addresses`](#0x3_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#0x3_sui_system_advance_epoch)
 -  [Function `get_stable_rate`](#0x3_sui_system_get_stable_rate)
@@ -1454,6 +1455,34 @@ Getter of the pool token exchange rate of a staking pool. Works for both active 
 ): &Table&lt;u64, PoolTokenExchangeRate&gt;  {
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_pool_exchange_rates">sui_system_state_inner::pool_exchange_rates</a>(self, pool_id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_pool_exchange_stable_rates"></a>
+
+## Function `pool_exchange_stable_rates`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_pool_exchange_stable_rates">pool_exchange_stable_rates</a>&lt;STABLE&gt;(wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, pool_id: &<a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>): &<a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;u64, <a href="stable_pool.md#0x3_stable_pool_PoolStableTokenExchangeRate">stable_pool::PoolStableTokenExchangeRate</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_pool_exchange_stable_rates">pool_exchange_stable_rates</a>&lt;STABLE&gt;(
+    wrapper: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
+    pool_id: &ID
+): &Table&lt;u64, PoolStableTokenExchangeRate&gt;  {
+    <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_pool_exchange_stable_rates">sui_system_state_inner::pool_exchange_stable_rates</a>&lt;STABLE&gt;(self, pool_id)
 }
 </code></pre>
 

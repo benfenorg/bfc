@@ -7,7 +7,6 @@ module sui_system::sui_system_state_inner {
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
     use sui::bfc::BFC;
-    use std::string::utf8;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};

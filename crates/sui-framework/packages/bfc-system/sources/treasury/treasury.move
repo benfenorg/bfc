@@ -472,7 +472,7 @@ module bfc_system::treasury {
 
         // update updated_at
         _treasury.updated_at = current_ts;
-        let bfc_in_vault = 0;
+        let mut bfc_in_vault = 0;
         let key = get_vault_key<StableCoinType>();
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, key != get_vault_key<MGG>(), _ctx);
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, key != get_vault_key<BUSD>(), _ctx);
@@ -585,6 +585,7 @@ module bfc_system::treasury {
         balance::supply_value(supply)
     }
 
+    #[allow(unused_trailing_semi)]
     fun one_coin_rebalance_internal<StableCoinType>(
         _treasury: &mut Treasury,
         _update: bool,
@@ -605,6 +606,7 @@ module bfc_system::treasury {
         };
 
         if (_update) {
+            // update shape
             vault::update_state(mut_v);
         };
 
