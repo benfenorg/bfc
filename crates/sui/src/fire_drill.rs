@@ -6,8 +6,8 @@
 //! 2. restart the node in a new epoch when config file will be reloaded and take effects
 //!
 //! Example usage:
-//! sui fire-drill metadata-rotation \
-//! --sui-node-config-path validator.yaml \
+//! bfc fire-drill metadata-rotation \
+//! --bfc-node-config-path validator.yaml \
 //! --account-key-path account.key \
 //! --fullnode-rpc-url http://fullnode-my-local-net:9000
 
@@ -39,8 +39,8 @@ pub enum FireDrill {
 #[derive(Parser)]
 pub struct MetadataRotation {
     /// Path to bfc node config.
-    #[clap(long = "sui-node-config-path")]
-    sui_node_config_path: PathBuf,
+    #[clap(long = "bfc-node-config-path")]
+    bfc_node_config_path: PathBuf,
     /// Path to account key file.
     #[clap(long = "account-key-path")]
     account_key_path: PathBuf,
@@ -60,15 +60,15 @@ pub async fn run_fire_drill(fire_drill: FireDrill) -> anyhow::Result<()> {
 
 async fn run_metadata_rotation(metadata_rotation: MetadataRotation) -> anyhow::Result<()> {
     let MetadataRotation {
-        sui_node_config_path,
+        bfc_node_config_path,
         account_key_path,
         fullnode_rpc_url,
     } = metadata_rotation;
     let account_key = read_keypair_from_file(&account_key_path)?;
-    let config: NodeConfig = PersistedConfig::read(&sui_node_config_path).map_err(|err| {
+    let config: NodeConfig = PersistedConfig::read(&bfc_node_config_path).map_err(|err| {
         err.context(format!(
             "Cannot open Bfc Node Config file at {:?}",
-            sui_node_config_path
+            bfc_node_config_path
         ))
     })?;
 
@@ -79,7 +79,7 @@ async fn run_metadata_rotation(metadata_rotation: MetadataRotation) -> anyhow::R
 
     // Prepare new metadata for next epoch
     let new_config_path =
-        update_next_epoch_metadata(&sui_node_config_path, &config, &sui_client, &account_key)
+        update_next_epoch_metadata(&bfc_node_config_path, &config, &sui_client, &account_key)
             .await?;
 
     let current_epoch = current_epoch(&sui_client).await?;
@@ -91,7 +91,7 @@ async fn run_metadata_rotation(metadata_rotation: MetadataRotation) -> anyhow::R
     info!("Just advanced to epoch {target_epoch}");
 
     // Replace new config
-    std::fs::rename(new_config_path, sui_node_config_path)?;
+    std::fs::rename(new_config_path, bfc_node_config_path)?;
     info!("Updated Bfc Node config.");
 
     Ok(())
@@ -116,13 +116,13 @@ pub async fn get_gas_obj_ref(
 }
 
 async fn update_next_epoch_metadata(
-    sui_node_config_path: &Path,
+    bfc_node_config_path: &Path,
     config: &NodeConfig,
     sui_client: &SuiClient,
     account_key: &SuiKeyPair,
 ) -> anyhow::Result<PathBuf> {
     // Save backup config just in case
-    let mut backup_config_path = sui_node_config_path.to_path_buf();
+    let mut backup_config_path = bfc_node_config_path.to_path_buf();
     backup_config_path.pop();
     backup_config_path.push("node_config_backup.yaml");
     let backup_config = config.clone();
@@ -215,10 +215,10 @@ async fn update_next_epoch_metadata(
     info!("New worker address:: {:?}", new_worker_addresses);
 
     // Save new config
-    let mut new_config_path = sui_node_config_path.to_path_buf();
+    let mut new_config_path = bfc_node_config_path.to_path_buf();
     new_config_path.pop();
     new_config_path.push(
-        String::from(sui_node_config_path.file_name().unwrap().to_str().unwrap()) + ".next_epoch",
+        String::from(bfc_node_config_path.file_name().unwrap().to_str().unwrap()) + ".next_epoch",
     );
     new_config.persisted(&new_config_path).save()?;
 
