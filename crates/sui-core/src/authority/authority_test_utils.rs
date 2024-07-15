@@ -177,6 +177,18 @@ pub async fn init_state_with_ids<I: IntoIterator<Item = (SuiAddress, ObjectID)>>
     state
 }
 
+pub async fn init_state_with_stable_ids<I: IntoIterator<Item = (SuiAddress, ObjectID)>>(
+    objects: I,
+) -> Arc<AuthorityState> {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, object_id) in objects {
+        let obj = Object::with_stable_id_owner_for_testing(object_id, address);
+        // TODO: Make this part of genesis initialization instead of explicit insert.
+        state.insert_genesis_object(obj).await;
+    }
+    state
+}
+
 pub async fn init_state_with_ids_and_versions<
     I: IntoIterator<Item = (SuiAddress, ObjectID, SequenceNumber)>,
 >(
@@ -212,6 +224,13 @@ pub async fn init_state_with_objects_and_committee<I: IntoIterator<Item = Object
         state.insert_genesis_object(o).await;
     }
     state
+}
+
+pub async fn init_state_with_stable_object_id(
+    address: SuiAddress,
+    object: ObjectID,
+) -> Arc<AuthorityState> {
+    init_state_with_stable_ids(std::iter::once((address, object))).await
 }
 
 pub async fn init_state_with_object_id(
@@ -524,6 +543,37 @@ pub async fn publish_package_on_single_authority(
         .unwrap()
         .0;
     Ok((package_id, cap_object))
+}
+
+pub async fn init_state_with_stable_ids_and_expensive_checks<
+    I: IntoIterator<Item = (SuiAddress, ObjectID)>,
+>(
+    objects: I,
+    config: ExpensiveSafetyCheckConfig,
+) -> Arc<AuthorityState> {
+    let state = TestAuthorityBuilder::new()
+        .with_expensive_safety_checks(config)
+        .build()
+        .await;
+    for (address, object_id) in objects {
+        let obj = Object::with_stable_id_owner_version_for_testing(object_id, SequenceNumber::from_u64(1), address);
+        // TODO: Make this part of genesis initialization instead of explicit insert.
+        state.insert_genesis_object(obj).await;
+    }
+    state
+}
+
+pub async fn init_state_with_stable_ids_and_versions<
+    I: IntoIterator<Item = (SuiAddress, ObjectID, SequenceNumber)>,
+>(
+    objects: I,
+) -> Arc<AuthorityState> {
+    let state = TestAuthorityBuilder::new().build().await;
+    for (address, object_id, version) in objects {
+        let obj = Object::with_stable_id_owner_version_for_testing(object_id, version, address);
+        state.insert_genesis_object(obj).await;
+    }
+    state
 }
 
 pub async fn upgrade_package_on_single_authority(

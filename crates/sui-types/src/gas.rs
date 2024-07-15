@@ -57,6 +57,7 @@ pub mod checked {
         fn adjust_computation_on_out_of_gas(&mut self);
         fn stable_rate(&self) -> Option<u64>;
         fn base_points(&self) -> Option<u64>;
+        fn has_adjust_computation_on_out_of_gas(&self) -> bool;
     }
 
     /// Version aware enum for gas status.
@@ -120,6 +121,12 @@ pub mod checked {
         ) -> UserInputResult {
             match self {
                 Self::V2(status) => status.check_gas_balance(gas_objs, gas_budget),
+            }
+        }
+
+        pub fn has_adjust_computation_on_out_of_gas(&self) ->bool {
+            return match self {
+                Self::V2(status) => status.has_adjust_computation_on_out_of_gas(),
             }
         }
     }
@@ -202,6 +209,12 @@ pub mod checked {
             self.computation_cost + self.storage_cost
         }
 
+        pub fn gas_used_improved(&self) -> u64 {
+            let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
+            let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
+            computation_cost + storage_cost
+        }
+
         /// Portion of the storage rebate that gets passed on to the transaction sender. The remainder
         /// will be burned, then re-minted + added to the storage fund at the next epoch change
         pub fn sender_rebate(&self, storage_rebate_rate: u64) -> u64 {
@@ -262,6 +275,24 @@ pub mod checked {
             let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
             let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point);
             (computation_cost + storage_cost) as i64 - (storage_rebate as i64)
+        }
+
+        pub fn storage_gas_usage_abs_improved(&self) -> u64 {
+            let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
+            let storage_rebate = calculate_bfc_to_stable_cost_with_base_point(self.storage_rebate, self.rate, self.base_point);
+            if storage_cost >= storage_rebate {
+                storage_cost - storage_rebate
+            } else {
+                storage_rebate - storage_cost
+            }
+        }
+
+        pub fn storage_gas_usage_abs(&self) -> u64 {
+            if self.storage_cost >= self.storage_rebate {
+                self.storage_cost - self.storage_rebate
+            } else {
+                self.storage_rebate - self.storage_cost
+            }
         }
     }
 
@@ -336,14 +367,6 @@ pub fn calculate_divide_rate(val: u64, rate_option: Option<u64>) -> u64 {
     }
 }
 
-pub fn calculate_multiply_rate(val: u64, rate_option: Option<u64>) -> u64 {
-    if let Some(rate) = rate_option {
-        let result =  (val as u128)  * (rate as u128) / BASE_RATE as u128;
-        result as u64
-    }else {
-        val
-    }
-}
 const REWARD_BASIS_POINTS: u128 = 100;
 
 pub fn calculate_reward_rate(reward: u64, reward_rate: u64) -> u64 {
@@ -383,6 +406,14 @@ pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_p
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
     ((cost as u128 * BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) / (rate * BFC_STABLE_BASIS_POINTS_U64) as u128) as u64
+}
+
+pub fn calculate_bfc_to_stable_cost(cost: u64, rate: u64) -> u64 {
+    if rate == 0 || rate == 1 {
+        return cost;
+    }
+    //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
+    ((cost as u128 * BFC_PRECISION) / (rate as u128)) as u64
 }
 
 pub fn calculate_stable_net_used_with_base_point(summary :&GasCostSummary) -> i64 {
@@ -443,5 +474,28 @@ mod test{
         let rate = 999999999u64;
         let result = calculate_bfc_to_stable_cost_with_base_point(cost.abs() as u64, rate, 10);
         println!("result: {}", result);
+    }
+
+    #[test]
+    fn test_calculate_stable_rate_() {
+        let cost = 100000+2645;
+        let rate = 10000995385;
+        let mut result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 10);
+
+        println!("result: {}", result);
+
+        let cost = 264480;
+        let rate = 10000995385;
+        println!("storage is {:?}",calculate_bfc_to_stable_cost_with_base_point(cost, rate, 10));
+        result += calculate_bfc_to_stable_cost_with_base_point(cost, rate, 10);
+
+        println!("result: {}", result);
+
+        let cost = 2645;
+        let rate = 10000995385;//291
+        result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 10);
+
+        println!("result: {}", result);
+
     }
 }

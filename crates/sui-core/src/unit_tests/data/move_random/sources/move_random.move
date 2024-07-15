@@ -13,6 +13,11 @@ module examples::move_random {
         loop { }
     }
 
+    public entry fun delete(o: Object) {
+        let Object { id, data: _ } = o;
+        object::delete(id);
+    }
+
     // create an object with a vector of size `size` and transfer to recipient
     public entry fun storage_heavy(mut size: u64, recipient: address, ctx: &mut TxContext) {
         let mut data = vector::empty();

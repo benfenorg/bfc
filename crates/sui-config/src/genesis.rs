@@ -738,7 +738,7 @@ impl GenesisCeremonyParameters {
         BfcSystemParameters {
             chain_start_timestamp_ms: self.chain_start_timestamp_ms,
             // re-balance time interval, default 4h
-            time_interval: 600,
+            time_interval: 300,
             treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),
         }
     }

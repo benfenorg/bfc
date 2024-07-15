@@ -41,6 +41,7 @@ module sui_system::validator_set {
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
     use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool;
 
     public struct ValidatorSet has store {
         /// Total amount of stake from all active validators at the beginning of the epoch.
@@ -69,6 +70,9 @@ module sui_system::validator_set {
         /// When a validator is deactivated the validator is removed from `active_validators` it
         /// is added to this table so that stakers can continue to withdraw their stake from it.
         inactive_validators: Table<ID, ValidatorWrapper>,
+
+        // Mapping from stablePoolID to stakingPoolID
+        inactive_validators_pool_mappings: Table<ID, ID>,
 
         /// Table storing preactive/candidate validators, mapping their addresses to their `Validator ` structs.
         /// When an address calls `request_add_validator_candidate`, they get added to this table and become a preactive
@@ -196,6 +200,7 @@ module sui_system::validator_set {
             stable_pool_mappings,
             last_epoch_stable_rate: rate_map,
             inactive_validators: table::new(ctx),
+            inactive_validators_pool_mappings: table::new(ctx),
             validator_candidates: table::new(ctx),
             at_risk_validators: vec_map::empty(),
             extra_fields: bag::new(ctx),
@@ -296,6 +301,17 @@ module sui_system::validator_set {
             staking_pool_id,
             validator_wrapper::create_v1(validator, ctx),
         );
+
+        let j = 0;
+        while (j < id_len) {
+        let id = vector::borrow(&id_vec, j);
+        table::add(
+        &mut self.inactive_validators_pool_mappings,
+        *id,
+        staking_pool_id,
+        );
+        j = j + 1;
+        };
     }
 
     #[allow(unused_mut_parameter)]
@@ -421,8 +437,10 @@ module sui_system::validator_set {
                 let validator_address = *table::borrow(&self.stable_pool_mappings, stable_pool_id(&staked_sui));
                 get_candidate_or_active_validator_mut(self, validator_address)
             } else { // This is an inactive pool.
-                assert!(table::contains(&self.inactive_validators, stable_pool_id), ENoPoolFound);
-                let wrapper = table::borrow_mut(&mut self.inactive_validators, stable_pool_id);
+                assert!(table::contains(&self.inactive_validators_pool_mappings, stable_pool_id), ENoPoolFound);
+                let staing_pool_id =    *table::borrow(&self.inactive_validators_pool_mappings, stable_pool_id);
+                assert!(table::contains(&self.inactive_validators, staing_pool_id), ENoPoolFound);
+                let wrapper = table::borrow_mut(&mut self.inactive_validators, staing_pool_id);
                 validator_wrapper::load_validator_maybe_upgrade(wrapper)
             };
         validator::request_withdraw_stable_stake(validator, staked_sui, *rate, ctx)
@@ -539,6 +557,7 @@ module sui_system::validator_set {
             very_low_stake_threshold,
             low_stake_grace_period,
             validator_report_records,
+            stable_rate,
             ctx
         );
 
@@ -557,6 +576,7 @@ module sui_system::validator_set {
         very_low_stake_threshold: u64,
         low_stake_grace_period: u64,
         validator_report_records: &mut VecMap<address, VecSet<address>>,
+        stable_rate: VecMap<ascii::String, u64>,
         ctx: &mut TxContext
     ) {
         // Iterate through all the active validators, record their low stake status, and kick them out if the condition is met.
@@ -565,7 +585,7 @@ module sui_system::validator_set {
             i = i - 1;
             let validator_ref = &self.active_validators[i];
             let validator_address = validator_ref.sui_address();
-            let stake = validator_ref.total_stake_amount();
+            let stake = validator::total_stake_with_all_stable(validator_ref, stable_rate);
             if (stake >= low_stake_threshold) {
                 // The validator is safe. We remove their entry from the at_risk map if there exists one.
                 if (self.at_risk_validators.contains(&validator_address)) {
@@ -699,6 +719,23 @@ module sui_system::validator_set {
 	validator.get_staking_pool_ref().exchange_rates()
     }
 
+    public(friend) fun pool_exchange_stable_rates<STABLE>(
+            self: &mut ValidatorSet, pool_id: &ID
+    ) : &Table<u64, PoolStableTokenExchangeRate> {
+        let validator =
+        // If the pool id is recorded in the mapping, then it must be either candidate or active.
+        if (table::contains(&self.stable_pool_mappings, *pool_id)) {
+            let validator_address = *table::borrow(&self.stable_pool_mappings, *pool_id);
+            get_active_or_pending_or_candidate_validator_ref(self, validator_address, ANY_VALIDATOR)
+        } else { // otherwise it's inactive
+            assert!(table::contains(&self.inactive_validators_pool_mappings, *pool_id), ENoPoolFound);
+            let staing_pool_id =    *table::borrow(&self.inactive_validators_pool_mappings, *pool_id);
+            assert!(table::contains(&self.inactive_validators, staing_pool_id), ENoPoolFound);
+            let wrapper = table::borrow_mut(&mut self.inactive_validators, staing_pool_id);
+            validator_wrapper::load_validator_maybe_upgrade(wrapper)
+        };
+        stable_pool::exchange_rates<STABLE>(validator::stable_pool<STABLE>(validator))
+    }
     /// Get the total number of validators in the next epoch.
     public(package) fun next_epoch_validator_count(self: &ValidatorSet): u64 {
         self.active_validators.length() - self.pending_removals.length() + self.pending_active_validators.length()
@@ -1028,6 +1065,17 @@ module sui_system::validator_set {
             validator_pool_id,
             validator_wrapper::create_v1(validator, ctx),
         );
+        let j = 0;
+        while (j < id_len) {
+            let id = vector::borrow(&id_vec, j);
+            table::add(
+                &mut self.inactive_validators_pool_mappings,
+                *id,
+                validator_pool_id,
+            );
+            j = j + 1;
+        };
+
     }
 
     fun clean_report_records_leaving_validator(

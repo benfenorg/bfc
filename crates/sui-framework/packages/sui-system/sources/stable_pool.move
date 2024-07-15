@@ -133,12 +133,13 @@ module sui_system::stable_pool {
         rate: u64,
         ctx: &mut TxContext
     ) : (Balance<STABLE>, Balance<BFC>) {
+        let staked_epoch = staked_sui.stake_activation_epoch;
         let (pool_token_withdraw_amount, principal_withdraw) =
             withdraw_from_principal(pool, staked_sui);
         let principal_withdraw_amount = balance::value(&principal_withdraw);
 
         let (rewards_withdraw, stable_reward_amount) = withdraw_rewards(
-            pool, principal_withdraw_amount, pool_token_withdraw_amount,tx_context::epoch(ctx), rate
+            pool, staked_epoch, principal_withdraw_amount, pool_token_withdraw_amount, tx_context::epoch(ctx), rate
         );
         let total_sui_withdraw_amount = principal_withdraw_amount + stable_reward_amount;
 
@@ -235,11 +236,16 @@ module sui_system::stable_pool {
     ///        portion because the principal portion was already taken out of the staker's self custodied StakedSui.
     fun withdraw_rewards<STABLE>(
         pool: &mut StablePool<STABLE>,
+        stake_activation_epoch: u64,
         principal_withdraw_amount: u64,
         pool_token_withdraw_amount: u64,
         epoch: u64,
         rate: u64,
     ) : (Balance<BFC>, u64) {
+        if (stake_activation_epoch == epoch) {
+            return (balance::zero<BFC>(), 0)
+        };
+
         let exchange_rate = pool_token_exchange_rate_at_epoch(pool, epoch);
         let total_sui_withdraw_amount = get_sui_amount(&exchange_rate, pool_token_withdraw_amount);
         let mut reward_withdraw_amount =
@@ -286,6 +292,8 @@ module sui_system::stable_pool {
     // ==== getters and misc utility functions ====
 
     public fun stable_balance<STABLE>(pool: &StablePool<STABLE>): u64 { pool.stable_balance }
+
+    public fun rewards_pool<STABLE>(pool: &StablePool<STABLE>): u64 { balance::value(&pool.rewards_pool) }
 
     public fun pool_id<STABLE>(staked_sui: &StakedStable<STABLE>): ID { staked_sui.pool_id }
 
