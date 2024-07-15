@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::key_derive::{derive_key_pair_from_path, generate_new_key};
-use anyhow::anyhow;
+use anyhow::{anyhow, Error};
 use bip32::DerivationPath;
 use bip39::{Language, Mnemonic, Seed};
 use rand::{rngs::StdRng, SeedableRng};
@@ -33,6 +33,7 @@ pub enum Keystore {
 #[enum_dispatch]
 pub trait AccountKeystore: Send + Sync {
     fn add_key(&mut self, keypair: SuiKeyPair) -> Result<(), anyhow::Error>;
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error>;
     fn keys(&self) -> Vec<PublicKey>;
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error>;
 
@@ -163,6 +164,15 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(())
     }
 
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error> {
+        for key in keypair {
+            let address: SuiAddress = (&key.public()).into();
+            self.keys.insert(address, key);
+        }
+        self.save()?;
+        Ok(())
+    }
+
     fn keys(&self) -> Vec<PublicKey> {
         self.keys.values().map(|key| key.public()).collect()
     }
@@ -277,6 +287,14 @@ impl AccountKeystore for InMemKeystore {
     fn add_key(&mut self, keypair: SuiKeyPair) -> Result<(), anyhow::Error> {
         let address: SuiAddress = (&keypair.public()).into();
         self.keys.insert(address, keypair);
+        Ok(())
+    }
+
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), Error> {
+        for key in keypair {
+            let address: SuiAddress = (&key.public()).into();
+            self.keys.insert(address, key);
+        }
         Ok(())
     }
 

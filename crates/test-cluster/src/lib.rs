@@ -804,10 +804,12 @@ impl TestClusterBuilder {
 
         swarm.config().save(&network_path)?;
         let mut keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
+        let mut accounts = Vec::new();
         for key in &swarm.config().account_keys {
             info!("account key: {:?}", key);
-            keystore.add_key(SuiKeyPair::Ed25519(key.copy()))?;
+            accounts.push(SuiKeyPair::Ed25519(key.copy()));
         }
+        keystore.add_key_batch(accounts)?;
 
         let active_address = keystore.addresses().first().cloned();
         info!("key store addr: {:?}", keystore.addresses());
