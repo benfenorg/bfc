@@ -109,7 +109,7 @@ mod checked {
     }
 
     impl SuiCostTable {
-        pub(crate) fn new(c: &ProtocolConfig, gas_price: u64, stable_rate: Option<u64>) -> Self {
+        pub(crate) fn new(c: &ProtocolConfig, gas_price: u64) -> Self {
             // gas_price here is the Reference Gas Price, however we may decide
             // to change it to be the price passed in the transaction
             let min_transaction_cost = if txn_base_cost_as_multiplier(c) {
@@ -252,7 +252,7 @@ mod checked {
             } else {
                 gas_budget_bfc
             };
-            let sui_cost_table = SuiCostTable::new(config, gas_price, stable_rate);
+            let sui_cost_table = SuiCostTable::new(config, gas_price);
             let gas_rounding_step = config.gas_rounding_step_as_option();
             Self::new(
                 GasStatus::new(
