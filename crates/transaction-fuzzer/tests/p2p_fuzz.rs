@@ -13,7 +13,6 @@ use transaction_fuzzer::run_proptest;
 const NUM_RUNS: u32 = 20;
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_low_balance() {
     let universe =
@@ -29,7 +28,6 @@ fn fuzz_p2p_low_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_high_balance() {
     let universe = AccountUniverseGen::strategy(
@@ -47,7 +45,6 @@ fn fuzz_p2p_high_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_high_balance() {
     let universe = AccountUniverseGen::strategy(
@@ -65,7 +62,6 @@ fn fuzz_p2p_random_gas_budget_high_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_low_balance() {
     let universe =
@@ -81,7 +77,6 @@ fn fuzz_p2p_random_gas_budget_low_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_high_balance() {
     let universe = AccountUniverseGen::strategy(
@@ -99,7 +94,6 @@ fn fuzz_p2p_random_gas_budget_and_price_high_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_low_balance() {
     let universe =
@@ -115,7 +109,6 @@ fn fuzz_p2p_random_gas_budget_and_price_low_balance() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_rand_gas_budget_price_and_coins() {
     let universe = AccountUniverseGen::strategy(
@@ -133,7 +126,6 @@ fn fuzz_p2p_rand_gas_budget_price_and_coins() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_high_balance_random_sponsorship() {
     let universe = AccountUniverseGen::strategy(
@@ -155,7 +147,6 @@ fn fuzz_p2p_random_gas_budget_and_price_high_balance_random_sponsorship() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_random_gas_budget_and_price_low_balance_random_sponsorship() {
     let universe =
@@ -175,7 +166,6 @@ fn fuzz_p2p_random_gas_budget_and_price_low_balance_random_sponsorship() {
 }
 
 #[test]
-#[ignore]
 #[cfg_attr(msim, ignore)]
 fn fuzz_p2p_mixed() {
     let universe = AccountUniverseGen::strategy(
