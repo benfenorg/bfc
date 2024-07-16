@@ -39,14 +39,14 @@ module polynet::bf_usdc {
 
         let initial_lock_token = coin::mint<T>(&mut cap, consts::get_huge(), ctx);
      
-        let remain = coin::split<T>(&mut initial_lock_token, consts::get_local_amount(), ctx);
+        let local_coin = coin::split<T>(&mut initial_lock_token, consts::get_local_amount(), ctx);
         let treasury = lock_proxy::init_treasury<T>(ctx);
 
-        lock_proxy::deposit<T>(&mut treasury, initial_lock_token);
+        lock_proxy::deposit<T>(&mut treasury, local_coin);
         lock_proxy::lock_proxy_transfer(treasury);
 
         transfer::public_transfer(cap, @treasure_admin);
-        transfer::public_transfer(remain, @treasure_admin);
+        transfer::public_transfer(initial_lock_token, @treasure_admin);
 
     }
 

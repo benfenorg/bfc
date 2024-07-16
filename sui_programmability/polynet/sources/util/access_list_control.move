@@ -23,7 +23,7 @@ module polynet::acl {
 
     //added: add relayer's address to assets admin, only assets admin can unlock token..!!!!
     const ASSETS_ADMIN:vector<address> = vector[
-                                                @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
+                                                @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,//its for unit test
                                                 @relayer_admin
                                                ];
     //added:  ONLY admin can MINT TREASURY token..!!!!
