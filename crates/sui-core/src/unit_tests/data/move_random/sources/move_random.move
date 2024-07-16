@@ -17,8 +17,12 @@ module examples::move_random {
         loop { }
     }
 
-    public entry fun delete(o: Object) {
+    // for test: delete two objects
+    public entry fun delete(o: Object, o2: Object) {
         let Object { id, data: _ } = o;
+        object::delete(id);
+
+        let Object { id, data: _ } = o2;
         object::delete(id);
     }
 

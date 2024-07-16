@@ -67,6 +67,7 @@ pub async fn send_and_confirm_transaction_with_execution_error(
     let response = authority
         .handle_transaction(&epoch_store, transaction.clone())
         .await?;
+
     let vote = response.status.into_signed_for_testing();
 
     // Collect signatures from a quorum of authorities

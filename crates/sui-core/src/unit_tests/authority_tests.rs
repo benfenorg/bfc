@@ -8171,7 +8171,6 @@ async fn test_stable_move_call_insufficient_gas() {
         .unwrap()
         .1;
     let effects = signed_effects.into_data();
-    dbg!("gas_used{} effects.status: {:#?}", gas_used, effects.status());
     assert!(effects.status().is_err());
     let obj = authority_state
         .get_object(&object_id)
@@ -9551,7 +9550,6 @@ async fn test_stable_gas_smashing() {
         let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
         let (state, effects) = create_obj(sender, sender_key, gas_coins, budget).await;
         // check transaction
-        dbg!("reference_gas_used:{}, coin_num:{}, budget:{}, effects.status: {:#?}", reference_gas_used, coin_num, budget, effects.status());
         if success {
             assert!(effects.status().is_ok());
         } else {

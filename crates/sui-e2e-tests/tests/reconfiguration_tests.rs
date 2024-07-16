@@ -2632,7 +2632,7 @@ async fn swap_stablecoin_to_bfc(test_cluster: &TestCluster, http_client: &HttpCl
             vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             Some(gas.object_id),
-            balance.into(),
+            1_000_000_000.into(),
             None,
         )
         .await?;

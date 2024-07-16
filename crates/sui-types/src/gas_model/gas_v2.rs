@@ -7,7 +7,7 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use crate::error::{UserInputError, UserInputResult};
-    use crate::gas::{self, BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, SuiGasStatusAPI};
+    use crate::gas::{self, BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, calculate_divide_rate, calculate_multiply_rate, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, SuiGasStatusAPI};
     use crate::gas_model::gas_predicates::{cost_table_for_version, txn_base_cost_as_multiplier};
     use crate::gas_model::units_types::CostTable;
     use crate::{
@@ -73,8 +73,8 @@ mod checked {
         // `< x.5` goes to x (truncates). We replicate `f32/64::round()`
         const BASIS_POINTS: u128 = 10000;
         (((storage_rebate as u128 * storage_rebate_rate as u128)
-        + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
-        / BASIS_POINTS) as u64
+            + (BASIS_POINTS / 2)) // integer rounding adds half of the BASIS_POINTS (denominator)
+            / BASIS_POINTS) as u64
     }
 
     /// A list of constant costs of various operations in Sui.
@@ -198,7 +198,7 @@ mod checked {
         /// Stable base points.
         base_points: Option<u64>,
 
-        has_adjust_computation_on_out_of_gas: bool,
+        is_computation_by_stable: bool,
     }
 
     impl SuiGasStatus {
@@ -232,7 +232,7 @@ mod checked {
                 cost_table,
                 stable_rate,
                 base_points,
-                has_adjust_computation_on_out_of_gas: false,
+                is_computation_by_stable: false,
             }
         }
 
@@ -245,12 +245,13 @@ mod checked {
             base_points: Option<u64>,
         ) -> SuiGasStatus {
             let storage_gas_price = config.storage_gas_price();
-            let stable_max_gas_computation_bucket = calculate_divide_rate(config.max_gas_computation_bucket(), stable_rate);
-            let max_computation_budget = stable_max_gas_computation_bucket * gas_price;
-            let computation_budget = if gas_budget > max_computation_budget {
+            //let stable_max_gas_computation_bucket = calculate_divide_rate(config.max_gas_computation_bucket(), stable_rate);
+            let max_computation_budget = config.max_gas_computation_bucket() * gas_price;
+            let gas_budget_bfc = calculate_multiply_rate(gas_budget,stable_rate);
+            let computation_budget = if gas_budget_bfc > max_computation_budget {
                 max_computation_budget
             } else {
-                gas_budget
+                gas_budget_bfc
             };
             let sui_cost_table = SuiCostTable::new(config, gas_price, stable_rate);
             let gas_rounding_step = config.gas_rounding_step_as_option();
@@ -286,7 +287,7 @@ mod checked {
                 None,
                 SuiCostTable::unmetered(),
                 None,
-                None
+                None,
             )
         }
 
@@ -309,7 +310,6 @@ mod checked {
                 }
             }
             let stable_max_budget = calculate_divide_rate(self.cost_table.max_gas_budget, self.stable_rate);
-
             //error 2. Gas budget is between min and max budget allowed
             if gas_budget > stable_max_budget {
                 return Err(UserInputError::GasBudgetTooHigh {
@@ -391,19 +391,22 @@ mod checked {
             };
             let base_points = if let Some(base) = self.base_points() {
                 base
-            }else {
+            } else {
                 DEFAULT_BASE_POINT_FOR_BFC
             };
             let rate = if let Some(rate) = self.stable_rate() {
                 rate
-            }else {
+            } else {
                 BASE_RATE
             };
 
-            let stable_gas_used =calculate_bfc_to_stable_cost_with_base_point(gas_used, rate, base_points);
+            let stable_gas_used = calculate_bfc_to_stable_cost_with_base_point(gas_used, rate, base_points);
 
             if self.gas_budget <= stable_gas_used {
                 self.computation_cost = self.gas_budget;
+                if self.stable_rate().is_some() {
+                    self.is_computation_by_stable = true;
+                }
                 Err(ExecutionErrorKind::InsufficientGas.into())
             } else {
                 self.computation_cost = gas_used;
@@ -453,7 +456,7 @@ mod checked {
             self.storage_cost = 0;
             self.storage_rebate = 0;
             self.unmetered_storage_rebate = 0;
-            self.has_adjust_computation_on_out_of_gas = false;
+            //self.is_computation_by_stable = false;
         }
 
         fn charge_storage_read(&mut self, size: usize) -> Result<(), ExecutionError> {
@@ -504,15 +507,20 @@ mod checked {
             } else {
                 let base_points = if let Some(base) = self.base_points() {
                     base
-                }else {
+                } else {
                     DEFAULT_BASE_POINT_FOR_BFC
                 };
-                let (stable_gas_left, stable_rebate) = if let Some(rate) =  self.stable_rate() {
+                let (stable_gas_left, stable_rebate) = if let Some(rate) = self.stable_rate() {
                     let stable_storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, rate, base_points);
                     let stable_sender_rebate = calculate_bfc_to_stable_cost_with_base_point(sender_rebate, rate, base_points);
-                    (self.gas_budget - calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, rate, base_points),
-                     stable_storage_cost - stable_sender_rebate)
-                }else {
+                    if self.is_computation_by_stable {
+                        (self.gas_budget - self.computation_cost,
+                         stable_storage_cost - stable_sender_rebate)
+                    } else {
+                        (self.gas_budget - calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, rate, base_points),
+                         stable_storage_cost - stable_sender_rebate)
+                    }
+                } else {
                     (self.gas_budget - self.computation_cost, self.storage_cost - sender_rebate)
                 };
 
@@ -532,7 +540,7 @@ mod checked {
             self.storage_rebate = 0;
             self.storage_cost = 0;
             self.computation_cost = self.gas_budget;
-            self.has_adjust_computation_on_out_of_gas = true;
+            self.is_computation_by_stable = true;
         }
 
         fn stable_rate(&self) -> Option<u64> {
@@ -542,9 +550,8 @@ mod checked {
             self.base_points
         }
 
-        fn has_adjust_computation_on_out_of_gas(&self) -> bool {
-            self.has_adjust_computation_on_out_of_gas
+        fn has_adjust_is_computation_by_stable(&self) -> bool {
+            self.is_computation_by_stable
         }
-
     }
 }
