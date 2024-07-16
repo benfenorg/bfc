@@ -9,7 +9,7 @@ module polynet::controller_test {
     borrow_wrapper_store};
     use sui::clock;
     use polynet::wrapper_v1::{fee_collector,need_fee};
-    use polynet::bfc_usdc::{ BFC_USDC, new_for_test};
+    use polynet::bf_usdc::{ BF_USDC, new_for_test};
     // use polynet::bfc_usdt::{ BFC_USDT};
     use polynet::tools::{ init_as_testnet};
     use polynet::acl::{ Self};
@@ -21,7 +21,8 @@ module polynet::controller_test {
    
     #[test]
     fun test_controllers(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
+        let treasure_admin = @0x984f38c8364f6d82f266569c5d1eed2cbe2a7d35693a6ed4cabb6dfafeec2e31;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -40,7 +41,7 @@ module polynet::controller_test {
             let clock = clock::create_for_testing(ctx);
             // let global_config_id = object::id(&ccConfig);
 
-            let config_address = @0xf441b258a5a3f1d5a6284682ae670f4ea569b7f0f8b49458d8e991e7ce554333;
+            let config_address = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
 
             init_as_testnet(&mut ccConfig, &clock,config_address , ctx);
             test_scenario::return_shared(ccConfig);
@@ -152,9 +153,9 @@ module polynet::controller_test {
 
             let hash = x"b646D14eFA51D516cBc8DF5d1D8aB5Fd6DAD9ddB";
             let decimal = 18;
-            bind_asset<BFC_USDC>(&mut ccConfig, 602,hash, decimal, ctx);
+            bind_asset<BF_USDC>(&mut ccConfig, 602,hash, decimal, ctx);
 
-            get_asset<BFC_USDC>(&mut ccConfig, 602, ctx);
+            get_asset<BF_USDC>(&mut ccConfig, 602, ctx);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -213,35 +214,35 @@ module polynet::controller_test {
         };
 
         // mint_treasury
-        test_scenario::next_tx(&mut scenario_val, owner);
+        test_scenario::next_tx(&mut scenario_val, treasure_admin);
         {
-            let treasure = test_scenario::take_shared<Treasury<BFC_USDC>>(&scenario_val);
+            let treasure = test_scenario::take_shared<Treasury<BF_USDC>>(&scenario_val);
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
            
            
-            let ids = test_scenario::ids_for_address<TreasuryCap<BFC_USDC>>(owner);
+            let ids = test_scenario::ids_for_address<TreasuryCap<BF_USDC>>(treasure_admin);
             assert!(vector::length(&ids) > 0, 1);
-            let cap = test_scenario::take_from_address_by_id<TreasuryCap<BFC_USDC>>(
-                &scenario_val, owner, *vector::borrow(&ids, 0)
+            let cap = test_scenario::take_from_address_by_id<TreasuryCap<BF_USDC>>(
+                &scenario_val, treasure_admin, *vector::borrow(&ids, 0)
             );
             let ctx = test_scenario::ctx(&mut scenario_val);
            
             mint_treasury(&mut ccConfig,&mut cap ,&mut treasure,10000000,ctx); 
-            test_scenario::return_to_address(tx_context::sender(ctx), cap);
+            test_scenario::return_to_address(treasure_admin, cap);
             test_scenario::return_shared(ccConfig);
             test_scenario::return_shared(treasure);
         };
 
          // deposit_treasury
-        test_scenario::next_tx(&mut scenario_val, owner);
+        test_scenario::next_tx(&mut scenario_val, treasure_admin);
         {
-            let treasure = test_scenario::take_shared<Treasury<BFC_USDC>>(&scenario_val);
+            let treasure = test_scenario::take_shared<Treasury<BF_USDC>>(&scenario_val);
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
            
-            let ids = test_scenario::ids_for_address<Coin<BFC_USDC>>(owner);
+            let ids = test_scenario::ids_for_address<Coin<BF_USDC>>(treasure_admin);
             assert!(vector::length(&ids) > 0, 1);
-            let coin = test_scenario::take_from_address_by_id<Coin<BFC_USDC>>(
-                &scenario_val, owner, *vector::borrow(&ids, 0)
+            let coin = test_scenario::take_from_address_by_id<Coin<BF_USDC>>(
+                &scenario_val, treasure_admin, *vector::borrow(&ids, 0)
             );
             let ctx = test_scenario::ctx(&mut scenario_val);
            

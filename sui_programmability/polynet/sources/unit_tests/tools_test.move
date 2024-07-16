@@ -14,7 +14,7 @@ module polynet::tools_test {
 
     #[test]
     fun test_init_testnet_ccm(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
        
@@ -51,7 +51,7 @@ module polynet::tools_test {
 
     #[test]
     fun test_init_mainnet_ccm(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -87,7 +87,7 @@ module polynet::tools_test {
 
     #[test]
     fun test_issue_license_to_lock_proxy() {
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -128,7 +128,7 @@ module polynet::tools_test {
 
     #[test]
     fun test_init_as_testnet() {
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -185,7 +185,7 @@ module polynet::tools_test {
 
     #[test]
     fun test_init_as_mainnet() {
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);

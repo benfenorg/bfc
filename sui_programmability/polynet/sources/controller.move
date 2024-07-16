@@ -3,7 +3,7 @@ module polynet::controller {
     use sui::clock::Clock;
     use sui::coin::{TreasuryCap, Coin, Self};
     use sui::bfc::BFC;
-    use polynet::bfc_usdc;
+    use polynet::bf_usdc;
     use polynet::config::{CrossChainGlobalConfig, Self};
     use polynet::wrapper_v1::{Self};
     use polynet::cross_chain_manager::{Self};
@@ -496,7 +496,7 @@ module polynet::controller {
         config::check_version(_global);
         let sender = tx_context::sender(_ctx);
         config::check_treasury_role(_global, sender);
-        let new_coin = bfc_usdc::mint_treasury<CoinType>(
+        let new_coin = bf_usdc::mint_treasury<CoinType>(
                                                         _cap,
                                                         _amount,
                                                         _ctx

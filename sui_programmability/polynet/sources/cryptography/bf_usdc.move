@@ -1,4 +1,4 @@
-module polynet::bfc_usdc {
+module polynet::bf_usdc {
     use std::option;
     use polynet::acl::{ Self};
     use sui::coin::{TreasuryCap, Self, Coin};
@@ -13,9 +13,9 @@ module polynet::bfc_usdc {
     // Errors
     const EINVALID_ADMIN: u64 = 2001;
 
-    struct BFC_USDC has drop {}
+    struct BF_USDC has drop {}
 
-    fun init(witness: BFC_USDC, ctx: &mut TxContext){
+    fun init(witness: BF_USDC, ctx: &mut TxContext){
 
         build_usdc(witness, consts::get_decimal(), tx_context::sender(ctx), ctx);
     }
@@ -28,7 +28,7 @@ module polynet::bfc_usdc {
         let (cap, metadata) = coin::create_currency(
             witness,
             decimals,
-            b"BFC_USDC",
+            b"BF_USDC",
             b"Benfen USDC",
             b"",
             option::none(),
@@ -45,8 +45,8 @@ module polynet::bfc_usdc {
         lock_proxy::deposit<T>(&mut treasury, initial_lock_token);
         lock_proxy::lock_proxy_transfer(treasury);
 
-        transfer::public_transfer(cap, tx_context::sender(ctx));
-        transfer::public_transfer(remain, admin);
+        transfer::public_transfer(cap, @treasure_admin);
+        transfer::public_transfer(remain, @treasure_admin);
 
     }
 
@@ -62,9 +62,9 @@ module polynet::bfc_usdc {
     public fun new_for_test(ctx: &mut TxContext, owner: address) {
 
         let (cap, metadata) = coin::create_currency(
-            BFC_USDC {},
+            BF_USDC {},
             consts::get_decimal(),
-            b"BFC_USDC",
+            b"BF_USDC",
             b"Benfen usdc",
             b"",
             option::none(),
@@ -73,16 +73,16 @@ module polynet::bfc_usdc {
         transfer::public_freeze_object(metadata);
         //coin::treasury_into_supply(cap)
 
-        let initial_lock = coin::mint<BFC_USDC>(&mut cap, consts::get_huge(), ctx);
-        let remain = coin::split<BFC_USDC>(&mut initial_lock, 100000, ctx);
+        let initial_lock = coin::mint<BF_USDC>(&mut cap, consts::get_huge(), ctx);
+        let remain = coin::split<BF_USDC>(&mut initial_lock, 100000, ctx);
         //lock_proxy::initTreasury<BFC_USDT>(admin, ctx);
-        let treasury = lock_proxy::init_treasury<BFC_USDC>(ctx);
+        let treasury = lock_proxy::init_treasury<BF_USDC>(ctx);
 
-        lock_proxy::deposit<BFC_USDC>(&mut treasury, initial_lock);
+        lock_proxy::deposit<BF_USDC>(&mut treasury, initial_lock);
         lock_proxy::lock_proxy_transfer(treasury);
 
-        transfer::public_transfer(cap, tx_context::sender(ctx));
-        transfer::public_transfer(remain, owner);
+        transfer::public_transfer(cap, @treasure_admin);
+        transfer::public_transfer(remain, @treasure_admin);
     }
 
 
