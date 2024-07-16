@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use sui_move_build::{BuildConfig, SuiPackageHooks};
 use sui_sdk::SuiClient;
 use test_cluster::TestClusterBuilder;
 

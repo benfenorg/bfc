@@ -92,8 +92,8 @@ pub mod bfc_system_state;
 #[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
-pub mod vault;
 pub mod stable_coin;
+pub mod vault;
 
 macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
