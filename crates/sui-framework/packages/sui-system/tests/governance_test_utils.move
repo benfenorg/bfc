@@ -5,8 +5,6 @@
 #[allow(unused_variable)]
 module sui_system::governance_test_utils {
     use sui::address;
-    use std::address::length;
-    use std::debug::print;
     use sui::balance;
     use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
@@ -17,13 +15,13 @@ module sui_system::governance_test_utils {
     use sui_system::sui_system::{Self, SuiSystemState, get_stable_rate};
     use sui_system::sui_system_state_inner;
     use sui_system::stake_subsidy;
-    use std::string::utf8;
     use std::type_name;
     use sui::test_scenario::{Self, Scenario};
     use sui::balance::Balance;
     use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
     use bfc_system::busd::BUSD;
     use sui::vec_map;
+    use sui_system::validator_set;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StakedStable, StablePool};
 
@@ -140,7 +138,7 @@ module sui_system::governance_test_utils {
         test_scenario::end(scenario_val);
     }
 
-    public fun advance_epoch(scenario: &mut Scenario) {
+    public(package) fun advance_epoch(scenario: &mut Scenario) {
         advance_epoch_with_reward_amounts(0, 0, scenario);
     }
 
@@ -352,13 +350,13 @@ module sui_system::governance_test_utils {
         };
     }
     public fun assert_validator_self_stake_amounts_stable<STABLE>(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
-        let i = 0;
+        let mut i = 0;
         while (i < vector::length(&validator_addrs)) {
             let validator_addr = *vector::borrow(&validator_addrs, i);
             let amount = *vector::borrow(&stake_amounts, i);
 
             test_scenario::next_tx(scenario, validator_addr);
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let stable_rate = get_stable_rate(&system_state);
             let pool_key = type_name::into_string(type_name::get<STABLE>());
             let rate = vec_map::get(&stable_rate, &pool_key);
@@ -418,12 +416,12 @@ module sui_system::governance_test_utils {
     }
 
     public fun assert_validator_non_self_stake_amounts_stable(validator_addrs: vector<address>, stake_amounts: vector<u64>, scenario: &mut Scenario) {
-        let i = 0;
+        let mut i = 0;
         while (i < vector::length(&validator_addrs)) {
             let validator_addr = *vector::borrow(&validator_addrs, i);
             let amount = *vector::borrow(&stake_amounts, i);
             test_scenario::next_tx(scenario, validator_addr);
-            let system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+            let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
             let stable_rate = get_stable_rate(&system_state);
             let pool_key = type_name::into_string(type_name::get<BUSD>());
             let rate = vec_map::get(&stable_rate, &pool_key);
@@ -468,9 +466,9 @@ module sui_system::governance_test_utils {
     }
 
     public fun stake_plus_current_stable_rewards<STABLE>(addr: address, staking_pool: &StablePool<STABLE>, scenario: &mut Scenario): u64 {
-        let sum = 0;
+        let mut sum = 0;
         test_scenario::next_tx(scenario, addr);
-        let stake_ids = test_scenario::ids_for_sender<StakedStable<STABLE>>(scenario);
+        let mut stake_ids = test_scenario::ids_for_sender<StakedStable<STABLE>>(scenario);
         let current_epoch = tx_context::epoch(test_scenario::ctx(scenario));
 
         while (!vector::is_empty(&stake_ids)) {

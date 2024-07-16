@@ -387,6 +387,7 @@ module sui_system::validator_set_tests {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
     #[expected_failure(abort_code = validator_set::EStakingBelowThreshold)]
     fun test_staking_below_threshold_with_stable() {
         let mut scenario_val = test_scenario::begin(@0x0);
@@ -414,16 +415,16 @@ module sui_system::validator_set_tests {
 
     #[test]
     fun test_staking_min_threshold_with_stable() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
 
         let validator1 = create_validator(@0x1, 1, 1, true, ctx);
-        let validator_set = validator_set::new(vector[validator1], ctx);
+        let mut validator_set = validator_set::new(vector[validator1], ctx);
         assert_eq(validator_set::total_stake(&validator_set), 100 * MIST_PER_SUI);
         test_scenario::end(scenario_val);
 
-        let scenario_val = test_scenario::begin(@0x1);
+        let mut scenario_val = test_scenario::begin(@0x1);
         let scenario = &mut scenario_val;
         let ctx1 = test_scenario::ctx(scenario);
         let stake = validator_set::request_add_stable_stake<BUSD>(
@@ -652,7 +653,7 @@ module sui_system::validator_set_tests {
 
     #[test]
     fun test_low_stake_departure_stable() {
-        let scenario_val = test_scenario::begin(@0x0);
+        let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
         // Create 4 validators.
@@ -661,10 +662,10 @@ module sui_system::validator_set_tests {
         let v3 = create_validator(@0x3, 10, 1, true, ctx); // 1000 SUI of stake
         let v4 = create_validator(@0x4, 4, 1, true, ctx); // 400 SUI of stake
 
-        let validator_set = validator_set::new(vector[v1, v2, v3, v4], ctx);
+        let mut validator_set = validator_set::new(vector[v1, v2, v3, v4], ctx);
         test_scenario::end(scenario_val);
 
-        let scenario_val = test_scenario::begin(@0x1);
+        let mut scenario_val = test_scenario::begin(@0x1);
         let scenario = &mut scenario_val;
         assert_eq(active_validator_addresses(&validator_set), vector[@0x1, @0x2, @0x3, @0x4]);
 

@@ -8,7 +8,7 @@ module sui_system::validator_tests {
     use sui::test_scenario;
     use sui::test_utils;
     use sui::url;
-    use std::string::{Self, utf8};
+    use std::string::{Self};
     use sui_system::validator::{Self, Validator, rate_vec_map};
     use std::ascii;
     use sui::coin::{Self, Coin};
@@ -17,8 +17,6 @@ module sui_system::validator_tests {
     use bfc_system::busd::BUSD;
     use sui::bag;
     use sui::test_utils::assert_eq;
-    use sui::transfer;
-    use sui_system::stable_pool;
     use sui_system::stable_pool::StakedStable;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
@@ -177,11 +175,11 @@ module sui_system::validator_tests {
     #[test]
     fun test_pending_validator_flow_with_stable() {
         let sender = VALID_ADDRESS;
-        let scenario_val = test_scenario::begin(sender);
+        let mut scenario_val = test_scenario::begin(sender);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
 
-        let validator = get_test_validator(ctx);
+        let mut validator = get_test_validator(ctx);
         test_scenario::next_tx(scenario, sender);
         {
             let ctx = test_scenario::ctx(scenario);
