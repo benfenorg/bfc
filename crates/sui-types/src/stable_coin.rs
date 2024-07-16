@@ -6,7 +6,6 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::{Display, Formatter};
 
 use crate::{
-    base_types::{SequenceNumber},
     coin::Coin,
     error::{ExecutionError, ExecutionErrorKind},
     id::UID,
@@ -21,7 +20,6 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use move_core_types::language_storage::{StructTag, TypeTag};
-    use move_core_types::annotated_value::MoveStructLayout;
     use move_core_types::ident_str;
     use crate::balance::Balance;
     use crate::base_types::ObjectID;

@@ -878,7 +878,7 @@ impl AuthorityPerEpochStore {
             expensive_safety_check_config,
         );
 
-        let oauth_provider_jwk = tables
+        let _oauth_provider_jwk = tables
             .load_oauth_provider_jwk()
             .expect("Load oauth provider jwk at initialization cannot fail");
 

@@ -197,7 +197,7 @@ async fn construct_shared_object_transaction_with_sequence_number(
             }),
             CallArg::Pure(16u64.to_le_bytes().to_vec()),
         ],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -1097,7 +1097,7 @@ async fn test_dry_run_dev_inspect_dynamic_field_too_new() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS / 10,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS / 10,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1150,7 +1150,7 @@ async fn test_dry_run_dev_inspect_max_gas_version() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1238,7 +1238,7 @@ async fn test_dry_run_with_two_gas_coin() {
         sender,
         vec![gas1_object.compute_object_reference(), gas2_object.compute_object_reference()],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS/10,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1275,7 +1275,7 @@ async fn test_handle_transfer_transaction_bad_signature() {
         recipient,
         object.compute_object_reference(),
         gas_object.compute_object_reference(),
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
 
@@ -2282,7 +2282,7 @@ async fn test_missing_package() {
         vec![],
         gas_object_ref,
         vec![],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -2331,7 +2331,7 @@ async fn test_type_argument_dependencies() {
         vec![TypeTag::U64],
         gas1,
         vec![],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -2357,7 +2357,7 @@ async fn test_type_argument_dependencies() {
         }))],
         gas2,
         vec![],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3165,7 +3165,7 @@ async fn test_invalid_mutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_MUT],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3350,7 +3350,7 @@ async fn test_valid_immutable_clock_parameter() {
         /* type_args */ vec![],
         gas_ref,
         vec![CallArg::CLOCK_IMM],
-        TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+        TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
         rgp,
     )
     .unwrap();
@@ -3579,7 +3579,7 @@ async fn test_store_revert_wrap_move_call() {
             vec![],
             create_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3667,7 +3667,7 @@ async fn test_store_revert_unwrap_move_call() {
             vec![],
             wrap_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(wrapper_v0))],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3773,7 +3773,7 @@ async fn create_and_retrieve_df_info(function: &IdentStr) -> (SuiAddress, Vec<Dy
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -3922,7 +3922,7 @@ async fn test_store_revert_add_ofield() {
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -4035,7 +4035,7 @@ async fn test_store_revert_remove_ofield() {
             vec![],
             add_effects.gas_object().0,
             vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v1))],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -4452,7 +4452,7 @@ pub async fn call_move_(
         *sender,
         vec![gas_object_ref],
         builder.finish(),
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 5,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 5,
         rgp,
     );
 
@@ -4766,7 +4766,7 @@ async fn make_test_transaction(
             }),
             CallArg::Pure(arg_value.to_le_bytes().to_vec()),
         ],
-        gas_budget.unwrap_or(TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp),
+        gas_budget.unwrap_or(TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp),
         gas_price.unwrap_or(rgp),
     )
     .unwrap();
@@ -4827,8 +4827,9 @@ async fn prepare_authority_and_shared_stable_object_cert(
         &gas_object_ref,
         &[&authority],
         16,
-    )
-        .await;
+        None,
+        None,
+    ).await;
     (authority, certificate, shared_object_id)
 }
 
@@ -5852,48 +5853,6 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
     objects
 }
 
-async fn prepare_authority_and_shared_stable_object_cert(
-) -> (Arc<AuthorityState>, VerifiedCertificate, ObjectID) {
-    let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
-
-    // Initialize an authority with a (owned) gas object and a shared object.
-    let gas_object_id = ObjectID::random();
-    let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
-    let gas_object_ref = gas_object.compute_object_reference();
-
-    let shared_object_id = ObjectID::random();
-    let shared_object = {
-        let obj = MoveObject::new_stable_coin(OBJECT_START_VERSION, shared_object_id, 10);
-        let owner = Owner::Shared {
-            initial_shared_version: obj.version(),
-        };
-        Object::new_move(obj, owner, TransactionDigest::genesis())
-    };
-    let initial_shared_version = shared_object.version();
-
-    let authority = init_state_with_objects(vec![gas_object, shared_object]).await;
-
-    let certificate = make_test_transaction(
-        &sender,
-        &keypair,
-        shared_object_id,
-        initial_shared_version,
-        &gas_object_ref,
-        &[&authority],
-        16,
-    )
-        .await;
-    (authority, certificate, shared_object_id)
-}
-
-#[tokio::test(flavor = "current_thread", start_paused = true)]
-#[should_panic]
-async fn test_shared_object_transaction_shared_locks_not_set() {
-    @@ -5555,3 +5633,4419 @@ async fn test_publish_not_a_package_dependency() {
-        failure,
-        )
-    }
-
     // tests using a gas coin with version MAX - 1
     #[tokio::test]
     async fn test_stable_dry_run_dev_inspect_max_gas_version() {
@@ -5937,7 +5896,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             sender,
             vec![gas_object_ref],
             pt,
-            rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
+            rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
             rgp,
         );
         let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -6795,7 +6754,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             sender,
             vec![gas_object_ref],
             builder.finish(),
-            rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 10,
+            rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * 10,
             rgp,
         );
 
@@ -6952,7 +6911,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             sender,
             vec![gas_object_ref],
             pt,
-            rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
+            rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
             rgp,
         );
         let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -7975,7 +7934,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             vec![],
             gas_object_ref,
             vec![],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -8023,7 +7982,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             vec![TypeTag::U64],
             gas1,
             vec![],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -8047,7 +8006,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             }))],
             gas2,
             vec![],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -8071,7 +8030,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             }))],
             gas3,
             vec![],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -8811,7 +8770,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             /* type_args */ vec![],
             gas_ref,
             vec![CallArg::CLOCK_MUT],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -8851,7 +8810,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             /* type_args */ vec![],
             gas_ref,
             vec![CallArg::CLOCK_IMM],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -9056,7 +9015,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
                 vec![],
                 create_effects.gas_object().0,
                 vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
-                TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+                TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
                 rgp,
             )
                 .unwrap(),
@@ -9144,7 +9103,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
                 vec![],
                 wrap_effects.gas_object().0,
                 vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(wrapper_v0))],
-                TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+                TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
                 rgp,
             )
                 .unwrap(),
@@ -9231,7 +9190,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
                     CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                     CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
                 ],
-                TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+                TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
                 rgp,
             )
                 .unwrap(),
@@ -9344,7 +9303,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
                 vec![],
                 add_effects.gas_object().0,
                 vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v1))],
-                TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+                TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
                 rgp,
             )
                 .unwrap(),
@@ -10297,7 +10256,7 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
                 }),
                 CallArg::Pure(16u64.to_le_bytes().to_vec()),
             ],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
             .unwrap();
@@ -10309,7 +10268,6 @@ async fn test_shared_object_transaction_shared_locks_not_set() {
             shared_object_id,
         )
     }
-}
 
 #[sim_test]
 async fn test_per_object_congestion_control() {

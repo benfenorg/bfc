@@ -3479,6 +3479,7 @@ async fn dev_inspect_call_return_vault_info(cluster: &TestCluster, pt: Programma
             Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
             /* gas_price */ None,
             /* epoch_id */ None,
+            None,
         )
         .await
         .unwrap();
