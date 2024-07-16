@@ -112,11 +112,10 @@ mod checked {
         pub(crate) fn new(c: &ProtocolConfig, gas_price: u64, stable_rate: Option<u64>) -> Self {
             // gas_price here is the Reference Gas Price, however we may decide
             // to change it to be the price passed in the transaction
-            let stable_base_tx_cost_fixed = calculate_divide_rate(c.base_tx_cost_fixed(), stable_rate);
             let min_transaction_cost = if txn_base_cost_as_multiplier(c) {
-                stable_base_tx_cost_fixed * gas_price
+                c.base_tx_cost_fixed() * gas_price
             } else {
-                stable_base_tx_cost_fixed
+                c.base_tx_cost_fixed()
             };
             Self {
                 min_transaction_cost,
