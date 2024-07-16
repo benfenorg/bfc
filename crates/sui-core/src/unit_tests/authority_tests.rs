@@ -7821,7 +7821,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
                     .auth_sig()
             );
 
-            authority_state.database.reset_locks_for_test(
+            authority_state.execution_cache.reset_locks_for_test(
                 &[*tx1.digest(), *tx2.digest()],
                 &[
                     gas_object.compute_object_reference(),
@@ -8964,7 +8964,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
             .await
             .unwrap();
 
-        let db = &authority_state.database;
+        let db = &authority_state.execution_cache;
         db.revert_state_update(&tx_digest).await.unwrap();
 
         assert_eq!(
@@ -9038,7 +9038,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
 
         let wrapper_v0 = wrap_effects.created()[0].0;
 
-        let db = &authority_state.database;
+        let db = &authority_state.execution_cache;
         db.revert_state_update(&wrap_digest).await.unwrap();
 
         // The wrapped object is unwrapped once again (accessible from storage).
@@ -9125,7 +9125,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
         assert_eq!(unwrap_effects.unwrapped().len(), 1);
         assert_eq!(unwrap_effects.unwrapped()[0].0 .0, object_v0.0);
 
-        let db = &authority_state.database;
+        let db = &authority_state.execution_cache;
 
         db.revert_state_update(&unwrap_digest).await.unwrap();
 
@@ -9213,7 +9213,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
         let outer_v1 = find_by_id(&add_effects.mutated(), outer_v0.0).unwrap();
         let inner_v1 = find_by_id(&add_effects.mutated(), inner_v0.0).unwrap();
 
-        let db = &authority_state.database;
+        let db = &authority_state.execution_cache;
 
         let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
         assert_eq!(outer.version(), outer_v1.1);
@@ -9326,7 +9326,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
         let outer_v2 = find_by_id(&remove_effects.mutated(), outer_v0.0).unwrap();
         let inner_v2 = find_by_id(&remove_effects.mutated(), inner_v0.0).unwrap();
 
-        let db = &authority_state.database;
+        let db = &authority_state.execution_cache;
 
         let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
         assert_eq!(outer.version(), outer_v2.1);
@@ -9672,7 +9672,7 @@ fn create_shared_objects(num: u32) -> Vec<Object> {
                     .unwrap();
                 authority2.try_execute_for_test(&certificate).await.unwrap();
                 authority2
-                    .database
+                    .execution_cache
                     .get_executed_effects(transaction_digest)
                     .unwrap()
                     .unwrap()
