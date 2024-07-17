@@ -1692,7 +1692,7 @@
                   "u64": "128"
                 },
                 "max_gas_computation_bucket": {
-                  "u64": "500000"
+                  "u64": "5000000"
                 },
                 "max_gas_payment_objects": {
                   "u32": "256"
@@ -1856,7 +1856,7 @@
                   "u64": "500"
                 },
                 "storage_gas_price": {
-                  "u64": "76"
+                  "u64": "38"
                 },
                 "storage_rebate_rate": {
                   "u64": "9900"
