@@ -9533,118 +9533,118 @@ async fn test_stable_shared_object_transaction_ok() {
 
 #[tokio::test]
 async fn test_stable_consensus_message_processed() {
-    telemetry_subscribers::init_for_testing();
-
-    let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
-
-    let gas_object_id = ObjectID::random();
-    let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
-    let mut gas_object_ref = gas_object.compute_object_reference();
-
-    let shared_object_id = ObjectID::random();
-    let shared_object = {
-        use sui_types::object::MoveObject;
-        let obj = MoveObject::new_stable_coin(OBJECT_START_VERSION, shared_object_id, 10);
-        let owner = Owner::Shared {
-            initial_shared_version: obj.version(),
-        };
-        Object::new_move(obj, owner, TransactionDigest::genesis())
-    };
-    let initial_shared_version = shared_object.version();
-
-<<<<<<< HEAD
-        let db = &authority_state.execution_cache;
-        db.revert_state_update(&tx_digest).await.unwrap();
-=======
-    let dir = tempfile::TempDir::new().unwrap();
-    let network_config = sui_swarm_config::network_config_builder::ConfigBuilder::new(&dir)
-        .committee_size(2.try_into().unwrap())
-        .with_objects(vec![gas_object.clone(), shared_object.clone()])
-        .build();
-    let genesis = network_config.genesis;
->>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
-
-    let sec1 = network_config.validator_configs[0]
-        .protocol_key_pair()
-        .copy();
-    let sec2 = network_config.validator_configs[1]
-        .protocol_key_pair()
-        .copy();
-
-    let authority1 = init_state_with_objects_and_committee(
-        vec![gas_object.clone(), shared_object.clone()],
-        &genesis,
-        &sec1,
-    )
-        .await;
-    let authority2 = init_state_with_objects_and_committee(
-        vec![gas_object.clone(), shared_object.clone()],
-        &genesis,
-        &sec2,
-    )
-        .await;
-
-    let seed = [1u8; 32];
-    let mut rng = StdRng::from_seed(seed);
-    for _ in 0..50 {
-        let certificate = make_test_transaction(
-            &sender,
-<<<<<<< HEAD
-            &sender_key,
-        )
-            .await
-            .unwrap();
-
-        assert!(create_effects.status().is_ok());
-        assert_eq!(create_effects.created().len(), 1);
-
-        let object_v0 = create_effects.created()[0].0;
-
-        let wrap_txn = to_sender_signed_transaction(
-            TransactionData::new_move_call(
-                sender,
-                object_basics.0,
-                ident_str!("object_basics").to_owned(),
-                ident_str!("wrap").to_owned(),
-                vec![],
-                create_effects.gas_object().0,
-                vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
-                TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
-                rgp,
-            )
-                .unwrap(),
-            &sender_key,
-        );
-
-        let wrap_cert = init_certified_transaction(wrap_txn, &authority_state);
-        let wrap_digest = *wrap_cert.digest();
-
-        let wrap_effects = authority_state
-            .execute_certificate(&wrap_cert, &authority_state.epoch_store_for_testing())
-            .await
-            .unwrap()
-            .into_message();
-
-        assert!(wrap_effects.status().is_ok());
-        assert_eq!(wrap_effects.created().len(), 1);
-        assert_eq!(wrap_effects.wrapped().len(), 1);
-        assert_eq!(wrap_effects.wrapped()[0].0, object_v0.0);
-
-        let wrapper_v0 = wrap_effects.created()[0].0;
-
-        let db = &authority_state.execution_cache;
-        db.revert_state_update(&wrap_digest).await.unwrap();
-
-        // The wrapped object is unwrapped once again (accessible from storage).
-        let object = db.get_object(&object_v0.0).unwrap().unwrap();
-        assert_eq!(object.version(), object_v0.1);
-
-        // The wrapper doesn't exist
-        assert!(db.get_object(&wrapper_v0.0).unwrap().is_none());
-
-        // The gas is uncharged
-        let gas = db.get_object(&gas_object_id).unwrap().unwrap();
-        assert_eq!(gas.version(), create_effects.gas_object().0 .1);
+//     telemetry_subscribers::init_for_testing();
+//
+//     let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
+//
+//     let gas_object_id = ObjectID::random();
+//     let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
+//     let mut gas_object_ref = gas_object.compute_object_reference();
+//
+//     let shared_object_id = ObjectID::random();
+//     let shared_object = {
+//         use sui_types::object::MoveObject;
+//         let obj = MoveObject::new_stable_coin(OBJECT_START_VERSION, shared_object_id, 10);
+//         let owner = Owner::Shared {
+//             initial_shared_version: obj.version(),
+//         };
+//         Object::new_move(obj, owner, TransactionDigest::genesis())
+//     };
+//     let initial_shared_version = shared_object.version();
+//
+// <<<<<<< HEAD
+//         let db = &authority_state.execution_cache;
+//         db.revert_state_update(&tx_digest).await.unwrap();
+// =======
+//     let dir = tempfile::TempDir::new().unwrap();
+//     let network_config = sui_swarm_config::network_config_builder::ConfigBuilder::new(&dir)
+//         .committee_size(2.try_into().unwrap())
+//         .with_objects(vec![gas_object.clone(), shared_object.clone()])
+//         .build();
+//     let genesis = network_config.genesis;
+// >>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
+//
+//     let sec1 = network_config.validator_configs[0]
+//         .protocol_key_pair()
+//         .copy();
+//     let sec2 = network_config.validator_configs[1]
+//         .protocol_key_pair()
+//         .copy();
+//
+//     let authority1 = init_state_with_objects_and_committee(
+//         vec![gas_object.clone(), shared_object.clone()],
+//         &genesis,
+//         &sec1,
+//     )
+//         .await;
+//     let authority2 = init_state_with_objects_and_committee(
+//         vec![gas_object.clone(), shared_object.clone()],
+//         &genesis,
+//         &sec2,
+//     )
+//         .await;
+//
+//     let seed = [1u8; 32];
+//     let mut rng = StdRng::from_seed(seed);
+//     for _ in 0..50 {
+//         let certificate = make_test_transaction(
+//             &sender,
+// <<<<<<< HEAD
+//             &sender_key,
+//         )
+//             .await
+//             .unwrap();
+//
+//         assert!(create_effects.status().is_ok());
+//         assert_eq!(create_effects.created().len(), 1);
+//
+//         let object_v0 = create_effects.created()[0].0;
+//
+//         let wrap_txn = to_sender_signed_transaction(
+//             TransactionData::new_move_call(
+//                 sender,
+//                 object_basics.0,
+//                 ident_str!("object_basics").to_owned(),
+//                 ident_str!("wrap").to_owned(),
+//                 vec![],
+//                 create_effects.gas_object().0,
+//                 vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(object_v0))],
+//                 TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+//                 rgp,
+//             )
+//                 .unwrap(),
+//             &sender_key,
+//         );
+//
+//         let wrap_cert = init_certified_transaction(wrap_txn, &authority_state);
+//         let wrap_digest = *wrap_cert.digest();
+//
+//         let wrap_effects = authority_state
+//             .execute_certificate(&wrap_cert, &authority_state.epoch_store_for_testing())
+//             .await
+//             .unwrap()
+//             .into_message();
+//
+//         assert!(wrap_effects.status().is_ok());
+//         assert_eq!(wrap_effects.created().len(), 1);
+//         assert_eq!(wrap_effects.wrapped().len(), 1);
+//         assert_eq!(wrap_effects.wrapped()[0].0, object_v0.0);
+//
+//         let wrapper_v0 = wrap_effects.created()[0].0;
+//
+//         let db = &authority_state.execution_cache;
+//         db.revert_state_update(&wrap_digest).await.unwrap();
+//
+//         // The wrapped object is unwrapped once again (accessible from storage).
+//         let object = db.get_object(&object_v0.0).unwrap().unwrap();
+//         assert_eq!(object.version(), object_v0.1);
+//
+//         // The wrapper doesn't exist
+//         assert!(db.get_object(&wrapper_v0.0).unwrap().is_none());
+//
+//         // The gas is uncharged
+//         let gas = db.get_object(&gas_object_id).unwrap().unwrap();
+//         assert_eq!(gas.version(), create_effects.gas_object().0 .1);
     }
 
     #[tokio::test]
@@ -9944,284 +9944,284 @@ async fn test_stable_consensus_message_processed() {
 
     #[tokio::test]
     async fn test_stable_iter_live_object_set() {
-        let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-        let (receiver, _): (_, AccountKeyPair) = get_key_pair();
-        let gas = ObjectID::random();
-        let obj_id = ObjectID::random();
-        let authority = init_state_with_stable_ids(vec![(sender, gas), (sender, obj_id)]).await;
-        let starting_live_set: HashSet<_> = authority
-            .iter_live_object_set_for_testing()
-            .filter_map(|object| {
-                let id = object.object_id();
-                if id != gas && id != obj_id {
-                    Some(id)
-                } else {
-                    None
-                }
-            })
-            .collect();
-
-        let gas_obj = authority.get_object(&gas).await.unwrap().unwrap();
-        let obj = authority.get_object(&obj_id).await.unwrap().unwrap();
-
-        let certified_transfer_transaction = init_certified_transfer_transaction(
-            sender,
-            &sender_key,
-            receiver,
-            obj.compute_object_reference(),
-            gas_obj.compute_object_reference(),
-            &authority,
-        );
-        authority
-            .execute_certificate(
-                &certified_transfer_transaction,
-                &authority.epoch_store_for_testing(),
-            )
-            .await
-            .unwrap();
-
-        let (package, upgrade_cap) = build_and_publish_test_package_with_upgrade_cap(
-            &authority,
-            &sender,
-            &sender_key,
-            &gas,
-            "object_wrapping",
-            /* with_unpublished_deps */ false,
-=======
-            &keypair,
-            shared_object_id,
-            initial_shared_version,
-            &gas_object_ref,
-            &[&authority1, &authority2],
-            Uniform::from(0..100000).sample(&mut rng),
->>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
-        )
-            .await;
-        let transaction_digest = certificate.digest();
-
-        // on authority1, we always sequence via consensus
-        send_consensus(&authority1, &certificate).await;
-        let (effects1, _execution_error_opt) =
-            authority1.try_execute_for_test(&certificate).await.unwrap();
-
-<<<<<<< HEAD
-        // Verify shared locks are now set for the transaction.
-        let shared_object_version = authority
-            .epoch_store_for_testing()
-            .get_shared_locks(transaction_digest)
-            .expect("Reading shared locks should not fail")
-            .into_iter()
-            .find_map(|(object_id, version)| {
-                if object_id == shared_object_id {
-                    Some(version)
-                } else {
-                    None
-                }
-            })
-            .expect("Shared object must be locked");
-        assert_eq!(shared_object_version, OBJECT_START_VERSION);
-
-        // Finally (Re-)execute the contract should succeed.
-        authority.try_execute_for_test(&certificate).await.unwrap();
-
-        // Ensure transaction effects are available.
-        authority.notify_read_effects(&certificate).await.unwrap();
-
-        // Ensure shared object sequence number increased.
-        let shared_object_version = authority
-            .get_object(&shared_object_id)
-            .await
-            .unwrap()
-            .unwrap()
-            .version();
-        assert_eq!(shared_object_version, SequenceNumber::from(2));
+//         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+//         let (receiver, _): (_, AccountKeyPair) = get_key_pair();
+//         let gas = ObjectID::random();
+//         let obj_id = ObjectID::random();
+//         let authority = init_state_with_stable_ids(vec![(sender, gas), (sender, obj_id)]).await;
+//         let starting_live_set: HashSet<_> = authority
+//             .iter_live_object_set_for_testing()
+//             .filter_map(|object| {
+//                 let id = object.object_id();
+//                 if id != gas && id != obj_id {
+//                     Some(id)
+//                 } else {
+//                     None
+//                 }
+//             })
+//             .collect();
+//
+//         let gas_obj = authority.get_object(&gas).await.unwrap().unwrap();
+//         let obj = authority.get_object(&obj_id).await.unwrap().unwrap();
+//
+//         let certified_transfer_transaction = init_certified_transfer_transaction(
+//             sender,
+//             &sender_key,
+//             receiver,
+//             obj.compute_object_reference(),
+//             gas_obj.compute_object_reference(),
+//             &authority,
+//         );
+//         authority
+//             .execute_certificate(
+//                 &certified_transfer_transaction,
+//                 &authority.epoch_store_for_testing(),
+//             )
+//             .await
+//             .unwrap();
+//
+//         let (package, upgrade_cap) = build_and_publish_test_package_with_upgrade_cap(
+//             &authority,
+//             &sender,
+//             &sender_key,
+//             &gas,
+//             "object_wrapping",
+//             /* with_unpublished_deps */ false,
+// =======
+//             &keypair,
+//             shared_object_id,
+//             initial_shared_version,
+//             &gas_object_ref,
+//             &[&authority1, &authority2],
+//             Uniform::from(0..100000).sample(&mut rng),
+// >>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
+//         )
+//             .await;
+//         let transaction_digest = certificate.digest();
+//
+//         // on authority1, we always sequence via consensus
+//         send_consensus(&authority1, &certificate).await;
+//         let (effects1, _execution_error_opt) =
+//             authority1.try_execute_for_test(&certificate).await.unwrap();
+//
+// <<<<<<< HEAD
+//         // Verify shared locks are now set for the transaction.
+//         let shared_object_version = authority
+//             .epoch_store_for_testing()
+//             .get_shared_locks(transaction_digest)
+//             .expect("Reading shared locks should not fail")
+//             .into_iter()
+//             .find_map(|(object_id, version)| {
+//                 if object_id == shared_object_id {
+//                     Some(version)
+//                 } else {
+//                     None
+//                 }
+//             })
+//             .expect("Shared object must be locked");
+//         assert_eq!(shared_object_version, OBJECT_START_VERSION);
+//
+//         // Finally (Re-)execute the contract should succeed.
+//         authority.try_execute_for_test(&certificate).await.unwrap();
+//
+//         // Ensure transaction effects are available.
+//         authority.notify_read_effects(&certificate).await.unwrap();
+//
+//         // Ensure shared object sequence number increased.
+//         let shared_object_version = authority
+//             .get_object(&shared_object_id)
+//             .await
+//             .unwrap()
+//             .unwrap()
+//             .version();
+//         assert_eq!(shared_object_version, SequenceNumber::from(2));
     }
 
     #[tokio::test]
     async fn test_stable_consensus_message_processed() {
-        telemetry_subscribers::init_for_testing();
-
-        let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
-
-        let gas_object_id = ObjectID::random();
-        let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
-        let mut gas_object_ref = gas_object.compute_object_reference();
-
-        let shared_object_id = ObjectID::random();
-        let shared_object = {
-            use sui_types::object::MoveObject;
-            let obj = MoveObject::new_stable_coin(OBJECT_START_VERSION, shared_object_id, 10);
-            let owner = Owner::Shared {
-                initial_shared_version: obj.version(),
-            };
-            Object::new_move(obj, owner, TransactionDigest::genesis())
-        };
-        let initial_shared_version = shared_object.version();
-
-        let dir = tempfile::TempDir::new().unwrap();
-        let network_config = sui_swarm_config::network_config_builder::ConfigBuilder::new(&dir)
-            .committee_size(2.try_into().unwrap())
-            .with_objects(vec![gas_object.clone(), shared_object.clone()])
-            .build();
-        let genesis = network_config.genesis;
-
-        let sec1 = network_config.validator_configs[0]
-            .protocol_key_pair()
-            .copy();
-        let sec2 = network_config.validator_configs[1]
-            .protocol_key_pair()
-            .copy();
-
-        let authority1 = init_state_with_objects_and_committee(
-            vec![gas_object.clone(), shared_object.clone()],
-            &genesis,
-            &sec1,
-        )
-            .await;
-        let authority2 = init_state_with_objects_and_committee(
-            vec![gas_object.clone(), shared_object.clone()],
-            &genesis,
-            &sec2,
-        )
-            .await;
-
-        let seed = [1u8; 32];
-        let mut rng = StdRng::from_seed(seed);
-        for _ in 0..50 {
-            let certificate = make_test_transaction(
-                &sender,
-                &keypair,
-                shared_object_id,
-                initial_shared_version,
-                &gas_object_ref,
-                &[&authority1, &authority2],
-                Uniform::from(0..100000).sample(&mut rng),
-            )
-                .await;
-            let transaction_digest = certificate.digest();
-
-            // on authority1, we always sequence via consensus
-            send_consensus(&authority1, &certificate).await;
-            let (effects1, _execution_error_opt) =
-                authority1.try_execute_for_test(&certificate).await.unwrap();
-
-            // now, on authority2, we send 0 or 1 consensus messages, then we either sequence and execute via
-            // effects or via handle_certificate, then send 0 or 1 consensus messages.
-            let send_first = rng.gen_bool(0.5);
-            if send_first {
-                send_consensus(&authority2, &certificate).await;
-            }
-
-            let effects2 = if send_first && rng.gen_bool(0.5) {
-                authority2
-                    .try_execute_for_test(&certificate)
-                    .await
-                    .unwrap()
-                    .0
-                    .into_message()
-            } else {
-                let epoch_store = authority2.epoch_store_for_testing();
-                epoch_store
-                    .acquire_shared_locks_from_effects(
-                        &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
-                        &effects1,
-                        authority2.db(),
-                    )
-                    .await
-                    .unwrap();
-                authority2.try_execute_for_test(&certificate).await.unwrap();
-                authority2
-                    .execution_cache
-                    .get_executed_effects(transaction_digest)
-                    .unwrap()
-                    .unwrap()
-            };
-
-            assert_eq!(effects1.data(), &effects2);
-
-            // If we didn't send consensus before handle_node_sync_certificate, we need to do it now.
-            if !send_first {
-                send_consensus(&authority2, &certificate).await;
-            }
-
-            // Sometimes send one more consensus message.
-            if rng.gen_bool(0.5) {
-                send_consensus(&authority2, &certificate).await;
-            }
-
-            // Update to the new gas object for new tx
-            gas_object_ref = *effects1
-                .data()
-                .mutated()
-                .iter()
-                .map(|(objref, _)| objref)
-                .find(|objref| objref.0 == gas_object_ref.0)
-                .unwrap();
-=======
-        // now, on authority2, we send 0 or 1 consensus messages, then we either sequence and execute via
-        // effects or via handle_certificate, then send 0 or 1 consensus messages.
-        let send_first = rng.gen_bool(0.5);
-        if send_first {
-            send_consensus(&authority2, &certificate).await;
->>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
-        }
-
-        let effects2 = if send_first && rng.gen_bool(0.5) {
-            authority2
-                .try_execute_for_test(&certificate)
-                .await
-                .unwrap()
-                .0
-                .into_message()
-        } else {
-            let epoch_store = authority2.epoch_store_for_testing();
-            epoch_store
-                .acquire_shared_locks_from_effects(
-                    &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
-                    &effects1,
-                    authority2.db(),
-                )
-                .await
-                .unwrap();
-            authority2.try_execute_for_test(&certificate).await.unwrap();
-            authority2
-                .database
-                .get_executed_effects(transaction_digest)
-                .unwrap()
-                .unwrap()
-        };
-
-        assert_eq!(effects1.data(), &effects2);
-
-        // If we didn't send consensus before handle_node_sync_certificate, we need to do it now.
-        if !send_first {
-            send_consensus(&authority2, &certificate).await;
-        }
-
-        // Sometimes send one more consensus message.
-        if rng.gen_bool(0.5) {
-            send_consensus(&authority2, &certificate).await;
-        }
-
-        // Update to the new gas object for new tx
-        gas_object_ref = *effects1
-            .data()
-            .mutated()
-            .iter()
-            .map(|(objref, _)| objref)
-            .find(|objref| objref.0 == gas_object_ref.0)
-            .unwrap();
-    }
-
-    // verify the two validators are in sync.
-    assert_eq!(
-        authority1
-            .epoch_store_for_testing()
-            .get_next_object_version(&shared_object_id),
-        authority2
-            .epoch_store_for_testing()
-            .get_next_object_version(&shared_object_id),
-    );
+//         telemetry_subscribers::init_for_testing();
+//
+//         let (sender, keypair): (_, AccountKeyPair) = get_key_pair();
+//
+//         let gas_object_id = ObjectID::random();
+//         let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
+//         let mut gas_object_ref = gas_object.compute_object_reference();
+//
+//         let shared_object_id = ObjectID::random();
+//         let shared_object = {
+//             use sui_types::object::MoveObject;
+//             let obj = MoveObject::new_stable_coin(OBJECT_START_VERSION, shared_object_id, 10);
+//             let owner = Owner::Shared {
+//                 initial_shared_version: obj.version(),
+//             };
+//             Object::new_move(obj, owner, TransactionDigest::genesis())
+//         };
+//         let initial_shared_version = shared_object.version();
+//
+//         let dir = tempfile::TempDir::new().unwrap();
+//         let network_config = sui_swarm_config::network_config_builder::ConfigBuilder::new(&dir)
+//             .committee_size(2.try_into().unwrap())
+//             .with_objects(vec![gas_object.clone(), shared_object.clone()])
+//             .build();
+//         let genesis = network_config.genesis;
+//
+//         let sec1 = network_config.validator_configs[0]
+//             .protocol_key_pair()
+//             .copy();
+//         let sec2 = network_config.validator_configs[1]
+//             .protocol_key_pair()
+//             .copy();
+//
+//         let authority1 = init_state_with_objects_and_committee(
+//             vec![gas_object.clone(), shared_object.clone()],
+//             &genesis,
+//             &sec1,
+//         )
+//             .await;
+//         let authority2 = init_state_with_objects_and_committee(
+//             vec![gas_object.clone(), shared_object.clone()],
+//             &genesis,
+//             &sec2,
+//         )
+//             .await;
+//
+//         let seed = [1u8; 32];
+//         let mut rng = StdRng::from_seed(seed);
+//         for _ in 0..50 {
+//             let certificate = make_test_transaction(
+//                 &sender,
+//                 &keypair,
+//                 shared_object_id,
+//                 initial_shared_version,
+//                 &gas_object_ref,
+//                 &[&authority1, &authority2],
+//                 Uniform::from(0..100000).sample(&mut rng),
+//             )
+//                 .await;
+//             let transaction_digest = certificate.digest();
+//
+//             // on authority1, we always sequence via consensus
+//             send_consensus(&authority1, &certificate).await;
+//             let (effects1, _execution_error_opt) =
+//                 authority1.try_execute_for_test(&certificate).await.unwrap();
+//
+//             // now, on authority2, we send 0 or 1 consensus messages, then we either sequence and execute via
+//             // effects or via handle_certificate, then send 0 or 1 consensus messages.
+//             let send_first = rng.gen_bool(0.5);
+//             if send_first {
+//                 send_consensus(&authority2, &certificate).await;
+//             }
+//
+//             let effects2 = if send_first && rng.gen_bool(0.5) {
+//                 authority2
+//                     .try_execute_for_test(&certificate)
+//                     .await
+//                     .unwrap()
+//                     .0
+//                     .into_message()
+//             } else {
+//                 let epoch_store = authority2.epoch_store_for_testing();
+//                 epoch_store
+//                     .acquire_shared_locks_from_effects(
+//                         &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
+//                         &effects1,
+//                         authority2.db(),
+//                     )
+//                     .await
+//                     .unwrap();
+//                 authority2.try_execute_for_test(&certificate).await.unwrap();
+//                 authority2
+//                     .execution_cache
+//                     .get_executed_effects(transaction_digest)
+//                     .unwrap()
+//                     .unwrap()
+//             };
+//
+//             assert_eq!(effects1.data(), &effects2);
+//
+//             // If we didn't send consensus before handle_node_sync_certificate, we need to do it now.
+//             if !send_first {
+//                 send_consensus(&authority2, &certificate).await;
+//             }
+//
+//             // Sometimes send one more consensus message.
+//             if rng.gen_bool(0.5) {
+//                 send_consensus(&authority2, &certificate).await;
+//             }
+//
+//             // Update to the new gas object for new tx
+//             gas_object_ref = *effects1
+//                 .data()
+//                 .mutated()
+//                 .iter()
+//                 .map(|(objref, _)| objref)
+//                 .find(|objref| objref.0 == gas_object_ref.0)
+//                 .unwrap();
+// =======
+//         // now, on authority2, we send 0 or 1 consensus messages, then we either sequence and execute via
+//         // effects or via handle_certificate, then send 0 or 1 consensus messages.
+//         let send_first = rng.gen_bool(0.5);
+//         if send_first {
+//             send_consensus(&authority2, &certificate).await;
+// >>>>>>> c4d12139fabce40b2ce72a48e4cd59e8308c78d6
+//         }
+// 
+//         let effects2 = if send_first && rng.gen_bool(0.5) {
+//             authority2
+//                 .try_execute_for_test(&certificate)
+//                 .await
+//                 .unwrap()
+//                 .0
+//                 .into_message()
+//         } else {
+//             let epoch_store = authority2.epoch_store_for_testing();
+//             epoch_store
+//                 .acquire_shared_locks_from_effects(
+//                     &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
+//                     &effects1,
+//                     authority2.db(),
+//                 )
+//                 .await
+//                 .unwrap();
+//             authority2.try_execute_for_test(&certificate).await.unwrap();
+//             authority2
+//                 .database
+//                 .get_executed_effects(transaction_digest)
+//                 .unwrap()
+//                 .unwrap()
+//         };
+//
+//         assert_eq!(effects1.data(), &effects2);
+//
+//         // If we didn't send consensus before handle_node_sync_certificate, we need to do it now.
+//         if !send_first {
+//             send_consensus(&authority2, &certificate).await;
+//         }
+//
+//         // Sometimes send one more consensus message.
+//         if rng.gen_bool(0.5) {
+//             send_consensus(&authority2, &certificate).await;
+//         }
+//
+//         // Update to the new gas object for new tx
+//         gas_object_ref = *effects1
+//             .data()
+//             .mutated()
+//             .iter()
+//             .map(|(objref, _)| objref)
+//             .find(|objref| objref.0 == gas_object_ref.0)
+//             .unwrap();
+//     }
+//
+//     // verify the two validators are in sync.
+//     assert_eq!(
+//         authority1
+//             .epoch_store_for_testing()
+//             .get_next_object_version(&shared_object_id),
+//         authority2
+//             .epoch_store_for_testing()
+//             .get_next_object_version(&shared_object_id),
+//     );
 }
 
 #[tokio::test]
