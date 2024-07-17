@@ -160,6 +160,7 @@ pub mod checked {
                 .clone();
             let gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
 
+            let mut first_coin_type = None;
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
@@ -181,6 +182,28 @@ pub mod checked {
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
+                    }
+                    if first_coin_type.is_none(){
+                        first_coin_type = obj.coin_type_maybe();
+                    } else {
+                        let gas_coin_type = obj.coin_type_maybe();
+                        match gas_coin_type {
+                            Some(coin_type) => {
+                                if let None = obj.coin_type_maybe() {
+                                    return Err(ExecutionError::invariant_violation(
+                                        "Provided non-gas coin object as input for gas!",
+                                    ));
+                                }
+                                if obj.coin_type_maybe().unwrap() != coin_type {
+                                    return Err(ExecutionError::invariant_violation(
+                                        "Provided non-gas coin object as input for gas!",
+                                    ));
+                                }
+                            }
+                            None => return Err(ExecutionError::invariant_violation(
+                                "Provided non-gas coin object as input for gas!",
+                            )),
+                        }
                     }
                     Ok(move_obj.get_coin_value_unsafe())
                 })

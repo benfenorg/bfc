@@ -1483,7 +1483,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
     // This test creates a transaction that sets a gas_budget less than the minimum
     // transaction requirement. It's expected to fail early during transaction
     // handling phase.
-    let min = 449;
+    let min = 4999;
     let budget = min - 1;
     let result = execute_stable_transfer(*MAX_GAS_BUDGET, budget, false, false).await;
 
