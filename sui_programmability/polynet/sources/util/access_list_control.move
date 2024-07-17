@@ -17,22 +17,18 @@ module polynet::acl {
 
     //operation admin, some of the operation need to be signed by admin
     const ADMINS: vector<address> =vector[
-                                          @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-                                          @0xc3f0bfdf21d95a247e306df123dde0dad1057f188bdc490737f2616f4062804b,
-                                          @0xfc171f86c07b0311a347d7e71b261c684848becbececec78802f1bf8a599f729,
-                                          @0xfd8669e7e9ecb8d9b893dc6b0ad6727aa28c80dd1c5a34809d20910c5ffa7525,
+                                          @admin,
                                           @0xb5e92ec96decaa207a41ffa1ea04c9a01ddf049c3a0c06764230cd3be1fc735e //its alexx for test
                                          ];
 
     //added: add relayer's address to assets admin, only assets admin can unlock token..!!!!
     const ASSETS_ADMIN:vector<address> = vector[
-                                                @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-                                                @0x5891702bb260411bc79f35ecd293581e9c4be7c926e6da7d4c7088101a69103e
+                                                @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,//its for unit test
+                                                @relayer_admin
                                                ];
     //added:  ONLY admin can MINT TREASURY token..!!!!
     const TREASURY_ADMIN:vector<address> = vector[
-                                                 @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590,
-                                                 @0xb5e92ec96decaa207a41ffa1ea04c9a01ddf049c3a0c06764230cd3be1fc735e
+                                                 @treasure_admin
                                                 ];
 
     struct AccessControlManager has store, drop, copy {

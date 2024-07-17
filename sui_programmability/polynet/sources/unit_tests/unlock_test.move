@@ -5,8 +5,8 @@ module polynet::unlock_test {
     use polynet::config::{init_cc_config, CrossChainGlobalConfig};
     use sui::clock;
     use polynet::lock_proxy::{Treasury};
-    use polynet::bfc_usdc::{ BFC_USDC, new_for_test};
-    use polynet::bfc_usdt::{ BFC_USDT};
+    use polynet::bf_usdc::{ BF_USDC, new_for_test};
+    use polynet::bf_usdt::{ BF_USDT};
     use polynet::tools::{ init_as_testnet};
     use polynet::acl::{ Self};
     use sui::test_scenario;
@@ -15,7 +15,7 @@ module polynet::unlock_test {
 
     #[test]
     fun test_unlock_tx(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -60,7 +60,7 @@ module polynet::unlock_test {
 
             let hash = x"b646D14eFA51D516cBc8DF5d1D8aB5Fd6DAD9ddB";
             let decimal = 18;
-            bind_asset<BFC_USDC>(&mut ccConfig, 602,hash, decimal, ctx);
+            bind_asset<BF_USDC>(&mut ccConfig, 602,hash, decimal, ctx);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -73,16 +73,16 @@ module polynet::unlock_test {
 
             let hash = x"9f3a4eb9871181e5fcb4cf1016e20fac8536f766";
             let decimal = 6;
-            bind_asset<BFC_USDT>(&mut ccConfig, 602,hash, decimal, ctx);
+            bind_asset<BF_USDT>(&mut ccConfig, 602,hash, decimal, ctx);
             test_scenario::return_shared(ccConfig);
         };
 
        
         //relay_unlock_tx
-        test_scenario::next_tx(&mut scenario_val, owner);
+        test_scenario::next_tx(&mut scenario_val, @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590);
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
-            let treasury =  test_scenario::take_shared<Treasury<BFC_USDC>>(&mut scenario_val );
+            let treasury =  test_scenario::take_shared<Treasury<BF_USDC>>(&mut scenario_val );
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
             let proof = x"fda1012096c990f8ba227a52dde8c6d6d36a16585bb93453eb5a3e14bb84fe63433b82d95a0200000000000020000000000000000000000000000000000000000000000000000000000000008620418a9310916a2ba4bcfa687bd22782b49143bda0e535c5af338c10cdb6b62919148b94ae7f1f59f6f8b20bf71944d5cb1f1c7439c4b0040000000000002c20f441b258a5a3f1d5a6284682ae670f4ea569b7f0f8b49458d8e991e7ce5543330a6c6f636b5f70726f787906756e6c6f636be4a2303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030303030323a3a636f696e3a3a436f696e3c313561343735356232353633306638626630616338306437306333653464366662643634386137373338376565623963373137663733656365653136373563373a3a6266635f757364633a3a4246435f555344433e20520eef03f83d2fd08316762b60601a88cdbc956912f3ee22f804c521bc352c8f000010632d5ec76b050000000000000000000000000000000000000000000000";
@@ -90,7 +90,7 @@ module polynet::unlock_test {
             let header_proof = vector::empty<u8>();
             let cur_raw_header = x"00";
             let header_sig = x"8b4c9fb32b017f2aa312592e75924462eb98354eb69fcd9b8c965514b7027f4044ef46da8f61e989b1031201df874fef563c8a764df0e4c2f5e86ea6e0be196f0124ee04d0a2cf683e3e5e57689046a5c05f4694b22bab200e13c88e8697114dc43496f8d39c66638b632849d76b1355305a1a6ca192197b6563b1e42338364f0200813e2bd830990b30232bb9ed785b341fc778ae55a0f9ce582b26c9ff00e0c50f13d5a1d53558c9e854dd973f9a5390c97a3e1606a602c0ec8e4bea5c027b273201";
-            test_relay_unlock_tx<BFC_USDC>(
+            test_relay_unlock_tx<BF_USDC>(
                                 &mut ccConfig, 
                                 &mut treasury,
                                 proof,

@@ -307,7 +307,6 @@ module polynet::config {
     public(friend) fun check_treasury_role (
          _config: &CrossChainGlobalConfig,
          _sender: address
-
     ) {
           assert!(has_role(_config, TREASURY_ROLE, _sender), ENOT_TREASURY_ROLE);
     }

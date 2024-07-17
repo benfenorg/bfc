@@ -8,7 +8,7 @@ module polynet::wrapper_v1_test {
     use sui::clock;
     use sui::coin;
     use polynet::lock_proxy::{Treasury};
-    use polynet::bfc_usdc::{new_for_test, BFC_USDC};
+    use polynet::bf_usdc::{new_for_test, BF_USDC};
     use polynet::tools::{init_mainnet_ccm, init_as_testnet};
     use polynet::wrapper_v1::{fee_collector, set_fee_collector, lock_and_pay_fee_with_fund};
     use polynet::acl::{ Self};
@@ -16,7 +16,7 @@ module polynet::wrapper_v1_test {
 
     #[test]
     fun test_wrapper_init(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         assert!(acl::is_admin(owner), 4001);
 
         let scenario_val = test_scenario::begin(owner);
@@ -61,7 +61,7 @@ module polynet::wrapper_v1_test {
 
     #[test]
     fun test_lock_and_pay_fee(){
-        let owner = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
+        let owner = @0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346;
         let contract = @0x7113a31aa484dfca371f854ae74918c7463c7b3f1bf4c1fe8ef28835e88fd590;
         assert!(acl::is_admin(owner), 4001);
 
@@ -118,7 +118,7 @@ module polynet::wrapper_v1_test {
 
             let hash = x"0123";
             let decimal = 6;
-            bind_asset<BFC_USDC>(&mut ccConfig, 10,hash, decimal, ctx);
+            bind_asset<BF_USDC>(&mut ccConfig, 10,hash, decimal, ctx);
             test_scenario::return_shared(ccConfig);
         };
 
@@ -137,16 +137,16 @@ module polynet::wrapper_v1_test {
         {
             let ccConfig = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let (lock_proxy, wrapper_store,manager) = borrow_mut_all(&mut ccConfig);
-            let treasury =  test_scenario::take_shared<Treasury<BFC_USDC>>(&mut scenario_val );
+            let treasury =  test_scenario::take_shared<Treasury<BF_USDC>>(&mut scenario_val );
 
             print(&treasury);
-            let coin =  coin::mint_for_testing<BFC_USDC>(10000000000, test_scenario::ctx(&mut scenario_val));
+            let coin =  coin::mint_for_testing<BF_USDC>(10000000000, test_scenario::ctx(&mut scenario_val));
             let fee =  coin::mint_for_testing<BFC>(10000000000, test_scenario::ctx(&mut scenario_val));
             
             let ctx = test_scenario::ctx(&mut scenario_val);
             let clock = clock::create_for_testing(ctx);
             let toAddress = x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899";
-            lock_and_pay_fee_with_fund<BFC_USDC>(manager, lock_proxy, &mut treasury, wrapper_store, @0x2, &mut coin, 7000000000, fee, 10, &toAddress, &clock, ctx);
+            lock_and_pay_fee_with_fund<BF_USDC>(manager, lock_proxy, &mut treasury, wrapper_store, @0x2, &mut coin, 7000000000, fee, 10, &toAddress, &clock, ctx);
             test_scenario::return_shared(ccConfig);
             test_scenario::return_shared( treasury);
             coin::burn_for_testing(coin);

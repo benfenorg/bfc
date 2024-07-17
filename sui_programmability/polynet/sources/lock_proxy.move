@@ -102,17 +102,17 @@ module polynet::lock_proxy {
             time: start_time,
             amount_record: vec_map::empty()
         };
-        //todo: change name
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
-        vec_map::insert(&mut amountLockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
+        
+        vec_map::insert(&mut amountLockManager.amount_record, b"BF_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountLockManager.amount_record, b"BF_USDC" , consts::get_max_amount_per_day());
 
         let amountUnlockManager = AmountLimitManager{
             time: start_time,
             amount_record: vec_map::empty()
         };
-         //todo: change name
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDT" , consts::get_max_amount_per_day());
-        vec_map::insert(&mut amountUnlockManager.amount_record, b"BFC_USDC" , consts::get_max_amount_per_day());
+         
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BF_USDT" , consts::get_max_amount_per_day());
+        vec_map::insert(&mut amountUnlockManager.amount_record, b"BF_USDC" , consts::get_max_amount_per_day());
 
         let min_amount = consts::get_min_amount_per_tx();
 
@@ -613,16 +613,13 @@ module polynet::lock_proxy {
 
     public(friend) fun reset_amount(amountManager:&mut AmountLimitManager){
         let amount = consts::get_max_amount_per_day();
-        let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDT");
+        let usdt =vec_map::get_mut(&mut amountManager.amount_record, &b"BF_USDT");
         *usdt = amount;
 
-        let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BFC_USDC");
+        let usdc = vec_map::get_mut(&mut amountManager.amount_record, &b"BF_USDC");
         *usdc = amount;
 
         events::reset_per_day_amount_event(amount);
-
-
-
     }
    
     public fun to_target_chain_amount(amount: u64,local_decimals: u8,  target_decimals: u8): u128 {
@@ -665,10 +662,10 @@ module polynet::lock_proxy {
 
         if (string::index_of(ascii_name, &string::utf8(b"BFC_ETH")) != length(ascii_name)) {
             return b"BFC_ETH"
-        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDT")) != length(ascii_name)) {
-            return b"BFC_USDT"
-        } else if (string::index_of(ascii_name, &string::utf8(b"BFC_USDC")) != length(ascii_name)) {
-            return b"BFC_USDC"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BF_USDT")) != length(ascii_name)) {
+            return b"BF_USDT"
+        } else if (string::index_of(ascii_name, &string::utf8(b"BF_USDC")) != length(ascii_name)) {
+            return b"BF_USDC"
         } else {
             return b"BFC_BTC"
         }

@@ -9,5 +9,6 @@ published-at = "580e552ab801865173bc3307fab2f84aea4004f89bb80102d4f627b253e6e5c8
 Sui = { local = "../../crates/sui-framework/packages/sui-framework" }
 [addresses]
 polynet = "0x0"
-#poly_bridge = "0x4a98355a0d56b8be0b8c95c85c522cff292916a716907e36a874b31c73b32eb3"
-
+treasure_admin= "0x984f38c8364f6d82f266569c5d1eed2cbe2a7d35693a6ed4cabb6dfafeec2e31"
+relayer_admin="0x5891702bb260411bc79f35ecd293581e9c4be7c926e6da7d4c7088101a69103e"
+admin="0xfbc4e44802b47459c0dbb03d123b2561ae86b8a559848d185ccd4fca6116e346"
