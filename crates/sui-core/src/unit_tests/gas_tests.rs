@@ -2062,7 +2062,7 @@ async fn execute_stable_transfer_with_price(
     let kind = TransactionKind::ProgrammableTransaction(pt);
     let data = TransactionData::new(kind, sender, gas_object_ref, gas_budget, rgp);
     let tx = to_sender_signed_transaction(data, &sender_key);
-    let (stable_rate, _) = authority_state.database.get_stable_rate_and_base_points(tx.gas()).unwrap();
+    let (stable_rate, _) = authority_state.database_for_testing().get_stable_rate_and_base_points(tx.gas()).unwrap();
     let response = if run_confirm {
         send_and_confirm_transaction(&authority_state, tx)
             .await
