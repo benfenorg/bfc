@@ -853,7 +853,7 @@ impl SuiNode {
             }
             anemo_config.quic = Some(quic_config);
 
-            let server_name = format!("sui-{}", chain_identifier);
+            let server_name = format!("bfc-{}", chain_identifier);
 
             let network = Network::bind(config.p2p_config.listen_address)
                 .server_name(&server_name)
