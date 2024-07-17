@@ -78,7 +78,7 @@ module polynet::tools_test {
             let global = test_scenario::take_shared<CrossChainGlobalConfig>(&scenario_val);
             let manager = config::borrow_crosschain_manager(&mut global);
             let result = get_poly_id(manager);
-            assert!(result == 41, 4002);
+            assert!(result == 48, 4002);
 
             test_scenario::return_shared(global);
         };
@@ -198,7 +198,7 @@ module polynet::tools_test {
 
         // let scenario_val = test_scenario::begin(owner);
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
-        vector::push_back(&mut keepers, x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899");
+        vector::push_back(&mut keepers, x"288bdebfab545852b31638298c7100a9c26ad325f246b0939c661b9b112722c188f1611de3c1c4ed0c68bedaa0c2e6f771e306ad397c8fa571d44b2856fbaece");
         vector::push_back(&mut keepers, x"09c6475ce07577ab72a1f96c263e5030cb53a843b00ca1238a093d9dcb183e2fec837e621b7ec6db7658c9b9808da304aed599043de1b433d490ff74f577c53d");
         vector::push_back(&mut keepers, x"e68a6e54bdfa0af47bd18465f4352f5151dc729c61a7399909f1cd1c6d816c0241800e782bb05f6f803b9f958930ebcee0b67d3af27845b4fbfa09e926cf17ae");
         vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
@@ -231,7 +231,7 @@ module polynet::tools_test {
 
             let result = get_poly_id(manager);
             print(&result);
-            assert!(result == 41, 4002);
+            assert!(result == 48, 4002);
 
             test_scenario::return_shared(global);
             clock::destroy_for_testing(clock);
