@@ -140,7 +140,7 @@ impl TestRunner {
             &self.sender,
             &self.sender_key,
             pt,
-            self.rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+            TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
         )
         .await
         .unwrap();

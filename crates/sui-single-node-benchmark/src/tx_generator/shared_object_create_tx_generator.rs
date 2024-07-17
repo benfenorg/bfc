@@ -22,7 +22,7 @@ impl TxGenerator for SharedObjectCreateTxGenerator {
         TestTransactionBuilder::new(
             account.sender,
             account.gas_objects[0],
-            DEFAULT_VALIDATOR_GAS_PRICE*6,
+            DEFAULT_VALIDATOR_GAS_PRICE,
         )
         .move_call(
             self.move_package,

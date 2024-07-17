@@ -4426,8 +4426,9 @@ pub async fn execute_programmable_transaction(
     sender: &SuiAddress,
     sender_key: &AccountKeyPair,
     pt: ProgrammableTransaction,
-    gas_unit: u64,
+    mut gas_unit: u64,
 ) -> SuiResult<TransactionEffects> {
+
     execute_programmable_transaction_(
         authority,
         None,
@@ -4492,8 +4493,14 @@ async fn execute_programmable_transaction_(
     let rgp = authority.reference_gas_price_for_testing().unwrap();
     let gas_object = authority.get_object(gas_object_id).await.unwrap();
     let gas_object_ref = gas_object.unwrap().compute_object_reference();
+    let mut gas_budget = rgp * gas_unit;
+    if gas_budget > 50000000000 {
+        //stable gas budget maybe not 50 bfc
+        gas_budget = 45000000000;
+    }
+
     let data =
-        TransactionData::new_programmable(*sender, vec![gas_object_ref], pt, rgp * gas_unit, rgp);
+        TransactionData::new_programmable(*sender, vec![gas_object_ref], pt, gas_budget, rgp);
 
     let transaction = to_sender_signed_transaction(data, sender_key);
     let signed_effects =
