@@ -1549,7 +1549,7 @@ impl PgIndexerStore {
         limit: usize,
         filter: Option<SuiOwnedMiningNFTFilter>,
     ) -> Result<ClassicPage<SuiMiningNFT>, IndexerError> {
-        let (count, records) = read_only_blocking!(&self.blocking_cp, |conn| {
+        let (count, mut records) = read_only_blocking!(&self.blocking_cp, |conn| {
             let query = mining_nfts_query!(address, filter);
             let count: i64 = query.count().get_result(conn)?;
             let count = count as usize;
@@ -1564,6 +1564,22 @@ impl PgIndexerStore {
             Ok::<(usize, Vec<MiningNFT>), IndexerError>((count, records))
         })
         .context("Failed to query mining NFTs.")?;
+        for record in records.iter_mut() {
+            let profit: Option<MiningNFTHistoryProfit> =
+                read_only_blocking!(&self.blocking_cp, |conn| {
+                mining_nft_history_profits::dsl::mining_nft_history_profits
+                    .filter(mining_nft_history_profits::dsl::owner.eq(record.owner.clone()))
+                    .filter(mining_nft_history_profits::dsl::miner_id.eq(record.miner_id.clone()))
+                    .order(mining_nft_history_profits::dsl::dt_timestamp_ms.desc())
+                    .limit(1)
+                    .first(conn)
+                    .optional()
+            })
+            .context("Failed to load pending reward of the mining NFT.")?;
+            if profit.is_some() {
+                record.total_mint_bfc = record.total_mint_bfc + profit.unwrap().pending_reward;
+            }
+        }
         let total_page = count / limit + if count % limit == 0 { 0 } else { 1 };
         Ok(ClassicPage {
             data: records.into_iter().map(|x| x.into()).collect(),
