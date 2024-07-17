@@ -9,6 +9,7 @@ use once_cell::sync::OnceCell;
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, Bytes};
+use tracing::info;
 use sui_protocol_config::Chain;
 
 /// A representation of a 32 byte digest
@@ -141,15 +142,15 @@ impl ChainIdentifier {
 
         match self {
             id if *id == mainnet_id => {
-                println!("start mainnet chain.....");
+                info!("start bfc mainnet chain.....");
                 Chain::Mainnet
             },
             id if *id == testnet_id => {
-                println!("start testnet chain.....");
+                info!("start bfc testnet chain.....");
                 Chain::Testnet
             },
             _ => {
-                println!("start unknown chain.....");
+                info!("start unknown chain.....");
                 Chain::Unknown
             },
         }
