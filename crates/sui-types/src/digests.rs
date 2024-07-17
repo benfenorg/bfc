@@ -140,9 +140,18 @@ impl ChainIdentifier {
         let testnet_id = get_testnet_chain_identifier();
 
         match self {
-            id if *id == mainnet_id => Chain::Mainnet,
-            id if *id == testnet_id => Chain::Testnet,
-            _ => Chain::Unknown,
+            id if *id == mainnet_id => {
+                println!("start mainnet chain.....");
+                Chain::Mainnet
+            },
+            id if *id == testnet_id => {
+                println!("start testnet chain.....");
+                Chain::Testnet
+            },
+            _ => {
+                println!("start unknown chain.....");
+                Chain::Unknown
+            },
         }
     }
 }

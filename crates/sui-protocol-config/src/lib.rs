@@ -1390,6 +1390,10 @@ impl ProtocolConfig {
                     cfg.consensus_bad_nodes_stake_threshold = Some(20);
                 }
                 24 => {
+                    if chain == Chain::Mainnet {
+                        println!("start Mainnet  for protocol v24");
+                    }
+
                 }
                 // Use this template when making changes:
                 //
