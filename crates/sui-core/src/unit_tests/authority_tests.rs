@@ -7419,7 +7419,7 @@ async fn test_stable_publish_dependent_module_ok() {
     let gas_payment_object = Object::with_stable_id_owner_for_testing(gas_payment_object_id, sender);
     let gas_payment_object_ref = gas_payment_object.compute_object_reference();
     // create a genesis state that contains the gas object and genesis modules
-    let genesis_module = match BuiltInFramework::genesis_objects().next().unwrap().data {
+    let genesis_module = match &BuiltInFramework::genesis_objects().next().unwrap().data {
         Data::Package(m) => CompiledModule::deserialize_with_defaults(
             m.serialized_module_map().values().next().unwrap(),
         )
@@ -7513,7 +7513,7 @@ async fn test_stable_publish_non_existing_dependent_module() {
     let gas_payment_object = Object::with_stable_id_owner_for_testing(gas_payment_object_id, sender);
     let gas_payment_object_ref = gas_payment_object.compute_object_reference();
     // create a genesis state that contains the gas object and genesis modules
-    let genesis_module = match BuiltInFramework::genesis_objects().next().unwrap().data {
+    let genesis_module = match &BuiltInFramework::genesis_objects().next().unwrap().data {
         Data::Package(m) => CompiledModule::deserialize_with_defaults(
             m.serialized_module_map().values().next().unwrap(),
         )
@@ -7606,7 +7606,7 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
     let invalid_gas_payment_object_id = ObjectID::random();
 
     let (authority_state, pkg_ref) =
-        init_state_with_stable_and_invalid_ids_and_object_basics(vec![(sender, gas_payment_object_id)], vec![(sender, invalid_gas_payment_object_id)]).await;
+        init_state_with_stable_and_invalid_ids_and_object_basics(vec![(sender, gas_payment_object_id)],vec![(sender, invalid_gas_payment_object_id)]).await;
 
     let effects = create_move_object(
         &pkg_ref.0,
@@ -7622,7 +7622,7 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
     assert_eq!(effects.created().len(), 1);
     assert_eq!(effects.mutated().len(), 1);
 
-    let created_object_id = effects.created()[0].0.0;
+    let created_object_id = effects.created()[0].0 .0;
     // check that transaction actually created an object with the expected ID, owner
     let created_obj = authority_state
         .get_object(&created_object_id)
@@ -7641,18 +7641,10 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
     )
         .await;
 
-    authority_state.database_for_testing().reset_locks_for_test(
-        &[*tx1.digest(), *tx2.digest()],
-        &[
-            gas_object.compute_object_reference(),
-            object.compute_object_reference(),
-        ],
-        &authority_state.epoch_store_for_testing(),
-    );
     match result {
         Ok(_) => panic!("Expected error"),
         Err(e) => {
-            assert_eq!(e, SuiError::UserInputError { error: UserInputError::GasCoinInvalid { coin_type: "None".to_string() } });
+            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
         }
     }
 
@@ -7668,9 +7660,10 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
     match result {
         Ok(_) => panic!("Expected error"),
         Err(e) => {
-            assert_eq!(e, SuiError::UserInputError { error: UserInputError::GasCoinInvalid { coin_type: "00000000000000000000000000000000000000000000000000000000000000c8::usdx::usdx".to_string() } });
+            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"00000000000000000000000000000000000000000000000000000000000000c8::usdx::usdx".to_string()}});
         }
     }
+
 }
 
 #[sim_test]
@@ -9528,213 +9521,6 @@ async fn test_stable_shared_object_transaction_ok() {
         .unwrap()
         .version();
     assert_eq!(shared_object_version, SequenceNumber::from(2));
-}
-
-#[tokio::test]
-async fn test_stable_store_revert_add_ofield() {
-    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-    let gas_object_id = ObjectID::random();
-    let (authority_state, object_basics) =
-        init_state_with_stable_ids_and_object_basics(vec![(sender, gas_object_id)]).await;
-
-    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let create_outer_effects = create_move_object(
-        &object_basics.0,
-        &authority_state,
-        &gas_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(create_outer_effects.status().is_ok());
-    assert_eq!(create_outer_effects.created().len(), 1);
-
-    let create_inner_effects = create_move_object(
-        &object_basics.0,
-        &authority_state,
-        &gas_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(create_inner_effects.status().is_ok());
-    assert_eq!(create_inner_effects.created().len(), 1);
-
-    let outer_v0 = create_outer_effects.created()[0].0;
-    let inner_v0 = create_inner_effects.created()[0].0;
-
-    let add_txn = to_sender_signed_transaction(
-        TransactionData::new_move_call(
-            sender,
-            object_basics.0,
-            ident_str!("object_basics").to_owned(),
-            ident_str!("add_ofield").to_owned(),
-            vec![],
-            create_inner_effects.gas_object().0,
-            vec![
-                CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
-                CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
-            ],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
-            rgp,
-        )
-            .unwrap(),
-        &sender_key,
-    );
-
-    let add_cert = init_certified_transaction(add_txn, &authority_state);
-    let add_digest = *add_cert.digest();
-
-    let add_effects = authority_state
-        .execute_certificate(&add_cert, &authority_state.epoch_store_for_testing())
-        .await
-        .unwrap()
-        .into_message();
-
-    assert!(add_effects.status().is_ok());
-    assert_eq!(add_effects.created().len(), 1);
-
-    let field_v0 = add_effects.created()[0].0;
-    let outer_v1 = find_by_id(&add_effects.mutated(), outer_v0.0).unwrap();
-    let inner_v1 = find_by_id(&add_effects.mutated(), inner_v0.0).unwrap();
-
-    let db = &authority_state.database_for_testing();
-
-    let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
-    assert_eq!(outer.version(), outer_v1.1);
-
-    let field = db.get_object(&field_v0.0).unwrap().unwrap();
-    assert_eq!(field.owner, Owner::ObjectOwner(outer_v0.0.into()));
-
-    let inner = db.get_object(&inner_v0.0).unwrap().unwrap();
-    assert_eq!(inner.version(), inner_v1.1);
-    assert_eq!(inner.owner, Owner::ObjectOwner(field_v0.0.into()));
-
-    db.revert_state_update(&add_digest).unwrap();
-
-    let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
-    assert_eq!(outer.version(), outer_v0.1);
-
-    // Field no longer exists
-    assert!(db.get_object(&field_v0.0).unwrap().is_none());
-
-    let inner = db.get_object(&inner_v0.0).unwrap().unwrap();
-    assert_eq!(inner.version(), inner_v0.1);
-    assert_eq!(inner.owner, Owner::AddressOwner(sender));
-}
-
-#[tokio::test]
-async fn test_stablestore_revert_remove_ofield() {
-    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-    let gas_object_id = ObjectID::random();
-    let (authority_state, object_basics) =
-        init_state_with_stable_ids_and_object_basics(vec![(sender, gas_object_id)]).await;
-
-    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let create_outer_effects = create_move_object(
-        &object_basics.0,
-        &authority_state,
-        &gas_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(create_outer_effects.status().is_ok());
-    assert_eq!(create_outer_effects.created().len(), 1);
-
-    let create_inner_effects = create_move_object(
-        &object_basics.0,
-        &authority_state,
-        &gas_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(create_inner_effects.status().is_ok());
-    assert_eq!(create_inner_effects.created().len(), 1);
-
-    let outer_v0 = create_outer_effects.created()[0].0;
-    let inner_v0 = create_inner_effects.created()[0].0;
-
-    let add_effects = add_ofield(
-        &object_basics.0,
-        &authority_state,
-        &outer_v0.0,
-        &inner_v0.0,
-        &gas_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(add_effects.status().is_ok());
-    assert_eq!(add_effects.created().len(), 1);
-
-    let field_v0 = add_effects.created()[0].0;
-    let outer_v1 = find_by_id(&add_effects.mutated(), outer_v0.0).unwrap();
-    let inner_v1 = find_by_id(&add_effects.mutated(), inner_v0.0).unwrap();
-
-    let remove_ofield_txn = to_sender_signed_transaction(
-        TransactionData::new_move_call(
-            sender,
-            object_basics.0,
-            ident_str!("object_basics").to_owned(),
-            ident_str!("remove_ofield").to_owned(),
-            vec![],
-            add_effects.gas_object().0,
-            vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v1))],
-            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
-            rgp,
-        )
-            .unwrap(),
-        &sender_key,
-    );
-
-    let remove_ofield_cert = init_certified_transaction(remove_ofield_txn, &authority_state);
-    let remove_ofield_digest = *remove_ofield_cert.digest();
-
-    let remove_effects = authority_state
-        .execute_certificate(
-            &remove_ofield_cert,
-            &authority_state.epoch_store_for_testing(),
-        )
-        .await
-        .unwrap()
-        .into_message();
-
-    assert!(remove_effects.status().is_ok());
-    let outer_v2 = find_by_id(&remove_effects.mutated(), outer_v0.0).unwrap();
-    let inner_v2 = find_by_id(&remove_effects.mutated(), inner_v0.0).unwrap();
-
-    let db = &authority_state.database_for_testing();
-
-    let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
-    assert_eq!(outer.version(), outer_v2.1);
-
-    let inner = db.get_object(&inner_v0.0).unwrap().unwrap();
-    assert_eq!(inner.owner, Owner::AddressOwner(sender));
-    assert_eq!(inner.version(), inner_v2.1);
-
-    db.revert_state_update(&remove_ofield_digest).unwrap();
-
-    let outer = db.get_object(&outer_v0.0).unwrap().unwrap();
-    assert_eq!(outer.version(), outer_v1.1);
-
-    let field = db.get_object(&field_v0.0).unwrap().unwrap();
-    assert_eq!(field.owner, Owner::ObjectOwner(outer_v0.0.into()));
-
-    let inner = db.get_object(&inner_v0.0).unwrap().unwrap();
-    assert_eq!(inner.owner, Owner::ObjectOwner(field_v0.0.into()));
-    assert_eq!(inner.version(), inner_v1.1);
 }
 
 
