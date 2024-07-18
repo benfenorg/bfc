@@ -8,7 +8,7 @@ module sui_system::validator_tests {
     use sui::test_scenario;
     use sui::test_utils;
     use sui::url;
-    use std::string::Self;
+    use std::string::{Self};
     use sui_system::validator::{Self, Validator, rate_vec_map};
     use std::ascii;
     use sui::coin::{Self, Coin};
@@ -16,6 +16,8 @@ module sui_system::validator_tests {
     use sui_system::staking_pool::{Self, StakedBfc};
     use bfc_system::busd::BUSD;
     use sui::bag;
+    use sui::test_utils::assert_eq;
+    use sui_system::stable_pool::StakedStable;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -64,6 +66,7 @@ module sui_system::validator_tests {
         );
 
         validator::activate(&mut validator, 0);
+        validator::activate_stable(&mut validator, 0);
 
         validator
     }
@@ -162,6 +165,59 @@ module sui_system::validator_tests {
             let coin_ids = test_scenario::ids_for_sender<Coin<BFC>>(scenario);
             let withdraw = test_scenario::take_from_sender_by_id<Coin<BFC>>(scenario, *vector::borrow(&coin_ids, 0));
             assert!(coin::value(&withdraw) == 1_000_000_000, 0);
+            test_scenario::return_to_sender(scenario, withdraw);
+        };
+
+        test_utils::destroy(validator);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_pending_validator_flow_with_stable() {
+        let sender = VALID_ADDRESS;
+        let mut scenario_val = test_scenario::begin(sender);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+
+        let mut validator = get_test_validator(ctx);
+        test_scenario::next_tx(scenario, sender);
+        {
+            let ctx = test_scenario::ctx(scenario);
+            let new_stake = coin::into_balance<BUSD>(coin::mint_for_testing<BUSD>(30_000_000_000, ctx));
+            let stake = validator::request_add_stable_stake<BUSD>(&mut validator, new_stake, sender, ctx);
+            transfer::public_transfer(stake, sender);
+
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
+            assert_eq(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
+        };
+
+        test_scenario::next_tx(scenario, sender);
+        {
+            let coin_ids = test_scenario::ids_for_sender<StakedStable<BUSD>>(scenario);
+            let stake = test_scenario::take_from_sender_by_id<StakedStable<BUSD>>(scenario, *vector::borrow(&coin_ids, 0));
+            let ctx = test_scenario::ctx(scenario);
+            let (withdrawn_balance, bfc) = validator::request_withdraw_stable_stake(&mut validator, stake, 1_000_000_000,ctx);
+            transfer::public_transfer(coin::from_balance<BUSD>(withdrawn_balance, ctx), sender);
+            transfer::public_transfer(coin::from_balance(bfc, ctx), sender);
+
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
+            assert_eq(validator::pending_stake_stable_amount<BUSD>(&validator), 30_000_000_000);
+
+            validator::deposit_stake_rewards(&mut validator, balance::zero(), &rate_vec_map());
+
+            // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
+            validator::process_pending_stakes_and_withdraws(&mut validator, ctx);
+
+            assert_eq(validator::total_stake_with_all_stable(&validator, rate_vec_map()), 1_000_000_000);
+            assert!(validator::pending_stake_amount(&validator) == 0, 0);
+            assert!(validator::pending_stake_withdraw_amount(&validator) == 0, 0);
+        };
+
+        test_scenario::next_tx(scenario, sender);
+        {
+            let coin_ids = test_scenario::ids_for_sender<Coin<BUSD>>(scenario);
+            let withdraw = test_scenario::take_from_sender_by_id<Coin<BUSD>>(scenario, *vector::borrow(&coin_ids, 0));
+            assert_eq(coin::value(&withdraw), 30_000_000_000);
             test_scenario::return_to_sender(scenario, withdraw);
         };
 

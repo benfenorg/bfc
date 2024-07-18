@@ -821,6 +821,92 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
+    pub fn get_input_sui_obj(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<Object, ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                invariant_violation!(
+                    "Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",
+                    expected_version,
+                    obj.version(),
+                );
+            }
+            Ok(obj.clone())
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                invariant_violation!(
+                    "Failed looking up dynamic field {id} in SUI conservation checking"
+                );
+            };
+            Ok(obj.clone())
+        }
+    }
+
+    fn get_input_stable_with_rebate(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<(u64,u64), ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                invariant_violation!(
+                    "Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",
+                    expected_version,
+                    obj.version(),
+                );
+            }
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+                make_invariant_violation!(
+                    "Failed looking up input SUI in SUI conservation checking for input with \
+                         type {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+            })
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                invariant_violation!(
+                    "Failed looking up dynamic field {id} in SUI conservation checking"
+                );
+            };
+            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+                make_invariant_violation!(
+                    "Failed looking up input SUI in SUI conservation checking for type \
+                         {:?}: {e:#?}",
+                    obj.struct_tag(),
+                )
+            })
+        }
+    }
+
+    pub fn get_input_sui_obj_nopanic(
+        &self,
+        id: &ObjectID,
+        expected_version: SequenceNumber,
+    ) -> Result<Object, ExecutionError> {
+        if let Some(obj) = self.input_objects.get(id) {
+            // the assumption here is that if it is in the input objects must be the right one
+            if obj.version() != expected_version {
+                return Err(ExecutionError::invariant_violation(format!("Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",expected_version,obj.version())));
+            }
+            Ok(obj.clone())
+        } else {
+            // not in input objects, must be a dynamic field
+            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+                return Err(ExecutionError::invariant_violation(format!( "Failed looking up dynamic field {id} in SUI conservation checking")));
+            };
+            Ok(obj.clone())
+        }
+    }
     /// Return the list of all modified objects, for each object, returns
     /// - Object ID,
     /// - Input: If the object existed prior to this transaction, include their version and storage_rebate,
@@ -848,6 +934,7 @@ impl<'backing> TemporaryStore<'backing> {
             )
             .collect()
     }
+
 
     /// Check that this transaction neither creates nor destroys SUI. This should hold for all txes
     /// except the epoch change tx, which mints staking rewards equal to the gas fees burned in the
@@ -951,6 +1038,7 @@ impl<'backing> TemporaryStore<'backing> {
         gas_summary: &GasCostSummary,
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
+        pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;

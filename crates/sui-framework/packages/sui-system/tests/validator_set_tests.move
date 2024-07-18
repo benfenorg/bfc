@@ -29,6 +29,7 @@ module sui_system::validator_set_tests {
     use bfc_system::mgg::MGG;
     use sui::test_utils::{Self, assert_eq};
     use sui::vec_map;
+    use sui_system::stable_pool::StakedStable;
 
     const MIST_PER_SUI: u64 = 1_000_000_000; // used internally for stakes.
 
@@ -387,7 +388,8 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
-    fun test_staking_min_threshold() {
+    #[expected_failure(abort_code = validator_set::EStakingBelowThreshold)]
+    fun test_staking_below_threshold_with_stable() {
         let mut scenario_val = test_scenario::begin(@0x0);
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
@@ -400,7 +402,32 @@ module sui_system::validator_set_tests {
         let mut scenario_val = test_scenario::begin(@0x1);
         let scenario = &mut scenario_val;
         let ctx1 = test_scenario::ctx(scenario);
-        let stake = validator_set::request_add_stake(
+        let stake = validator_set::request_add_stable_stake<BUSD>(
+        &mut validator_set,
+        @0x1,
+        balance::create_for_testing(MIST_PER_SUI - 1), // 1 MIST lower than the threshold
+        ctx1,
+        );
+        transfer::public_transfer(stake, @0x1);
+        test_utils::destroy(validator_set);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_staking_min_threshold_with_stable() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+
+        let validator1 = create_validator(@0x1, 1, 1, true, ctx);
+        let mut validator_set = validator_set::new(vector[validator1], ctx);
+        assert_eq(validator_set::total_stake(&validator_set), 100 * MIST_PER_SUI);
+        test_scenario::end(scenario_val);
+
+        let mut scenario_val = test_scenario::begin(@0x1);
+        let scenario = &mut scenario_val;
+        let ctx1 = test_scenario::ctx(scenario);
+        let stake = validator_set::request_add_stable_stake<BUSD>(
             &mut validator_set,
             @0x1,
             balance::create_for_testing(MIST_PER_SUI), // min possible stake
@@ -600,6 +627,97 @@ module sui_system::validator_set_tests {
                 ctx,
             );
             transfer::public_transfer(coin::from_balance(withdrawn_balance, ctx), @0x42);
+        };
+
+        // Now @0x4 gets kicked out after 3 grace days are used at the 4th epoch change.
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        // @0x4 was kicked out.
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x3]);
+        test_utils::destroy(validator_set);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_low_stake_departure_stable() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        // Create 4 validators.
+        let v1 = create_validator(@0x1, 1, 1, true, ctx); // 100 SUI of stake
+        let v2 = create_validator(@0x2, 4, 1, true, ctx); // 400 SUI of stake
+        let v3 = create_validator(@0x3, 10, 1, true, ctx); // 1000 SUI of stake
+        let v4 = create_validator(@0x4, 4, 1, true, ctx); // 400 SUI of stake
+
+        let mut validator_set = validator_set::new(vector[v1, v2, v3, v4], ctx);
+        test_scenario::end(scenario_val);
+
+        let mut scenario_val = test_scenario::begin(@0x1);
+        let scenario = &mut scenario_val;
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x1, @0x2, @0x3, @0x4]);
+
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+
+        // v1 is kicked out because their stake 100 is less than the very low stake threshold
+        // which is 200.
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
+
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
+
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x2, @0x3, @0x4]);
+
+        // Add some stake to @0x4 to get her out of the danger zone.
+        test_scenario::next_tx(scenario, @0x42);
+        {
+            let ctx = test_scenario::ctx(scenario);
+            let stake = validator_set::request_add_stable_stake<BUSD>(
+                &mut validator_set,
+                @0x4,
+                balance::create_for_testing<BUSD>(500 * MIST_PER_SUI),
+                ctx,
+            );
+            transfer::public_transfer(stake, @0x42);
+        };
+
+        // So only @0x2 will be kicked out.
+        advance_epoch_with_low_stake_params(
+            &mut validator_set, 500, 200, 3, scenario
+        );
+        assert_eq(active_validator_addresses(&validator_set), vector[@0x3, @0x4]);
+
+        // Withdraw the stake from @0x4.
+        test_scenario::next_tx(scenario, @0x42);
+        {
+            let stake = test_scenario::take_from_sender<StakedStable<BUSD>>(scenario);
+            let ctx = test_scenario::ctx(scenario);
+            let (withdrawn_balance_busd, withdrawn_balance_bfc) = validator_set::request_withdraw_stable_stake<BUSD>(
+                &mut validator_set,
+                stake,
+                ctx,
+            );
+            transfer::public_transfer(coin::from_balance<BUSD>(withdrawn_balance_busd, ctx), @0x42);
+            transfer::public_transfer(coin::from_balance(withdrawn_balance_bfc, ctx), @0x42);
         };
 
         // Now @0x4 gets kicked out after 3 grace days are used at the 4th epoch change.

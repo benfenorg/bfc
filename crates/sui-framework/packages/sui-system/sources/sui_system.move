@@ -54,7 +54,7 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use sui::dynamic_field;
     use sui::vec_map::VecMap;
-    use sui_system::stable_pool::StakedStable;
+    use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
 
     #[test_only] use sui::balance;
@@ -565,6 +565,14 @@ module sui_system::sui_system {
         sui_system_state_inner::pool_exchange_rates(self, pool_id)
     }
 
+    public fun pool_exchange_stable_rates<STABLE>(
+        wrapper: &mut SuiSystemState,
+        pool_id: &ID
+    ): &Table<u64, PoolStableTokenExchangeRate>  {
+        let self = load_system_state_mut(wrapper);
+        sui_system_state_inner::pool_exchange_stable_rates<STABLE>(self, pool_id)
+    }
+
     /// Getter returning addresses of the currently active validators.
     public fun active_validator_addresses(wrapper: &mut SuiSystemState): vector<address> {
         let self = load_system_state(wrapper);
@@ -742,6 +750,16 @@ module sui_system::sui_system {
         let self = load_system_state(wrapper);
         let rate_map = rate_vec_map();
         sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, rate_map)
+    }
+
+    #[test_only]
+    public fun validator_stake_amount_with_stable_real_rate(
+        wrapper: &mut SuiSystemState,
+        validator_addr: address,
+    ): u64 {
+        let stable_rate = get_stable_rate(wrapper);
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, stable_rate)
     }
 
     #[test_only]

@@ -6,7 +6,6 @@ use std::convert::{TryFrom, TryInto};
 use std::fmt::{Display, Formatter};
 
 use crate::{
-    base_types::{SequenceNumber},
     coin::Coin,
     error::{ExecutionError, ExecutionErrorKind},
     id::UID,
@@ -21,9 +20,10 @@ pub use checked::*;
 #[sui_macros::with_checked_arithmetic]
 mod checked {
     use move_core_types::language_storage::{StructTag, TypeTag};
-    use move_core_types::annotated_value::MoveStructLayout;
+    use move_core_types::ident_str;
     use crate::balance::Balance;
     use crate::base_types::ObjectID;
+    use crate::BFC_SYSTEM_ADDRESS;
     use super::*;
 
     /// Rust version of the Move sui::coin::Coin<STABLE> type
@@ -39,7 +39,7 @@ mod checked {
             self.0.value()
         }
 
-        pub fn type_() -> StructTag {
+        pub fn busd_type_() -> StructTag {
             Coin::type_(TypeTag::Struct(Box::new(BUSD.type_())))
         }
         pub fn type_with_tag(tag: TypeTag) -> StructTag {
@@ -66,13 +66,17 @@ mod checked {
             bcs::to_bytes(&self).unwrap()
         }
 
-        pub fn to_object(&self, version: SequenceNumber) -> MoveObject {
-            MoveObject::new_stable_coin(version, *self.id(), self.value())
+        pub fn invalid_gas_coin_type() -> StructTag {
+            let struc_tag= StructTag {
+                address: BFC_SYSTEM_ADDRESS,
+                name: ident_str!("usdx").to_owned(),
+                module: ident_str!("usdx").to_owned(),
+                type_params: Vec::new(),
+            };
+
+            Coin::type_(TypeTag::Struct(Box::new(struc_tag)))
         }
 
-        pub fn layout() -> MoveStructLayout {
-            Coin::layout(TypeTag::Struct(Box::new(BUSD.type_())))
-        }
 
         #[cfg(test)]
         pub fn new_for_testing(value: u64) -> Self {

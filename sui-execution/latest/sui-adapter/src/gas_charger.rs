@@ -116,6 +116,23 @@ pub mod checked {
             self.gas_status.summary()
         }
 
+        pub fn is_pay_with_stable_coin(&self,temporary_store: &TemporaryStore<'_>) -> bool {
+            for (id,version,_) in self.gas_coins.iter()  {
+                let obj_result = temporary_store.get_input_sui_obj_nopanic(id,version.clone());
+                if obj_result.is_err() {
+                    continue;
+                }
+                let obj = obj_result.unwrap();
+                if let Data::Move(move_obj) = &obj.data{
+                    return move_obj.type_().is_stable_gas_coin();
+                } else {
+                    continue
+                }
+            }
+            false
+        }
+
+
         // This function is called when the transaction is about to be executed.
         // It will smash all gas coins into a single one and set the logical gas coin
         // to be the first one in the list.
@@ -319,7 +336,7 @@ pub mod checked {
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                if gas_object.is_stable_gas_coin() {
+                if !self.gas_status.has_adjust_computation_on_out_of_gas() && gas_object.is_stable_gas_coin() {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
@@ -336,6 +353,9 @@ pub mod checked {
                                 ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
                             ));
                             self.reset(temporary_store);
+                            cost_summary = self.gas_status.summary();
+                            let gas_used = cost_summary.net_gas_usage();
+
                             deduct_gas(&mut gas_object, gas_used);
                         }
                     }

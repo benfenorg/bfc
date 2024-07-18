@@ -93,6 +93,7 @@ pub mod bfc_system_state;
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
 pub mod stable_coin;
+pub mod vault;
 
 macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {

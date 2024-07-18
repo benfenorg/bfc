@@ -139,7 +139,7 @@ impl MoveObject {
     pub fn new_stable_coin(version: SequenceNumber, id: ObjectID, value: u64) -> Self {
         unsafe {
             Self::new_from_execution_with_limit(
-                StableCoin::type_().into(),
+                StableCoin::busd_type_().into(),
                 true,
                 version,
                 StableCoin::new(id, value).to_bcs_bytes(),
@@ -390,6 +390,16 @@ impl MoveObject {
     pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         let balances = self.get_coin_balances(layout_resolver)?;
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
+    }
+
+    pub fn get_total_stable_coin(&self,) -> Result<u64, SuiError> {
+        Ok(Coin::from_bcs_bytes(self.contents())
+            .expect("failed to deserialize coin")
+            .balance
+            .value())
+        // let balances = self.get_coin_balances(layout_resolver)?;
+        // tracing::error!("balances {:?}",balances);
+        // Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
 }
 
@@ -958,6 +968,19 @@ impl Object {
         })
     }
 
+    pub fn get_total_stable_coin_with_rebate(&self,) -> Result<(u64,u64), SuiError> {
+        Ok(match &self.data {
+            Data::Move(m) => {
+                if m.type_.is_stable_gas_coin() {
+                    (m.get_total_stable_coin()?,self.storage_rebate)
+                }else {
+                    Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
+                }
+            }
+            Data::Package(_) => Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?,
+        })
+    }
+
     pub fn immutable_with_id_for_testing(id: ObjectID) -> Self {
         let data = Data::Move(MoveObject {
             type_: GasCoin::type_().into(),
@@ -998,6 +1021,21 @@ impl Object {
             initial_shared_version: obj.version(),
         };
         Object::new_move(obj, owner, TransactionDigest::genesis_marker())
+    }
+
+    pub fn with_stable_id_owner_gas_for_testing(id: ObjectID, owner: SuiAddress, gas: u64) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::busd_type_().into(),
+            has_public_transfer: true,
+            version: OBJECT_START_VERSION,
+            contents: StableCoin::new(id, gas).to_bcs_bytes(),
+        });
+        ObjectInner {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }.into()
     }
 
     pub fn with_id_owner_gas_for_testing(id: ObjectID, owner: SuiAddress, gas: u64) -> Self {
@@ -1069,6 +1107,11 @@ impl Object {
         Self::with_id_owner_gas_for_testing(id, owner, GAS_VALUE_FOR_TESTING)
     }
 
+    pub fn with_stable_id_owner_for_testing(id: ObjectID, owner: SuiAddress) -> Self {
+        // For testing, we provide sufficient gas by default.
+        Self::with_stable_id_owner_gas_for_testing(id, owner, GAS_VALUE_FOR_TESTING)
+    }
+
     pub fn with_id_owner_version_for_testing(
         id: ObjectID,
         version: SequenceNumber,
@@ -1094,7 +1137,26 @@ impl Object {
         owner: SuiAddress,
     ) -> Self {
         let data = Data::Move(MoveObject {
-            type_: StableCoin::type_().into(),
+            type_: StableCoin::busd_type_().into(),
+            has_public_transfer: true,
+            version,
+            contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
+        });
+        ObjectInner {
+            owner: Owner::AddressOwner(owner),
+            data,
+            previous_transaction: TransactionDigest::genesis(),
+            storage_rebate: 0,
+        }.into()
+    }
+
+    pub fn with_id_owner_version_invalid_gas_obj_for_testing(
+        id: ObjectID,
+        version: SequenceNumber,
+        owner: SuiAddress,
+    ) -> Self {
+        let data = Data::Move(MoveObject {
+            type_: StableCoin::invalid_gas_coin_type().into(),
             has_public_transfer: true,
             version,
             contents: StableCoin::new(id, GAS_VALUE_FOR_TESTING).to_bcs_bytes(),
@@ -1132,6 +1194,10 @@ impl Object {
 
     pub fn with_owner_for_testing(owner: SuiAddress) -> Self {
         Self::with_id_owner_for_testing(ObjectID::random(), owner)
+    }
+
+    pub fn with_stable_owner_for_testing(owner: SuiAddress) -> Self {
+        Self::with_stable_id_owner_for_testing(ObjectID::random(), owner)
     }
 
     /// Generate a new gas coin worth `value` with a random object ID and owner

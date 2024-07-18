@@ -30,6 +30,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `withdraw_voting`](#0xc8_bfc_system_withdraw_voting)
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
+-  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
 -  [Function `swap_stablecoin_to_bfc`](#0xc8_bfc_system_swap_stablecoin_to_bfc)
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
@@ -42,6 +43,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `get_stablecoin_exchange_rate`](#0xc8_bfc_system_get_stablecoin_exchange_rate)
 -  [Function `bfc_required`](#0xc8_bfc_system_bfc_required)
 -  [Function `next_epoch_bfc_required`](#0xc8_bfc_system_next_epoch_bfc_required)
+-  [Function `bfc_required_with_one_stablecoin`](#0xc8_bfc_system_bfc_required_with_one_stablecoin)
 -  [Function `treasury_balance`](#0xc8_bfc_system_treasury_balance)
 -  [Function `deposit_to_treasury`](#0xc8_bfc_system_deposit_to_treasury)
 -  [Function `deposit_to_treasury_inner`](#0xc8_bfc_system_deposit_to_treasury_inner)
@@ -849,6 +851,35 @@ X treasury rebalance
 
 </details>
 
+<a name="0xc8_bfc_system_rebalance_with_one_stablecoin"></a>
+
+## Function `rebalance_with_one_stablecoin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_rebalance_with_one_stablecoin">rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_rebalance_with_one_stablecoin">rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin">bfc_system_state_inner::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_swap_bfc_to_stablecoin"></a>
 
 ## Function `swap_bfc_to_stablecoin`
@@ -1170,6 +1201,31 @@ X treasury  swap stablecoin to bfc
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_next_epoch_bfc_required">next_epoch_bfc_required</a>(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): u64 {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_next_epoch_bfc_required">bfc_system_state_inner::next_epoch_bfc_required</a>(system_state)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_bfc_required_with_one_stablecoin"></a>
+
+## Function `bfc_required_with_one_stablecoin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_required_with_one_stablecoin">bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_required_with_one_stablecoin">bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(wrapper: &<a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): u64 {
+    <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_required_with_one_stablecoin">bfc_system_state_inner::bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(system_state)
 }
 </code></pre>
 

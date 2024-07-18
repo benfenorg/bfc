@@ -4609,7 +4609,7 @@ impl AuthorityState {
 
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
-        let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
+        let (next_epoch_protocol_version, next_epoch_system_packages) =
             Self::choose_protocol_version_and_system_packages(
                 epoch_store.protocol_version(),
                 epoch_store.protocol_config(),
@@ -4627,7 +4627,7 @@ impl AuthorityState {
 
         let version = epoch_store.protocol_version().as_u64();
         let next_bfc_p_version = bfc_get_next_avail_protocol_version(version);
-        let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
+        let _proposal_result = self.get_proposal_state(next_bfc_p_version).await;
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
@@ -4886,6 +4886,15 @@ impl AuthorityState {
         self.epoch_store.store(new_epoch_store.clone());
         cur_epoch_store.epoch_terminated().await;
         Ok(new_epoch_store)
+    }
+
+    // TODO: when we add stateful authenticators, we may need to take care that this function is
+    // reconfig safe (i.e. cannot be called concurrently with reconfiguration).
+    pub fn verify_transaction(&self, tx: Transaction) -> SuiResult<VerifiedTransaction> {
+        self.load_epoch_store_one_call_per_task()
+            .signature_verifier
+            .verify_tx(tx.data())
+            .map(|_| VerifiedTransaction::new_from_verified(tx))
     }
 
     #[cfg(test)]

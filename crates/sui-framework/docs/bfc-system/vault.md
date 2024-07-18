@@ -43,6 +43,7 @@ title: Module `0xc8::vault`
 -  [Function `vault_id`](#0xc8_vault_vault_id)
 -  [Function `vault_current_sqrt_price`](#0xc8_vault_vault_current_sqrt_price)
 -  [Function `vault_current_tick_index`](#0xc8_vault_vault_current_tick_index)
+-  [Function `last_bfc_rebalance_amount`](#0xc8_vault_last_bfc_rebalance_amount)
 -  [Function `balances`](#0xc8_vault_balances)
 -  [Function `get_liquidity`](#0xc8_vault_get_liquidity)
 -  [Function `get_vault_state`](#0xc8_vault_get_vault_state)
@@ -2065,6 +2066,30 @@ vault info
 
 <pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): I32 {
     _vault.current_tick_index
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_last_bfc_rebalance_amount"></a>
+
+## Function `last_bfc_rebalance_amount`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+    _vault.last_bfc_rebalance_amount
 }
 </code></pre>
 

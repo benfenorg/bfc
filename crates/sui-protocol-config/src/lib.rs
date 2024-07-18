@@ -1447,7 +1447,7 @@ impl ProtocolConfig {
             max_publish_or_upgrade_per_ptb: None,
             max_tx_gas: Some(100_000_000),
             max_gas_price: Some(10_000),
-            max_gas_computation_bucket: Some(500_000),
+            max_gas_computation_bucket: Some(5_000_000),
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
             max_function_parameters: Some(128),
@@ -2228,10 +2228,6 @@ impl ProtocolConfig {
 
 // Setters for tests
 impl ProtocolConfig {
-    pub fn set_gas_rounding_step(&mut self, gas_rounding_step: Option<u64>) {
-        self.gas_rounding_step = gas_rounding_step
-    }
-
     pub fn set_package_upgrades_for_testing(&mut self, val: bool) {
         self.feature_flags.package_upgrades = val
     }

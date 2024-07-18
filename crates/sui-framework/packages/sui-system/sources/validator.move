@@ -875,6 +875,10 @@ module sui_system::validator {
         stable_pool::stable_balance(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
+    public fun stable_rewards_pool<STABLE>(self: &Validator): u64 {
+        stable_pool::rewards_pool(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+
     /// Return the total amount staked with this validator
     public fun total_stake(self: &Validator): u64 {
         stake_amount(self)
@@ -945,8 +949,16 @@ module sui_system::validator {
         self.staking_pool.pending_stake_amount()
     }
 
+    public fun pending_stake_stable_amount<STABLE>(self: &Validator): u64 {
+        stable_pool::pending_stake_amount(get_stable_pool<STABLE>(&self.stable_pools))
+    }
+
     public fun pending_stake_withdraw_amount(self: &Validator): u64 {
         self.staking_pool.pending_stake_withdraw_amount()
+    }
+
+    public fun pending_stake_withdraw_stable_amount<STABLE>(self: &Validator): u64 {
+        stable_pool::pending_stake_withdraw_amount(get_stable_pool<STABLE>(&self.stable_pools))
     }
 
     public fun gas_price(self: &Validator): u64 {
@@ -990,6 +1002,11 @@ module sui_system::validator {
     public fun stable_pool_id<STABLE>(self: &Validator): ID {
         object::id(get_stable_pool<STABLE>(&self.stable_pools))
     }
+
+    public fun stable_pool<STABLE>(self: &Validator): &StablePool<STABLE> {
+        get_stable_pool<STABLE>(&self.stable_pools)
+    }
+
     public fun all_stable_pool_id(self:&Validator): vector<ID> {
         let mut id_vec = vector[];
         vector::insert(&mut id_vec ,stable_pool_id<BUSD>(self), 0);
@@ -1299,6 +1316,9 @@ module sui_system::validator {
         &self.staking_pool
     }
 
+    public(package) fun get_stable_pool_ref<STABLE>(self: &Validator) : &StablePool<STABLE> {
+        get_stable_pool<STABLE>(&self.stable_pools)
+    }
 
     /// Create a new validator from the given `ValidatorMetadata`, called by both `new` and `new_for_testing`.
     fun new_from_metadata(

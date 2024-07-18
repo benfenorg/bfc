@@ -865,6 +865,10 @@ module bfc_system::vault {
         _vault.current_tick_index
     }
 
+    public(package) fun last_bfc_rebalance_amount<StableCoinType>(_vault: &Vault<StableCoinType>): u64 {
+        _vault.last_bfc_rebalance_amount
+    }
+
     public fun balances<StableCoinType>(_vault: &Vault<StableCoinType>): (u64, u64) {
         (
             balance::value<StableCoinType>(&_vault.coin_a),
