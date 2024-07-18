@@ -450,7 +450,8 @@ module sui_system::stake_tests {
     }
 
     #[test]
-    fun test_remove_stake_post_active_flow_stable(should_distribute_rewards: bool) {
+    fun test_remove_stake_post_active_flow_stable() {
+        let should_distribute_rewards= false;
         set_up_sui_system_state_with_storage_fund();
         let mut scenario_val = test_scenario::begin(VALIDATOR_ADDR_1);
         let scenario = &mut scenario_val;

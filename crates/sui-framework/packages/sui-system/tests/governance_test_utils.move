@@ -138,7 +138,7 @@ module sui_system::governance_test_utils {
         test_scenario::end(scenario_val);
     }
 
-    public(package) fun advance_epoch(scenario: &mut Scenario) {
+    public fun advance_epoch(scenario: &mut Scenario) {
         advance_epoch_with_reward_amounts(0, 0, scenario);
     }
 
