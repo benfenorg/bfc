@@ -1730,7 +1730,7 @@ async fn test_package_publish_command_failure_invalid() -> Result<(), anyhow::Er
 }
 
 #[sim_test]
-async fn test_package_publish_nonexistent_dependency() -> Result<(), anyhow::Error> {
+async fn sim_test_package_publish_nonexistent_dependency() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
