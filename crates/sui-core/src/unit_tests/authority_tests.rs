@@ -1137,12 +1137,19 @@ async fn test_dry_run_with_stable_gas_coin() {
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
     };
+
+    let mut gas_budget = rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS;
+    if gas_budget > 4999500000 {
+        //todo: remove this when we have a better way to handle this
+        gas_budget = 4999500000;
+    }
+
     // dry run
     let data = TransactionData::new_programmable(
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
+        gas_budget,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -4484,8 +4491,17 @@ async fn execute_programmable_transaction_(
     let rgp = authority.reference_gas_price_for_testing().unwrap();
     let gas_object = authority.get_object(gas_object_id).await.unwrap();
     let gas_object_ref = gas_object.unwrap().compute_object_reference();
+
+    let mut gas_budget = rgp * gas_unit;
+    if gas_budget > 49990000000 {
+        //stable gas budget maybe not 50 bfc
+        gas_budget = 49990000000;
+    }
+
+
+
     let data =
-        TransactionData::new_programmable(*sender, vec![gas_object_ref], pt, rgp * gas_unit, rgp);
+        TransactionData::new_programmable(*sender, vec![gas_object_ref], pt, gas_budget, rgp);
 
     let transaction = to_sender_signed_transaction(data, sender_key);
     let signed_effects =
