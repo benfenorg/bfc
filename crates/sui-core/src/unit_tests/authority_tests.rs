@@ -1250,7 +1250,7 @@ async fn test_dry_run_with_two_gas_coin() {
     let gas1_id = ObjectID::random();
     let gas2_id = ObjectID::random();
     let gas1_object = Object::with_id_owner_gas_for_testing(gas1_id, sender, 1);
-    let gas2_object = Object::with_id_owner_gas_for_testing(gas2_id, sender, 1000000000);
+    let gas2_object = Object::with_id_owner_gas_for_testing(gas2_id, sender, 5000000000);
     validator.insert_genesis_object(gas1_object.clone()).await;
     validator.insert_genesis_object(gas2_object.clone()).await;
     fullnode.insert_genesis_object(gas1_object.clone()).await;

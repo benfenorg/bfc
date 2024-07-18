@@ -1698,7 +1698,7 @@
                   "u32": "256"
                 },
                 "max_gas_price": {
-                  "u64": "10000"
+                  "u64": "100000"
                 },
                 "max_generic_instantiation_length": {
                   "u64": "32"
@@ -1805,13 +1805,13 @@
                   "u64": "40"
                 },
                 "obj_access_cost_read_per_byte": {
-                  "u64": "5"
+                  "u64": "15"
                 },
                 "obj_access_cost_verify_per_byte": {
                   "u64": "200"
                 },
                 "obj_data_cost_refundable": {
-                  "u64": "10"
+                  "u64": "100"
                 },
                 "obj_metadata_cost_non_refundable": {
                   "u64": "50"
@@ -1856,7 +1856,7 @@
                   "u64": "500"
                 },
                 "storage_gas_price": {
-                  "u64": "38"
+                  "u64": "76"
                 },
                 "storage_rebate_rate": {
                   "u64": "9900"
