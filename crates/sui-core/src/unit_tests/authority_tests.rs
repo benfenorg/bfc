@@ -1231,7 +1231,7 @@ async fn test_dry_run_with_stable_gas_coin() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1274,14 +1274,13 @@ async fn test_dry_run_with_two_gas_coin() {
         sender,
         vec![gas1_object.compute_object_reference(), gas2_object.compute_object_reference()],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
     let digest = *transaction.digest();
     let DryRunTransactionBlockResponse { effects, .. } =
         fullnode.dry_exec_transaction(data, digest).await.unwrap().0;
-    println!("{:?}", effects);
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
 }
 
@@ -3607,7 +3606,7 @@ async fn create_and_retrieve_df_info(function: &IdentStr) -> (SuiAddress, Vec<Dy
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),

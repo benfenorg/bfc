@@ -6,22 +6,22 @@ A: object(0,0)
 task 1 'publish'. lines 6-62:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 462840,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 9256800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 64-64:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 139460,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2789200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 66-66:
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 130340,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4 'run'. lines 68-68:
 created: object(4,0)
 mutated: object(0,0), object(2,0), object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 327180,  storage_rebate: 202396, non_refundable_storage_fee: 2044
+gas summary: computation_cost: 1000000, storage_cost: 6543600,  storage_rebate: 4047912, non_refundable_storage_fee: 40888
 
 task 5 'view-object'. lines 70-70:
 Owner: Object ID: ( BFC7f817821eee8338a4ed1c763272345fde19f6e016320cf531959699e698c03d2df08 )
@@ -32,7 +32,7 @@ task 6 'run'. lines 72-72:
 created: object(6,0)
 mutated: object(0,0), object(2,0), object(3,0)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 278540,  storage_rebate: 323908, non_refundable_storage_fee: 3272
+gas summary: computation_cost: 1000000, storage_cost: 5570800,  storage_rebate: 6478164, non_refundable_storage_fee: 65436
 
 task 7 'view-object'. lines 74-74:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )

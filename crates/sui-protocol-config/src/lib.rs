@@ -1000,8 +1000,8 @@ impl ProtocolConfig {
             move_binary_format_version: Some(6),
             max_move_object_size: Some(250 * 1024),
             max_move_package_size: Some(100 * 1024),
-            max_tx_gas: Some(100_000_000),
-            max_gas_price: Some(10_000),
+            max_tx_gas: Some(10_000_000_000),
+            max_gas_price: Some(100_000),
             max_gas_computation_bucket: Some(5_000_000),
             max_loop_depth: Some(5),
             max_generic_instantiation_length: Some(32),
@@ -1044,11 +1044,11 @@ impl ProtocolConfig {
             package_publish_cost_fixed: Some(1_000),
             base_tx_cost_per_byte: Some(0),
             package_publish_cost_per_byte: Some(80),
-            obj_access_cost_read_per_byte: Some(5),
+            obj_access_cost_read_per_byte: Some(15),
             obj_access_cost_mutate_per_byte: Some(40),
             obj_access_cost_delete_per_byte: Some(40),
             obj_access_cost_verify_per_byte: Some(200),
-            obj_data_cost_refundable: Some(10),
+            obj_data_cost_refundable: Some(100),
             obj_metadata_cost_non_refundable: Some(50),
             gas_model_version: Some(1),
             storage_rebate_rate: Some(9900),
@@ -1256,7 +1256,7 @@ impl ProtocolConfig {
                     // min gas budget is in MIST and an absolute value 2000MIST or 0.000002SUI
                     cfg.base_tx_cost_fixed = Some(2_000);
                     // storage gas price multiplier
-                    cfg.storage_gas_price = Some(38);
+                    cfg.storage_gas_price = Some(76);
                     cfg.feature_flags.loaded_child_objects_fixed = true;
                     // max size of written objects during a TXn
                     cfg.max_size_written_objects = Some(5 * 1000 * 1000);
@@ -1348,7 +1348,7 @@ impl ProtocolConfig {
                     // cfg.feature_flags.pack_digest_hash_modules = true;
                     cfg.feature_flags.txn_base_cost_as_multiplier = true;
                     // this is a multiplier of the gas price
-                    cfg.base_tx_cost_fixed = Some(100);
+                    cfg.base_tx_cost_fixed = Some(1_000);
                 }
                 19 => {
                     cfg.max_num_event_emit = Some(1024);

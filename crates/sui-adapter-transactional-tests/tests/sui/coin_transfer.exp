@@ -6,7 +6,7 @@ A: object(0,0), B: object(0,1), C: object(0,2)
 task 1 'programmable'. lines 8-10:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'view-object'. lines 12-12:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
@@ -16,7 +16,7 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object:
 task 3 'run'. lines 14-14:
 created: object(3,0)
 mutated: object(0,1), object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 196080,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 3921600,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 4 'view-object'. lines 16-16:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )

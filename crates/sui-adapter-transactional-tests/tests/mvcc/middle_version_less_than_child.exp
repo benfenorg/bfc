@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 8-53:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 390640,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7812800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 55-59:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 330220,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6604400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 61-61:
 Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
@@ -30,7 +30,7 @@ Contents: test::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2
 
 task 6 'programmable'. lines 67-70:
 mutated: object(0,0), object(2,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 229900,  storage_rebate: 227601, non_refundable_storage_fee: 2299
+gas summary: computation_cost: 1000000, storage_cost: 4598000,  storage_rebate: 4552020, non_refundable_storage_fee: 45980
 
 task 7 'view-object'. lines 72-72:
 Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
@@ -49,4 +49,4 @@ Contents: test::m::Obj {id: sui::object::UID {id: sui::object::ID {bytes: fake(2
 
 task 10 'programmable'. lines 81-82:
 mutated: object(0,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 129580,  storage_rebate: 128284, non_refundable_storage_fee: 1296
+gas summary: computation_cost: 1000000, storage_cost: 2591600,  storage_rebate: 2565684, non_refundable_storage_fee: 25916

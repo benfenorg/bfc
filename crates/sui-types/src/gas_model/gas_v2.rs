@@ -54,7 +54,7 @@ mod checked {
     // define the bucket table for computation charging
     // If versioning defines multiple functions and
     fn computation_bucket(max_bucket_cost: u64) -> Vec<ComputationBucket> {
-        assert!(max_bucket_cost >= 500_000);
+        assert!(max_bucket_cost >= 5_000_000);
         vec![
             ComputationBucket::simple(0, 1_000),
             ComputationBucket::simple(1_000, 5_000),
@@ -62,7 +62,8 @@ mod checked {
             ComputationBucket::simple(10_000, 20_000),
             ComputationBucket::simple(20_000, 50_000),
             ComputationBucket::simple(50_000, 200_000),
-            ComputationBucket::simple(200_000, max_bucket_cost),
+            ComputationBucket::simple(200_000, 1_000_000),
+            ComputationBucket::simple(1_000_000, max_bucket_cost),
         ]
     }
 
@@ -137,7 +138,7 @@ mod checked {
                 storage_per_byte_cost: 0,
                 execution_cost_table: ZERO_COST_SCHEDULE.clone(),
                 // should not matter
-                computation_bucket: computation_bucket(500_000),
+                computation_bucket: computation_bucket(5_000_000),
             }
         }
     }

@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use tracing::error;
+use tracing::info;
 use sui_json_rpc_types::SuiTransactionBlockResponseQuery;
 use sui_json_rpc_types::TransactionFilter;
 use sui_json_rpc_types::{
@@ -447,7 +447,6 @@ async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Er
         .build()
         .await;
 
-    // let rgp = test_cluster.get_reference_gas_price().await;
     let context = &mut test_cluster.wallet;
     context
         .config
@@ -471,7 +470,7 @@ async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Er
 
     // Make a transfer transactions
     let transaction_bytes: TransactionBlockBytes = http_client
-        .transfer_object(address, object_to_transfer, Some(gas_object.id()), 1_000.into(), address)
+        .transfer_object(address, object_to_transfer, Some(gas_object.id()), 100_000.into(), address)
         .await?;
     let tx = test_cluster
         .wallet
@@ -483,11 +482,8 @@ async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Er
     let dry_response = http_client
         .dry_run_transaction_block(tx_bytes.clone()).await;
 
-    error!("response: {:?}", dry_response);
     assert_eq!(dry_response.is_ok(), true);
     let dry_gas = dry_response.unwrap().effects.gas_cost_summary().clone();
-    let dry_stable_gas_used= dry_gas.net_gas_usage();
-    error!("dry_gas_summary: {:?}, {}", dry_gas, dry_stable_gas_used);
     let response = http_client
         .execute_transaction_block(
             tx_bytes,
@@ -503,8 +499,7 @@ async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Er
 
     let gas_usage = response.effects.unwrap().gas_cost_summary().clone();
     let stable_gas_used= gas_usage.net_gas_usage();
-
-    error!("gas_summary: {:?}, {}", &gas_usage, stable_gas_used);
+    info!("gas_summary: {:?}, {}", &gas_usage, stable_gas_used);
 
     Ok(())
 }

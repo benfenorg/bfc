@@ -6,27 +6,27 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 8-27:
 created: object(1,0)
 mutated: object(0,3)
-gas summary: computation_cost: 1000000, storage_cost: 323380,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6467600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 29-29:
 created: object(2,0)
 mutated: object(0,3)
-gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'run'. lines 31-31:
 created: object(3,0), object(3,1)
 mutated: object(0,3), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 124522, non_refundable_storage_fee: 1258
+gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 4 'view-object'. lines 33-33:
-Owner: Object ID: ( BFCf93983aa8311dc99fab87437ee6073571949a77bfcb734b3ccb9ecfaa86240842376 )
+Owner: Object ID: ( BFC45d422e950764906cfcfb1bfb450ab45fc5b6fdc5facfdab44b5b2a86be520a0df1e )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(3,1)}}
 
 task 5 'transfer-object'. lines 35-35:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xec35ad333976e3a40f54417e222b01315deb73f54cf900a94094b091e0ec90f0, parent_id: 0xf93983aa8311dc99fab87437ee6073571949a77bfcb734b3ccb9ecfaa8624084 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0xf76524aebbfb746a140f6b22bbc33ead39e911b59375e1c09dad206e68e3a054, parent_id: 0x45d422e950764906cfcfb1bfb450ab45fc5b6fdc5facfdab44b5b2a86be520a0 }
 
 task 6 'view-object'. lines 37-37:
-Owner: Object ID: ( BFCf93983aa8311dc99fab87437ee6073571949a77bfcb734b3ccb9ecfaa86240842376 )
+Owner: Object ID: ( BFC45d422e950764906cfcfb1bfb450ab45fc5b6fdc5facfdab44b5b2a86be520a0df1e )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {id: sui::object::UID {id: sui::object::ID {bytes: fake(3,0)}}, name: sui::dynamic_object_field::Wrapper<u64> {name: 0u64}, value: sui::object::ID {bytes: fake(3,1)}}

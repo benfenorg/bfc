@@ -21,6 +21,7 @@ use sui_types::sui_system_state::SUI_SYSTEM_MODULE_NAME;
 use sui_types::transaction::{
     CallArg, ObjectArg, ProgrammableTransaction, Transaction, TransactionData,
     DEFAULT_VALIDATOR_GAS_PRICE, TEST_ONLY_GAS_UNIT_FOR_GENERIC, TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+    TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
 };
 use sui_types::{TypeTag, SUI_SYSTEM_PACKAGE_ID};
 
@@ -317,7 +318,7 @@ impl TestTransactionBuilder {
                     self.gas_objects[0],
                     all_module_bytes,
                     dependencies,
-                    self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
+                    self.gas_price * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
                     self.gas_price,
                 )
             }

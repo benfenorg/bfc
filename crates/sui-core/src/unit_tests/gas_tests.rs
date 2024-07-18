@@ -134,16 +134,20 @@ where
     F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
 {
     // initial system with given gas coins
-    const GAS_AMOUNT: u64 = 1_000_000_000;
-    let gas_coins = make_gas_coins(sender, GAS_AMOUNT, coin_num);
+    let gas_amount: u64 = if budget < 10_000_000_000 {
+        10_000_000_000
+    } else {
+        budget
+    };
+    let gas_coins = make_gas_coins(sender, gas_amount, coin_num);
     let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
-    let authority_state = TestAuthorityBuilder::new().with_reference_gas_price(30).build().await;
+    let authority_state = TestAuthorityBuilder::new().with_reference_gas_price(500).build().await;
     for obj in gas_coins {
         authority_state.insert_genesis_object(obj).await;
     }
 
     let gas_object_id = ObjectID::random();
-    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, GAS_AMOUNT);
+    let gas_coin = Object::with_id_owner_gas_for_testing(gas_object_id, sender, gas_amount);
     authority_state.insert_genesis_object(gas_coin).await;
     // touch gas coins so that `storage_rebate` is set (not 0 as in genesis)
     touch_gas_coins(
@@ -220,7 +224,7 @@ where
     let summary = effects.gas_cost_summary();
 
     // call checker
-    checker(summary, GAS_AMOUNT, final_value)
+    checker(summary, gas_amount, final_value)
 }
 
 // make a `coin_num` coins distributing `gas_amount` across them
@@ -284,17 +288,16 @@ async fn touch_gas_coins(
 
 // - OOG computation, storage ok
 #[tokio::test]
-async fn test_oog_computation_storage_ok() -> SuiResult {
-    const MAX_BUDGET: u64 = 10_000_000;
-    const GAS_PRICE: u64 = 30;
-    const BUDGET: u64 = MAX_BUDGET * GAS_PRICE;
+async fn test_oog_computation_storage_ok_one_coin() -> SuiResult {
+    const GAS_PRICE: u64 = 1_000;
+    let budget: u64 = ProtocolConfig::get_for_max_version_UNSAFE().max_tx_gas();
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
         sender_key,
         "loopy",
         vec![],
-        BUDGET,
+        budget,
         GAS_PRICE,
         1,
         |summary, initial_value, final_value| {
@@ -305,7 +308,7 @@ async fn test_oog_computation_storage_ok() -> SuiResult {
                     && summary.storage_rebate > 0
                     && summary.non_refundable_storage_fee > 0
             );
-            assert!(initial_value - gas_used == final_value);
+            assert_eq!(initial_value - gas_used, final_value);
             Ok(())
         },
     )
@@ -344,7 +347,7 @@ async fn test_stable_oog_computation_storage_ok() -> SuiResult {
 // OOG for computation, OOG for minimal storage (e.g. computation is entire budget)
 #[tokio::test]
 async fn test_oog_computation_oog_storage() -> SuiResult {
-    const GAS_PRICE: u64 = 100;
+    const GAS_PRICE: u64 = 1_000;
     // WARNING: this value is taken from gas_v2.rs::MAX_BUCKET_COST and when
     // that value changes this test will break!
     // TODO: when buckets move to ProtocolConfig change this value to use ProtocolConfig
@@ -441,7 +444,7 @@ async fn test_computation_ok_oog_storage_minimal_ok() -> SuiResult {
 #[tokio::test]
 async fn test_computation_ok_oog_storage() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 100_200;
+    const BUDGET: u64 = 1_002_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
@@ -470,16 +473,15 @@ async fn test_computation_ok_oog_storage() -> SuiResult {
 
 #[tokio::test]
 async fn test_oog_computation_storage_ok_multi_coins() -> SuiResult {
-    const MAX_BUDGET: u64 = 4_000_000;
-    const GAS_PRICE: u64 = 30;
-    const BUDGET: u64 = MAX_BUDGET * GAS_PRICE;
+    const GAS_PRICE: u64 = 1_000;
+    let budget: u64 = ProtocolConfig::get_for_max_version_UNSAFE().max_tx_gas();
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
         sender_key,
         "loopy",
         vec![],
-        BUDGET,
+        budget,
         GAS_PRICE,
         5,
         |summary, initial_value, final_value| {
@@ -490,7 +492,7 @@ async fn test_oog_computation_storage_ok_multi_coins() -> SuiResult {
                     && summary.storage_rebate > 0
                     && summary.non_refundable_storage_fee > 0
             );
-            assert!(initial_value - gas_used == final_value);
+            assert_eq!(initial_value - gas_used, final_value);
             Ok(())
         },
     )
@@ -499,31 +501,28 @@ async fn test_oog_computation_storage_ok_multi_coins() -> SuiResult {
 
 #[tokio::test]
 async fn test_stable_oog_computation_storage_ok_multi_coins() -> SuiResult {
-    const MAX_BUDGET: u64 = 4_000;
-    const GAS_PRICE: u64 = 500;
-    const BUDGET: u64 = MAX_BUDGET * GAS_PRICE;
+    const GAS_PRICE: u64 = 1_000;
     let (sender, sender_key) = get_key_pair();
     check_stable_oog_transaction(
         sender,
         sender_key,
         "loopy",
         vec![],
-        BUDGET,
+        4999502357,
         GAS_PRICE,
         5,
         |summary, initial_value, final_value| {
-            let gas_used = summary.net_gas_usage() as u64;
+            let gas_used = summary.net_gas_usage_improved() as u64;
             assert!(
                 summary.computation_cost > 0
                     && summary.storage_cost > 0
                     && summary.storage_rebate > 0
                     && summary.non_refundable_storage_fee > 0
             );
-            assert_eq!((initial_value - gas_used)/10000000, final_value/10000000);
+            assert_eq!((initial_value - gas_used), final_value);
             Ok(())
         },
-    )
-        .await
+    ).await
 }
 
 #[tokio::test]
@@ -1491,7 +1490,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBudgetTooLow {
             gas_budget: budget ,
-            min_budget: min,
+            min_budget: 49995,
         }
     );
 }
@@ -1559,7 +1558,7 @@ async fn test_stable_computation_ok_oog_storage_minimal_ok() -> SuiResult {
 #[tokio::test]
 async fn test_stable_computation_ok_oog_storage() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
-    const BUDGET: u64 = 100_200;
+    const BUDGET: u64 = 1_002_000;
     let (sender, sender_key) = get_key_pair();
     check_oog_transaction(
         sender,
@@ -1631,7 +1630,7 @@ async fn test_stable_native_transfer_sufficient_gas() -> SuiResult {
 
 #[tokio::test]
 async fn test_stable_native_transfer_gas_price_is_used() {
-    let max_budget = 5000;
+    let max_budget = 50_000;
     let result =
         execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
     let effects = result
@@ -1686,7 +1685,7 @@ async fn test_stable_transfer_sui_insufficient_gas() {
         kind,
         sender,
         gas_object_ref,
-        *MIN_GAS_BUDGET_PRE_RGP * rgp,
+        *MIN_GAS_BUDGET_PRE_RGP * rgp / 10,
         rgp,
     );
     let tx = to_sender_signed_transaction(data, &sender_key);
@@ -1818,7 +1817,7 @@ async fn test_stable_native_transfer_insufficient_gas_reading_objects() {
     // the minimum budget requirement, but not enough to even read the objects from db.
     // This will lead to failure in lock check step during handle transaction phase.
     let balance = *MIN_GAS_BUDGET_PRE_RGP + 1;
-    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance, true, true).await;
+    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance / 10, true, true).await;
     // The transaction should still execute to effects, but with execution status as failure.
     let effects = result
         .response
@@ -1898,7 +1897,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2,
+        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2 / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )
@@ -1932,7 +1931,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        budget,
+        budget / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )
