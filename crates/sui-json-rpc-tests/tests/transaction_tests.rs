@@ -483,7 +483,6 @@ async fn test_get_raw_transaction_with_stable_gascoin() -> Result<(), anyhow::Er
         .dry_run_transaction_block(tx_bytes.clone()).await;
 
     assert_eq!(dry_response.is_ok(), true);
-    let dry_gas = dry_response.unwrap().effects.gas_cost_summary().clone();
     let response = http_client
         .execute_transaction_block(
             tx_bytes,
