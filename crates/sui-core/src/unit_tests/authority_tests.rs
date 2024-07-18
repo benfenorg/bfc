@@ -7569,8 +7569,10 @@ async fn test_stable_publish_non_existing_dependent_module() {
     let response = authority
         .handle_transaction(&epoch_store, transaction)
         .await;
+
+    //println!("=====> {:?}", std::string::ToString::to_string(&response.clone().unwrap_err()));
     assert!(std::string::ToString::to_string(&response.unwrap_err())
-        .contains("BFCObjectNotFound"));
+        .contains("DependentPackageNotFound"));
     // Check that gas was not charged.
     assert_eq!(
         authority
@@ -7905,9 +7907,11 @@ async fn test_stable_missing_package() {
     let result = authority_state
         .handle_transaction(&epoch_store, transaction)
         .await;
+
+    //println!("========{:?}", result.clone().unwrap());
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 
@@ -8002,9 +8006,11 @@ async fn test_stable_type_argument_dependencies() {
         .handle_transaction(&epoch_store, transaction)
         .await;
 
+
+    //println!("========{:?}", result.clone().unwrap_err());
     assert!(matches!(
         UserInputError::try_from(result.unwrap_err()).unwrap(),
-        UserInputError::BFCObjectNotFound { .. }
+        UserInputError::DependentPackageNotFound { .. }
     ));
 }
 

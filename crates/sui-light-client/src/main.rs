@@ -268,6 +268,8 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
     // Load the genesis committee
     let mut genesis_path = config.checkpoint_summary_dir.clone();
     genesis_path.push(&config.genesis_filename);
+
+    println!("Genesis Path: {:?}", genesis_path);
     let genesis_committee = Genesis::load(&genesis_path)?.committee()?;
 
     // Check the signatures of all checkpoints
@@ -350,6 +352,9 @@ fn extract_verified_effects_and_events(
 
     // Check the events are all correct.
     let events_digest = matching_tx.events.as_ref().map(|events| events.digest());
+
+    println!("Events Digest: {:?}", events_digest);
+    println!("Matching Events Digest: {:?}", matching_tx.effects.events_digest());
     anyhow::ensure!(
         events_digest.as_ref() == matching_tx.effects.events_digest(),
         "Events digest does not match"
