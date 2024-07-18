@@ -9685,7 +9685,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
     let signed = to_sender_signed_transaction(txn_data, &key);
@@ -9721,7 +9721,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
     let signed = to_sender_signed_transaction(txn_data, &key);
@@ -9758,7 +9758,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
     let signed = to_sender_signed_transaction(txn_data, &key);
@@ -9804,7 +9804,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH * 2,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
     let signed = to_sender_signed_transaction(txn_data, &key);
@@ -9849,7 +9849,7 @@ async fn test_stable_publish_missing_dependency() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
 
@@ -9898,7 +9898,7 @@ async fn test_stable_publish_missing_transitive_dependency() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
 
@@ -9950,7 +9950,7 @@ async fn test_stable_publish_not_a_package_dependency() {
         kind,
         sender,
         vec![gas_ref],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH,
         rgp,
     );
 

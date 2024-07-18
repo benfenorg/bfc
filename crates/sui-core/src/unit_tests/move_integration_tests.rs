@@ -2857,7 +2857,7 @@ pub async fn build_and_publish_test_package_with_upgrade_cap(
     with_unpublished_deps: bool,
 ) -> (ObjectRef, ObjectRef) {
     let gas_price = authority.reference_gas_price_for_testing().unwrap();
-    let gas_budget = TEST_ONLY_GAS_UNIT_FOR_PUBLISH * gas_price;
+    let gas_budget = TEST_ONLY_STABLE_GAS_UNIT_FOR_PUBLISH * gas_price;
     let effects = build_and_try_publish_test_package(
         authority,
         sender,
