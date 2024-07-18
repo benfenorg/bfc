@@ -317,7 +317,7 @@ impl TestTransactionBuilder {
                     self.gas_objects[0],
                     all_module_bytes,
                     dependencies,
-                    self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
+                    self.gas_price * TEST_ONLY_GAS_UNIT_FOR_GENERIC * 2,
                     self.gas_price,
                 )
             }
