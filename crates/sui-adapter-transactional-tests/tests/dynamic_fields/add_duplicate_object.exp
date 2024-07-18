@@ -6,12 +6,12 @@ A: object(0,0)
 task 1 'publish'. lines 10-31:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 317300,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6346000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 33-33:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 310460,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 35-35:
 Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x59166afd1568543b1fa337d03dfa10fd49a7c312074c901d32f9c40a177bb7c6, parent_id: 0xb6366aa44ac6ae475e47788c06dc10d6bd37d9317cbb5b53e0ffae365d4f68c7 }

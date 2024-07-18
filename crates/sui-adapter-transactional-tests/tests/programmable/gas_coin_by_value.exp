@@ -5,9 +5,9 @@ A: object(0,0), B: object(0,1)
 
 task 1 'programmable'. lines 8-9:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'view-object'. lines 11-11:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 2
-Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(0,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 299999998934640u64}}
+Contents: sui::coin::Coin<sui::bfc::BFC> {id: sui::object::UID {id: sui::object::ID {bytes: fake(0,0)}}, balance: sui::balance::Balance<sui::bfc::BFC> {value: 299999997692800u64}}

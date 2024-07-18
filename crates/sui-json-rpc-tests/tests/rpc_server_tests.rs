@@ -899,7 +899,7 @@ async fn test_staking_multiple_coins() -> Result<(), anyhow::Error> {
             Some(1000000000.into()),
             validator,
             None,
-            10_000_000.into(),
+            50_000_000.into(),
         )
         .await?;
     let tx = cluster

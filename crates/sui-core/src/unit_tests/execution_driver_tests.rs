@@ -461,7 +461,7 @@ async fn test_per_object_overload() {
     let (aggregator, authorities, _genesis, package) =
         init_local_authorities(4, gas_objects.clone()).await;
     let rgp = authorities
-        .get(0)
+        .first()
         .unwrap()
         .reference_gas_price_for_testing()
         .unwrap();
@@ -472,7 +472,7 @@ async fn test_per_object_overload() {
 
     // Create a shared counter.
     let gas_ref = get_latest_ref(authority_clients[0].clone(), gas_objects[0].id()).await;
-    let create_counter_txn = TestTransactionBuilder::new(addr, gas_ref, rgp)
+    let create_counter_txn = TestTransactionBuilder::new(addr, gas_ref, rgp + 1000)
         .call_counter_create(package)
         .build_and_sign(&key);
     let create_counter_cert = try_sign_on_first_three_authorities(

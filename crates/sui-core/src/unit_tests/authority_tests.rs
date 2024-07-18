@@ -1231,7 +1231,7 @@ async fn test_dry_run_with_stable_gas_coin() {
         sender,
         vec![gas_object_ref],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
@@ -1274,14 +1274,13 @@ async fn test_dry_run_with_two_gas_coin() {
         sender,
         vec![gas1_object.compute_object_reference(), gas2_object.compute_object_reference()],
         pt,
-        rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS/10,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS,
         rgp,
     );
     let transaction = to_sender_signed_transaction(data.clone(), &sender_key);
     let digest = *transaction.digest();
     let DryRunTransactionBlockResponse { effects, .. } =
         fullnode.dry_exec_transaction(data, digest).await.unwrap().0;
-    println!("{:?}", effects);
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
 }
 
@@ -3607,7 +3606,7 @@ async fn create_and_retrieve_df_info(function: &IdentStr) -> (SuiAddress, Vec<Dy
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(outer_v0)),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(inner_v0)),
             ],
-            TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
+            TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS * rgp,
             rgp,
         )
         .unwrap(),
@@ -9597,6 +9596,54 @@ async fn test_stable_gas_smashing() {
     run_and_check(reference_gas_used, 30, reference_gas_used, false).await;
     // use a small amount less than what 3 coins above reported (with success)
     run_and_check(three_coin_gas, 3, three_coin_gas - 1, false).await;
+}
+
+
+#[tokio::test]
+async fn test_stable_gas_smashing_type_mismatch() {
+    use crate::authority::UserInputError;
+    fn make_multi_gas_coins(owner: SuiAddress, gas_amount: u64, coin_num: u64) -> Vec<Object> {
+        let mut objects = vec![];
+        let coin_balance = gas_amount / coin_num;
+        for _ in 1..coin_num {
+            let gas_object_id = ObjectID::random();
+            objects.push(Object::with_id_owner_gas_for_testing(
+                gas_object_id,
+                owner,
+                coin_balance,
+            ));
+        }
+        // in case integer division dropped something, make a coin with whatever is left
+        let amount_left = gas_amount - (coin_balance * (coin_num - 1));
+        let gas_object_id = ObjectID::random();
+        objects.push(Object::with_stable_id_owner_gas_for_testing(
+            gas_object_id,
+            owner,
+            amount_left,
+        ));
+        objects
+    }
+
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_coins = make_multi_gas_coins(sender, 100_000_000, 2);
+    let object_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
+    let (authority_state, pkg_ref) = init_state_with_objects_and_object_basics(gas_coins).await;
+    let err = create_move_object_with_gas_coins(
+        &pkg_ref.0,
+        &authority_state,
+        &object_ids,
+        100_000_000,
+        &sender,
+        &sender_key,
+    )
+        .await
+        .err();
+    assert_eq!(SuiError::UserInputError {
+        error: UserInputError::GasCoinTypeMismatch {
+            coin_type: "00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string(),
+            second_coin_type: "0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC".to_string(),
+        }
+    }, err.unwrap());
 }
 
 #[tokio::test]
