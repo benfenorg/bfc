@@ -47,6 +47,7 @@ use crate::stable_coin::stable::checked::STABLE;
 // We should revisit them.
 pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 2_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 10_000_000;
+pub const TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS: u64 = 1_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_PUBLISH: u64 = 25_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_STAKING: u64 = 10_000_000;
 pub const TEST_ONLY_GAS_UNIT_FOR_GENERIC: u64 = 5_000_000;
