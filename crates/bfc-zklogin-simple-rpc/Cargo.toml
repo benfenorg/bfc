@@ -1,5 +1,5 @@
 [package]
-name = "sui-simple-rpc"
+name = "bfc-zklogin-simple-rpc"
 version = "2024.2.0"
 authors = ["Mysten Labs <build@mystenlabs.com>"]
 license = "Apache-2.0"
@@ -78,5 +78,5 @@ tower.workspace = true
 sui-test-transaction-builder.workspace = true
 
 [[bin]]
-name = "bfc-simple-rpc"
+name = "bfc-zklogin-simple-rpc"
 path = "src/main.rs"

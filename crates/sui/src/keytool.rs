@@ -1017,7 +1017,9 @@ impl KeyToolCommand {
                     &jwt_randomness,
                     &kp_bigint,
                     user_salt,
-                    "https://zkproverdev1.openblock.vip/v1",
+                    // "https://zkproverdev1.openblock.vip/v1",
+                    "https://prover-dev.mystenlabs.com/v1",
+
                 )
                 .await
                 .unwrap();
@@ -1033,6 +1035,7 @@ impl KeyToolCommand {
                     .unwrap(),
                 );
                 let address = SuiAddress::from(&pk);
+                println!("address={:?}", address.to_string());
                 // sign with ephemeral key and combine with zklogin inputs to generic signature
                 let s = Signature::new_secure(&intent_msg, &skp);
                 let sig = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
