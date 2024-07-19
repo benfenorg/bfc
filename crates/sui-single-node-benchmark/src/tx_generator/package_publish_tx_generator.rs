@@ -94,7 +94,7 @@ impl TxGenerator for PackagePublishTxGenerator {
         TestTransactionBuilder::new(
             account.sender,
             account.gas_objects[0],
-            DEFAULT_VALIDATOR_GAS_PRICE,
+            DEFAULT_VALIDATOR_GAS_PRICE*5,
         )
         .publish_with_data(PublishData::CompiledPackage(self.compiled_package.clone()))
         .build_and_sign(account.keypair.as_ref())

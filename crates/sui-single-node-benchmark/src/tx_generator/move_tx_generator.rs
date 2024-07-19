@@ -158,7 +158,7 @@ impl TxGenerator for MoveTxGenerator {
         TestTransactionBuilder::new(
             account.sender,
             account.gas_objects[0],
-            DEFAULT_VALIDATOR_GAS_PRICE,
+            DEFAULT_VALIDATOR_GAS_PRICE*5,
         )
         .programmable(pt)
         .build_and_sign(account.keypair.as_ref())

@@ -99,8 +99,10 @@ impl SingleValidator {
         keypair: &AccountKeyPair,
         gas: ObjectRef,
     ) -> (ObjectRef, ObjectRef) {
+
+        let benchmark_gas_price = self.epoch_store.reference_gas_price();
         let tx_builder = TestTransactionBuilder::new(sender, gas,
-                                                     DEFAULT_VALIDATOR_GAS_PRICE)
+                                                     benchmark_gas_price)
             .publish_with_data(publish_data);
         let transaction = tx_builder.build_and_sign(keypair);
         let effects = self.execute_raw_transaction(transaction).await;
@@ -204,6 +206,10 @@ impl SingleValidator {
         let executable = VerifiedExecutableTransaction::new_from_certificate(
             VerifiedCertificate::new_unchecked(transaction),
         );
+
+        println!("ref_gas_price: {:?}", self.epoch_store.reference_gas_price());
+        println!("transaction gas price: {:?}", executable.transaction_data().gas_price());
+
         let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
             &executable,
             objects,
