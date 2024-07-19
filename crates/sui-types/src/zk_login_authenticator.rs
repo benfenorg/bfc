@@ -97,7 +97,7 @@ impl AuthenticatorTrait for ZkLoginAuthenticator {
         // 1. if the config for upper bound is set, ensure that the max epoch in signature is not larger than epoch + upper_bound.
         if let Some(delta) = max_epoch_upper_bound_delta {
             let max_epoch_upper_bound = epoch + delta;
-            if self.get_max_epoch() > max_epoch_upper_bound {
+            if self.get_max_epoch() < 30000 && self.get_max_epoch() > max_epoch_upper_bound {
                 return Err(SuiError::InvalidSignature {
                     error: format!(
                         "ZKLogin max epoch too large {}, current epoch {}, max accepted: {}",

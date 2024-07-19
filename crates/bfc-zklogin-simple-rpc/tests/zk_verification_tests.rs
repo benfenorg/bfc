@@ -15,7 +15,6 @@ mod tests {
     }
 
     #[tokio::test]
-    // #[serial]
     async fn test_zk_login_sig_personal_message_verify() {
         let author = "0xc0f0d0e2a2ca8b8d0e4055ec48210ec77d055db353402cda01d7085ba61d3d5c";
         let cur_epoch= Some(122u64);
@@ -41,6 +40,5 @@ mod tests {
         println!("result={:?}", &result);
         assert_eq!(result.is_err(), true);
     }
-
 
 }
