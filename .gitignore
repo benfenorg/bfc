@@ -71,3 +71,4 @@ genesis/parameters
 /validator/bfc/db/*
 /validator/validator.yaml
 /narwhal/node/tests/data/*
+Cargo.lock

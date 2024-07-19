@@ -3,7 +3,7 @@
 use axum::{routing::get, Router};
 use axum::routing::post;
 use std::net::SocketAddr;
-use sui_simple_rpc::{verify_zk_signature, hello};
+use bfc_zklogin_simple_rpc::{verify_zk_signature, hello};
 
 #[tokio::main]
 async fn main() {
