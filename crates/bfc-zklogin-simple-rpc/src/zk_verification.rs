@@ -65,7 +65,7 @@ pub async fn verify_zk_login_sig(
     // TODO  adjust env by environment variable
     let env = ZkLoginEnv::Test;
 
-    let upper_bound_delta = if zk.get_max_epoch() >= 20000 {
+    let upper_bound_delta = if zk.get_max_epoch() >= 30000 {
         None
     } else {
         Some(30)
@@ -135,23 +135,23 @@ pub async fn get_current_epoch(rpc_url: String) -> Result<u64, anyhow::Error>  {
     let response_obj = response.as_object().ok_or_else(|| anyhow!("response format is not json"))?;
     let result_obj = response_obj.get("result").ok_or_else(|| anyhow!("result is not present"))?;
     let epoch = result_obj.get("epoch").ok_or_else(|| anyhow!("epoch is not present"))?
-        .as_u64().ok_or_else(|| anyhow!("epoch is not a valid u64"))?;
+        .as_str().ok_or_else(|| anyhow!("epoch is not a valid u64"))?;
 
-    Ok(epoch)
+    return epoch.parse::<u64>().map_err(|e| anyhow!("epoch not a integer: {:?}", e));
 }
 
-async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyhow::Error>  {
+pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyhow::Error>  {
     let client = Client::new();
 
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", HeaderValue::from_static("application/json"));
 
-    // println!("post url={}", url);
+    println!("post url={}", url);
     let response = client.post(url)
         .headers(headers).body(body_data)
         .send().await?;
     let body: Value = response.json::<Value>().await?;
-    // println!("response body={:?}", &body);
+    println!("response body={:?}", &body);
 
     Ok(body)
 }
