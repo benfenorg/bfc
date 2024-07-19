@@ -2683,7 +2683,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
     assert!(objects.len() == 0);
 
     rebalance(&test_cluster, http_client, address).await?;
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10000000000000).await?;
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address, amount).await?;
 
     let _ = sleep(Duration::from_secs(10)).await;
 
