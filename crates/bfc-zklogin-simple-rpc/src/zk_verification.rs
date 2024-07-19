@@ -18,6 +18,7 @@ use sui_types::transaction::TransactionData;
 use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
 use im::hashmap::HashMap as ImHashMap;
 use serde_json::{json, Value};
+use tracing::info;
 
 /// A response struct for the zk verification.
 #[derive(Deserialize, Serialize, Debug)]
@@ -65,12 +66,6 @@ pub async fn verify_zk_login_sig(
     // TODO  adjust env by environment variable
     let env = ZkLoginEnv::Test;
 
-    let upper_bound_delta = if zk.get_max_epoch() >= 30000 {
-        None
-    } else {
-        Some(30)
-    };
-
     let cur_epoch_id = match cur_rpc_url {
         Some(url) => {
             if url.starts_with("http") || url.starts_with("https") {
@@ -86,7 +81,7 @@ pub async fn verify_zk_login_sig(
     };
 
     let verify_params =
-        VerifyParams::new(parsed, vec![], env, true, true, upper_bound_delta);
+        VerifyParams::new(parsed, vec![], env, true, true, Some(30));
 
     let (_serialized, res) = match IntentScope::try_from(intent_scope)
         .map_err(|_| anyhow!("Invalid scope"))? {
@@ -146,12 +141,12 @@ pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyh
     let mut headers = HeaderMap::new();
     headers.insert("Content-Type", HeaderValue::from_static("application/json"));
 
-    println!("post url={}", url);
+    info!("post url={}", url);
     let response = client.post(url)
         .headers(headers).body(body_data)
         .send().await?;
     let body: Value = response.json::<Value>().await?;
-    println!("response body={:?}", &body);
+    // println!("response body={:?}", &body);
 
     Ok(body)
 }
