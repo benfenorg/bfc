@@ -1088,12 +1088,13 @@ impl TestClusterBuilder {
         let mut keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
         let mut accounts = Vec::new();
         for key in &swarm.config().account_keys {
-            keystore.add_key(None, SuiKeyPair::Ed25519(key.copy()))?;
+            info!("account key: {:?}", key);
+            accounts.push(SuiKeyPair::Ed25519(key.copy()));
         }
         keystore.add_key_batch(accounts)?;
 
         let active_address = keystore.addresses().first().cloned();
-
+        info!("key store addr: {:?}", keystore.addresses());
         // Create wallet config with stated authorities port
         SuiClientConfig {
             keystore: Keystore::from(FileBasedKeystore::new(&keystore_path)?),
