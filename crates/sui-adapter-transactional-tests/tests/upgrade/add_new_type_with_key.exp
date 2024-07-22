@@ -6,9 +6,9 @@ A: object(0,0)
 task 1 'publish'. lines 6-11:
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 300960,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6019200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'upgrade'. lines 13-21:
 created: object(2,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 348460,  storage_rebate: 145589, non_refundable_storage_fee: 1471
+gas summary: computation_cost: 1000000, storage_cost: 6969200,  storage_rebate: 2911788, non_refundable_storage_fee: 29412

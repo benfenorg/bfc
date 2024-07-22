@@ -210,7 +210,7 @@ async fn test_publish_and_move_call() {
         sender,
         pt,
         vec![],
-        rgp * TEST_ONLY_GAS_UNIT_FOR_GENERIC,
+        rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH,
         rgp,
         false,
     )
@@ -456,7 +456,7 @@ async fn test_failed_pay_sui() {
         sender,
         pt,
         vec![coin1, coin2],
-        200000,
+        1000000,
         rgp,
         true,
     )

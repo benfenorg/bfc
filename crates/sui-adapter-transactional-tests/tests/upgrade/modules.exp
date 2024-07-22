@@ -6,7 +6,7 @@ A: object(0,0)
 task 1 'publish'. lines 6-27:
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 495140,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 9902800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'upgrade'. lines 28-48:
 Error: Transaction Effects Status: Invalid package upgrade. New package is incompatible with previous version

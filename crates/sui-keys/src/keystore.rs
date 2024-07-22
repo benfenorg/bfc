@@ -236,6 +236,15 @@ impl AccountKeystore for FileBasedKeystore {
         Ok(())
     }
 
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error> {
+        for key in keypair {
+            let address: SuiAddress = (&key.public()).into();
+            self.keys.insert(address, key);
+        }
+        self.save()?;
+        Ok(())
+    }
+
     /// Return an array of `Alias`, consisting of every alias and its corresponding public key.
     fn aliases(&self) -> Vec<&Alias> {
         self.aliases.values().collect()
@@ -524,6 +533,14 @@ impl AccountKeystore for InMemKeystore {
         };
         self.aliases.insert(address, alias);
         self.keys.insert(address, keypair);
+        Ok(())
+    }
+
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), Error> {
+        for key in keypair {
+            let address: SuiAddress = (&key.public()).into();
+            self.keys.insert(address, key);
+        }
         Ok(())
     }
 

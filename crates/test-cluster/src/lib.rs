@@ -1086,9 +1086,11 @@ impl TestClusterBuilder {
 
         swarm.config().save(network_path)?;
         let mut keystore = Keystore::from(FileBasedKeystore::new(&keystore_path)?);
+        let mut accounts = Vec::new();
         for key in &swarm.config().account_keys {
             keystore.add_key(None, SuiKeyPair::Ed25519(key.copy()))?;
         }
+        keystore.add_key_batch(accounts)?;
 
         let active_address = keystore.addresses().first().cloned();
 

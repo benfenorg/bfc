@@ -20,7 +20,7 @@ Anemo networks are identified by a "server name" that the client must match. Ser
 Example command to ping an anemo server:
 
 ```sh
-SERVER_NAME="sui"; \
+SERVER_NAME="bfc"; \
 ADDRESS="1.2.3.4:5678"; \
 cargo run --bin sui-tool -- anemo ping --server-name "$SERVER_NAME" "$ADDRESS"
 ```

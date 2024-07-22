@@ -9,6 +9,7 @@ use once_cell::sync::{Lazy, OnceCell};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, Bytes};
+use tracing::info;
 use sui_protocol_config::Chain;
 use tracing::info;
 
@@ -184,9 +185,18 @@ impl ChainIdentifier {
         let testnet_id = get_testnet_chain_identifier();
 
         let chain = match self {
-            id if *id == mainnet_id => Chain::Mainnet,
-            id if *id == testnet_id => Chain::Testnet,
-            _ => Chain::Unknown,
+            id if *id == mainnet_id => {
+                info!("start bfc mainnet chain.....");
+                Chain::Mainnet
+            },
+            id if *id == testnet_id => {
+                info!("start bfc testnet chain.....");
+                Chain::Testnet
+            },
+            _ => {
+                info!("start unknown chain.....");
+                Chain::Unknown
+            },
         };
         if let Some(override_chain) = *SUI_PROTOCOL_CONFIG_CHAIN_OVERRIDE {
             if chain != Chain::Unknown {
