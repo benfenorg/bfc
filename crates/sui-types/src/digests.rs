@@ -9,7 +9,6 @@ use once_cell::sync::{Lazy, OnceCell};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::{serde_as, Bytes};
-use tracing::info;
 use sui_protocol_config::Chain;
 use tracing::info;
 

@@ -35,6 +35,7 @@ pub enum Keystore {
 #[enum_dispatch]
 pub trait AccountKeystore: Send + Sync {
     fn add_key(&mut self, alias: Option<String>, keypair: SuiKeyPair) -> Result<(), anyhow::Error>;
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error>;
     fn keys(&self) -> Vec<PublicKey>;
     fn get_key(&self, address: &SuiAddress) -> Result<&SuiKeyPair, anyhow::Error>;
 
@@ -536,7 +537,7 @@ impl AccountKeystore for InMemKeystore {
         Ok(())
     }
 
-    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), Error> {
+    fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error> {
         for key in keypair {
             let address: SuiAddress = (&key.public()).into();
             self.keys.insert(address, key);
