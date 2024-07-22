@@ -143,10 +143,10 @@ pub mod checked {
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
                     let Data::Move(move_obj) = &obj.data else {
-                        return Err(ExecutionError::invariant_violation(
-                            "Provided non-gas coin object as input for gas!",
-                        ));
-                    };
+                    return Err(ExecutionError::invariant_violation(
+                        "Provided non-gas coin object as input for gas!"
+                    ));
+                };
                     if !move_obj.type_().is_gas_coin() {
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
@@ -302,11 +302,6 @@ pub mod checked {
             // compute and collect storage charges
             temporary_store.ensure_gas_and_input_mutated(self);
             temporary_store.collect_storage_and_rebate(self);
-
-            if self.smashed_gas_coin.is_some() {
-                #[skip_checked_arithmetic]
-                trace!(target: "replay_gas_info", "Gas smashing has occurred for this transaction");
-            }
 
             // system transactions (None smashed_gas_coin)  do not have gas and so do not charge
             // for storage, however they track storage values to check for conservation rules

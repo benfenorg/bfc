@@ -89,7 +89,6 @@ pub mod checked {
                 }
                 .into());
             }
-
             if gas_price_too_high(config.gas_model_version()) && gas_price >= config.max_gas_price()
             {
                 return Err(UserInputError::GasPriceTooHigh {
@@ -270,6 +269,7 @@ pub mod checked {
                 non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
         }
+
         pub fn net_gas_usage_improved(&self) -> i64 {
             let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
             let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
@@ -294,6 +294,7 @@ pub mod checked {
                 self.storage_rebate - self.storage_cost
             }
         }
+
     }
 
     impl std::fmt::Display for GasCostSummary {
