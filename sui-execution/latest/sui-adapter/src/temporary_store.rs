@@ -848,6 +848,7 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
+    #[allow(unused)]
     fn get_input_stable_with_rebate(
         &self,
         id: &ObjectID,
@@ -1038,7 +1039,7 @@ impl<'backing> TemporaryStore<'backing> {
         gas_summary: &GasCostSummary,
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
-        pay_with_stable_gas : bool,
+        _pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;

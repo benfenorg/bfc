@@ -405,6 +405,7 @@ impl MoveObject {
 
 // Helpers for extracting Coin<T> balances for all T
 impl MoveObject {
+    #[allow(unused)]
     fn is_balance(s: &StructTag) -> Option<&TypeTag> {
         (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
     }
