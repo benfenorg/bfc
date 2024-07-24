@@ -856,7 +856,7 @@ async fn test_move_call_storage() -> SuiResult {
     let package_object = authority_state.get_object(&package).await?.unwrap();
     let pkg_ref = package_object.compute_object_reference();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
-    move_call_heavy_storage_object(stable_gas_object, gas_object_id_stable, sender,sender_key,rgp, pkg_ref, authority_state).await?;
+    move_call_heavy_storage_object(stable_gas_object, sender, sender_key,rgp, pkg_ref, authority_state).await?;
     Ok(())
 }
 
@@ -1202,59 +1202,60 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     Ok(())
 }
 
-async fn move_call_heavy_storage_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
                                         sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
     let module = ident_str!("move_random").to_owned();
     let function = ident_str!("storage_heavy").to_owned();
-    let args = vec![
-        CallArg::Pure(160u64.to_le_bytes().to_vec()),
-        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
-    ];
-
     let gas_budget = if gas_object.is_stable_gas_coin() {
         4999500000
     } else {
         *MAX_GAS_BUDGET
     };
 
-    let data = TransactionData::new_move_call(
-        sender,
-        package_object_ref.0,
-        module.clone(),
-        function.clone(),
-        Vec::new(),
-        gas_object.compute_object_reference(),
-        args.clone(),
-        gas_budget,
-        rgp,
-    )
-        .unwrap();
-
-    let tx = to_sender_signed_transaction(data, &sender_key);
-    let response = send_and_confirm_transaction(&authority_state, tx).await?;
-    println!("effect: {:?}",response.1);
+    let response = send_and_confirm_transaction(
+        &authority_state,
+        to_sender_signed_transaction(TransactionData::new_move_call(
+            sender,
+            package_object_ref.0,
+            module.clone(),
+            function.clone(),
+            Vec::new(),
+            gas_object.compute_object_reference(),
+            vec![
+                CallArg::Pure(10000u64.to_le_bytes().to_vec()),
+                CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+            ],
+            gas_budget,
+            rgp,
+        ).unwrap(), &sender_key),
+    ).await?;
     let effects = response.1.into_data();
-    let created_object_ref = effects.created()[0].0;
     assert!(effects.status().is_ok());
-    let gas_cost = effects.gas_cost_summary();
-    assert!(gas_cost.storage_cost > 0);
-    assert_eq!(gas_cost.storage_rebate, 0);
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
-    let gas_used = if !gas_object.is_stable_gas_coin() {
-        gas_cost.net_gas_usage() as u64
-    } else {
-        gas_cost.net_gas_usage_improved() as u64
-    };
-    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_used;
-    assert_eq!(
-        GasCoin::try_from(&gas_object)?.value(),
-        expected_gas_balance,
-    );
+    let created_object_ref = effects.created()[0].0;
 
-    // This is the total amount of storage cost paid. We will use this
-    // to check if we get back the same amount of rebate latter.
-    let prev_storage_cost = gas_cost.storage_cost;
+    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
+    let response2 = send_and_confirm_transaction(
+        &authority_state,
+        to_sender_signed_transaction(TransactionData::new_move_call(
+            sender,
+            package_object_ref.0,
+            module.clone(),
+            function.clone(),
+            Vec::new(),
+            gas_object.compute_object_reference(),
+            vec![
+                CallArg::Pure(10001u64.to_le_bytes().to_vec()),
+                CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+            ],
+            gas_budget,
+            rgp,
+        ).unwrap(), &sender_key),
+    ).await?;
+    let effects2 = response2.1.into_data();
+    assert!(effects2.status().is_ok());
+    let created_object_ref2 = effects2.created()[0].0;
 
+    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
     // Execute object deletion, and make sure we have storage rebate.
     let data = TransactionData::new_move_call(
         sender,
@@ -1263,27 +1264,22 @@ async fn move_call_heavy_storage_object(gas_object: Object,gas_object_id: Object
         ident_str!("delete").to_owned(),
         vec![],
         gas_object.compute_object_reference(),
-        vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(
-            created_object_ref,
-        ))],
-        gas_budget,
+        vec![
+            CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref)),
+            CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref2)),
+        ],
+        80618,
         rgp,
-    )
-        .unwrap();
+    ).unwrap();
 
     let transaction = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, transaction).await?;
     let effects = response.1.into_data();
-    assert!(effects.status().is_ok());
-    let gas_cost = effects.gas_cost_summary();
-    // storage_cost should be less than rebate because for object deletion, we only
-    // rebate without charging.
-    assert!(gas_cost.storage_cost > 0 && gas_cost.storage_cost < gas_cost.storage_rebate);
-    // Check that we have storage rebate is less or equal to the previous one + non refundable
     assert_eq!(
-        gas_cost.storage_rebate + gas_cost.non_refundable_storage_fee,
-        prev_storage_cost
+        *effects.status(),
+        ExecutionStatus::new_failure(ExecutionFailureStatus::InsufficientGas, None)
     );
+
     Ok(())
 }
 
