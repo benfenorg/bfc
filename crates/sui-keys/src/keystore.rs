@@ -239,8 +239,7 @@ impl AccountKeystore for FileBasedKeystore {
 
     fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error> {
         for key in keypair {
-            let address: SuiAddress = (&key.public()).into();
-            self.keys.insert(address, key);
+            self.add_key(None, key)?;
         }
         self.save()?;
         Ok(())
@@ -539,8 +538,7 @@ impl AccountKeystore for InMemKeystore {
 
     fn add_key_batch(&mut self, keypair: Vec<SuiKeyPair>) -> Result<(), anyhow::Error> {
         for key in keypair {
-            let address: SuiAddress = (&key.public()).into();
-            self.keys.insert(address, key);
+            self.add_key(None, key)?;
         }
         Ok(())
     }
