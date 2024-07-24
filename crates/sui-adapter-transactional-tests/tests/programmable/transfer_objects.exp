@@ -6,12 +6,12 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 8-32:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 316160,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6323200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 33-35:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 129960,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 37-39:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -23,14 +23,14 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {
         },
     },
     balance: sui::balance::Balance<sui::bfc::BFC> {
-        value: 299999998870040u64,
+        value: 299999996400800u64,
     },
 }
 
 task 4 'programmable'. lines 40-43:
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 129960,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5 'view-object'. lines 45-47:
 Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
@@ -47,7 +47,7 @@ Contents: test::m1::Pub {
 task 6 'programmable'. lines 48-53:
 created: object(6,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 129960,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7 'view-object'. lines 55-57:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
@@ -64,7 +64,7 @@ Contents: test::m1::Pub {
 task 8 'programmable'. lines 58-65:
 created: object(8,0), object(8,1), object(8,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 285380,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 5707600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 9 'view-object'. lines 67-67:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )

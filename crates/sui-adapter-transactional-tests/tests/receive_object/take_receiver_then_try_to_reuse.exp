@@ -3,12 +3,12 @@ processed 6 tasks
 task 1 'publish'. lines 6-32:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 375060,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7501200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 34-34:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'view-object'. lines 36-36:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 38-40:
-Owner: Account Address ( BFC025ec4516d6f0ca112587433027a299355bd72d2b95e3865f3919ae1780ffd337f63 )
+Owner: Account Address ( BFCb9c2444d7eeabacfa4f8a4830e69e64597f80874b633d5eae0780b1c7268606c967a )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {

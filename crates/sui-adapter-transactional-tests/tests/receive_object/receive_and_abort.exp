@@ -3,12 +3,12 @@ processed 8 tasks
 task 1 'publish'. lines 6-30:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 350360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7007200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 32-32:
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 186960,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'view-object'. lines 34-34:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 36-38:
-Owner: Account Address ( BFCa8f3cf99110b5f96c724bd07f8766c78b94b6dd7638c1b641c541cbd4054f84493fa )
+Owner: Account Address ( BFC910d93e7b0b9319c748c386ca7771569a6af3b4b5874e22de26c5105dc784da67c7c )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -48,7 +48,7 @@ Contents: tto::M1::A {
 }
 
 task 7 'view-object'. lines 43-43:
-Owner: Account Address ( BFCa8f3cf99110b5f96c724bd07f8766c78b94b6dd7638c1b641c541cbd4054f84493fa )
+Owner: Account Address ( BFC910d93e7b0b9319c748c386ca7771569a6af3b4b5874e22de26c5105dc784da67c7c )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {

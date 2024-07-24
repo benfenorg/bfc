@@ -6,29 +6,29 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 6-25:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 326420,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6528400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 26-29:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'programmable'. lines 30-34:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4 'programmable'. lines 35-39:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5 'programmable'. lines 40-46:
 created: object(5,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6 'programmable'. lines 47-53:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7 'programmable'. lines 54-55:
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072

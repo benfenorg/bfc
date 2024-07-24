@@ -3,17 +3,17 @@ processed 10 tasks
 task 1 'publish'. lines 8-55:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 381520,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7630400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 56-58:
 events: 1
 mutated: 1
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'run'. lines 59-61:
 events: 50
 mutated: 1
-gas summary: computation_cost: 3000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 3000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4 'run'. lines 62-64:
 Error: Transaction Effects Status: Move Primitive Runtime Error. Location: sui::event::emit (function index 0) at offset 0. Arithmetic error, stack overflow, max value depth, etc.
@@ -26,12 +26,12 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 6 'run'. lines 68-70:
 events: 1
 mutated: 1
-gas summary: computation_cost: 1393000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1393000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7 'run'. lines 71-73:
 events: 1
 mutated: 1
-gas summary: computation_cost: 1814000000, storage_cost: 65360,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1814000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8 'run'. lines 74-76:
 Error: Transaction Effects Status: Move Primitive Runtime Error. Location: sui::event::emit (function index 0) at offset 0. Arithmetic error, stack overflow, max value depth, etc.

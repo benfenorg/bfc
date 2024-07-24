@@ -6,7 +6,7 @@ A: object(0,0)
 task 1 'publish'. lines 6-18:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 265620,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5312400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'programmable'. lines 20-22:
 Error: Transaction Effects Status: Move Bytecode Verification Error. Please run the Bytecode Verifier for more information.
@@ -19,7 +19,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 4 'run'. lines 28-28:
 created: object(4,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5 'view-object'. lines 30-32:
 Owner: Shared
@@ -38,7 +38,7 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {
 task 6 'programmable'. lines 33-37:
 created: object(6,0)
 mutated: object(0,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 196080,  storage_rebate: 129413, non_refundable_storage_fee: 1307
+gas summary: computation_cost: 1000000, storage_cost: 3921600,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 7 'programmable'. lines 38-41:
 Error: Transaction Effects Status: The shared object operation is not allowed.
