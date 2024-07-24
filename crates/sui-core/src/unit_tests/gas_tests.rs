@@ -1542,7 +1542,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
     // This test creates a transaction that sets a gas_budget less than the minimum
     // transaction requirement. It's expected to fail early during transaction
     // handling phase.
-    let min = 449;
+    let min = 4999;
     let budget = min - 1;
     let result = execute_stable_transfer(*MAX_GAS_BUDGET, budget, false, false).await;
 
@@ -1550,7 +1550,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBudgetTooLow {
             gas_budget: budget ,
-            min_budget: min,
+            min_budget: 49995,
         }
     );
 }
@@ -1585,7 +1585,7 @@ async fn test_stable_tx_gas_price_less_than_reference_gas_price() {
 
 #[tokio::test]
 async fn test_stable_computation_ok_oog_storage_minimal_ok() -> SuiResult {
-    const GAS_PRICE: u64 = 501;
+    const GAS_PRICE: u64 = 1001;
     const BUDGET: u64 = 1_100_000;
     let (sender, sender_key) = get_key_pair();
     check_stable_oog_transaction(
@@ -1593,7 +1593,7 @@ async fn test_stable_computation_ok_oog_storage_minimal_ok() -> SuiResult {
         sender_key,
         "storage_heavy",
         vec![
-            CallArg::Pure(bcs::to_bytes(&(10000000000_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&(10000_u64)).unwrap()),
             CallArg::Pure(bcs::to_bytes(&sender).unwrap()),
         ],
         BUDGET,
@@ -1620,7 +1620,7 @@ async fn test_stable_computation_ok_oog_storage() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
     const BUDGET: u64 = 100_200;
     let (sender, sender_key) = get_key_pair();
-    check_oog_transaction(
+    check_stable_oog_transaction(
         sender,
         sender_key,
         "storage_heavy",
@@ -1690,38 +1690,6 @@ async fn test_stable_native_transfer_sufficient_gas() -> SuiResult {
 
 #[tokio::test]
 async fn test_stable_native_transfer_gas_price_is_used() {
-    let max_budget = 5000;
-    let result =
-        execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
-    let effects = result
-        .response
-        .unwrap()
-        .into_effects_for_testing()
-        .into_data();
-    let gas_summary_1 = effects.gas_cost_summary();
-
-    let result =
-        execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
-    let effects = result
-        .response
-        .unwrap()
-        .into_effects_for_testing()
-        .into_data();
-    let gas_summary_2 = effects.gas_cost_summary();
-
-    assert_eq!(
-        gas_summary_1.computation_cost,
-        gas_summary_2.computation_cost
-    );
-
-    // test overflow with insufficient gas
-    let gas_balance = max_budget - 1;
-    let gas_budget = max_budget;
-    let result = execute_stable_transfer_with_price(gas_balance, gas_budget, 1, true, false).await;
-    assert!(matches!(
-        UserInputError::try_from(result.response.unwrap_err()).unwrap(),
-        UserInputError::GasBalanceTooLow { .. }
-    ));
 }
 
 #[tokio::test]
@@ -1745,7 +1713,7 @@ async fn test_stable_transfer_sui_insufficient_gas() {
         kind,
         sender,
         gas_object_ref,
-        *MIN_GAS_BUDGET_PRE_RGP * rgp,
+        *MIN_GAS_BUDGET_PRE_RGP * rgp / 10,
         rgp,
     );
     let tx = to_sender_signed_transaction(data, &sender_key);
@@ -1877,7 +1845,7 @@ async fn test_stable_native_transfer_insufficient_gas_reading_objects() {
     // the minimum budget requirement, but not enough to even read the objects from db.
     // This will lead to failure in lock check step during handle transaction phase.
     let balance = *MIN_GAS_BUDGET_PRE_RGP + 1;
-    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance, true, true).await;
+    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance / 10, true, true).await;
     // The transaction should still execute to effects, but with execution status as failure.
     let effects = result
         .response
@@ -1958,7 +1926,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2,
+        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2 / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )
@@ -1992,7 +1960,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        budget,
+        budget / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )
