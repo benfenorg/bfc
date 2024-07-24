@@ -6,15 +6,15 @@ A: object(0,0)
 task 1 'publish'. lines 6-36:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 407740,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8154800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 38-38:
 created: object(2,0), object(2,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 193040,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 3860800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'view-object'. lines 40-40:
-Owner: Account Address ( BFCfc01dc06506b798d86b30ad68a6f5108421235de6719dc5fad3bf00ab7bf75aecf7f )
+Owner: Account Address ( BFC79d56270062e2b0eb0e466cc859b76be52187fbed46f032de89f2f4c442b4577f1a0 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -41,7 +41,7 @@ task 5 'run'. lines 44-44:
 Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,0) is owned by account address object(2,1), but given owner/signer address is 0xd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8b" }
 
 task 6 'view-object'. lines 46-46:
-Owner: Account Address ( BFCfc01dc06506b798d86b30ad68a6f5108421235de6719dc5fad3bf00ab7bf75aecf7f )
+Owner: Account Address ( BFC79d56270062e2b0eb0e466cc859b76be52187fbed46f032de89f2f4c442b4577f1a0 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {

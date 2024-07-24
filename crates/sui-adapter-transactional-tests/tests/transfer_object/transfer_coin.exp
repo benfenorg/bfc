@@ -5,7 +5,7 @@ A: object(0,0), B: object(0,1), C: object(0,2)
 
 task 1 'programmable'. lines 8-9:
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'view-object'. lines 11-11:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -17,13 +17,13 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {
         },
     },
     balance: sui::balance::Balance<sui::bfc::BFC> {
-        value: 299999998934640u64,
+        value: 299999997692800u64,
     },
 }
 
 task 3 'transfer-object'. lines 13-13:
 mutated: object(0,0), object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 130720,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4 'view-object'. lines 15-15:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
@@ -35,6 +35,6 @@ Contents: sui::coin::Coin<sui::bfc::BFC> {
         },
     },
     balance: sui::balance::Balance<sui::bfc::BFC> {
-        value: 299999998934640u64,
+        value: 299999997692800u64,
     },
 }

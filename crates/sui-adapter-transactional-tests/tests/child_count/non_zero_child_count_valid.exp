@@ -50,7 +50,7 @@ mutated: object(0,0)
 gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8 'transfer-object'. lines 67-67:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: 0x6ecd00bc63b49b38dfedd0795d52882ff7161ba1aac7b55b7cd9ded8063a2b2c, parent_id: 0x8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b08 }
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(7,1), parent_id: object(7,0) }
 
 task 9 'view-object'. lines 69-69:
 Owner: Object ID: ( BFC8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b088480 )
