@@ -24,7 +24,6 @@ use sui_types::{
     transaction::{GasData, Transaction, TransactionData, TransactionKind},
     utils::{to_sender_signed_transaction, to_sender_signed_transaction_with_multi_signers},
 };
-use sui_types::base_types_bfc::bfc_address_util::{sui_address_to_bfc_address, objects_id_to_bfc_address};
 
 const GAS_UNIT_PRICE: u64 = 2;
 const DEFAULT_TRANSFER_AMOUNT: u64 = 1;
@@ -502,10 +501,10 @@ impl AUTransactionGen for P2PTransferGenRandomGasRandomPriceRandomSponsorship {
             } => Err(SuiError::UserInputError {
                 error: UserInputError::IncorrectUserSignature {
                     error: format!(
-                               "Object {:?} is owned by account address {:?}, but given owner/signer address is {:?}",
-                               objects_id_to_bfc_address(gas_object.id()),
-                               sui_address_to_bfc_address(sender_address),
-                               sui_address_to_bfc_address(payer.initial_data.account.address),
+                               "Object {} is owned by account address {}, but given owner/signer address is {}",
+                               gas_object.id(),
+                               sender_address,
+                               payer.initial_data.account.address,
                            )
                 }
             }),
