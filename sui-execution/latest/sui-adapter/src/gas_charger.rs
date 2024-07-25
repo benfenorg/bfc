@@ -132,7 +132,6 @@ pub mod checked {
             false
         }
 
-
         // This function is called when the transaction is about to be executed.
         // It will smash all gas coins into a single one and set the logical gas coin
         // to be the first one in the list.
@@ -166,7 +165,7 @@ pub mod checked {
                 .clone();
             let gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
 
-
+            let mut first_coin_type = None;
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
@@ -188,8 +187,29 @@ pub mod checked {
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
-                    };
-
+                    }
+                    if first_coin_type.is_none(){
+                        first_coin_type = obj.coin_type_maybe();
+                    } else {
+                        let gas_coin_type = obj.coin_type_maybe();
+                        match gas_coin_type {
+                            Some(coin_type) => {
+                                if let None = obj.coin_type_maybe() {
+                                    return Err(ExecutionError::invariant_violation(
+                                        "Provided non-gas coin object as input for gas!",
+                                    ));
+                                }
+                                if obj.coin_type_maybe().unwrap() != coin_type {
+                                    return Err(ExecutionError::invariant_violation(
+                                        "Provided non-gas coin object as input for gas!",
+                                    ));
+                                }
+                            }
+                            None => return Err(ExecutionError::invariant_violation(
+                                "Provided non-gas coin object as input for gas!",
+                            )),
+                        }
+                    }
                     Ok(move_obj.get_coin_value_unsafe())
                 })
                 .collect::<Result<Vec<u64>, ExecutionError>>()
@@ -220,7 +240,7 @@ pub mod checked {
                     )
                 })
                 .set_coin_value_unsafe(new_balance);
-            temporary_store.mutate_input_object(primary_gas_object);
+             temporary_store.mutate_input_object(primary_gas_object);
         }
 
         //
@@ -268,6 +288,7 @@ pub mod checked {
                 .filter(|(id, _)| !is_system_package(**id))
                 .map(|(_, obj)| obj.object_size_for_gas_metering())
                 .sum();
+
             self.gas_status.charge_storage_read(total_size)
         }
 
@@ -317,11 +338,6 @@ pub mod checked {
             temporary_store.ensure_active_inputs_mutated();
             temporary_store.collect_storage_and_rebate(self);
 
-            if self.smashed_gas_coin.is_some() {
-                #[skip_checked_arithmetic]
-                trace!(target: "replay_gas_info", "Gas smashing has occurred for this transaction");
-            }
-
             // system transactions (None smashed_gas_coin)  do not have gas and so do not charge
             // for storage, however they track storage values to check for conservation rules
             if let Some(gas_object_id) = self.smashed_gas_coin {
@@ -332,11 +348,10 @@ pub mod checked {
                 }
 
                 let mut cost_summary = self.gas_status.summary();
-
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                if !self.gas_status.has_adjust_computation_on_out_of_gas() && gas_object.is_stable_gas_coin() {
+                if !self.gas_status.has_adjust_is_computation_by_stable() && gas_object.is_stable_gas_coin() {
                     let coin_name = gas_object.get_gas_coin_name();
                     //read rate
                     let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());

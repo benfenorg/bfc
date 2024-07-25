@@ -6,16 +6,16 @@ A: object(0,0)
 task 1 'publish'. lines 8-67:
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 481840,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 9636800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 69-69:
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 135280,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2705600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'run'. lines 71-71:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 135280,  storage_rebate: 133927, non_refundable_storage_fee: 1353
+gas summary: computation_cost: 1000000, storage_cost: 2705600,  storage_rebate: 2678544, non_refundable_storage_fee: 27056
 
 task 4 'run'. lines 73-73:
 Error: Transaction Effects Status: Invalid command argument at 0. Immutable objects cannot be passed by-value.

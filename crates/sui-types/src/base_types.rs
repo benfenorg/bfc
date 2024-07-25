@@ -657,8 +657,6 @@ impl SuiAddress {
     /// Parse a SuiAddress from a byte array or buffer.
     pub fn from_bytes<T: AsRef<[u8]>>(bytes: T) -> Result<Self, SuiError> {
         //let byte_string = String::from_utf8(bytes.as_ref().to_vec()).unwrap();
-        info!("suiAddress from_bytes");
-
         <[u8; SUI_ADDRESS_LENGTH]>::try_from(bytes.as_ref())
             .map_err(|_| SuiError::InvalidAddress)
             .map(SuiAddress)

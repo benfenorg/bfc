@@ -57,7 +57,7 @@ pub mod checked {
         fn adjust_computation_on_out_of_gas(&mut self);
         fn stable_rate(&self) -> Option<u64>;
         fn base_points(&self) -> Option<u64>;
-        fn has_adjust_computation_on_out_of_gas(&self) -> bool;
+        fn has_adjust_is_computation_by_stable(&self) -> bool;
     }
 
     /// Version aware enum for gas status.
@@ -89,7 +89,6 @@ pub mod checked {
                 }
                 .into());
             }
-
             if gas_price_too_high(config.gas_model_version()) && gas_price >= config.max_gas_price()
             {
                 return Err(UserInputError::GasPriceTooHigh {
@@ -124,9 +123,9 @@ pub mod checked {
             }
         }
 
-        pub fn has_adjust_computation_on_out_of_gas(&self) ->bool {
+        pub fn has_adjust_is_computation_by_stable(&self) ->bool {
             return match self {
-                Self::V2(status) => status.has_adjust_computation_on_out_of_gas(),
+                Self::V2(status) => status.has_adjust_is_computation_by_stable(),
             }
         }
     }
@@ -270,6 +269,7 @@ pub mod checked {
                 non_refundable_storage_fee: calculate_bfc_to_stable_cost_with_base_point(self.non_refundable_storage_fee, self.rate, self.base_point),
             }
         }
+
         pub fn net_gas_usage_improved(&self) -> i64 {
             let computation_cost = calculate_bfc_to_stable_cost_with_base_point(self.computation_cost, self.rate, self.base_point);
             let storage_cost = calculate_bfc_to_stable_cost_with_base_point(self.storage_cost, self.rate, self.base_point);
@@ -294,6 +294,7 @@ pub mod checked {
                 self.storage_rebate - self.storage_cost
             }
         }
+
     }
 
     impl std::fmt::Display for GasCostSummary {
@@ -361,6 +362,15 @@ pub fn calculate_divide_rate(val: u64, rate_option: Option<u64>) -> u64 {
             return val;
         }
         let result =  (val as u128)  * BASE_RATE as u128/ (rate as u128);
+        result as u64
+    }else {
+        val
+    }
+}
+
+pub fn calculate_multiply_rate(val: u64, rate_option: Option<u64>) -> u64 {
+    if let Some(rate) = rate_option {
+        let result =  (val as u128)  * (rate as u128) / BASE_RATE as u128;
         result as u64
     }else {
         val

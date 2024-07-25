@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-use tracing::error;
+use tracing::{error, info};
 use sui_json_rpc_types::SuiTransactionBlockResponseQuery;
 use sui_json_rpc_types::TransactionFilter;
 use sui_json_rpc_types::{

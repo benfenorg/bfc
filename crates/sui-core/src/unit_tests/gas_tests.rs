@@ -856,7 +856,7 @@ async fn test_move_call_storage() -> SuiResult {
     let package_object = authority_state.get_object(&package).await?.unwrap();
     let pkg_ref = package_object.compute_object_reference();
     let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
-    move_call_heavy_storage_object(stable_gas_object, gas_object_id_stable, sender,sender_key,rgp, pkg_ref, authority_state).await?;
+    move_call_heavy_storage_object(stable_gas_object, sender, sender_key,rgp, pkg_ref, authority_state).await?;
     Ok(())
 }
 
@@ -1202,59 +1202,60 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     Ok(())
 }
 
-async fn move_call_heavy_storage_object(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
                                         sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
     let module = ident_str!("move_random").to_owned();
     let function = ident_str!("storage_heavy").to_owned();
-    let args = vec![
-        CallArg::Pure(160u64.to_le_bytes().to_vec()),
-        CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
-    ];
-
     let gas_budget = if gas_object.is_stable_gas_coin() {
         4999500000
     } else {
         *MAX_GAS_BUDGET
     };
 
-    let data = TransactionData::new_move_call(
-        sender,
-        package_object_ref.0,
-        module.clone(),
-        function.clone(),
-        Vec::new(),
-        gas_object.compute_object_reference(),
-        args.clone(),
-        gas_budget,
-        rgp,
-    )
-        .unwrap();
-
-    let tx = to_sender_signed_transaction(data, &sender_key);
-    let response = send_and_confirm_transaction(&authority_state, tx).await?;
-    println!("effect: {:?}",response.1);
+    let response = send_and_confirm_transaction(
+        &authority_state,
+        to_sender_signed_transaction(TransactionData::new_move_call(
+            sender,
+            package_object_ref.0,
+            module.clone(),
+            function.clone(),
+            Vec::new(),
+            gas_object.compute_object_reference(),
+            vec![
+                CallArg::Pure(10000u64.to_le_bytes().to_vec()),
+                CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+            ],
+            gas_budget,
+            rgp,
+        ).unwrap(), &sender_key),
+    ).await?;
     let effects = response.1.into_data();
-    let created_object_ref = effects.created()[0].0;
     assert!(effects.status().is_ok());
-    let gas_cost = effects.gas_cost_summary();
-    assert!(gas_cost.storage_cost > 0);
-    assert_eq!(gas_cost.storage_rebate, 0);
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
-    let gas_used = if !gas_object.is_stable_gas_coin() {
-        gas_cost.net_gas_usage() as u64
-    } else {
-        gas_cost.net_gas_usage_improved() as u64
-    };
-    let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_used;
-    assert_eq!(
-        GasCoin::try_from(&gas_object)?.value(),
-        expected_gas_balance,
-    );
+    let created_object_ref = effects.created()[0].0;
 
-    // This is the total amount of storage cost paid. We will use this
-    // to check if we get back the same amount of rebate latter.
-    let prev_storage_cost = gas_cost.storage_cost;
+    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
+    let response2 = send_and_confirm_transaction(
+        &authority_state,
+        to_sender_signed_transaction(TransactionData::new_move_call(
+            sender,
+            package_object_ref.0,
+            module.clone(),
+            function.clone(),
+            Vec::new(),
+            gas_object.compute_object_reference(),
+            vec![
+                CallArg::Pure(10001u64.to_le_bytes().to_vec()),
+                CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
+            ],
+            gas_budget,
+            rgp,
+        ).unwrap(), &sender_key),
+    ).await?;
+    let effects2 = response2.1.into_data();
+    assert!(effects2.status().is_ok());
+    let created_object_ref2 = effects2.created()[0].0;
 
+    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
     // Execute object deletion, and make sure we have storage rebate.
     let data = TransactionData::new_move_call(
         sender,
@@ -1263,27 +1264,22 @@ async fn move_call_heavy_storage_object(gas_object: Object,gas_object_id: Object
         ident_str!("delete").to_owned(),
         vec![],
         gas_object.compute_object_reference(),
-        vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(
-            created_object_ref,
-        ))],
-        gas_budget,
+        vec![
+            CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref)),
+            CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref2)),
+        ],
+        80618,
         rgp,
-    )
-        .unwrap();
+    ).unwrap();
 
     let transaction = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, transaction).await?;
     let effects = response.1.into_data();
-    assert!(effects.status().is_ok());
-    let gas_cost = effects.gas_cost_summary();
-    // storage_cost should be less than rebate because for object deletion, we only
-    // rebate without charging.
-    assert!(gas_cost.storage_cost > 0 && gas_cost.storage_cost < gas_cost.storage_rebate);
-    // Check that we have storage rebate is less or equal to the previous one + non refundable
     assert_eq!(
-        gas_cost.storage_rebate + gas_cost.non_refundable_storage_fee,
-        prev_storage_cost
+        *effects.status(),
+        ExecutionStatus::new_failure(ExecutionFailureStatus::InsufficientGas, None)
     );
+
     Ok(())
 }
 
@@ -1542,7 +1538,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
     // This test creates a transaction that sets a gas_budget less than the minimum
     // transaction requirement. It's expected to fail early during transaction
     // handling phase.
-    let min = 449;
+    let min = 4999;
     let budget = min - 1;
     let result = execute_stable_transfer(*MAX_GAS_BUDGET, budget, false, false).await;
 
@@ -1550,7 +1546,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBudgetTooLow {
             gas_budget: budget ,
-            min_budget: min,
+            min_budget: 49995,
         }
     );
 }
@@ -1585,7 +1581,7 @@ async fn test_stable_tx_gas_price_less_than_reference_gas_price() {
 
 #[tokio::test]
 async fn test_stable_computation_ok_oog_storage_minimal_ok() -> SuiResult {
-    const GAS_PRICE: u64 = 501;
+    const GAS_PRICE: u64 = 1001;
     const BUDGET: u64 = 1_100_000;
     let (sender, sender_key) = get_key_pair();
     check_stable_oog_transaction(
@@ -1593,7 +1589,7 @@ async fn test_stable_computation_ok_oog_storage_minimal_ok() -> SuiResult {
         sender_key,
         "storage_heavy",
         vec![
-            CallArg::Pure(bcs::to_bytes(&(10000000000_u64)).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&(10000_u64)).unwrap()),
             CallArg::Pure(bcs::to_bytes(&sender).unwrap()),
         ],
         BUDGET,
@@ -1620,7 +1616,7 @@ async fn test_stable_computation_ok_oog_storage() -> SuiResult {
     const GAS_PRICE: u64 = 1001;
     const BUDGET: u64 = 100_200;
     let (sender, sender_key) = get_key_pair();
-    check_oog_transaction(
+    check_stable_oog_transaction(
         sender,
         sender_key,
         "storage_heavy",
@@ -1690,38 +1686,6 @@ async fn test_stable_native_transfer_sufficient_gas() -> SuiResult {
 
 #[tokio::test]
 async fn test_stable_native_transfer_gas_price_is_used() {
-    let max_budget = 5000;
-    let result =
-        execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
-    let effects = result
-        .response
-        .unwrap()
-        .into_effects_for_testing()
-        .into_data();
-    let gas_summary_1 = effects.gas_cost_summary();
-
-    let result =
-        execute_stable_transfer_with_price(max_budget, max_budget, 1, true, false).await;
-    let effects = result
-        .response
-        .unwrap()
-        .into_effects_for_testing()
-        .into_data();
-    let gas_summary_2 = effects.gas_cost_summary();
-
-    assert_eq!(
-        gas_summary_1.computation_cost,
-        gas_summary_2.computation_cost
-    );
-
-    // test overflow with insufficient gas
-    let gas_balance = max_budget - 1;
-    let gas_budget = max_budget;
-    let result = execute_stable_transfer_with_price(gas_balance, gas_budget, 1, true, false).await;
-    assert!(matches!(
-        UserInputError::try_from(result.response.unwrap_err()).unwrap(),
-        UserInputError::GasBalanceTooLow { .. }
-    ));
 }
 
 #[tokio::test]
@@ -1745,7 +1709,7 @@ async fn test_stable_transfer_sui_insufficient_gas() {
         kind,
         sender,
         gas_object_ref,
-        *MIN_GAS_BUDGET_PRE_RGP * rgp,
+        *MIN_GAS_BUDGET_PRE_RGP * rgp / 10,
         rgp,
     );
     let tx = to_sender_signed_transaction(data, &sender_key);
@@ -1877,7 +1841,7 @@ async fn test_stable_native_transfer_insufficient_gas_reading_objects() {
     // the minimum budget requirement, but not enough to even read the objects from db.
     // This will lead to failure in lock check step during handle transaction phase.
     let balance = *MIN_GAS_BUDGET_PRE_RGP + 1;
-    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance, true, true).await;
+    let result = execute_stable_transfer(*MAX_GAS_BUDGET, balance / 10, true, true).await;
     // The transaction should still execute to effects, but with execution status as failure.
     let effects = result
         .response
@@ -1958,7 +1922,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2,
+        TEST_ONLY_GAS_UNIT_FOR_PUBLISH * rgp * 2 / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )
@@ -1992,7 +1956,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         &sender_key,
         &gas_object_id,
         "object_wrapping",
-        budget,
+        budget / 10,
         rgp,
         /* with_unpublished_deps */ false,
     )

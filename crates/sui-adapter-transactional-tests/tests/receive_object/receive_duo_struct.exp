@@ -3,12 +3,12 @@ processed 9 tasks
 task 1 'publish'. lines 6-44:
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 419520,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8390400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 46-46:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 247760,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 4955200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3 'view-object'. lines 48-48:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
@@ -22,7 +22,7 @@ Contents: tto::M1::A {
 }
 
 task 4 'view-object'. lines 50-50:
-Owner: Account Address ( BFCacab70746918610394388c266eaf502c0ecc2c00f788e12d0fe7e3e8c0ac189657ed )
+Owner: Account Address ( BFC7e97086439ef205701e1db770d82ee9f4ffdf410b1b6dd430afa80e270a89bb15ca9 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -33,7 +33,7 @@ Contents: tto::M1::B {
 }
 
 task 5 'view-object'. lines 52-54:
-Owner: Account Address ( BFC2124650cf8f149e62b3ccafc021a547b416b975fc4f7f777f310fa4134c14dcb55e1 )
+Owner: Account Address ( BFC3cd7f1d0d39e95bef3aaaa61aec5cb5d563551f1877eedc9d81753b2e38d2c8704cc )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -45,7 +45,7 @@ Contents: tto::M1::B {
 
 task 6 'programmable'. lines 55-58:
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 126160,  storage_rebate: 124898, non_refundable_storage_fee: 1262
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 7 'programmable'. lines 59-63:
 Error: Error checking transaction input objects: DuplicateObjectRefInput

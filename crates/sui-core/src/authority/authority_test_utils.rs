@@ -337,6 +337,7 @@ pub async fn certify_shared_obj_transaction_no_execution(
     let response = authority
         .handle_transaction(&epoch_store, transaction.clone())
         .await?;
+
     let vote = response.status.into_signed_for_testing();
 
     // Collect signatures from a quorum of authorities

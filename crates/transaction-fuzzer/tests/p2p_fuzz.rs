@@ -173,7 +173,7 @@ fn fuzz_p2p_mixed() {
         log_balance_strategy(1_000_000, 1_000_000_000_000),
     );
     let transfers = vec(
-        p2p_transfer_strategy(1, 100_000),
+        p2p_transfer_strategy(1, 1_000_000),
         0..default_num_transactions(),
     );
     let strategy = (universe, transfers).boxed();

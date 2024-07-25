@@ -6,31 +6,31 @@ A: object(0,0)
 task 1 'publish'. lines 6-20:
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 399380,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7987600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'upgrade'. lines 21-35:
 created: object(2,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 427500,  storage_rebate: 145589, non_refundable_storage_fee: 1471
+gas summary: computation_cost: 1000000, storage_cost: 8550000,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 3 'upgrade'. lines 36-60:
 created: object(3,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 488680,  storage_rebate: 145589, non_refundable_storage_fee: 1471
+gas summary: computation_cost: 1000000, storage_cost: 9773600,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 4 'upgrade'. lines 61-83:
 created: object(4,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 535040,  storage_rebate: 145589, non_refundable_storage_fee: 1471
+gas summary: computation_cost: 1000000, storage_cost: 10700800,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 5 'run'. lines 85-85:
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 65360,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 6 'run'. lines 87-87:
 created: object(6,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 137560,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 2751200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7 'view-object'. lines 89-89:
 Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )

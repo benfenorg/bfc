@@ -31,7 +31,7 @@ use sui_types::mock_checkpoint_builder::{MockCheckpointBuilder, ValidatorKeypair
 use sui_types::object::Object;
 use sui_types::transaction::{
     CertifiedTransaction, Transaction, TransactionDataAPI, VerifiedCertificate,
-    VerifiedTransaction, DEFAULT_VALIDATOR_GAS_PRICE,
+    VerifiedTransaction,
 };
 use tokio::sync::broadcast;
 

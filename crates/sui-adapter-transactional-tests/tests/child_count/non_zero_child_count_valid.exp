@@ -6,12 +6,12 @@ A: object(0,0), B: object(0,1)
 task 1 'publish'. lines 9-45:
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 364800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7296000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2 'run'. lines 47-47:
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 308940,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3 'view-object'. lines 49-53:
 Owner: Object ID: ( BFCfaeccb41267e22d3ab0fb5f7d68cd66a0bed90e7d01af7ec074601d57f016ae82968 )
@@ -27,11 +27,11 @@ Contents: test::m::S {
 task 4 'run'. lines 55-55:
 created: object(4,0), object(4,1), object(4,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 308940,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5 'run'. lines 57-57:
 mutated: object(0,0), object(4,2)
-gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 124522, non_refundable_storage_fee: 1258
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 6 'view-object'. lines 59-63:
 Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
@@ -47,15 +47,14 @@ Contents: test::m::S {
 task 7 'run'. lines 65-65:
 created: object(7,0), object(7,1), object(7,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 308940,  storage_rebate: 64706, non_refundable_storage_fee: 654
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8 'transfer-object'. lines 67-67:
-mutated: object(0,0), object(7,1)
-gas summary: computation_cost: 1000000, storage_cost: 125780,  storage_rebate: 124522, non_refundable_storage_fee: 1258
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(7,1), parent_id: object(7,0) }
 
 task 9 'view-object'. lines 69-69:
-Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
-Version: 6
+Owner: Object ID: ( BFC8d089c745b8ce42a84f52c33a446d4b70fc4dafdf851bdcc05f90154fd246b088480 )
+Version: 5
 Contents: test::m::S {
     id: sui::object::UID {
         id: sui::object::ID {
