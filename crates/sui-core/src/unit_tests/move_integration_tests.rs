@@ -2950,7 +2950,7 @@ pub async fn run_multi_txns(
     let gas_object_ref = gas_object.unwrap().compute_object_reference();
     let gas_price = authority.reference_gas_price_for_testing().unwrap();
     let gas_budget = pt.non_system_packages_to_be_published().count() as u64
-        * TEST_ONLY_GAS_UNIT_FOR_PUBLISH
+        * TEST_ONLY_GAS_UNIT_FOR_PUBLISH / 100
         * gas_price;
     let data =
         TransactionData::new_programmable(sender, vec![gas_object_ref], pt, gas_budget, gas_price);
