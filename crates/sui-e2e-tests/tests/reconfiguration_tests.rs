@@ -1176,7 +1176,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     let start_version = 44u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(500000)
+        .with_epoch_duration_ms(10000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -2745,7 +2745,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
