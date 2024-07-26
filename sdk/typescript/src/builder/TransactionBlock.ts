@@ -113,7 +113,7 @@ const LIMITS = {
 type Limits = Partial<Record<keyof typeof LIMITS, number>>;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-const GAS_SAFE_OVERHEAD = 1000000n;
+const GAS_SAFE_OVERHEAD = 1000n;
 
 // The maximum objects that can be fetched at once using multiGetObjects.
 const MAX_OBJECTS_PER_FETCH = 50;
