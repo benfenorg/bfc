@@ -6,7 +6,7 @@
 	"license": "Apache-2.0",
 	"sideEffects": false,
 	"files": [
-		"CHANGELOG.md",
+		"CHANGElOG.md",
 		"LICENSE",
 		"README.md",
 		"bcs",
