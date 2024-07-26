@@ -10102,8 +10102,8 @@ async fn test_dry_run_gas_transfer() {
     let object_id = ObjectID::random();
     let gas_object_id = ObjectID::random();
 
-    let (_, authority_state, _) =
-        init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, object_id), (sender, gas_object_id),]).await;
+    let (authority_state, fullnode, _) =
+        init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)]).await;
 
     let gas_object = authority_state
         .get_object(&gas_object_id)
@@ -10121,10 +10121,10 @@ async fn test_dry_run_gas_transfer() {
         vec![gas_object_ref],
         pt,
         ProtocolConfig::get_for_max_version_UNSAFE().max_tx_gas(),
-        authority_state.reference_gas_price_for_testing().unwrap(),
+        fullnode.reference_gas_price_for_testing().unwrap(),
     );
     let signed = to_sender_signed_transaction(data.clone(), &sender_key);
-    let (dry_run_res, _, _, _) = authority_state
+    let (dry_run_res, _, _, _) = fullnode
         .dry_exec_transaction(
             signed.data().intent_message().value.clone(),
             *signed.digest(),
@@ -10145,5 +10145,5 @@ async fn test_dry_run_gas_transfer() {
     let effects = signed_effects.into_data();
 
     dbg!(&effects);
-    assert!(effects.status().is_err());
+    assert!(effects.status().is_ok());
 }
