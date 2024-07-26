@@ -10182,24 +10182,34 @@ async fn test_dry_run_gas_transfer() {
     dbg!(&effects);
     assert!(effects.status().is_ok());
 
-
     let object_id = effects.created()[0].0 .0;
     let obj = authority_state
         .get_object(&object_id)
         .await
         .unwrap()
         .unwrap();
+    fullnode.database.insert_raw_object_unchecked_for_testing(&[obj.clone()]).await.unwrap();
     let mut builder = ProgrammableTransactionBuilder::new();
     builder.transfer_sui(sender, Some(1));
     let pt = builder.finish();
     let data = TransactionData::new_programmable(
         recipient,
-        vec![obj.compute_object_reference()],
+        vec![obj.clone().compute_object_reference()],
         pt,
-        1000000,
+        100000,
         authority_state.reference_gas_price_for_testing().unwrap(),
     );
+
     let signed = to_sender_signed_transaction(data.clone(), &recipient_key);
+    let (dry_run_res, _, _, _) = fullnode
+        .dry_exec_transaction(
+            signed.data().intent_message().value.clone(),
+            *signed.digest(),
+        )
+        .await
+        .unwrap();
+    dbg!(dry_run_res.clone().effects);
+
     let signed_effects = send_and_confirm_transaction(&authority_state, signed)
         .await
         .unwrap()
