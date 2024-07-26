@@ -407,6 +407,8 @@ mod checked {
                 if self.stable_rate().is_some() {
                     self.is_computation_by_stable = true;
                 }
+                dbg!("bug here");
+
                 Err(ExecutionErrorKind::InsufficientGas.into())
             } else {
                 self.computation_cost = gas_used;
@@ -463,6 +465,7 @@ mod checked {
             self.gas_status
                 .charge_bytes(size, self.cost_table.object_read_per_byte_cost)
                 .map_err(|e| {
+                    dbg!("bug here");
                     debug_assert_eq!(e.major_status(), StatusCode::OUT_OF_GAS);
                     ExecutionErrorKind::InsufficientGas.into()
                 })
@@ -472,6 +475,8 @@ mod checked {
             self.gas_status
                 .charge_bytes(size, self.cost_table.package_publish_per_byte_cost)
                 .map_err(|e| {
+                    dbg!("bug here");
+
                     debug_assert_eq!(e.major_status(), StatusCode::OUT_OF_GAS);
                     ExecutionErrorKind::InsufficientGas.into()
                 })
@@ -529,6 +534,8 @@ mod checked {
                     // Running out of gas would cause the temporary store to reset
                     // and zero storage and rebate.
                     // The remaining_gas will be 0 and we will charge all in computation
+                    dbg!("bug here", stable_gas_left, stable_rebate);
+
                     Err(ExecutionErrorKind::InsufficientGas.into())
                 } else {
                     Ok(())

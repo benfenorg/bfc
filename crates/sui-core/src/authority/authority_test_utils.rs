@@ -121,10 +121,11 @@ pub async fn send_and_confirm_transaction_with_execution_error(
 pub async fn init_state_validator_with_fullnode() -> (Arc<AuthorityState>, Arc<AuthorityState>) {
     use sui_types::crypto::get_authority_key_pair;
 
-    let validator = TestAuthorityBuilder::new().build().await;
+    let validator = TestAuthorityBuilder::new().with_reference_gas_price(10).build().await;
     let fullnode_key_pair = get_authority_key_pair().1;
     let fullnode = TestAuthorityBuilder::new()
         .with_keypair(&fullnode_key_pair)
+        .with_reference_gas_price(10)
         .build()
         .await;
     (validator, fullnode)

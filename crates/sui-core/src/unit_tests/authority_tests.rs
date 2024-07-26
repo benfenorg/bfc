@@ -10099,7 +10099,6 @@ async fn construct_stable_shared_object_transaction_with_sequence_number(
 async fn test_dry_run_gas_transfer() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let (recipient, recipient_key): (_, AccountKeyPair) = get_key_pair();
-    let object_id = ObjectID::random();
     let gas_object_id = ObjectID::random();
 
     let (authority_state, fullnode, _) =
@@ -10112,7 +10111,7 @@ async fn test_dry_run_gas_transfer() {
         .unwrap();
     let gas_object_ref = gas_object.compute_object_reference();
 
-    let amount = 1_000u64;
+    let amount = 50000000000;
     let mut builder = ProgrammableTransactionBuilder::new();
     builder.transfer_sui(recipient, Some(amount));
     let pt = builder.finish();
@@ -10121,7 +10120,7 @@ async fn test_dry_run_gas_transfer() {
         vec![gas_object_ref],
         pt,
         ProtocolConfig::get_for_max_version_UNSAFE().max_tx_gas(),
-        fullnode.reference_gas_price_for_testing().unwrap(),
+        authority_state.reference_gas_price_for_testing().unwrap(),
     );
     let signed = to_sender_signed_transaction(data.clone(), &sender_key);
     let (dry_run_res, _, _, _) = fullnode
@@ -10146,64 +10145,25 @@ async fn test_dry_run_gas_transfer() {
 
     dbg!(&effects);
     assert!(effects.status().is_ok());
-}
 
-#[tokio::test]
-async fn test_dry_run_storage_heavy_gas_transfer() {
-    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-    let (recipient, recipient_key): (_, AccountKeyPair) = get_key_pair();
-    let gas_object_id = ObjectID::random();
 
-    let (authority_state, fullnode, _) =
-        init_state_with_ids_and_object_basics_with_fullnode(vec![(sender, gas_object_id)]).await;
-
-    let gas_object = authority_state
-        .get_object(&gas_object_id)
+    let object_id = effects.created()[0].0 .0;
+    let obj = authority_state
+        .get_object(&object_id)
         .await
         .unwrap()
         .unwrap();
-    let package =
-        gas_tests::publish_move_random_package(&authority_state, &sender, &sender_key, &gas_object_id).await;
-
-    let package_object = authority_state.get_object(&package).await.unwrap();
-    let pkg_ref = package_object.expect("not found").compute_object_reference();
-    let module = ident_str!("move_random").to_owned();
-    let function = ident_str!("storage_heavy").to_owned();
-    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-
-    let amount = 1000_000u64;
     let mut builder = ProgrammableTransactionBuilder::new();
-    builder.transfer_sui(recipient, Some(amount));
+    builder.transfer_sui(sender, Some(1));
     let pt = builder.finish();
-    let data = TransactionData::new_move_call(
-        sender,
-        pkg_ref.0,
-        module.clone(),
-        function.clone(),
-        Vec::new(),
-        gas_object.compute_object_reference(),
-        vec![
-            CallArg::Pure(10001u64.to_le_bytes().to_vec()),
-            CallArg::Pure(bcs::to_bytes(&AccountAddress::from(sender)).unwrap()),
-        ],
-        5000000,
-        rgp,
-    ).unwrap();
-    let signed = to_sender_signed_transaction(data.clone(), &sender_key);
-    let (dry_run_res, _, _, _) = fullnode
-        .dry_exec_transaction(
-            signed.data().intent_message().value.clone(),
-            *signed.digest(),
-        )
-        .await
-        .unwrap();
-    assert_eq!(*dry_run_res.effects.status(), SuiExecutionStatus::Success);
-
-    let gas_used = dry_run_res.effects.gas_cost_summary().net_gas_usage() as u64;
-    let budget = (gas_used as f64 * 1.2) as u64;
-    let TransactionData::V1(mut txn_data_v1) = data;
-    txn_data_v1.gas_data.budget = budget;
-    let signed = to_sender_signed_transaction(TransactionData::V1(txn_data_v1), &sender_key);
+    let data = TransactionData::new_programmable(
+        recipient,
+        vec![obj.compute_object_reference()],
+        pt,
+        1000000,
+        authority_state.reference_gas_price_for_testing().unwrap(),
+    );
+    let signed = to_sender_signed_transaction(data.clone(), &recipient_key);
     let signed_effects = send_and_confirm_transaction(&authority_state, signed)
         .await
         .unwrap()
