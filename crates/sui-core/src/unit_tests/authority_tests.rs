@@ -59,9 +59,9 @@ use crate::{
     authority_server::AuthorityServer,
     test_utils::init_state_parameters_from_rng,
 };
-
+use base64;
 use super::*;
-
+use shared_crypto::intent::{AppId, Intent, IntentMessage, IntentScope, IntentVersion};
 pub use crate::authority::authority_test_utils::*;
 
 pub enum TestCallArg {
@@ -200,6 +200,42 @@ async fn construct_shared_object_transaction_with_sequence_number(
         gas_object_id,
         shared_object_id,
     )
+}
+
+#[tokio::test]
+async fn test_dry_run_transaction_block_busd() {
+    let txn_base_64="AAAHAAgArCP8BgAAAAEBz6fd5s83bx7PPgWO3OrKW6S551M1+uDZLAQ76u+mP+8UAgAAAAAAAAAAISA0Njk5YWJjZjNhNTc0MDNmYTE5NjQ0NDllZDcxNDZkZAAIAKwj/AYAAAABAbFblciMAhqyo1ZeYMCNHaZn/mWF8GVDmNsFWudu0MmuGwIAAAAAAAABAAEAAQEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABgEAAAAAAAAAAAICAAEBAAAA+/95gK8ktsIy4SpHDoJvD0Sih9AbIC9egoiNcMdxrDwFZnVuZHMHZGVwb3NpdAEHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMgEYnVzZARCVVNEAAcBAQABAgABAwACAAABBAABBQABBgAwvJy1SOfPPnxIn4qEuqIMuZ7r9+Eq2EzgpObtZLUWiwAwvJy1SOfPPnxIn4qEuqIMuZ7r9+Eq2EzgpObtZLUWi2QAAAAAAAAAAHQ7pAsAAAAA";
+    let data:TransactionData = bcs::from_bytes(&base64::decode(txn_base_64).unwrap().to_vec()).unwrap();
+    dbg!(data.clone());
+
+    let (validator, fullnode, transaction, gas_object_id, shared_object_id) =
+        construct_shared_object_transaction_with_sequence_number(None).await;
+    let initial_shared_object_version = validator
+        .get_object(&shared_object_id)
+        .await
+        .unwrap()
+        .unwrap()
+        .version();
+
+    let intent_msg = IntentMessage::new(
+        Intent {
+            version: IntentVersion::V0,
+            scope: IntentScope::TransactionData,
+            app_id: AppId::Sui,
+        },
+        data.clone(),
+    );
+    let txn_digest = TransactionDigest::new(default_hash(&intent_msg.value));
+
+    let (response, _, _, _) = fullnode
+        .dry_exec_transaction(
+            data,
+            txn_digest,
+        )
+        .await
+        .unwrap();
+    assert_eq!(*response.effects.status(), SuiExecutionStatus::Success);
+
 }
 
 #[tokio::test]
