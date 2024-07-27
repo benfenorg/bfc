@@ -820,7 +820,7 @@ pub async fn genesis_private(
        //           ip_string
        //     }
        // };
-        let tmp =  ValidatorGenesisConfig {
+        let validate_config =  ValidatorGenesisConfig {
             key_pair: author_key_pair.copy(),
             worker_key_pair: worker_key_pair.copy(),
             account_key_pair: SuiKeyPair::decode_base64(&account_key_pair_string).unwrap(),
@@ -843,7 +843,7 @@ pub async fn genesis_private(
             stake: sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
         };
 
-        validator_private.push(tmp);
+        validator_private.push(validate_config);
     }
     //todo, we can chang this validator_info to the info we generate from genesis_ceremony committee
     let mut network_config = if !validator_private.is_empty() {

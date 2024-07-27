@@ -3907,8 +3907,9 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let proposal_result = self.get_proposal_state(version + 1).await;
-        info!("===========protocol: {:?} detecting next version:{:?}", version, version+1);
+        let next_version = epoch_store.bfc_protocol_next_version();
+        let proposal_result = self.get_proposal_state(next_version).await;
+        info!("===========protocol: {:?} detecting next version:{:?}", version, next_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
         if cfg!(feature="bfc_skip_dao_update") {

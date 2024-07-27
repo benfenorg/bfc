@@ -602,6 +602,15 @@ impl AuthorityPerEpochStore {
         self.epoch_start_state().protocol_version()
     }
 
+    pub fn bfc_protocol_next_version(&self) -> u64 {
+        let current_version = self.epoch_start_state().protocol_version();
+        return if current_version.as_u64() == 24 {
+            44
+        } else {
+            current_version.as_u64() + 1
+        }
+    }
+
     pub fn module_cache(&self) -> &Arc<SyncModuleCache<ResolverWrapper<AuthorityStore>>> {
         &self.execution_component.module_cache
     }
