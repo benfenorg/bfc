@@ -3431,28 +3431,6 @@ async fn dev_inspect_call_return_u64(cluster: &TestCluster, pt: ProgrammableTran
 
     bcs::from_bytes(&return_).unwrap()
 }
-
-async fn dev_inspect_call_return_vault_info(cluster: &TestCluster, pt: ProgrammableTransaction) -> VaultInfo
-{
-    let client = cluster.rpc_client();
-    let sender = cluster.get_address_0();
-    let txn = TransactionKind::programmable(pt);
-    let response = client
-        .dev_inspect_transaction_block(
-            sender,
-            Base64::from_bytes(&bcs::to_bytes(&txn).unwrap()),
-            /* gas_price */ None,
-            /* epoch_id */ None,
-        )
-        .await
-        .unwrap();
-
-    let results = response.results.unwrap();
-    let return_ = &results.first().unwrap().return_values.first().unwrap().0;
-
-    bcs::from_bytes(&return_).unwrap()
-}
-
 #[sim_test]
 async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
@@ -3535,81 +3513,4 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
     let r = dev_inspect_call_return_u64(&test_cluster, pt.clone()).await;
     assert!(r > 0);
     Ok(())
-}
-
-const ACCOUNT_NUM: usize = 100;
-const GAS_OBJECT_COUNT: usize = 3;
-
-const DEFAULT_GAS_AMOUNT: u64 = 30_000_000_000;
-
-#[sim_test]
-async fn sim_test_swap_and_rebalance() -> Result<(), anyhow::Error> {
-    let config = GenesisConfig::custom_genesis_with_gas(ACCOUNT_NUM, GAS_OBJECT_COUNT, DEFAULT_GAS_AMOUNT);
-    let test_cluster = TestClusterBuilder::new()
-        .set_genesis_config(config)
-        .with_epoch_duration_ms(1000 * 300)
-        .with_num_validators(3)
-        .build()
-        .await;
-    let http_client = test_cluster.rpc_client();
-    let sender = test_cluster.get_address_0();
-    rebalance(&test_cluster, http_client, sender).await?;
-    let vault_info = get_vault_info(&test_cluster).await?;
-    info!("vault info {:?}",vault_info);
-
-    let first_address = test_cluster.get_address_0();
-    let bfc_balance = get_bfc_balance(http_client, first_address).await;
-    assert!(bfc_balance > 0);
-    let addresses = test_cluster.wallet.get_addresses();
-
-    //swap bfc to stablecoin
-    for (i, address) in test_cluster.wallet.get_addresses().iter().enumerate() {
-        if i % 1000 == 0 {
-            rebalance(&test_cluster, http_client, *address).await?;
-        }
-        swap_bfc_to_stablecoin(&test_cluster, http_client, *address, 10_000_000_000).await?;
-    }
-    let last_address = addresses.last().unwrap();
-    let balance_busd = get_busd_balance(http_client, *last_address).await?;
-    assert!(balance_busd > 0);
-    let bfc_balance = get_bfc_balance(http_client, first_address).await;
-    assert!(bfc_balance > 1_000_000_000);
-
-    //swap stablecoin to bfc
-    for (i, address) in addresses.iter().enumerate() {
-        if i % 1000 == 0 {
-            rebalance(&test_cluster, http_client, *address).await?;
-        }
-        swap_stablecoin_to_bfc(&test_cluster, http_client, *address, 500_000_000).await?;
-    }
-    //do rebalance
-    rebalance(&test_cluster, http_client, first_address).await?;
-    Ok(())
-}
-
-async fn get_vault_info(test_cluster: &TestCluster) -> Result<VaultInfo, Error> {
-    let pt = ProgrammableTransaction {
-        inputs: vec![
-            CallArg::BFC_SYSTEM_MUT
-        ],
-        commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
-            package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("vault_info").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
-            arguments: vec![Argument::Input(0)],
-        }))],
-    };
-    let rs= dev_inspect_call_return_vault_info(&test_cluster, pt).await;
-    Ok(rs)
-}
-
-async fn get_busd_balance(http_client: &HttpClient, address: SuiAddress) -> Result<u64,Error> {
-    let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
-    assert!(busd_response_vec.len() >= 1);
-    let total_balance = busd_response_vec.iter().map(|obj| {
-        let busd_data = obj.data.as_ref().unwrap();
-        get_balance(busd_data)
-    }).sum();
-    Ok(total_balance)
 }

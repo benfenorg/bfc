@@ -130,7 +130,7 @@ function sortWallets(
 	];
 }
 
-let checkInterval = 0;
+let checkInterval: number | NodeJS.Timer | null = null;
 
 export function createWalletKitCore({
 	preferredWallets = [SUI_WALLET_NAME],
@@ -201,7 +201,7 @@ export function createWalletKitCore({
 	if (checkInterval) {
 		clearInterval(checkInterval);
 	}
-	checkInterval = window.setInterval(() => {
+	checkInterval = setInterval(() => {
 		const registered = registeredWallets.get();
 		const newWallets = registered.filter((wallet) => !wallets.includes(wallet));
 		if (newWallets.length > 0) {
