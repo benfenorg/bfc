@@ -89,7 +89,7 @@ async fn test_tx_more_than_maximum_gas_budget() {
 // Helpers for OOG scenarios
 //
 
-pub(crate) async fn publish_move_random_package(
+async fn publish_move_random_package(
     authority_state: &Arc<AuthorityState>,
     sender: &SuiAddress,
     sender_key: &AccountKeyPair,
