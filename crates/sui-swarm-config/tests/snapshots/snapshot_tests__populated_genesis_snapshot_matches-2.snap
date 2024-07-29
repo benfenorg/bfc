@@ -327,14 +327,17 @@ validators:
   inactive_validators:
     id: BFCbcf1fd40c597b24f44774da67019b8700205fa40c7059ca0073e64b6e9aff97daab0
     size: 0
-  validator_candidates:
+  inactive_validators_pool_mappings:
     id: BFCfdb3bc24434ac9b5126f919bc9f6958d0829812bb08086606342418f93a00b8ff7dd
+    size: 0
+  validator_candidates:
+    id: BFCd281bb963730dff3e5d3dd2e20cd2f93524d900ec7697ab2633997eaa056075d5116
     size: 0
   at_risk_validators:
     contents: []
   extra_fields:
     id:
-      id: BFCd281bb963730dff3e5d3dd2e20cd2f93524d900ec7697ab2633997eaa056075d5116
+      id: BFC846bf36e530c6ec4de7bc430eaa05568ba0c8922db031f6c3989366e3dd58453d47a
     size: 0
 storage_fund:
   total_object_storage_rebates:
@@ -377,6 +380,6 @@ safe_mode_non_refundable_storage_fee: 0
 epoch_start_timestamp_ms: 10
 extra_fields:
   id:
-    id: BFC7b3ffac17221326758b2c26fe730e8208beff9854cc385fb19f000bdbaef4b527578
+    id: BFCff6a88b31f18d7c248d4c29be102f24f550e3cc4d3adfc19a0919ba57a141ad02fa5
   size: 0
 

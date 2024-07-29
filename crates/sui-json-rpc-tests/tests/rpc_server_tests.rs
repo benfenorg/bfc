@@ -429,7 +429,7 @@ async fn test_get_balance() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_metadata() -> Result<(), anyhow::Error> {
+async fn sim_test_get_metadata() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let cluster = TestClusterBuilder::new().build().await;
 
