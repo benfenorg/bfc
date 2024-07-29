@@ -59,9 +59,7 @@ use crate::{
     authority_server::AuthorityServer,
     test_utils::init_state_parameters_from_rng,
 };
-
 use super::*;
-
 pub use crate::authority::authority_test_utils::*;
 
 pub enum TestCallArg {
@@ -4220,6 +4218,44 @@ pub async fn init_state_with_ids_and_object_basics_with_fullnode<
         BuiltInFramework::genesis_move_packages(),
     )
     .unwrap();
+    let pkg_ref = pkg.compute_object_reference();
+    validator.insert_genesis_object(pkg.clone()).await;
+    fullnode.insert_genesis_object(pkg).await;
+    (validator, fullnode, pkg_ref)
+}
+
+#[cfg(test)]
+pub async fn init_state_with_ids_and_object_basics_with_fullnode_by_gas_price<
+    I: IntoIterator<Item = (SuiAddress, ObjectID)>,
+>(
+    objects: I,
+    gas_price: u64,
+) -> (Arc<AuthorityState>, Arc<AuthorityState>, ObjectRef) {
+    use sui_move_build::BuildConfig;
+
+    let (validator, fullnode) = init_state_validator_with_fullnode_by_gas_price(gas_price).await;
+    for (address, object_id) in objects {
+        let obj = Object::with_id_owner_for_testing(object_id, address);
+        validator.insert_genesis_object(obj.clone()).await;
+        fullnode.insert_genesis_object(obj).await;
+    }
+
+    // add object_basics package object to genesis, since lots of test use it
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.push("src/unit_tests/data/object_basics");
+    let modules: Vec<_> = BuildConfig::new_for_testing()
+        .build(path)
+        .unwrap()
+        .get_modules()
+        .cloned()
+        .collect();
+    let digest = TransactionDigest::genesis();
+    let pkg = Object::new_package_for_testing(
+        &modules,
+        digest,
+        BuiltInFramework::genesis_move_packages(),
+    )
+        .unwrap();
     let pkg_ref = pkg.compute_object_reference();
     validator.insert_genesis_object(pkg.clone()).await;
     fullnode.insert_genesis_object(pkg).await;
@@ -10211,3 +10247,90 @@ pub async fn init_state_with_objects_and_object_basics_rgp<I: IntoIterator<Item 
     publish_object_basics(state).await
 }
 
+#[tokio::test]
+async fn test_dry_run_gas_transfer() {
+    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+    let (recipient, recipient_key): (_, AccountKeyPair) = get_key_pair();
+    let gas_object_id = ObjectID::random();
+
+    let (authority_state, fullnode, _) =
+        init_state_with_ids_and_object_basics_with_fullnode_by_gas_price(vec![(sender, gas_object_id)], 10).await;
+
+    let gas_object = authority_state
+        .get_object(&gas_object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    let gas_object_ref = gas_object.compute_object_reference();
+
+    let amount = 50000000000;
+    let mut builder = ProgrammableTransactionBuilder::new();
+    builder.transfer_sui(recipient, Some(amount));
+    let pt = builder.finish();
+    let data = TransactionData::new_programmable(
+        sender,
+        vec![gas_object_ref],
+        pt,
+        ProtocolConfig::get_for_max_version_UNSAFE().max_tx_gas(),
+        authority_state.reference_gas_price_for_testing().unwrap(),
+    );
+    let signed = to_sender_signed_transaction(data.clone(), &sender_key);
+    let (dry_run_res, _, _, _) = fullnode
+        .dry_exec_transaction(
+            signed.data().intent_message().value.clone(),
+            *signed.digest(),
+        )
+        .await
+        .unwrap();
+    assert_eq!(*dry_run_res.effects.status(), SuiExecutionStatus::Success);
+
+    let gas_used = dry_run_res.effects.gas_cost_summary().net_gas_usage() as u64;
+    let budget = (gas_used as f64 * 1.2) as u64;
+    let TransactionData::V1(mut txn_data_v1) = data;
+    txn_data_v1.gas_data.budget = budget;
+    let signed = to_sender_signed_transaction(TransactionData::V1(txn_data_v1), &sender_key);
+    let signed_effects = send_and_confirm_transaction(&authority_state, signed)
+        .await
+        .unwrap()
+        .1;
+    let effects = signed_effects.into_data();
+
+    dbg!(&effects);
+    assert!(effects.status().is_ok());
+
+    let object_id = effects.created()[0].0 .0;
+    let obj = authority_state
+        .get_object(&object_id)
+        .await
+        .unwrap()
+        .unwrap();
+    fullnode.database.insert_raw_object_unchecked_for_testing(&[obj.clone()]).await.unwrap();
+    let mut builder = ProgrammableTransactionBuilder::new();
+    builder.transfer_sui(sender, Some(1));
+    let pt = builder.finish();
+    let data = TransactionData::new_programmable(
+        recipient,
+        vec![obj.clone().compute_object_reference()],
+        pt,
+        100000,
+        authority_state.reference_gas_price_for_testing().unwrap(),
+    );
+
+    let signed = to_sender_signed_transaction(data.clone(), &recipient_key);
+    let (dry_run_res, _, _, _) = fullnode
+        .dry_exec_transaction(
+            signed.data().intent_message().value.clone(),
+            *signed.digest(),
+        )
+        .await
+        .unwrap();
+
+    let effects = send_and_confirm_transaction(&authority_state, signed)
+        .await
+        .unwrap()
+        .1
+        .into_data();
+
+    dbg!(dry_run_res.clone().effects, &effects);
+    assert!(dry_run_res.effects.status().is_err() && effects.status().is_err());
+}

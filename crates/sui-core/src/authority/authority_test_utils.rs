@@ -130,6 +130,19 @@ pub async fn init_state_validator_with_fullnode() -> (Arc<AuthorityState>, Arc<A
     (validator, fullnode)
 }
 
+pub async fn init_state_validator_with_fullnode_by_gas_price(gas_price: u64) -> (Arc<AuthorityState>, Arc<AuthorityState>) {
+    use sui_types::crypto::get_authority_key_pair;
+
+    let validator = TestAuthorityBuilder::new().with_reference_gas_price(gas_price).build().await;
+    let fullnode_key_pair = get_authority_key_pair().1;
+    let fullnode = TestAuthorityBuilder::new()
+        .with_keypair(&fullnode_key_pair)
+        .with_reference_gas_price(gas_price)
+        .build()
+        .await;
+    (validator, fullnode)
+}
+
 pub async fn init_state_with_committee(
     genesis: &Genesis,
     authority_key: &AuthorityKeyPair,

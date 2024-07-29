@@ -3890,7 +3890,7 @@ impl AuthorityState {
 
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
-        let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
+        let (mut _next_epoch_protocol_version,mut _next_epoch_system_packages) =
             Self::choose_protocol_version_and_system_packages(
                 epoch_store.protocol_version(),
                 epoch_store.protocol_config(),
@@ -3907,17 +3907,16 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let next_version = epoch_store.bfc_protocol_next_version();
-        let proposal_result = self.get_proposal_state(next_version).await;
-        info!("===========protocol: {:?} detecting next version:{:?}", version, next_version);
-        info!("===========system package size {:?}", next_epoch_system_packages.len());
+        let _proposal_result = self.get_proposal_state(version + 1).await;
+        info!("===========protocol: {:?} detecting next version:{:?}", version, version+1);
+        info!("===========system package size {:?}", _next_epoch_system_packages.len());
 
         if cfg!(feature="bfc_skip_dao_update") {
             info!("===========msim test skip ========");
-        } else if proposal_result == false {
+        } else if _proposal_result == false {
             info!("=========skip system package update, proposal fail=======",);
-            next_epoch_system_packages.clear();
-            next_epoch_protocol_version = epoch_store.protocol_version();
+            _next_epoch_system_packages.clear();
+            _next_epoch_protocol_version = epoch_store.protocol_version();
         } else {
             info!("======= system package update, proposal success=======");
         };
@@ -3926,14 +3925,14 @@ impl AuthorityState {
         // rules of the current epoch, including the current epoch's max Move binary format version
         let config = epoch_store.protocol_config();
         let Some(next_epoch_system_package_bytes) = self.get_system_package_bytes(
-            next_epoch_system_packages.clone(),
+            _next_epoch_system_packages.clone(),
             config.move_binary_format_version(),
             config.no_extraneous_module_bytes(),
         ).await else {
             error!(
                 "upgraded system packages {:?} are not locally available, cannot create \
                 ChangeEpochTx. validator binary must be upgraded to the correct version!",
-                next_epoch_system_packages
+                _next_epoch_system_packages
             );
             // the checkpoint builder will keep retrying forever when it hits this error.
             // Eventually, one of two things will happen:
@@ -3949,7 +3948,7 @@ impl AuthorityState {
         let epoch_duration_ms = epoch_store.epoch_start_state().epoch_duration_ms();
         let tx = VerifiedTransaction::new_change_epoch(
             next_epoch,
-            next_epoch_protocol_version,
+            _next_epoch_protocol_version,
             bfc_gas_cost_summary.storage_cost,
             bfc_gas_cost_summary.computation_cost,
             bfc_gas_cost_summary.storage_rebate,
@@ -3970,8 +3969,8 @@ impl AuthorityState {
 
         info!(
             ?next_epoch,
-            ?next_epoch_protocol_version,
-            ?next_epoch_system_packages,
+            ?_next_epoch_protocol_version,
+            ?_next_epoch_system_packages,
             computation_cost=?bfc_gas_cost_summary.computation_cost,
             storage_cost=?bfc_gas_cost_summary.storage_cost,
             storage_rebate=?bfc_gas_cost_summary.storage_rebate,
