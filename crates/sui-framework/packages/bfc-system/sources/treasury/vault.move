@@ -965,6 +965,7 @@ module bfc_system::vault {
         );
     }
 
+    /*
     fun rebuild_positions_after_clean_liquidities<StableCoinType>(
         _vault: &mut Vault<StableCoinType>,
         _ctx: &mut TxContext
@@ -988,6 +989,28 @@ module bfc_system::vault {
         let spacing_times = _vault.spacing_times;
         let ticks = init_positions(_vault, spacing_times, _ctx);
         (balance0, balance1, ticks)
+    }
+    */
+
+    fun clear_positions<StableCoinType>(
+        _vault: &mut Vault<StableCoinType>,
+        _ctx: &mut TxContext
+    ): (Balance<StableCoinType>, Balance<BFC>, vector<vector<I32>>)
+    {
+        let amount_a = balance::value(&_vault.coin_a);
+        let balance_a = balance::split(&mut _vault.coin_a, amount_a);
+
+        let amount_b = balance::value(&_vault.coin_b);
+        let balance_b = balance::split(&mut _vault.coin_b, amount_b);
+        let mut position_index = 1u64;
+        while (position_index <= (_vault.position_number as u64)) {
+            position::force_close_position(&mut _vault.position_manager, position_index);
+            position_index = position_index + 1;
+        };
+        tick::rebuild_ticks(&mut _vault.tick_manager, _ctx);
+        let spacing_times = _vault.spacing_times;
+        let ticks = init_positions(_vault, spacing_times, _ctx);
+        (balance_a, balance_b, ticks)
     }
 
     fun get_liquidity_from_base_point<StableCoinType>(
@@ -1119,7 +1142,7 @@ module bfc_system::vault {
             balance0,
             balance1,
             ticks
-        ) = rebuild_positions_after_clean_liquidities(_vault, _ctx);
+        ) = clear_positions(_vault, _ctx);
         let shape = _vault.state;
         let liquidities = positions_liquidity_size_balance(
             _vault,

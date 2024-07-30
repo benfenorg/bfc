@@ -161,6 +161,15 @@ module bfc_system::position {
         _manager.position_index = _manager.position_index - 1;
     }
 
+    public(package) fun force_close_position(
+        _manager: &mut PositionManager,
+        _index: u64
+    ) {
+        let position = linked_table::remove(&mut _manager.positions, _index);
+        destory(position);
+        _manager.position_index = _manager.position_index - 1;
+    }
+
     /// add/remove liquidity
     public(package) fun increase_liquidity(position: &mut Position, _liquidity_delta: u128): u128 {
         assert!(math_u128::add_check(_liquidity_delta, position.liquidity), ERR_U128_ADD_CHECK_FAILED);
