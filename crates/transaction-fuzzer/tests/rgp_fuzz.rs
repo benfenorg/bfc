@@ -32,3 +32,5 @@ proptest! {
         run_rgp(universe, transfers, rgp);
     }
 }
+//run for 290 seconds
+//cargo test --color=always --test rgp_fuzz fuzz_high_rgp_high_gas_price --no-fail-fast
