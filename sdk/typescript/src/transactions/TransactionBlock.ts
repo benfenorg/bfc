@@ -7,9 +7,14 @@ import type { SerializedBcs } from '../bcs/index.js';
 import { bcs, fromB64, isSerializedBcs } from '../bcs/index.js';
 import type { BenfenClient, BenfenMoveNormalizedType, ProtocolConfig } from '../client/index.js';
 import type { SignatureWithBytes, Signer } from '../cryptography/index.js';
-import { normalizeBenfenObjectId, normalizeHexAddress } from '../utils/bf-types.js';
+import {
+	normalizeBenfenObjectId,
+	normalizeHexAddress,
+	normalizeStructTag,
+	parseStructTag,
+} from '../utils/bf-types.js';
 import { hex2BfcAddress } from '../utils/format.js';
-import { BFC_TYPE_ARG } from '../utils/index.js';
+import { BFC_TYPE_ARG, MIST_PER_BFC } from '../utils/index.js';
 import {
 	BenfenObjectRef,
 	BuilderCallArg,
@@ -841,7 +846,8 @@ export class TransactionBlock {
 			await this.#prepareGasPayment(options);
 
 			if (!this.#blockData.gasConfig.budget) {
-				const dryRunResult = await expectClient(options).dryRunTransactionBlock({
+				const client = expectClient(options);
+				const dryRunResult = await client.dryRunTransactionBlock({
 					transactionBlock: this.#blockData.build({
 						maxSizeBytes: this.#getConfig('maxTxSizeBytes', options),
 						overrides: {
@@ -852,22 +858,37 @@ export class TransactionBlock {
 						},
 					}),
 				});
+
 				if (dryRunResult.effects.status.status !== 'success') {
 					throw new Error(
 						`Dry run failed, could not automatically determine a budget: ${dryRunResult.effects.status.error}`,
 						{ cause: dryRunResult },
 					);
 				}
-
 				const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(this.blockData.gasConfig.price || 1n);
 
 				const baseComputationCostWithOverhead =
 					BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
 
-				const gasBudget =
+				let gasBudget =
 					baseComputationCostWithOverhead +
 					BigInt(dryRunResult.effects.gasUsed.storageCost) -
 					BigInt(dryRunResult.effects.gasUsed.storageRebate);
+
+				const gasObject = await client.getObject({
+					id: this.#blockData.gasConfig.payment![0].objectId,
+					options: { showType: true },
+				});
+				const coinType = normalizeStructTag(parseStructTag(gasObject.data!.type!).typeParams[0]);
+				if (coinType !== normalizeStructTag(BFC_TYPE_ARG)) {
+					const [rate, balance] = await Promise.all([
+						client.getStableRate(coinType),
+						client.getBalance({ owner: this.#blockData.sender!, coinType }),
+					]);
+					gasBudget = (BigInt(gasBudget) * MIST_PER_BFC) / BigInt(rate);
+					gasBudget =
+						gasBudget > BigInt(balance.totalBalance) ? BigInt(balance.totalBalance) : gasBudget;
+				}
 
 				// Set the budget to max(computation, computation + storage - rebate)
 				this.setGasBudget(

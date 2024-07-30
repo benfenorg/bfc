@@ -477,6 +477,17 @@ export class BenfenClient {
 	}
 
 	/**
+	 * Getting the stable rate for a coin type
+	 */
+	async getStableRate(coinType: string): Promise<string> {
+		const resp = await this.transport.request<string>({
+			method: 'bfcx_getStableRate',
+			params: [coinType.replace(/^0x/, '')],
+		});
+		return resp;
+	}
+
+	/**
 	 * Return the delegated stakes for an address
 	 */
 	async getStakes(input: GetStakesParams): Promise<DelegatedStake[]> {
