@@ -19,7 +19,7 @@ use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveVal
 use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
-use sui_swarm_config::genesis_config::{GenesisConfig, ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
+use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder};
 use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins, make_transfer_sui_transaction_with_gas_coins_budget};
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 
@@ -47,7 +47,6 @@ use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
-use sui_types::vault::VaultInfo;
 
 #[sim_test]
 async fn sim_advance_epoch_tx_test() {
@@ -370,15 +369,17 @@ async fn sim_test_change_bfc_round() {
 
 #[sim_test]
 async fn sim_test_bfc_dao_update_system_package_blocked() {
-    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-    //     config.set_commit_root_state_digest_supported(true);
-    //     config
-    // });
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
     ProtocolConfig::poison_get_for_min_version();
 
     let start_version = 23u64;
+
+
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(150000)
+        .with_epoch_duration_ms(1500)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -407,12 +408,6 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     info!("=============target_epoch: {}", target_epoch);
 
     test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
-
-
-    epochid = node.state().current_epoch_for_testing();
-    protocol_version = epoch_store.protocol_version();
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
 
 
     //waiting for....
@@ -1229,7 +1224,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
 #[sim_test]
 async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(150000)
+        .with_epoch_duration_ms(450000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1300,7 +1295,7 @@ async fn sim_test_bfc_dao_change_vote() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn sim_test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
-    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(40000).build().await;
+    let cluster = TestClusterBuilder::new().with_epoch_duration_ms(450000).build().await;
 
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
