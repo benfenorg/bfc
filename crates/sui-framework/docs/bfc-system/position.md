@@ -20,6 +20,7 @@ title: Module `0xc8::position`
 -  [Function `check_position_tick_range`](#0xc8_position_check_position_tick_range)
 -  [Function `open_position`](#0xc8_position_open_position)
 -  [Function `close_position`](#0xc8_position_close_position)
+-  [Function `force_close_position`](#0xc8_position_force_close_position)
 -  [Function `increase_liquidity`](#0xc8_position_increase_liquidity)
 -  [Function `decrease_liquidity`](#0xc8_position_decrease_liquidity)
 -  [Function `destory`](#0xc8_position_destory)
@@ -596,6 +597,35 @@ open / close position
 {
     <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="linked_table.md#0xc8_linked_table_remove">linked_table::remove</a>(&<b>mut</b> _manager.positions, _index);
     <b>assert</b>!(<a href="position.md#0xc8_position_is_empty">is_empty</a>(&<a href="position.md#0xc8_position">position</a>), <a href="position.md#0xc8_position_ERR_POSITION_INFO_NOT_EMPTY">ERR_POSITION_INFO_NOT_EMPTY</a>);
+    <a href="position.md#0xc8_position_destory">destory</a>(<a href="position.md#0xc8_position">position</a>);
+    _manager.position_index = _manager.position_index - 1;
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_position_force_close_position"></a>
+
+## Function `force_close_position`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="position.md#0xc8_position_force_close_position">force_close_position</a>(_manager: &<b>mut</b> <a href="position.md#0xc8_position_PositionManager">position::PositionManager</a>, _index: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="position.md#0xc8_position_force_close_position">force_close_position</a>(
+    _manager: &<b>mut</b> <a href="position.md#0xc8_position_PositionManager">PositionManager</a>,
+    _index: u64
+) {
+    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="linked_table.md#0xc8_linked_table_remove">linked_table::remove</a>(&<b>mut</b> _manager.positions, _index);
     <a href="position.md#0xc8_position_destory">destory</a>(<a href="position.md#0xc8_position">position</a>);
     _manager.position_index = _manager.position_index - 1;
 }

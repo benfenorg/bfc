@@ -4264,6 +4264,9 @@ open_position
 close_position
 	public(package) fun
 	0xc8::position
+force_close_position
+	public(package) fun
+	0xc8::position
 increase_liquidity
 	public(package) fun
 	0xc8::position
@@ -4549,7 +4552,7 @@ base_liquidity_rate
 update_state
 	public(package) fun
 	0xc8::vault
-rebuild_positions_after_clean_liquidities
+clear_positions
 	fun
 	0xc8::vault
 get_liquidity_from_base_point

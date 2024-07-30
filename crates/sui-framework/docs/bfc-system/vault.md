@@ -53,7 +53,7 @@ title: Module `0xc8::vault`
 -  [Function `max_liquidity_rate`](#0xc8_vault_max_liquidity_rate)
 -  [Function `base_liquidity_rate`](#0xc8_vault_base_liquidity_rate)
 -  [Function `update_state`](#0xc8_vault_update_state)
--  [Function `rebuild_positions_after_clean_liquidities`](#0xc8_vault_rebuild_positions_after_clean_liquidities)
+-  [Function `clear_positions`](#0xc8_vault_clear_positions)
 -  [Function `get_liquidity_from_base_point`](#0xc8_vault_get_liquidity_from_base_point)
 -  [Function `positions_liquidity_size_balance`](#0xc8_vault_positions_liquidity_size_balance)
 -  [Function `rebalance_internal`](#0xc8_vault_rebalance_internal)
@@ -2373,13 +2373,13 @@ State checker
 
 </details>
 
-<a name="0xc8_vault_rebuild_positions_after_clean_liquidities"></a>
+<a name="0xc8_vault_clear_positions"></a>
 
-## Function `rebuild_positions_after_clean_liquidities`
+## Function `clear_positions`
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
 </code></pre>
 
 
@@ -2388,29 +2388,25 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>&lt;StableCoinType&gt;(
+<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(
     _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ctx: &<b>mut</b> TxContext
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt;)
 {
+    <b>let</b> amount_a = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_a);
+    <b>let</b> balance_a = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_a, amount_a);
+
+    <b>let</b> amount_b = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
+    <b>let</b> balance_b = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_b, amount_b);
     <b>let</b> <b>mut</b> position_index = 1u64;
-    <b>let</b> <b>mut</b> balance0 = <a href="../sui-framework/balance.md#0x2_balance_zero">balance::zero</a>&lt;StableCoinType&gt;();
-    <b>let</b> <b>mut</b> balance1 = <a href="../sui-framework/balance.md#0x2_balance_zero">balance::zero</a>&lt;BFC&gt;();
     <b>while</b> (position_index &lt;= (_vault.position_number <b>as</b> u64)) {
-        <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(&<b>mut</b> _vault.position_manager, position_index);
-        <b>let</b> liquidity_delta = <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>);
-        <b>if</b> (liquidity_delta != 0) {
-            <b>let</b> (_balance0, _balance1) = <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>(_vault, position_index, liquidity_delta);
-            <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance0, _balance0);
-            <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> balance1, _balance1);
-        };
-        <a href="position.md#0xc8_position_close_position">position::close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
+        <a href="position.md#0xc8_position_force_close_position">position::force_close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         position_index = position_index + 1;
     };
     <a href="tick.md#0xc8_tick_rebuild_ticks">tick::rebuild_ticks</a>(&<b>mut</b> _vault.tick_manager, _ctx);
     <b>let</b> spacing_times = _vault.spacing_times;
     <b>let</b> ticks = <a href="vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
-    (balance0, balance1, ticks)
+    (balance_a, balance_b, ticks)
 }
 </code></pre>
 
@@ -2622,7 +2618,7 @@ State checker
         balance0,
         balance1,
         ticks
-    ) = <a href="vault.md#0xc8_vault_rebuild_positions_after_clean_liquidities">rebuild_positions_after_clean_liquidities</a>(_vault, _ctx);
+    ) = <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>(_vault, _ctx);
     <b>let</b> shape = _vault.state;
     <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(
         _vault,
