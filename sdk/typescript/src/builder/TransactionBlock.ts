@@ -28,9 +28,10 @@ import type { WellKnownEncoding } from './utils.js';
 import { TRANSACTION_TYPE, create } from './utils.js';
 import type { ProtocolConfig, SuiClient, SuiMoveNormalizedType } from '../client/index.js';
 import { sui2BfcAddress } from '../utils/format.js';
-import { normalizeSuiObjectId } from '../utils/bfc-types.js';
+import { normalizeStructTag, normalizeSuiObjectId, parseStructTag } from '../utils/bfc-types.js';
 import type { Keypair, SignatureWithBytes } from '../cryptography/index.js';
 import { SUI_TYPE_ARG } from '../framework/framework.js';
+import { MIST_PER_SUI } from '../utils/index.js';
 
 type TransactionResult = TransactionArgument & TransactionArgument[];
 
@@ -739,7 +740,7 @@ export class TransactionBlock {
 			throw new Error('Missing transaction sender');
 		}
 
-		const client = options.client || options.provider;
+		let client = options.client || options.provider;
 
 		if (!options.protocolConfig && !options.limits && client) {
 			options.protocolConfig = await client.getProtocolConfig();
@@ -751,7 +752,8 @@ export class TransactionBlock {
 			await this.#prepareGasPayment(options);
 
 			if (!this.#blockData.gasConfig.budget) {
-				const dryRunResult = await expectClient(options).dryRunTransactionBlock({
+				const client = expectClient(options);
+				const dryRunResult = await client.dryRunTransactionBlock({
 					transactionBlock: this.#blockData.build({
 						maxSizeBytes: this.#getConfig('maxTxSizeBytes', options),
 						overrides: {
@@ -762,26 +764,38 @@ export class TransactionBlock {
 						},
 					}),
 				});
+
 				if (dryRunResult.effects.status.status !== 'success') {
 					throw new Error(
 						`Dry run failed, could not automatically determine a budget: ${dryRunResult.effects.status.error}`,
 						{ cause: dryRunResult },
 					);
 				}
-
 				const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(this.blockData.gasConfig.price || 1n);
 
 				const baseComputationCostWithOverhead =
 					BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
 
-				const gasBudget =
+				let gasBudget =
 					baseComputationCostWithOverhead +
 					BigInt(dryRunResult.effects.gasUsed.storageCost) -
 					BigInt(dryRunResult.effects.gasUsed.storageRebate);
 
+				const gasObject = await client.getObject({ id: this.#blockData.gasConfig.payment![0].objectId, options: { showType: true }});
+				const coinType = normalizeStructTag(parseStructTag(gasObject.data!.type!).typeParams[0]);
+				if (coinType !== normalizeStructTag(SUI_TYPE_ARG)) {
+					const [rate, balance] = await Promise.all([
+						client.getStableRate(coinType),
+						client.getBalance({ owner: this.#blockData.sender!, coinType }),
+					]);
+					gasBudget = BigInt(gasBudget) * MIST_PER_SUI / BigInt(rate);
+					gasBudget = gasBudget > BigInt(balance.totalBalance) ? BigInt(balance.totalBalance) : gasBudget;
+				}
+
+
 				// Set the budget to max(computation, computation + storage - rebate)
 				this.setGasBudget(
-					gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead,
+					gasBudget > baseComputationCostWithOverhead ? gasBudget: baseComputationCostWithOverhead,
 				);
 			}
 		}
