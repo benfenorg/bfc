@@ -164,7 +164,7 @@ mod sim_only_tests {
     }
 
     #[sim_test]
-    async fn test_protocol_version_upgrade_one_laggard() {
+    async fn sim_test_protocol_version_upgrade_one_laggard() {
         let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
             config.set_buffer_stake_for_protocol_upgrade_bps_for_testing(0);
             config
@@ -205,7 +205,7 @@ mod sim_only_tests {
     }
 
     #[sim_test]
-    async fn test_protocol_version_upgrade_forced() {
+    async fn sim_test_protocol_version_upgrade_forced() {
         ProtocolConfig::poison_get_for_min_version();
 
         let test_cluster = TestClusterBuilder::new()

@@ -27,6 +27,7 @@ fn test_initialize_service_ext() -> Result<()> {
         .output()?;
 
     debug!("cargo build output: {:?}", output);
+    println!("cargo build output: {:?}", output);
     assert!(output.status.success());
     Ok(())
 }

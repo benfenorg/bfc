@@ -48,7 +48,7 @@ async fn sim_receive_object_feature_deny() {
 }
 
 #[sim_test]
-async fn receive_of_object() {
+async fn sim_receive_of_object() {
     let env = TestEnvironment::new().await;
     let (parent, child) = env.start().await;
     env.receive(parent, child).await.unwrap();

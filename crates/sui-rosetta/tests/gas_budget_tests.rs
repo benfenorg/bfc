@@ -160,7 +160,7 @@ async fn pay_with_gas_budget(budget: u64) -> TransactionIdentifierResponseResult
 
 #[tokio::test]
 async fn test_pay_with_gas_budget() {
-    const TX_BUDGET_PASS: u64 = 5_000_000;
+    const TX_BUDGET_PASS: u64 = 5_000_000_0;
     let submit = pay_with_gas_budget(TX_BUDGET_PASS).await;
     match submit {
         TransactionIdentifierResponseResult::Success(_) => {}
