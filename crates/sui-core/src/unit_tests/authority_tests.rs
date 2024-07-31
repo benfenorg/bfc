@@ -10475,3 +10475,119 @@ async fn test_per_object_congestion_control() {
         .unwrap()
         .is_empty());
 }
+
+#[cfg(test)]
+pub async fn init_state_with_objects_and_object_basics_rgp<I: IntoIterator<Item = Object>>(
+    objects: I,rgp:u64,
+) -> (Arc<AuthorityState>, ObjectRef) {
+    let state = TestAuthorityBuilder::new().with_reference_gas_price(rgp).build().await;
+    for obj in objects {
+        state.insert_genesis_object(obj).await;
+    }
+    publish_object_basics(state).await
+}
+
+#[tokio::test]
+async fn test_rebalance() {
+    async fn create_obj(
+        sender: SuiAddress,
+        sender_key: &AccountKeyPair,
+        gas_coins: Vec<Object>,
+        gas_budget: u64,
+    ) -> (Arc<AuthorityState>, TransactionEffects) {
+        let object_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
+        let (authority_state, pkg_ref) = crate::authority::authority_tests::init_state_with_objects_and_object_basics_rgp(gas_coins, 100).await;
+        let effects = create_move_object_with_gas_coins(
+            &pkg_ref.0,
+            &authority_state,
+            &object_ids,
+            gas_budget,
+            &sender,
+            sender_key,
+        )
+            .await
+            .unwrap();
+        (authority_state, effects)
+    }
+
+    // make a `coin_num` coins distributing `gas_amount` across them
+    fn make_gas_coins(owner: SuiAddress, gas_amount: u64, coin_num: u64) -> Vec<Object> {
+        let mut objects = vec![];
+        let coin_balance = gas_amount / coin_num;
+        for _ in 1..coin_num {
+            let gas_object_id = ObjectID::random();
+            objects.push(Object::with_id_owner_gas_for_testing(
+                gas_object_id,
+                owner,
+                coin_balance,
+            ));
+        }
+        // in case integer division dropped something, make a coin with whatever is left
+        let amount_left = gas_amount - (coin_balance * (coin_num - 1));
+        let gas_object_id = ObjectID::random();
+        objects.push(Object::with_id_owner_gas_for_testing(
+            gas_object_id,
+            owner,
+            amount_left,
+        ));
+        objects
+    }
+
+    // run an object creation transaction with the given amount of gas and coins
+    async fn run_and_check(
+        reference_gas_used: u64,
+        coin_num: u64,
+        budget: u64,
+        success: bool,
+    ) {
+        let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
+        let gas_coins = make_gas_coins(sender, reference_gas_used, coin_num);
+        let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
+        let (state, effects) = create_obj(sender, &sender_key, gas_coins, budget).await;
+
+        let gas_object = state
+            .get_object(&gas_coin_ids[0])
+            .await
+            .unwrap()
+            .unwrap();
+        let gas_object_ref = gas_object.compute_object_reference();
+        // check transaction
+        if success {
+            assert!(effects.status().is_ok());
+        } else {
+            assert!(effects.status().is_err());
+        }
+
+        let mut builder2 = ProgrammableTransactionBuilder::new();
+        let arg1 = builder2
+            .input(CallArg::BFC_SYSTEM_MUT)
+            .unwrap();
+        let arg2 = builder2
+            .input(CallArg::CLOCK_IMM)
+            .unwrap();
+
+        builder2.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bfc_system").to_owned(),
+            ident_str!("rebalance").to_owned(),
+            vec![],
+            vec![arg1,arg2],
+        );
+        let rgp = state.reference_gas_price_for_testing().unwrap();
+        let data = TransactionData::new_programmable(
+            sender,
+            vec![gas_object_ref],
+            builder2.finish(),
+            rgp * TEST_ONLY_STABLE_GAS_UNIT_FOR_OBJECT_BASICS * 1000,
+            rgp,
+        );
+        let transaction = to_sender_signed_transaction(data, &sender_key);
+        let signed_effects = send_and_confirm_transaction_(&state, Option::None, transaction, true)
+            .await
+            .unwrap();
+        let status = signed_effects.1.into_data().into_status();
+        assert!(status.is_ok());
+    }
+
+    run_and_check(100_000_000_000, 1, 2_000_000_000, true).await;
+}
