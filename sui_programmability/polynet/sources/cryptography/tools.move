@@ -43,11 +43,10 @@ module polynet::tools {
         let startHeight: u64 = 0;
         let keepers: vector<vector<u8>> = vector::empty<vector<u8>>();
 
-        // vector::push_back(&mut keepers, x"2bed55e8c4d9cbc50657ff5909ee51dc394a92aad911c36bace83c4d63540794bc68a65f1a54ec4f14a630043090bc29ee9cddf90f3ecb86e0973ffff3fd4899");
         vector::push_back(&mut keepers, x"288bdebfab545852b31638298c7100a9c26ad325f246b0939c661b9b112722c188f1611de3c1c4ed0c68bedaa0c2e6f771e306ad397c8fa571d44b2856fbaece");
-        vector::push_back(&mut keepers, x"09c6475ce07577ab72a1f96c263e5030cb53a843b00ca1238a093d9dcb183e2fec837e621b7ec6db7658c9b9808da304aed599043de1b433d490ff74f577c53d");
-        vector::push_back(&mut keepers, x"e68a6e54bdfa0af47bd18465f4352f5151dc729c61a7399909f1cd1c6d816c0241800e782bb05f6f803b9f958930ebcee0b67d3af27845b4fbfa09e926cf17ae");
-        vector::push_back(&mut keepers, x"29e0d1c5b2ae838930ae1ad861ddd3d0745d1c7f142492cabd02b291d2c95c1dda6633dc7be5dd4f9597f32f1e45721959d0902a8e56a58b2db79ada7c3ce932");
+        vector::push_back(&mut keepers, x"09d013d6adf0e56e439bde646ea9eff68467fa0a03a16d227d79f98c5a6725f64011909c67b64362ceaaf7032d177b453c0bf57a8ed8b07c17b00dc6525ec751");
+        vector::push_back(&mut keepers, x"cf256247dda995ab1ec68ef90865b5d78f6d805339b40e736e913493bb25446d159039a2a07c9b4ac01a9d1201defbd444226afe45a122265b14bd0c91b83c0f");
+        vector::push_back(&mut keepers, x"ecb8c0737073522c6f80dd8c7f1d8f0ec19c320010a27f9568bcdebefe8196d4898a17e9aeba611bfce20dc542c1152cea665fd426d3cbb5048bd9bbca23b1b3");
         cross_chain_manager::update_cross_chain_manager_config(cc_manager, keepers, startHeight, polyId, _ctx);
 
         set_fee_collector(wrapper, _feeAddress, _ctx);
