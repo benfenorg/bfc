@@ -270,13 +270,14 @@ pub async fn get_nft_staking_overview(
     let nft_staking = get_global_nft_staking(http_client.clone(), config.clone()).await?;
     let di = nft_staking.decrease_interval;
     let rps = nft_staking.reward_per_second;
-    let p: u64 = (timestamp - nft_staking.begin_at) / di + 1; // nft_staking.period;
+    let diff: u64 = if timestamp > nft_staking.begin_at {timestamp - nft_staking.begin_at} else {0};
+    let p: u64 = diff / di + 1; // nft_staking.period;
     let prev_total_reward: f64 = (1..p)
         .into_iter()
         .map(|n| di as f64 * current_period_rps(rps, n))
         .sum();
     let past_period_secs = di * (p - 1);
-    let current_period_past_secs = timestamp - nft_staking.begin_at - past_period_secs;
+    let current_period_past_secs = if diff > past_period_secs {diff - past_period_secs} else {0};
     let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
     let nft_config = get_global_nft_config(http_client, config).await?;
     let mut nft_future_rewards = vec![];
@@ -287,7 +288,8 @@ pub async fn get_nft_staking_overview(
     for d in 0..180 {
         let new_suply = (d + 1) * max_count_per_day;
         let dp = timestamp + d * 86_400;
-        let p: u64 = (dp - nft_staking.begin_at) / di + 1;
+        let diff: u64 = if dp > nft_staking.begin_at {dp - nft_staking.begin_at} else {0};
+        let p: u64 = diff / di + 1;
         let crps = current_period_rps(rps, p);
         overall_reward += (crps * 86_400f64) as u64;
         let current_supply = nft_config.total_supply + new_suply;
@@ -339,7 +341,8 @@ fn current_period_rps(rps: u64, p: u64) -> f64 {
 }
 
 fn nth_day(begin_at: u64, now: u64) -> u64 {
-    (now - begin_at) / 86_400 + 1
+    let diff = if now > begin_at {now - begin_at} else {0};
+    diff / 86_400 + 1
 }
 
 fn calculate_nft_cost(n: u64) -> u64 {
