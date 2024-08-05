@@ -265,6 +265,7 @@ where
             let download_futures = (next_cursor_sequence_number
                 ..next_cursor_sequence_number + current_parallel_downloads as i64)
                 .map(|seq_num| self.download_checkpoint_data(seq_num as u64));
+            info!("download checkpoints from {:?} to {:?}", next_cursor_sequence_number, next_cursor_sequence_number + current_parallel_downloads as i64);
             let download_results = join_all(download_futures).await;
             let mut downloaded_checkpoints = vec![];
             // NOTE: Push sequentially and if one of the downloads failed,
@@ -400,6 +401,7 @@ where
             let download_futures = (next_cursor_sequence_number
                 ..next_cursor_sequence_number + current_parallel_downloads as i64)
                 .map(|seq_num| self.download_checkpoint_data(seq_num as u64));
+            info!("download objects from {:?} to {:?}", next_cursor_sequence_number, next_cursor_sequence_number + current_parallel_downloads as i64);
             let download_results = join_all(download_futures).await;
             let mut downloaded_checkpoints = vec![];
             // NOTE: Push sequentially and if one of the downloads failed,

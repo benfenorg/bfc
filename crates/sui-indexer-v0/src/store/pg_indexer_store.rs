@@ -1489,7 +1489,7 @@ impl PgIndexerStore {
                             )
                             .execute(conn)
                     })
-                    .context("Failed to handle unstaking event.")?;
+                    .context("Failed to handle StakingTransferReward event.")?;
                 }
                 crate::models::mining_nft::MiningNFTOperation::BurnNFT(v) => {
                     transactional_blocking!(&self.blocking_cp, |conn| {
@@ -1685,7 +1685,7 @@ impl PgIndexerStore {
                 ))
                 .execute(conn)
         })
-        .context("Failed to handle unstaking event.")
+        .context("Failed to handle persist_mining_nft_profits event.")
     }
 
     fn calculate_mining_nft_overall(
