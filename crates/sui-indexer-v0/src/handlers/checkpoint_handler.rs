@@ -140,13 +140,8 @@ where
                     "Indexer checkpoint download & index failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(std::time::Duration::from_secs(
-                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
-                ))
-                .await;
-                checkpoint_download_index_res = tx_download_handler
-                    .start_download_and_index_tx_checkpoint()
-                    .await;
+                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
+                checkpoint_download_index_res = tx_download_handler.start_download_and_index_tx_checkpoint().await;
             }
         });
 
@@ -160,13 +155,8 @@ where
                     "Indexer object download & index failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(std::time::Duration::from_secs(
-                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
-                ))
-                .await;
-                object_download_index_res = object_download_handler
-                    .start_download_and_index_object_checkpoint()
-                    .await;
+                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
+                object_download_index_res = object_download_handler.start_download_and_index_object_checkpoint().await;
             }
         });
 
@@ -180,13 +170,8 @@ where
                     "Indexer checkpoint commit failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(std::time::Duration::from_secs(
-                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
-                ))
-                .await;
-                checkpoint_commit_res = tx_checkpoint_commit_handler
-                    .start_tx_checkpoint_commit()
-                    .await;
+                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
+                checkpoint_commit_res = tx_checkpoint_commit_handler.start_tx_checkpoint_commit().await;
             }
         });
 
@@ -254,8 +239,7 @@ where
             info!("Resuming tx handler from checkpoint {last_seq_from_db}");
         }
         let mut next_cursor_sequence_number = last_seq_from_db + 1;
-        self.check_epoch_staking(next_cursor_sequence_number)
-            .await?;
+        self.check_epoch_staking(next_cursor_sequence_number).await?;
 
         // NOTE: we will download checkpoints in parallel, but we will commit them sequentially.
         // We will start with MAX_PARALLEL_DOWNLOADS, and adjust if no more checkpoints are available.
@@ -277,10 +261,7 @@ where
                     if let Err(IndexerError::UnexpectedFullnodeResponseError(fn_e)) =
                         download_result
                     {
-                        warn!(
-                            "Unexpected response from fullnode for checkpoints: {}",
-                            fn_e
-                        );
+                        warn!("Unexpected response from fullnode for checkpoints: {}",fn_e);
                     } else if let Err(IndexerError::FullNodeReadingError(fn_e)) = download_result {
                         warn!("Fullnode reading error for checkpoints {}: {}. It can be transient or due to rate limiting.", next_cursor_sequence_number, fn_e);
                     } else {
@@ -293,13 +274,9 @@ where
             // NOTE: with this line, we can make sure that:
             // - when indexer is way behind and catching up, we download MAX_PARALLEL_DOWNLOADS checkpoints in parallel;
             // - when indexer is up to date, we download at least one checkpoint at a time.
-            current_parallel_downloads =
-                std::cmp::min(downloaded_checkpoints.len() + 1, MAX_PARALLEL_DOWNLOADS);
+            current_parallel_downloads = std::cmp::min(downloaded_checkpoints.len() + 1, MAX_PARALLEL_DOWNLOADS);
             if downloaded_checkpoints.is_empty() {
-                warn!(
-                    "No checkpoints were downloaded for sequence number {}, retrying...",
-                    next_cursor_sequence_number
-                );
+                warn!("No checkpoints were downloaded for sequence number {}, retrying...",next_cursor_sequence_number);
                 continue;
             }
 
@@ -358,10 +335,7 @@ where
                     let epoch_sender_guard = self.epoch_sender.lock().await;
                     // NOTE: when the channel is full, epoch_sender_guard will wait until the channel has space.
                     epoch_sender_guard.send(epoch.clone()).await.map_err(|e| {
-                        error!(
-                            "Failed to send indexed epoch to epoch commit handler with error {}",
-                            e.to_string()
-                        );
+                        error!("Failed to send indexed epoch to epoch commit handler with error {}",e.to_string());
                         IndexerError::MpscChannelError(e.to_string())
                     })?;
                     drop(epoch_sender_guard);
@@ -372,10 +346,7 @@ where
                     .send((epoch.new_epoch.epoch as u64, Some(epoch)))
                     .await
                     .map_err(|e| {
-                        error!(
-                            "Failed to send indexed epoch to epoch staking handler with error {}",
-                            e.to_string()
-                        );
+                        error!("Failed to send indexed epoch to epoch staking handler with error {}",e.to_string());
                         IndexerError::MpscChannelError(e.to_string())
                     })?;
                 drop(staking_sender_guard);
@@ -493,6 +464,7 @@ where
                     );
                     continue;
                 }
+                info!("download indexed_checkpoint {:?}", indexed_checkpoint);
                 let indexed_checkpoint_nft = indexed_checkpoint.clone();
                 // Write checkpoint to DB
                 let TemporaryCheckpointStore {
@@ -520,12 +492,8 @@ where
                             "Indexer event commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(std::time::Duration::from_millis(
-                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                        ))
-                        .await;
-                        event_commit_res =
-                            events_handler.state.persist_events(&events_cloned).await;
+                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
+                        event_commit_res = events_handler.state.persist_events(&events_cloned).await;
                     }
                 });
 
@@ -538,12 +506,8 @@ where
                             "Indexer package commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(std::time::Duration::from_millis(
-                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                        ))
-                        .await;
-                        package_commit_res =
-                            packages_handler.state.persist_packages(&packages).await;
+                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
+                        package_commit_res = packages_handler.state.persist_packages(&packages).await;
                     }
                 });
 
@@ -564,31 +528,20 @@ where
                         while let Err(e) = proposals_commit_res {
                             warn!("Indexer proposals commit failed with error: {:?}, retrying fater {:?} milli-secs",
                               e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
-                            tokio::time::sleep(std::time::Duration::from_millis(
-                                DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                            ))
-                            .await;
-                            proposals_commit_res =
-                                proposal_handler.state.persist_proposals(&proposals).await;
+                            tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
+                            proposals_commit_res = proposal_handler.state.persist_proposals(&proposals).await;
                         }
                     });
                 }
 
                 let mining_nft_handler = self.clone();
                 spawn_monitored_task!(async move {
-                    let mut mining_nft_commit_res = mining_nft_handler
-                        .index_mining_nfts(indexed_checkpoint_nft.clone())
-                        .await;
+                    let mut mining_nft_commit_res = mining_nft_handler.index_mining_nfts(indexed_checkpoint_nft.clone()).await;
                     while let Err(e) = mining_nft_commit_res {
                         warn!("Indexer mining NFTs commit failed with error: {:?}, retrying fater {:?} milli-secs",
                               e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
-                        tokio::time::sleep(std::time::Duration::from_millis(
-                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                        ))
-                        .await;
-                        mining_nft_commit_res = mining_nft_handler
-                            .index_mining_nfts(indexed_checkpoint_nft.clone())
-                            .await;
+                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
+                        mining_nft_commit_res = mining_nft_handler.index_mining_nfts(indexed_checkpoint_nft.clone()).await;
                     }
                 });
 
@@ -608,10 +561,7 @@ where
                             "Indexer transaction index tables commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(std::time::Duration::from_millis(
-                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                        ))
-                        .await;
+                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
                         transaction_index_tables_commit_res = tx_index_table_handler
                             .state
                             .persist_transaction_index_tables(
@@ -639,10 +589,7 @@ where
                             "Indexer checkpoint & transaction commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                    tokio::time::sleep(std::time::Duration::from_millis(
-                        DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                    ))
-                    .await;
+                    tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS, )).await;
                     checkpoint_tx_commit_res = self
                         .state
                         .persist_checkpoint_transactions(
@@ -676,7 +623,7 @@ where
                     .transaction_per_checkpoint
                     .observe(tx_count as f64);
             } else {
-                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+                tokio::time::sleep(Duration::from_millis(100)).await;
             }
         }
     }
@@ -742,10 +689,7 @@ where
                     warn!("Indexer update stakes failed with error: {:?} retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                    tokio::time::sleep(std::time::Duration::from_millis(
-                        DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
-                    ))
-                    .await;
+                    tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS, )).await;
                     update_stakes_res = self.update_address_stakes(&indexed_epoch).await;
                 }
                 info!(
@@ -1609,6 +1553,7 @@ where
         if checkpoint_id == 0 {
             return Ok(());
         }
+        info!("check_epoch_staking begin {:?}", checkpoint_id);
         let data = self.download_checkpoint_data(checkpoint_id as u64).await?;
         let stop_epoch = data.checkpoint.epoch;
         let latest = self.state.get_last_epoch_stake().await?.unwrap_or_default();
