@@ -81,8 +81,8 @@ max_move_identifier_len: 128
 max_move_value_depth: 128
 max_back_edges_per_function: 10000
 max_back_edges_per_module: 10000
-max_verifier_meter_ticks_per_function: 16000000
-max_meter_ticks_per_module: 16000000
+max_verifier_meter_ticks_per_function: 20000000
+max_meter_ticks_per_module: 20000000
 object_runtime_max_num_cached_objects: 1000
 object_runtime_max_num_cached_objects_system_tx: 16000
 object_runtime_max_num_store_entries: 1000
@@ -108,6 +108,7 @@ buffer_stake_for_protocol_upgrade_bps: 5000
 address_from_bytes_cost_base: 52
 address_to_u256_cost_base: 52
 address_from_u256_cost_base: 52
+curve_dx_cost_base: 52
 dynamic_field_hash_type_and_key_cost_base: 100
 dynamic_field_hash_type_and_key_type_cost_per_byte: 2
 dynamic_field_hash_type_and_key_value_cost_per_byte: 2
@@ -204,4 +205,5 @@ execution_version: 1
 consensus_bad_nodes_stake_threshold: 20
 max_jwk_votes_per_validator_per_epoch: 240
 max_age_of_jwk_in_epochs: 1
+bfc_system_state_open: 0
 

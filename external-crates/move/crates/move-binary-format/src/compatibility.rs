@@ -180,7 +180,8 @@ impl Compatibility {
                 )
             {
 
-                println!("checking {:?}========== struct Check signature compatibility {:?} {:?}",name, old_func.parameters,  old_module);
+                println!("====struct Check signature compatibility");
+                //println!("checking {:?}========== struct Check signature compatibility {:?} {:?}",name, old_func.parameters,  old_module);
 
 
                 match old_func.visibility {

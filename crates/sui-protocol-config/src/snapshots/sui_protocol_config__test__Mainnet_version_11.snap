@@ -34,8 +34,8 @@ move_binary_format_version: 6
 max_move_object_size: 256000
 max_move_package_size: 102400
 max_tx_gas: 50000000000
-max_gas_price: 10000
-max_gas_computation_bucket: 500000
+max_gas_price: 100000
+max_gas_computation_bucket: 5000000
 max_loop_depth: 5
 max_generic_instantiation_length: 32
 max_function_parameters: 128
@@ -60,8 +60,8 @@ max_move_identifier_len: 128
 max_move_value_depth: 128
 max_back_edges_per_function: 10000
 max_back_edges_per_module: 10000
-max_verifier_meter_ticks_per_function: 16000000
-max_meter_ticks_per_module: 16000000
+max_verifier_meter_ticks_per_function: 20000000
+max_meter_ticks_per_module: 20000000
 object_runtime_max_num_cached_objects: 1000
 object_runtime_max_num_cached_objects_system_tx: 16000
 object_runtime_max_num_store_entries: 1000
@@ -70,12 +70,12 @@ base_tx_cost_fixed: 2000
 package_publish_cost_fixed: 1000
 base_tx_cost_per_byte: 0
 package_publish_cost_per_byte: 80
-obj_access_cost_read_per_byte: 5
+obj_access_cost_read_per_byte: 15
 obj_access_cost_mutate_per_byte: 40
 obj_access_cost_delete_per_byte: 40
 obj_access_cost_verify_per_byte: 200
 gas_model_version: 5
-obj_data_cost_refundable: 10
+obj_data_cost_refundable: 100
 obj_metadata_cost_non_refundable: 50
 storage_rebate_rate: 9900
 storage_fund_reinvest_rate: 500
@@ -178,4 +178,5 @@ hmac_hmac_sha3_256_input_cost_per_byte: 2
 hmac_hmac_sha3_256_input_cost_per_block: 2
 scoring_decision_mad_divisor: 2.3
 scoring_decision_cutoff_value: 2.5
+bfc_system_state_open: 0
 
