@@ -467,9 +467,18 @@ mod test {
         let max_ver = ProtocolVersion::MAX.as_u64();
         let manifest = sui_framework_snapshot::load_bytecode_snapshot_manifest();
 
-        let Some((&starting_version, _)) = manifest.range(..max_ver).last() else {
+        let Some((& starting_version, _)) = manifest.range(..max_ver).last() else {
             panic!("Couldn't find previously supported version");
         };
+
+        let mut starting_version = starting_version as u64;
+
+        //change starting_version for bfc.
+        if starting_version == 43 {
+            starting_version = 24;
+        }
+
+        println!("the starting version is {:?}", starting_version);
 
         let init_framework =
             sui_framework_snapshot::load_bytecode_snapshot(starting_version).unwrap();
