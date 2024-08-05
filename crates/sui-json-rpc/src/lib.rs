@@ -25,7 +25,7 @@ use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::info;
-use tracing::log::error;
+use tracing::error;
 pub use balance_changes::*;
 pub use object_changes::*;
 pub use sui_json_rpc_api::{
