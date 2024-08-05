@@ -6481,7 +6481,7 @@ async fn test_stable_dev_inspect_gas_coin_argument() {
     assert_eq!(mutable_reference_outputs.len(), 1);
     let (arg, arg_value, arg_type) = &mutable_reference_outputs[0];
     assert_eq!(arg, &SuiArgument::GasCoin);
-    check_coin_value(arg_value, arg_type, protocol_config.max_tx_gas() - amount);
+    check_coin_value(arg_value, arg_type, DEV_INSPECT_GAS_COIN_VALUE - protocol_config.max_tx_gas() - amount);
 
     assert_eq!(return_values.len(), 1);
     let (ret_value, ret_type) = &return_values[0];
