@@ -693,7 +693,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 
     assert!(resp.is_err());
     let err_string = format!("{} ", resp.err().unwrap());
-    println!("==========={}", err_string);
+    //println!("==========={}", err_string);
     assert!(err_string.contains("Gas price 1 under reference gas price"));
 
     // FIXME: uncomment once we figure out what is going on with `resolve_and_type_check`
@@ -744,7 +744,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
             9999
         );
     } else {
-        println!("==========={}", result);
+        //println!("==========={}", result);
         panic!("Command failed with unexpected result.")
     };
 

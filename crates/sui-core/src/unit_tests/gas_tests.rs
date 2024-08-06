@@ -201,7 +201,7 @@ where
         .into_data();
 
     // check effects
-    println!("======={:?}", effects.status().clone().unwrap_err().0);
+    //println!("======={:?}", effects.status().clone().unwrap_err().0);
     assert_eq!(
         effects.status().clone().unwrap_err().0,
         ExecutionFailureStatus::InsufficientGas

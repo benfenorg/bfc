@@ -4675,7 +4675,7 @@ impl AuthorityState {
             .protocol_config()
             .bfc_authenticator_state_supported()
         {
-            println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
+            //println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
                 next_epoch,
                 _next_epoch_protocol_version,
@@ -4691,7 +4691,7 @@ impl AuthorityState {
 
             VerifiedTransaction::new_end_of_epoch_transaction(txns)
         } else {
-            println!("===========end_of_epoch_transaction_supported: using new_change_epoch======= running with new txns pushed");
+            //println!("===========end_of_epoch_transaction_supported: using new_change_epoch======= running with new txns pushed");
 
             VerifiedTransaction::new_change_epoch(
                 next_epoch,
@@ -4791,7 +4791,7 @@ impl AuthorityState {
         );
         epoch_store.record_checkpoint_builder_is_safe_mode_metric(system_obj.safe_mode());
 
-        println!("===========epoch_store.record_checkpoint_builder_is_safe_mode_metric ====={:?}", system_obj.safe_mode());
+        //println!("===========epoch_store.record_checkpoint_builder_is_safe_mode_metric ====={:?}", system_obj.safe_mode());
 
         // The change epoch transaction cannot fail to execute.
         assert!(effects.status().is_ok());
