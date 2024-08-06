@@ -535,7 +535,7 @@ async fn sim_test_process_transaction_fault_success() {
 }
 
 #[sim_test]
-async fn test_process_transaction_fault_fail() {
+async fn sim_test_process_transaction_fault_fail() {
     // This test exercises the cases when there are 2 authorities faulty,
     // and hence no quorum could be formed. This is tested on the
     // process_transaction phase.
@@ -556,7 +556,7 @@ async fn test_process_transaction_fault_fail() {
 }
 
 #[sim_test]
-async fn test_process_certificate_fault_fail() {
+async fn sim_test_process_certificate_fault_fail() {
     // Similar to test_process_transaction_fault_fail but tested on the process_certificate phase.
     let fail_before_process_certificate_config = LocalAuthorityClientFaultConfig {
         fail_before_handle_confirmation: true,
