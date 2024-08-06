@@ -2840,6 +2840,7 @@ async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
+#[allow(unused_variables)]
 async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
@@ -2849,7 +2850,7 @@ async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
-    let bfc_balance_before = get_bfc_balance(http_client, address).await;
+    let _bfc_balance_before = get_bfc_balance(http_client, address).await;
     let amount = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),

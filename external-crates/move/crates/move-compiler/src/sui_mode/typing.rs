@@ -978,6 +978,7 @@ fn exp(context: &mut Context, e: &T::Exp) {
     }
 }
 
+#[allow(dead_code)]
 fn otw_special_cases(context: &Context) -> bool {
     return BRIDGE_SUPPORTED_ASSET
         .iter()

@@ -450,7 +450,7 @@ mod test {
     }
 
     #[sim_test(config = "test_config()")]
-    async fn test_upgrade_compatibility() {
+    async fn sim_test_upgrade_compatibility() {
         // This test is intended to test the compatibility of the latest protocol version with
         // the previous protocol version. It does this by starting a network with
         // the previous protocol version that this binary supports, and then upgrading the network

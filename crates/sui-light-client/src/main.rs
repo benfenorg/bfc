@@ -549,6 +549,7 @@ mod tests {
     use super::*;
     use std::path::{Path, PathBuf};
 
+    #[allow(dead_code)]
     async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
         let mut reader = fs::File::open(checkpoint_path.clone())?;
         let metadata = fs::metadata(checkpoint_path)?;
@@ -560,8 +561,8 @@ mod tests {
     async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
         let mut reader = fs::File::open(checkpoint_path.clone())?;
         let mut json: String = String::new();
-        reader.read_to_string(&mut json);
-        let rs: CheckpointData = serde_json::from_str(&json).unwrap();
+        let _ = reader.read_to_string(&mut json);
+        let _rs: CheckpointData = serde_json::from_str(&json).unwrap();
 
         serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
     }

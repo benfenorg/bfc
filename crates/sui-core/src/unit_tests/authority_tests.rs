@@ -6709,7 +6709,7 @@ pub async fn init_state_with_stable_ids_and_object_basics_with_fullnode<
 async fn test_stable_paranoid_mode_with_natives() {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
-    let mut expensive_safety_checks_config = ExpensiveSafetyCheckConfig::default();
+    let expensive_safety_checks_config = ExpensiveSafetyCheckConfig::default();
     let authority_state = init_state_with_stable_ids_and_expensive_checks(
         vec![(sender, gas_object_id)],
         expensive_safety_checks_config,
@@ -9546,7 +9546,7 @@ async fn test_stable_shared_object_transaction_shared_locks_not_set() {
 async fn test_stable_shared_object_transaction_ok() {
     let (authority, certificate, shared_object_id) =
         prepare_authority_and_shared_stable_object_cert().await;
-    let transaction_digest = certificate.digest();
+    //let transaction_digest = certificate.digest();
 
     // Sequence the certificate to assign a sequence number to the shared object.
     send_consensus(&authority, &certificate).await;
