@@ -76,7 +76,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 
 	const validatorData = useMemo(() => {
 		if (!system) return null;
-		return system.activeValidators.find((av) => av.benfenAddress === validatorAddress);
+		return system.activeValidators.find((av) => av.suiAddress === validatorAddress);
 	}, [validatorAddress, system]);
 
 	const delegationData = useMemo(() => {
