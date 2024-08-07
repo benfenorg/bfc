@@ -47,6 +47,7 @@ use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
+use tracing::log::Level::Info;
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
@@ -860,26 +861,15 @@ async fn test_bfc_dao_create_votingbfc() -> Result<(), anyhow::Error> {
 }
 
 async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<ObjectID, anyhow::Error> {
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+
 
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
     let function = "create_voting_bfc".to_string();
 
-    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let coin_obj = objects.get(1).unwrap().object().unwrap();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
@@ -889,9 +879,13 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
-    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    let call_result = do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish create voting bfc {:?}", call_result);
+
+    sleep(Duration::from_secs(5)).await;
 
     let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingBfc", http_client, address).await?;
+    info!("============finish get owned objects {:?}", objects);
     let voting_bfc = objects.get(0).unwrap().object().unwrap();
 
     let result = http_client.get_inner_dao_info().await?;
