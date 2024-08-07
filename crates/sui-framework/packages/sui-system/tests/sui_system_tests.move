@@ -1075,7 +1075,7 @@ module sui_system::sui_system_tests {
         let prev_counter = sui_system::get_stake_subsidy_distribution_counter(&mut system_state);
 
         let rebate = sui_system::advance_epoch_for_testing(
-            &mut system_state, new_epoch, 1, 0, 0, 0, 0, 0, 0, prev_epoch_time + epoch_length, test_scenario::ctx(scenario), false
+            &mut system_state, new_epoch, 1, 0, 0, 0, 0, 0, 0, prev_epoch_time + epoch_length, test_scenario::ctx(scenario),
         );
         destroy(rebate);
         assert_eq(sui_system::get_stake_subsidy_distribution_counter(&mut system_state), prev_counter + (if (should_increment_counter) 1 else 0));

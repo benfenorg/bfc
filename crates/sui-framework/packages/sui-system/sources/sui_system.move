@@ -60,8 +60,6 @@ module sui_system::sui_system {
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui::vec_set::VecSet;
-    #[test_only]
-    use sui_system::validator::rate_vec_map;
 
     public struct SuiSystemState has key {
         id: UID,
@@ -748,7 +746,7 @@ module sui_system::sui_system {
         validator_addr: address,
     ): u64 {
         let self = load_system_state(wrapper);
-        let rate_map = rate_vec_map();
+        let rate_map = get_stable_rate(wrapper);
         sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, rate_map)
     }
 
@@ -913,41 +911,21 @@ module sui_system::sui_system {
         reward_slashing_rate: u64,
         epoch_start_timestamp_ms: u64,
         ctx: &mut TxContext,
-        stable_rate_defined:bool,
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
-
-        let storage_rebate = if (stable_rate_defined) {
-            advance_epoch_with_stable_rate(
-                storage_reward,
-                computation_reward,
-                wrapper,
-                new_epoch,
-                next_protocol_version,
-                storage_rebate,
-                non_refundable_storage_fee,
-                storage_fund_reinvest_rate,
-                reward_slashing_rate,
-                epoch_start_timestamp_ms,
-                ctx,
-                rate_vec_map(),
-            )
-        } else {
-            advance_epoch(
-                storage_reward,
-                computation_reward,
-                wrapper,
-                new_epoch,
-                next_protocol_version,
-                storage_rebate,
-                non_refundable_storage_fee,
-                storage_fund_reinvest_rate,
-                reward_slashing_rate,
-                epoch_start_timestamp_ms,
-                ctx,
-            )
-        };
-        storage_rebate
+        advance_epoch(
+            storage_reward,
+            computation_reward,
+            wrapper,
+            new_epoch,
+            next_protocol_version,
+            storage_rebate,
+            non_refundable_storage_fee,
+            storage_fund_reinvest_rate,
+            reward_slashing_rate,
+            epoch_start_timestamp_ms,
+            ctx,
+        )
     }
 }
