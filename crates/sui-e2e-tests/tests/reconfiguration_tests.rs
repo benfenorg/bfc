@@ -379,16 +379,17 @@ async fn sim_test_change_bfc_round() {
 
 #[sim_test]
 async fn sim_test_bfc_dao_update_system_package_blocked() {
-    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-    //     config.set_commit_root_state_digest_supported(true);
-    //     config
-    // });
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
     ProtocolConfig::poison_get_for_min_version();
 
     let start_version = 44u64;
 
+
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(150000)
+        .with_epoch_duration_ms(1500)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -419,12 +420,6 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
 
 
-    epochid = node.state().current_epoch_for_testing();
-    protocol_version = epoch_store.protocol_version();
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
-
-
     //waiting for....
 
     //test_cluster.wait_for_all_nodes_upgrade_to(20u64).await;
@@ -442,6 +437,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
 
     assert_eq!(protocol_version, ProtocolVersion::new(start_version));
 }
+
 
 async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let transaction_bytes: TransactionBlockBytes = http_client
