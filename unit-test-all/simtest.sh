@@ -17,3 +17,6 @@ cargo simtest sim_test_multiple_stable_staking
 cargo simtest sim_test_passive_reconfig
 cargo simtest sim_test_reconfig_with_committee_change_stress
 cargo simtest sim_test_onsite_reconfig_observer_basic
+
+
+# UNIVERSE_SIZE=10 cargo nextest run --profile ci
