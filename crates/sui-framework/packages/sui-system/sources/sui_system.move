@@ -104,7 +104,6 @@ module sui_system::sui_system {
         transfer::share_object(self);
     }
 
-
     // ==== entry functions ====
 
     /// Can be called by anyone who wishes to become a validator candidate and starts accuring delegated
@@ -601,15 +600,13 @@ module sui_system::sui_system {
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-        // into storage fund, in basis point.
+                                         // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get stable exchange rate from bfc system
         let stable_rate = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
-
-
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
@@ -655,7 +652,7 @@ module sui_system::sui_system {
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-        // into storage fund, in basis point.
+                                         // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
@@ -682,13 +679,13 @@ module sui_system::sui_system {
         storage_rebate
     }
 
-    public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
-        get_stable_rate_from_bfc(&self.bfc_system_id)
-    }
-
     #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
         bfc_system::get_exchange_rate(id)
+    }
+
+    public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
+        get_stable_rate_from_bfc(&self.bfc_system_id)
     }
 
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {
