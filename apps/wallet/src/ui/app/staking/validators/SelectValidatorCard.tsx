@@ -52,7 +52,7 @@ export function SelectValidatorCard() {
 	const totalStake = useMemo(() => {
 		if (!data) return 0;
 		return data.activeValidators.reduce(
-			(acc, curr) => (acc += BigInt(curr.stakingPoolBfcBalance)),
+			(acc, curr) => (acc += BigInt(curr.stakingPoolSuiBalance)),
 			0n,
 		);
 	}, [data]);
@@ -63,16 +63,16 @@ export function SelectValidatorCard() {
 	);
 	const validatorList = useMemo(() => {
 		const sortedAsc = validatorsRandomOrder.map((validator) => {
-			const { apy, isApyApproxZero } = rollingAverageApys?.[validator.benfenAddress] ?? {
+			const { apy, isApyApproxZero } = rollingAverageApys?.[validator.suiAddress] ?? {
 				apy: null,
 			};
 			return {
 				name: validator.name,
-				address: validator.benfenAddress,
+				address: validator.suiAddress,
 				apy,
 				isApyApproxZero,
 				stakeShare: calculateStakeShare(
-					BigInt(validator.stakingPoolBfcBalance),
+					BigInt(validator.stakingPoolSuiBalance),
 					BigInt(totalStake),
 				),
 			};

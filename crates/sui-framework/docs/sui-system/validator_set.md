@@ -173,7 +173,7 @@ title: Module `0x3::validator_set`
 <code>stable_pool_mappings: <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>, <b>address</b>&gt;</code>
 </dt>
 <dd>
-
+ Mappings from stable staking pool's ID to the sui address of a validator.
 </dd>
 <dt>
 <code>last_epoch_stable_rate: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;</code>
@@ -844,6 +844,7 @@ Called by <code><a href="sui_system.md#0x3_sui_system">sui_system</a></code> to 
         <a href="../sui-framework/table.md#0x2_table_remove">table::remove</a>(&<b>mut</b> self.stable_pool_mappings, *id);
         j = j + 1;
     };
+
     // Deactivate the staking pool.
     <b>let</b> deactivation_epoch = <a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx);
     <a href="validator.md#0x3_validator_deactivate">validator::deactivate</a>(&<b>mut</b> <a href="validator.md#0x3_validator">validator</a>, deactivation_epoch);
@@ -1219,6 +1220,9 @@ It does the following things:
 ) {
     <b>let</b> new_epoch = ctx.epoch() + 1;
     <b>let</b> total_voting_power = <a href="voting_power.md#0x3_voting_power_total_voting_power">voting_power::total_voting_power</a>();
+
+    // Update the stable rate of last epoch.
+    self.last_epoch_stable_rate = stable_rate;
 
     // Compute the reward distribution without taking into account the tallying rule slashing.
     <b>let</b> (unadjusted_staking_reward_amounts, unadjusted_storage_fund_reward_amounts) = <a href="validator_set.md#0x3_validator_set_compute_unadjusted_reward_distribution">compute_unadjusted_reward_distribution</a>(
@@ -1739,17 +1743,17 @@ gas price, weighted by stake.
         self: &<b>mut</b> <a href="validator_set.md#0x3_validator_set_ValidatorSet">ValidatorSet</a>, pool_id: &ID
 ) : &Table&lt;u64, PoolStableTokenExchangeRate&gt; {
     <b>let</b> <a href="validator.md#0x3_validator">validator</a> =
-    // If the pool id is recorded in the mapping, then it must be either candidate or active.
-    <b>if</b> (<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.stable_pool_mappings, *pool_id)) {
-        <b>let</b> validator_address = *<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&self.stable_pool_mappings, *pool_id);
-        <a href="validator_set.md#0x3_validator_set_get_active_or_pending_or_candidate_validator_ref">get_active_or_pending_or_candidate_validator_ref</a>(self, validator_address, <a href="validator_set.md#0x3_validator_set_ANY_VALIDATOR">ANY_VALIDATOR</a>)
-    } <b>else</b> { // otherwise it's inactive
-        <b>assert</b>!(<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.inactive_validators_pool_mappings, *pool_id), <a href="validator_set.md#0x3_validator_set_ENoPoolFound">ENoPoolFound</a>);
-        <b>let</b> staing_pool_id =    *<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&self.inactive_validators_pool_mappings, *pool_id);
-        <b>assert</b>!(<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.inactive_validators, staing_pool_id), <a href="validator_set.md#0x3_validator_set_ENoPoolFound">ENoPoolFound</a>);
-        <b>let</b> wrapper = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> self.inactive_validators, staing_pool_id);
-        <a href="validator_wrapper.md#0x3_validator_wrapper_load_validator_maybe_upgrade">validator_wrapper::load_validator_maybe_upgrade</a>(wrapper)
-    };
+        // If the pool id is recorded in the mapping, then it must be either candidate or active.
+        <b>if</b> (<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.stable_pool_mappings, *pool_id)) {
+            <b>let</b> validator_address = *<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&self.stable_pool_mappings, *pool_id);
+            <a href="validator_set.md#0x3_validator_set_get_active_or_pending_or_candidate_validator_ref">get_active_or_pending_or_candidate_validator_ref</a>(self, validator_address, <a href="validator_set.md#0x3_validator_set_ANY_VALIDATOR">ANY_VALIDATOR</a>)
+        } <b>else</b> { // otherwise it's inactive
+            <b>assert</b>!(<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.inactive_validators_pool_mappings, *pool_id), <a href="validator_set.md#0x3_validator_set_ENoPoolFound">ENoPoolFound</a>);
+            <b>let</b> staing_pool_id =    *<a href="../sui-framework/table.md#0x2_table_borrow">table::borrow</a>(&self.inactive_validators_pool_mappings, *pool_id);
+            <b>assert</b>!(<a href="../sui-framework/table.md#0x2_table_contains">table::contains</a>(&self.inactive_validators, staing_pool_id), <a href="validator_set.md#0x3_validator_set_ENoPoolFound">ENoPoolFound</a>);
+            <b>let</b> wrapper = <a href="../sui-framework/table.md#0x2_table_borrow_mut">table::borrow_mut</a>(&<b>mut</b> self.inactive_validators, staing_pool_id);
+            <a href="validator_wrapper.md#0x3_validator_wrapper_load_validator_maybe_upgrade">validator_wrapper::load_validator_maybe_upgrade</a>(wrapper)
+        };
     <a href="stable_pool.md#0x3_stable_pool_exchange_rates">stable_pool::exchange_rates</a>&lt;STABLE&gt;(<a href="validator.md#0x3_validator_stable_pool">validator::stable_pool</a>&lt;STABLE&gt;(<a href="validator.md#0x3_validator">validator</a>))
 }
 </code></pre>
@@ -2493,7 +2497,6 @@ is removed from <code>validators</code> and its staking pool is put into the <co
     <b>if</b> (self.at_risk_validators.contains(&validator_address)) {
         self.at_risk_validators.remove(&validator_address);
     };
-
 
     self.total_stake = self.total_stake - <a href="validator.md#0x3_validator">validator</a>.total_stake_amount();
 

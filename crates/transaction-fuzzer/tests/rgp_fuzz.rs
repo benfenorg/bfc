@@ -34,3 +34,4 @@ proptest! {
 }
 //run for 290 seconds
 //cargo test --color=always --test rgp_fuzz fuzz_high_rgp_high_gas_price --no-fail-fast
+// UNIVERSE_SIZE=10 cargo nextest run --profile ci

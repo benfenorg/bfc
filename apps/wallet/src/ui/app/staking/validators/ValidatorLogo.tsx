@@ -36,7 +36,7 @@ export function ValidatorLogo({
 		if (!data) return null;
 
 		return (
-			data.activeValidators.find((validator) => validator.benfenAddress === validatorAddress) ||
+			data.activeValidators.find((validator) => validator.suiAddress === validatorAddress) ||
 			null
 		);
 	}, [validatorAddress, data]);

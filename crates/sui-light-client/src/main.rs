@@ -566,6 +566,7 @@ mod tests {
     use super::*;
     use std::path::{PathBuf};
 
+    #[allow(dead_code)]
     async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
         let mut reader = fs::File::open(checkpoint_path.clone())?;
         let metadata = fs::metadata(checkpoint_path)?;

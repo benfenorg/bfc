@@ -60,7 +60,7 @@ module sui_system::validator_set {
 
         /// Mappings from staking pool's ID to the sui address of a validator.
         staking_pool_mappings: Table<ID, address>,
-
+        /// Mappings from stable staking pool's ID to the sui address of a validator.
         stable_pool_mappings: Table<ID, address>,
 
         ///The stable rate of ast epoch.
@@ -275,6 +275,7 @@ module sui_system::validator_set {
             table::remove(&mut self.stable_pool_mappings, *id);
             j = j + 1;
         };
+
         // Deactivate the staking pool.
         let deactivation_epoch = tx_context::epoch(ctx);
         validator::deactivate(&mut validator, deactivation_epoch);
@@ -482,6 +483,9 @@ module sui_system::validator_set {
     ) {
         let new_epoch = ctx.epoch() + 1;
         let total_voting_power = voting_power::total_voting_power();
+
+        // Update the stable rate of last epoch.
+        self.last_epoch_stable_rate = stable_rate;
 
         // Compute the reward distribution without taking into account the tallying rule slashing.
         let (unadjusted_staking_reward_amounts, unadjusted_storage_fund_reward_amounts) = compute_unadjusted_reward_distribution(
@@ -723,17 +727,17 @@ module sui_system::validator_set {
             self: &mut ValidatorSet, pool_id: &ID
     ) : &Table<u64, PoolStableTokenExchangeRate> {
         let validator =
-        // If the pool id is recorded in the mapping, then it must be either candidate or active.
-        if (table::contains(&self.stable_pool_mappings, *pool_id)) {
-            let validator_address = *table::borrow(&self.stable_pool_mappings, *pool_id);
-            get_active_or_pending_or_candidate_validator_ref(self, validator_address, ANY_VALIDATOR)
-        } else { // otherwise it's inactive
-            assert!(table::contains(&self.inactive_validators_pool_mappings, *pool_id), ENoPoolFound);
-            let staing_pool_id =    *table::borrow(&self.inactive_validators_pool_mappings, *pool_id);
-            assert!(table::contains(&self.inactive_validators, staing_pool_id), ENoPoolFound);
-            let wrapper = table::borrow_mut(&mut self.inactive_validators, staing_pool_id);
-            validator_wrapper::load_validator_maybe_upgrade(wrapper)
-        };
+            // If the pool id is recorded in the mapping, then it must be either candidate or active.
+            if (table::contains(&self.stable_pool_mappings, *pool_id)) {
+                let validator_address = *table::borrow(&self.stable_pool_mappings, *pool_id);
+                get_active_or_pending_or_candidate_validator_ref(self, validator_address, ANY_VALIDATOR)
+            } else { // otherwise it's inactive
+                assert!(table::contains(&self.inactive_validators_pool_mappings, *pool_id), ENoPoolFound);
+                let staing_pool_id =    *table::borrow(&self.inactive_validators_pool_mappings, *pool_id);
+                assert!(table::contains(&self.inactive_validators, staing_pool_id), ENoPoolFound);
+                let wrapper = table::borrow_mut(&mut self.inactive_validators, staing_pool_id);
+                validator_wrapper::load_validator_maybe_upgrade(wrapper)
+            };
         stable_pool::exchange_rates<STABLE>(validator::stable_pool<STABLE>(validator))
     }
     /// Get the total number of validators in the next epoch.
@@ -1027,7 +1031,6 @@ module sui_system::validator_set {
         if (self.at_risk_validators.contains(&validator_address)) {
             self.at_risk_validators.remove(&validator_address);
         };
-
 
         self.total_stake = self.total_stake - validator.total_stake_amount();
 

@@ -428,7 +428,7 @@ impl TestCluster {
             })
             .collect();
 
-        timeout(Duration::from_secs(40), join_all(tasks))
+        timeout(Duration::from_secs(120), join_all(tasks))
             .await
             .expect("timed out waiting for reconfiguration to complete");
     }

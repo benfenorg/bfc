@@ -1089,7 +1089,8 @@ async fn move_call_with_gas_objects(gas_objects: Vec<ObjectRef>,sender: SuiAddre
     Ok(effects)
 }
 
-async fn move_call_rebalance(gas_object: Object,gas_object_id: ObjectID,sender: SuiAddress,
+#[allow(dead_code)]
+async fn move_call_rebalance(gas_object: Object,_gas_object_id: ObjectID,sender: SuiAddress,
                              sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
     let module = ident_str!("bfc_system").to_owned();
     let function = ident_str!("rebalance").to_owned();
@@ -1113,7 +1114,7 @@ async fn move_call_rebalance(gas_object: Object,gas_object_id: ObjectID,sender: 
     let tx = to_sender_signed_transaction(data, &sender_key);
     let response = send_and_confirm_transaction(&authority_state, tx).await?;
     println!("the response is {:?}",response);
-    let effects = response.1.into_data();
+    //let effects = response.1.into_data();
     Ok(())
 }
 

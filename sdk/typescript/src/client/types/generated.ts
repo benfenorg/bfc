@@ -1188,7 +1188,7 @@ export interface BenfenValidatorSummary {
 	/** Pending stake amount for this epoch. */
 	pendingStake: string;
 	/** Pending stake withdrawn during the current epoch, emptied at epoch boundaries. */
-	pendingTotalBfcWithdraw: string;
+	pendingTotalSuiWithdraw: string;
 	/** Total number of pool tokens issued by the pool. */
 	poolTokenBalance: string;
 	primaryAddress: string;
@@ -1204,8 +1204,8 @@ export interface BenfenValidatorSummary {
 	/** ID of the staking pool object. */
 	stakingPoolId: string;
 	/** The total number of BFC tokens in this pool. */
-	stakingPoolBfcBalance: string;
-	benfenAddress: string;
+	stakingPoolSuiBalance: string;
+	suiAddress: string;
 	votingPower: string;
 	workerAddress: string;
 	workerPubkeyBytes: string;

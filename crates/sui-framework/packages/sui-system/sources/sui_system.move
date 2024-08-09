@@ -60,8 +60,6 @@ module sui_system::sui_system {
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
     #[test_only] use sui::vec_set::VecSet;
-    #[test_only]
-    use sui_system::validator::rate_vec_map;
 
     public struct SuiSystemState has key {
         id: UID,
@@ -105,7 +103,6 @@ module sui_system::sui_system {
         dynamic_field::add(&mut self.id, version, system_state);
         transfer::share_object(self);
     }
-
 
     // ==== entry functions ====
 
@@ -603,15 +600,13 @@ module sui_system::sui_system {
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-        // into storage fund, in basis point.
+                                         // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
     ) : Balance<BFC> {
         // get stable exchange rate from bfc system
         let stable_rate = get_stable_rate_from_bfc(&wrapper.bfc_system_id);
-
-
         let self = load_system_state_mut(wrapper);
         // Validator will make a special system call with sender set as 0x0.
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
@@ -657,7 +652,7 @@ module sui_system::sui_system {
         storage_rebate: u64,
         non_refundable_storage_fee: u64,
         storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-        // into storage fund, in basis point.
+                                         // into storage fund, in basis point.
         reward_slashing_rate: u64, // how much rewards are slashed to punish a validator, in bps.
         epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
         ctx: &mut TxContext,
@@ -684,13 +679,13 @@ module sui_system::sui_system {
         storage_rebate
     }
 
-    public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
-        get_stable_rate_from_bfc(&self.bfc_system_id)
-    }
-
     #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
         bfc_system::get_exchange_rate(id)
+    }
+
+    public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
+        get_stable_rate_from_bfc(&self.bfc_system_id)
     }
 
     fun load_system_state(self: &mut SuiSystemState): &SuiSystemStateInnerV2 {
@@ -748,7 +743,7 @@ module sui_system::sui_system {
         validator_addr: address,
     ): u64 {
         let self = load_system_state(wrapper);
-        let rate_map = rate_vec_map();
+        let rate_map = get_stable_rate(wrapper);
         sui_system_state_inner::validator_stake_amount_with_stable(self, validator_addr, rate_map)
     }
 
@@ -913,41 +908,21 @@ module sui_system::sui_system {
         reward_slashing_rate: u64,
         epoch_start_timestamp_ms: u64,
         ctx: &mut TxContext,
-        stable_rate_defined:bool,
     ): Balance<BFC> {
         let storage_reward = balance::create_for_testing(storage_charge);
         let computation_reward = balance::create_for_testing(computation_charge);
-
-        let storage_rebate = if (stable_rate_defined) {
-            advance_epoch_with_stable_rate(
-                storage_reward,
-                computation_reward,
-                wrapper,
-                new_epoch,
-                next_protocol_version,
-                storage_rebate,
-                non_refundable_storage_fee,
-                storage_fund_reinvest_rate,
-                reward_slashing_rate,
-                epoch_start_timestamp_ms,
-                ctx,
-                rate_vec_map(),
-            )
-        } else {
-            advance_epoch(
-                storage_reward,
-                computation_reward,
-                wrapper,
-                new_epoch,
-                next_protocol_version,
-                storage_rebate,
-                non_refundable_storage_fee,
-                storage_fund_reinvest_rate,
-                reward_slashing_rate,
-                epoch_start_timestamp_ms,
-                ctx,
-            )
-        };
-        storage_rebate
+        advance_epoch(
+            storage_reward,
+            computation_reward,
+            wrapper,
+            new_epoch,
+            next_protocol_version,
+            storage_rebate,
+            non_refundable_storage_fee,
+            storage_fund_reinvest_rate,
+            reward_slashing_rate,
+            epoch_start_timestamp_ms,
+            ctx,
+        )
     }
 }

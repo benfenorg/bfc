@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { BenfenValidatorSummary } from '@benfen/bfc.js/client';
@@ -34,7 +34,7 @@ export function getRefGasPrice(validators?: BenfenValidatorSummary[]) {
 	});
 
 	const totalStaked = validators.reduce(
-		(acc, cur) => acc + BigInt(cur.stakingPoolBfcBalance),
+		(acc, cur) => acc + BigInt(cur.stakingPoolSuiBalance),
 		BigInt(0),
 	);
 
@@ -43,7 +43,7 @@ export function getRefGasPrice(validators?: BenfenValidatorSummary[]) {
 
 	for (let i = 0; i < sortedByGasPrice.length; i++) {
 		const validator = sortedByGasPrice[i];
-		const stake = BigInt(validator?.stakingPoolBfcBalance);
+		const stake = BigInt(validator?.stakingPoolSuiBalance);
 
 		const stakeShare = calculateStakeShare(stake, totalStaked);
 

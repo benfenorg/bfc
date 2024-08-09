@@ -143,7 +143,7 @@ module sui_system::governance_test_utils {
     }
 
     public fun advance_epoch_with_reward_amounts_return_rebate(
-        storage_charge: u64, computation_charge: u64, stoarge_rebate: u64, non_refundable_storage_rebate: u64, scenario: &mut Scenario,stable_rate_defined: bool
+        storage_charge: u64, computation_charge: u64, stoarge_rebate: u64, non_refundable_storage_rebate: u64, scenario: &mut Scenario
     ): Balance<BFC> {
         test_scenario::next_tx(scenario, @0x0);
         let new_epoch = tx_context::epoch(test_scenario::ctx(scenario)) + 1;
@@ -152,7 +152,7 @@ module sui_system::governance_test_utils {
         let ctx = test_scenario::ctx(scenario);
 
         let storage_rebate = sui_system::advance_epoch_for_testing(
-            &mut system_state, new_epoch, 1, storage_charge, computation_charge, stoarge_rebate, non_refundable_storage_rebate, 0, 0, 0, ctx,stable_rate_defined,
+            &mut system_state, new_epoch, 1, storage_charge, computation_charge, stoarge_rebate, non_refundable_storage_rebate, 0, 0, 0, ctx
         );
         test_scenario::return_shared(system_state);
         test_scenario::next_epoch(scenario, @0x0);
@@ -162,14 +162,14 @@ module sui_system::governance_test_utils {
     public fun advance_epoch_with_reward_amounts(
         storage_charge: u64, computation_charge: u64, scenario: &mut Scenario
     ) {
-        let storage_rebate = advance_epoch_with_reward_amounts_return_rebate(storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, scenario,false);
+        let storage_rebate = advance_epoch_with_reward_amounts_return_rebate(storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, scenario);
         destroy(storage_rebate)
     }
 
     public fun advance_epoch_with_reward_amounts_with_stable_rate(
-        storage_charge: u64, computation_charge: u64, scenario: &mut Scenario,stable_rate_defined: bool
+        storage_charge: u64, computation_charge: u64, scenario: &mut Scenario
     ) {
-        let storage_rebate = advance_epoch_with_reward_amounts_return_rebate(storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, scenario,stable_rate_defined);
+        let storage_rebate = advance_epoch_with_reward_amounts_return_rebate(storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, scenario);
         destroy(storage_rebate)
     }
 
@@ -186,7 +186,7 @@ module sui_system::governance_test_utils {
         let ctx = test_scenario::ctx(scenario);
 
         let storage_rebate = sui_system::advance_epoch_for_testing(
-            &mut system_state, new_epoch, 1, storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, 0, reward_slashing_rate, 0, ctx, false
+            &mut system_state, new_epoch, 1, storage_charge * MIST_PER_SUI, computation_charge * MIST_PER_SUI, 0, 0, 0, reward_slashing_rate, 0, ctx,
         );
         destroy(storage_rebate);
         test_scenario::return_shared(system_state);
@@ -394,6 +394,7 @@ module sui_system::governance_test_utils {
 
             test_scenario::next_tx(scenario, validator_addr);
             let  mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+
             let validator_amount = sui_system::validator_stake_amount_with_stable(&mut system_state, validator_addr);
             assert!(validator_amount == amount, validator_amount);
             test_scenario::return_shared(system_state);

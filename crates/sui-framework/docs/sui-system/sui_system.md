@@ -85,8 +85,8 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `pool_exchange_stable_rates`](#0x3_sui_system_pool_exchange_stable_rates)
 -  [Function `active_validator_addresses`](#0x3_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#0x3_sui_system_advance_epoch)
--  [Function `get_stable_rate`](#0x3_sui_system_get_stable_rate)
 -  [Function `get_stable_rate_from_bfc`](#0x3_sui_system_get_stable_rate_from_bfc)
+-  [Function `get_stable_rate`](#0x3_sui_system_get_stable_rate)
 -  [Function `load_system_state`](#0x3_sui_system_load_system_state)
 -  [Function `load_system_state_mut`](#0x3_sui_system_load_system_state_mut)
 -  [Function `load_inner_maybe_upgrade`](#0x3_sui_system_load_inner_maybe_upgrade)
@@ -1547,15 +1547,13 @@ gas coins.
     storage_rebate: u64,
     non_refundable_storage_fee: u64,
     storage_fund_reinvest_rate: u64, // share of storage fund's rewards that's reinvested
-    // into storage fund, in basis point.
+                                     // into storage fund, in basis point.
     reward_slashing_rate: u64, // how much rewards are slashed <b>to</b> punish a <a href="validator.md#0x3_validator">validator</a>, in bps.
     epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
     // get stable exchange rate from <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a> system
     <b>let</b> stable_rate = <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&wrapper.bfc_system_id);
-
-
     <b>let</b> self = <a href="sui_system.md#0x3_sui_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     // Validator will make a special system call <b>with</b> sender set <b>as</b> 0x0.
     <b>assert</b>!(ctx.sender() == @0x0, <a href="sui_system.md#0x3_sui_system_ENotSystemAddress">ENotSystemAddress</a>);
@@ -1582,30 +1580,6 @@ gas coins.
 
 </details>
 
-<a name="0x3_sui_system_get_stable_rate"></a>
-
-## Function `get_stable_rate`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>) : VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
-    <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&self.bfc_system_id)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0x3_sui_system_get_stable_rate_from_bfc"></a>
 
 ## Function `get_stable_rate_from_bfc`
@@ -1623,6 +1597,30 @@ gas coins.
 
 <pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_exchange_rate">bfc_system::get_exchange_rate</a>(id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_get_stable_rate"></a>
+
+## Function `get_stable_rate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate">get_stable_rate</a>(self: &<a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>) : VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
+    <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(&self.bfc_system_id)
 }
 </code></pre>
 

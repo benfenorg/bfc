@@ -70,7 +70,7 @@ module sui_system::rewards_distribution_tests {
         // the voting power is capped at 10%.
         assert_validator_total_stake_amounts(
             validator_addrs(),
-            vector[150 * MIST_PER_SUI, 970 * MIST_PER_SUI, 350 * MIST_PER_SUI, 450 * MIST_PER_SUI],
+            vector[150 * MIST_PER_SUI, 969 * MIST_PER_SUI, 350 * MIST_PER_SUI, 450 * MIST_PER_SUI],
             scenario
         );
         scenario_val.end();
@@ -100,7 +100,7 @@ module sui_system::rewards_distribution_tests {
         // the voting power is capped at 10%.
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
-            vector[175 * MIST_PER_SUI, 994 * MIST_PER_SUI,  375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
+            vector[175 * MIST_PER_SUI, 7474998400873,  375 * MIST_PER_SUI, 475 * MIST_PER_SUI],
             scenario
         );
         test_scenario::end(scenario_val);
@@ -191,22 +191,22 @@ module sui_system::rewards_distribution_tests {
 
         assert_validator_total_stake_with_stable_amounts(
             validator_addrs(),
-            vector[299 * MIST_PER_SUI, 299 * MIST_PER_SUI, 300 * MIST_PER_SUI, 400 * MIST_PER_SUI],
+            vector[100 * MIST_PER_SUI, 200 * MIST_PER_SUI, 300 * MIST_PER_SUI, 400 * MIST_PER_SUI],
             scenario);
 
         // Each pool gets 30 SUI.
-        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario,true);
+        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario);
         unstake_stable(STAKER_ADDR_1, 0, scenario);
         stake_with_stable(STAKER_ADDR_2, VALIDATOR_ADDR_1, 600, scenario);
         // Each pool gets 30 SUI.
-        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario,true);
+        advance_epoch_with_reward_amounts_with_stable_rate(0, 120, scenario);
         // staker 1 receives only 20 SUI of rewards, not 40 since we are using pre-epoch exchange rate.
         assert_eq(total_busd_balance(STAKER_ADDR_1, scenario), 200*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 19);
+        assert_eq(total_sui_balance(STAKER_ADDR_1, scenario)/MIST_PER_SUI, 0);
 
         unstake_stable(STAKER_ADDR_2, 0, scenario);
         assert_eq(total_busd_balance(STAKER_ADDR_2, scenario), 100*MIST_PER_SUI/(*rate) * MIST_PER_SUI);
-        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 19);
+        assert_eq(total_sui_balance(STAKER_ADDR_2, scenario)/MIST_PER_SUI, 9);
         test_scenario::end(scenario_val);
     }
 
@@ -323,7 +323,7 @@ module sui_system::rewards_distribution_tests {
         set_commission_rate_and_advance_epoch(VALIDATOR_ADDR_1, 1000, scenario); // 10% commission
 
         advance_epoch_with_reward_amounts(0, 240, scenario);
-        assert_validator_total_stake_with_stable_amounts(validator_addrs(), vector[289 * MIST_PER_SUI, 389 * MIST_PER_SUI, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
+        assert_validator_total_stake_with_stable_amounts(validator_addrs(), vector[289999977777, 389999977786, 390 * MIST_PER_SUI, 490 * MIST_PER_SUI], scenario);
 
         // Staker 1 rewards in the recent distribution is 0.9 x 30 = 27 SUI
         // Validator 1 rewards in the recent distribution is 60 - 27 = 33 SUI

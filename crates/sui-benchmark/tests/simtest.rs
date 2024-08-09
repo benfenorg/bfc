@@ -450,7 +450,7 @@ mod test {
     }
 
     #[sim_test(config = "test_config()")]
-    async fn test_upgrade_compatibility() {
+    async fn sim_test_upgrade_compatibility() {
         // This test is intended to test the compatibility of the latest protocol version with
         // the previous protocol version. It does this by starting a network with
         // the previous protocol version that this binary supports, and then upgrading the network
@@ -470,16 +470,6 @@ mod test {
         let Some((& starting_version, _)) = manifest.range(..max_ver).last() else {
             panic!("Couldn't find previously supported version");
         };
-
-        let mut starting_version = starting_version as u64;
-
-        //change starting_version for bfc.
-        if starting_version == 43 {
-            starting_version = 24;
-        }
-
-        println!("the starting version is {:?}", starting_version);
-
         let init_framework =
             sui_framework_snapshot::load_bytecode_snapshot(starting_version).unwrap();
         let mut test_cluster = init_test_cluster_builder(4, 15000)

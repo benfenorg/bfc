@@ -57,11 +57,11 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 
 	const validatorData = useMemo(() => {
 		if (!system) return null;
-		return system.activeValidators.find((av) => av.benfenAddress === validatorAddress);
+		return system.activeValidators.find((av) => av.suiAddress === validatorAddress);
 	}, [validatorAddress, system]);
 
 	//TODO: verify this is the correct validator stake balance
-	const totalValidatorStake = validatorData?.stakingPoolBfcBalance || 0;
+	const totalValidatorStake = validatorData?.stakingPoolSuiBalance || 0;
 
 	const totalStake = useMemo(() => {
 		if (!stakeData) return 0n;
@@ -73,7 +73,7 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 	const totalValidatorsStake = useMemo(() => {
 		if (!system) return 0;
 		return system.activeValidators.reduce(
-			(acc, curr) => (acc += BigInt(curr.stakingPoolBfcBalance)),
+			(acc, curr) => (acc += BigInt(curr.stakingPoolSuiBalance)),
 			0n,
 		);
 	}, [system]);
@@ -82,7 +82,7 @@ export function ValidatorFormDetail({ validatorAddress, unstake }: ValidatorForm
 		if (!system || !validatorData) return null;
 
 		return calculateStakeShare(
-			BigInt(validatorData.stakingPoolBfcBalance),
+			BigInt(validatorData.stakingPoolSuiBalance),
 			BigInt(totalValidatorsStake),
 		);
 	}, [system, totalValidatorsStake, validatorData]);

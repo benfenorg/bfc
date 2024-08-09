@@ -47,6 +47,7 @@ use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
+use tracing::log::Level::Info;
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
@@ -378,16 +379,17 @@ async fn sim_test_change_bfc_round() {
 
 #[sim_test]
 async fn sim_test_bfc_dao_update_system_package_blocked() {
-    // let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-    //     config.set_commit_root_state_digest_supported(true);
-    //     config
-    // });
+    let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+        config.set_commit_root_state_digest_supported(true);
+        config
+    });
     ProtocolConfig::poison_get_for_min_version();
 
     let start_version = 44u64;
 
+
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(150000)
+        .with_epoch_duration_ms(1500)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -418,12 +420,6 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
 
 
-    epochid = node.state().current_epoch_for_testing();
-    protocol_version = epoch_store.protocol_version();
-    info!("=============epochid: {}", epochid);
-    info!("=============protocol_version:{:?} ", protocol_version);
-
-
     //waiting for....
 
     //test_cluster.wait_for_all_nodes_upgrade_to(20u64).await;
@@ -441,6 +437,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
 
     assert_eq!(protocol_version, ProtocolVersion::new(start_version));
 }
+
 
 async fn do_move_call(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster, package_id: ObjectID, module: String, function: String, arg: Vec<SuiJsonValue>) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -860,26 +857,15 @@ async fn test_bfc_dao_create_votingbfc() -> Result<(), anyhow::Error> {
 }
 
 async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<ObjectID, anyhow::Error> {
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+
 
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
     let function = "create_voting_bfc".to_string();
 
-    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let coin_obj = objects.get(1).unwrap().object().unwrap();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
@@ -889,9 +875,13 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
-    do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    let call_result = do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("============finish create voting bfc {:?}", call_result);
+
+    sleep(Duration::from_secs(5)).await;
 
     let objects = do_get_owned_objects_with_filter("0xc8::voting_pool::VotingBfc", http_client, address).await?;
+    info!("============finish get owned objects {:?}", objects);
     let voting_bfc = objects.get(0).unwrap().object().unwrap();
 
     let result = http_client.get_inner_dao_info().await?;
@@ -2840,6 +2830,7 @@ async fn sim_test_dry_run_stable_gas() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
+#[allow(unused_variables)]
 async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
@@ -2849,7 +2840,7 @@ async fn sim_test_bfc_stable_gas_single() -> Result<(), anyhow::Error> {
         .await;
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
-    let bfc_balance_before = get_bfc_balance(http_client, address).await;
+    let _bfc_balance_before = get_bfc_balance(http_client, address).await;
     let amount = 100_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
