@@ -2727,7 +2727,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(8000)
         .with_num_validators(5)
         .build()
         .await;
