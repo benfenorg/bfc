@@ -11,7 +11,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 24;
+const MAX_PROTOCOL_VERSION: u64 = 25;
 
 // Record history of protocol version allocations here:
 //
@@ -1395,6 +1395,14 @@ impl ProtocolConfig {
                     }
 
                 }
+                25 => {
+                    if chain == Chain::Mainnet {
+                        println!("start Mainnet  for protocol v25");
+                    }
+
+                }
+
+
                 // Use this template when making changes:
                 //
                 //     // modify an existing constant.
