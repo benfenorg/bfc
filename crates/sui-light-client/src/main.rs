@@ -28,6 +28,7 @@ use sui_sdk::SuiClientBuilder;
 use clap::{Parser, Subcommand};
 use std::{fs, io::Write, path::PathBuf, str::FromStr};
 use std::{io::Read, sync::Arc};
+use std::path::Path;
 
 /// A light client for the Sui blockchain
 #[derive(Parser, Debug)]
@@ -268,8 +269,6 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
     // Load the genesis committee
     let mut genesis_path = config.checkpoint_summary_dir.clone();
     genesis_path.push(&config.genesis_filename);
-
-    println!("Genesis Path: {:?}", genesis_path);
     let genesis_committee = Genesis::load(&genesis_path)?.committee()?;
 
     // Check the signatures of all checkpoints
@@ -294,7 +293,7 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
         };
 
         // Print the id of the checkpoint and the epoch number
-        println!(
+        dbg!(
             "Epoch: {} Checkpoint ID: {}",
             summary.epoch(),
             summary.digest()
@@ -302,9 +301,9 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
 
         // Extract the new committee information
         if let Some(EndOfEpochData {
-            next_epoch_committee,
-            ..
-        }) = &summary.end_of_epoch_data
+                        next_epoch_committee,
+                        ..
+                    }) = &summary.end_of_epoch_data
         {
             let next_committee = next_epoch_committee.iter().cloned().collect();
             prev_committee =
@@ -314,6 +313,13 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
                 "Expected all checkpoints to be end-of-epoch checkpoints"
             ));
         }
+
+        // get next checkpoint full data
+        let next_ckp_id = *ckp_id+1;
+        let full_check_point = get_full_checkpoint(config, next_ckp_id).await?;
+        let mut checkpoints_path = config.checkpoint_summary_dir.clone();
+        checkpoints_path.push(format!("{}.bcs", next_ckp_id));
+        write_full_checkpoint(&checkpoints_path, &full_check_point).await?;
     }
 
     Ok(())
@@ -448,6 +454,17 @@ async fn get_verified_object(config: &Config, id: ObjectID) -> anyhow::Result<Ob
     Ok(object)
 }
 
+async fn write_full_checkpoint(
+    checkpoint_path: &Path,
+    checkpoint: &CheckpointData,
+) -> anyhow::Result<()> {
+    let mut writer = fs::File::create(checkpoint_path)?;
+    let bytes = bcs::to_bytes(&checkpoint)
+        .map_err(|_| anyhow!("Unable to serialize checkpoint summary"))?;
+    writer.write_all(&bytes)?;
+    Ok(())
+}
+
 #[tokio::main]
 pub async fn main() {
     // Command line arguments and config loading
@@ -475,8 +492,8 @@ pub async fn main() {
                 &config,
                 TransactionDigest::from_str(&tid).unwrap(),
             )
-            .await
-            .unwrap();
+                .await
+                .unwrap();
 
             let exec_digests = effects.execution_digests();
             println!(
@@ -547,7 +564,7 @@ mod tests {
     use sui_types::messages_checkpoint::FullCheckpointContents;
 
     use super::*;
-    use std::path::{Path, PathBuf};
+    use std::path::{PathBuf};
 
     async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
         let mut reader = fs::File::open(checkpoint_path.clone())?;
@@ -560,26 +577,13 @@ mod tests {
     async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
         let mut reader = fs::File::open(checkpoint_path.clone())?;
         let mut json: String = String::new();
-        reader.read_to_string(&mut json);
-        let rs: CheckpointData = serde_json::from_str(&json).unwrap();
+        let _ = reader.read_to_string(&mut json);
+        let _rs: CheckpointData = serde_json::from_str(&json).unwrap();
 
         serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
     }
 
-    // clippy ignore dead-code
-    #[allow(dead_code)]
-    async fn write_full_checkpoint(
-        checkpoint_path: &Path,
-        checkpoint: &CheckpointData,
-    ) -> anyhow::Result<()> {
-        let mut writer = fs::File::create(checkpoint_path)?;
-        let bytes = bcs::to_bytes(&checkpoint)
-            .map_err(|_| anyhow!("Unable to serialize checkpoint summary"))?;
-        writer.write_all(&bytes)?;
-        Ok(())
-    }
-
-    async fn read_data() -> (Committee, CheckpointData) {
+    async fn read_data_with_bad_events() -> (Committee, CheckpointData) {
         let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         d.push("example_config/right.yaml");
         let mut reader = fs::File::open(d.clone()).unwrap();
@@ -613,6 +617,40 @@ mod tests {
         (committee, full_checkpoint)
     }
 
+    async fn read_data() -> (Committee, CheckpointData) {
+        let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        d.push("example_config/3.yaml");
+        let mut reader = fs::File::open(d.clone()).unwrap();
+        let metadata = fs::metadata(&d).unwrap();
+        let mut buffer = vec![0; metadata.len() as usize];
+        reader.read_exact(&mut buffer).unwrap();
+        let checkpoint: Envelope<CheckpointSummary, AuthorityQuorumSignInfo<true>> =
+            bcs::from_bytes(&buffer)
+                .map_err(|_| anyhow!("Unable to parse checkpoint file"))
+                .unwrap();
+
+        let prev_committee = checkpoint
+            .end_of_epoch_data
+            .as_ref()
+            .ok_or(anyhow!(
+                "Expected all checkpoints to be end-of-epoch checkpoints"
+            ))
+            .unwrap()
+            .next_epoch_committee
+            .iter()
+            .cloned()
+            .collect();
+
+        // Make a committee object using this
+        let committee = Committee::new(checkpoint.epoch().checked_add(1).unwrap(), prev_committee);
+
+        let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+        d.push("example_config/4.bcs");
+        let full_checkpoint = read_full_checkpoint(&d).await.unwrap();
+
+        (committee, full_checkpoint)
+    }
+
     #[tokio::test]
     async fn test_checkpoint_all_good() {
         let (committee, full_checkpoint) = read_data().await;
@@ -626,9 +664,9 @@ mod tests {
         extract_verified_effects_and_events(
             &full_checkpoint,
             &committee,
-            TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zi6cMVA9t4WhWk").unwrap(),
+            TransactionDigest::from_str("DmSZtzfD1zEa6WbjjtUjgsr1B2DuGaFm9h1A33ncFViR").unwrap(),
         )
-        .unwrap();
+            .unwrap();
     }
 
     #[tokio::test]
@@ -643,7 +681,7 @@ mod tests {
             &committee,
             TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zi6cMVA9t4WhWk").unwrap(),
         )
-        .is_err());
+            .is_err());
     }
 
     #[tokio::test]
@@ -655,7 +693,7 @@ mod tests {
             &committee,
             TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
         )
-        .is_err());
+            .is_err());
     }
 
     #[tokio::test]
@@ -671,12 +709,12 @@ mod tests {
             &committee,
             TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
         )
-        .is_err());
+            .is_err());
     }
 
     #[tokio::test]
     async fn test_checkpoint_bad_events() {
-        let (committee, mut full_checkpoint) = read_data().await;
+        let (committee, mut full_checkpoint) = read_data_with_bad_events().await;
 
         let event = full_checkpoint.transactions[4]
             .events
@@ -696,6 +734,6 @@ mod tests {
             &committee,
             TransactionDigest::from_str("8RiKBwuAbtu8zNCtz8SrcfHyEUzto6zj6cMVA9t4WhWk").unwrap(),
         )
-        .is_err());
+            .is_err());
     }
 }
