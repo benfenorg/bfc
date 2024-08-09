@@ -846,26 +846,14 @@ async fn test_bfc_dao_create_votingbfc() -> Result<(), anyhow::Error> {
 }
 
 async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<ObjectID, anyhow::Error> {
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    //let gas = bfc_objects.first().unwrap().object().unwrap();
 
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
     let function = "create_voting_bfc".to_string();
 
-    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let coin_obj = objects.get(1).unwrap().object().unwrap();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
