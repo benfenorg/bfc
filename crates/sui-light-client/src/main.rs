@@ -315,7 +315,7 @@ async fn check_and_sync_checkpoints(config: &Config) -> anyhow::Result<()> {
         }
 
         // get next checkpoint full data
-        let next_ckp_id = *ckp_id+1;
+        let next_ckp_id = *ckp_id + 1;
         let full_check_point = get_full_checkpoint(config, next_ckp_id).await?;
         let mut checkpoints_path = config.checkpoint_summary_dir.clone();
         checkpoints_path.push(format!("{}.bcs", next_ckp_id));
