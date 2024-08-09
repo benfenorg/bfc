@@ -908,7 +908,7 @@ async fn case_vote(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAd
 #[sim_test]
 async fn sim_test_bfc_dao_revoke_vote() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(90000)
+        .with_epoch_duration_ms(150000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -1072,7 +1072,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(500000)
+        .with_epoch_duration_ms(4500000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -1150,7 +1150,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     let start_version = 23u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(500000)
+        .with_epoch_duration_ms(4500000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -1248,7 +1248,7 @@ async fn sim_test_bfc_dao_unvote_votingbfc() -> Result<(), anyhow::Error> {
 #[sim_test]
 async fn sim_test_bfc_dao_change_vote() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(90000)
+        .with_epoch_duration_ms(150000)
         .build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -2715,7 +2715,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(20000)
+        .with_epoch_duration_ms(8000)
         .with_num_validators(5)
         .build()
         .await;
