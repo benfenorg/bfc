@@ -3455,10 +3455,10 @@ async fn test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Error> 
 }
 
 #[sim_test]
-async fn test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(1000)
+        .with_epoch_duration_ms(5000)
         .with_num_validators(5)
         .build()
         .await;
