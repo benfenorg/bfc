@@ -122,7 +122,7 @@ async fn sim_zklogin_end_to_end_test() {
         .await;
 
     test_cluster.wait_for_authenticator_state_update().await;
-    let signed_txn = build_zklogin_tx(&test_cluster, 2).await;
+    let signed_txn = build_zklogin_tx(&test_cluster, 10).await;
     let context = &test_cluster.wallet;
     let res = context.execute_transaction_may_fail(signed_txn).await;
     assert!(res.is_ok());
