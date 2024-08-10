@@ -1017,9 +1017,7 @@ impl KeyToolCommand {
                     &jwt_randomness,
                     &kp_bigint,
                     user_salt,
-                    // "https://zkproverdev1.openblock.vip/v1",
-                    "https://prover-dev.mystenlabs.com/v1",
-
+                    "https://devprover.openblock.vip/v1"
                 )
                 .await
                 .unwrap();
@@ -1094,8 +1092,8 @@ impl KeyToolCommand {
                     OIDCProvider::Twitch,
                     &eph_pk_bytes,
                     max_epoch,
-                    "rs1bh065i9ya4ydvifixl4kss0uhpt",
-                    "https://sui.io/",
+                    "ni86tx0qtb1cbtqhqh1eu1yj6w1zgw",
+                    "https://www.benfen.org/",
                     &jwt_randomness,
                 )?;
                 let url_3 = get_oidc_url(

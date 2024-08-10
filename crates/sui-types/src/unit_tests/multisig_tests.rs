@@ -32,6 +32,9 @@ use rand::{rngs::StdRng, SeedableRng};
 use roaring::RoaringBitmap;
 use shared_crypto::intent::{Intent, IntentMessage, PersonalMessage};
 use std::str::FromStr;
+use fastcrypto::traits::KeyPair;
+use num_bigint::BigUint;
+
 #[test]
 fn test_combine_sigs() {
     let kp1: SuiKeyPair = SuiKeyPair::Ed25519(get_key_pair().1);
@@ -334,10 +337,17 @@ fn multisig_get_indices() {
 #[test]
 fn multisig_zklogin_scenarios() {
     // consistency test with sui/sdk/typescript/test/unit/cryptography/multisig.test.ts
-    let mut seed = StdRng::from_seed([0; 32]);
-    let kp: Ed25519KeyPair = get_key_pair_from_rng(&mut seed).1;
-    let skp: SuiKeyPair = SuiKeyPair::Ed25519(kp);
+    let mut seed = StdRng::from_seed([1; 32]);
+    // let kp: Ed25519KeyPair = get_key_pair_from_rng(&mut seed).1;
+    let skp: SuiKeyPair = SuiKeyPair::Ed25519(Ed25519KeyPair::generate(&mut seed));
+    // let skp: SuiKeyPair = SuiKeyPair::Ed25519(kp);
     let pk1 = skp.public();
+
+    let mut eph_pk_bytes = vec![pk1.flag()];
+    eph_pk_bytes.extend(pk1.as_ref());
+    let kp_bigint = BigUint::from_bytes_be(&eph_pk_bytes);
+    println!("Ephemeral keypair: {:?}", skp.encode());
+    println!("Ephemeral pubkey (BigInt): {:?}", kp_bigint);
 
     let (_, _, inputs) = &load_test_vectors("./src/unit_tests/zklogin_test_vectors.json")[0];
     // pk consistent with the one in make_zklogin_tx
@@ -350,27 +360,27 @@ fn multisig_zklogin_scenarios() {
     );
 
     // set up 1-out-of-2 multisig with one zklogin public identifier and one traditional public key.
-    let multisig_pk = MultiSigPublicKey::new(vec![pk1, pk2], vec![1, 1], 1).unwrap();
+    let multisig_pk = MultiSigPublicKey::new(vec![pk2, pk1], vec![1, 1], 1).unwrap();
     let multisig_addr = SuiAddress::from(&multisig_pk);
     assert_eq!(
         multisig_addr,
-        SuiAddress::from_str("0xb9c0780a3943cde13a2409bf1a6f06ae60b0dff2b2f373260cf627aa4f43a588")
+        SuiAddress::from_str("0xcdfb9850cbbe54e2093c1e104a50896e1069216e58ec0000d83251b9096eba21")
             .unwrap()
     );
 
     let (_, envelop, zklogin_sig) = make_zklogin_tx(multisig_addr, false);
     let binding = envelop.into_data();
     let tx = binding.transaction_data();
-    assert_eq!(Base64::encode(bcs::to_bytes(tx).unwrap()), "AAABACACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgEBAQABAAC5wHgKOUPN4TokCb8abwauYLDf8rLzcyYM9ieqT0OliAGbB4FfBEl+LgXSLKw6oGFBCyCGjMYZFUxCocYb6ZAnFwEAAAAAAAAAIHqXpR03f3carjyhraTVCgGVN1SwvsqRpfTLPY64YFRFucB4CjlDzeE6JAm/Gm8GrmCw3/Ky83MmDPYnqk9DpYgBAAAAAAAAABAnAAAAAAAAAA==".to_string());
+    assert_eq!(Base64::encode(bcs::to_bytes(tx).unwrap()), "AAABACACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgEBAQABAADN+5hQy75U4gk8HhBKUIluEGkhbljsAADYMlG5CW66IQGbB4FfBEl+LgXSLKw6oGFBCyCGjMYZFUxCocYb6ZAnFwEAAAAAAAAAIHqXpR03f3carjyhraTVCgGVN1SwvsqRpfTLPY64YFRFzfuYUMu+VOIJPB4QSlCJbhBpIW5Y7AAA2DJRuQluuiEBAAAAAAAAAEANAwAAAAAAAA==".to_string());
 
     let intent_msg = &IntentMessage::new(Intent::sui_transaction(), tx.clone());
-    assert_eq!(Base64::encode(zklogin_sig.as_ref()), "BQNNMTczMTgwODkxMjU5NTI0MjE3MzYzNDIyNjM3MTc5MzI3MTk0Mzc3MTc4NDQyODI0MTAxODc5NTc5ODQ3NTE5Mzk5NDI4OTgyNTEyNTBNMTEzNzM5NjY2NDU0NjkxMjI1ODIwNzQwODIyOTU5ODUzODgyNTg4NDA2ODE2MTgyNjg1OTM5NzY2OTczMjU4OTIyODA5MTU2ODEyMDcBMQMCTDU5Mzk4NzExNDczNDg4MzQ5OTczNjE3MjAxMjIyMzg5ODAxNzcxNTIzMDMyNzQzMTEwNDcyNDk5MDU5NDIzODQ5MTU3Njg2OTA4OTVMNDUzMzU2ODI3MTEzNDc4NTI3ODczMTIzNDU3MDM2MTQ4MjY1MTk5Njc0MDc5MTg4ODI4NTg2NDk2Njg4NDAzMjcxNzA0OTgxMTcwOAJNMTA1NjQzODcyODUwNzE1NTU0Njk3NTM5OTA2NjE0MTA4NDAxMTg2MzU5MjU0NjY1OTcwMzcwMTgwNTg3NzAwNDEzNDc1MTg0NjEzNjhNMTI1OTczMjM1NDcyNzc1NzkxNDQ2OTg0OTYzNzIyNDI2MTUzNjgwODU4MDEzMTMzNDMxNTU3MzU1MTEzMzAwMDM4ODQ3Njc5NTc4NTQCATEBMANNMTU3OTE1ODk0NzI1NTY4MjYyNjMyMzE2NDQ3Mjg4NzMzMzc2MjkwMTUyNjk5ODQ2OTk0MDQwNzM2MjM2MDMzNTI1Mzc2Nzg4MTMxNzFMNDU0Nzg2NjQ5OTI0ODg4MTQ0OTY3NjE2MTE1ODAyNDc0ODA2MDQ4NTM3MzI1MDAyOTQyMzkwNDExMzAxNzQyMjUzOTAzNzE2MjUyNwExMXdpYVhOeklqb2lhSFIwY0hNNkx5OXBaQzUwZDJsMFkyZ3VkSFl2YjJGMWRHZ3lJaXcCMmV5SmhiR2NpT2lKU1V6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SWpFaWZRTTIwNzk0Nzg4NTU5NjIwNjY5NTk2MjA2NDU3MDIyOTY2MTc2OTg2Njg4NzI3ODc2MTI4MjIzNjI4MTEzOTE2MzgwOTI3NTAyNzM3OTExCgAAAAAAAABhAFbRKzZXXkcRzQyaoSbmAD6Oe6NRNnLMcbe9zA11vLRE5TfIMgkbrUKAqxldN4p+fy4RnsH60U5dIFh1a+UoXgS5xu4WMO8+cRFEpkjbBruyKE9ydM++5T/87lA8waSSAA==".to_string());
+    assert_eq!(Base64::encode(zklogin_sig.as_ref()), "BQNMMjIzODg4NDk0OTc5MjA4NjM4MDE5OTQ3ODkxNDQ0MzEwNTYwODg4MzMxNjkyMDI0ODQ5MzY4Nzg2NDc3OTU1NzI5NDQzNTAxNTA1ME0yMDg4MjE0NjgxMDYzODEzMDMyMjAzOTY0MjcxNzE2NDM1OTU3OTcyNzczMzY2NDYxMDYxMDc3Mzc0MTAwNDE1Nzk2MjYzMDk5MDE4NwExAwJNMTMyNTk4NDEyMTM0OTc0NTU0MDE5ODQxNzcwNDU1NTYzMjU4NDQ1NzIwODE4ODg5NTAwNjQ4MzU0MDExOTU5NTgyNzU4NTI0ODkxNTVNMTIxODgxMDcyNTc4ODI3MTA3ODE5OTE0MTg0NzExNTc5MDc3ODU2NTc0MTc0NTUyODg2NDQ2NDk1MTk3NTM5MjEyNTc2MDEwMDk5NDMCTTExMTAxNjc2MjM5NTU4Nzc1MzkxMTU0MDcwOTQyNzExMDk0MDg4NDQ2MzM1ODA5NjkyNjQ0MTAyODYwMjkxMTU3MDEyMzUxNTg5ODI0TDgwNjY3NjAxNTIzMDA5NDk3NzY0NjYyMzE3MTIxODkzMTEwNTgyOTAwMjcwODc4MjkzMDEyNzg3ODgyMzkyMTE1MjEzOTUzNDMxMzQCATEBMANMNjI1Njc1NjkwMzAyMTUxNjQ3MjUxNTc3NTkyNjA4NDkwNTE5OTk3OTc5MzAxNDU0MTQyMTk2MDIxMjMyNTcxNDM1OTI1NDk4ODU0NU0xNDQ0MzQwMzYyMjI5MDc1MzEzNzQ5Mjk0OTg5MjUyNTY0NzQwMTI0NTQ3ODk2MzEwMTIyNjUwMDM4NzI1Nzg2NDM3MDAxMDU2MDQ3NgExMXdpYVhOeklqb2lhSFIwY0hNNkx5OXBaQzUwZDJsMFkyZ3VkSFl2YjJGMWRHZ3lJaXcCMmV5SmhiR2NpT2lKU1V6STFOaUlzSW5SNWNDSTZJa3BYVkNJc0ltdHBaQ0k2SWpFaWZRTTE1MjgzMDkyMjI5OTY4NDU5NTU1ODg1MTU0MTAxODQ1NzE1MzQyMTM1OTk4MDE0NDQwNzU5MjQ0Mjk5OTgzNTEzNDQ3NTM4NzUyNTM4CgAAAAAAAABhAGyjF3dDoIA+OtCT/tyaAB+O4iRnpWwQewsDxvGV2hRpWAH4QDHrIvPYBRHWSplje7nNGXyJDCl9hnV3sYx/gQG5xu4WMO8+cRFEpkjbBruyKE9ydM++5T/87lA8waSSAA==".to_string());
 
     let single_sig = GenericSignature::Signature(Signature::new_secure(intent_msg, &skp));
     let multisig = GenericSignature::MultiSig(
         MultiSig::combine(vec![single_sig, zklogin_sig], multisig_pk.clone()).unwrap(),
     );
-    assert_eq!(Base64::encode(multisig.as_ref()), "AwIABBh039sgp5XJ7+Ebo8i/xc3Nbz3FVPhy3VRZtNdihnINttKRJWpBXh0hsXwywh+5jsioi+H3p9ULNzF1zLDMCwOaBwUDTTE3MzE4MDg5MTI1OTUyNDIxNzM2MzQyMjYzNzE3OTMyNzE5NDM3NzE3ODQ0MjgyNDEwMTg3OTU3OTg0NzUxOTM5OTQyODk4MjUxMjUwTTExMzczOTY2NjQ1NDY5MTIyNTgyMDc0MDgyMjk1OTg1Mzg4MjU4ODQwNjgxNjE4MjY4NTkzOTc2Njk3MzI1ODkyMjgwOTE1NjgxMjA3ATEDAkw1OTM5ODcxMTQ3MzQ4ODM0OTk3MzYxNzIwMTIyMjM4OTgwMTc3MTUyMzAzMjc0MzExMDQ3MjQ5OTA1OTQyMzg0OTE1NzY4NjkwODk1TDQ1MzM1NjgyNzExMzQ3ODUyNzg3MzEyMzQ1NzAzNjE0ODI2NTE5OTY3NDA3OTE4ODgyODU4NjQ5NjY4ODQwMzI3MTcwNDk4MTE3MDgCTTEwNTY0Mzg3Mjg1MDcxNTU1NDY5NzUzOTkwNjYxNDEwODQwMTE4NjM1OTI1NDY2NTk3MDM3MDE4MDU4NzcwMDQxMzQ3NTE4NDYxMzY4TTEyNTk3MzIzNTQ3Mjc3NTc5MTQ0Njk4NDk2MzcyMjQyNjE1MzY4MDg1ODAxMzEzMzQzMTU1NzM1NTExMzMwMDAzODg0NzY3OTU3ODU0AgExATADTTE1NzkxNTg5NDcyNTU2ODI2MjYzMjMxNjQ0NzI4ODczMzM3NjI5MDE1MjY5OTg0Njk5NDA0MDczNjIzNjAzMzUyNTM3Njc4ODEzMTcxTDQ1NDc4NjY0OTkyNDg4ODE0NDk2NzYxNjExNTgwMjQ3NDgwNjA0ODUzNzMyNTAwMjk0MjM5MDQxMTMwMTc0MjI1MzkwMzcxNjI1MjcBMTF3aWFYTnpJam9pYUhSMGNITTZMeTlwWkM1MGQybDBZMmd1ZEhZdmIyRjFkR2d5SWl3AjJleUpoYkdjaU9pSlNVekkxTmlJc0luUjVjQ0k2SWtwWFZDSXNJbXRwWkNJNklqRWlmUU0yMDc5NDc4ODU1OTYyMDY2OTU5NjIwNjQ1NzAyMjk2NjE3Njk4NjY4ODcyNzg3NjEyODIyMzYyODExMzkxNjM4MDkyNzUwMjczNzkxMQoAAAAAAAAAYQBW0Ss2V15HEc0MmqEm5gA+jnujUTZyzHG3vcwNdby0ROU3yDIJG61CgKsZXTeKfn8uEZ7B+tFOXSBYdWvlKF4EucbuFjDvPnERRKZI2wa7sihPcnTPvuU//O5QPMGkkgADAAIADX2rNYyNrapO+gBJp1sHQ2VVsQo2ghm7aA9wVxNJ13UBAzwbaHR0cHM6Ly9pZC50d2l0Y2gudHYvb2F1dGgyLflu6Eag/zG3tLd5CtZRYx9p1t34RovVSn/+uHFiYfcBAQA=".to_string());
+    assert_eq!(Base64::encode(multisig.as_ref()), "AwIAC1EoYyi9D1XJFxLwIilYJ2ktMp6TmXjdg5WPvwKSio9RYAabgN71ga4LLpMTK9HdByWKVWq7JpfwdEVXCzn5BAOaBwUDTDIyMzg4ODQ5NDk3OTIwODYzODAxOTk0Nzg5MTQ0NDMxMDU2MDg4ODMzMTY5MjAyNDg0OTM2ODc4NjQ3Nzk1NTcyOTQ0MzUwMTUwNTBNMjA4ODIxNDY4MTA2MzgxMzAzMjIwMzk2NDI3MTcxNjQzNTk1Nzk3Mjc3MzM2NjQ2MTA2MTA3NzM3NDEwMDQxNTc5NjI2MzA5OTAxODcBMQMCTTEzMjU5ODQxMjEzNDk3NDU1NDAxOTg0MTc3MDQ1NTU2MzI1ODQ0NTcyMDgxODg4OTUwMDY0ODM1NDAxMTk1OTU4Mjc1ODUyNDg5MTU1TTEyMTg4MTA3MjU3ODgyNzEwNzgxOTkxNDE4NDcxMTU3OTA3Nzg1NjU3NDE3NDU1Mjg4NjQ0NjQ5NTE5NzUzOTIxMjU3NjAxMDA5OTQzAk0xMTEwMTY3NjIzOTU1ODc3NTM5MTE1NDA3MDk0MjcxMTA5NDA4ODQ0NjMzNTgwOTY5MjY0NDEwMjg2MDI5MTE1NzAxMjM1MTU4OTgyNEw4MDY2NzYwMTUyMzAwOTQ5Nzc2NDY2MjMxNzEyMTg5MzExMDU4MjkwMDI3MDg3ODI5MzAxMjc4Nzg4MjM5MjExNTIxMzk1MzQzMTM0AgExATADTDYyNTY3NTY5MDMwMjE1MTY0NzI1MTU3NzU5MjYwODQ5MDUxOTk5Nzk3OTMwMTQ1NDE0MjE5NjAyMTIzMjU3MTQzNTkyNTQ5ODg1NDVNMTQ0NDM0MDM2MjIyOTA3NTMxMzc0OTI5NDk4OTI1MjU2NDc0MDEyNDU0Nzg5NjMxMDEyMjY1MDAzODcyNTc4NjQzNzAwMTA1NjA0NzYBMTF3aWFYTnpJam9pYUhSMGNITTZMeTlwWkM1MGQybDBZMmd1ZEhZdmIyRjFkR2d5SWl3AjJleUpoYkdjaU9pSlNVekkxTmlJc0luUjVjQ0k2SWtwWFZDSXNJbXRwWkNJNklqRWlmUU0xNTI4MzA5MjIyOTk2ODQ1OTU1NTg4NTE1NDEwMTg0NTcxNTM0MjEzNTk5ODAxNDQ0MDc1OTI0NDI5OTk4MzUxMzQ0NzUzODc1MjUzOAoAAAAAAAAAYQBsoxd3Q6CAPjrQk/7cmgAfjuIkZ6VsEHsLA8bxldoUaVgB+EAx6yLz2AUR1kqZY3u5zRl8iQwpfYZ1d7GMf4EBucbuFjDvPnERRKZI2wa7sihPcnTPvuU//O5QPMGkkgADAAIDPBtodHRwczovL2lkLnR3aXRjaC50di9vYXV0aDIhyex1AlxW6vOIayyBvgGzyPMGmEAn50k8km4kUan8GgEAjFUzNe7oC5v6DFRKRf5jR0oJ3/nEsLM9srZi+TTqRsQBAQA=".to_string());
 }
 
 #[test]
@@ -378,6 +388,14 @@ fn zklogin_in_multisig_works_with_both_addresses() {
     let mut seed = StdRng::from_seed([0; 32]);
     let kp: Ed25519KeyPair = get_key_pair_from_rng(&mut seed).1;
     let skp: SuiKeyPair = SuiKeyPair::Ed25519(kp);
+    let pk = skp.public();
+
+    // printing important key information
+    let mut eph_pk_bytes = vec![pk.flag()];
+    eph_pk_bytes.extend(pk.as_ref());
+    let kp_bigint = BigUint::from_bytes_be(&eph_pk_bytes);
+    println!("Ephemeral keypair: {:?}", skp.encode());
+    println!("Ephemeral pubkey (BigInt): {:?}", kp_bigint);
 
     // create a new multisig address based on pk1 and pk2 where pk1 is a zklogin public identifier, with a crafted unpadded bytes.
     let mut bytes = Vec::new();

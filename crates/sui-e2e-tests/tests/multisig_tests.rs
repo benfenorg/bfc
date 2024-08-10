@@ -198,7 +198,7 @@ async fn sim_test_multisig_with_zklogin_scenerios() {
     let (eph_kp, _eph_pk, zklogin_inputs) =
         &load_test_vectors("../sui-types/src/unit_tests/zklogin_test_vectors.json")[1];
     let (eph_kp_1, _, _) =
-        &load_test_vectors("../sui-types/src/unit_tests/zklogin_test_vectors.json")[2];
+        &load_test_vectors("../sui-types/src/unit_tests/zklogin_test_vectors.json")[0];
     let zklogin_pk = PublicKey::ZkLogin(
         ZkLoginPublicIdentifier::new(zklogin_inputs.get_iss(), zklogin_inputs.get_address_seed())
             .unwrap(),
@@ -282,7 +282,7 @@ async fn sim_test_multisig_with_zklogin_scenerios() {
     let eph_sig = Signature::new_secure(&intent_msg, eph_kp_1);
     let zklogin_sig_mismatch = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
         zklogin_inputs.clone(),
-        2,
+        10,
         eph_sig,
     ));
     let multisig = GenericSignature::MultiSig(
@@ -328,7 +328,7 @@ async fn sim_test_multisig_with_zklogin_scenerios() {
     let intent_msg = IntentMessage::new(Intent::sui_transaction(), tx_data.clone());
     let sig_4: GenericSignature = ZkLoginAuthenticator::new(
         zklogin_inputs.clone(),
-        2,
+        10,
         Signature::new_secure(&intent_msg, eph_kp),
     )
     .into();
@@ -414,7 +414,7 @@ async fn sim_test_multisig_with_zklogin_scenerios() {
     let intent_msg = IntentMessage::new(Intent::sui_transaction(), tx_data.clone());
     let sig_4: GenericSignature = ZkLoginAuthenticator::new(
         zklogin_inputs.clone(),
-        2,
+        10,
         Signature::new_secure(&intent_msg, eph_kp),
     )
     .into();
@@ -434,7 +434,7 @@ async fn sim_test_multisig_with_zklogin_scenerios() {
     let sig: GenericSignature = Signature::new_secure(&intent_msg, &keys[0]).into();
     let sig_1: GenericSignature = ZkLoginAuthenticator::new(
         zklogin_inputs.clone(),
-        2,
+        10,
         Signature::new_secure(&intent_msg, eph_kp),
     )
     .into();
@@ -735,7 +735,7 @@ async fn sim_test_random_zklogin_in_multisig() {
         let eph_sig = Signature::new_secure(&intent_msg, kp);
         let zklogin_sig = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
             inputs.clone(),
-            2,
+            10,
             eph_sig,
         ));
         zklogin_sigs.push(zklogin_sig);
@@ -745,6 +745,7 @@ async fn sim_test_random_zklogin_in_multisig() {
     );
     let bad_tx = Transaction::from_generic_sig_data(tx_data.clone(), vec![short_multisig]);
     let res = context.execute_transaction_may_fail(bad_tx).await;
+    println!("execute_transaction_may_fail, res={:?}", res);
     assert!(res
         .unwrap_err()
         .to_string()

@@ -102,5 +102,6 @@ fn zklogin_sign_personal_message() {
     let aux_verify_data = VerifyParams::new(parsed, vec![], ZkLoginEnv::Test, true, true, Some(30));
     let res = authenticator.verify_authenticator(&intent_msg, user_address, 0, &aux_verify_data);
     // Verify passes.
+    println!("res={:?}", res);
     assert!(res.is_ok());
 }

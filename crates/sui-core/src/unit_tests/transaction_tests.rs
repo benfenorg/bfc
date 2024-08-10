@@ -23,6 +23,8 @@ use sui_types::{
     zk_login_authenticator::ZkLoginAuthenticator,
     zk_login_util::DEFAULT_JWK_BYTES,
 };
+use num_bigint::BigUint;
+
 
 use sui_macros::sim_test;
 
@@ -509,6 +511,7 @@ async fn zklogin_test_cached_proof_wrong_key() {
     let res = client
         .handle_transaction(transfer_transaction, Some(socket_addr))
         .await;
+    println!("res={:?}", &res);
     assert!(res.is_ok());
 
     /*
@@ -653,6 +656,14 @@ async fn setup_zklogin_network(
 ) {
     let (skp, _eph_pk, zklogin) =
         &load_test_vectors("../sui-types/src/unit_tests/zklogin_test_vectors.json")[1];
+    println!("Ephemeral keypair: {:?}", skp.encode());
+    let ephemeral_key_identifier: SuiAddress = (&skp.public()).into();
+    println!("Ephemeral key identifier: {ephemeral_key_identifier}");
+    let mut eph_pk_bytes = vec![_eph_pk.flag()];
+    eph_pk_bytes.extend(_eph_pk.as_ref());
+    let kp_bigint = BigUint::from_bytes_be(&eph_pk_bytes);
+    println!("Ephemeral pubkey (BigInt): {:?}", kp_bigint);
+
     let ephemeral_key = match skp {
         SuiKeyPair::Ed25519(kp) => kp,
         _ => panic!(),
@@ -765,7 +776,7 @@ async fn init_zklogin_transfer(
     };
     let authenticator = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
         zklogin.clone(),
-        2,
+        10,
         signature,
     ));
     tx.data_mut_for_testing().tx_signatures_mut_for_testing()[0] = authenticator;

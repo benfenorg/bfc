@@ -106,7 +106,7 @@ pub async fn perform_zk_login_test_tx(
     sign_with_sk: bool, // if true, submit tx with the traditional sig, otherwise submit with zklogin sig.
 ) -> Result<String, anyhow::Error> {
     let (gas_url, fullnode_url) = get_config(network);
-    let user_salt = generate_salt(parsed_token, "https://saltdev.openblock.vip/generate_salt")
+    let user_salt = generate_salt(parsed_token, "https://devsalt.openblock.vip/generate_salt")
         .await
         .unwrap_or("129390038577185583942388216820280642146".to_string());
     println!("User salt: {user_salt}");
@@ -116,7 +116,7 @@ pub async fn perform_zk_login_test_tx(
         jwt_randomness,
         kp_bigint,
         &user_salt,
-        "https://zkproverdev1.openblock.vip/v1",
+        "https://devprover.openblock.vip/v1",
     )
     .await
     .map_err(|e| anyhow!("Failed to get proof {e}"))?;
@@ -125,9 +125,11 @@ pub async fn perform_zk_login_test_tx(
 
     let (sub, aud) = parse_and_validate_jwt(parsed_token)?;
     let address_seed = gen_address_seed(&user_salt, "sub", &sub, &aud)?;
+    println!("address_seed: {:?}", &address_seed);
     let zk_login_inputs = ZkLoginInputs::from_reader(reader, &address_seed)?;
 
     let skp1 = SuiKeyPair::Ed25519(Ed25519KeyPair::generate(&mut StdRng::from_seed([1; 32])));
+    println!("skp1 keypair: {:?}", skp1.encode());
     let multisig_pk = MultiSigPublicKey::new(
         vec![
             PublicKey::from_zklogin_inputs(&zk_login_inputs)?,

@@ -17,4 +17,5 @@ services:
     environment:
       - PROVER_URI=http://backend:8080/input
       - NODE_ENV=production
+      - ENVIRONMENT=dev
       - DEBUG=zkLogin:info,jwks
