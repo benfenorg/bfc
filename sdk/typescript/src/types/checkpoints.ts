@@ -3,15 +3,15 @@
 
 import type { Infer } from 'superstruct';
 import {
+	any,
 	array,
+	boolean,
+	nullable,
 	number,
 	object,
+	optional,
 	string,
 	tuple,
-	boolean,
-	optional,
-	any,
-	nullable,
 } from 'superstruct';
 
 export const GasCostSummary = object({
@@ -19,6 +19,8 @@ export const GasCostSummary = object({
 	storageCost: string(),
 	storageRebate: string(),
 	nonRefundableStorageFee: string(),
+	basePoint: number(),
+	rate: number(),
 });
 export type GasCostSummary = Infer<typeof GasCostSummary>;
 
@@ -63,7 +65,7 @@ export const Checkpoint = object({
 	digest: string(),
 	networkTotalTransactions: string(),
 	previousDigest: optional(string()),
-	epochRollingGasCostSummary: GasCostSummary,
+	epochRollingBfcGasCostSummary: GasCostSummary,
 	timestampMs: string(),
 	endOfEpochData: optional(EndOfEpochData),
 	validatorSignature: string(),
