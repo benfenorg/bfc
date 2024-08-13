@@ -47,7 +47,6 @@ use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
 use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
-use tracing::log::Level::Info;
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
