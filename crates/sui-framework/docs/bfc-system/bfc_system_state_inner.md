@@ -1074,7 +1074,6 @@ swap stablecoin to bfc
     };
     <b>let</b> pool_balance = <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">treasury_pool::get_balance</a>(&self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
     <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <b>true</b>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
-    self.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
 
@@ -1113,7 +1112,6 @@ swap stablecoin to bfc
     };
     <b>let</b> pool_balance = <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">treasury_pool::get_balance</a>(&self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
     <a href="treasury.md#0xc8_treasury_rebalance_with_one_stablecoin">treasury::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <b>true</b>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
-    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">treasury::one_coin_exchange_rate</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>, &<b>mut</b> self.stable_rate, 1_000_000_000);
 }
 </code></pre>
 

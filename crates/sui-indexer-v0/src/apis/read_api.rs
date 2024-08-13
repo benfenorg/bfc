@@ -197,9 +197,11 @@ where
             tx_guard.stop_and_record();
             return tx_resp;
         }
-        Ok(self
-            .get_transaction_block_internal(&digest, options)
-            .await?)
+        let r = self.get_transaction_block_internal(&digest, options.clone()).await;
+        match r {
+            Ok(res) => {Ok(res)}
+            Err(_) => {self.fullnode.get_transaction_block(digest, options).await}
+        }
     }
 
     async fn multi_get_transaction_blocks(
