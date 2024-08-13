@@ -373,7 +373,6 @@ module bfc_system::bfc_system_state_inner {
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
         treasury::rebalance(&mut self.treasury, pool_balance, true, clock, ctx);
-        self.stable_rate = treasury::get_exchange_rates(&self.treasury);
     }
 
     public(package) fun rebalance_with_one_stablecoin<StableCoinType>(
@@ -392,7 +391,6 @@ module bfc_system::bfc_system_state_inner {
         };
         let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
         treasury::rebalance_with_one_stablecoin<StableCoinType>(&mut self.treasury, pool_balance, true, clock, ctx);
-        treasury::one_coin_exchange_rate<StableCoinType>(&self.treasury, &mut self.stable_rate, 1_000_000_000);
     }
 
 

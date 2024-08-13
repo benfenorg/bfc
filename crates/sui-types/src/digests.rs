@@ -215,7 +215,7 @@ impl ChainIdentifier {
 pub fn get_mainnet_chain_identifier() -> ChainIdentifier {
     let digest = MAINNET_CHAIN_IDENTIFIER.get_or_init(|| {
         let digest = CheckpointDigest::new(
-            Base58::decode("4btiuiMPvEENsttpZC7CZ53DruC3MAgfznDbASZ7DR6S")
+            Base58::decode("98WEwQW1UERH3hm8CFVahuEf4m1nMz28VvWKkun96sc5")
                 .expect("mainnet genesis checkpoint digest literal is invalid")
                 .try_into()
                 .expect("Mainnet genesis checkpoint digest literal has incorrect length"),
