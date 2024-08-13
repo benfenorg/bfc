@@ -1,3 +1,4 @@
+use std::env;
 use std::str::FromStr;
 use anyhow::anyhow;
 use axum::Json;
@@ -47,7 +48,7 @@ impl IntoResponse for ZkVerifyResponse {
 }
 
 pub async fn verify_zk_login_sig(
-    sig: String, bytes: String, intent_scope: u8, cur_epoch: Option<u64>, cur_rpc_url: Option<String>, author: String
+    sig: String, bytes: String, intent_scope: u8, cur_epoch: Option<u64>, cur_rpc_url: Option<String>, author: String, env: String
 ) -> Result<SuiResult, anyhow::Error> {
     let mut address_string = author.to_string();
     if author.starts_with("bfc") || author.starts_with("BFC") {
@@ -63,8 +64,7 @@ pub async fn verify_zk_login_sig(
         .map_err(|_| anyhow!("Invalid iss"))?;
     let jwks = fetch_jwks(&provider, &client).await?;
     let parsed: ImHashMap<JwkId, JWK> = jwks.clone().into_iter().collect();
-    // TODO  adjust env by environment variable
-    let env = ZkLoginEnv::Test;
+    let zklogin_env = match env.as_str() { "test" => ZkLoginEnv::Test, _ => ZkLoginEnv::Prod };
 
     let cur_epoch_id = match cur_rpc_url {
         Some(url) => {
@@ -81,7 +81,7 @@ pub async fn verify_zk_login_sig(
     };
 
     let verify_params =
-        VerifyParams::new(parsed, vec![], env, true, true, Some(30));
+        VerifyParams::new(parsed, vec![], zklogin_env, true, true, Some(30));
 
     let (_serialized, res) = match IntentScope::try_from(intent_scope)
         .map_err(|_| anyhow!("Invalid scope"))? {
