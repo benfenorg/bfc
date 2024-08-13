@@ -1165,11 +1165,11 @@ active_validator_addresses
 advance_epoch
 	fun
 	0x3::sui_system
-get_stable_rate
-	public fun
-	0x3::sui_system
 get_stable_rate_from_bfc
 	fun
+	0x3::sui_system
+get_stable_rate
+	public fun
 	0x3::sui_system
 load_system_state
 	fun
