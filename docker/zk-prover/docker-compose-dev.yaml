@@ -17,5 +17,8 @@ services:
     environment:
       - PROVER_URI=http://backend:8080/input
       - NODE_ENV=production
+      - REDIS_URI=redis://cache:6379
       - ENVIRONMENT=dev
       - DEBUG=zkLogin:info,jwks
+  cache:
+    image: redis:latest
