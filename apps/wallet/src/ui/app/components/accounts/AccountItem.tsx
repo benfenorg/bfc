@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { Text } from '_src/ui/app/shared/text';
-import { formatAddress } from '@benfen/bfc.js/utils';
+import { formatAddress, hex2BfcAddress } from '@benfen/bfc.js/utils';
 import { useResolveSuiNSName } from '@mysten/core';
 import { ArrowUpRight12, Copy12 } from '@mysten/icons';
 import cn from 'clsx';
@@ -53,9 +53,12 @@ export const AccountItem = forwardRef<HTMLDivElement, AccountItemProps>(
 		const account = accounts?.find((account) => account.id === accountID);
 		const { data: domainName } = useResolveSuiNSName(account?.address);
 		const accountName = account?.nickname ?? domainName ?? formatAddress(account?.address || '');
-		const copyAddress = useCopyToClipboard(account?.address || '', {
-			copySuccessMessage: 'Address copied',
-		});
+		const copyAddress = useCopyToClipboard(
+			account?.address ? hex2BfcAddress(account.address) : '',
+			{
+				copySuccessMessage: 'Address copied',
+			},
+		);
 		const explorerHref = useExplorerLink({
 			type: ExplorerLinkType.address,
 			address: account?.address,

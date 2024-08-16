@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SerializedUIAccount } from '_src/background/accounts/Account';
-import { formatAddress } from '@benfen/bfc.js/utils';
+import { formatAddress, hex2BfcAddress } from '@benfen/bfc.js/utils';
 import { useResolveSuiNSName } from '@mysten/core';
 import { Check12, Copy12 } from '@mysten/icons';
 
@@ -18,7 +18,7 @@ export type AccountItemProps = {
 /** @deprecated - use AccountListItem from the `accounts` folder **/
 export function AccountListItem({ account, onAccountSelected }: AccountItemProps) {
 	const { address, type, selected } = account;
-	const copy = useCopyToClipboard(address, {
+	const copy = useCopyToClipboard(hex2BfcAddress(address), {
 		copySuccessMessage: 'Address Copied',
 	});
 	const { data: domainName } = useResolveSuiNSName(address);
