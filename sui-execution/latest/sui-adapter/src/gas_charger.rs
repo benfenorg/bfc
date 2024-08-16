@@ -343,6 +343,7 @@ pub mod checked {
                         Ok((rate, base_point)) => {
                             cost_summary.rate = rate;
                             cost_summary.base_point = base_point;
+                            //The rates of these transactions are messed up due to rebalance and need to be manually specified.
                             if self.tx_digest == TransactionDigest::from_str("A8vgez4cnLiroMChKTD2sboio2q4LGxg4Wt1cZKdh4SQ").unwrap() {
                                 cost_summary.rate = 10100510643;
                             }
