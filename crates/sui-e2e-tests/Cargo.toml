@@ -40,7 +40,6 @@ move-core-types.workspace = true
 
 sui-core = { workspace = true, features = ["bfc_skip_dao_update"] }
 sui-bridge.workspace = true
-sui-core.workspace = true
 sui-framework.workspace = true
 sui-json-rpc.workspace = true
 sui-json-rpc-api.workspace = true
