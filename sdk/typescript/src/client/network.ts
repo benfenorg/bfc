@@ -4,11 +4,11 @@
 export function getFullnodeUrl(network: 'mainnet' | 'testnet' | 'devnet' | 'localnet') {
 	switch (network) {
 		case 'mainnet':
-			return 'https://fullnode.mainnet.sui.io:443';
+			return 'https://rpc-mainnet.benfen.org';
 		case 'testnet':
-			return 'https://fullnode.testnet.sui.io:443';
+			return 'https://testrpc.benfen.org';
 		case 'devnet':
-			return 'https://fullnode.devnet.sui.io:443';
+			return 'https://devrpc.benfen.org';
 		case 'localnet':
 			return 'http://127.0.0.1:9000';
 		default:

@@ -37,15 +37,14 @@ export const localnetConnection = new Connection({
 });
 
 export const devnetConnection = new Connection({
-	fullnode: 'https://fullnode.devnet.sui.io:443/',
-	faucet: 'https://faucet.devnet.sui.io/gas',
+	fullnode: 'https://devrpc.benfen.org',
 });
 
 export const testnetConnection = new Connection({
-	fullnode: 'https://fullnode.testnet.sui.io:443/',
-	faucet: 'https://faucet.testnet.sui.io/gas',
+	fullnode: 'https://testrpc.benfen.org',
+	faucet: 'https://testfaucet.benfen.org/gas',
 });
 
 export const mainnetConnection = new Connection({
-	fullnode: 'https://fullnode.mainnet.sui.io:443/',
+	fullnode: 'https://rpc-mainnet.benfen.org',
 });
