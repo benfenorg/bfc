@@ -1,9 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { normalizeHexAddress } from '../utils/bf-types.js';
-import type { TypeTag } from './index.js';
-import { splitGenericParameters } from './src/index.js';
+import { splitGenericParameters } from '@mysten/bcs';
+
+import { normalizeSuiAddress } from '../utils/sui-types.js';
+import type { TypeTag } from './types.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
@@ -29,6 +30,7 @@ export class TypeTagSerializer {
 		} else if (str === 'signer') {
 			return { signer: null };
 		}
+
 		const vectorMatch = str.match(VECTOR_REGEX);
 		if (vectorMatch) {
 			return {
@@ -38,7 +40,7 @@ export class TypeTagSerializer {
 
 		const structMatch = str.match(STRUCT_REGEX);
 		if (structMatch) {
-			const address = normalizeAddress ? normalizeHexAddress(structMatch[1]) : structMatch[1];
+			const address = normalizeAddress ? normalizeSuiAddress(structMatch[1]) : structMatch[1];
 			return {
 				struct: {
 					address,

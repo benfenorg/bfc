@@ -3,6 +3,7 @@
 
 use self::{
     address::{AddressFromBytesCostParams, AddressFromU256CostParams, AddressToU256CostParams},
+    config::ConfigReadSettingImplCostParams,
     crypto::{bls12381, ecdsa_k1, ecdsa_r1, ecvrf, ed25519, groth16, hash, hmac},
     crypto::{
         bls12381::{Bls12381Bls12381MinPkVerifyCostParams, Bls12381Bls12381MinSigVerifyCostParams},
@@ -41,6 +42,7 @@ use crate::crypto::poseidon::PoseidonBN254CostParams;
 use crate::crypto::zklogin;
 use crate::crypto::zklogin::{CheckZkloginIdCostParams, CheckZkloginIssuerCostParams};
 use better_any::{Tid, TidAble};
+use crypto::vdf::{self, VDFCostParams};
 use move_binary_format::errors::{PartialVMError, PartialVMResult};
 use move_core_types::{
     annotated_value as A,
@@ -50,7 +52,7 @@ use move_core_types::{
     runtime_value as R,
     vm_status::StatusCode,
 };
-use move_stdlib_natives::{GasParameters, NurseryGasParameters};
+use move_stdlib_natives::{self as MSN, GasParameters};
 use move_vm_runtime::native_functions::{NativeContext, NativeFunction, NativeFunctionTable};
 use move_vm_types::{
     loaded_data::runtime_types::Type,
@@ -63,6 +65,7 @@ use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
 
 mod address;
+mod config;
 mod crypto;
 mod dynamic_field;
 mod event;
@@ -86,6 +89,9 @@ pub struct NativesCostTable {
 
     // Curve natives
     pub curve_dx_cost_params: CurveDxCostParams,
+
+    // Config
+    pub config_read_setting_impl_cost_params: ConfigReadSettingImplCostParams,
 
     // Dynamic field natives
     pub dynamic_field_hash_type_and_key_cost_params: DynamicFieldHashTypeAndKeyCostParams,
@@ -157,6 +163,9 @@ pub struct NativesCostTable {
     // group ops
     pub group_ops_cost_params: GroupOpsCostParams,
 
+    // vdf
+    pub vdf_cost_params: VDFCostParams,
+
     // zklogin
     pub check_zklogin_id_cost_params: CheckZkloginIdCostParams,
     pub check_zklogin_issuer_cost_params: CheckZkloginIssuerCostParams,
@@ -180,6 +189,15 @@ impl NativesCostTable {
 
             curve_dx_cost_params: CurveDxCostParams {
                 curve_dx_cost_base: protocol_config.curve_dx_cost_base().into(),
+            },
+
+            config_read_setting_impl_cost_params: ConfigReadSettingImplCostParams {
+                config_read_setting_impl_cost_base: protocol_config
+                    .config_read_setting_impl_cost_base_as_option()
+                    .map(Into::into),
+                config_read_setting_impl_cost_per_byte: protocol_config
+                    .config_read_setting_impl_cost_per_byte_as_option()
+                    .map(Into::into),
             },
 
             dynamic_field_hash_type_and_key_cost_params: DynamicFieldHashTypeAndKeyCostParams {
@@ -619,11 +637,123 @@ impl NativesCostTable {
                     .group_ops_bls12381_pairing_cost_as_option()
                     .map(Into::into),
             },
+            vdf_cost_params: VDFCostParams {
+                vdf_verify_cost: protocol_config
+                    .vdf_verify_vdf_cost_as_option()
+                    .map(Into::into),
+                hash_to_input_cost: protocol_config
+                    .vdf_hash_to_input_cost_as_option()
+                    .map(Into::into),
+            },
         }
     }
 }
 
-pub fn all_natives(silent: bool) -> NativeFunctionTable {
+pub fn make_stdlib_gas_params_for_protocol_config(
+    protocol_config: &ProtocolConfig,
+) -> GasParameters {
+    macro_rules! get_gas_cost_or_default {
+        ($name: ident) => {{
+            debug_assert!(
+                protocol_config.version.as_u64() < 53 || protocol_config.$name().is_some()
+            );
+            protocol_config.$name().map(Into::into).unwrap_or(0.into())
+        }};
+    }
+    GasParameters::new(
+        MSN::bcs::GasParameters {
+            to_bytes: MSN::bcs::ToBytesGasParameters {
+                per_byte_serialized: get_gas_cost_or_default!(
+                    bcs_per_byte_serialized_cost_as_option
+                ),
+                legacy_min_output_size: get_gas_cost_or_default!(
+                    bcs_legacy_min_output_size_cost_as_option
+                ),
+                failure: get_gas_cost_or_default!(bcs_failure_cost_as_option),
+            },
+        },
+        MSN::debug::GasParameters {
+            print: MSN::debug::PrintGasParameters {
+                base_cost: get_gas_cost_or_default!(debug_print_base_cost_as_option),
+            },
+            print_stack_trace: MSN::debug::PrintStackTraceGasParameters {
+                base_cost: get_gas_cost_or_default!(debug_print_stack_trace_base_cost_as_option),
+            },
+        },
+        MSN::hash::GasParameters {
+            sha2_256: MSN::hash::Sha2_256GasParameters {
+                base: get_gas_cost_or_default!(hash_sha2_256_base_cost_as_option),
+                per_byte: get_gas_cost_or_default!(hash_sha2_256_per_byte_cost_as_option),
+                legacy_min_input_len: get_gas_cost_or_default!(
+                    hash_sha2_256_legacy_min_input_len_cost_as_option
+                ),
+            },
+            sha3_256: MSN::hash::Sha3_256GasParameters {
+                base: get_gas_cost_or_default!(hash_sha3_256_base_cost_as_option),
+                per_byte: get_gas_cost_or_default!(hash_sha3_256_per_byte_cost_as_option),
+                legacy_min_input_len: get_gas_cost_or_default!(
+                    hash_sha3_256_legacy_min_input_len_cost_as_option
+                ),
+            },
+        },
+        MSN::string::GasParameters {
+            check_utf8: MSN::string::CheckUtf8GasParameters {
+                base: get_gas_cost_or_default!(string_check_utf8_base_cost_as_option),
+                per_byte: get_gas_cost_or_default!(string_check_utf8_per_byte_cost_as_option),
+            },
+            is_char_boundary: MSN::string::IsCharBoundaryGasParameters {
+                base: get_gas_cost_or_default!(string_is_char_boundary_base_cost_as_option),
+            },
+            sub_string: MSN::string::SubStringGasParameters {
+                base: get_gas_cost_or_default!(string_sub_string_base_cost_as_option),
+                per_byte: get_gas_cost_or_default!(string_sub_string_per_byte_cost_as_option),
+            },
+            index_of: MSN::string::IndexOfGasParameters {
+                base: get_gas_cost_or_default!(string_index_of_base_cost_as_option),
+                per_byte_pattern: get_gas_cost_or_default!(
+                    string_index_of_per_byte_pattern_cost_as_option
+                ),
+                per_byte_searched: get_gas_cost_or_default!(
+                    string_index_of_per_byte_searched_cost_as_option
+                ),
+            },
+        },
+        MSN::type_name::GasParameters {
+            get: MSN::type_name::GetGasParameters {
+                base: get_gas_cost_or_default!(type_name_get_base_cost_as_option),
+                per_byte: get_gas_cost_or_default!(type_name_get_per_byte_cost_as_option),
+            },
+        },
+        MSN::vector::GasParameters {
+            empty: MSN::vector::EmptyGasParameters {
+                base: get_gas_cost_or_default!(vector_empty_base_cost_as_option),
+            },
+            length: MSN::vector::LengthGasParameters {
+                base: get_gas_cost_or_default!(vector_length_base_cost_as_option),
+            },
+            push_back: MSN::vector::PushBackGasParameters {
+                base: get_gas_cost_or_default!(vector_push_back_base_cost_as_option),
+                legacy_per_abstract_memory_unit: get_gas_cost_or_default!(
+                    vector_push_back_legacy_per_abstract_memory_unit_cost_as_option
+                ),
+            },
+            borrow: MSN::vector::BorrowGasParameters {
+                base: get_gas_cost_or_default!(vector_borrow_base_cost_as_option),
+            },
+            pop_back: MSN::vector::PopBackGasParameters {
+                base: get_gas_cost_or_default!(vector_pop_back_base_cost_as_option),
+            },
+            destroy_empty: MSN::vector::DestroyEmptyGasParameters {
+                base: get_gas_cost_or_default!(vector_destroy_empty_base_cost_as_option),
+            },
+            swap: MSN::vector::SwapGasParameters {
+                base: get_gas_cost_or_default!(vector_swap_base_cost_as_option),
+            },
+        },
+    )
+}
+
+pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunctionTable {
     let sui_framework_natives: &[(&str, &str, NativeFunction)] = &[
         ("address", "from_bytes", make_native!(address::from_bytes)),
         ("address", "to_u256", make_native!(address::to_u256)),
@@ -644,6 +774,11 @@ pub fn all_natives(silent: bool) -> NativeFunctionTable {
             "dynamic_field",
             "hash_type_and_key",
             make_native!(dynamic_field::hash_type_and_key),
+        ),
+        (
+            "config",
+            "read_setting_impl",
+            make_native!(config::read_setting_impl),
         ),
         (
             "dynamic_field",
@@ -707,6 +842,12 @@ pub fn all_natives(silent: bool) -> NativeFunctionTable {
             make_native!(ed25519::ed25519_verify),
         ),
         ("event", "emit", make_native!(event::emit)),
+        (
+            "event",
+            "events_by_type",
+            make_native!(event::get_events_by_type),
+        ),
+        ("event", "num_events", make_native!(event::num_events)),
         (
             "groth16",
             "verify_groth16_proof_internal",
@@ -887,6 +1028,26 @@ pub fn all_natives(silent: bool) -> NativeFunctionTable {
             "poseidon_bn254_internal",
             make_native!(poseidon::poseidon_bn254_internal),
         ),
+        (
+            "vdf",
+            "vdf_verify_internal",
+            make_native!(vdf::vdf_verify_internal),
+        ),
+        (
+            "vdf",
+            "hash_to_input_internal",
+            make_native!(vdf::hash_to_input_internal),
+        ),
+        (
+            "ecdsa_k1",
+            "secp256k1_sign",
+            make_native!(ecdsa_k1::secp256k1_sign),
+        ),
+        (
+            "ecdsa_k1",
+            "secp256k1_keypair_from_seed",
+            make_native!(ecdsa_k1::secp256k1_keypair_from_seed),
+        ),
     ];
     let sui_framework_natives_iter =
         sui_framework_natives
@@ -919,14 +1080,8 @@ pub fn all_natives(silent: bool) -> NativeFunctionTable {
         .chain(sui_framework_natives_iter)
         .chain(move_stdlib_natives::all_natives(
             MOVE_STDLIB_ADDRESS,
-            // TODO: tune gas params
-            GasParameters::zeros(),
-        ))
-        .chain(move_stdlib_natives::nursery_natives(
+            make_stdlib_gas_params_for_protocol_config(protocol_config),
             silent,
-            MOVE_STDLIB_ADDRESS,
-            // TODO: tune gas params
-            NurseryGasParameters::zeros(),
         ))
         .collect()
 }
@@ -943,7 +1098,7 @@ pub fn get_object_id(object: Value) -> Result<Value, PartialVMError> {
     get_nested_struct_field(object, &[0, 0, 0])
 }
 
-// Extract a field valye that's nested inside value `v`. The offset of each nesting
+// Extract a field value that's nested inside value `v`. The offset of each nesting
 // is determined by `offsets`.
 pub fn get_nested_struct_field(mut v: Value, offsets: &[usize]) -> Result<Value, PartialVMError> {
     for offset in offsets {

@@ -11,6 +11,7 @@ use crate::{
     multisig::{as_indices, MultiSig, MAX_SIGNER_IN_MULTISIG},
     multisig_legacy::bitmap_to_u16,
     signature::{AuthenticatorTrait, GenericSignature, VerifyParams},
+    signature_verification::VerifiedDigestCache,
     utils::{
         keys, load_test_vectors, make_transaction_data, make_zklogin_tx, DEFAULT_ADDRESS_SEED,
         SHORT_ADDRESS_SEED,
@@ -35,6 +36,7 @@ use std::str::FromStr;
 use fastcrypto::traits::KeyPair;
 use num_bigint::BigUint;
 
+use std::{str::FromStr, sync::Arc};
 #[test]
 fn test_combine_sigs() {
     let kp1: SuiKeyPair = SuiKeyPair::Ed25519(get_key_pair().1);
@@ -436,7 +438,12 @@ fn zklogin_in_multisig_works_with_both_addresses() {
         .collect();
 
     let aux_verify_data = VerifyParams::new(parsed, vec![], ZkLoginEnv::Test, true, true, Some(30));
-    let res = multisig.verify_claims(intent_msg, multisig_address, &aux_verify_data);
+    let res = multisig.verify_claims(
+        intent_msg,
+        multisig_address,
+        &aux_verify_data,
+        Arc::new(VerifiedDigestCache::new_empty()),
+    );
     // since the zklogin inputs is crafted, it is expected that the proof verify failed, but all checks before passes.
     assert!(
         matches!(res, Err(crate::error::SuiError::InvalidSignature { error }) if error.contains("General cryptographic error: Groth16 proof verify failed"))
@@ -471,8 +478,12 @@ fn zklogin_in_multisig_works_with_both_addresses() {
         multisig_pk_padded,
     );
 
-    let res =
-        multisig_padded.verify_claims(intent_msg_padded, multisig_address_padded, &aux_verify_data);
+    let res = multisig_padded.verify_claims(
+        intent_msg_padded,
+        multisig_address_padded,
+        &aux_verify_data,
+        Arc::new(VerifiedDigestCache::new_empty()),
+    );
     assert!(
         matches!(res, Err(crate::error::SuiError::InvalidSignature { error }) if error.contains("General cryptographic error: Groth16 proof verify failed"))
     );

@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { BenfenObjectChange } from '@benfen/bfc.js/client';
+import type { SuiObjectChange } from '@mysten/sui/client';
 
-export const getOwnerType = (change: BenfenObjectChange) => {
+export const getOwnerType = (change: SuiObjectChange) => {
 	if (!('owner' in change)) return '';
 	if (typeof change.owner === 'object') {
 		if ('AddressOwner' in change.owner) return 'AddressOwner';

@@ -1,8 +1,8 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { formatAddress } from '@benfen/bfc.js/utils';
 import { CheckFill16, XFill16 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui/utils';
 import { cva, cx, type VariantProps } from 'class-variance-authority';
 import { useEffect, useRef } from 'react';
 

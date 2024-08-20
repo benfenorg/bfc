@@ -1,10 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import { useActiveAccount } from '_app/hooks/useActiveAccount';
 import { useCoinsReFetchingConfig } from '_hooks';
-import { type BalanceChange } from '@benfen/bfc.js/client';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { roundFloat, useFormatCoin } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
+import { type DeepBookClient } from '@mysten/deepbook';
+import { type BalanceChange } from '@mysten/sui/client';
 import BigNumber from 'bignumber.js';
 
 export function useSwapData({
@@ -18,18 +19,17 @@ export function useSwapData({
 	const activeAccountAddress = activeAccount?.address;
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 
-	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useBenfenClientQuery(
+	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useSuiClientQuery(
 		'getBalance',
 		{ coinType: baseCoinType, owner: activeAccountAddress! },
 		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
 	);
 
-	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } =
-		useBenfenClientQuery(
-			'getBalance',
-			{ coinType: quoteCoinType, owner: activeAccountAddress! },
-			{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
-		);
+	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } = useSuiClientQuery(
+		'getBalance',
+		{ coinType: quoteCoinType, owner: activeAccountAddress! },
+		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
+	);
 
 	const rawBaseBalance = baseCoinBalanceData?.totalBalance;
 	const rawQuoteBalance = quoteCoinBalanceData?.totalBalance;
@@ -70,17 +70,31 @@ export function getUSDCurrency(amount?: number | null) {
 export async function isExceedingSlippageTolerance({
 	slipPercentage,
 	poolId,
+	deepBookClient,
 	conversionRate,
 	isAsk,
 	average,
 }: {
 	slipPercentage: string;
 	poolId: string;
+	deepBookClient: DeepBookClient;
 	conversionRate: number;
 	isAsk: boolean;
 	average: string;
 }) {
-	return false;
+	const convertedAverage = new BigNumber(average).shiftedBy(conversionRate).toString();
+
+	const { bestBidPrice, bestAskPrice } = await deepBookClient.getMarketPrice(poolId);
+
+	if (!bestBidPrice || !bestAskPrice) {
+		return false;
+	}
+
+	const slip = new BigNumber(isAsk ? bestBidPrice.toString() : bestAskPrice.toString()).dividedBy(
+		convertedAverage,
+	);
+
+	return new BigNumber('1').minus(slip).abs().isGreaterThan(slipPercentage);
 }
 
 function getCoinsFromBalanceChanges(coinType: string, balanceChanges: BalanceChange[]) {

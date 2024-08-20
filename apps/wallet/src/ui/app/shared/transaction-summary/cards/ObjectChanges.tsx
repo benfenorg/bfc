@@ -1,9 +1,8 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { Text } from '_src/ui/app/shared/text';
-import { formatAddress } from '@benfen/bfc.js/utils';
 import { Disclosure } from '@headlessui/react';
 import {
 	getObjectChangeLabel,
@@ -13,6 +12,7 @@ import {
 	type SuiObjectChangeWithDisplay,
 } from '@mysten/core';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui/utils';
 import cx from 'clsx';
 
 import { ExpandableList } from '../../ExpandableList';
@@ -172,7 +172,7 @@ export function ObjectChangeEntry({ changes, type }: ObjectChangeEntryProps) {
 															open
 																? changes.changesWithDisplay.map((change) => (
 																		<ObjectChangeDisplay change={change} />
-																  ))
+																	))
 																: []
 														}
 													/>
@@ -186,7 +186,7 @@ export function ObjectChangeEntry({ changes, type }: ObjectChangeEntryProps) {
 														open
 															? changes.changes.map((change) => (
 																	<ObjectDetail ownerKey={owner} change={change} />
-															  ))
+																))
 															: []
 													}
 												/>

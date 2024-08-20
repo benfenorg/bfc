@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 /**
@@ -7,10 +7,10 @@
  *  ######################################
  *
  * This file is generated from:
- * /crates/bfc-open-rpc/spec/openrpc.json
+ * /crates/sui-open-rpc/spec/openrpc.json
  */
 
-import type { TransactionBlock } from '../../transactions/index.js';
+import type { Transaction } from '../../transactions/index.js';
 import type * as RpcTypes from './generated.js';
 
 /**
@@ -21,11 +21,13 @@ import type * as RpcTypes from './generated.js';
 export interface DevInspectTransactionBlockParams {
 	sender: string;
 	/** BCS encoded TransactionKind(as opposed to TransactionData, which include gasBudget and gasPrice) */
-	transactionBlock: TransactionBlock | Uint8Array | string;
+	transactionBlock: Transaction | Uint8Array | string;
 	/** Gas is not charged, but gas usage is still calculated. Default to use reference gas price */
 	gasPrice?: bigint | number | null | undefined;
 	/** The epoch to perform the call. Will be set from the system state object if not provided */
 	epoch?: string | null | undefined;
+	/** Additional arguments including gas_budget, gas_objects, gas_sponsor and skip_checks. */
+	additionalArgs?: RpcTypes.DevInspectArgs | null | undefined;
 }
 /**
  * Return transaction execution effects including the gas cost summary, while the effects are not
@@ -53,8 +55,8 @@ export interface ExecuteTransactionBlockParams {
 	 */
 	signature: string | string[];
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenTransactionBlockResponseOptions | null | undefined;
-	/** The request type, derived from `BenfenTransactionBlockResponseOptions` if None */
+	options?: RpcTypes.SuiTransactionBlockResponseOptions | null | undefined;
+	/** @deprecated requestType will be ignored by JSON RPC in the future */
 	requestType?: RpcTypes.ExecuteTransactionRequestType | null | undefined;
 }
 /** Return the first four bytes of the chain's genesis checkpoint digest. */
@@ -83,9 +85,6 @@ export interface GetEventsParams {
 }
 /** Return the sequence number of the latest checkpoint that has been executed */
 export interface GetLatestCheckpointSequenceNumberParams {}
-export interface GetLoadedChildObjectsParams {
-	digest: string;
-}
 /** Return the argument types of a Move function, based on normalized Type. */
 export interface GetMoveFunctionArgTypesParams {
 	package: string;
@@ -118,7 +117,7 @@ export interface GetObjectParams {
 	/** the ID of the queried object */
 	id: string;
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenObjectDataOptions | null | undefined;
+	options?: RpcTypes.SuiObjectDataOptions | null | undefined;
 }
 /**
  * Return the protocol config table for the given version number. If the version number is not
@@ -138,14 +137,14 @@ export interface GetTransactionBlockParams {
 	/** the digest of the queried transaction */
 	digest: string;
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenTransactionBlockResponseOptions | null | undefined;
+	options?: RpcTypes.SuiTransactionBlockResponseOptions | null | undefined;
 }
 /** Return the object data for a list of objects */
 export interface MultiGetObjectsParams {
 	/** the IDs of the queried objects */
 	ids: string[];
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenObjectDataOptions | null | undefined;
+	options?: RpcTypes.SuiObjectDataOptions | null | undefined;
 }
 /**
  * Returns an ordered list of transaction responses The method will throw an error if the input
@@ -155,7 +154,7 @@ export interface MultiGetTransactionBlocksParams {
 	/** A list of transaction digests. */
 	digests: string[];
 	/** config options to control which fields to fetch */
-	options?: RpcTypes.BenfenTransactionBlockResponseOptions | null | undefined;
+	options?: RpcTypes.SuiTransactionBlockResponseOptions | null | undefined;
 }
 /**
  * Note there is no software-level guarantee/SLA that objects with past versions can be retrieved by
@@ -168,7 +167,7 @@ export interface TryGetPastObjectParams {
 	/** the version of the queried object. If None, default to the latest known version */
 	version: number;
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenObjectDataOptions | null | undefined;
+	options?: RpcTypes.SuiObjectDataOptions | null | undefined;
 }
 /**
  * Note there is no software-level guarantee/SLA that objects with past versions can be retrieved by
@@ -179,16 +178,16 @@ export interface TryMultiGetPastObjectsParams {
 	/** a vector of object and versions to be queried */
 	pastObjects: RpcTypes.GetPastObjectRequest[];
 	/** options for specifying the content to be returned */
-	options?: RpcTypes.BenfenObjectDataOptions | null | undefined;
+	options?: RpcTypes.SuiObjectDataOptions | null | undefined;
 }
 /** Return the total coin balance for all coin type, owned by the address owner. */
 export interface GetAllBalancesParams {
-	/** the owner's Benfen address */
+	/** the owner's Sui address */
 	owner: string;
 }
 /** Return all Coin objects owned by an address. */
 export interface GetAllCoinsParams {
-	/** the owner's Benfen address */
+	/** the owner's Sui address */
 	owner: string;
 	/** optional paging cursor */
 	cursor?: string | null | undefined;
@@ -197,11 +196,11 @@ export interface GetAllCoinsParams {
 }
 /** Return the total coin balance for one coin type, owned by the address owner. */
 export interface GetBalanceParams {
-	/** the owner's Benfen address */
+	/** the owner's Sui address */
 	owner: string;
 	/**
 	 * optional type names for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC),
-	 * default to 0x2::bfc::BFC if not specified.
+	 * default to 0x2::sui::SUI if not specified.
 	 */
 	coinType?: string | null | undefined;
 }
@@ -212,11 +211,11 @@ export interface GetCoinMetadataParams {
 }
 /** Return all Coin<`coin_type`> objects owned by an address. */
 export interface GetCoinsParams {
-	/** the owner's Benfen address */
+	/** the owner's Sui address */
 	owner: string;
 	/**
 	 * optional type name for the coin (e.g., 0x168da5bf1f48dafc111b0a488fa454aca95e0b5e::usdc::USDC),
-	 * default to 0x2::bfc::BFC if not specified.
+	 * default to 0x2::sui::SUI if not specified.
 	 */
 	coinType?: string | null | undefined;
 	/** optional paging cursor */
@@ -248,15 +247,15 @@ export interface GetDynamicFieldsParams {
 	/** Maximum item returned per page, default to [QUERY_MAX_RESULT_LIMIT] if not specified. */
 	limit?: number | null | undefined;
 }
-/** Return the latest BENFEN system state object on-chain. */
-export interface GetLatestBenfenSystemStateParams {}
+/** Return the latest SUI system state object on-chain. */
+export interface GetLatestSuiSystemStateParams {}
 /**
  * Return the list of objects owned by an address. Note that if the address owns more than
  * `QUERY_MAX_RESULT_LIMIT` objects, the pagination is not accurate, because previous page may have
- * been updated when the next page is fetched. Please use bfcx_queryObjects if this is a concern.
+ * been updated when the next page is fetched. Please use suix_queryObjects if this is a concern.
  */
 export type GetOwnedObjectsParams = {
-	/** the owner's Benfen address */
+	/** the owner's Sui address */
 	owner: string;
 	/**
 	 * An optional paging cursor. If provided, the query will start from the next item after the specified
@@ -265,7 +264,7 @@ export type GetOwnedObjectsParams = {
 	cursor?: string | null | undefined;
 	/** Max number of items returned per page, default to [QUERY_MAX_RESULT_LIMIT] if not specified. */
 	limit?: number | null | undefined;
-} & RpcTypes.BenfenObjectResponseQuery;
+} & RpcTypes.SuiObjectResponseQuery;
 /** Return the reference gas price for the network */
 export interface GetReferenceGasPriceParams {}
 /** Return all [DelegatedStake]. */
@@ -274,7 +273,7 @@ export interface GetStakesParams {
 }
 /** Return one or more [DelegatedStake]. If a Stake was withdrawn its status will be Unstaked. */
 export interface GetStakesByIdsParams {
-	stakedBfcIds: string[];
+	stakedSuiIds: string[];
 }
 /** Return total supply for a coin */
 export interface GetTotalSupplyParams {
@@ -285,7 +284,11 @@ export interface GetTotalSupplyParams {
 export interface GetValidatorsApyParams {}
 /** Return list of events for a specified query criteria. */
 export interface QueryEventsParams {
-	query: RpcTypes.BenfenEventFilter;
+	/**
+	 * The event query criteria. See [Event filter](https://docs.sui.io/build/event_api#event-filters)
+	 * documentation for examples.
+	 */
+	query: RpcTypes.SuiEventFilter;
 	/** optional paging cursor */
 	cursor?: RpcTypes.EventId | null | undefined;
 	/** maximum number of items per page, default to [QUERY_MAX_RESULT_LIMIT] if not specified. */
@@ -304,7 +307,7 @@ export type QueryTransactionBlocksParams = {
 	limit?: number | null | undefined;
 	/** query result ordering, default to false (ascending order), oldest record first. */
 	order?: 'ascending' | 'descending' | null | undefined;
-} & RpcTypes.BenfenTransactionBlockResponseQuery;
+} & RpcTypes.SuiTransactionBlockResponseQuery;
 /** Return the resolved address given resolver and name */
 export interface ResolveNameServiceAddressParams {
 	/** The name to resolve */
@@ -320,14 +323,21 @@ export interface ResolveNameServiceNamesParams {
 	cursor?: string | null | undefined;
 	limit?: number | null | undefined;
 }
+/** Subscribe to a stream of Sui event */
 export interface SubscribeEventParams {
-	filter: RpcTypes.BenfenEventFilter;
+	/**
+	 * The filter criteria of the event stream. See
+	 * [Event filter](https://docs.sui.io/build/event_api#event-filters) documentation for examples.
+	 */
+	filter: RpcTypes.SuiEventFilter;
 }
+/** Subscribe to a stream of Sui transaction effects */
 export interface SubscribeTransactionParams {
 	filter: RpcTypes.TransactionFilter;
 }
 /** Create an unsigned batched transaction. */
 export interface UnsafeBatchTransactionParams {
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** list of transaction request parameters */
 	singleTransactionParams: RpcTypes.RPCTransactionRequestParams[];
@@ -339,11 +349,11 @@ export interface UnsafeBatchTransactionParams {
 	/** the gas budget, the transaction will fail if the gas cost exceed the budget */
 	gasBudget: string;
 	/** Whether this is a regular transaction or a Dev Inspect Transaction */
-	txnBuilderMode?: RpcTypes.BenfenTransactionBlockBuilderMode | null | undefined;
+	txnBuilderMode?: RpcTypes.SuiTransactionBlockBuilderMode | null | undefined;
 }
 /** Create an unsigned transaction to merge multiple coins into one coin. */
 export interface UnsafeMergeCoinsParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** the coin object to merge into, this coin will remain after the transaction */
 	primaryCoin: string;
@@ -365,7 +375,7 @@ export interface UnsafeMergeCoinsParams {
  * function in the module of a given package.
  */
 export interface UnsafeMoveCallParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** the Move package ID, e.g. `0x2` */
 	packageObjectId: string;
@@ -376,7 +386,7 @@ export interface UnsafeMoveCallParams {
 	/** the type arguments of the Move function */
 	typeArguments: string[];
 	/**
-	 * the arguments to be passed into the Move function
+	 * the arguments to be passed into the Move function, in [SuiJson](https://docs.sui.io/build/sui-json)
 	 * format
 	 */
 	arguments: unknown[];
@@ -389,9 +399,9 @@ export interface UnsafeMoveCallParams {
 	gasBudget: string;
 	/**
 	 * Whether this is a Normal transaction or a Dev Inspect Transaction. Default to be
-	 * `BenfenTransactionBlockBuilderMode::Commit` when it's None.
+	 * `SuiTransactionBlockBuilderMode::Commit` when it's None.
 	 */
-	executionMode?: RpcTypes.BenfenTransactionBlockBuilderMode | null | undefined;
+	executionMode?: RpcTypes.SuiTransactionBlockBuilderMode | null | undefined;
 }
 /**
  * Send `Coin<T>` to a list of addresses, where `T` can be any coin type, following a list of amounts,
@@ -400,9 +410,9 @@ export interface UnsafeMoveCallParams {
  * auto-select one.
  */
 export interface UnsafePayParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** the Benfen coins to be used in this transaction */
+	/** the Sui coins to be used in this transaction */
 	inputCoins: string[];
 	/** the recipients' addresses, the length of this vector must be the same as amounts. */
 	recipients: string[];
@@ -417,16 +427,16 @@ export interface UnsafePayParams {
 	gasBudget: string;
 }
 /**
- * Send all BFC coins to one recipient. This is for BFC coin only and does not require a separate gas
- * coin object. Specifically, what pay_all_bfc does are: 1. accumulate all BFC from input coins and
- * deposit all BFC to the first input coin 2. transfer the updated first coin to the recipient and also
+ * Send all SUI coins to one recipient. This is for SUI coin only and does not require a separate gas
+ * coin object. Specifically, what pay_all_sui does are: 1. accumulate all SUI from input coins and
+ * deposit all SUI to the first input coin 2. transfer the updated first coin to the recipient and also
  * use this first coin as gas coin object. 3. the balance of the first input coin after tx is
  * sum(input_coins) - actual_gas_cost. 4. all other input coins other than the first are deleted.
  */
-export interface UnsafePayAllBfcParams {
-	/** the transaction signer's Bfc address */
+export interface UnsafePayAllSuiParams {
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** the Bfc coins to be used in this transaction, including the coin for gas payment. */
+	/** the Sui coins to be used in this transaction, including the coin for gas payment. */
 	inputCoins: string[];
 	/** the recipient address, */
 	recipient: string;
@@ -434,18 +444,18 @@ export interface UnsafePayAllBfcParams {
 	gasBudget: string;
 }
 /**
- * Send BFC coins to a list of addresses, following a list of amounts. This is for BFC coin only and
- * does not require a separate gas coin object. Specifically, what pay_bfc does are: 1. debit each
+ * Send SUI coins to a list of addresses, following a list of amounts. This is for SUI coin only and
+ * does not require a separate gas coin object. Specifically, what pay_sui does are: 1. debit each
  * input_coin to create new coin following the order of amounts and assign it to the corresponding
- * recipient. 2. accumulate all residual BFC from input coins left and deposit all BFC to the first
+ * recipient. 2. accumulate all residual SUI from input coins left and deposit all SUI to the first
  * input coin, then use the first input coin as the gas coin object. 3. the balance of the first input
  * coin after tx is sum(input_coins) - sum(amounts) - actual_gas_cost 4. all other input coints other
  * than the first one are deleted.
  */
-export interface UnsafePayBfcParams {
-	/** the transaction signer's Benfen address */
+export interface UnsafePaySuiParams {
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** the Bfc coins to be used in this transaction, including the coin for gas payment. */
+	/** the Sui coins to be used in this transaction, including the coin for gas payment. */
 	inputCoins: string[];
 	/** the recipients' addresses, the length of this vector must be the same as amounts. */
 	recipients: string[];
@@ -456,7 +466,7 @@ export interface UnsafePayBfcParams {
 }
 /** Create an unsigned transaction to publish a Move package. */
 export interface UnsafePublishParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	sender: string;
 	/** the compiled bytes of a Move package */
 	compiledModules: string[];
@@ -472,13 +482,13 @@ export interface UnsafePublishParams {
 }
 /** Add stake to a validator's staking pool using multiple coins and amount. */
 export interface UnsafeRequestAddStakeParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** Coin<BFC> object to stake */
+	/** Coin<SUI> object to stake */
 	coins: string[];
 	/** stake amount */
 	amount?: string | null | undefined;
-	/** the validator's Benfen address */
+	/** the validator's Sui address */
 	validator: string;
 	/**
 	 * gas object to be used in this transaction, node will pick one from the signer's possession if not
@@ -490,10 +500,10 @@ export interface UnsafeRequestAddStakeParams {
 }
 /** Withdraw stake from a validator's staking pool. */
 export interface UnsafeRequestWithdrawStakeParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** StakedBfc object ID */
-	stakedBfc: string;
+	/** StakedSui object ID */
+	stakedSui: string;
 	/**
 	 * gas object to be used in this transaction, node will pick one from the signer's possession if not
 	 * provided
@@ -504,7 +514,7 @@ export interface UnsafeRequestWithdrawStakeParams {
 }
 /** Create an unsigned transaction to split a coin object into multiple coins. */
 export interface UnsafeSplitCoinParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** the coin object to be spilt */
 	coinObjectId: string;
@@ -520,7 +530,7 @@ export interface UnsafeSplitCoinParams {
 }
 /** Create an unsigned transaction to split a coin object into multiple equal-size coins. */
 export interface UnsafeSplitCoinEqualParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** the coin object to be spilt */
 	coinObjectId: string;
@@ -539,7 +549,7 @@ export interface UnsafeSplitCoinEqualParams {
  * must allow public transfers
  */
 export interface UnsafeTransferObjectParams {
-	/** the transaction signer's Benfen address */
+	/** the transaction signer's Sui address */
 	signer: string;
 	/** the ID of the object to be transferred */
 	objectId: string;
@@ -550,21 +560,21 @@ export interface UnsafeTransferObjectParams {
 	gas?: string | null | undefined;
 	/** the gas budget, the transaction will fail if the gas cost exceed the budget */
 	gasBudget: string;
-	/** the recipient's Benfen address */
+	/** the recipient's Sui address */
 	recipient: string;
 }
 /**
- * Create an unsigned transaction to send BFC coin object to a Benfen address. The BFC object is also used
+ * Create an unsigned transaction to send SUI coin object to a Sui address. The SUI object is also used
  * as the gas object.
  */
-export interface UnsafeTransferBfcParams {
-	/** the transaction signer's Benfen address */
+export interface UnsafeTransferSuiParams {
+	/** the transaction signer's Sui address */
 	signer: string;
-	/** the Bfc coin object to be used in this transaction */
-	bfcObjectId: string;
+	/** the Sui coin object to be used in this transaction */
+	suiObjectId: string;
 	/** the gas budget, the transaction will fail if the gas cost exceed the budget */
 	gasBudget: string;
-	/** the recipient's Benfen address */
+	/** the recipient's Sui address */
 	recipient: string;
 	/** the amount to be split out and transferred */
 	amount?: string | null | undefined;

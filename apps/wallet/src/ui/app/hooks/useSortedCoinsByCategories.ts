@@ -1,15 +1,15 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { usePinnedCoinTypes } from '_app/hooks/usePinnedCoinTypes';
 import { useRecognizedPackages } from '_app/hooks/useRecognizedPackages';
-import { type CoinBalance as CoinBalanceType } from '@benfen/bfc.js/client';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { type CoinBalance as CoinBalanceType } from '@mysten/sui/client';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { useMemo } from 'react';
 
 function sortCoins(balances: CoinBalanceType[]) {
 	return balances.sort((a, b) => {
-		if (a.coinType === BFC_TYPE_ARG) {
+		if (a.coinType === SUI_TYPE_ARG) {
 			return -1;
 		}
 

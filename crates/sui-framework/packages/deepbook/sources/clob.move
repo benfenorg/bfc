@@ -10,7 +10,7 @@ module deepbook::clob {
     use sui::coin::{Self, Coin, join};
     use sui::event;
     use sui::linked_table::{Self, LinkedTable};
-    use sui::bfc::BFC;
+    use sui::sui::SUI;
     use sui::table::{Self, Table, contains, add, borrow_mut};
 
     use deepbook::critbit::{Self, CritbitTree, is_empty, borrow_mut_leaf_by_index, min_leaf, remove_leaf_by_index, max_leaf, next_leaf, previous_leaf, borrow_leaf_by_index, borrow_leaf_by_key, find_leaf, insert_leaf};
@@ -177,7 +177,7 @@ module deepbook::clob {
         base_custodian: Custodian<BaseAsset>,
         quote_custodian: Custodian<QuoteAsset>,
         // Stores the fee paid to create this pool. These funds are not accessible.
-        creation_fee: Balance<BFC>,
+        creation_fee: Balance<SUI>,
         // Deprecated.
         base_asset_trading_fees: Balance<BaseAsset>,
         // Stores the trading fees paid in `QuoteAsset`. These funds are not accessible.
@@ -193,7 +193,7 @@ module deepbook::clob {
         linked_table::destroy_empty(orders);
     }
 
-    fun create_account(_ctx: &mut TxContext): AccountCap {
+    public fun create_account(_ctx: &mut TxContext): AccountCap {
         abort DEPRECATED
     }
 
@@ -203,7 +203,7 @@ module deepbook::clob {
         maker_rebate_rate: u64,
         tick_size: u64,
         lot_size: u64,
-        creation_fee: Balance<BFC>,
+        creation_fee: Balance<SUI>,
         ctx: &mut TxContext,
     ) {
         let base_type_name = type_name::get<BaseAsset>();
@@ -249,13 +249,13 @@ module deepbook::clob {
     public fun create_pool<BaseAsset, QuoteAsset>(
         _tick_size: u64,
         _lot_size: u64,
-        _creation_fee: Coin<BFC>,
+        _creation_fee: Coin<SUI>,
         _ctx: &mut TxContext,
     ) {
         abort DEPRECATED
     }
 
-    fun deposit_base<BaseAsset, QuoteAsset>(
+    public fun deposit_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         coin: Coin<BaseAsset>,
         account_cap: &AccountCap
@@ -268,7 +268,7 @@ module deepbook::clob {
         )
     }
 
-    fun deposit_quote<BaseAsset, QuoteAsset>(
+    public fun deposit_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         coin: Coin<QuoteAsset>,
         account_cap: &AccountCap
@@ -281,7 +281,7 @@ module deepbook::clob {
         )
     }
 
-    fun withdraw_base<BaseAsset, QuoteAsset>(
+    public fun withdraw_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         account_cap: &AccountCap,
@@ -291,7 +291,7 @@ module deepbook::clob {
         custodian::withdraw_asset(&mut pool.base_custodian, quantity, account_cap, ctx)
     }
 
-    fun withdraw_quote<BaseAsset, QuoteAsset>(
+    public fun withdraw_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         account_cap: &AccountCap,
@@ -302,7 +302,7 @@ module deepbook::clob {
     }
 
     // for smart routing
-    fun swap_exact_base_for_quote<BaseAsset, QuoteAsset>(
+    public fun swap_exact_base_for_quote<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         base_coin: Coin<BaseAsset>,
@@ -327,7 +327,7 @@ module deepbook::clob {
     }
 
     // for smart routing
-    fun swap_exact_quote_for_base<BaseAsset, QuoteAsset>(
+    public fun swap_exact_quote_for_base<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         clock: &Clock,
@@ -362,151 +362,151 @@ module deepbook::clob {
         let mut quote_balance_left = quote_balance;
         let all_open_orders = &mut pool.asks;
         if (critbit::is_empty(all_open_orders)) {
-        return (base_balance_filled, quote_balance_left)
+            return (base_balance_filled, quote_balance_left)
         };
         let (mut tick_price, mut tick_index) = min_leaf(all_open_orders);
         let mut terminate_loop = false;
 
         while (!is_empty<TickLevel>(all_open_orders) && tick_price <= price_limit) {
-        let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
+            let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+            let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
 
-        while (!linked_table::is_empty(&tick_level.open_orders)) {
-        let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
-        let mut maker_base_quantity = maker_order.quantity;
-        let mut skip_order = false;
+            while (!linked_table::is_empty(&tick_level.open_orders)) {
+                let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
+                let mut maker_base_quantity = maker_order.quantity;
+                let mut skip_order = false;
 
-        if (maker_order.expire_timestamp <= current_timestamp) {
-        skip_order = true;
-        custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
-        emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
-        } else {
-        // Calculate how much quote asset (maker_quote_quantity) is required, including the commission, to fill the maker order.
-        let maker_quote_quantity_without_commission = clob_math::mul(
-        maker_base_quantity,
-        maker_order.price
-        );
-        let (is_round_down, mut taker_commission)  = clob_math::unsafe_mul_round(
-        maker_quote_quantity_without_commission,
-        pool.taker_fee_rate
-        );
-        if (is_round_down)  taker_commission = taker_commission + 1;
+                if (maker_order.expire_timestamp <= current_timestamp) {
+                    skip_order = true;
+                    custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
+                    emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                } else {
+                    // Calculate how much quote asset (maker_quote_quantity) is required, including the commission, to fill the maker order.
+                    let maker_quote_quantity_without_commission = clob_math::mul(
+                        maker_base_quantity,
+                        maker_order.price
+                    );
+                    let (is_round_down, mut taker_commission)  = clob_math::unsafe_mul_round(
+                        maker_quote_quantity_without_commission,
+                        pool.taker_fee_rate
+                    );
+                    if (is_round_down)  taker_commission = taker_commission + 1;
 
-        let maker_quote_quantity = maker_quote_quantity_without_commission + taker_commission;
+                    let maker_quote_quantity = maker_quote_quantity_without_commission + taker_commission;
 
-        // Total base quantity filled.
-        let mut filled_base_quantity: u64;
-        // Total quote quantity filled, excluding commission and rebate.
-        let mut filled_quote_quantity: u64;
-        // Total quote quantity paid by taker.
-        // filled_quote_quantity_without_commission * (FLOAT_SCALING + taker_fee_rate) = filled_quote_quantity
-        let mut filled_quote_quantity_without_commission: u64;
-        if (taker_quote_quantity_remaining > maker_quote_quantity) {
-        filled_quote_quantity = maker_quote_quantity;
-        filled_quote_quantity_without_commission = maker_quote_quantity_without_commission;
-        filled_base_quantity = maker_base_quantity;
-        } else {
-        terminate_loop = true;
-        // if not enough quote quantity to pay for taker commission, then no quantity will be filled
-        filled_quote_quantity_without_commission = clob_math::unsafe_div(
-        taker_quote_quantity_remaining,
-        FLOAT_SCALING + pool.taker_fee_rate
-        );
-        // filled_base_quantity = 0 is permitted since filled_quote_quantity_without_commission can be 0
-        filled_base_quantity = clob_math::unsafe_div(
-        filled_quote_quantity_without_commission,
-        maker_order.price
-        );
-        let filled_base_lot = filled_base_quantity / pool.lot_size;
-        filled_base_quantity = filled_base_lot * pool.lot_size;
-        // filled_quote_quantity_without_commission = 0 is permitted here since filled_base_quantity could be 0
-        filled_quote_quantity_without_commission = clob_math::unsafe_mul(
-        filled_base_quantity,
-        maker_order.price
-        );
-        // if taker_commission = 0 due to underflow, round it up to 1
-        let (round_down, mut taker_commission) = clob_math::unsafe_mul_round(
-        filled_quote_quantity_without_commission,
-        pool.taker_fee_rate
-        );
-        if (round_down) {
-        taker_commission = taker_commission + 1;
-        };
-        filled_quote_quantity = filled_quote_quantity_without_commission + taker_commission;
-        };
-        // if maker_rebate = 0 due to underflow, maker will not receive a rebate
-        let maker_rebate = clob_math::unsafe_mul(
-        filled_quote_quantity_without_commission,
-        pool.maker_rebate_rate
-        );
-        maker_base_quantity = maker_base_quantity - filled_base_quantity;
+                    // Total base quantity filled.
+                    let mut filled_base_quantity: u64;
+                    // Total quote quantity filled, excluding commission and rebate.
+                    let mut filled_quote_quantity: u64;
+                    // Total quote quantity paid by taker.
+                    // filled_quote_quantity_without_commission * (FLOAT_SCALING + taker_fee_rate) = filled_quote_quantity
+                    let mut filled_quote_quantity_without_commission: u64;
+                    if (taker_quote_quantity_remaining > maker_quote_quantity) {
+                        filled_quote_quantity = maker_quote_quantity;
+                        filled_quote_quantity_without_commission = maker_quote_quantity_without_commission;
+                        filled_base_quantity = maker_base_quantity;
+                    } else {
+                        terminate_loop = true;
+                        // if not enough quote quantity to pay for taker commission, then no quantity will be filled
+                        filled_quote_quantity_without_commission = clob_math::unsafe_div(
+                            taker_quote_quantity_remaining,
+                            FLOAT_SCALING + pool.taker_fee_rate
+                        );
+                        // filled_base_quantity = 0 is permitted since filled_quote_quantity_without_commission can be 0
+                        filled_base_quantity = clob_math::unsafe_div(
+                            filled_quote_quantity_without_commission,
+                            maker_order.price
+                        );
+                        let filled_base_lot = filled_base_quantity / pool.lot_size;
+                        filled_base_quantity = filled_base_lot * pool.lot_size;
+                        // filled_quote_quantity_without_commission = 0 is permitted here since filled_base_quantity could be 0
+                        filled_quote_quantity_without_commission = clob_math::unsafe_mul(
+                            filled_base_quantity,
+                            maker_order.price
+                        );
+                        // if taker_commission = 0 due to underflow, round it up to 1
+                        let (round_down, mut taker_commission) = clob_math::unsafe_mul_round(
+                            filled_quote_quantity_without_commission,
+                            pool.taker_fee_rate
+                        );
+                        if (round_down) {
+                            taker_commission = taker_commission + 1;
+                        };
+                        filled_quote_quantity = filled_quote_quantity_without_commission + taker_commission;
+                    };
+                    // if maker_rebate = 0 due to underflow, maker will not receive a rebate
+                    let maker_rebate = clob_math::unsafe_mul(
+                        filled_quote_quantity_without_commission,
+                        pool.maker_rebate_rate
+                    );
+                    maker_base_quantity = maker_base_quantity - filled_base_quantity;
 
-        // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
-        taker_quote_quantity_remaining = taker_quote_quantity_remaining - filled_quote_quantity;
-        let locked_base_balance = custodian::decrease_user_locked_balance<BaseAsset>(
-        &mut pool.base_custodian,
-        maker_order.owner,
-        filled_base_quantity
-        );
+                    // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
+                    taker_quote_quantity_remaining = taker_quote_quantity_remaining - filled_quote_quantity;
+                    let locked_base_balance = custodian::decrease_user_locked_balance<BaseAsset>(
+                        &mut pool.base_custodian,
+                        maker_order.owner,
+                        filled_base_quantity
+                    );
 
-        let mut quote_balance_filled = balance::split(
-        &mut quote_balance_left,
-        filled_quote_quantity,
-        );
-        // Send quote asset including rebate to maker.
-        custodian::increase_user_available_balance<QuoteAsset>(
-        &mut pool.quote_custodian,
-        maker_order.owner,
-        balance::split(
-        &mut quote_balance_filled,
-        maker_rebate + filled_quote_quantity_without_commission,
-        ),
-        );
-        // Send remaining of commission - rebate to the protocol.
-        // commission - rebate = filled_quote_quantity_without_commission - filled_quote_quantity - maker_rebate
-        balance::join(&mut pool.quote_asset_trading_fees, quote_balance_filled);
-        balance::join(&mut base_balance_filled, locked_base_balance);
+                    let mut quote_balance_filled = balance::split(
+                        &mut quote_balance_left,
+                        filled_quote_quantity,
+                    );
+                    // Send quote asset including rebate to maker.
+                    custodian::increase_user_available_balance<QuoteAsset>(
+                        &mut pool.quote_custodian,
+                        maker_order.owner,
+                        balance::split(
+                            &mut quote_balance_filled,
+                            maker_rebate + filled_quote_quantity_without_commission,
+                        ),
+                    );
+                    // Send remaining of commission - rebate to the protocol.
+                    // commission - rebate = filled_quote_quantity_without_commission - filled_quote_quantity - maker_rebate
+                    balance::join(&mut pool.quote_asset_trading_fees, quote_balance_filled);
+                    balance::join(&mut base_balance_filled, locked_base_balance);
 
-        emit_order_filled<BaseAsset, QuoteAsset>(
-        *object::uid_as_inner(&pool.id),
-        maker_order,
-        filled_base_quantity,
-        // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
-        // This guarantees that the subtraction will not underflow
-        filled_quote_quantity - filled_quote_quantity_without_commission,
-        maker_rebate
-        )
-        };
+                    emit_order_filled<BaseAsset, QuoteAsset>(
+                        *object::uid_as_inner(&pool.id),
+                        maker_order,
+                        filled_base_quantity,
+                        // taker_commission = filled_quote_quantity - filled_quote_quantity_without_commission
+                        // This guarantees that the subtraction will not underflow
+                        filled_quote_quantity - filled_quote_quantity_without_commission,
+                        maker_rebate
+                    )
+                };
 
-        if (skip_order || maker_base_quantity == 0) {
-        // Remove the maker order.
-        let old_order_id = order_id;
-        let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
-        if (!option::is_none(maybe_order_id)) {
-        order_id = *option::borrow(maybe_order_id);
-        };
-        let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
-        linked_table::remove(usr_open_order_ids, old_order_id);
-        linked_table::remove(&mut tick_level.open_orders, old_order_id);
-        } else {
-        // Update the maker order.
-        let maker_order_mut = linked_table::borrow_mut(
-        &mut tick_level.open_orders,
-        order_id);
-        maker_order_mut.quantity = maker_base_quantity;
-        };
-        if (terminate_loop) {
-        break
-        };
-        };
-        if (linked_table::is_empty(&tick_level.open_orders)) {
-        (tick_price, _) = next_leaf(all_open_orders, tick_price);
-        destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
-        (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        if (terminate_loop) {
-        break
-        };
+                if (skip_order || maker_base_quantity == 0) {
+                    // Remove the maker order.
+                    let old_order_id = order_id;
+                    let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
+                    if (!option::is_none(maybe_order_id)) {
+                        order_id = *option::borrow(maybe_order_id);
+                    };
+                    let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
+                    linked_table::remove(usr_open_order_ids, old_order_id);
+                    linked_table::remove(&mut tick_level.open_orders, old_order_id);
+                } else {
+                    // Update the maker order.
+                    let maker_order_mut = linked_table::borrow_mut(
+                        &mut tick_level.open_orders,
+                        order_id);
+                    maker_order_mut.quantity = maker_base_quantity;
+                };
+                if (terminate_loop) {
+                    break
+                };
+            };
+            if (linked_table::is_empty(&tick_level.open_orders)) {
+                (tick_price, _) = next_leaf(all_open_orders, tick_price);
+                destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
+                (_, tick_index) = find_leaf(all_open_orders, tick_price);
+            };
+            if (terminate_loop) {
+                break
+            };
         };
         return (base_balance_filled, quote_balance_left)
     }
@@ -526,110 +526,110 @@ module deepbook::clob {
         let mut quote_balance_left = quote_balance;
         let all_open_orders = &mut pool.asks;
         if (critbit::is_empty(all_open_orders)) {
-        return (base_balance_filled, quote_balance_left)
+            return (base_balance_filled, quote_balance_left)
         };
         let (mut tick_price, mut tick_index) = min_leaf(all_open_orders);
 
         while (!is_empty<TickLevel>(all_open_orders) && tick_price <= price_limit) {
-        let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
+            let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+            let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
 
-        while (!linked_table::is_empty(&tick_level.open_orders)) {
-        let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
-        let mut maker_base_quantity = maker_order.quantity;
-        let mut skip_order = false;
+            while (!linked_table::is_empty(&tick_level.open_orders)) {
+                let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
+                let mut maker_base_quantity = maker_order.quantity;
+                let mut skip_order = false;
 
-        if (maker_order.expire_timestamp <= current_timestamp) {
-        skip_order = true;
-        custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
-        emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
-        } else {
-        let filled_base_quantity =
-        if (taker_base_quantity_remaining > maker_base_quantity) { maker_base_quantity }
-        else { taker_base_quantity_remaining };
+                if (maker_order.expire_timestamp <= current_timestamp) {
+                    skip_order = true;
+                    custodian::unlock_balance(&mut pool.base_custodian, maker_order.owner, maker_order.quantity);
+                    emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                } else {
+                    let filled_base_quantity =
+                        if (taker_base_quantity_remaining > maker_base_quantity) { maker_base_quantity }
+                        else { taker_base_quantity_remaining };
 
-        let filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
+                    let filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
 
-        // if maker_rebate = 0 due to underflow, maker will not receive a rebate
-        let maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
-        // if taker_commission = 0 due to underflow, round it up to 1
-        let (is_round_down, mut taker_commission) = clob_math::unsafe_mul_round(
-        filled_quote_quantity,
-        pool.taker_fee_rate
-        );
-        if (is_round_down) taker_commission = taker_commission + 1;
+                    // if maker_rebate = 0 due to underflow, maker will not receive a rebate
+                    let maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
+                    // if taker_commission = 0 due to underflow, round it up to 1
+                    let (is_round_down, mut taker_commission) = clob_math::unsafe_mul_round(
+                        filled_quote_quantity,
+                        pool.taker_fee_rate
+                    );
+                    if (is_round_down) taker_commission = taker_commission + 1;
 
-        maker_base_quantity = maker_base_quantity - filled_base_quantity;
+                    maker_base_quantity = maker_base_quantity - filled_base_quantity;
 
-        // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
-        taker_base_quantity_remaining = taker_base_quantity_remaining - filled_base_quantity;
-        let locked_base_balance = custodian::decrease_user_locked_balance<BaseAsset>(
-        &mut pool.base_custodian,
-        maker_order.owner,
-        filled_base_quantity
-        );
-        let mut taker_commission_balance = balance::split(
-        &mut quote_balance_left,
-        taker_commission,
-        );
-        custodian::increase_user_available_balance<QuoteAsset>(
-        &mut pool.quote_custodian,
-        maker_order.owner,
-        balance::split(
-        &mut taker_commission_balance,
-        maker_rebate,
-        ),
-        );
-        balance::join(&mut pool.quote_asset_trading_fees, taker_commission_balance);
-        balance::join(&mut base_balance_filled, locked_base_balance);
+                    // maker in ask side, decrease maker's locked base asset, increase maker's available quote asset
+                    taker_base_quantity_remaining = taker_base_quantity_remaining - filled_base_quantity;
+                    let locked_base_balance = custodian::decrease_user_locked_balance<BaseAsset>(
+                        &mut pool.base_custodian,
+                        maker_order.owner,
+                        filled_base_quantity
+                    );
+                    let mut taker_commission_balance = balance::split(
+                        &mut quote_balance_left,
+                        taker_commission,
+                    );
+                    custodian::increase_user_available_balance<QuoteAsset>(
+                        &mut pool.quote_custodian,
+                        maker_order.owner,
+                        balance::split(
+                            &mut taker_commission_balance,
+                            maker_rebate,
+                        ),
+                    );
+                    balance::join(&mut pool.quote_asset_trading_fees, taker_commission_balance);
+                    balance::join(&mut base_balance_filled, locked_base_balance);
 
-        custodian::increase_user_available_balance<QuoteAsset>(
-        &mut pool.quote_custodian,
-        maker_order.owner,
-        balance::split(
-        &mut quote_balance_left,
-        filled_quote_quantity,
-        ),
-        );
+                    custodian::increase_user_available_balance<QuoteAsset>(
+                        &mut pool.quote_custodian,
+                        maker_order.owner,
+                        balance::split(
+                            &mut quote_balance_left,
+                            filled_quote_quantity,
+                        ),
+                    );
 
-        emit_order_filled<BaseAsset, QuoteAsset>(
-        *object::uid_as_inner(&pool.id),
-        maker_order,
-        filled_base_quantity,
-        taker_commission,
-        maker_rebate
-        );
-        };
+                    emit_order_filled<BaseAsset, QuoteAsset>(
+                        *object::uid_as_inner(&pool.id),
+                        maker_order,
+                        filled_base_quantity,
+                        taker_commission,
+                        maker_rebate
+                    );
+                };
 
-        if (skip_order || maker_base_quantity == 0) {
-        // Remove the maker order.
-        let old_order_id = order_id;
-        let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
-        if (!option::is_none(maybe_order_id)) {
-        order_id = *option::borrow(maybe_order_id);
-        };
-        let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
-        linked_table::remove(usr_open_order_ids, old_order_id);
-        linked_table::remove(&mut tick_level.open_orders, old_order_id);
-        } else {
-        // Update the maker order.
-        let maker_order_mut = linked_table::borrow_mut(
-        &mut tick_level.open_orders,
-        order_id);
-        maker_order_mut.quantity = maker_base_quantity;
-        };
-        if (taker_base_quantity_remaining == 0) {
-        break
-        };
-        };
-        if (linked_table::is_empty(&tick_level.open_orders)) {
-        (tick_price, _) = next_leaf(all_open_orders, tick_price);
-        destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
-        (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        if (taker_base_quantity_remaining == 0) {
-        break
-        };
+                if (skip_order || maker_base_quantity == 0) {
+                    // Remove the maker order.
+                    let old_order_id = order_id;
+                    let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
+                    if (!option::is_none(maybe_order_id)) {
+                        order_id = *option::borrow(maybe_order_id);
+                    };
+                    let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
+                    linked_table::remove(usr_open_order_ids, old_order_id);
+                    linked_table::remove(&mut tick_level.open_orders, old_order_id);
+                } else {
+                    // Update the maker order.
+                    let maker_order_mut = linked_table::borrow_mut(
+                        &mut tick_level.open_orders,
+                        order_id);
+                    maker_order_mut.quantity = maker_base_quantity;
+                };
+                if (taker_base_quantity_remaining == 0) {
+                    break
+                };
+            };
+            if (linked_table::is_empty(&tick_level.open_orders)) {
+                (tick_price, _) = next_leaf(all_open_orders, tick_price);
+                destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
+                (_, tick_index) = find_leaf(all_open_orders, tick_price);
+            };
+            if (taker_base_quantity_remaining == 0) {
+                break
+            };
         };
         return (base_balance_filled, quote_balance_left)
     }
@@ -646,108 +646,108 @@ module deepbook::clob {
         let mut quote_balance_filled = balance::zero<QuoteAsset>();
         let all_open_orders = &mut pool.bids;
         if (critbit::is_empty(all_open_orders)) {
-        return (base_balance_left, quote_balance_filled)
+            return (base_balance_left, quote_balance_filled)
         };
         let (mut tick_price, mut tick_index) = max_leaf(all_open_orders);
         while (!is_empty<TickLevel>(all_open_orders) && tick_price >= price_limit) {
-        let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
-        let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
-        while (!linked_table::is_empty(&tick_level.open_orders)) {
-        let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
-        let mut maker_base_quantity = maker_order.quantity;
-        let mut skip_order = false;
+            let tick_level = borrow_mut_leaf_by_index(all_open_orders, tick_index);
+            let mut order_id = *option::borrow(linked_table::front(&tick_level.open_orders));
+            while (!linked_table::is_empty(&tick_level.open_orders)) {
+                let maker_order = linked_table::borrow(&tick_level.open_orders, order_id);
+                let mut maker_base_quantity = maker_order.quantity;
+                let mut skip_order = false;
 
-        if (maker_order.expire_timestamp <= current_timestamp) {
-        skip_order = true;
-        let maker_quote_quantity = clob_math::mul(maker_order.quantity, maker_order.price);
-        custodian::unlock_balance(&mut pool.quote_custodian, maker_order.owner, maker_quote_quantity);
-        emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
-        } else {
-        let taker_base_quantity_remaining = balance::value(&base_balance_left);
-        let filled_base_quantity =
-        if (taker_base_quantity_remaining >= maker_base_quantity) { maker_base_quantity }
-        else { taker_base_quantity_remaining };
+                if (maker_order.expire_timestamp <= current_timestamp) {
+                    skip_order = true;
+                    let maker_quote_quantity = clob_math::mul(maker_order.quantity, maker_order.price);
+                    custodian::unlock_balance(&mut pool.quote_custodian, maker_order.owner, maker_quote_quantity);
+                    emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, maker_order);
+                } else {
+                    let taker_base_quantity_remaining = balance::value(&base_balance_left);
+                    let filled_base_quantity =
+                        if (taker_base_quantity_remaining >= maker_base_quantity) { maker_base_quantity }
+                        else { taker_base_quantity_remaining };
 
-        let filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
+                    let filled_quote_quantity = clob_math::mul(filled_base_quantity, maker_order.price);
 
-        // if maker_rebate = 0 due to underflow, maker will not receive a rebate
-        let maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
-        // if taker_commission = 0 due to underflow, round it up to 1
-        let (is_round_down, mut taker_commission) = clob_math::unsafe_mul_round(
-        filled_quote_quantity,
-        pool.taker_fee_rate
-        );
-        if (is_round_down) taker_commission = taker_commission + 1;
+                    // if maker_rebate = 0 due to underflow, maker will not receive a rebate
+                    let maker_rebate = clob_math::unsafe_mul(filled_quote_quantity, pool.maker_rebate_rate);
+                    // if taker_commission = 0 due to underflow, round it up to 1
+                    let (is_round_down, mut taker_commission) = clob_math::unsafe_mul_round(
+                        filled_quote_quantity,
+                        pool.taker_fee_rate
+                    );
+                    if (is_round_down) taker_commission = taker_commission + 1;
 
-        maker_base_quantity = maker_base_quantity - filled_base_quantity;
-        // maker in bid side, decrease maker's locked quote asset, increase maker's available base asset
-        let mut locked_quote_balance = custodian::decrease_user_locked_balance<QuoteAsset>(
-        &mut pool.quote_custodian,
-        maker_order.owner,
-        filled_quote_quantity
-        );
-        let mut taker_commission_balance = balance::split(
-        &mut locked_quote_balance,
-        taker_commission,
-        );
-        custodian::increase_user_available_balance<QuoteAsset>(
-        &mut pool.quote_custodian,
-        maker_order.owner,
-        balance::split(
-        &mut taker_commission_balance,
-        maker_rebate,
-        ),
-        );
-        balance::join(&mut pool.quote_asset_trading_fees, taker_commission_balance);
-        balance::join(&mut quote_balance_filled, locked_quote_balance);
+                    maker_base_quantity = maker_base_quantity - filled_base_quantity;
+                    // maker in bid side, decrease maker's locked quote asset, increase maker's available base asset
+                    let mut locked_quote_balance = custodian::decrease_user_locked_balance<QuoteAsset>(
+                        &mut pool.quote_custodian,
+                        maker_order.owner,
+                        filled_quote_quantity
+                    );
+                    let mut taker_commission_balance = balance::split(
+                        &mut locked_quote_balance,
+                        taker_commission,
+                    );
+                    custodian::increase_user_available_balance<QuoteAsset>(
+                        &mut pool.quote_custodian,
+                        maker_order.owner,
+                        balance::split(
+                            &mut taker_commission_balance,
+                            maker_rebate,
+                        ),
+                    );
+                    balance::join(&mut pool.quote_asset_trading_fees, taker_commission_balance);
+                    balance::join(&mut quote_balance_filled, locked_quote_balance);
 
-        custodian::increase_user_available_balance<BaseAsset>(
-        &mut pool.base_custodian,
-        maker_order.owner,
-        balance::split(
-        &mut base_balance_left,
-        filled_base_quantity,
-        ),
-        );
+                    custodian::increase_user_available_balance<BaseAsset>(
+                        &mut pool.base_custodian,
+                        maker_order.owner,
+                        balance::split(
+                            &mut base_balance_left,
+                            filled_base_quantity,
+                        ),
+                    );
 
-        emit_order_filled<BaseAsset, QuoteAsset>(
-        *object::uid_as_inner(&pool.id),
-        maker_order,
-        filled_base_quantity,
-        taker_commission,
-        maker_rebate
-        );
-        };
+                    emit_order_filled<BaseAsset, QuoteAsset>(
+                        *object::uid_as_inner(&pool.id),
+                        maker_order,
+                        filled_base_quantity,
+                        taker_commission,
+                        maker_rebate
+                    );
+                };
 
-        if (skip_order || maker_base_quantity == 0) {
-        // Remove the maker order.
-        let old_order_id = order_id;
-        let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
-        if (!option::is_none(maybe_order_id)) {
-        order_id = *option::borrow(maybe_order_id);
-        };
-        let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
-        linked_table::remove(usr_open_order_ids, old_order_id);
-        linked_table::remove(&mut tick_level.open_orders, old_order_id);
-        } else {
-        // Update the maker order.
-        let maker_order_mut = linked_table::borrow_mut(
-        &mut tick_level.open_orders,
-        order_id);
-        maker_order_mut.quantity = maker_base_quantity;
-        };
-        if (balance::value(&base_balance_left) == 0) {
-        break
-        };
-        };
-        if (linked_table::is_empty(&tick_level.open_orders)) {
-        (tick_price, _) = previous_leaf(all_open_orders, tick_price);
-        destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
-        (_, tick_index) = find_leaf(all_open_orders, tick_price);
-        };
-        if (balance::value(&base_balance_left) == 0) {
-        break
-        };
+                if (skip_order || maker_base_quantity == 0) {
+                    // Remove the maker order.
+                    let old_order_id = order_id;
+                    let maybe_order_id = linked_table::next(&tick_level.open_orders, order_id);
+                    if (!option::is_none(maybe_order_id)) {
+                        order_id = *option::borrow(maybe_order_id);
+                    };
+                    let usr_open_order_ids = table::borrow_mut(&mut pool.usr_open_orders, maker_order.owner);
+                    linked_table::remove(usr_open_order_ids, old_order_id);
+                    linked_table::remove(&mut tick_level.open_orders, old_order_id);
+                } else {
+                    // Update the maker order.
+                    let maker_order_mut = linked_table::borrow_mut(
+                        &mut tick_level.open_orders,
+                        order_id);
+                    maker_order_mut.quantity = maker_base_quantity;
+                };
+                if (balance::value(&base_balance_left) == 0) {
+                    break
+                };
+            };
+            if (linked_table::is_empty(&tick_level.open_orders)) {
+                (tick_price, _) = previous_leaf(all_open_orders, tick_price);
+                destroy_empty_level(remove_leaf_by_index(all_open_orders, tick_index));
+                (_, tick_index) = find_leaf(all_open_orders, tick_price);
+            };
+            if (balance::value(&base_balance_left) == 0) {
+                break
+            };
         };
         return (base_balance_left, quote_balance_filled)
     }
@@ -879,7 +879,7 @@ module deepbook::clob {
     /// When the limit order is not successfully placed, we return false to indicate that and also returns a meaningless order_id 0.
     /// When the limit order is successfully placed, we return true to indicate that and also the corresponding order_id.
     /// So please check that boolean value first before using the order id.
-    fun place_limit_order<BaseAsset, QuoteAsset>(
+    public fun place_limit_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         price: u64,
         quantity: u64,
@@ -1037,7 +1037,7 @@ module deepbook::clob {
 
     /// Cancel and opening order.
     /// Abort if order_id is invalid or if the order is not submitted by the transaction sender.
-    fun cancel_order<BaseAsset, QuoteAsset>(
+    public fun cancel_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         order_id: u64,
         account_cap: &AccountCap
@@ -1091,7 +1091,7 @@ module deepbook::clob {
         order
     }
 
-    fun cancel_all_orders<BaseAsset, QuoteAsset>(
+    public fun cancel_all_orders<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ) {
@@ -1132,7 +1132,7 @@ module deepbook::clob {
     /// and if orders with the same price are grouped together in the vector.
     /// For example, if we have the following order_id to price mapping, {0: 100., 1: 200., 2: 100., 3: 200.}.
     /// Grouping order_ids like [0, 2, 1, 3] would make it the most gas efficient.
-    fun batch_cancel_order<BaseAsset, QuoteAsset>(
+    public fun batch_cancel_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         order_ids: vector<u64>,
         account_cap: &AccountCap
@@ -1151,38 +1151,38 @@ module deepbook::clob {
         let mut i_order = 0;
         let usr_open_orders = borrow_mut(&mut pool.usr_open_orders, user);
         while (i_order < n_order) {
-        let order_id = *vector::borrow(&order_ids, i_order);
-        assert!(linked_table::contains(usr_open_orders, order_id), EInvalidOrderId);
-        let new_tick_price = *linked_table::borrow(usr_open_orders, order_id);
-        let is_bid = order_is_bid(order_id);
-        if (new_tick_price != tick_price) {
-        tick_price = new_tick_price;
-        let (tick_exists, new_tick_index) = find_leaf(
-        if (is_bid) { &pool.bids } else { &pool.asks },
-        tick_price
-        );
-        assert!(tick_exists, EInvalidTickPrice);
-        tick_index = new_tick_index;
-        };
-        let order = remove_order(
-        if (is_bid) { &mut pool.bids } else { &mut pool.asks },
-        usr_open_orders,
-        tick_index,
-        order_id,
-        user
-        );
-        if (is_bid) {
-        let balance_locked = clob_math::mul(order.quantity, order.price);
-        custodian::unlock_balance(&mut pool.quote_custodian, user, balance_locked);
-        } else {
-        custodian::unlock_balance(&mut pool.base_custodian, user, order.quantity);
-        };
-        emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, &order);
-        i_order = i_order + 1;
+            let order_id = *vector::borrow(&order_ids, i_order);
+            assert!(linked_table::contains(usr_open_orders, order_id), EInvalidOrderId);
+            let new_tick_price = *linked_table::borrow(usr_open_orders, order_id);
+            let is_bid = order_is_bid(order_id);
+            if (new_tick_price != tick_price) {
+                tick_price = new_tick_price;
+                let (tick_exists, new_tick_index) = find_leaf(
+                    if (is_bid) { &pool.bids } else { &pool.asks },
+                    tick_price
+                );
+                assert!(tick_exists, EInvalidTickPrice);
+                tick_index = new_tick_index;
+            };
+            let order = remove_order(
+                if (is_bid) { &mut pool.bids } else { &mut pool.asks },
+                usr_open_orders,
+                tick_index,
+                order_id,
+                user
+            );
+            if (is_bid) {
+                let balance_locked = clob_math::mul(order.quantity, order.price);
+                custodian::unlock_balance(&mut pool.quote_custodian, user, balance_locked);
+            } else {
+                custodian::unlock_balance(&mut pool.base_custodian, user, order.quantity);
+            };
+            emit_order_canceled<BaseAsset, QuoteAsset>(pool_id, &order);
+            i_order = i_order + 1;
         }
     }
 
-    fun list_open_orders<BaseAsset, QuoteAsset>(
+    public fun list_open_orders<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ): vector<Order> {
@@ -1191,26 +1191,26 @@ module deepbook::clob {
         let mut open_orders = vector::empty<Order>();
         let mut order_id = linked_table::front(usr_open_order_ids);
         while (!option::is_none(order_id)) {
-        let order_price = *linked_table::borrow(usr_open_order_ids, *option::borrow(order_id));
-        let tick_level =
-        if (order_is_bid(*option::borrow(order_id))) borrow_leaf_by_key(&pool.bids, order_price)
-        else borrow_leaf_by_key(&pool.asks, order_price);
-        let order = linked_table::borrow(&tick_level.open_orders, *option::borrow(order_id));
-        vector::push_back(&mut open_orders, Order {
-        order_id: order.order_id,
-        price: order.price,
-        quantity: order.quantity,
-        is_bid: order.is_bid,
-        owner: order.owner,
-        expire_timestamp: order.expire_timestamp
-        });
-        order_id = linked_table::next(usr_open_order_ids, *option::borrow(order_id));
+            let order_price = *linked_table::borrow(usr_open_order_ids, *option::borrow(order_id));
+            let tick_level =
+                if (order_is_bid(*option::borrow(order_id))) borrow_leaf_by_key(&pool.bids, order_price)
+                else borrow_leaf_by_key(&pool.asks, order_price);
+            let order = linked_table::borrow(&tick_level.open_orders, *option::borrow(order_id));
+            vector::push_back(&mut open_orders, Order {
+                order_id: order.order_id,
+                price: order.price,
+                quantity: order.quantity,
+                is_bid: order.is_bid,
+                owner: order.owner,
+                expire_timestamp: order.expire_timestamp
+            });
+            order_id = linked_table::next(usr_open_order_ids, *option::borrow(order_id));
         };
         open_orders
     }
 
     /// query user balance inside custodian
-    fun account_balance<BaseAsset, QuoteAsset>(
+    public fun account_balance<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         account_cap: &AccountCap
     ): (u64, u64, u64, u64) {
@@ -1234,7 +1234,7 @@ module deepbook::clob {
     /// returns two vectors of u64
     /// The previous is a list of all valid prices
     /// The latter is the corresponding depth list
-    fun get_level2_book_status_bid_side<BaseAsset, QuoteAsset>(
+    public fun get_level2_book_status_bid_side<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         mut price_low: u64,
         mut price_high: u64,
@@ -1250,16 +1250,16 @@ module deepbook::clob {
         let mut depth_vec = vector::empty<u64>();
         if (price_low == 0) { return (price_vec, depth_vec) };
         while (price_low <= price_high) {
-        let depth = get_level2_book_status(
-        &pool.bids,
-        price_low,
-        clock::timestamp_ms(clock)
-        );
-        vector::push_back(&mut price_vec, price_low);
-        vector::push_back(&mut depth_vec, depth);
-        let (next_price, _) = critbit::next_leaf(&pool.bids, price_low);
-        if (next_price == 0) { break }
-        else { price_low = next_price };
+            let depth = get_level2_book_status(
+                &pool.bids,
+                price_low,
+                clock::timestamp_ms(clock)
+            );
+            vector::push_back(&mut price_vec, price_low);
+            vector::push_back(&mut depth_vec, depth);
+            let (next_price, _) = critbit::next_leaf(&pool.bids, price_low);
+            if (next_price == 0) { break }
+            else { price_low = next_price };
         };
         (price_vec, depth_vec)
     }
@@ -1268,7 +1268,7 @@ module deepbook::clob {
     /// returns two vectors of u64
     /// The previous is a list of all valid prices
     /// The latter is the corresponding depth list
-    fun get_level2_book_status_ask_side<BaseAsset, QuoteAsset>(
+    public fun get_level2_book_status_ask_side<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         mut price_low: u64,
         mut price_high: u64,
@@ -1284,16 +1284,16 @@ module deepbook::clob {
         let mut depth_vec = vector::empty<u64>();
         if (price_low == 0) { return (price_vec, depth_vec) };
         while (price_low <= price_high) {
-        let depth = get_level2_book_status(
-        &pool.asks,
-        price_low,
-        clock::timestamp_ms(clock)
-        );
-        vector::push_back(&mut price_vec, price_low);
-        vector::push_back(&mut depth_vec, depth);
-        let (next_price, _) = critbit::next_leaf(&pool.asks, price_low);
-        if (next_price == 0) { break }
-        else { price_low = next_price };
+            let depth = get_level2_book_status(
+                &pool.asks,
+                price_low,
+                clock::timestamp_ms(clock)
+            );
+            vector::push_back(&mut price_vec, price_low);
+            vector::push_back(&mut depth_vec, depth);
+            let (next_price, _) = critbit::next_leaf(&pool.asks, price_low);
+            if (next_price == 0) { break }
+            else { price_low = next_price };
         };
         (price_vec, depth_vec)
     }
@@ -1310,14 +1310,14 @@ module deepbook::clob {
         let mut order_id = linked_table::front(tick_open_orders);
         let mut order: &Order;
         while (!option::is_none(order_id)) {
-        order = linked_table::borrow(tick_open_orders, *option::borrow(order_id));
-        if (order.expire_timestamp > time_stamp) depth = depth + order.quantity;
-        order_id = linked_table::next(tick_open_orders, *option::borrow(order_id));
+            order = linked_table::borrow(tick_open_orders, *option::borrow(order_id));
+            if (order.expire_timestamp > time_stamp) depth = depth + order.quantity;
+            order_id = linked_table::next(tick_open_orders, *option::borrow(order_id));
         };
         depth
     }
 
-    fun get_order_status<BaseAsset, QuoteAsset>(
+    public fun get_order_status<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         order_id: u64,
         account_cap: &AccountCap
@@ -1341,12 +1341,10 @@ module deepbook::clob {
 
     #[test_only] use sui::test_scenario::{Self, Scenario};
 
-    #[test_only] const E_NULL: u64 = 0;
-
     #[test_only] public struct USD {}
 
     #[test_only]
-    fun setup_test_with_tick_lot(
+    public fun setup_test_with_tick_lot(
         taker_fee_rate: u64,
         maker_rebate_rate: u64,
         // tick size with scaling
@@ -1362,7 +1360,7 @@ module deepbook::clob {
 
         test_scenario::next_tx(scenario, sender);
         {
-            create_pool_<BFC, USD>(
+            create_pool_<SUI, USD>(
                 taker_fee_rate,
                 maker_rebate_rate,
                 tick_size,
@@ -1374,7 +1372,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun setup_test(
+    public fun setup_test(
         taker_fee_rate: u64,
         maker_rebate_rate: u64,
         scenario: &mut Scenario,
@@ -1415,39 +1413,39 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(package) fun check_tick_level(
+    public fun check_tick_level(
         tree: &CritbitTree<TickLevel>,
         price: u64,
         open_orders: &vector<Order>,
     ) {
         let (tick_exists, tick_index) = find_leaf(tree, price);
-        assert!(tick_exists, E_NULL);
+        assert!(tick_exists);
         let tick_level = borrow_leaf_by_index(tree, tick_index);
-        assert!(tick_level.price == price, E_NULL);
+        assert!(tick_level.price == price);
         let mut total_quote_amount: u64 = 0;
-        assert!(linked_table::length(&tick_level.open_orders) == vector::length(open_orders), E_NULL);
+        assert!(linked_table::length(&tick_level.open_orders) == vector::length(open_orders));
         let mut i_order = 0;
         while (i_order < vector::length(open_orders)) {
-        let order = vector::borrow(open_orders, i_order);
-        total_quote_amount = total_quote_amount + order.quantity;
-        assert!(order.price == price, E_NULL);
-        assert!(contains_order(&tick_level.open_orders, order), E_NULL);
-        i_order = i_order + 1;
+            let order = vector::borrow(open_orders, i_order);
+            total_quote_amount = total_quote_amount + order.quantity;
+            assert!(order.price == price);
+            assert!(contains_order(&tick_level.open_orders, order));
+            i_order = i_order + 1;
         };
     }
 
     #[test_only]
-    public(package) fun check_empty_tick_level(
+    public fun check_empty_tick_level(
         tree: &CritbitTree<TickLevel>,
         price: u64,
     ) {
         let (tick_exists, _) = find_leaf(tree, price);
-        assert!(!tick_exists, E_NULL);
+        assert!(!tick_exists);
     }
 
 
     #[test_only]
-    fun order_id(
+    public fun order_id(
         sequence_id: u64,
         is_bid: bool
     ): u64 {
@@ -1455,7 +1453,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(package) fun mint_account_cap_transfer(
+    public fun mint_account_cap_transfer(
         user: address,
         ctx: &mut TxContext
     ) {
@@ -1463,21 +1461,21 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun borrow_mut_custodian<BaseAsset, QuoteAsset>(
+    public fun borrow_mut_custodian<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>
     ): (&mut Custodian<BaseAsset>, &mut Custodian<QuoteAsset>) {
         (&mut pool.base_custodian, &mut pool.quote_custodian)
     }
 
     #[test_only]
-    fun borrow_custodian<BaseAsset, QuoteAsset>(
+    public fun borrow_custodian<BaseAsset, QuoteAsset>(
         pool: & Pool<BaseAsset, QuoteAsset>
     ): (&Custodian<BaseAsset>, &Custodian<QuoteAsset>) {
         (&pool.base_custodian, &pool.quote_custodian)
     }
 
     #[test_only]
-    fun test_match_bid<BaseAsset, QuoteAsset>(
+    public fun test_match_bid<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         price_limit: u64, // upper price limit if bid, lower price limit if ask, inclusive
@@ -1499,7 +1497,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun test_match_bid_with_quote_quantity<BaseAsset, QuoteAsset>(
+    public fun test_match_bid_with_quote_quantity<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         price_limit: u64, // upper price limit if bid, lower price limit if ask, inclusive
@@ -1521,7 +1519,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun test_match_ask<BaseAsset, QuoteAsset>(
+    public fun test_match_ask<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         quantity: u64,
         price_limit: u64, // upper price limit if bid, lower price limit if ask, inclusive
@@ -1541,7 +1539,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun test_inject_limit_order<BaseAsset, QuoteAsset>(
+    public fun test_inject_limit_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         price: u64,
         quantity: u64,
@@ -1553,7 +1551,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun test_inject_limit_order_with_expiration<BaseAsset, QuoteAsset>(
+    public fun test_inject_limit_order_with_expiration<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         price: u64,
         quantity: u64,
@@ -1566,7 +1564,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun get_pool_stat<BaseAsset, QuoteAsset>(
+    public fun get_pool_stat<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>
     ): (u64, u64, &CritbitTree<TickLevel>, &CritbitTree<TickLevel>) {
         (
@@ -1578,7 +1576,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun get_usr_open_orders<BaseAsset, QuoteAsset>(
+    public fun get_usr_open_orders<BaseAsset, QuoteAsset>(
         pool: &Pool<BaseAsset, QuoteAsset>,
         owner: ID
     ): &LinkedTable<u64, u64> {
@@ -1587,7 +1585,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    public(package) fun test_construct_order(sequence_id: u64, price: u64, quantity: u64, is_bid: bool, owner: ID): Order {
+    public fun test_construct_order(sequence_id: u64, price: u64, quantity: u64, is_bid: bool, owner: ID): Order {
         Order {
             order_id: order_id(sequence_id, is_bid),
             price,
@@ -1599,7 +1597,7 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun test_construct_order_with_expiration(
+    public fun test_construct_order_with_expiration(
         sequence_id: u64,
         price: u64,
         quantity: u64,
@@ -1618,25 +1616,25 @@ module deepbook::clob {
     }
 
     #[test_only]
-    fun check_usr_open_orders(
+    public fun check_usr_open_orders(
         usr_open_orders: &LinkedTable<u64, u64>,
         usr_open_orders_cmp: &vector<u64>,
     ) {
-        assert!(2 * linked_table::length(usr_open_orders) == vector::length(usr_open_orders_cmp), 0);
+        assert!(2 * linked_table::length(usr_open_orders) == vector::length(usr_open_orders_cmp));
         let mut i_order = 0;
         while (i_order < vector::length(usr_open_orders_cmp)) {
-        let order_id = *vector::borrow(usr_open_orders_cmp, i_order);
-        i_order = i_order + 1;
-        assert!(linked_table::contains(usr_open_orders, order_id), 0);
-        let price_cmp = *vector::borrow(usr_open_orders_cmp, i_order);
-        let price = *linked_table::borrow(usr_open_orders, order_id);
-        assert!(price_cmp == price, ENotEqual);
-        i_order = i_order + 1;
+            let order_id = *vector::borrow(usr_open_orders_cmp, i_order);
+            i_order = i_order + 1;
+            assert!(linked_table::contains(usr_open_orders, order_id));
+            let price_cmp = *vector::borrow(usr_open_orders_cmp, i_order);
+            let price = *linked_table::borrow(usr_open_orders, order_id);
+            assert!(price_cmp == price, ENotEqual);
+            i_order = i_order + 1;
         };
     }
 
     #[test_only]
-    fun test_remove_order<BaseAsset, QuoteAsset>(
+    public fun test_remove_order<BaseAsset, QuoteAsset>(
         pool: &mut Pool<BaseAsset, QuoteAsset>,
         tick_index: u64,
         sequence_id: u64,

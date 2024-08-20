@@ -1,14 +1,12 @@
-// Copyright (c) Benfen.
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 module display_test::boars {
-    use bfc::object::{Self, UID};
-    use std::option::{Self, Option};
-    use bfc::tx_context::{TxContext, sender};
-    use bfc::transfer;
-    use bfc::package;
-    use bfc::url::{Self, Url};
-    use bfc::display;
+    use sui::tx_context::{sender};
+    use sui::transfer;
+    use sui::package;
+    use sui::url::{Self, Url};
+    use sui::display;
     use std::string::{utf8, String};
 
     /// For when a witness type passed is not an OTW.
@@ -34,7 +32,7 @@ module display_test::boars {
     }
 
     fun init(otw: BOARS, ctx: &mut TxContext) {
-        assert!(bfc::types::is_one_time_witness(&otw), ENotOneTimeWitness);
+        assert!(sui::types::is_one_time_witness(&otw), ENotOneTimeWitness);
 
         let pub = package::claim(otw, ctx);
         let mut display = display::new<Boar>(&pub, ctx);

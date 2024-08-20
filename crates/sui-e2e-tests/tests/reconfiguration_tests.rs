@@ -17,6 +17,8 @@ use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
+use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
@@ -36,6 +38,7 @@ use sui_types::sui_system_state::{
     SuiSystemStateTrait,
 };
 use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
+use sui_types::transaction::{TransactionDataAPI, TransactionExpiration, VerifiedTransaction};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -123,29 +126,21 @@ async fn sim_test_transaction_expiration() {
     let mut expired_data = data.clone();
     *expired_data.expiration_mut_for_testing() = TransactionExpiration::Epoch(0);
     let expired_transaction = test_cluster.wallet.sign_transaction(&expired_data);
-    let authority = test_cluster.swarm.validator_node_handles().pop().unwrap();
-    let result = authority
-        .with_async(|node| async {
-            let epoch_store = node.state().epoch_store_for_testing();
-            let state = node.state();
-            let expired_transaction = epoch_store.verify_transaction(expired_transaction).unwrap();
-            state
-                .handle_transaction(&epoch_store, expired_transaction)
-                .await
-        })
+    let result = test_cluster
+        .wallet
+        .execute_transaction_may_fail(expired_transaction)
         .await;
-    assert!(matches!(result.unwrap_err(), SuiError::TransactionExpired));
+    assert!(result
+        .unwrap_err()
+        .to_string()
+        .contains(&SuiError::TransactionExpired.to_string()));
 
     // Non expired transaction signed without issue
     *data.expiration_mut_for_testing() = TransactionExpiration::Epoch(10);
     let transaction = test_cluster.wallet.sign_transaction(&data);
-    authority
-        .with_async(|node| async {
-            let epoch_store = node.state().epoch_store_for_testing();
-            let state = node.state();
-            let transaction = epoch_store.verify_transaction(transaction).unwrap();
-            state.handle_transaction(&epoch_store, transaction).await
-        })
+    test_cluster
+        .wallet
+        .execute_transaction_may_fail(transaction)
         .await
         .unwrap();
 }
@@ -290,7 +285,7 @@ async fn sim_reconfig_with_revert_end_to_end_test() {
 async fn sim_test_passive_reconfig() {
     //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
+        config.set_commit_root_state_digest_supported_for_testing(true);
         config
     });
     ProtocolConfig::poison_get_for_min_version();
@@ -324,6 +319,7 @@ async fn sim_test_passive_reconfig() {
         });
 }
 
+// Test that transaction locks from previously epochs could be overridden.
 #[sim_test]
 async fn sim_test_change_bfc_round() {
     //telemetry_subscribers::init_for_testing();
@@ -387,6 +383,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     let start_version = 44u64;
 
 
+async fn test_expired_locks() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1500)
         .with_protocol_version(ProtocolVersion::new(start_version))
@@ -1139,9 +1136,31 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 
     let queue_proposal_action_function = "queue_proposal_action".to_string();
     let _ = sleep(Duration::from_secs(60)).await;
+    let t1 = transfer_sui(1);
+    // attempt to equivocate
+    let t2 = transfer_sui(2);
+
+    for (idx, validator) in test_cluster.all_validator_handles().into_iter().enumerate() {
+        let state = validator.state();
+        let epoch_store = state.epoch_store_for_testing();
+        let t = if idx % 2 == 0 { t1.clone() } else { t2.clone() };
+        validator
+            .state()
+            .handle_transaction(&epoch_store, VerifiedTransaction::new_unchecked(t))
+            .await
+            .unwrap();
+    }
+    test_cluster
+        .create_certificate(t1.clone(), None)
+        .await
+        .unwrap_err();
 
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas2 = bfc_objects.first().unwrap().object().unwrap();
+    test_cluster
+        .create_certificate(t2.clone(), None)
+        .await
+        .unwrap_err();
 
     do_move_call(http_client, gas2, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
     let _ = sleep(Duration::from_secs(60)).await;
@@ -1816,7 +1835,7 @@ async fn sim_test_inactive_validator_pool_read() {
         assert_eq!(
             system_state
                 .get_current_epoch_committee()
-                .committee
+                .committee()
                 .num_members(),
             4
         );
@@ -1898,6 +1917,9 @@ async fn sim_test_reconfig_with_committee_change_stress() {
 
     while !candidates.is_empty() {
         let v1 = candidates.pop().unwrap();
+    let mut cur_epoch = 0;
+
+    while let Some(v1) = candidates.pop() {
         let v2 = candidates.pop().unwrap();
         execute_add_validator_transactions(&test_cluster, &v1).await;
         execute_add_validator_transactions(&test_cluster, &v2).await;
@@ -1910,7 +1932,7 @@ async fn sim_test_reconfig_with_committee_change_stress() {
             // otherwise new validators to the committee will not be able to catch up to the network
             // TODO: remove and replace with usage of archival solution
             .filter(|node| {
-                node.config
+                node.config()
                     .authority_store_pruning_config
                     .num_epochs_to_retain_for_checkpoints()
                     .is_some()
@@ -1923,11 +1945,18 @@ async fn sim_test_reconfig_with_committee_change_stress() {
         }
         let handle1 = test_cluster.spawn_new_validator(v1).await;
         let handle2 = test_cluster.spawn_new_validator(v2).await;
+
+        tokio::join!(
+            test_cluster.wait_for_epoch_on_node(&handle1, Some(cur_epoch), Duration::from_secs(60)),
+            test_cluster.wait_for_epoch_on_node(&handle2, Some(cur_epoch), Duration::from_secs(60))
+        );
+
         test_cluster.trigger_reconfiguration().await;
         let committee = test_cluster
             .fullnode_handle
             .sui_node
             .with(|node| node.state().epoch_store_for_testing().committee().clone());
+        cur_epoch = committee.epoch();
         assert_eq!(committee.num_members(), 7);
         assert!(committee.authority_exists(&handle1.state().name));
         assert!(committee.authority_exists(&handle2.state().name));
@@ -2254,6 +2283,70 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
     assert_eq!(system_state.system_state_version(), 2);
 
     Ok(())
+}
+
+#[cfg(msim)]
+#[sim_test]
+async fn test_epoch_flag_upgrade() {
+    use std::sync::Mutex;
+    use sui_core::authority::epoch_start_configuration::EpochFlag;
+    use sui_core::authority::epoch_start_configuration::EpochStartConfigTrait;
+    use sui_macros::register_fail_point_arg;
+
+    let initial_flags_nodes = Arc::new(Mutex::new(HashSet::new()));
+    register_fail_point_arg("initial_epoch_flags", move || {
+        // only alter flags on each node once
+        let current_node = sui_simulator::current_simnode_id();
+
+        // override flags on up to 2 nodes.
+        let mut initial_flags_nodes = initial_flags_nodes.lock().unwrap();
+        if initial_flags_nodes.len() >= 2 || !initial_flags_nodes.insert(current_node) {
+            return None;
+        }
+
+        // start with no flags set
+        Some(Vec::<EpochFlag>::new())
+    });
+
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(30000)
+        .build()
+        .await;
+
+    let mut any_empty = false;
+    for node in test_cluster.all_node_handles() {
+        any_empty = any_empty
+            || node.with(|node| {
+                node.state()
+                    .epoch_store_for_testing()
+                    .epoch_start_config()
+                    .flags()
+                    .is_empty()
+            });
+    }
+    assert!(any_empty);
+
+    test_cluster.wait_for_epoch_all_nodes(1).await;
+
+    let mut any_empty = false;
+    for node in test_cluster.all_node_handles() {
+        any_empty = any_empty
+            || node.with(|node| {
+                node.state()
+                    .epoch_store_for_testing()
+                    .epoch_start_config()
+                    .flags()
+                    .is_empty()
+            });
+    }
+    assert!(!any_empty);
+
+    sleep(Duration::from_secs(15)).await;
+
+    test_cluster.stop_all_validators().await;
+    test_cluster.start_all_validators().await;
+
+    test_cluster.wait_for_epoch_all_nodes(2).await;
 }
 
 #[cfg(msim)]

@@ -1,11 +1,12 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useResolveSuiNSName } from '_app/hooks/useAppResolveSuinsName';
 import { Text } from '_src/ui/app/shared/text';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG, formatAddress } from '@benfen/bfc.js/utils';
-import { useFormatCoin, useResolveSuiNSName } from '@mysten/core';
+import { useFormatCoin } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { CheckFill16 } from '@mysten/icons';
+import { formatAddress, SUI_TYPE_ARG } from '@mysten/sui/utils';
 import cl from 'clsx';
 
 import { useCoinsReFetchingConfig } from '../../hooks';
@@ -18,10 +19,10 @@ type LedgerAccountRowProps = {
 export function LedgerAccountRow({ isSelected, address }: LedgerAccountRowProps) {
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 
-	const { data: coinBalance } = useBenfenClientQuery(
+	const { data: coinBalance } = useSuiClientQuery(
 		'getBalance',
 		{
-			coinType: BFC_TYPE_ARG,
+			coinType: SUI_TYPE_ARG,
 			owner: address,
 		},
 		{
@@ -29,10 +30,11 @@ export function LedgerAccountRow({ isSelected, address }: LedgerAccountRowProps)
 			staleTime,
 		},
 	);
-	const { data: domainName } = useResolveSuiNSName(address);
+	const domainName = useResolveSuiNSName(address);
+
 	const [totalAmount, totalAmountSymbol] = useFormatCoin(
 		coinBalance?.totalBalance ?? 0,
-		BFC_TYPE_ARG,
+		SUI_TYPE_ARG,
 	);
 
 	return (

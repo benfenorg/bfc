@@ -28,6 +28,7 @@ pub fn bench<M: Measurement + 'static>(c: &mut Criterion<M>, fun: &str) {
     let move_vm = MoveVM::new(move_stdlib_natives::all_natives(
         AccountAddress::from_hex_literal("0x1").unwrap(),
         move_stdlib_natives::GasParameters::zeros(),
+        /* silent debug */ true,
     ))
     .unwrap();
     execute(c, &move_vm, modules, fun);
@@ -68,7 +69,7 @@ fn execute<M: Measurement + 'static>(
     for module in modules {
         let mut mod_blob = vec![];
         module
-            .serialize(&mut mod_blob)
+            .serialize_with_version(module.version, &mut mod_blob)
             .expect("Module serialization error");
         session
             .publish_module(mod_blob, sender, &mut UnmeteredGasMeter)

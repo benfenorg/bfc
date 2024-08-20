@@ -113,7 +113,9 @@ impl<'a> MoveTestAdapter<'a> for SimpleVMTestAdapter {
                 |session, gas_status| {
                     for module in &*MOVE_STDLIB_COMPILED {
                         let mut module_bytes = vec![];
-                        module.serialize(&mut module_bytes).unwrap();
+                        module
+                            .serialize_with_version(module.version, &mut module_bytes)
+                            .unwrap();
 
                         let id = module.self_id();
                         let sender = *id.address();
@@ -153,7 +155,8 @@ impl<'a> MoveTestAdapter<'a> for SimpleVMTestAdapter {
             .iter()
             .map(|m| {
                 let mut module_bytes = vec![];
-                m.module.serialize(&mut module_bytes)?;
+                m.module
+                    .serialize_with_version(m.module.version, &mut module_bytes)?;
                 Ok(module_bytes)
             })
             .collect::<Result<_>>()?;
@@ -271,6 +274,7 @@ impl SimpleVMTestAdapter {
                 STD_ADDR,
                 // TODO: come up with a suitable gas schedule
                 move_stdlib_natives::GasParameters::zeros(),
+                /* silent */ false,
             ),
             vm_config,
         )
@@ -290,7 +294,7 @@ impl SimpleVMTestAdapter {
 
         // save changeset
         // TODO support events
-        let (changeset, _events) = session.finish().0?;
+        let changeset = session.finish().0?;
         self.storage.apply(changeset).unwrap();
         Ok(res)
     }
@@ -305,6 +309,7 @@ static PRECOMPILED_MOVE_STDLIB: Lazy<FullyCompiledProgram> = Lazy::new(|| {
         }],
         None,
         move_compiler::Flags::empty(),
+        None,
     )
     .unwrap();
     match program_res {

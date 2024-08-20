@@ -25,7 +25,7 @@ pub(crate) struct PgExecutor {
 }
 
 pub(crate) struct PgConnection<'c> {
-    max_cost: u64,
+    max_cost: u32,
     conn: &'c mut diesel::PgConnection,
 }
 
@@ -125,7 +125,7 @@ mod query_cost {
     use diesel::{query_builder::AstPass, sql_types::Text, PgConnection, QueryResult};
     use serde_json::Value;
     use tap::{TapFallible, TapOptional};
-    use tracing::{info, warn};
+    use tracing::{debug, info, warn};
 
     #[derive(Debug, Clone, Copy, QueryId)]
     struct Explained<Q> {
@@ -147,10 +147,12 @@ mod query_cost {
     }
 
     /// Run `EXPLAIN` on the `query`, and log the estimated cost.
-    pub(crate) fn log<Q>(conn: &mut PgConnection, max_db_query_cost: u64, query: Q)
+    pub(crate) fn log<Q>(conn: &mut PgConnection, max_db_query_cost: u32, query: Q)
     where
         Q: Query + QueryId + QueryFragment<Pg> + RunQueryDsl<PgConnection>,
     {
+        debug!("Estimating: {}", diesel::debug_query(&query).to_string());
+
         let Some(cost) = explain(conn, query) else {
             warn!("Failed to extract cost from EXPLAIN.");
             return;
@@ -187,7 +189,7 @@ mod query_cost {
 #[cfg(all(test, feature = "pg_integration"))]
 mod tests {
     use super::*;
-    use crate::config::DEFAULT_SERVER_DB_URL;
+    use crate::config::ConnectionConfig;
     use diesel::QueryDsl;
     use sui_framework::BuiltInFramework;
     use sui_indexer::{
@@ -199,8 +201,12 @@ mod tests {
 
     #[test]
     fn test_query_cost() {
-        let pool =
-            new_connection_pool::<diesel::PgConnection>(DEFAULT_SERVER_DB_URL, Some(5)).unwrap();
+        let connection_config = ConnectionConfig::default();
+        let pool = new_connection_pool::<diesel::PgConnection>(
+            &connection_config.db_url,
+            Some(connection_config.db_pool_size),
+        )
+        .unwrap();
         let mut conn = get_pool_connection(&pool).unwrap();
         reset_database(&mut conn, /* drop_all */ true).unwrap();
 

@@ -1,11 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Wallet } from '_src/shared/qredo-api';
 import { BadgeLabel } from '_src/ui/app/components/BadgeLabel';
 import { Text } from '_src/ui/app/shared/text';
-import { formatAddress } from '@benfen/bfc.js/utils';
 import { CheckFill16 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui/utils';
 import cn from 'clsx';
 
 export type QredoAccountItemProps = Wallet & {

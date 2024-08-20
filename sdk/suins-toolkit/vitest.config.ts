@@ -26,8 +26,8 @@ export default defineConfig({
 	},
 	resolve: {
 		alias: {
-			'@mysten/bcs': new URL('../bcs/src', import.meta.url).toString(),
-			'@mysten/sui.js': new URL('../typescript/src', import.meta.url).toString(),
+			'@mysten/bcs': new URL('../bcs/src', import.meta.url).pathname,
+			'@mysten/sui': new URL('../typescript/src', import.meta.url).pathname,
 		},
 	},
 >>>>>>> mainnet-v1.24.1

@@ -1,14 +1,14 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { toB64 } from '@mysten/bcs';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bytesToHex } from '@noble/hashes/utils';
 
 import { bcs } from '../bcs/index.js';
-import { toB64 } from '../bcs/src/index.js';
-import { BENFEN_ADDRESS_LENGTH, normalizeHexAddress } from '../utils/bf-types.js';
-import type { SerializedSignature } from './index.js';
-import { IntentScope, messageWithIntent } from './intent.js';
+import { normalizeSuiAddress, SUI_ADDRESS_LENGTH } from '../utils/sui-types.js';
+import type { IntentScope } from './intent.js';
+import { messageWithIntent } from './intent.js';
 
 /**
  * Value to be converted into public key.
@@ -55,18 +55,18 @@ export abstract class PublicKey {
 	}
 
 	/**
-	 * Return the Benfen representation of the public key encoded in
-	 * base-64. A Benfen public key is formed by the concatenation
+	 * Return the Sui representation of the public key encoded in
+	 * base-64. A Sui public key is formed by the concatenation
 	 * of the scheme flag with the raw bytes of the public key
 	 */
-	toBenfenPublicKey(): string {
-		const bytes = this.toBenfenBytes();
+	toSuiPublicKey(): string {
+		const bytes = this.toSuiBytes();
 		return toB64(bytes);
 	}
 
 	verifyWithIntent(
 		bytes: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
+		signature: Uint8Array | string,
 		intent: IntentScope,
 	): Promise<boolean> {
 		const intentMessage = messageWithIntent(intent, bytes);
@@ -78,47 +78,41 @@ export abstract class PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided PersonalMessage
 	 */
-	verifyPersonalMessage(
-		message: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
-	): Promise<boolean> {
+	verifyPersonalMessage(message: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
 		return this.verifyWithIntent(
 			bcs.vector(bcs.u8()).serialize(message).toBytes(),
 			signature,
-			IntentScope.PersonalMessage,
+			'PersonalMessage',
 		);
 	}
 
 	/**
-	 * Verifies that the signature is valid for for the provided TransactionBlock
+	 * Verifies that the signature is valid for for the provided Transaction
 	 */
-	verifyTransactionBlock(
-		transactionBlock: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
-	): Promise<boolean> {
-		return this.verifyWithIntent(transactionBlock, signature, IntentScope.TransactionData);
+	verifyTransaction(transaction: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
+		return this.verifyWithIntent(transaction, signature, 'TransactionData');
 	}
 
 	/**
 	 * Returns the bytes representation of the public key
 	 * prefixed with the signature scheme flag
 	 */
-	toBenfenBytes(): Uint8Array {
+	toSuiBytes(): Uint8Array {
 		const rawBytes = this.toRawBytes();
-		const benfenBytes = new Uint8Array(rawBytes.length + 1);
-		benfenBytes.set([this.flag()]);
-		benfenBytes.set(rawBytes, 1);
+		const suiBytes = new Uint8Array(rawBytes.length + 1);
+		suiBytes.set([this.flag()]);
+		suiBytes.set(rawBytes, 1);
 
-		return benfenBytes;
+		return suiBytes;
 	}
 
 	/**
-	 * Return the Benfen address associated with this Ed25519 public key
+	 * Return the Sui address associated with this Ed25519 public key
 	 */
-	toHexAddress(): string {
+	toSuiAddress(): string {
 		// Each hex char represents half a byte, hence hex address doubles the length
-		return normalizeHexAddress(
-			bytesToHex(blake2b(this.toBenfenBytes(), { dkLen: 32 })).slice(0, BENFEN_ADDRESS_LENGTH * 2),
+		return normalizeSuiAddress(
+			bytesToHex(blake2b(this.toSuiBytes(), { dkLen: 32 })).slice(0, SUI_ADDRESS_LENGTH * 2),
 		);
 	}
 
@@ -135,5 +129,5 @@ export abstract class PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided message
 	 */
-	abstract verify(data: Uint8Array, signature: Uint8Array | SerializedSignature): Promise<boolean>;
+	abstract verify(data: Uint8Array, signature: Uint8Array | string): Promise<boolean>;
 }

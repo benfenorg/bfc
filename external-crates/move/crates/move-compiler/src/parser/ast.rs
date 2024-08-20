@@ -104,12 +104,31 @@ pub enum Use {
         ty: Box<NameAccessChain>,
         method: Name,
     },
+    // used for one of the three cases when `LeadingNameAccess` represents `some_pkg`
+    // - `some_pkg`
+    // - `some_pkg::`
+    // - `some_pkg::{`
+    // where first location represents `::` and the second one represents `{`
+    Partial {
+        package: LeadingNameAccess,
+        colon_colon: Option<Loc>,
+        opening_brace: Option<Loc>,
+    },
 }
 
 #[derive(Debug, PartialEq, Clone, Eq)]
 pub enum ModuleUse {
     Module(Option<ModuleName>),
     Members(Vec<(Name, Option<Name>)>),
+    // used for one of the three cases when defining `ModuleUse` for `some_mod`:
+    // - `... some_mod`
+    // - `... some_mod::`
+    // - `... some_mod::{`
+    // where first location represents `::` and the second one represents `{`
+    Partial {
+        colon_colon: Option<Loc>,
+        opening_brace: Option<Loc>,
+    },
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -176,12 +195,19 @@ pub struct ModuleIdent_ {
 pub type ModuleIdent = Spanned<ModuleIdent_>;
 
 #[derive(Debug, Clone)]
+pub enum ModuleDefinitionMode {
+    Braces,
+    Semicolon,
+}
+
+#[derive(Debug, Clone)]
 pub struct ModuleDefinition {
     pub attributes: Vec<Attributes>,
     pub loc: Loc,
     pub address: Option<LeadingNameAccess>,
     pub name: ModuleName,
     pub is_spec_module: bool,
+    pub definition_mode: ModuleDefinitionMode,
     pub members: Vec<ModuleMember>,
 }
 
@@ -356,6 +382,8 @@ pub struct RootPathEntry {
 pub struct NamePath {
     pub root: RootPathEntry,
     pub entries: Vec<PathEntry>,
+    // if parsing of this name path was incomplete
+    pub is_incomplete: bool,
 }
 
 // See the NameAccess trait below for usage.
@@ -756,6 +784,7 @@ impl NameAccessChain_ {
         NamePath {
             root,
             entries: vec![],
+            is_incomplete: false,
         }
     }
 }
@@ -977,6 +1006,13 @@ impl Definition {
         match self {
             Definition::Module(m) => m.loc.file_hash(),
             Definition::Address(a) => a.loc.file_hash(),
+        }
+    }
+
+    pub fn name_loc(&self) -> Loc {
+        match self {
+            Definition::Module(mdef) => mdef.name.loc(),
+            Definition::Address(aref) => aref.addr.loc,
         }
     }
 }
@@ -1415,6 +1451,7 @@ impl AstDebug for ModuleDefinition {
             name,
             is_spec_module,
             members,
+            definition_mode: _,
         } = self;
         attributes.ast_debug(w);
         match address {
@@ -1471,6 +1508,13 @@ impl AstDebug for ModuleUse {
                     alias.map(|alias| w.write(&format!("as {}", alias.value)));
                 })
             }),
+            ModuleUse::Partial {
+                colon_colon,
+                opening_brace,
+            } => {
+                colon_colon.map(|_| w.write("::"));
+                opening_brace.map(|_| w.write("{"));
+            }
         }
     }
 }
@@ -1504,6 +1548,15 @@ impl AstDebug for Use {
                 w.write(" as ");
                 ty.ast_debug(w);
                 w.write(format!(".{method}"));
+            }
+            Use::Partial {
+                package,
+                colon_colon,
+                opening_brace,
+            } => {
+                w.write(package.to_string());
+                colon_colon.map(|_| w.write("::"));
+                opening_brace.map(|_| w.write("{"));
             }
         }
         w.write(";")
@@ -1834,12 +1887,22 @@ impl AstDebug for PathEntry {
 
 impl AstDebug for NamePath {
     fn ast_debug(&self, w: &mut AstWriter) {
-        let NamePath { root, entries } = self;
+        let NamePath {
+            root,
+            entries,
+            is_incomplete,
+        } = self;
         w.write(format!("{}::", root));
         w.list(entries, "::", |w, e| {
             e.ast_debug(w);
             false
         });
+        if *is_incomplete {
+            if !entries.is_empty() {
+                w.write("::");
+            }
+            w.write("_#incomplete#_");
+        }
     }
 }
 

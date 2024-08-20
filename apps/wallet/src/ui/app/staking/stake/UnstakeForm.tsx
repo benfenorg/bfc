@@ -1,11 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Card } from '_app/shared/card';
 import { Text } from '_app/shared/text';
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { Form } from 'formik';
 import { useMemo } from 'react';
 
@@ -29,8 +29,8 @@ export function UnStakeForm({
 	stakingReward,
 	epoch,
 }: StakeFromProps) {
-	const [rewards, rewardSymbol] = useFormatCoin(stakingReward, BFC_TYPE_ARG);
-	const [totalSui] = useFormatCoin(BigInt(stakingReward || 0) + coinBalance, BFC_TYPE_ARG);
+	const [rewards, rewardSymbol] = useFormatCoin(stakingReward, SUI_TYPE_ARG);
+	const [totalSui] = useFormatCoin(BigInt(stakingReward || 0) + coinBalance, SUI_TYPE_ARG);
 	const [tokenBalance] = useFormatCoin(coinBalance, coinType);
 
 	const transaction = useMemo(() => createUnstakeTransaction(stakedSuiId), [stakedSuiId]);

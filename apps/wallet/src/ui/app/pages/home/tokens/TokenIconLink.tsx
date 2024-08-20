@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { LargeButton } from '_app/shared/LargeButton';
@@ -8,9 +8,9 @@ import {
 	DELEGATED_STAKES_QUERY_STALE_TIME,
 } from '_src/shared/constants';
 import { Text } from '_src/ui/app/shared/text';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetDelegatedStake } from '@mysten/core';
 import { WalletActionStake24 } from '@mysten/icons';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { useMemo } from 'react';
 
 export function TokenIconLink({
@@ -35,7 +35,7 @@ export function TokenIconLink({
 		);
 	}, [delegatedStake]);
 
-	const [formatted, symbol, queryResult] = useFormatCoin(totalActivePendingStake, BFC_TYPE_ARG);
+	const [formatted, symbol, queryResult] = useFormatCoin(totalActivePendingStake, SUI_TYPE_ARG);
 
 	return (
 		<LargeButton

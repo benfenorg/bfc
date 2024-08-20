@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
@@ -12,10 +12,10 @@ import {
 	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
 	DELEGATED_STAKES_QUERY_STALE_TIME,
 } from '_src/shared/constants';
-import type { StakeObject } from '@benfen/bfc.js/client';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { useGetDelegatedStake } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { Plus12 } from '@mysten/icons';
+import type { StakeObject } from '@mysten/sui/client';
 import { useMemo } from 'react';
 
 import { useActiveAddress } from '../../hooks/useActiveAddress';
@@ -36,7 +36,7 @@ export function ValidatorsCard() {
 		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
 	});
 
-	const { data: system } = useBenfenClientQuery('getLatestBenfeSystemState');
+	const { data: system } = useSuiClientQuery('getLatestSuiSystemState');
 	const activeValidators = system?.activeValidators;
 
 	// Total active stake for all Staked validators
@@ -121,7 +121,7 @@ export function ValidatorsCard() {
 										<StakeCard
 											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
-											key={delegation.stakedBfcId}
+											key={delegation.stakedSuiId}
 											inactiveValidator
 										/>
 									))}
@@ -155,7 +155,7 @@ export function ValidatorsCard() {
 										<StakeCard
 											delegationObject={delegation as DelegationObjectWithValidator}
 											currentEpoch={Number(system.epoch)}
-											key={delegation.stakedBfcId}
+											key={delegation.stakedSuiId}
 										/>
 									))}
 						</div>

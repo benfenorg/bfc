@@ -1,10 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { useActiveAddress } from '_src/ui/app/hooks';
-import { formatAddress, isValidBenfenAddress } from '@benfen/bfc.js/utils';
+import { formatAddress, isValidSuiAddress } from '@mysten/sui/utils';
 
 import { Text } from '../text';
 import { SummaryCardFooter } from './Card';
@@ -17,11 +17,11 @@ export function OwnerFooter({ owner, ownerType }: { owner?: string; ownerType?: 
 	const display =
 		ownerType === 'Shared'
 			? 'Shared'
-			: isValidBenfenAddress(owner)
-			? isOwner
-				? 'You'
-				: formatAddress(owner)
-			: owner;
+			: isValidSuiAddress(owner)
+				? isOwner
+					? 'You'
+					: formatAddress(owner)
+				: owner;
 
 	return (
 		<SummaryCardFooter>

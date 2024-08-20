@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 use std::fmt::Write;
 
 use super::available_range::AvailableRange;
@@ -9,7 +9,7 @@ use super::balance::{self, Balance};
 use super::big_int::BigInt;
 use super::coin::Coin;
 use super::coin_metadata::CoinMetadata;
-use super::cursor::{self, Page, Paginated, RawPaginated, Target};
+use super::cursor::{self, Page, RawPaginated, Target};
 use super::digest::Digest;
 use super::display::{Display, DisplayEntry};
 use super::dynamic_field::{DynamicField, DynamicFieldName};
@@ -21,23 +21,25 @@ use super::suins_registration::{DomainFormat, SuinsRegistration};
 use super::transaction_block;
 use super::transaction_block::TransactionBlockFilter;
 use super::type_filter::{ExactTypeFilter, TypeFilter};
+use super::uint53::UInt53;
 use super::{owner::Owner, sui_address::SuiAddress, transaction_block::TransactionBlock};
 use crate::consistency::{build_objects_query, Checkpointed, View};
 use crate::data::package_resolver::PackageResolver;
-use crate::data::{self, Db, DbConnection, QueryExecutor};
+use crate::data::{DataLoader, Db, DbConnection, QueryExecutor};
 use crate::error::Error;
 use crate::raw_query::RawQuery;
 use crate::types::base64::Base64;
 use crate::types::intersect;
 use crate::{filter, or_filter};
 use async_graphql::connection::{CursorType, Edge};
+use async_graphql::dataloader::Loader;
 use async_graphql::{connection::Connection, *};
-use diesel::{CombineDsl, ExpressionMethods, OptionalExtension, QueryDsl};
+use diesel::{BoolExpressionMethods, ExpressionMethods, QueryDsl};
 use move_core_types::annotated_value::{MoveStruct, MoveTypeLayout};
 use move_core_types::language_storage::StructTag;
 use serde::{Deserialize, Serialize};
-use sui_indexer::models::objects::{StoredDeletedHistoryObject, StoredHistoryObject, StoredObject};
-use sui_indexer::schema::{objects, objects_history, objects_snapshot};
+use sui_indexer::models::objects::{StoredDeletedHistoryObject, StoredHistoryObject};
+use sui_indexer::schema::objects_history;
 use sui_indexer::types::ObjectStatus as NativeObjectStatus;
 use sui_indexer::types::OwnerType;
 use sui_types::object::bounded_visitor::BoundedVisitor;
@@ -52,6 +54,18 @@ pub(crate) struct Object {
     pub kind: ObjectKind,
     /// The checkpoint sequence number at which this was viewed at.
     pub checkpoint_viewed_at: u64,
+    /// Root parent object version for dynamic fields.
+    ///
+    /// This enables consistent dynamic field reads in the case of chained dynamic object fields,
+    /// e.g., `Parent -> DOF1 -> DOF2`. In such cases, the object versions may end up like
+    /// `Parent >= DOF1, DOF2` but `DOF1 < DOF2`. Thus, database queries for dynamic fields must
+    /// bound the object versions by the version of the root object of the tree.
+    ///
+    /// Essentially, lamport timestamps of objects are updated for all top-level mutable objects
+    /// provided as inputs to a transaction as well as any mutated dynamic child objects. However,
+    /// any dynamic child objects that were loaded but not actually mutated don't end up having
+    /// their versions updated.
+    root_version: u64,
 }
 
 /// Type to implement GraphQL fields that are shared by all Objects.
@@ -88,7 +102,7 @@ pub(crate) struct ObjectRef {
     /// ID of the object.
     pub address: SuiAddress,
     /// Version or sequence number of the object.
-    pub version: u64,
+    pub version: UInt53,
     /// Digest of the object.
     pub digest: Digest,
 }
@@ -124,12 +138,12 @@ pub(crate) struct ObjectFilter {
 #[derive(InputObject, Debug, Clone, Eq, PartialEq)]
 pub(crate) struct ObjectKey {
     pub object_id: SuiAddress,
-    pub version: u64,
+    pub version: UInt53,
 }
 
 /// The object's owner type: Immutable, Shared, Parent, or Address.
 #[derive(Union, Clone)]
-pub enum ObjectOwner {
+pub(crate) enum ObjectOwner {
     Immutable(Immutable),
     Shared(Shared),
     Parent(Parent),
@@ -139,7 +153,7 @@ pub enum ObjectOwner {
 /// An immutable object is an object that can't be mutated, transferred, or deleted.
 /// Immutable objects have no owner, so anyone can use them.
 #[derive(SimpleObject, Clone)]
-pub struct Immutable {
+pub(crate) struct Immutable {
     #[graphql(name = "_")]
     dummy: Option<bool>,
 }
@@ -147,15 +161,15 @@ pub struct Immutable {
 /// A shared object is an object that is shared using the 0x2::transfer::share_object function.
 /// Unlike owned objects, once an object is shared, it stays mutable and is accessible by anyone.
 #[derive(SimpleObject, Clone)]
-pub struct Shared {
-    initial_shared_version: u64,
+pub(crate) struct Shared {
+    initial_shared_version: UInt53,
 }
 
 /// If the object's owner is a Parent, this object is part of a dynamic field (it is the value of
 /// the dynamic field, or the intermediate Field object itself). Also note that if the owner
 /// is a parent, then it's guaranteed to be an object.
 #[derive(SimpleObject, Clone)]
-pub struct Parent {
+pub(crate) struct Parent {
     parent: Option<Object>,
 }
 
@@ -163,28 +177,28 @@ pub struct Parent {
 /// either an account address (derived from a particular signature scheme) or
 /// an object ID. An address-owned object is accessible only to its owner and no others.
 #[derive(SimpleObject, Clone)]
-pub struct AddressOwner {
+pub(crate) struct AddressOwner {
     owner: Option<Owner>,
 }
 
-pub(crate) enum ObjectLookupKey {
-    LatestAt(u64),
-    VersionAt {
-        version: u64,
-        /// The checkpoint sequence number at which this was viewed at.
+pub(crate) enum ObjectLookup {
+    LatestAt {
+        /// The parent version to be used as an optional upper bound for the query. Look for the
+        /// latest version of a child object that is less than or equal to this upper bound.
+        parent_version: Option<u64>,
+        /// The checkpoint sequence number at which this was viewed at
         checkpoint_viewed_at: u64,
     },
-    LatestAtParentVersion {
-        /// The parent version to be used as the upper bound for the query. Look for the latest
-        /// version of a child object that is less than or equal to this upper bound.
+
+    VersionAt {
+        /// The exact version of the object to be fetched.
         version: u64,
-        /// The checkpoint sequence number at which this was viewed at
+        /// The checkpoint sequence number at which this was viewed at.
         checkpoint_viewed_at: u64,
     },
 }
 
 pub(crate) type Cursor = cursor::BcsCursor<HistoricalObjectCursor>;
-type Query<ST, GB> = data::Query<ST, objects::table, GB>;
 
 /// The inner struct for the `Object`'s cursor. The `object_id` is used as the cursor, while the
 /// `checkpoint_viewed_at` sets the consistent upper bound for the cursor.
@@ -202,7 +216,7 @@ pub(crate) struct HistoricalObjectCursor {
 #[derive(Interface)]
 #[graphql(
     name = "IObject",
-    field(name = "version", ty = "u64"),
+    field(name = "version", ty = "UInt53"),
     field(
         name = "status",
         ty = "ObjectStatus",
@@ -257,6 +271,26 @@ pub(crate) enum IObject {
     CoinMetadata(CoinMetadata),
     StakedSui(StakedSui),
     SuinsRegistration(SuinsRegistration),
+}
+
+/// DataLoader key for fetching an `Object` at a specific version, constrained by a consistency
+/// cursor (if that version was created after the checkpoint the query is viewing at, then it will
+/// fail).
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+struct HistoricalKey {
+    id: SuiAddress,
+    version: u64,
+    checkpoint_viewed_at: u64,
+}
+
+/// DataLoader key for fetching the latest version of an `Object` as of a consistency cursor. The
+/// query can optionally be bounded by a `parent_version` which imposes an additional requirement
+/// that the object's version is bounded above by the parent version.
+#[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
+struct LatestAtKey {
+    id: SuiAddress,
+    parent_version: Option<u64>,
+    checkpoint_viewed_at: u64,
 }
 
 /// An object in Sui is a package (set of Move bytecode modules) or object (typed data structure
@@ -362,7 +396,7 @@ impl Object {
             .await
     }
 
-    pub(crate) async fn version(&self) -> u64 {
+    pub(crate) async fn version(&self) -> UInt53 {
         ObjectImpl(self).version().await
     }
 
@@ -441,7 +475,7 @@ impl Object {
         name: DynamicFieldName,
     ) -> Result<Option<DynamicField>> {
         OwnerImpl::from(self)
-            .dynamic_field(ctx, name, Some(self.version_impl()))
+            .dynamic_field(ctx, name, Some(self.root_version()))
             .await
     }
 
@@ -458,7 +492,7 @@ impl Object {
         name: DynamicFieldName,
     ) -> Result<Option<DynamicField>> {
         OwnerImpl::from(self)
-            .dynamic_object_field(ctx, name, Some(self.version_impl()))
+            .dynamic_object_field(ctx, name, Some(self.root_version()))
             .await
     }
 
@@ -475,7 +509,7 @@ impl Object {
         before: Option<Cursor>,
     ) -> Result<Connection<String, DynamicField>> {
         OwnerImpl::from(self)
-            .dynamic_fields(ctx, first, after, last, before, Some(self.version_impl()))
+            .dynamic_fields(ctx, first, after, last, before, Some(self.root_version()))
             .await
     }
 
@@ -491,8 +525,8 @@ impl Object {
 }
 
 impl ObjectImpl<'_> {
-    pub(crate) async fn version(&self) -> u64 {
-        self.0.version_impl()
+    pub(crate) async fn version(&self) -> UInt53 {
+        self.0.version_impl().into()
     }
 
     pub(crate) async fn status(&self) -> ObjectStatus {
@@ -519,15 +553,16 @@ impl ObjectImpl<'_> {
                     owner: Some(Owner {
                         address,
                         checkpoint_viewed_at: self.0.checkpoint_viewed_at,
+                        root_version: None,
                     }),
                 }))
             }
             O::Immutable => Some(ObjectOwner::Immutable(Immutable { dummy: None })),
             O::ObjectOwner(address) => {
                 let parent = Object::query(
-                    ctx.data_unchecked(),
+                    ctx,
                     address.into(),
-                    ObjectLookupKey::LatestAt(self.0.checkpoint_viewed_at),
+                    Object::latest_at(self.0.checkpoint_viewed_at),
                 )
                 .await
                 .ok()
@@ -538,7 +573,7 @@ impl ObjectImpl<'_> {
             O::Shared {
                 initial_shared_version,
             } => Some(ObjectOwner::Shared(Shared {
-                initial_shared_version: initial_shared_version.value(),
+                initial_shared_version: initial_shared_version.value().into(),
             })),
         }
     }
@@ -552,13 +587,9 @@ impl ObjectImpl<'_> {
         };
         let digest = native.previous_transaction;
 
-        TransactionBlock::query(
-            ctx.data_unchecked(),
-            digest.into(),
-            self.0.checkpoint_viewed_at,
-        )
-        .await
-        .extend()
+        TransactionBlock::query(ctx, digest.into(), self.0.checkpoint_viewed_at)
+            .await
+            .extend()
     }
 
     pub(crate) async fn storage_rebate(&self) -> Option<BigInt> {
@@ -655,15 +686,24 @@ impl Object {
     /// `checkpoint_viewed_at` represents the checkpoint sequence number at which this `Object` was
     /// constructed in. This is stored on `Object` so that when viewing that entity's state, it will
     /// be as if it was read at the same checkpoint.
+    ///
+    /// `root_version` represents the version of the root object in some nested chain of dynamic
+    /// fields. This should typically be left `None`, unless the object(s) being resolved is a
+    /// dynamic field, or if `root_version` has been explicitly set for this object. If None, then
+    /// we use [`version_for_dynamic_fields`] to infer a root version to then propagate from this
+    /// object down to its dynamic fields.
     pub(crate) fn from_native(
         address: SuiAddress,
         native: NativeObject,
         checkpoint_viewed_at: u64,
+        root_version: Option<u64>,
     ) -> Object {
+        let root_version = root_version.unwrap_or_else(|| version_for_dynamic_fields(&native));
         Object {
             address,
             kind: ObjectKind::NotIndexed(native),
             checkpoint_viewed_at,
+            root_version,
         }
     }
 
@@ -683,6 +723,13 @@ impl Object {
             K::NotIndexed(native) | K::Indexed(native, _) => native.version().value(),
             K::WrappedOrDeleted(stored) => stored.object_version as u64,
         }
+    }
+
+    /// Root parent object version for dynamic fields.
+    ///
+    /// Check [`Object::root_version`] for details.
+    pub(crate) fn root_version(&self) -> u64 {
+        self.root_version
     }
 
     /// Query the database for a `page` of objects, optionally `filter`-ed.
@@ -749,207 +796,72 @@ impl Object {
             // To maintain consistency, the returned cursor should have the same upper-bound as the
             // checkpoint found on the cursor.
             let cursor = stored.cursor(checkpoint_viewed_at).encode_cursor();
-            let object = Object::try_from_stored_history_object(stored, checkpoint_viewed_at)?;
+            let object =
+                Object::try_from_stored_history_object(stored, checkpoint_viewed_at, None)?;
             conn.edges.push(Edge::new(cursor, downcast(object)?));
         }
 
         Ok(conn)
     }
 
-    /// Query for the object at a specific version, at the checkpoint_viewed_at if given, else
-    /// against the latest checkpoint.
-    ///
-    /// `checkpoint_viewed_at` represents the checkpoint sequence number at which this `Object` was
-    /// queried in. This is stored on `Object` so that when viewing that entity's state, it will be
-    /// as if it was read at the same checkpoint.
-    async fn query_at_version(
-        db: &Db,
-        address: SuiAddress,
-        version: u64,
-        checkpoint_viewed_at: u64,
-    ) -> Result<Option<Self>, Error> {
-        use objects_history::dsl as history;
-        use objects_snapshot::dsl as snapshot;
-
-        let version = version as i64;
-
-        let stored_objs: Option<Vec<StoredHistoryObject>> = db
-            .execute_repeatable(move |conn| {
-                let Some(range) = AvailableRange::result(conn, checkpoint_viewed_at)? else {
-                    return Ok::<_, diesel::result::Error>(None);
-                };
-
-                conn.results(move || {
-                    // If an object was created or mutated in a checkpoint outside the current
-                    // available range, and never touched again, it will not show up in the
-                    // objects_history table. Thus, we always need to check the objects_snapshot
-                    // table as well.
-                    let snapshot_query = snapshot::objects_snapshot
-                        .filter(snapshot::object_id.eq(address.into_vec()))
-                        .filter(snapshot::object_version.eq(version));
-
-                    let historical_query = history::objects_history
-                        .filter(history::object_id.eq(address.into_vec()))
-                        .filter(history::object_version.eq(version))
-                        .filter(
-                            history::checkpoint_sequence_number
-                                .between(range.first as i64, range.last as i64),
-                        )
-                        .order_by(history::object_version.desc())
-                        .limit(1);
-
-                    snapshot_query.union(historical_query)
-                })
-                // Return optional to match the state when checkpoint_viewed_at is out of range
-                .optional()
-            })
-            .await?;
-
-        let Some(stored_objs) = stored_objs else {
-            return Ok(None);
-        };
-
-        // Select the max by key after the union query, because Diesel currently does not support
-        // order_by on union
-        stored_objs
-            .into_iter()
-            .max_by_key(|o| o.object_version)
-            .map(|obj| Self::try_from_stored_history_object(obj, checkpoint_viewed_at))
-            .transpose()
+    /// Look-up the latest version of the object as of a given checkpoint.
+    pub(crate) fn latest_at(checkpoint_viewed_at: u64) -> ObjectLookup {
+        ObjectLookup::LatestAt {
+            parent_version: None,
+            checkpoint_viewed_at,
+        }
     }
 
-    /// Query for the latest version of an object bounded by the provided `parent_version`.
-    ///
-    /// `checkpoint_viewed_at` represents the checkpoint sequence number at which this `Object` was
-    /// queried in. This is stored on `Object` so that when viewing that entity's state, it will be
-    /// as if it was read at the same checkpoint.
-    async fn query_latest_at_version(
-        db: &Db,
-        address: SuiAddress,
-        parent_version: u64,
-        checkpoint_viewed_at: u64,
-    ) -> Result<Option<Self>, Error> {
-        use objects_history::dsl as history;
-        use objects_snapshot::dsl as snapshot;
-
-        let version = parent_version as i64;
-        let stored_objs: Option<Vec<StoredHistoryObject>> = db
-            .execute_repeatable(move |conn| {
-                let Some(range) = AvailableRange::result(conn, checkpoint_viewed_at)? else {
-                    return Ok::<_, diesel::result::Error>(None);
-                };
-
-                conn.results(move || {
-                    // If an object was created or mutated in a checkpoint outside the current
-                    // available range, and never touched again, it will not show up in the
-                    // objects_history table. Thus, we always need to check the objects_snapshot
-                    // table as well.
-                    let snapshot_query = snapshot::objects_snapshot
-                        .filter(snapshot::object_id.eq(address.into_vec()))
-                        .filter(snapshot::object_version.le(version));
-
-                    let historical_query = history::objects_history
-                        .filter(history::object_id.eq(address.into_vec()))
-                        .filter(history::object_version.le(version))
-                        .filter(
-                            history::checkpoint_sequence_number
-                                .between(range.first as i64, range.last as i64),
-                        )
-                        .order_by(history::object_version.desc())
-                        .limit(1);
-
-                    snapshot_query.union(historical_query)
-                })
-                // Return optional to match the state when checkpoint_viewed_at is out of range
-                .optional()
-            })
-            .await?;
-
-        let Some(stored_objs) = stored_objs else {
-            return Ok(None);
-        };
-
-        // Select the max by key after the union query, because Diesel currently does not support
-        // order_by on union
-        stored_objs
-            .into_iter()
-            .max_by_key(|o| o.object_version)
-            .map(|obj| Self::try_from_stored_history_object(obj, checkpoint_viewed_at))
-            .transpose()
+    /// Look-up the latest version of an object whose version is less than or equal to its parent's
+    /// version, as of a given checkpoint.
+    pub(crate) fn under_parent(parent_version: u64, checkpoint_viewed_at: u64) -> ObjectLookup {
+        ObjectLookup::LatestAt {
+            parent_version: Some(parent_version),
+            checkpoint_viewed_at,
+        }
     }
 
-    /// Query for the object at the latest version at the checkpoint sequence number if given, else
-    /// the latest version of the object against the latest checkpoint.
-    async fn query_latest_at_checkpoint(
-        db: &Db,
-        address: SuiAddress,
-        checkpoint_viewed_at: u64,
-    ) -> Result<Option<Self>, Error> {
-        use objects_history::dsl as history;
-        use objects_snapshot::dsl as snapshot;
-
-        let stored_objs: Option<Vec<StoredHistoryObject>> = db
-            .execute_repeatable(move |conn| {
-                let Some(range) = AvailableRange::result(conn, checkpoint_viewed_at)? else {
-                    return Ok::<_, diesel::result::Error>(None);
-                };
-
-                conn.results(move || {
-                    // If an object was created or mutated in a checkpoint outside the current
-                    // available range, and never touched again, it will not show up in the
-                    // objects_history table. Thus, we always need to check the objects_snapshot
-                    // table as well.
-                    let snapshot_query = snapshot::objects_snapshot
-                        .filter(snapshot::object_id.eq(address.into_vec()));
-
-                    let historical_query = history::objects_history
-                        .filter(history::object_id.eq(address.into_vec()))
-                        .filter(
-                            history::checkpoint_sequence_number
-                                .between(range.first as i64, range.last as i64),
-                        )
-                        .order_by(history::object_version.desc())
-                        .limit(1);
-
-                    snapshot_query.union(historical_query)
-                })
-                // Return optional to match the state when checkpoint_viewed_at is out of range
-                .optional()
-            })
-            .await?;
-
-        let Some(stored_objs) = stored_objs else {
-            return Ok(None);
-        };
-
-        // Select the max by key after the union query, because Diesel currently does not support
-        // order_by on union
-        stored_objs
-            .into_iter()
-            .max_by_key(|o| o.object_version)
-            .map(|obj| Self::try_from_stored_history_object(obj, checkpoint_viewed_at))
-            .transpose()
+    /// Look-up a specific version of the object, as of a given checkpoint.
+    pub(crate) fn at_version(version: u64, checkpoint_viewed_at: u64) -> ObjectLookup {
+        ObjectLookup::VersionAt {
+            version,
+            checkpoint_viewed_at,
+        }
     }
 
     pub(crate) async fn query(
-        db: &Db,
-        address: SuiAddress,
-        key: ObjectLookupKey,
+        ctx: &Context<'_>,
+        id: SuiAddress,
+        key: ObjectLookup,
     ) -> Result<Option<Self>, Error> {
+        let DataLoader(loader) = &ctx.data_unchecked();
+
         match key {
-            ObjectLookupKey::LatestAt(checkpoint_sequence_number) => {
-                Self::query_latest_at_checkpoint(db, address, checkpoint_sequence_number).await
+            ObjectLookup::VersionAt {
+                version,
+                checkpoint_viewed_at,
+            } => {
+                loader
+                    .load_one(HistoricalKey {
+                        id,
+                        version,
+                        checkpoint_viewed_at,
+                    })
+                    .await
             }
-            ObjectLookupKey::VersionAt {
-                version,
+            ObjectLookup::LatestAt {
+                parent_version,
                 checkpoint_viewed_at,
-            } => Self::query_at_version(db, address, version, checkpoint_viewed_at).await,
-            ObjectLookupKey::LatestAtParentVersion {
-                version,
-                checkpoint_viewed_at,
-            } => Self::query_latest_at_version(db, address, version, checkpoint_viewed_at).await,
+            } => {
+                loader
+                    .load_one(LatestAtKey {
+                        id,
+                        parent_version,
+                        checkpoint_viewed_at,
+                    })
+                    .await
+            }
         }
-        .map_err(|e| Error::Internal(format!("Failed to fetch object: {e}")))
     }
 
     /// Query for a singleton object identified by its type. Note: the object is assumed to be a
@@ -957,7 +869,7 @@ impl Object {
     /// nothing).
     pub(crate) async fn query_singleton(
         db: &Db,
-        type_: TypeTag,
+        type_: StructTag,
         checkpoint_viewed_at: u64,
     ) -> Result<Option<Object>, Error> {
         let filter = ObjectFilter {
@@ -973,9 +885,16 @@ impl Object {
     /// `checkpoint_viewed_at` represents the checkpoint sequence number at which this `Object` was
     /// constructed in. This is stored on `Object` so that when viewing that entity's state, it will
     /// be as if it was read at the same checkpoint.
+    ///
+    /// `root_version` represents the version of the root object in some nested chain of dynamic
+    /// fields. This should typically be left `None`, unless the object(s) being resolved is a
+    /// dynamic field, or if `root_version` has been explicitly set for this object. If None, then
+    /// we use [`version_for_dynamic_fields`] to infer a root version to then propagate from this
+    /// object down to its dynamic fields.
     pub(crate) fn try_from_stored_history_object(
         history_object: StoredHistoryObject,
         checkpoint_viewed_at: u64,
+        root_version: Option<u64>,
     ) -> Result<Self, Error> {
         let address = addr(&history_object.object_id)?;
 
@@ -1000,10 +919,13 @@ impl Object {
                     Error::Internal(format!("Failed to deserialize object {address}"))
                 })?;
 
+                let root_version =
+                    root_version.unwrap_or_else(|| version_for_dynamic_fields(&native_object));
                 Ok(Self {
                     address,
                     kind: ObjectKind::Indexed(native_object, history_object),
                     checkpoint_viewed_at,
+                    root_version,
                 })
             }
             NativeObjectStatus::WrappedOrDeleted => Ok(Self {
@@ -1015,9 +937,21 @@ impl Object {
                     checkpoint_sequence_number: history_object.checkpoint_sequence_number,
                 }),
                 checkpoint_viewed_at,
+                root_version: history_object.object_version as u64,
             }),
         }
     }
+}
+
+/// We're deliberately choosing to use a child object's version as the root here, and letting the
+/// caller override it with the actual root object's version if it has access to it.
+///
+/// Using the child object's version as the root means that we're seeing the dynamic field tree
+/// under this object at the state resulting from the transaction that produced this version.
+///
+/// See [`Object::root_version`] for more details on parent/child object version mechanics.
+fn version_for_dynamic_fields(native: &NativeObject) -> u64 {
+    native.as_inner().version().into()
 }
 
 impl ObjectFilter {
@@ -1070,7 +1004,7 @@ impl ObjectFilter {
                 .filter_map(|(id, v)| {
                     Some(ObjectKey {
                         object_id: *id,
-                        version: (*v)?,
+                        version: (*v)?.into(),
                     })
                 })
                 .collect();
@@ -1098,7 +1032,7 @@ impl ObjectFilter {
             self.object_keys
                 .iter()
                 .flatten()
-                .map(|key| (key.object_id, Some(key.version)))
+                .map(|key| (key.object_id, Some(key.version.into())))
                 // Chain ID filters after Key filters so if there is overlap, we overwrite the key
                 // filter with the ID filter.
                 .chain(self.object_ids.iter().flatten().map(|id| (*id, None))),
@@ -1166,7 +1100,13 @@ impl ObjectFilter {
         }
 
         if let Some(type_) = &self.type_ {
-            return type_.apply_raw(query, "object_type");
+            return type_.apply_raw(
+                query,
+                "object_type",
+                "object_type_package",
+                "object_type_module",
+                "object_type_name",
+            );
         }
 
         query
@@ -1189,36 +1129,6 @@ impl HistoricalObjectCursor {
 impl Checkpointed for Cursor {
     fn checkpoint_viewed_at(&self) -> u64 {
         self.checkpoint_viewed_at
-    }
-}
-
-impl Paginated<Cursor> for StoredObject {
-    type Source = objects::table;
-
-    fn filter_ge<ST, GB>(cursor: &Cursor, query: Query<ST, GB>) -> Query<ST, GB> {
-        query.filter(objects::dsl::object_id.ge(cursor.object_id.clone()))
-    }
-
-    fn filter_le<ST, GB>(cursor: &Cursor, query: Query<ST, GB>) -> Query<ST, GB> {
-        query.filter(objects::dsl::object_id.le(cursor.object_id.clone()))
-    }
-
-    fn order<ST, GB>(asc: bool, query: Query<ST, GB>) -> Query<ST, GB> {
-        use objects::dsl;
-        if asc {
-            query.order_by(dsl::object_id.asc())
-        } else {
-            query.order_by(dsl::object_id.desc())
-        }
-    }
-}
-
-impl Target<Cursor> for StoredObject {
-    fn cursor(&self, checkpoint_viewed_at: u64) -> Cursor {
-        Cursor::new(HistoricalObjectCursor::new(
-            self.object_id.clone(),
-            checkpoint_viewed_at,
-        ))
     }
 }
 
@@ -1258,6 +1168,169 @@ impl Target<Cursor> for StoredHistoryObject {
             self.object_id.clone(),
             checkpoint_viewed_at,
         ))
+    }
+}
+
+#[async_trait::async_trait]
+impl Loader<HistoricalKey> for Db {
+    type Value = Object;
+    type Error = Error;
+
+    async fn load(&self, keys: &[HistoricalKey]) -> Result<HashMap<HistoricalKey, Object>, Error> {
+        use objects_history::dsl;
+
+        let id_versions: BTreeSet<_> = keys
+            .iter()
+            .map(|key| (key.id.into_vec(), key.version as i64))
+            .collect();
+
+        let objects: Vec<StoredHistoryObject> = self
+            .execute(move |conn| {
+                conn.results(move || {
+                    let mut query = dsl::objects_history.into_boxed();
+
+                    // TODO: Speed up using an `obj_version` table.
+                    for (id, version) in id_versions.iter().cloned() {
+                        query = query
+                            .or_filter(dsl::object_id.eq(id).and(dsl::object_version.eq(version)));
+                    }
+
+                    query
+                })
+            })
+            .await
+            .map_err(|e| Error::Internal(format!("Failed to fetch objects: {e}")))?;
+
+        let mut id_version_to_stored = BTreeMap::new();
+        for stored in objects {
+            let key = (addr(&stored.object_id)?, stored.object_version as u64);
+            id_version_to_stored.insert(key, stored);
+        }
+
+        let mut result = HashMap::new();
+        for key in keys {
+            let Some(stored) = id_version_to_stored.get(&(key.id, key.version)) else {
+                continue;
+            };
+
+            // Filter by key's checkpoint viewed at here. Doing this in memory because it should be
+            // quite rare that this query actually filters something, but encoding it in SQL is
+            // complicated.
+            if key.checkpoint_viewed_at < stored.checkpoint_sequence_number as u64 {
+                continue;
+            }
+
+            let object = Object::try_from_stored_history_object(
+                stored.clone(),
+                key.checkpoint_viewed_at,
+                // This conversion will use the object's own version as the `Object::root_version`.
+                None,
+            )?;
+            result.insert(*key, object);
+        }
+
+        Ok(result)
+    }
+}
+
+#[async_trait::async_trait]
+impl Loader<LatestAtKey> for Db {
+    type Value = Object;
+    type Error = Error;
+
+    async fn load(&self, keys: &[LatestAtKey]) -> Result<HashMap<LatestAtKey, Object>, Error> {
+        // Group keys by checkpoint viewed at and parent version -- we'll issue a separate query for
+        // each group.
+        #[derive(Eq, PartialEq, Ord, PartialOrd, Clone, Copy)]
+        struct GroupKey {
+            checkpoint_viewed_at: u64,
+            parent_version: Option<u64>,
+        }
+
+        let mut keys_by_cursor_and_parent_version: BTreeMap<_, BTreeSet<_>> = BTreeMap::new();
+        for key in keys {
+            let group_key = GroupKey {
+                checkpoint_viewed_at: key.checkpoint_viewed_at,
+                parent_version: key.parent_version,
+            };
+
+            keys_by_cursor_and_parent_version
+                .entry(group_key)
+                .or_default()
+                .insert(key.id);
+        }
+
+        // Issue concurrent reads for each group of keys.
+        let futures = keys_by_cursor_and_parent_version
+            .into_iter()
+            .map(|(group_key, ids)| {
+                self.execute_repeatable(move |conn| {
+                    let Some(range) = AvailableRange::result(conn, group_key.checkpoint_viewed_at)?
+                    else {
+                        return Ok::<Vec<(GroupKey, StoredHistoryObject)>, diesel::result::Error>(
+                            vec![],
+                        );
+                    };
+
+                    let filter = ObjectFilter {
+                        object_ids: Some(ids.iter().cloned().collect()),
+                        ..Default::default()
+                    };
+
+                    // TODO: Implement queries that use a parent version bound using an
+                    // `obj_version` table.
+                    let apply_parent_bound = |q: RawQuery| {
+                        if let Some(parent_version) = group_key.parent_version {
+                            filter!(q, format!("object_version <= {parent_version}"))
+                        } else {
+                            q
+                        }
+                    };
+
+                    Ok(conn
+                        .results(move || {
+                            build_objects_query(
+                                View::Consistent,
+                                range,
+                                &Page::bounded(ids.len() as u64),
+                                |q| apply_parent_bound(filter.apply(q)),
+                                apply_parent_bound,
+                            )
+                            .into_boxed()
+                        })?
+                        .into_iter()
+                        .map(|r| (group_key, r))
+                        .collect())
+                })
+            });
+
+        // Wait for the reads to all finish, and gather them into the result map.
+        let groups = futures::future::join_all(futures).await;
+
+        let mut results = HashMap::new();
+        for group in groups {
+            for (group_key, stored) in
+                group.map_err(|e| Error::Internal(format!("Failed to fetch objects: {e}")))?
+            {
+                let object = Object::try_from_stored_history_object(
+                    stored,
+                    group_key.checkpoint_viewed_at,
+                    // If `LatestAtKey::parent_version` is set, it must have been correctly
+                    // propagated from the `Object::root_version` of some object.
+                    group_key.parent_version,
+                )?;
+
+                let key = LatestAtKey {
+                    id: object.address,
+                    checkpoint_viewed_at: group_key.checkpoint_viewed_at,
+                    parent_version: group_key.parent_version,
+                };
+
+                results.insert(key, object);
+            }
+        }
+
+        Ok(results)
     }
 }
 
@@ -1327,19 +1400,61 @@ pub(crate) async fn deserialize_move_struct(
 fn objects_query(filter: &ObjectFilter, range: AvailableRange, page: &Page<Cursor>) -> RawQuery
 where
 {
-    let view = if filter.object_keys.is_some() || !filter.has_filters() {
-        View::Historical
-    } else {
-        View::Consistent
-    };
+    if let (Some(_), Some(_)) = (&filter.object_ids, &filter.object_keys) {
+        // If both object IDs and object keys are specified, then we need to query in
+        // both historical and consistent views, and then union the results.
+        let ids_only_filter = ObjectFilter {
+            object_keys: None,
+            ..filter.clone()
+        };
+        let (id_query, id_bindings) = build_objects_query(
+            View::Consistent,
+            range,
+            page,
+            move |query| ids_only_filter.apply(query),
+            move |newer| newer,
+        )
+        .finish();
 
-    build_objects_query(
-        view,
-        range,
-        page,
-        move |query| filter.apply(query),
-        move |newer| newer,
-    )
+        let keys_only_filter = ObjectFilter {
+            object_ids: None,
+            ..filter.clone()
+        };
+        let (key_query, key_bindings) = build_objects_query(
+            View::Historical,
+            range,
+            page,
+            move |query| keys_only_filter.apply(query),
+            move |newer| newer,
+        )
+        .finish();
+
+        RawQuery::new(
+            format!(
+                "SELECT * FROM (({id_query}) UNION ALL ({key_query})) AS candidates",
+                id_query = id_query,
+                key_query = key_query,
+            ),
+            id_bindings.into_iter().chain(key_bindings).collect(),
+        )
+        .order_by("object_id")
+        .limit(page.limit() as i64)
+    } else {
+        // Only one of object IDs or object keys is specified, or neither are specified.
+        let view = if filter.object_keys.is_some() || !filter.has_filters() {
+            View::Historical
+        } else {
+            View::Consistent
+        };
+
+        build_objects_query(
+            view,
+            range,
+            page,
+            move |query| filter.apply(query),
+            move |newer| newer,
+        )
+    }
 }
 
 #[cfg(test)]
@@ -1375,11 +1490,11 @@ mod tests {
             object_keys: Some(vec![
                 ObjectKey {
                     object_id: i2,
-                    version: 1,
+                    version: 1.into(),
                 },
                 ObjectKey {
                     object_id: i4,
-                    version: 2,
+                    version: 2.into(),
                 },
             ]),
             ..Default::default()
@@ -1389,7 +1504,7 @@ mod tests {
             object_ids: Some(vec![i1, i2]),
             object_keys: Some(vec![ObjectKey {
                 object_id: i4,
-                version: 2,
+                version: 2.into(),
             }]),
             ..Default::default()
         };
@@ -1403,11 +1518,11 @@ mod tests {
             object_keys: Some(vec![
                 ObjectKey {
                     object_id: i2,
-                    version: 2,
+                    version: 2.into(),
                 },
                 ObjectKey {
                     object_id: i4,
-                    version: 2,
+                    version: 2.into(),
                 },
             ]),
             ..Default::default()
@@ -1420,11 +1535,11 @@ mod tests {
                 object_keys: Some(vec![
                     ObjectKey {
                         object_id: i2,
-                        version: 1
+                        version: 1.into(),
                     },
                     ObjectKey {
                         object_id: i4,
-                        version: 2
+                        version: 2.into(),
                     },
                 ]),
                 ..Default::default()
@@ -1445,11 +1560,11 @@ mod tests {
                 object_keys: Some(vec![
                     ObjectKey {
                         object_id: i2,
-                        version: 2
+                        version: 2.into(),
                     },
                     ObjectKey {
                         object_id: i4,
-                        version: 2
+                        version: 2.into(),
                     },
                 ]),
                 ..Default::default()

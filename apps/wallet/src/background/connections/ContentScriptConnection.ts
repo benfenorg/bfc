@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { createMessage } from '_messages';
@@ -31,7 +31,7 @@ import {
 	type SignMessageRequest,
 } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
 import type { Runtime } from 'webextension-polyfill';
 
 import { getAccountsStatusData } from '../accounts';
@@ -40,7 +40,7 @@ import { requestUserApproval } from '../qredo';
 import { Connection } from './Connection';
 
 export class ContentScriptConnection extends Connection {
-	public static readonly CHANNEL: PortChannelName = 'bfc_content<->background';
+	public static readonly CHANNEL: PortChannelName = 'sui_content<->background';
 	public readonly origin: string;
 	public readonly pagelink?: string | undefined;
 	public readonly originFavIcon: string | undefined;
@@ -94,7 +94,7 @@ export class ContentScriptConnection extends Connection {
 					createMessage<ExecuteTransactionResponse>(
 						{
 							type: 'execute-transaction-response',
-							result: result as BenfenTransactionBlockResponse,
+							result: result as SuiTransactionBlockResponse,
 						},
 						msg.id,
 					),
@@ -228,7 +228,6 @@ export class ContentScriptConnection extends Connection {
 	}
 
 	private async ensurePermissions(permissions: PermissionType[], account?: string) {
-		console.log('ensurePermissions', permissions, account);
 		const existingPermission = await Permissions.getPermission(this.origin);
 		const allowed = await Permissions.hasPermissions(
 			this.origin,

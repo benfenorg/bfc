@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { ValidatorLogo } from '_app/staking/validators/ValidatorLogo';
@@ -10,18 +10,18 @@ import {
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
-import type { BenfenEvent } from '@benfen/bfc.js/client';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import {
 	formatPercentageDisplay,
 	useGetTimeBeforeEpochNumber,
 	useGetValidatorsApy,
 } from '@mysten/core';
+import type { SuiEvent } from '@mysten/sui/client';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 
 import { Card } from '../../shared/transaction-summary/Card';
 
 type StakeTxnCardProps = {
-	event: BenfenEvent;
+	event: SuiEvent;
 };
 
 // For Staked Transaction use moveEvent Field to get the validator address, delegation amount, epoch
@@ -64,7 +64,7 @@ export function StakeTxnCard({ event }: StakeTxnCardProps) {
 						/>
 					</div>
 				)}
-				{stakedAmount && <TxnAmount amount={stakedAmount} coinType={BFC_TYPE_ARG} label="Stake" />}
+				{stakedAmount && <TxnAmount amount={stakedAmount} coinType={SUI_TYPE_ARG} label="Stake" />}
 				<div className="flex flex-col">
 					<div className="flex justify-between w-full py-3.5">
 						<div className="flex gap-1 items-baseline justify-center text-steel">

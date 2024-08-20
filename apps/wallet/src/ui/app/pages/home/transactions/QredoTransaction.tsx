@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { toUtf8OrB64 } from '_src/shared/utils';
@@ -6,9 +6,9 @@ import LoadingIndicator from '_src/ui/app/components/loading/LoadingIndicator';
 import { TxnIcon } from '_src/ui/app/components/transactions-card/TxnIcon';
 import { useGetQredoTransaction } from '_src/ui/app/hooks/useGetQredoTransaction';
 import { Text } from '_src/ui/app/shared/text';
-import { IntentScope } from '@benfen/bfc.js/cryptography';
-import { fromB64 } from '@benfen/bfc.js/utils';
 import { formatDate, useOnScreen } from '@mysten/core';
+import { bcs } from '@mysten/sui/bcs';
+import { fromB64 } from '@mysten/sui/utils';
 import { useMemo, useRef } from 'react';
 
 export type QredoTransactionProps = {
@@ -30,8 +30,11 @@ export function QredoTransaction({ qredoID, qredoTransactionID }: QredoTransacti
 		}
 		return null;
 	}, [data?.MessageWithIntent]);
-	const scope = messageWithIntent?.[0];
-	const isSignMessage = scope === IntentScope.PersonalMessage;
+
+	const isSignMessage = messageWithIntent
+		? bcs.IntentScope.parse(messageWithIntent).PersonalMessage
+		: false;
+
 	const transactionBytes = useMemo(() => messageWithIntent?.slice(3) || null, [messageWithIntent]);
 	const messageToSign =
 		useMemo(

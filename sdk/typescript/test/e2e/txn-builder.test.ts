@@ -1,15 +1,13 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import {
-	BenfenClient,
-	BenfenObjectChangeCreated,
-	BenfenTransactionBlockResponse,
-} from '../../src/client';
+import { bcs } from '../../src/bcs';
+import { SuiClient, SuiObjectChangeCreated, SuiTransactionBlockResponse } from '../../src/client';
 import type { Keypair } from '../../src/cryptography';
-import { BFC_SYSTEM_STATE_OBJECT_ID, normalizeBenfenObjectId } from '../../src/utils';
+import { Transaction } from '../../src/transactions';
+import { normalizeSuiObjectId, SUI_SYSTEM_STATE_OBJECT_ID } from '../../src/utils';
 import {
 	DEFAULT_GAS_BUDGET,
 	DEFAULT_RECIPIENT,
@@ -19,29 +17,24 @@ import {
 	upgradePackage,
 } from './utils/setup';
 
-import '../../src/transactions/TransactionBlockData';
-
-import { bcs } from '../../src/bcs';
-import { TransactionBlock } from '../../src/transactions';
-
-export const BFC_CLOCK_OBJECT_ID = normalizeBenfenObjectId('0x6');
+export const SUI_CLOCK_OBJECT_ID = normalizeSuiObjectId('0x6');
 
 describe('Transaction Builders', () => {
 	let toolbox: TestToolbox;
 	let packageId: string;
-	let publishTxn: BenfenTransactionBlockResponse;
+	let publishTxn: SuiTransactionBlockResponse;
 	let sharedObjectId: string;
 
 	beforeAll(async () => {
 		const packagePath = __dirname + '/./data/serializer';
 		({ packageId, publishTxn } = await publishPackage(packagePath));
-		const sharedObject = (publishTxn.effects?.created)!.filter(
+		const sharedObject = publishTxn.effects?.created!.filter(
 			(o) =>
 				typeof o.owner === 'object' &&
 				'Shared' in o.owner &&
 				o.owner.Shared.initial_shared_version !== undefined,
 		)[0];
-		sharedObjectId = sharedObject.reference.objectId;
+		sharedObjectId = sharedObject!.reference.objectId;
 	});
 
 	beforeEach(async () => {
@@ -50,7 +43,7 @@ describe('Transaction Builders', () => {
 
 	it('SplitCoins + TransferObjects', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		const coin_0 = coins.data[0];
 
 		const coin = tx.splitCoins(tx.object(coin_0.coinObjectId), [
@@ -63,7 +56,7 @@ describe('Transaction Builders', () => {
 	it('MergeCoins', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 		const [coin_0, coin_1] = coins.data;
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.mergeCoins(coin_0.coinObjectId, [coin_1.coinObjectId]);
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
@@ -71,10 +64,10 @@ describe('Transaction Builders', () => {
 	it('MoveCall', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
 		const [coin_0] = coins.data;
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.moveCall({
 			target: '0x2::pay::split',
-			typeArguments: ['0x2::bfc::BFC'],
+			typeArguments: ['0x2::sui::SUI'],
 			arguments: [tx.object(coin_0.coinObjectId), tx.pure.u64(DEFAULT_GAS_BUDGET * 2)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
@@ -86,13 +79,13 @@ describe('Transaction Builders', () => {
 			const coins = await toolbox.getGasObjectsOwnedByAddress();
 			const coin_2 = coins.data[2];
 
-			const [{ benfenAddress: validatorAddress }] = await toolbox.getActiveValidators();
+			const [{ suiAddress: validatorAddress }] = await toolbox.getActiveValidators();
 
-			const tx = new TransactionBlock();
+			const tx = new Transaction();
 			tx.moveCall({
-				target: '0x3::bfc_system::request_add_stake',
+				target: '0x3::sui_system::request_add_stake',
 				arguments: [
-					tx.object(BFC_SYSTEM_STATE_OBJECT_ID),
+					tx.object(SUI_SYSTEM_STATE_OBJECT_ID),
 					tx.object(coin_2.coinObjectId),
 					tx.pure.address(validatorAddress),
 				],
@@ -107,21 +100,21 @@ describe('Transaction Builders', () => {
 	);
 
 	it('SplitCoins from gas object + TransferObjects', async () => {
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		const coin = tx.splitCoins(tx.gas, [1]);
 		tx.transferObjects([coin], DEFAULT_RECIPIENT);
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
 
 	it('TransferObjects gas object', async () => {
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.transferObjects([tx.gas], DEFAULT_RECIPIENT);
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
 
 	it('TransferObject', async () => {
 		const coins = await toolbox.getGasObjectsOwnedByAddress();
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		const coin_0 = coins.data[2];
 
 		tx.transferObjects([coin_0.coinObjectId], DEFAULT_RECIPIENT);
@@ -129,7 +122,7 @@ describe('Transaction Builders', () => {
 	});
 
 	it('Move Shared Object Call with mixed usage of mutable and immutable references', async () => {
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.moveCall({
 			target: `${packageId}::serializer_tests::value`,
 			arguments: [tx.object(sharedObjectId)],
@@ -142,7 +135,7 @@ describe('Transaction Builders', () => {
 	});
 
 	it('Move Shared Object Call by Value', async () => {
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.moveCall({
 			target: `${packageId}::serializer_tests::value`,
 			arguments: [tx.object(sharedObjectId)],
@@ -155,10 +148,10 @@ describe('Transaction Builders', () => {
 	});
 
 	it('immutable clock', async () => {
-		const tx = new TransactionBlock();
+		const tx = new Transaction();
 		tx.moveCall({
 			target: `${packageId}::serializer_tests::use_clock`,
-			arguments: [tx.object(BFC_CLOCK_OBJECT_ID)],
+			arguments: [tx.object(SUI_CLOCK_OBJECT_ID)],
 		});
 		await validateTransaction(toolbox.client, toolbox.keypair, tx);
 	});
@@ -178,21 +171,21 @@ describe('Transaction Builders', () => {
 						'Immutable' !== a.owner &&
 						'AddressOwner' in a.owner &&
 						a.owner.AddressOwner === toolbox.address(),
-				) as BenfenObjectChangeCreated
+				) as SuiObjectChangeCreated
 			)?.objectId;
 
 			expect(capId).toBeTruthy();
 
-			const sharedObjectId = (publishTxn.effects?.created)!.filter(
+			const sharedObjectId = publishTxn.effects?.created!.filter(
 				(o) =>
 					typeof o.owner === 'object' &&
 					'Shared' in o.owner &&
 					o.owner.Shared.initial_shared_version !== undefined,
-			)[0].reference.objectId;
+			)[0].reference.objectId!;
 
 			// Step 2. Confirm that its functions work as expected in its
 			// first version
-			let callOrigTx = new TransactionBlock();
+			let callOrigTx = new Transaction();
 			callOrigTx.moveCall({
 				target: `${packageId}::serializer_tests::value`,
 				arguments: [callOrigTx.object(sharedObjectId)],
@@ -217,12 +210,12 @@ describe('Transaction Builders', () => {
 	);
 });
 
-async function validateTransaction(client: BenfenClient, signer: Keypair, tx: TransactionBlock) {
-	tx.setSenderIfNotSet(signer.getPublicKey().toHexAddress());
+async function validateTransaction(client: SuiClient, signer: Keypair, tx: Transaction) {
+	tx.setSenderIfNotSet(signer.getPublicKey().toSuiAddress());
 	const localDigest = await tx.getDigest({ client });
-	const result = await client.signAndExecuteTransactionBlock({
+	const result = await client.signAndExecuteTransaction({
 		signer,
-		transactionBlock: tx,
+		transaction: tx,
 		options: {
 			showEffects: true,
 		},

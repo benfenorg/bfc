@@ -7,6 +7,8 @@ module sui_system::sui_system_state_inner {
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
     use sui::bfc::BFC;
+    use sui::coin::Coin;
+    use sui_system::staking_pool::StakedSui;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -220,7 +222,6 @@ module sui_system::sui_system_state_inner {
     const ECannotReportOneself: u64 = 3;
     const EReportRecordNotFound: u64 = 4;
     const EBpsTooLarge: u64 = 5;
-    const EStakeWithdrawBeforeActivation: u64 = 6;
     const ESafeModeGasNotProcessed: u64 = 7;
     const EAdvancedToWrongEpoch: u64 = 8;
 
@@ -375,21 +376,21 @@ module sui_system::sui_system_state_inner {
     ) {
         let validator = validator::new(
             ctx.sender(),
-        pubkey_bytes,
-        network_pubkey_bytes,
-        worker_pubkey_bytes,
-        proof_of_possession,
-        name,
-        description,
-        image_url,
-        project_url,
-        net_address,
-        p2p_address,
-        primary_address,
-        worker_address,
-        gas_price,
-        commission_rate,
-        ctx
+            pubkey_bytes,
+            network_pubkey_bytes,
+            worker_pubkey_bytes,
+            proof_of_possession,
+            name,
+            description,
+            image_url,
+            project_url,
+            net_address,
+            p2p_address,
+            primary_address,
+            worker_address,
+            gas_price,
+            commission_rate,
+            ctx
         );
 
         self.validators.request_add_validator_candidate(validator, ctx);
@@ -415,7 +416,7 @@ module sui_system::sui_system_state_inner {
     ) {
         assert!(
             self.validators.next_epoch_validator_count() < self.parameters.max_validator_count,
-        ELimitExceeded,
+            ELimitExceeded,
         );
 
         self.validators.request_add_validator(self.parameters.min_validator_joining_stake, ctx);
@@ -437,7 +438,7 @@ module sui_system::sui_system_state_inner {
         if (self.validators.active_validators().length() >= self.parameters.min_validator_count) {
             assert!(
                 self.validators.next_epoch_validator_count() > self.parameters.min_validator_count,
-            ELimitExceeded,
+                ELimitExceeded,
             );
         };
 
@@ -507,8 +508,8 @@ module sui_system::sui_system_state_inner {
             validator_address,
             stake.into_balance(),
             ctx,
-            )
-        }
+        )
+    }
 
         /// Add stake to a validator's stable pool.
         public(package) fun request_add_stable_stake<STABLE>(
@@ -550,6 +551,14 @@ module sui_system::sui_system_state_inner {
             );
             self.validators.request_withdraw_stake(staked_sui, ctx)
         }
+    /// Withdraw some portion of a stake from a validator's staking pool.
+    public(package) fun request_withdraw_stake(
+        self: &mut SuiSystemStateInnerV2,
+        staked_sui: StakedSui,
+        ctx: &TxContext,
+    ) : Balance<SUI> {
+        self.validators.request_withdraw_stake(staked_sui, ctx)
+    }
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
             self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,
@@ -1036,6 +1045,19 @@ module sui_system::sui_system_state_inner {
         stable_rate: VecMap<ascii::String, u64>
     ): u64 {
         validator_set::validator_total_stake_amount_with_stable(&self.validators, validator_addr, stable_rate)
+    }
+
+    /// Returns the voting power for `validator_addr`.
+    /// Aborts if `validator_addr` is not an active validator.
+    public(package) fun active_validator_voting_powers(self: &SuiSystemStateInnerV2): VecMap<address, u64> {
+        let mut active_validators = active_validator_addresses(self);
+        let mut voting_powers = vec_map::empty();
+        while (!vector::is_empty(&active_validators)) {
+            let validator = vector::pop_back(&mut active_validators);
+            let voting_power = validator_set::validator_voting_power(&self.validators, validator);
+            vec_map::insert(&mut voting_powers, validator, voting_power);
+        };
+        voting_powers
     }
 
     /// Returns the staking pool id of a given validator.

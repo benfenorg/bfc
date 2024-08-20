@@ -1,8 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::sync::Arc;
-use std::time::{Instant, SystemTime};
+use std::{sync::Arc, time::SystemTime};
 
 use consensus_config::{AuthorityIndex, Committee, Parameters};
 #[cfg(test)]
@@ -10,11 +9,11 @@ use consensus_config::{NetworkKeyPair, ProtocolKeyPair};
 use sui_protocol_config::ProtocolConfig;
 #[cfg(test)]
 use tempfile::TempDir;
+use tokio::time::Instant;
 
-use crate::block::BlockTimestampMs;
 #[cfg(test)]
 use crate::metrics::test_metrics;
-use crate::metrics::Metrics;
+use crate::{block::BlockTimestampMs, metrics::Metrics};
 
 /// Context contains per-epoch configuration and metrics shared by all components
 /// of this authority.
@@ -68,7 +67,7 @@ impl Context {
             AuthorityIndex::new_for_test(0),
             committee,
             Parameters {
-                db_path: Some(temp_dir.into_path()),
+                db_path: temp_dir.into_path(),
                 ..Default::default()
             },
             ProtocolConfig::get_for_max_version_UNSAFE(),

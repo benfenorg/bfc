@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
@@ -12,17 +12,11 @@ import { parseAmount } from '_helpers';
 import { useGetAllCoins } from '_hooks';
 import { GAS_SYMBOL } from '_src/ui/app/redux/slices/sui-objects/Coin';
 import { InputWithAction } from '_src/ui/app/shared/InputWithAction';
-import { type CoinStruct } from '@benfen/bfc.js/client';
-import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
-import {
-	CoinFormat,
-	isSuiNSName,
-	useCoinMetadata,
-	useFormatCoin,
-	useSuiNSEnabled,
-} from '@mysten/core';
+import { CoinFormat, useCoinMetadata, useFormatCoin, useSuiNSEnabled } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { ArrowRight16 } from '@mysten/icons';
+import { type CoinStruct } from '@mysten/sui/client';
+import { isValidSuiNSName, SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { Field, Form, Formik, useFormikContext } from 'formik';
 import { useEffect, useMemo } from 'react';
@@ -73,7 +67,7 @@ function GasBudgetEstimation({
 	const { values, setFieldValue } = useFormikContext<FormValues>();
 	const suiNSEnabled = useSuiNSEnabled();
 
-	const client = useBenfenClient();
+	const client = useSuiClient();
 	const { data: gasBudget } = useQuery({
 		// eslint-disable-next-line @tanstack/query/exhaustive-deps
 		queryKey: [
@@ -92,7 +86,7 @@ function GasBudgetEstimation({
 			}
 
 			let to = values.to;
-			if (suiNSEnabled && isSuiNSName(values.to)) {
+			if (suiNSEnabled && isValidSuiNSName(values.to)) {
 				const address = await client.resolveNameServiceAddress({
 					name: values.to,
 				});
@@ -105,7 +99,7 @@ function GasBudgetEstimation({
 			const tx = createTokenTransferTransaction({
 				to,
 				amount: values.amount,
-				coinType: BFC_TYPE_ARG,
+				coinType: SUI_TYPE_ARG,
 				coinDecimals,
 				isPayAllSui: values.isPayAllSui,
 				coins,
@@ -117,7 +111,7 @@ function GasBudgetEstimation({
 		},
 	});
 
-	const [formattedGas] = useFormatCoin(gasBudget, BFC_TYPE_ARG);
+	const [formattedGas] = useFormatCoin(gasBudget, SUI_TYPE_ARG);
 
 	// gasBudgetEstimation should change when the amount above changes
 	useEffect(() => {
@@ -147,13 +141,13 @@ export function SendTokenForm({
 	initialAmount = '',
 	initialTo = '',
 }: SendTokenFormProps) {
-	const client = useBenfenClient();
+	const client = useSuiClient();
 	const activeAddress = useActiveAddress();
 	// Get all coins of the type
 	const { data: coinsData, isPending: coinsIsPending } = useGetAllCoins(coinType, activeAddress!);
 
 	const { data: suiCoinsData, isPending: suiCoinsIsPending } = useGetAllCoins(
-		BFC_TYPE_ARG,
+		SUI_TYPE_ARG,
 		activeAddress!,
 	);
 
@@ -188,7 +182,7 @@ export function SendTokenForm({
 					amount: initialAmount,
 					to: initialTo,
 					isPayAllSui:
-						!!initAmountBig && initAmountBig === coinBalance && coinType === BFC_TYPE_ARG,
+						!!initAmountBig && initAmountBig === coinBalance && coinType === SUI_TYPE_ARG,
 					gasBudgetEst: '',
 				}}
 				validationSchema={validationSchemaStepOne}
@@ -201,7 +195,7 @@ export function SendTokenForm({
 						.sort((a, b) => Number(b.balance) - Number(a.balance))
 						.map(({ coinObjectId }) => coinObjectId);
 
-					if (suiNSEnabled && isSuiNSName(to)) {
+					if (suiNSEnabled && isValidSuiNSName(to)) {
 						const address = await client.resolveNameServiceAddress({
 							name: to,
 						});
@@ -224,7 +218,7 @@ export function SendTokenForm({
 			>
 				{({ isValid, isSubmitting, setFieldValue, values, submitForm, validateField }) => {
 					const newPaySuiAll =
-						parseAmount(values.amount, coinDecimals) === coinBalance && coinType === BFC_TYPE_ARG;
+						parseAmount(values.amount, coinDecimals) === coinBalance && coinType === SUI_TYPE_ARG;
 					if (values.isPayAllSui !== newPaySuiAll) {
 						setFieldValue('isPayAllSui', newPaySuiAll);
 					}
@@ -233,7 +227,7 @@ export function SendTokenForm({
 						values.isPayAllSui ||
 						suiBalance >
 							parseAmount(values.gasBudgetEst, coinDecimals) +
-								parseAmount(coinType === BFC_TYPE_ARG ? values.amount : '0', coinDecimals);
+								parseAmount(coinType === SUI_TYPE_ARG ? values.amount : '0', coinDecimals);
 
 					return (
 						<BottomMenuLayout>

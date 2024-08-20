@@ -11,6 +11,7 @@ use super::{
     epoch::Epoch,
     gas::GasCostSummary,
     transaction_block::{self, TransactionBlock, TransactionBlockFilter},
+    uint53::UInt53,
 };
 use crate::consistency::Checkpointed;
 use crate::{
@@ -32,11 +33,11 @@ use sui_types::messages_checkpoint::CheckpointDigest;
 #[derive(Default, InputObject)]
 pub(crate) struct CheckpointId {
     pub digest: Option<Digest>,
-    pub sequence_number: Option<u64>,
+    pub sequence_number: Option<UInt53>,
 }
 
-/// DataLoader key for fetching a `Checkpoint` by its sequence number, optionally constrained by a
-/// consistency cursor.
+/// DataLoader key for fetching a `Checkpoint` by its sequence number, constrained by a consistency
+/// cursor.
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
 struct SeqNumKey {
     pub sequence_number: u64,
@@ -46,8 +47,7 @@ struct SeqNumKey {
     pub checkpoint_viewed_at: u64,
 }
 
-/// DataLoader key for fetching a `Checkpoint` by its digest, optionally constrained by a
-/// consistency cursor.
+/// DataLoader key for fetching a `Checkpoint` by its digest, constrained by a consistency cursor.
 #[derive(Copy, Clone, Hash, Eq, PartialEq, Debug)]
 struct DigestKey {
     pub digest: Digest,
@@ -91,8 +91,8 @@ impl Checkpoint {
 
     /// This checkpoint's position in the total order of finalized checkpoints, agreed upon by
     /// consensus.
-    async fn sequence_number(&self) -> u64 {
-        self.sequence_number_impl()
+    async fn sequence_number(&self) -> UInt53 {
+        self.sequence_number_impl().into()
     }
 
     /// The timestamp at which the checkpoint is agreed to have happened according to consensus.
@@ -116,8 +116,8 @@ impl Checkpoint {
     }
 
     /// The total number of transaction blocks in the network by the end of this checkpoint.
-    async fn network_total_transactions(&self) -> Option<u64> {
-        Some(self.network_total_transactions_impl())
+    async fn network_total_transactions(&self) -> Option<UInt53> {
+        Some(self.network_total_transactions_impl().into())
     }
 
     /// The computation cost, storage cost, storage rebate, and non-refundable storage fee
@@ -158,7 +158,7 @@ impl Checkpoint {
         let Some(filter) = filter
             .unwrap_or_default()
             .intersect(TransactionBlockFilter {
-                at_checkpoint: Some(self.stored.sequence_number as u64),
+                at_checkpoint: Some(UInt53::from(self.stored.sequence_number as u64)),
                 ..Default::default()
             })
         else {
@@ -179,7 +179,7 @@ impl Checkpoint {
 impl CheckpointId {
     pub(crate) fn by_seq_num(seq_num: u64) -> Self {
         CheckpointId {
-            sequence_number: Some(seq_num),
+            sequence_number: Some(seq_num.into()),
             digest: None,
         }
     }
@@ -214,7 +214,7 @@ impl Checkpoint {
             } => {
                 let DataLoader(dl) = ctx.data_unchecked();
                 dl.load_one(SeqNumKey {
-                    sequence_number,
+                    sequence_number: sequence_number.into(),
                     digest,
                     checkpoint_viewed_at,
                 })
@@ -320,8 +320,7 @@ impl Checkpoint {
             })
             .await?;
 
-        // Defer to the provided checkpoint_viewed_at, but if it is not provided, use the
-        // current available range. This sets a consistent upper bound for the nested queries.
+        // The "checkpoint viewed at" sets a consistent upper bound for the nested queries.
         let mut conn = Connection::new(prev, next);
         for stored in results {
             let cursor = stored.cursor(checkpoint_viewed_at).encode_cursor();

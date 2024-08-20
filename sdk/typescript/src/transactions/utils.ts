@@ -1,34 +1,29 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Struct } from 'superstruct';
-import { create as superstructCreate } from 'superstruct';
-
-import type { BenfenMoveNormalizedType } from '../client/index.js';
-
-export function create<T, S>(value: T, struct: Struct<T, S>): T {
-	return superstructCreate(value, struct);
-}
+import type { SuiMoveNormalizedType } from '../client/index.js';
+import { normalizeSuiAddress } from '../utils/sui-types.js';
+import type { CallArg } from './data/internal.js';
 
 export function extractMutableReference(
-	normalizedType: BenfenMoveNormalizedType,
-): BenfenMoveNormalizedType | undefined {
+	normalizedType: SuiMoveNormalizedType,
+): SuiMoveNormalizedType | undefined {
 	return typeof normalizedType === 'object' && 'MutableReference' in normalizedType
 		? normalizedType.MutableReference
 		: undefined;
 }
 
 export function extractReference(
-	normalizedType: BenfenMoveNormalizedType,
-): BenfenMoveNormalizedType | undefined {
+	normalizedType: SuiMoveNormalizedType,
+): SuiMoveNormalizedType | undefined {
 	return typeof normalizedType === 'object' && 'Reference' in normalizedType
 		? normalizedType.Reference
 		: undefined;
 }
 
 export function extractStructTag(
-	normalizedType: BenfenMoveNormalizedType,
-): Extract<BenfenMoveNormalizedType, { Struct: unknown }> | undefined {
+	normalizedType: SuiMoveNormalizedType,
+): Extract<SuiMoveNormalizedType, { Struct: unknown }> | undefined {
 	if (typeof normalizedType === 'object' && 'Struct' in normalizedType) {
 		return normalizedType;
 	}
@@ -43,5 +38,29 @@ export function extractStructTag(
 	if (typeof mutRef === 'object' && 'Struct' in mutRef) {
 		return mutRef;
 	}
+	return undefined;
+}
+
+export function getIdFromCallArg(arg: string | CallArg) {
+	if (typeof arg === 'string') {
+		return normalizeSuiAddress(arg);
+	}
+
+	if (arg.Object) {
+		if (arg.Object.ImmOrOwnedObject) {
+			return normalizeSuiAddress(arg.Object.ImmOrOwnedObject.objectId);
+		}
+
+		if (arg.Object.Receiving) {
+			return normalizeSuiAddress(arg.Object.Receiving.objectId);
+		}
+
+		return normalizeSuiAddress(arg.Object.SharedObject.objectId);
+	}
+
+	if (arg.UnresolvedObject) {
+		return normalizeSuiAddress(arg.UnresolvedObject.objectId);
+	}
+
 	return undefined;
 }

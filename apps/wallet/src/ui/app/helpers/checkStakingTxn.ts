@@ -1,9 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import type { SuiTransactionBlockResponse } from '@mysten/sui/client';
 
 // TODO: Support programmable transactions:
-export function checkStakingTxn(_txn: BenfenTransactionBlockResponse) {
+export function checkStakingTxn(_txn: SuiTransactionBlockResponse) {
 	return false;
 }

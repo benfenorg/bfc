@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import BottomMenuLayout, { Content } from '_app/shared/bottom-menu-layout';
@@ -18,11 +18,11 @@ import {
 	MIN_NUMBER_SUI_TO_STAKE,
 } from '_src/shared/constants';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
-import type { StakeObject } from '@benfen/bfc.js/client';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG, MIST_PER_BFC } from '@benfen/bfc.js/utils';
 import { useCoinMetadata, useGetDelegatedStake, useGetValidatorsApy } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { ArrowLeft16, StakeAdd16, StakeRemove16 } from '@mysten/icons';
+import type { StakeObject } from '@mysten/sui/client';
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui/utils';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
 
@@ -41,7 +41,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 		data: system,
 		isPending: loadingValidators,
 		isError: errorValidators,
-	} = useBenfenClientQuery('getLatestBenfeSystemState');
+	} = useSuiClientQuery('getLatestSuiSystemState');
 
 	const accountAddress = useActiveAddress();
 
@@ -57,12 +57,12 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 
 	const apiEnv = useAppSelector(({ app }) => app.apiEnv);
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-	const { data: suiCoinBalance } = useBenfenClientQuery(
+	const { data: suiCoinBalance } = useSuiClientQuery(
 		'getBalance',
-		{ coinType: BFC_TYPE_ARG, owner: accountAddress!! },
+		{ coinType: SUI_TYPE_ARG, owner: accountAddress!! },
 		{ refetchInterval, staleTime, enabled: !!accountAddress },
 	);
-	const { data: metadata } = useCoinMetadata(BFC_TYPE_ARG);
+	const { data: metadata } = useCoinMetadata(SUI_TYPE_ARG);
 	// set minimum stake amount to 1 SUI
 	const showRequestMoreSuiToken = useMemo(() => {
 		if (!suiCoinBalance?.totalBalance || !metadata?.decimals || apiEnv === API_ENV.mainnet)
@@ -92,7 +92,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 		apy: 0,
 	};
 
-	const delegationId = delegationData?.status === 'Active' && delegationData?.stakedBfcId;
+	const delegationId = delegationData?.status === 'Active' && delegationData?.stakedSuiId;
 
 	const stakeByValidatorAddress = `/stake/new?${new URLSearchParams({
 		address: validatorAddress,
@@ -224,7 +224,7 @@ export function DelegationDetailCard({ validatorAddress, stakedId }: DelegationD
 									to={stakeByValidatorAddress + '&unstake=true'}
 									onClick={() => {
 										ampli.clickedUnstakeSui({
-											stakedAmount: Number(totalStake / MIST_PER_BFC),
+											stakedAmount: Number(totalStake / MIST_PER_SUI),
 											validatorAddress,
 										});
 									}}

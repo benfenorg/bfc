@@ -1,13 +1,13 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { NUM_OF_EPOCH_BEFORE_STAKING_REWARDS_REDEEMABLE } from '_src/shared/constants';
 import { CountDownTimer } from '_src/ui/app/shared/countdown-timer';
 import { Text } from '_src/ui/app/shared/text';
 import { IconTooltip } from '_src/ui/app/shared/tooltip';
-import { type StakeObject } from '@benfen/bfc.js/client';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useFormatCoin, useGetTimeBeforeEpochNumber } from '@mysten/core';
+import { type StakeObject } from '@mysten/sui/client';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { cva, cx, type VariantProps } from 'class-variance-authority';
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
@@ -108,7 +108,7 @@ export function StakeCard({
 	currentEpoch,
 	inactiveValidator = false,
 }: StakeCardProps) {
-	const { stakedBfcId, principal, stakeRequestEpoch, estimatedReward, validatorAddress } =
+	const { stakedSuiId, principal, stakeRequestEpoch, estimatedReward, validatorAddress } =
 		delegationObject;
 
 	// TODO: Once two step withdraw is available, add cool down and withdraw now logic
@@ -120,17 +120,17 @@ export function StakeCard({
 	const delegationState = inactiveValidator
 		? StakeState.IN_ACTIVE
 		: isEarnedRewards
-		? StakeState.EARNING
-		: StakeState.WARM_UP;
+			? StakeState.EARNING
+			: StakeState.WARM_UP;
 
 	const rewards = isEarnedRewards && estimatedReward ? BigInt(estimatedReward) : 0n;
 
 	// For inactive validator, show principal + rewards
 	const [principalStaked, symbol] = useFormatCoin(
 		inactiveValidator ? principal + rewards : principal,
-		BFC_TYPE_ARG,
+		SUI_TYPE_ARG,
 	);
-	const [rewardsStaked] = useFormatCoin(rewards, BFC_TYPE_ARG);
+	const [rewardsStaked] = useFormatCoin(rewards, SUI_TYPE_ARG);
 	const isEarning = delegationState === StakeState.EARNING && rewards > 0n;
 
 	// Applicable only for warm up
@@ -151,7 +151,7 @@ export function StakeCard({
 			data-testid="stake-card"
 			to={`/stake/delegation-detail?${new URLSearchParams({
 				validator: validatorAddress,
-				staked: stakedBfcId,
+				staked: stakedSuiId,
 			}).toString()}`}
 			className="no-underline"
 		>

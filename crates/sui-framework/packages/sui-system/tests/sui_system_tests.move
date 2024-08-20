@@ -106,12 +106,12 @@ module sui_system::sui_system_tests {
 
         // Add a pending validator
         let new_validator_addr = @0x1a4623343cd42be47d67314fce0ad042f3c82685544bc91d8c11d24e74ba7357;
-        test_scenario::next_tx(scenario, new_validator_addr);
+        scenario.next_tx(new_validator_addr);
         let pubkey = x"99f25ef61f8032b914636460982c5cc6f134ef1ddae76657f2cbfec1ebfc8d097374080df6fcf0dcb8bc4b0d8e0af5d80ebbff2b4c599f54f42d6312dfc314276078c1cc347ebbbec5198be258513f386b930d02c2749a803e2330955ebd1a10";
         let pop = x"8b93fc1b33379e2796d361c4056f0f04ad5aea7f4a8c02eaac57340ff09b6dc158eb1945eece103319167f420daf0cb3";
         add_validator_full_flow(new_validator_addr, b"name1", b"/ip4/127.0.0.1/udp/81", 100, pubkey, pop, scenario);
 
-        test_scenario::next_tx(scenario, new_validator_addr);
+        scenario.next_tx(new_validator_addr);
         // Pending validator could set reference price as well
         set_gas_price_helper(new_validator_addr, 777, scenario);
 
@@ -1081,5 +1081,55 @@ module sui_system::sui_system_tests {
         assert_eq(sui_system::get_stake_subsidy_distribution_counter(&mut system_state), prev_counter + (if (should_increment_counter) 1 else 0));
         test_scenario::return_shared(system_state);
         test_scenario::next_epoch(scenario, @0x0);
+    }
+
+    #[test]
+    fun test_withdraw_inactive_stake() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        // Epoch duration is set to be 42 here.
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+        {
+            scenario.next_tx(@0x0);
+            let mut system_state = scenario.take_shared<SuiSystemState>();
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_staking_pool_ref();
+
+            assert!(staking_pool.pending_stake_amount() == 0, 0);
+            assert!(staking_pool.pending_stake_withdraw_amount() == 0, 0);
+            assert!(staking_pool.sui_balance() == 100 * 1_000_000_000, 0);
+
+            test_scenario::return_shared(system_state);
+        };
+
+        stake_with(@0x0, @0x1, 1, scenario);
+
+        {
+            scenario.next_tx(@0x0);
+            let mut system_state = scenario.take_shared<SuiSystemState>();
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_staking_pool_ref();
+
+            assert!(staking_pool.pending_stake_amount() == 1_000_000_000, 0);
+            assert!(staking_pool.pending_stake_withdraw_amount() == 0, 0);
+            assert!(staking_pool.sui_balance() == 100 * 1_000_000_000, 0);
+
+            test_scenario::return_shared(system_state);
+        };
+
+        unstake(@0x0, 0, scenario);
+
+        {
+            scenario.next_tx(@0x0);
+            let mut system_state = scenario.take_shared<SuiSystemState>();
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_staking_pool_ref();
+
+            assert!(staking_pool.pending_stake_amount() == 0, 0);
+            assert!(staking_pool.pending_stake_withdraw_amount() == 0, 0);
+            assert!(staking_pool.sui_balance() == 100 * 1_000_000_000, 0);
+
+            test_scenario::return_shared(system_state);
+        };
+
+        scenario_val.end();
     }
 }

@@ -1,7 +1,149 @@
 # @mysten/suins-toolkit
 
-<<<<<<< HEAD
-=======
+## 0.5.14
+
+### Patch Changes
+
+- Updated dependencies [0851b31]
+- Updated dependencies [f37b3c2]
+  - @mysten/sui@1.5.0
+
+## 0.5.13
+
+### Patch Changes
+
+- Updated dependencies [4419234]
+  - @mysten/sui@1.4.0
+
+## 0.5.12
+
+### Patch Changes
+
+- Updated dependencies [a45f461]
+  - @mysten/sui@1.3.1
+
+## 0.5.11
+
+### Patch Changes
+
+- 0f27a97: Update dependencies
+- Updated dependencies [7fc464a]
+- Updated dependencies [086b2bc]
+- Updated dependencies [0fb0628]
+- Updated dependencies [cdedf69]
+- Updated dependencies [0f27a97]
+- Updated dependencies [beed646]
+  - @mysten/sui@1.3.0
+
+## 0.5.10
+
+### Patch Changes
+
+- Updated dependencies [06a900c1ab]
+- Updated dependencies [45877014d1]
+- Updated dependencies [87d6f75403]
+  - @mysten/sui@1.2.1
+
+## 0.5.9
+
+### Patch Changes
+
+- Updated dependencies [fef99d377f]
+  - @mysten/sui@1.2.0
+
+## 0.5.8
+
+### Patch Changes
+
+- Updated dependencies [0dfff33b95]
+  - @mysten/sui@1.1.2
+
+## 0.5.7
+
+### Patch Changes
+
+- Updated dependencies [101f1ff4b8]
+  - @mysten/sui@1.1.1
+
+## 0.5.6
+
+### Patch Changes
+
+- Updated dependencies [bae8f9683c]
+  - @mysten/sui@1.1.0
+
+## 0.5.5
+
+### Patch Changes
+
+- Updated dependencies [369b924343]
+  - @mysten/sui@1.0.5
+
+## 0.5.4
+
+### Patch Changes
+
+- Updated dependencies [f1e828f557]
+  - @mysten/sui@1.0.4
+
+## 0.5.3
+
+### Patch Changes
+
+- Updated dependencies [1f20580841]
+  - @mysten/sui@1.0.3
+
+## 0.5.2
+
+### Patch Changes
+
+- Updated dependencies [f0a839f874]
+  - @mysten/sui@1.0.2
+
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [6fc6235984]
+  - @mysten/sui@1.0.1
+
+## 0.5.0
+
+### Minor Changes
+
+- a92b03de42: The Typescript SDK has been renamed to `@mysten/sui` and includes many new features
+  and breaking changes. See the
+  [full migration guide](https://sdk.mystenlabs.com/typescript/migrations/sui-1.0) for details on
+  how to upgrade.
+
+### Patch Changes
+
+- Updated dependencies [ebdfe7cf21]
+- Updated dependencies [a92b03de42]
+  - @mysten/sui@1.0.0
+
+## 0.4.10
+
+### Patch Changes
+
+- Updated dependencies [99b112178c]
+  - @mysten/sui.js@0.54.1
+
+## 0.4.9
+
+### Patch Changes
+
+- Updated dependencies [b7f673dbd9]
+- Updated dependencies [123b42c75c]
+  - @mysten/sui.js@0.54.0
+
+## 0.4.8
+
+### Patch Changes
+
+- Updated dependencies [774bfb41a8]
+  - @mysten/sui.js@0.53.0
+
 ## 0.4.7
 
 ### Patch Changes
@@ -58,30 +200,10 @@
 - Updated dependencies [9ac0a4ec01]
   - @mysten/sui.js@0.49.1
 
->>>>>>> mainnet-v1.24.1
 ## 0.4.0
 
 ### Minor Changes
 
-<<<<<<< HEAD
-- 1696f3e5f: Update to use modular imports from @mysten/sui.js
-
-  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
-
-### Patch Changes
-
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-  - @mysten/sui.js@0.42.0
-
-=======
 - e5f9e3ba21: Replace tsup based build to fix issues with esm/cjs dual publishing
 
 ### Patch Changes
@@ -199,13 +321,12 @@
 
 - @mysten/sui.js@0.41.2
 
->>>>>>> mainnet-v1.24.1
 ## 0.3.4
 
 ### Patch Changes
 
 - Updated dependencies [24c21e1f0]
-  - @benfen/bfc.js@0.41.1
+  - @mysten/sui.js@0.41.1
 
 ## 0.3.3
 
@@ -213,7 +334,7 @@
 
 - Updated dependencies [ba8e3b857]
 - Updated dependencies [f4b7b3474]
-  - @benfen/bfc.js@0.41.0
+  - @mysten/sui.js@0.41.0
 
 ## 0.3.2
 
@@ -221,23 +342,24 @@
 
 - Updated dependencies [a503cad34]
 - Updated dependencies [8281e3d25]
-  - @benfen/bfc.js@0.40.0
+  - @mysten/sui.js@0.40.0
 
 ## 0.3.1
 
 ### Patch Changes
 
 - Updated dependencies [47ea5ec7c]
-  - @benfen/bfc.js@0.39.0
+  - @mysten/sui.js@0.39.0
 
 ## 0.3.0
 
 ### Minor Changes
 
-- cc6441f46: Updated types and imports to use new modular exports from the `@benfen/bfc.js` refactor
-- 6d41059c7: Update to use modular imports from @benfen/bfc.js
+- cc6441f46: Updated types and imports to use new modular exports from the `@mysten/sui.js` refactor
+- 6d41059c7: Update to use modular imports from @mysten/sui.js
 
-  Some methods now accept a `SuiClient` imported from `@benfen/bfc.js/client` rather than a `JsonRpcProvider`
+  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a
+  `JsonRpcProvider`
 
 ### Patch Changes
 
@@ -252,14 +374,14 @@
 - Updated dependencies [6d41059c7]
 - Updated dependencies [cc6441f46]
 - Updated dependencies [001148443]
-  - @benfen/bfc.js@0.38.0
+  - @mysten/sui.js@0.38.0
 
 ## 0.2.3
 
 ### Patch Changes
 
 - Updated dependencies [34cc7d610]
-  - @benfen/bfc.js@0.37.1
+  - @mysten/sui.js@0.37.1
 
 ## 0.2.2
 
@@ -272,7 +394,7 @@
 - Updated dependencies [a17d3678a]
 - Updated dependencies [2f37537d5]
 - Updated dependencies [00484bcc3]
-  - @benfen/bfc.js@0.37.0
+  - @mysten/sui.js@0.37.0
 
 ## 0.2.1
 
@@ -282,7 +404,7 @@
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [1cfb1c9da3]
 - Updated dependencies [fb3bb9118a]
-  - @benfen/bfc.js@0.36.0
+  - @mysten/sui.js@0.36.0
 
 ## 0.2.0
 
@@ -293,4 +415,4 @@
 ### Patch Changes
 
 - Updated dependencies [09d77325a9]
-  - @benfen/bfc.js@0.35.1
+  - @mysten/sui.js@0.35.1

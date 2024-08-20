@@ -1,17 +1,19 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Heading } from '_app/shared/heading';
 import Loading from '_components/loading';
 import { NftImage, type NftImageProps } from '_components/nft-display/NftImage';
 import { useFileExtensionType, useGetNFTMeta } from '_hooks';
-import { formatAddress } from '@benfen/bfc.js/utils';
-import { useGetObject } from '@mysten/core';
+import { isKioskOwnerToken, useGetObject } from '@mysten/core';
+import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
+import { formatAddress } from '@mysten/sui/utils';
 import { cva } from 'class-variance-authority';
 import type { VariantProps } from 'class-variance-authority';
 
 import { useResolveVideo } from '../../hooks/useResolveVideo';
 import { Text } from '../../shared/text';
+import { Kiosk } from './Kiosk';
 
 const nftDisplayCardStyles = cva('flex flex-nowrap items-center h-full relative', {
 	variants: {
@@ -59,21 +61,34 @@ export function NFTDisplayCard({
 	const nftImageUrl = nftMeta?.imageUrl || '';
 	const video = useResolveVideo(objectData);
 	const fileExtensionType = useFileExtensionType(nftImageUrl);
+	const kioskClient = useKioskClient();
+	const isOwnerToken = isKioskOwnerToken(kioskClient.network, objectData);
 	const shouldShowLabel = !wideView && orientation !== 'horizontal';
 
 	return (
 		<div className={nftDisplayCardStyles({ animateHover, wideView, orientation })}>
 			<Loading loading={isPending}>
-				<NftImage
-					name={nftName}
-					src={nftImageUrl}
-					animateHover={animateHover}
-					showLabel={shouldShowLabel}
-					borderRadius={borderRadius}
-					size={size}
-					isLocked={isLocked}
-					video={video}
-				/>
+				{objectData?.data && isOwnerToken ? (
+					<Kiosk
+						object={objectData}
+						borderRadius={borderRadius}
+						size={size}
+						orientation={orientation}
+						playable={playable}
+						showLabel={shouldShowLabel}
+					/>
+				) : (
+					<NftImage
+						name={nftName}
+						src={nftImageUrl}
+						animateHover={animateHover}
+						showLabel={shouldShowLabel}
+						borderRadius={borderRadius}
+						size={size}
+						isLocked={isLocked}
+						video={video}
+					/>
+				)}
 				{wideView && (
 					<div className="flex flex-col gap-1 flex-1 min-w-0 ml-1">
 						<Heading variant="heading6" color="gray-90" truncate>
@@ -91,7 +106,7 @@ export function NFTDisplayCard({
 
 				{orientation === 'horizontal' ? (
 					<div className="flex-1 text-steel-dark overflow-hidden max-w-full ml-2">{nftName}</div>
-				) : !hideLabel ? (
+				) : !isOwnerToken && !hideLabel ? (
 					<div className="w-10/12 absolute bottom-2 bg-white/90 rounded-lg left-1/2 -translate-x-1/2 flex items-center justify-center opacity-0 group-hover:opacity-100">
 						<div className="mt-0.5 px-2 py-1 overflow-hidden">
 							<Text variant="subtitleSmall" weight="semibold" mono color="steel-darker" truncate>

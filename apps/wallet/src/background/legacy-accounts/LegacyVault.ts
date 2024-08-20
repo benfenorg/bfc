@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { decrypt } from '_shared/cryptography/keystore';
@@ -12,7 +12,7 @@ import {
 	fromExportedKeypair,
 	type LegacyExportedKeyPair,
 } from '_shared/utils/from-exported-keypair';
-import { mnemonicToSeedHex, type Keypair } from '@benfen/bfc.js/cryptography';
+import { mnemonicToSeedHex, type Keypair } from '@mysten/sui/cryptography';
 
 import { getFromLocalStorage } from '../storage-utils';
 

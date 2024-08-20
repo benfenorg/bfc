@@ -1,7 +1,7 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFaucetRequestStatus, requestBfcFromFaucetV1 } from '@benfen/bfc.js/faucet';
+import { getFaucetRequestStatus, requestSuiFromFaucetV1 } from '@mysten/sui/faucet';
 import { useIsMutating, useMutation, type UseMutationOptions } from '@tanstack/react-query';
 
 import { useActiveAccount } from '../../hooks/useActiveAccount';
@@ -29,7 +29,7 @@ export function useFaucetMutation(options?: UseFaucetMutationOptions) {
 				throw new Error('Failed, faucet host not found.');
 			}
 
-			const { error, task: taskId } = await requestBfcFromFaucetV1({
+			const { error, task: taskId } = await requestSuiFromFaucetV1({
 				recipient: addressToTopUp,
 				host: options.host,
 			});

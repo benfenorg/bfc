@@ -1,6 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { BenfenObjectResponse } from '@benfen/bfc.js/client';
+import { SuiObjectResponse } from '@mysten/sui/client';
 
-export const hasDisplayData = (obj: BenfenObjectResponse) => !!obj.data?.display?.data;
+export const hasDisplayData = (obj: SuiObjectResponse) => !!obj.data?.display?.data;

@@ -3,18 +3,21 @@ processed 8 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 6-28:
+task 1, lines 6-28:
+//# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6954000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6634800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 2 'run'. lines 30-30:
+task 2, line 30:
+//# run tto::M1::start --sender A
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6315600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5996400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 3 'view-object'. lines 32-32:
-Owner: Object ID: ( BFC4910b5b648186adaab39c9fb8086da37d7aadc4c2500f39843794a55d5a30a408b1c )
+task 3, line 32:
+//# view-object 2,0
+Owner: Object ID: ( fake(2,2) )
 Version: 2
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -26,12 +29,13 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
         name: 0u64,
     },
     value: sui::object::ID {
-        bytes: fake(2,2),
+        bytes: fake(2,1),
     },
 }
 
-task 4 'view-object'. lines 34-34:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+task 4, line 34:
+//# view-object 2,1
+Owner: Object ID: ( fake(2,0) )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -42,8 +46,9 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 5 'view-object'. lines 36-38:
-Owner: Object ID: ( BFC566fdeb849fd9e469831823c82c4506d89056b33259e270ecf6fa829c008f08da4c6 )
+task 5, lines 36-38:
+//# view-object 2,2
+Owner: Account Address ( A )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -54,8 +59,10 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 6 'run'. lines 39-41:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(2,2), parent_id: object(2,0) }
+task 6, lines 39-41:
+//# run tto::M1::receive --args object(2,2) receiving(2,1) --sender A
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(2,1), parent_id: object(2,0) }
 
-task 7 'run'. lines 42-42:
-Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(2,2), parent_id: object(2,0) }
+task 7, line 42:
+//# run tto::M1::receive --args object(2,2) receiving(2,0) --sender A
+Error: Error checking transaction input objects: InvalidChildObjectArgument { child_id: object(2,0), parent_id: object(2,2) }

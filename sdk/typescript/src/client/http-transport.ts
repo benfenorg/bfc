@@ -1,8 +1,8 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { PACKAGE_VERSION, TARGETED_RPC_VERSION } from '../version.js';
-import { BenfenHTTPStatusError, JsonRpcError } from './errors.js';
+import { JsonRpcError, SuiHTTPStatusError } from './errors.js';
 import type { WebsocketClientOptions } from './rpc-websocket-client.js';
 import { WebsocketClient } from './rpc-websocket-client.js';
 
@@ -11,7 +11,7 @@ import { WebsocketClient } from './rpc-websocket-client.js';
  */
 export type HttpHeaders = { [header: string]: string };
 
-interface BenfenHTTPTransportOptions {
+export interface SuiHTTPTransportOptions {
 	fetch?: typeof fetch;
 	WebSocketConstructor?: typeof WebSocket;
 	url: string;
@@ -24,54 +24,52 @@ interface BenfenHTTPTransportOptions {
 	};
 }
 
-export interface BenfenTransportRequestOptions {
+export interface SuiTransportRequestOptions {
 	method: string;
 	params: unknown[];
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 
-export interface BenfenTransportSubscribeOptions<T> {
+export interface SuiTransportSubscribeOptions<T> {
 	method: string;
 	unsubscribe: string;
 	params: unknown[];
 	onMessage: (event: T) => void;
 }
 
-export interface BenfenTransport {
-	request<T = unknown>(input: BenfenTransportRequestOptions): Promise<T>;
-	subscribe<T = unknown>(
-		input: BenfenTransportSubscribeOptions<T>,
-	): Promise<() => Promise<boolean>>;
+export interface SuiTransport {
+	request<T = unknown>(input: SuiTransportRequestOptions): Promise<T>;
+	subscribe<T = unknown>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>>;
 }
 
-export class BenfenHTTPTransport implements BenfenTransport {
+export class SuiHTTPTransport implements SuiTransport {
 	#requestId = 0;
-	#options: BenfenHTTPTransportOptions;
+	#options: SuiHTTPTransportOptions;
 	#websocketClient?: WebsocketClient;
 
-	constructor(options: BenfenHTTPTransportOptions) {
+	constructor(options: SuiHTTPTransportOptions) {
 		this.#options = options;
 	}
 
 	fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-		const fetch = this.#options.fetch ?? globalThis.fetch;
+		const fetchFn = this.#options.fetch ?? fetch;
 
-		if (!fetch) {
+		if (!fetchFn) {
 			throw new Error(
-				'The current environment does not support fetch, you can provide a fetch implementation in the options for BenfenHTTPTransport.',
+				'The current environment does not support fetch, you can provide a fetch implementation in the options for SuiHTTPTransport.',
 			);
 		}
 
-		return fetch(input, init);
+		return fetchFn(input, init);
 	}
 
 	#getWebsocketClient(): WebsocketClient {
 		if (!this.#websocketClient) {
-			const WebSocketConstructor = this.#options.WebSocketConstructor ?? globalThis.WebSocket;
+			const WebSocketConstructor = this.#options.WebSocketConstructor ?? WebSocket;
 			if (!WebSocketConstructor) {
 				throw new Error(
-					'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for BenfenHTTPTransport.',
+					'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for SuiHTTPTransport.',
 				);
 			}
 
@@ -87,7 +85,7 @@ export class BenfenHTTPTransport implements BenfenTransport {
 		return this.#websocketClient;
 	}
 
-	async request<T>(input: BenfenTransportRequestOptions): Promise<T> {
+	async request<T>(input: SuiTransportRequestOptions): Promise<T> {
 		this.#requestId += 1;
 
 		const res = await this.fetch(this.#options.rpc?.url ?? this.#options.url, {
@@ -108,7 +106,7 @@ export class BenfenHTTPTransport implements BenfenTransport {
 		});
 
 		if (!res.ok) {
-			throw new BenfenHTTPStatusError(
+			throw new SuiHTTPStatusError(
 				`Unexpected status code: ${res.status}`,
 				res.status,
 				res.statusText,
@@ -124,7 +122,7 @@ export class BenfenHTTPTransport implements BenfenTransport {
 		return data.result;
 	}
 
-	async subscribe<T>(input: BenfenTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
+	async subscribe<T>(input: SuiTransportSubscribeOptions<T>): Promise<() => Promise<boolean>> {
 		const unsubscribe = await this.#getWebsocketClient().subscribe(input);
 
 		return async () => !!(await unsubscribe());

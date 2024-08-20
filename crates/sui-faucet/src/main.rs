@@ -1,34 +1,13 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use axum::{
-    error_handling::HandleErrorLayer,
-    extract::Path,
-    http::StatusCode,
-    response::IntoResponse,
-    routing::{get, post},
-    BoxError, Extension, Json, Router,
-};
 use clap::Parser;
-use http::Method;
-use mysten_metrics::spawn_monitored_task;
 use std::env;
-use std::{
-    borrow::Cow,
-    net::{IpAddr, SocketAddr},
-    sync::Arc,
-    time::Duration,
-};
-use sui_config::{sui_config_dir, SUI_CLIENT_CONFIG};
-use sui_faucet::{
-    BatchFaucetResponse, BatchStatusFaucetResponse, Faucet, FaucetConfig, FaucetError,
-    FaucetRequest, FaucetResponse, RequestMetricsLayer, SimpleFaucet,
-};
-use sui_sdk::wallet_context::WalletContext;
-use tower::{limit::RateLimitLayer, ServiceBuilder};
-use tower_http::cors::{Any, CorsLayer};
-use tracing::{info, warn};
-use uuid::Uuid;
+use std::sync::Arc;
+use sui_config::sui_config_dir;
+use sui_faucet::{create_wallet_context, start_faucet, AppState};
+use sui_faucet::{FaucetConfig, SimpleFaucet};
+use tracing::info;
 
 const CONCURRENCY_LIMIT: usize = 30;
 const DEFAULT_AMOUNT: u64 = 1000 * 1_000_000_000;
@@ -41,6 +20,7 @@ struct AppState<F = Arc<SimpleFaucet>> {
 //const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
 
 const PROM_PORT_ADDR: &str = "0.0.0.0:9185";
+const PROM_PORT_ADDR: &str = "0.0.0.0:9184";
 
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
@@ -56,18 +36,22 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("Max concurrency: {max_concurrency}.");
 
     let mut config: FaucetConfig = FaucetConfig::parse();
+    let config: FaucetConfig = FaucetConfig::parse();
     let FaucetConfig {
-        port,
-        host_ip,
-        request_buffer_size,
-        max_request_per_second,
         wallet_client_timeout_secs,
         ref write_ahead_log,
-        wal_retry_interval,
         ..
     } = config;
     config.amount = DEFAULT_AMOUNT;
     let context = create_wallet_context(wallet_client_timeout_secs)?;
+
+    let context = create_wallet_context(wallet_client_timeout_secs, sui_config_dir()?)?;
+
+    let max_concurrency = match env::var("MAX_CONCURRENCY") {
+        Ok(val) => val.parse::<usize>().unwrap(),
+        _ => CONCURRENCY_LIMIT,
+    };
+    info!("Max concurrency: {max_concurrency}.");
 
     let prom_binding = PROM_PORT_ADDR.parse().unwrap();
     info!("Starting Prometheus HTTP endpoint at {}", prom_binding);
@@ -311,4 +295,5 @@ async fn handle_error(error: BoxError) -> impl IntoResponse {
         StatusCode::INTERNAL_SERVER_ERROR,
         Cow::from(format!("Unhandled internal error: {}", error)),
     )
+    start_faucet(app_state, max_concurrency, &prometheus_registry).await
 }

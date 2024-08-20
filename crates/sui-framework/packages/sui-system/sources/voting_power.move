@@ -125,11 +125,11 @@ module sui_system::voting_power {
         while (i < len && remaining_power > 0) {
             let v = vector::borrow_mut(info_list, i);
             // planned is the amount of extra power we want to distribute to this validator.
-            let planned = divide_and_round_up(remaining_power, len - i);
+            let planned = remaining_power.divide_and_round_up(len - i);
             // target is the targeting power this validator will reach, capped by threshold.
-            let target = math::min(threshold, v.voting_power + planned);
+            let target = threshold.min(v.voting_power + planned);
             // actual is the actual amount of power we will be distributing to this validator.
-            let actual = math::min(remaining_power, target - v.voting_power);
+            let actual = remaining_power.min(target - v.voting_power);
             v.voting_power = v.voting_power + actual;
             assert!(v.voting_power <= threshold, EVotingPowerOverThreshold);
             remaining_power = remaining_power - actual;

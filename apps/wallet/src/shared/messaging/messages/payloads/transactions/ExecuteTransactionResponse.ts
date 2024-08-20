@@ -1,14 +1,14 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { isBasePayload } from '_payloads';
 import type { BasePayload, Payload } from '_payloads';
-import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { type BenfenSignTransactionBlockOutput } from '@benfen/bfc.js/wallet-standard';
+import type { SuiTransactionBlockResponse } from '@mysten/sui/client';
+import { type SuiSignTransactionBlockOutput } from '@mysten/wallet-standard';
 
 export interface ExecuteTransactionResponse extends BasePayload {
 	type: 'execute-transaction-response';
-	result: BenfenTransactionBlockResponse;
+	result: SuiTransactionBlockResponse;
 }
 
 export function isExecuteTransactionResponse(
@@ -19,7 +19,7 @@ export function isExecuteTransactionResponse(
 
 export interface SignTransactionResponse extends BasePayload {
 	type: 'sign-transaction-response';
-	result: BenfenSignTransactionBlockOutput;
+	result: SuiSignTransactionBlockOutput;
 }
 
 export function isSignTransactionResponse(payload: Payload): payload is SignTransactionResponse {

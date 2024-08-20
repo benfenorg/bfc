@@ -75,12 +75,12 @@ module sui_system::stake_tests {
 
             let amount1 = part1.amount();
             let amount2 = part2.amount();
-            assert!(amount1 == 20 * MIST_PER_SUI || amount1 == 40 * MIST_PER_SUI, 102);
-            assert!(amount2 == 20 * MIST_PER_SUI || amount2 == 40 * MIST_PER_SUI, 103);
-            assert!(amount1 + amount2 == 60 * MIST_PER_SUI, 104);
+            assert!(amount1 == 20 * MIST_PER_SUI || amount1 == 40 * MIST_PER_SUI);
+            assert!(amount2 == 20 * MIST_PER_SUI || amount2 == 40 * MIST_PER_SUI);
+            assert!(amount1 + amount2 == 60 * MIST_PER_SUI);
 
             part1.join(part2);
-            assert!(part1.amount() == 60 * MIST_PER_SUI, 105);
+            assert!(part1.amount() == 60 * MIST_PER_SUI);
             scenario.return_to_sender(part1);
         };
         scenario_val.end();
@@ -274,8 +274,8 @@ module sui_system::stake_tests {
                 coin::mint_for_testing(60 * MIST_PER_SUI, ctx), VALIDATOR_ADDR_1, ctx
             );
 
-            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 101);
-            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI, 102);
+            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI);
+            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI);
 
             test_scenario::return_shared(system_state);
         };
@@ -288,18 +288,20 @@ module sui_system::stake_tests {
             assert!(staked_sui.amount() == 60 * MIST_PER_SUI, 105);
 
 
+
+
             let mut system_state = scenario.take_shared<SuiSystemState>();
             let system_state_mut_ref = &mut system_state;
 
-            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 160 * MIST_PER_SUI, 103);
-            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI, 104);
+            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 160 * MIST_PER_SUI);
+            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_2) == 100 * MIST_PER_SUI);
 
             let ctx = scenario.ctx();
 
             // Unstake from VALIDATOR_ADDR_1
             system_state_mut_ref.request_withdraw_stake(staked_sui, ctx);
 
-            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 160 * MIST_PER_SUI, 107);
+            assert!(system_state_mut_ref.validator_stake_amount(VALIDATOR_ADDR_1) == 160 * MIST_PER_SUI);
             test_scenario::return_shared(system_state);
         };
 
@@ -308,7 +310,7 @@ module sui_system::stake_tests {
         scenario.next_tx(STAKER_ADDR_1);
         {
             let mut system_state = scenario.take_shared<SuiSystemState>();
-            assert!(system_state.validator_stake_amount(VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI, 107);
+            assert!(system_state.validator_stake_amount(VALIDATOR_ADDR_1) == 100 * MIST_PER_SUI);
             test_scenario::return_shared(system_state);
         };
         scenario_val.end();
@@ -422,7 +424,7 @@ module sui_system::stake_tests {
             let mut system_state = scenario.take_shared<SuiSystemState>();
             let system_state_mut_ref = &mut system_state;
 
-            assert!(!system_state_mut_ref.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1), 0);
+            assert!(!system_state_mut_ref.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1));
 
             let staked_sui = scenario.take_from_sender<StakedBfc>();
             assert_eq(staked_sui.amount(), 100 * MIST_PER_SUI);
@@ -570,7 +572,7 @@ module sui_system::stake_tests {
             let mut system_state = scenario.take_shared<SuiSystemState>();
             let system_state_mut_ref = &mut system_state;
 
-            assert!(!system_state_mut_ref.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1), 0);
+            assert!(!system_state_mut_ref.validators().is_active_validator_by_sui_address(VALIDATOR_ADDR_1));
 
             test_scenario::return_shared(system_state);
         };

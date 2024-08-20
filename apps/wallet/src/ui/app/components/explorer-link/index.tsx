@@ -1,9 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import ExternalLink from '_components/external-link';
-import { formatAddress } from '@benfen/bfc.js/utils';
 import { ArrowUpRight16 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui/utils';
 import type { ReactNode } from 'react';
 
 import { useExplorerLink, type ExplorerLinkConfig } from '../../hooks/useExplorerLink';

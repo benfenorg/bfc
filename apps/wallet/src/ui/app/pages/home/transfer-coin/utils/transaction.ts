@@ -1,10 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { parseAmount } from '_src/ui/app/helpers';
-import { type CoinStruct } from '@benfen/bfc.js/client';
-import { TransactionBlock } from '@benfen/bfc.js/transactions';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { type CoinStruct } from '@mysten/sui/client';
+import { Transaction } from '@mysten/sui/transactions';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 
 interface Options {
 	coinType: string;
@@ -23,9 +23,9 @@ export function createTokenTransferTransaction({
 	coinDecimals,
 	isPayAllSui,
 }: Options) {
-	const tx = new TransactionBlock();
+	const tx = new Transaction();
 
-	if (isPayAllSui && coinType === BFC_TYPE_ARG) {
+	if (isPayAllSui && coinType === SUI_TYPE_ARG) {
 		tx.transferObjects([tx.gas], to);
 		tx.setGasPayment(
 			coins
@@ -43,7 +43,7 @@ export function createTokenTransferTransaction({
 	const bigIntAmount = parseAmount(amount, coinDecimals);
 	const [primaryCoin, ...mergeCoins] = coins.filter((coin) => coin.coinType === coinType);
 
-	if (coinType === BFC_TYPE_ARG) {
+	if (coinType === SUI_TYPE_ARG) {
 		const coin = tx.splitCoins(tx.gas, [bigIntAmount]);
 		tx.transferObjects([coin], to);
 	} else {

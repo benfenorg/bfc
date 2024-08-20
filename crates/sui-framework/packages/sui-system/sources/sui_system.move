@@ -56,6 +56,7 @@ module sui_system::sui_system {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
+    use sui::vec_map::VecMap;
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
@@ -710,6 +711,18 @@ module sui_system::sui_system {
         );
         assert!(inner.system_state_version() == self.version, EWrongInnerVersion);
         inner
+    }
+
+    #[allow(unused_function)]
+    /// Returns the voting power of the active validators, values are voting power in the scale of 10000.
+    fun validator_voting_powers(wrapper: &mut SuiSystemState): VecMap<address, u64> {
+        let self = load_system_state(wrapper);
+        sui_system_state_inner::active_validator_voting_powers(self)
+    }
+
+    #[test_only]
+    public fun validator_voting_powers_for_testing(wrapper: &mut SuiSystemState): VecMap<address, u64> {
+        validator_voting_powers(wrapper)
     }
 
     #[test_only]

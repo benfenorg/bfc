@@ -5,12 +5,13 @@ use std::sync::Arc;
 
 use consensus_config::AuthorityIndex;
 use parking_lot::RwLock;
+use rand::{rngs::StdRng, Rng, SeedableRng};
 
 use crate::{
-    block::{genesis_blocks, BlockRef, BlockTimestampMs, Round, Slot, TestBlock, VerifiedBlock},
+    block::{genesis_blocks, BlockRef, BlockTimestampMs, Round, TestBlock, VerifiedBlock},
     context::Context,
     dag_state::DagState,
-    leader_schedule::LeaderSchedule,
+    test_dag_builder::DagBuilder,
 };
 
 // todo: remove this once tests have been refactored to use DagBuilder/DagParser
@@ -90,27 +91,27 @@ pub(crate) fn build_dag_layer(
     references
 }
 
-// Leader blocks start from round 1 as we do not consider any blocks from genesis
-// round as a leader block.
-// TODO: confirm pipelined & multi-leader cases work properly and interaction with
-// DagState flush
-pub(crate) fn get_all_uncommitted_leader_blocks(
-    dag_state: Arc<RwLock<DagState>>,
-    leader_schedule: LeaderSchedule,
-    num_rounds: u32,
-    wave_length: u32,
-    pipelined: bool,
-    num_leaders: u32,
-) -> Vec<VerifiedBlock> {
-    let mut blocks = Vec::new();
-    for round in 1..=num_rounds {
-        for leader_offset in 0..num_leaders {
-            if pipelined || round % wave_length == 0 {
-                let slot = Slot::new(round, leader_schedule.elect_leader(round, leader_offset));
-                let uncommitted_blocks = dag_state.read().get_uncommitted_blocks_at_slot(slot);
-                blocks.extend(uncommitted_blocks);
-            }
-        }
+pub(crate) fn create_random_dag(
+    seed: u64,
+    include_leader_percentage: u64,
+    num_rounds: Round,
+    context: Arc<Context>,
+) -> DagBuilder {
+    assert!(
+        (0..=100).contains(&include_leader_percentage),
+        "include_leader_percentage must be in the range 0..100"
+    );
+
+    let mut rng = StdRng::seed_from_u64(seed);
+    let mut dag_builder = DagBuilder::new(context);
+
+    for r in 1..=num_rounds {
+        let random_num = rng.gen_range(0..100);
+        let include_leader = random_num <= include_leader_percentage;
+        dag_builder
+            .layer(r)
+            .min_ancestor_links(include_leader, Some(random_num));
     }
-    blocks
+
+    dag_builder
 }

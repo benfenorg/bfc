@@ -14,7 +14,7 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::SuiAddress;
 use sui_types::committee::EpochId;
 use sui_types::crypto::Signature;
-use sui_types::error::{SuiError, SuiResult};
+use sui_types::error::{SuiError, SuiResult, UserInputError};
 use sui_types::signature::GenericSignature;
 use sui_types::transaction::Transaction;
 use sui_types::utils::load_test_vectors;
@@ -80,7 +80,12 @@ async fn sim_test_zklogin_feature_deny() {
         .await
         .unwrap_err();
 
-    assert!(matches!(err, SuiError::UnsupportedFeatureError { .. }));
+    assert!(matches!(
+        err,
+        SuiError::UserInputError {
+            error: UserInputError::Unsupported(..)
+        }
+    ));
 }
 
 #[sim_test]
@@ -88,8 +93,8 @@ async fn sim_test_zklogin_feature_legacy_address_deny() {
     use sui_protocol_config::ProtocolConfig;
 
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_verify_legacy_zklogin_address(false);
-        config.set_zklogin_max_epoch_upper_bound_delta(None);
+        config.set_verify_legacy_zklogin_address_for_testing(false);
+        config.set_zklogin_max_epoch_upper_bound_delta_for_testing(None);
         config
     });
 
@@ -102,7 +107,7 @@ async fn sim_test_zklogin_feature_legacy_address_deny() {
 #[sim_test]
 async fn test_legacy_zklogin_address_accept() {
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_verify_legacy_zklogin_address(true);
+        config.set_verify_legacy_zklogin_address_for_testing(true);
         config
     });
     let err = do_zklogin_test(get_legacy_zklogin_user_address(), true)
@@ -139,7 +144,7 @@ async fn sim_zklogin_end_to_end_test() {
 async fn sim_test_max_epoch_too_large_fail_tx() {
     use sui_protocol_config::ProtocolConfig;
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_zklogin_max_epoch_upper_bound_delta(Some(1));
+        config.set_zklogin_max_epoch_upper_bound_delta_for_testing(Some(1));
         config
     });
 
@@ -246,6 +251,16 @@ async fn sim_test_create_authenticator_state_object() {
     //             .is_none());
     //     });
     // }
+    for h in &handles {
+        h.with(|node| {
+            assert!(node
+                .state()
+                .get_object_cache_reader()
+                .get_latest_object_ref_or_tombstone(SUI_AUTHENTICATOR_STATE_OBJECT_ID)
+                .unwrap()
+                .is_none());
+        });
+    }
 
     // wait until feature is enabled
     test_cluster.wait_for_protocol_version(39.into()).await;
@@ -256,7 +271,7 @@ async fn sim_test_create_authenticator_state_object() {
     for h in &handles {
         h.with(|node| {
             node.state()
-                .get_cache_reader()
+                .get_object_cache_reader()
                 .get_latest_object_ref_or_tombstone(SUI_AUTHENTICATOR_STATE_OBJECT_ID)
                 .unwrap()
                 .expect("auth state object should exist");
@@ -329,7 +344,7 @@ async fn sim_test_conflicting_jwks() {
     use tokio::time::Duration;
 
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(30000)
+        .with_epoch_duration_ms(15000)
         .with_jwk_fetch_interval(Duration::from_secs(5))
         .build()
         .await;
@@ -347,7 +362,7 @@ async fn sim_test_conflicting_jwks() {
             while let Some(tx) = txns.next().await {
                 let digest = *tx.transaction_digest();
                 let tx = state
-                    .get_cache_reader()
+                    .get_transaction_cache_reader()
                     .get_transaction_block(&digest)
                     .unwrap()
                     .unwrap();

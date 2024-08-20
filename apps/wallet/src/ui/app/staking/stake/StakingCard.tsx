@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
@@ -16,12 +16,13 @@ import {
 	MIN_NUMBER_SUI_TO_STAKE,
 } from '_src/shared/constants';
 import { FEATURES } from '_src/shared/experimentation/features';
-import type { StakeObject } from '@benfen/bfc.js/client';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG, MIST_PER_BFC } from '@benfen/bfc.js/utils';
 import { useFeatureIsOn } from '@growthbook/growthbook-react';
 import { useCoinMetadata, useGetDelegatedStake } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { ArrowLeft16 } from '@mysten/icons';
+import type { StakeObject } from '@mysten/sui/client';
+import { MIST_PER_SUI, SUI_TYPE_ARG } from '@mysten/sui/utils';
+import * as Sentry from '@sentry/react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Formik } from 'formik';
 import type { FormikHelpers } from 'formik';
@@ -50,13 +51,13 @@ const initialValues = {
 export type FormValues = typeof initialValues;
 
 function StakingCard() {
-	const coinType = BFC_TYPE_ARG;
+	const coinType = SUI_TYPE_ARG;
 	const activeAccount = useActiveAccount();
 	const accountAddress = activeAccount?.address;
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
-	const { data: suiBalance, isPending: loadingSuiBalances } = useBenfenClientQuery(
+	const { data: suiBalance, isPending: loadingSuiBalances } = useSuiClientQuery(
 		'getBalance',
-		{ coinType: BFC_TYPE_ARG, owner: accountAddress! },
+		{ coinType: SUI_TYPE_ARG, owner: accountAddress! },
 		{ refetchInterval, staleTime, enabled: !!accountAddress },
 	);
 	const coinBalance = BigInt(suiBalance?.totalBalance || 0);
@@ -73,9 +74,8 @@ function StakingCard() {
 		FEATURES.WALLET_EFFECTS_ONLY_SHARED_TRANSACTION as string,
 	);
 
-	const { data: system, isPending: validatorsisPending } = useBenfenClientQuery(
-		'getLatestBenfeSystemState',
-	);
+	const { data: system, isPending: validatorsisPending } =
+		useSuiClientQuery('getLatestSuiSystemState');
 
 	const totalTokenBalance = useMemo(() => {
 		if (!allDelegation) return 0n;
@@ -107,7 +107,7 @@ function StakingCard() {
 	const queryClient = useQueryClient();
 	const delegationId = useMemo(() => {
 		if (!stakeData || stakeData.status === 'Pending') return null;
-		return stakeData.stakedBfcId;
+		return stakeData.stakedSuiId;
 	}, [stakeData]);
 
 	const navigate = useNavigate();
@@ -128,25 +128,32 @@ function StakingCard() {
 				throw new Error('Failed, missing required field');
 			}
 
-			const transactionBlock = createStakeTransaction(amount, validatorAddress);
-			return await signer.signAndExecuteTransactionBlock(
-				{
-					transactionBlock,
-					requestType: effectsOnlySharedTransactions
-						? 'WaitForEffectsCert'
-						: 'WaitForLocalExecution',
-					options: {
-						showInput: true,
-						showEffects: true,
-						showEvents: true,
+			const sentryTransaction = Sentry.startTransaction({
+				name: 'stake',
+			});
+			try {
+				const transactionBlock = createStakeTransaction(amount, validatorAddress);
+				return await signer.signAndExecuteTransactionBlock(
+					{
+						transactionBlock,
+						requestType: effectsOnlySharedTransactions
+							? 'WaitForEffectsCert'
+							: 'WaitForLocalExecution',
+						options: {
+							showInput: true,
+							showEffects: true,
+							showEvents: true,
+						},
 					},
-				},
-				clientIdentifier,
-			);
+					clientIdentifier,
+				);
+			} finally {
+				sentryTransaction.finish();
+			}
 		},
 		onSuccess: (_, { amount, validatorAddress }) => {
 			ampli.stakedSui({
-				stakedAmount: Number(amount / MIST_PER_BFC),
+				stakedAmount: Number(amount / MIST_PER_SUI),
 				validatorAddress: validatorAddress,
 			});
 		},
@@ -158,21 +165,28 @@ function StakingCard() {
 				throw new Error('Failed, missing required field.');
 			}
 
-			const transactionBlock = createUnstakeTransaction(stakedSuiId);
-			return await signer.signAndExecuteTransactionBlock(
-				{
-					transactionBlock,
-					requestType: effectsOnlySharedTransactions
-						? 'WaitForEffectsCert'
-						: 'WaitForLocalExecution',
-					options: {
-						showInput: true,
-						showEffects: true,
-						showEvents: true,
+			const sentryTransaction = Sentry.startTransaction({
+				name: 'stake',
+			});
+			try {
+				const transactionBlock = createUnstakeTransaction(stakedSuiId);
+				return await signer.signAndExecuteTransactionBlock(
+					{
+						transactionBlock,
+						requestType: effectsOnlySharedTransactions
+							? 'WaitForEffectsCert'
+							: 'WaitForLocalExecution',
+						options: {
+							showInput: true,
+							showEffects: true,
+							showEvents: true,
+						},
 					},
-				},
-				clientIdentifier,
-			);
+					clientIdentifier,
+				);
+			} finally {
+				sentryTransaction.finish();
+			}
 		},
 		onSuccess: () => {
 			ampli.unstakedSui({
@@ -230,7 +244,7 @@ function StakingCard() {
 								state: {
 									response,
 								},
-						  }
+							}
 						: undefined,
 				);
 			} catch (error) {

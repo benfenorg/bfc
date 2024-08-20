@@ -16,8 +16,8 @@
 //! - its only instance in existence is passed as an argument to the module initializer
 //! - it is never instantiated anywhere in its defining module
 use move_binary_format::file_format::{
-    Ability, AbilitySet, Bytecode, CompiledModule, FunctionDefinition, FunctionHandle,
-    SignatureToken, StructDefinition, StructHandle,
+    Ability, AbilitySet, Bytecode, CompiledModule, DatatypeHandle, FunctionDefinition,
+    FunctionHandle, SignatureToken, StructDefinition,
 };
 use move_core_types::{ident_str, language_storage::ModuleId};
 use sui_types::bridge::BRIDGE_SUPPORTED_ASSET;
@@ -86,57 +86,55 @@ pub fn verify_module(
     let mut one_time_witness_candidate = None;
     // find structs that can potentially represent a one-time witness type
     for def in struct_defs {
-            let struct_handle = module.struct_handle_at(def.struct_handle);
-            let struct_name = module.identifier_at(struct_handle.name).as_str();
-            if mod_name.to_ascii_uppercase() == struct_name {
-                // one-time witness candidate's type name must be the same as capitalized module name
-                if let Ok(field_count) = def.declared_field_count() {
-                    // checks if the struct is non-native (and if it isn't then that's why unwrap below
-                    // is safe)
-                    if field_count == 1 && def.field(0).unwrap().signature.0 == SignatureToken::Bool {
-                        // a single boolean field means that we found a one-time witness candidate -
-                        // make sure that the remaining properties hold
-                        verify_one_time_witness(module, struct_name, struct_handle)
-                            .map_err(verification_failure)?;
-                        // if we reached this point, it means we have a legitimate one-time witness type
-                        // candidate and we have to make sure that both the init function's signature
-                        // reflects this and that this type is not instantiated in any function of the
-                        // module
-                        one_time_witness_candidate = Some((struct_name, struct_handle, def));
-                        break; // no reason to look any further
-                    }
+        let struct_handle = module.datatype_handle_at(def.struct_handle);
+        let struct_name = module.identifier_at(struct_handle.name).as_str();
+        if mod_name.to_ascii_uppercase() == struct_name {
+            // one-time witness candidate's type name must be the same as capitalized module name
+            if let Ok(field_count) = def.declared_field_count() {
+                // checks if the struct is non-native (and if it isn't then that's why unwrap below
+                // is safe)
+                if field_count == 1 && def.field(0).unwrap().signature.0 == SignatureToken::Bool {
+                    // a single boolean field means that we found a one-time witness candidate -
+                    // make sure that the remaining properties hold
+                    verify_one_time_witness(module, struct_name, struct_handle)
+                        .map_err(verification_failure)?;
+                    // if we reached this point, it means we have a legitimate one-time witness type
+                    // candidate and we have to make sure that both the init function's signature
+                    // reflects this and that this type is not instantiated in any function of the
+                    // module
+                    one_time_witness_candidate = Some((struct_name, struct_handle, def));
+                    break; // no reason to look any further
                 }
             }
         }
+    }
     for fn_def in &module.function_defs {
-            let fn_handle = module.function_handle_at(fn_def.function);
-            let fn_name = module.identifier_at(fn_handle.name);
-            if fn_name == INIT_FN_NAME {
-                if let Some((candidate_name, candidate_handle, _)) = one_time_witness_candidate {
-                    // only verify if init function conforms to one-time witness type requirements if we
-                    // have a one-time witness type candidate
-                    verify_init_one_time_witness(module, fn_handle, candidate_name, candidate_handle)
-                        .map_err(verification_failure)?;
-                } else {
-                    // if there is no one-time witness type candidate than the init function should have
-                    // only one parameter of TxContext type
-                    verify_init_single_param(module, fn_handle).map_err(verification_failure)?;
-                }
-            }
-            if let Some((candidate_name, _, def)) = one_time_witness_candidate {
-                // only verify lack of one-time witness type instantiations if we have a one-time
-                // witness type candidate and if instantiation does not happen in test code
-
-                if !is_test_fun(fn_name, module, fn_info_map) {
-                    verify_no_instantiations(module, fn_def, candidate_name, def)
-                        .map_err(verification_failure)?;
-                }
+        let fn_handle = module.function_handle_at(fn_def.function);
+        let fn_name = module.identifier_at(fn_handle.name);
+        if fn_name == INIT_FN_NAME {
+            if let Some((candidate_name, candidate_handle, _)) = one_time_witness_candidate {
+                // only verify if init function conforms to one-time witness type requirements if we
+                // have a one-time witness type candidate
+                verify_init_one_time_witness(module, fn_handle, candidate_name, candidate_handle)
+                    .map_err(verification_failure)?;
+            } else {
+                // if there is no one-time witness type candidate than the init function should have
+                // only one parameter of TxContext type
+                verify_init_single_param(module, fn_handle).map_err(verification_failure)?;
             }
         }
+        if let Some((candidate_name, _, def)) = one_time_witness_candidate {
+            // only verify lack of one-time witness type instantiations if we have a one-time
+            // witness type candidate and if instantiation does not happen in test code
 
-        Ok(())
+            if !is_test_fun(fn_name, module, fn_info_map) {
+                verify_no_instantiations(module, fn_def, candidate_name, def)
+                    .map_err(verification_failure)?;
+            }
+        }
+    }
 
-
+    Ok(())
 }
 
 // Verifies all required properties of a one-time witness type candidate (that is a type whose name
@@ -144,7 +142,7 @@ pub fn verify_module(
 fn verify_one_time_witness(
     module: &CompiledModule,
     candidate_name: &str,
-    candidate_handle: &StructHandle,
+    candidate_handle: &DatatypeHandle,
 ) -> Result<(), String> {
     // must have only one ability: drop
     let drop_set = AbilitySet::EMPTY | Ability::Drop;
@@ -172,7 +170,7 @@ fn verify_init_one_time_witness(
     module: &CompiledModule,
     fn_handle: &FunctionHandle,
     candidate_name: &str,
-    candidate_handle: &StructHandle,
+    candidate_handle: &DatatypeHandle,
 ) -> Result<(), String> {
     let fn_sig = module.signature_at(fn_handle.parameters);
     if fn_sig.len() != 2 || !is_one_time_witness(module, &fn_sig.0[0], candidate_handle) {
@@ -194,9 +192,9 @@ fn verify_init_one_time_witness(
 fn is_one_time_witness(
     view: &CompiledModule,
     tok: &SignatureToken,
-    candidate_handle: &StructHandle,
+    candidate_handle: &DatatypeHandle,
 ) -> bool {
-    matches!(tok, SignatureToken::Struct(idx) if view.struct_handle_at(*idx) == candidate_handle)
+    matches!(tok, SignatureToken::Datatype(idx) if view.datatype_handle_at(*idx) == candidate_handle)
 }
 
 /// Checks if this module's `init` function has a single parameter of TxContext type only

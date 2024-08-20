@@ -1,6 +1,7 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { useResolveSuiNSName } from '_app/hooks/useAppResolveSuinsName';
 import { useIsWalletDefiEnabled } from '_app/hooks/useIsWalletDefiEnabled';
 import { LargeButton } from '_app/shared/LargeButton';
 import { Text } from '_app/shared/text';
@@ -9,7 +10,12 @@ import Alert from '_components/alert';
 import { CoinIcon } from '_components/coin-icon';
 import Loading from '_components/loading';
 import { filterAndSortTokenBalances } from '_helpers';
-import { useAppSelector, useCoinsReFetchingConfig, useSortedCoinsByCategories } from '_hooks';
+import {
+	useAllowedSwapCoinsList,
+	useAppSelector,
+	useCoinsReFetchingConfig,
+	useSortedCoinsByCategories,
+} from '_hooks';
 import {
 	DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
 	DELEGATED_STAKES_QUERY_STALE_TIME,
@@ -21,12 +27,10 @@ import { AccountsList } from '_src/ui/app/components/accounts/AccountsList';
 import { UnlockAccountButton } from '_src/ui/app/components/accounts/UnlockAccountButton';
 import { BuyNLargeHomePanel } from '_src/ui/app/components/buynlarge/HomePanel';
 import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
+import { useCoinMetadataOverrides } from '_src/ui/app/hooks/useCoinMetadataOverride';
 import { usePinnedCoinTypes } from '_src/ui/app/hooks/usePinnedCoinTypes';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import PageTitle from '_src/ui/app/shared/PageTitle';
-import { type CoinBalance as CoinBalanceType } from '@benfen/bfc.js/client';
-import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG, formatAddress, parseStructTag } from '@benfen/bfc.js/utils';
 import { useFeature } from '@growthbook/growthbook-react';
 import {
 	useAppsBackend,
@@ -34,9 +38,11 @@ import {
 	useCoinMetadata,
 	useFormatCoin,
 	useGetDelegatedStake,
-	useResolveSuiNSName,
 } from '@mysten/core';
+import { useSuiClientQuery } from '@mysten/dapp-kit';
 import { Info12, Pin16, Unpin16 } from '@mysten/icons';
+import { type CoinBalance as CoinBalanceType } from '@mysten/sui/client';
+import { formatAddress, parseStructTag, SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { useQuery } from '@tanstack/react-query';
 import clsx from 'clsx';
 import { useEffect, useState, type ReactNode } from 'react';
@@ -109,11 +115,13 @@ export function TokenRow({
 	const params = new URLSearchParams({
 		type: coinBalance.coinType,
 	});
+	const allowedSwapCoinsList = useAllowedSwapCoinsList();
 
 	const balanceInUsd = useBalanceInUSD(coinBalance.coinType, coinBalance.totalBalance);
 
-	const isRenderSwapButton = false;
+	const isRenderSwapButton = allowedSwapCoinsList.includes(coinType);
 
+	const coinMetadataOverrides = useCoinMetadataOverrides();
 	return (
 		<Tag
 			className={clsx(
@@ -126,7 +134,7 @@ export function TokenRow({
 				<CoinIcon coinType={coinType} size="md" />
 				<div className="flex flex-col gap-1 items-start">
 					<Text variant="body" color="gray-90" weight="semibold" truncate>
-						{coinMeta?.name || symbol}
+						{coinMetadataOverrides[coinBalance.coinType]?.name || coinMeta?.name || symbol}
 					</Text>
 
 					{renderActions && (
@@ -146,6 +154,7 @@ export function TokenRow({
 									ampli.selectedCoin({
 										coinType: coinBalance.coinType,
 										totalBalance: Number(formatted),
+										sourceFlow: 'TokenDetails',
 									})
 								}
 							>
@@ -303,17 +312,18 @@ function getFallbackSymbol(coinType: string) {
 function TokenDetails({ coinType }: TokenDetailsProps) {
 	const isDefiWalletEnabled = useIsWalletDefiEnabled();
 	const [interstitialDismissed, setInterstitialDismissed] = useState<boolean>(false);
-	const activeCoinType = coinType || BFC_TYPE_ARG;
+	const activeCoinType = coinType || SUI_TYPE_ARG;
 	const activeAccount = useActiveAccount();
 	const activeAccountAddress = activeAccount?.address;
-	const { data: domainName } = useResolveSuiNSName(activeAccountAddress);
+	const domainName = useResolveSuiNSName(activeAccountAddress);
+
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 	const {
 		data: coinBalance,
 		isError,
 		isPending,
 		isFetched,
-	} = useBenfenClientQuery(
+	} = useSuiClientQuery(
 		'getBalance',
 		{ coinType: activeCoinType, owner: activeAccountAddress! },
 		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
@@ -338,7 +348,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 		data: coinBalances,
 		isPending: coinBalancesLoading,
 		isFetched: coinBalancesFetched,
-	} = useBenfenClientQuery(
+	} = useSuiClientQuery(
 		'getAllBalances',
 		{ owner: activeAccountAddress! },
 		{
@@ -391,7 +401,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 			/>
 		);
 	}
-	const accountHasSui = coinBalances?.some(({ coinType }) => coinType === BFC_TYPE_ARG);
+	const accountHasSui = coinBalances?.some(({ coinType }) => coinType === SUI_TYPE_ARG);
 
 	if (!activeAccountAddress) {
 		return null;
@@ -467,7 +477,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 												primary={!accountHasSui}
 												center
 												to="/onramp"
-												disabled={(coinType && coinType !== BFC_TYPE_ARG) || !providers?.length}
+												disabled={(coinType && coinType !== SUI_TYPE_ARG) || !providers?.length}
 											>
 												Buy
 											</LargeButton>
@@ -480,7 +490,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 												coinBalance?.coinType
 													? `?${new URLSearchParams({
 															type: coinBalance.coinType,
-													  }).toString()}`
+														}).toString()}`
 													: ''
 											}`}
 											disabled={!tokenBalance}
@@ -495,7 +505,7 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 												coinBalance?.coinType
 													? `?${new URLSearchParams({
 															type: coinBalance.coinType,
-													  }).toString()}`
+														}).toString()}`
 													: ''
 											}`}
 											onClick={() => {

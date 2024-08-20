@@ -1,20 +1,20 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SignedTransaction } from '_src/ui/app/WalletSigner';
-import type { BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import type { SuiTransactionBlockResponse } from '@mysten/sui/client';
 import {
-	type BenfenSignAndExecuteTransactionBlockInput,
-	type BenfenSignMessageOutput,
-} from '@benfen/bfc.js/wallet-standard';
+	type SuiSignAndExecuteTransactionBlockInput,
+	type SuiSignMessageOutput,
+} from '@mysten/wallet-standard';
 
 export type TransactionDataType = {
 	type: 'transaction';
 	data: string;
 	account: string;
 	justSign?: boolean;
-	requestType?: BenfenSignAndExecuteTransactionBlockInput['requestType'];
-	options?: BenfenSignAndExecuteTransactionBlockInput['options'];
+	requestType?: SuiSignAndExecuteTransactionBlockInput['requestType'];
+	options?: SuiSignAndExecuteTransactionBlockInput['options'];
 };
 
 export type SignMessageDataType = {
@@ -28,7 +28,7 @@ export type ApprovalRequest = {
 	approved: boolean | null;
 	origin: string;
 	originFavIcon?: string;
-	txResult?: BenfenTransactionBlockResponse | BenfenSignMessageOutput;
+	txResult?: SuiTransactionBlockResponse | SuiSignMessageOutput;
 	txResultError?: string;
 	txSigned?: SignedTransaction;
 	createdDate: string;
@@ -37,12 +37,12 @@ export type ApprovalRequest = {
 
 export interface SignMessageApprovalRequest extends Omit<ApprovalRequest, 'txResult' | 'tx'> {
 	tx: SignMessageDataType;
-	txResult?: BenfenSignMessageOutput;
+	txResult?: SuiSignMessageOutput;
 }
 
 export interface TransactionApprovalRequest extends Omit<ApprovalRequest, 'txResult' | 'tx'> {
 	tx: TransactionDataType;
-	txResult?: BenfenTransactionBlockResponse;
+	txResult?: SuiTransactionBlockResponse;
 }
 
 export function isSignMessageApprovalRequest(

@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { CoinMetadata } from '@benfen/bfc.js/client';
-import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useSuiClient } from '@mysten/dapp-kit';
+import { CoinMetadata } from '@mysten/sui/client';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
@@ -45,7 +45,7 @@ const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
 export function useCoinMetadata(coinType?: string | null) {
-	const client = useBenfenClient();
+	const client = useSuiClient();
 	return useQuery({
 		queryKey: ['coin-metadata', coinType],
 		queryFn: async () => {
@@ -54,14 +54,14 @@ export function useCoinMetadata(coinType?: string | null) {
 			}
 
 			// Optimize the known case of SUI to avoid a network call:
-			if (coinType === BFC_TYPE_ARG) {
+			if (coinType === SUI_TYPE_ARG) {
 				const metadata: CoinMetadata = {
 					id: null,
 					decimals: 9,
 					description: '',
 					iconUrl: null,
-					name: 'bfc',
-					symbol: 'BFC',
+					name: 'Sui',
+					symbol: 'SUI',
 				};
 
 				return metadata;

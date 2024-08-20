@@ -1,13 +1,13 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import ExplorerLink from '_src/ui/app/components/explorer-link';
 import { ExplorerLinkType } from '_src/ui/app/components/explorer-link/ExplorerLinkType';
 import { Text } from '_src/ui/app/shared/text';
-import { type BenfenObjectData } from '@benfen/bfc.js/client';
-import { formatAddress, parseStructTag } from '@benfen/bfc.js/utils';
+import { type SuiObjectData } from '@mysten/sui/client';
+import { formatAddress, parseStructTag } from '@mysten/sui/utils';
 
-export default function NonVisualAssets({ items }: { items: BenfenObjectData[] }) {
+export default function NonVisualAssets({ items }: { items: SuiObjectData[] }) {
 	return (
 		<div className="flex flex-col items-center gap-4 w-full flex-1">
 			{items?.length ? (

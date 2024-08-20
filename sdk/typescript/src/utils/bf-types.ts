@@ -53,7 +53,7 @@ export function parseStructTag(type: string): StructTag {
 	const typeParams = rest.includes('<')
 		? splitGenericParameters(rest.slice(rest.indexOf('<') + 1, rest.lastIndexOf('>'))).map(
 				(typeParam) => parseTypeTag(typeParam.trim()),
-		  )
+			)
 		: [];
 
 	return {

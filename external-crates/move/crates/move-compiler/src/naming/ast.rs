@@ -6,8 +6,8 @@ use crate::{
     diagnostics::WarningFilters,
     expansion::ast::{
         ability_constraints_ast_debug, ability_modifiers_ast_debug, AbilitySet, Attributes,
-        DottedUsage, Fields, Friend, ImplicitUseFunCandidate, ModuleIdent, Mutability, Value,
-        Value_, Visibility,
+        DottedUsage, Fields, Friend, ImplicitUseFunCandidate, ModuleIdent, Mutability, TargetKind,
+        Value, Value_, Visibility,
     },
     parser::ast::{
         self as P, Ability_, BinOp, ConstantName, DatatypeName, Field, FunctionName, UnaryOp,
@@ -109,7 +109,7 @@ pub type SyntaxMethodKind = Spanned<SyntaxMethodKind_>;
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct SyntaxMethod {
     pub loc: Loc,
-    pub public_visibility: Loc,
+    pub visibility: Visibility,
     pub tname: TypeName,
     pub target_function: (ModuleIdent, FunctionName),
     pub kind: SyntaxMethodKind,
@@ -141,7 +141,7 @@ pub struct ModuleDefinition {
     // package name metadata from compiler arguments, not used for any language rules
     pub package_name: Option<Symbol>,
     pub attributes: Attributes,
-    pub is_source_module: bool,
+    pub target_kind: TargetKind,
     pub use_funs: UseFuns,
     pub syntax_methods: SyntaxMethods,
     pub friends: UniqueMap<ModuleIdent, Friend>,
@@ -166,6 +166,7 @@ pub struct StructDefinition {
     pub warning_filter: WarningFilters,
     // index in the original order as defined in the source file
     pub index: usize,
+    pub loc: Loc,
     pub attributes: Attributes,
     pub abilities: AbilitySet,
     pub type_parameters: Vec<DatatypeTypeParameter>,
@@ -183,6 +184,7 @@ pub struct EnumDefinition {
     pub warning_filter: WarningFilters,
     // index in the original order as defined in the source file
     pub index: usize,
+    pub loc: Loc,
     pub attributes: Attributes,
     pub abilities: AbilitySet,
     pub type_parameters: Vec<DatatypeTypeParameter>,
@@ -343,6 +345,7 @@ pub enum LValue_ {
         unused_binding: bool,
     },
     Unpack(ModuleIdent, DatatypeName, Option<Vec<Type>>, Fields<LValue>),
+    Error,
 }
 pub type LValue = Spanned<LValue_>;
 pub type LValueList_ = Vec<LValue>;
@@ -356,7 +359,7 @@ pub enum ExpDotted_ {
     Exp(Box<Exp>),
     Dot(Box<ExpDotted>, Field),
     Index(Box<ExpDotted>, Spanned<Vec<Exp>>),
-    DotUnresolved(Loc, Box<ExpDotted>), // Dot (and its location) where Field could not be parsed
+    DotAutocomplete(Loc, Box<ExpDotted>), // Dot (and its location) where Field could not be parsed
 }
 pub type ExpDotted = Spanned<ExpDotted_>;
 
@@ -460,7 +463,9 @@ pub enum Exp_ {
     Cast(Box<Exp>, Type),
     Annotate(Box<Exp>, Type),
 
-    ErrorConstant,
+    ErrorConstant {
+        line_number_loc: Loc,
+    },
 
     UnresolvedError,
 }
@@ -1152,7 +1157,7 @@ impl AstDebug for SyntaxMethod {
             loc: _,
             tname,
             target_function: (target_m, target_f),
-            public_visibility: _,
+            visibility: _,
             kind,
         } = self;
         let kind_str = format!("{:?}", kind.value);
@@ -1193,7 +1198,7 @@ impl AstDebug for ModuleDefinition {
             warning_filter,
             package_name,
             attributes,
-            is_source_module,
+            target_kind,
             use_funs,
             syntax_methods,
             friends,
@@ -1207,11 +1212,15 @@ impl AstDebug for ModuleDefinition {
             w.writeln(&format!("{}", n))
         }
         attributes.ast_debug(w);
-        if *is_source_module {
-            w.writeln("library module")
-        } else {
-            w.writeln("source module")
-        }
+        w.writeln(match target_kind {
+            TargetKind::Source {
+                is_root_package: true,
+            } => "root module",
+            TargetKind::Source {
+                is_root_package: false,
+            } => "dependency module",
+            TargetKind::External => "external module",
+        });
         use_funs.ast_debug(w);
         syntax_methods.ast_debug(w);
         for (mident, _loc) in friends.key_cloned_iter() {
@@ -1244,6 +1253,7 @@ impl AstDebug for (DatatypeName, &StructDefinition) {
             StructDefinition {
                 warning_filter,
                 index,
+                loc: _,
                 attributes,
                 abilities,
                 type_parameters,
@@ -1280,6 +1290,7 @@ impl AstDebug for (DatatypeName, &EnumDefinition) {
             name,
             EnumDefinition {
                 index,
+                loc: _,
                 attributes,
                 abilities,
                 type_parameters,
@@ -1809,7 +1820,7 @@ impl AstDebug for Exp_ {
                 w.write(")");
             }
             E::UnresolvedError => w.write("_|_"),
-            E::ErrorConstant => w.write("ErrorConstant"),
+            E::ErrorConstant { .. } => w.write("ErrorConstant"),
         }
     }
 }
@@ -1884,7 +1895,7 @@ impl AstDebug for ExpDotted_ {
                 w.comma(args, |w, e| e.ast_debug(w));
                 w.write(")");
             }
-            D::DotUnresolved(_, e) => {
+            D::DotAutocomplete(_, e) => {
                 e.ast_debug(w);
                 w.write(".")
             }
@@ -1990,6 +2001,7 @@ impl AstDebug for LValue_ {
         use LValue_ as L;
         match self {
             L::Ignore => w.write("_"),
+            L::Error => w.write("<_error>"),
             L::Var {
                 mut_,
                 var,

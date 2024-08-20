@@ -2,24 +2,24 @@
 // SPDX-License-Identifier: Apache-2.0
 import {
 	DisplayFieldsResponse,
-	BenfenObjectChange,
-	BenfenObjectChangeCreated,
-	BenfenObjectChangeDeleted,
-	BenfenObjectChangeMutated,
-	BenfenObjectChangePublished,
-	BenfenObjectChangeTransferred,
-	BenfenObjectChangeWrapped,
-} from '@benfen/bfc.js/client';
+	SuiObjectChange,
+	SuiObjectChangeCreated,
+	SuiObjectChangeDeleted,
+	SuiObjectChangeMutated,
+	SuiObjectChangePublished,
+	SuiObjectChangeTransferred,
+	SuiObjectChangeWrapped,
+} from '@mysten/sui/client';
 
 import { groupByOwner } from './groupByOwner';
 import { SuiObjectChangeTypes } from './types';
 
 export type WithDisplayFields<T> = T & { display?: DisplayFieldsResponse };
-export type SuiObjectChangeWithDisplay = WithDisplayFields<BenfenObjectChange>;
+export type SuiObjectChangeWithDisplay = WithDisplayFields<SuiObjectChange>;
 
 export type ObjectChanges = {
 	changesWithDisplay: SuiObjectChangeWithDisplay[];
-	changes: BenfenObjectChange[];
+	changes: SuiObjectChange[];
 	ownerType: string;
 };
 export type ObjectChangesByOwner = Record<string, ObjectChanges>;
@@ -33,27 +33,27 @@ export const getObjectChangeSummary = (objectChanges: SuiObjectChangeWithDisplay
 
 	const mutated = objectChanges.filter(
 		(change) => change.type === 'mutated',
-	) as BenfenObjectChangeMutated[];
+	) as SuiObjectChangeMutated[];
 
 	const created = objectChanges.filter(
 		(change) => change.type === 'created',
-	) as BenfenObjectChangeCreated[];
+	) as SuiObjectChangeCreated[];
 
 	const transferred = objectChanges.filter(
 		(change) => change.type === 'transferred',
-	) as BenfenObjectChangeTransferred[];
+	) as SuiObjectChangeTransferred[];
 
 	const published = objectChanges.filter(
 		(change) => change.type === 'published',
-	) as BenfenObjectChangePublished[];
+	) as SuiObjectChangePublished[];
 
 	const wrapped = objectChanges.filter(
 		(change) => change.type === 'wrapped',
-	) as BenfenObjectChangeWrapped[];
+	) as SuiObjectChangeWrapped[];
 
 	const deleted = objectChanges.filter(
 		(change) => change.type === 'deleted',
-	) as BenfenObjectChangeDeleted[];
+	) as SuiObjectChangeDeleted[];
 
 	return {
 		transferred: groupByOwner(transferred),

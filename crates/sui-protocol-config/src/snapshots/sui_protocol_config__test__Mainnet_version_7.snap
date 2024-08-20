@@ -82,7 +82,6 @@ buffer_stake_for_protocol_upgrade_bps: 5000
 address_from_bytes_cost_base: 52
 address_to_u256_cost_base: 52
 address_from_u256_cost_base: 52
-curve_dx_cost_base: 52
 dynamic_field_hash_type_and_key_cost_base: 100
 dynamic_field_hash_type_and_key_type_cost_per_byte: 2
 dynamic_field_hash_type_and_key_value_cost_per_byte: 2
@@ -171,7 +170,4 @@ hash_keccak256_data_cost_per_block: 2
 hmac_hmac_sha3_256_cost_base: 52
 hmac_hmac_sha3_256_input_cost_per_byte: 2
 hmac_hmac_sha3_256_input_cost_per_block: 2
-scoring_decision_mad_divisor: 2.3
-scoring_decision_cutoff_value: 2.5
-bfc_system_state_open: 0
 

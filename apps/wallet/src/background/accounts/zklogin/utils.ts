@@ -1,15 +1,16 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type NetworkEnvType } from '_src/shared/api-env';
-import { type PublicKey } from '@benfen/bfc.js/cryptography';
-import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { API_ENV, type NetworkEnvType } from '_src/shared/api-env';
+import { fetchWithSentry } from '_src/shared/utils';
+import { type PublicKey } from '@mysten/sui/cryptography';
+import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
 import {
 	generateNonce,
 	generateRandomness,
 	getExtendedEphemeralPublicKey,
 	type getZkLoginSignature,
-} from '@benfen/bfc.js/zklogin';
+} from '@mysten/zklogin';
 import { randomBytes } from '@noble/hashes/utils';
 import { base64url } from 'jose';
 import { v4 as uuidV4 } from 'uuid';
@@ -33,7 +34,7 @@ export function prepareZkLogin(currentEpoch: number) {
 const forceSilentGetProviders: ZkLoginProvider[] = ['twitch'];
 
 /**
- * This method does a get request to the authorize url and is used as a workarround
+ * This method does a get request to the authorize url and is used as a workaround
  * for `forceSilentGetProviders` that they do the silent login/token refresh using
  * html directives or js code to redirect to the redirect_url (instead of response headers) and that forces the launchWebAuthFlow
  * to open and close quickly a new window. Which closes the popup window when open but also creates a weird flickering effect.
@@ -117,6 +118,20 @@ export async function zkLoginAuthenticate({
 	return jwt;
 }
 
+const saltRegistryUrl = 'https://salt.api.mystenlabs.com';
+
+export async function fetchSalt(jwt: string): Promise<string> {
+	const response = await fetchWithSentry('fetchUserSalt', `${saltRegistryUrl}/get_salt`, {
+		method: 'POST',
+		headers: {
+			'Content-Type': 'application/json',
+			'Request-Id': uuidV4(),
+		},
+		body: JSON.stringify({ token: jwt }),
+	});
+	return (await response.json()).salt;
+}
+
 type WalletInputs = {
 	jwt: string;
 	ephemeralPublicKey: PublicKey;
@@ -132,7 +147,8 @@ export type PartialZkLoginSignature = Omit<
 	'addressSeed'
 >;
 
-const zkLoginProofsServerUrl = 'https://zkproverdev1.openblock.vip/v1';
+const zkLoginProofsServerUrlDev = 'https://prover-dev.mystenlabs.com/v1';
+const zkLoginProofsServerUrlProd = 'https://prover.mystenlabs.com/v1';
 
 export async function createPartialZkLoginSignature({
 	jwt,
@@ -141,8 +157,12 @@ export async function createPartialZkLoginSignature({
 	maxEpoch,
 	userSalt,
 	keyClaimName = 'sub',
+	network,
 }: WalletInputs): Promise<PartialZkLoginSignature> {
-	const response = await fetch(zkLoginProofsServerUrl, {
+	const zkLoginProofsServerUrl = [API_ENV.mainnet, API_ENV.testNet].includes(network.env)
+		? zkLoginProofsServerUrlProd
+		: zkLoginProofsServerUrlDev;
+	const response = await fetchWithSentry('createZkLoginProofs', zkLoginProofsServerUrl, {
 		method: 'POST',
 		headers: {
 			'Content-Type': 'application/json',
@@ -158,17 +178,4 @@ export async function createPartialZkLoginSignature({
 		}),
 	});
 	return response.json();
-}
-
-export async function getSalt(jwt: string): Promise<string> {
-	const result = await fetch('https://saltdev.openblock.vip/generate_salt', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
-			'Request-Id': uuidV4(),
-		},
-		body: JSON.stringify({ jwt }),
-	});
-	const json = await result.json();
-	return json.result;
 }

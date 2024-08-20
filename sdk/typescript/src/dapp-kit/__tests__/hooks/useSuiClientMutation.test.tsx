@@ -1,17 +1,17 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { act, renderHook, waitFor } from '@testing-library/react';
 
-import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
-import { useBenfenClientMutation } from '../../hooks/useBenfenClientMutation.js';
+import { useSuiClientMutation } from '../../src/hooks/useSuiClientMutation.js';
 import { createWalletProviderContextWrapper } from '../test-utils.js';
 
-describe('useBenfenClientMutation', () => {
+describe('useSuiClientMutation', () => {
 	it('should fetch data', async () => {
-		const benfenClient = new BenfenClient({ url: getFullnodeUrl('mainnet') });
-		const wrapper = createWalletProviderContextWrapper({}, benfenClient);
+		const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
+		const wrapper = createWalletProviderContextWrapper({}, suiClient);
 
-		const queryTransactionBlocks = vi.spyOn(benfenClient, 'queryTransactionBlocks');
+		const queryTransactionBlocks = vi.spyOn(suiClient, 'queryTransactionBlocks');
 
 		queryTransactionBlocks.mockResolvedValueOnce({
 			data: [{ digest: '0x123' }],
@@ -19,7 +19,7 @@ describe('useBenfenClientMutation', () => {
 			nextCursor: 'page2',
 		});
 
-		const { result } = renderHook(() => useBenfenClientMutation('queryTransactionBlocks'), {
+		const { result } = renderHook(() => useSuiClientMutation('queryTransactionBlocks'), {
 			wrapper,
 		});
 

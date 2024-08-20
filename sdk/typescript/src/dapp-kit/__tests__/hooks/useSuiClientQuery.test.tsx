@@ -1,17 +1,17 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
 import { renderHook, waitFor } from '@testing-library/react';
 
-import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
-import { useBenfenClientQuery } from '../../hooks/useBenfenClientQuery.js';
+import { useSuiClientQuery } from '../../src/hooks/useSuiClientQuery.js';
 import { createWalletProviderContextWrapper } from '../test-utils.js';
 
-describe('useBenfenClientQuery', () => {
+describe('useSuiClientQuery', () => {
 	it('should fetch data', async () => {
-		const benfenClient = new BenfenClient({ url: getFullnodeUrl('mainnet') });
-		const wrapper = createWalletProviderContextWrapper({}, benfenClient);
+		const suiClient = new SuiClient({ url: getFullnodeUrl('mainnet') });
+		const wrapper = createWalletProviderContextWrapper({}, suiClient);
 
-		const queryTransactionBlocks = vi.spyOn(benfenClient, 'queryTransactionBlocks');
+		const queryTransactionBlocks = vi.spyOn(suiClient, 'queryTransactionBlocks');
 
 		queryTransactionBlocks.mockResolvedValueOnce({
 			data: [{ digest: '0x123' }],
@@ -21,7 +21,7 @@ describe('useBenfenClientQuery', () => {
 
 		const { result } = renderHook(
 			() =>
-				useBenfenClientQuery('queryTransactionBlocks', {
+				useSuiClientQuery('queryTransactionBlocks', {
 					filter: {
 						FromAddress: '0x123',
 					},

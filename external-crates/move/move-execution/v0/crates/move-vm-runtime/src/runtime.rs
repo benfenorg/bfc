@@ -61,7 +61,7 @@ impl VMRuntime {
     ) -> Session<'r, '_, S> {
         Session {
             runtime: self,
-            data_cache: TransactionDataCache::new(remote, &self.loader),
+            data_cache: TransactionDataCache::new(remote),
             native_extensions,
         }
     }
@@ -82,6 +82,10 @@ impl VMRuntime {
                     blob,
                     &BinaryConfig::legacy(
                         self.loader.vm_config().max_binary_format_version,
+                        self.loader()
+                            .vm_config()
+                            .binary_config
+                            .min_binary_format_version,
                         self.loader
                             .vm_config()
                             .check_no_extraneous_bytes_during_deserialization,

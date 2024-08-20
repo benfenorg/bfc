@@ -1,9 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { type LedgerAccountSerializedUI } from '_src/background/accounts/LedgerAccount';
-import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
+import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 import { useQuery, type UseQueryOptions } from '@tanstack/react-query';
 
 import { useSuiLedgerClient } from './SuiLedgerClientProvider';
@@ -44,7 +44,7 @@ async function deriveAccountsFromLedger(
 	for (const derivationPath of derivationPaths) {
 		const publicKeyResult = await suiLedgerClient.getPublicKey(derivationPath);
 		const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-		const suiAddress = publicKey.toHexAddress();
+		const suiAddress = publicKey.toSuiAddress();
 		ledgerAccounts.push({
 			type: 'ledger',
 			address: suiAddress,

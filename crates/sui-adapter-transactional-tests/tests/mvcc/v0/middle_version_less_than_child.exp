@@ -3,18 +3,24 @@ processed 11 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 8-51:
+task 1, lines 8-51:
+//# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7812800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7493600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 2 'programmable'. lines 53-57:
+task 2, lines 53-57:
+//# programmable --sender A --inputs @A
+//> 0: test::m::new();
+//> TransferObjects([Result(0)], Input(0))
+// All 3 objects have version 2
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6604400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6285200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 3 'view-object'. lines 59-59:
-Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
+task 3, line 59:
+//# view-object 2,0
+Owner: Object ID: ( _ )
 Version: 2
 Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     id: sui::object::UID {
@@ -33,8 +39,9 @@ Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     },
 }
 
-task 4 'view-object'. lines 61-61:
-Owner: Object ID: ( BFC3a622f284aa42a84aee7d3f881252497305a24d74bba78d08f6ee3752a71d3a62e87 )
+task 4, line 61:
+//# view-object 2,1
+Owner: Object ID: ( fake(2,2) )
 Version: 2
 Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     id: sui::object::UID {
@@ -53,8 +60,9 @@ Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     },
 }
 
-task 5 'view-object'. lines 63-63:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+task 5, line 63:
+//# view-object 2,2
+Owner: Account Address ( A )
 Version: 2
 Contents: test::m::Obj {
     id: sui::object::UID {
@@ -65,12 +73,16 @@ Contents: test::m::Obj {
     value: 0u64,
 }
 
-task 6 'programmable'. lines 65-68:
+task 6, lines 65-68:
+//# programmable --sender A --inputs object(2,2) 112
+//> test::m::set(Input(0), Input(1))
+// The middle object has version 2, while the root and modified leaf have version 3
 mutated: object(0,0), object(2,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 4598000,  storage_rebate: 4552020, non_refundable_storage_fee: 45980
+gas summary: computation_cost: 1000000, storage_cost: 4278800,  storage_rebate: 4236012, non_refundable_storage_fee: 42788
 
-task 7 'view-object'. lines 70-70:
-Owner: Object ID: ( BFCcb452eab616da246cd7cdc99a3a96679f6e2758ce7ca8a226e7e8cae4cc9ac402a42 )
+task 7, line 70:
+//# view-object 2,0
+Owner: Object ID: ( _ )
 Version: 3
 Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     id: sui::object::UID {
@@ -89,8 +101,9 @@ Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     },
 }
 
-task 8 'view-object'. lines 72-72:
-Owner: Object ID: ( BFC3a622f284aa42a84aee7d3f881252497305a24d74bba78d08f6ee3752a71d3a62e87 )
+task 8, line 72:
+//# view-object 2,1
+Owner: Object ID: ( fake(2,2) )
 Version: 2
 Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     id: sui::object::UID {
@@ -109,8 +122,9 @@ Contents: sui::dynamic_field::Field<u64, test::m::Obj> {
     },
 }
 
-task 9 'view-object'. lines 74-77:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+task 9, lines 74-77:
+//# view-object 2,2
+Owner: Account Address ( A )
 Version: 3
 Contents: test::m::Obj {
     id: sui::object::UID {
@@ -121,6 +135,8 @@ Contents: test::m::Obj {
     value: 0u64,
 }
 
-task 10 'programmable'. lines 79-80:
+task 10, lines 79-80:
+//# programmable --sender A --inputs object(2,2) 112
+//> test::m::check(Input(0), Input(1))
 mutated: object(0,0), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 2591600,  storage_rebate: 2565684, non_refundable_storage_fee: 25916
+gas summary: computation_cost: 1000000, storage_cost: 2272400,  storage_rebate: 2249676, non_refundable_storage_fee: 22724

@@ -1,18 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 /*
 Transaction Orchestrator is a Node component that utilizes Quorum Driver to
 submit transactions to validators for finality, and proactively executes
 finalized transactions locally, when possible.
 */
+
+use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::AuthorityState;
-use crate::authority_aggregator::{AuthAggMetrics, AuthorityAggregator};
+use crate::authority_aggregator::AuthorityAggregator;
 use crate::authority_client::{AuthorityAPI, NetworkAuthorityClient};
 use crate::quorum_driver::reconfig_observer::{OnsiteReconfigObserver, ReconfigObserver};
 use crate::quorum_driver::{QuorumDriverHandler, QuorumDriverHandlerBuilder, QuorumDriverMetrics};
-use crate::safe_client::SafeClientMetricsBase;
 use futures::future::{select, Either, Future};
 use futures::FutureExt;
 use mysten_common::sync::notify_read::NotifyRead;
@@ -25,6 +25,7 @@ use prometheus::{
     register_int_gauge_vec_with_registry, register_int_gauge_with_registry, Registry,
 };
 use std::net::SocketAddr;
+use std::ops::Deref;
 use std::path::Path;
 use std::sync::Arc;
 use std::time::Duration;
@@ -34,18 +35,17 @@ use sui_types::effects::{TransactionEffectsAPI, VerifiedCertifiedTransactionEffe
 use sui_types::error::{SuiError, SuiResult};
 use sui_types::executable_transaction::VerifiedExecutableTransaction;
 use sui_types::quorum_driver_types::{
-    ExecuteTransactionRequest, ExecuteTransactionRequestType, ExecuteTransactionResponse,
-    FinalizedEffects, QuorumDriverEffectsQueueResult, QuorumDriverError, QuorumDriverResponse,
-    QuorumDriverResult,
+    ExecuteTransactionRequestType, ExecuteTransactionRequestV3, ExecuteTransactionResponseV3,
+    FinalizedEffects, IsTransactionExecutedLocally, QuorumDriverEffectsQueueResult,
+    QuorumDriverError, QuorumDriverResponse, QuorumDriverResult,
 };
 use sui_types::sui_system_state::SuiSystemState;
+use sui_types::transaction::VerifiedTransaction;
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::broadcast::Receiver;
 use tokio::task::JoinHandle;
 use tokio::time::timeout;
 use tracing::{debug, error, error_span, info, instrument, warn, Instrument};
-
-use sui_types::transaction::VerifiedTransaction;
 
 // How long to wait for local execution (including parents) before a timeout
 // is returned to client.
@@ -63,35 +63,27 @@ pub struct TransactiondOrchestrator<A: Clone> {
 }
 
 impl TransactiondOrchestrator<NetworkAuthorityClient> {
-    pub fn new_with_network_clients(
+    pub fn new_with_auth_aggregator(
+        validators: Arc<AuthorityAggregator<NetworkAuthorityClient>>,
         validator_state: Arc<AuthorityState>,
         reconfig_channel: Receiver<SuiSystemState>,
         parent_path: &Path,
         prometheus_registry: &Registry,
-    ) -> anyhow::Result<Self> {
-        let safe_client_metrics_base = SafeClientMetricsBase::new(prometheus_registry);
-        let auth_agg_metrics = AuthAggMetrics::new(prometheus_registry);
-        let validators = AuthorityAggregator::new_from_local_system_state(
-            validator_state.get_cache_reader(),
-            validator_state.committee_store(),
-            safe_client_metrics_base.clone(),
-            auth_agg_metrics.clone(),
-        )?;
-
+    ) -> Self {
         let observer = OnsiteReconfigObserver::new(
             reconfig_channel,
-            validator_state.get_cache_reader().clone(),
+            validator_state.get_object_cache_reader().clone(),
             validator_state.clone_committee_store(),
-            safe_client_metrics_base,
-            auth_agg_metrics,
+            validators.safe_client_metrics_base.clone(),
+            validators.metrics.deref().clone(),
         );
-        Ok(TransactiondOrchestrator::new(
-            Arc::new(validators),
+        TransactiondOrchestrator::new(
+            validators,
             validator_state,
             parent_path,
             prometheus_registry,
             observer,
-        ))
+        )
     }
 }
 
@@ -147,25 +139,112 @@ where
             metrics,
         }
     }
+}
 
+impl<A> TransactiondOrchestrator<A>
+where
+    A: AuthorityAPI + Send + Sync + 'static + Clone,
+{
     #[instrument(name = "tx_orchestrator_execute_transaction", level = "debug", skip_all,
     fields(
         tx_digest = ?request.transaction.digest(),
-        tx_type = ?request.transaction_type(),
+        tx_type = ?request_type,
     ),
     err)]
     pub async fn execute_transaction_block(
         &self,
-        request: ExecuteTransactionRequest,
+        request: ExecuteTransactionRequestV3,
+        request_type: ExecuteTransactionRequestType,
         client_addr: Option<SocketAddr>,
-    ) -> Result<ExecuteTransactionResponse, QuorumDriverError> {
-        // TODO check if tx is already executed on this node.
-        // Note: since EffectsCert is not stored today, we need to gather that from validators
-        // (and maybe store it for caching purposes)
+    ) -> Result<(ExecuteTransactionResponseV3, IsTransactionExecutedLocally), QuorumDriverError>
+    {
         let epoch_store = self.validator_state.load_epoch_store_one_call_per_task();
 
+        let (transaction, response) = self
+            .execute_transaction_impl(&epoch_store, request, client_addr)
+            .await?;
+
+        let executed_locally = if matches!(
+            request_type,
+            ExecuteTransactionRequestType::WaitForLocalExecution
+        ) {
+            let executable_tx = VerifiedExecutableTransaction::new_from_quorum_execution(
+                transaction,
+                response.effects_cert.executed_epoch(),
+            );
+            Self::execute_finalized_tx_locally_with_timeout(
+                &self.validator_state,
+                &epoch_store,
+                &executable_tx,
+                &response.effects_cert,
+                &self.metrics,
+            )
+            .await
+            .is_ok()
+        } else {
+            false
+        };
+
+        let QuorumDriverResponse {
+            effects_cert,
+            events,
+            input_objects,
+            output_objects,
+            auxiliary_data,
+        } = response;
+
+        let response = ExecuteTransactionResponseV3 {
+            effects: FinalizedEffects::new_from_effects_cert(effects_cert.into()),
+            events,
+            input_objects,
+            output_objects,
+            auxiliary_data,
+        };
+
+        Ok((response, executed_locally))
+    }
+
+    // Utilize the handle_certificate_v3 validator api to request input/output objects
+    #[instrument(name = "tx_orchestrator_execute_transaction_v3", level = "trace", skip_all,
+                 fields(tx_digest = ?request.transaction.digest()))]
+    pub async fn execute_transaction_v3(
+        &self,
+        request: ExecuteTransactionRequestV3,
+        client_addr: Option<SocketAddr>,
+    ) -> Result<ExecuteTransactionResponseV3, QuorumDriverError> {
+        let epoch_store = self.validator_state.load_epoch_store_one_call_per_task();
+
+        let QuorumDriverResponse {
+            effects_cert,
+            events,
+            input_objects,
+            output_objects,
+            auxiliary_data,
+        } = self
+            .execute_transaction_impl(&epoch_store, request, client_addr)
+            .await
+            .map(|(_, r)| r)?;
+
+        Ok(ExecuteTransactionResponseV3 {
+            effects: FinalizedEffects::new_from_effects_cert(effects_cert.into()),
+            events,
+            input_objects,
+            output_objects,
+            auxiliary_data,
+        })
+    }
+
+    // TODO check if tx is already executed on this node.
+    // Note: since EffectsCert is not stored today, we need to gather that from validators
+    // (and maybe store it for caching purposes)
+    pub async fn execute_transaction_impl(
+        &self,
+        epoch_store: &AuthorityPerEpochStore,
+        request: ExecuteTransactionRequestV3,
+        client_addr: Option<SocketAddr>,
+    ) -> Result<(VerifiedTransaction, QuorumDriverResponse), QuorumDriverError> {
         let transaction = epoch_store
-            .verify_transaction(request.transaction)
+            .verify_transaction(request.transaction.clone())
             .map_err(QuorumDriverError::InvalidUserSignature)?;
         let (_in_flight_metrics_guards, good_response_metrics) = self.update_metrics(&transaction);
         let tx_digest = *transaction.digest();
@@ -195,17 +274,12 @@ where
         });
 
         let ticket = self
-            .submit(transaction.clone(), client_addr)
+            .submit(transaction.clone(), request, client_addr)
             .await
             .map_err(|e| {
                 warn!(?tx_digest, "QuorumDriverInternalError: {e:?}");
                 QuorumDriverError::QuorumDriverInternalError(e)
             })?;
-
-        let wait_for_local_execution = matches!(
-            request.request_type,
-            ExecuteTransactionRequestType::WaitForLocalExecution
-        );
 
         let Ok(result) = timeout(WAIT_FOR_FINALITY_TIMEOUT, ticket).await else {
             debug!(?tx_digest, "Timeout waiting for transaction finality.");
@@ -225,49 +299,18 @@ where
             Ok(Err(err)) => Err(err),
             Ok(Ok(response)) => {
                 good_response_metrics.inc();
-                let QuorumDriverResponse { effects_cert, .. } = response;
-                if !wait_for_local_execution {
-                    return Ok(ExecuteTransactionResponse::EffectsCert(Box::new((
-                        FinalizedEffects::new_from_effects_cert(effects_cert.into()),
-                        response.events,
-                        false,
-                    ))));
-                }
-
-                let executable_tx = VerifiedExecutableTransaction::new_from_quorum_execution(
-                    transaction,
-                    effects_cert.executed_epoch(),
-                );
-
-                match Self::execute_finalized_tx_locally_with_timeout(
-                    &self.validator_state,
-                    &epoch_store,
-                    &executable_tx,
-                    &effects_cert,
-                    &self.metrics,
-                )
-                .await
-                {
-                    Ok(_) => Ok(ExecuteTransactionResponse::EffectsCert(Box::new((
-                        FinalizedEffects::new_from_effects_cert(effects_cert.into()),
-                        response.events,
-                        true,
-                    )))),
-                    Err(_) => Ok(ExecuteTransactionResponse::EffectsCert(Box::new((
-                        FinalizedEffects::new_from_effects_cert(effects_cert.into()),
-                        response.events,
-                        false,
-                    )))),
-                }
+                Ok((transaction, response))
             }
         }
     }
 
     /// Submits the transaction to Quorum Driver for execution.
     /// Returns an awaitable Future.
+    #[instrument(name = "tx_orchestrator_submit", level = "trace", skip_all)]
     async fn submit(
         &self,
         transaction: VerifiedTransaction,
+        request: ExecuteTransactionRequestV3,
         client_addr: Option<SocketAddr>,
     ) -> SuiResult<impl Future<Output = SuiResult<QuorumDriverResult>> + '_> {
         let tx_digest = *transaction.digest();
@@ -281,14 +324,14 @@ where
         {
             debug!(?tx_digest, "no pending request in flight, submitting.");
             self.quorum_driver()
-                .submit_transaction_no_ticket(transaction.clone().into(), client_addr)
+                .submit_transaction_no_ticket(request.clone(), client_addr)
                 .await?;
         }
         // It's possible that the transaction effects is already stored in DB at this point.
         // So we also subscribe to that. If we hear from `effects_await` first, it means
         // the ticket misses the previous notification, and we want to ask quorum driver
         // to form a certificate for us again, to serve this request.
-        let cache_reader = self.validator_state.get_cache_reader().clone();
+        let cache_reader = self.validator_state.get_transaction_cache_reader().clone();
         let qd = self.clone_quorum_driver();
         Ok(async move {
             let digests = [tx_digest];
@@ -302,7 +345,7 @@ where
                         ?tx_digest,
                         "Effects are available in DB, use quorum driver to get a certificate"
                     );
-                    qd.submit_transaction_no_ticket(transaction.into(), client_addr)
+                    qd.submit_transaction_no_ticket(request, client_addr)
                         .await?;
                     Ok(unfinished_quorum_driver_task.await)
                 }
@@ -519,7 +562,19 @@ where
                 let tx_digest = *tx.digest();
                 // It's not impossible we fail to enqueue a task but that's not the end of world.
                 // TODO(william) correctly extract client_addr from logs
-                if let Err(err) = quorum_driver.submit_transaction_no_ticket(tx, None).await {
+                if let Err(err) = quorum_driver
+                    .submit_transaction_no_ticket(
+                        ExecuteTransactionRequestV3 {
+                            transaction: tx,
+                            include_events: true,
+                            include_input_objects: false,
+                            include_output_objects: false,
+                            include_auxiliary_data: false,
+                        },
+                        None,
+                    )
+                    .await
+                {
                     warn!(
                         ?tx_digest,
                         "Failed to enqueue transaction from pending_tx_log, err: {err:?}"
@@ -697,5 +752,22 @@ impl TransactionOrchestratorMetrics {
     pub fn new_for_tests() -> Self {
         let registry = Registry::new();
         Self::new(&registry)
+    }
+}
+
+#[async_trait::async_trait]
+impl<A> sui_rest_api::TransactionExecutor for TransactiondOrchestrator<A>
+where
+    A: AuthorityAPI + Send + Sync + 'static + Clone,
+{
+    async fn execute_transaction(
+        &self,
+        request: sui_types::quorum_driver_types::ExecuteTransactionRequestV3,
+        client_addr: Option<std::net::SocketAddr>,
+    ) -> Result<
+        sui_types::quorum_driver_types::ExecuteTransactionResponseV3,
+        sui_types::quorum_driver_types::QuorumDriverError,
+    > {
+        self.execute_transaction_v3(request, client_addr).await
     }
 }

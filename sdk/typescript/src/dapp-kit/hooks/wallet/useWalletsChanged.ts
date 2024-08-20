@@ -1,10 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { WalletWithRequiredFeatures } from '@mysten/wallet-standard';
+import { getWallets } from '@mysten/wallet-standard';
 import { useEffect } from 'react';
 
-import { getWallets } from '../../../wallet-standard/index.js';
-import type { Wallet, WalletWithRequiredFeatures } from '../../../wallet-standard/index.js';
 import { getRegisteredWallets } from '../../utils/walletUtils.js';
 import { useWalletStore } from './useWalletStore.js';
 
@@ -13,31 +13,22 @@ import { useWalletStore } from './useWalletStore.js';
  */
 export function useWalletsChanged(
 	preferredWallets: string[],
-	requiredFeatures: (keyof WalletWithRequiredFeatures['features'])[],
+	walletFilter?: (wallet: WalletWithRequiredFeatures) => boolean,
 ) {
 	const setWalletRegistered = useWalletStore((state) => state.setWalletRegistered);
 	const setWalletUnregistered = useWalletStore((state) => state.setWalletUnregistered);
 
 	useEffect(() => {
 		const walletsApi = getWallets();
-		let wallets: Wallet[] = [];
-
-		const checkInterval = window.setInterval(() => {
-			const registered = walletsApi.get();
-			const newWallets = registered.filter((wallet) => !wallets.includes(wallet));
-			if (newWallets.length > 0) {
-				setWalletRegistered(getRegisteredWallets(preferredWallets, requiredFeatures));
-				wallets = [...registered];
-			}
-		}, 100);
+		setWalletRegistered(getRegisteredWallets(preferredWallets, walletFilter));
 
 		const unsubscribeFromRegister = walletsApi.on('register', () => {
-			setWalletRegistered(getRegisteredWallets(preferredWallets, requiredFeatures));
+			setWalletRegistered(getRegisteredWallets(preferredWallets, walletFilter));
 		});
 
 		const unsubscribeFromUnregister = walletsApi.on('unregister', (unregisteredWallet) => {
 			setWalletUnregistered(
-				getRegisteredWallets(preferredWallets, requiredFeatures),
+				getRegisteredWallets(preferredWallets, walletFilter),
 				unregisteredWallet,
 			);
 		});
@@ -45,7 +36,6 @@ export function useWalletsChanged(
 		return () => {
 			unsubscribeFromRegister();
 			unsubscribeFromUnregister();
-			clearInterval(checkInterval);
 		};
-	}, [preferredWallets, requiredFeatures, setWalletRegistered, setWalletUnregistered]);
+	}, [preferredWallets, walletFilter, setWalletRegistered, setWalletUnregistered]);
 }

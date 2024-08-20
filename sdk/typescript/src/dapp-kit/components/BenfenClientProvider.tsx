@@ -1,29 +1,29 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { getFullnodeUrl, isSuiClient, SuiClient } from '@mysten/sui/client';
+import type { SuiClientOptions } from '@mysten/sui/client';
 import { createContext, useMemo, useState } from 'react';
 
-import { BenfenClient, getFullnodeUrl, isBenfenClient } from '../../client/index.js';
-import type { BenfenClientOptions } from '../../client/index.js';
 import type { NetworkConfig } from '../hooks/networkConfig.js';
 
-type NetworkConfigs<T extends NetworkConfig | BenfenClient = NetworkConfig | BenfenClient> = Record<
+type NetworkConfigs<T extends NetworkConfig | SuiClient = NetworkConfig | SuiClient> = Record<
 	string,
 	T
 >;
 
-export interface BenfenClientProviderContext {
-	client: BenfenClient;
+export interface SuiClientProviderContext {
+	client: SuiClient;
 	networks: NetworkConfigs;
 	network: string;
 	config: NetworkConfig | null;
 	selectNetwork: (network: string) => void;
 }
 
-export const BenfenClientContext = createContext<BenfenClientProviderContext | null>(null);
+export const SuiClientContext = createContext<SuiClientProviderContext | null>(null);
 
-export type BenfenClientProviderProps<T extends NetworkConfigs> = {
-	createClient?: (name: keyof T, config: T[keyof T]) => BenfenClient;
+export type SuiClientProviderProps<T extends NetworkConfigs> = {
+	createClient?: (name: keyof T, config: T[keyof T]) => SuiClient;
 	children: React.ReactNode;
 	networks?: T;
 	onNetworkChange?: (network: keyof T & string) => void;
@@ -44,18 +44,16 @@ const DEFAULT_NETWORKS = {
 
 const DEFAULT_CREATE_CLIENT = function createClient(
 	_name: string,
-	config: NetworkConfig | BenfenClient,
+	config: NetworkConfig | SuiClient,
 ) {
-	if (isBenfenClient(config)) {
+	if (isSuiClient(config)) {
 		return config;
 	}
 
-	return new BenfenClient(config);
+	return new SuiClient(config);
 };
 
-export function BenfenClientProvider<T extends NetworkConfigs>(
-	props: BenfenClientProviderProps<T>,
-) {
+export function SuiClientProvider<T extends NetworkConfigs>(props: SuiClientProviderProps<T>) {
 	const { onNetworkChange, network, children } = props;
 	const networks = (props.networks ?? DEFAULT_NETWORKS) as T;
 	const createClient =
@@ -71,15 +69,15 @@ export function BenfenClientProvider<T extends NetworkConfigs>(
 		return createClient(currentNetwork, networks[currentNetwork]);
 	}, [createClient, currentNetwork, networks]);
 
-	const ctx = useMemo((): BenfenClientProviderContext => {
+	const ctx = useMemo((): SuiClientProviderContext => {
 		return {
 			client,
 			networks,
 			network: currentNetwork,
 			config:
-				(networks[currentNetwork] as any) instanceof BenfenClient
+				networks[currentNetwork] instanceof SuiClient
 					? null
-					: (networks[currentNetwork] as BenfenClientOptions),
+					: (networks[currentNetwork] as SuiClientOptions),
 			selectNetwork: (newNetwork) => {
 				if (currentNetwork === newNetwork) {
 					return;
@@ -94,5 +92,5 @@ export function BenfenClientProvider<T extends NetworkConfigs>(
 		};
 	}, [client, networks, selectedNetwork, currentNetwork, network, onNetworkChange]);
 
-	return <BenfenClientContext.Provider value={ctx}>{children}</BenfenClientContext.Provider>;
+	return <SuiClientContext.Provider value={ctx}>{children}</SuiClientContext.Provider>;
 }

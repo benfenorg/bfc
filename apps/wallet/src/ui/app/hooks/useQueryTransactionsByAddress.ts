@@ -1,14 +1,14 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { FEATURES } from '_src/shared/experimentation/features';
-import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
-import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
 import { useFeatureValue } from '@growthbook/growthbook-react';
+import { useSuiClient } from '@mysten/dapp-kit';
+import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function useQueryTransactionsByAddress(address: string | null) {
-	const rpc = useBenfenClient();
+	const rpc = useSuiClient();
 	const refetchInterval = useFeatureValue(FEATURES.WALLET_ACTIVITY_REFETCH_INTERVAL, 20_000);
 
 	return useQuery({
@@ -39,7 +39,7 @@ export function useQueryTransactionsByAddress(address: string | null) {
 			]);
 
 			const inserted = new Map();
-			const uniqueList: BenfenTransactionBlockResponse[] = [];
+			const uniqueList: SuiTransactionBlockResponse[] = [];
 
 			[...txnIds.data, ...fromTxnIds.data]
 				.sort((a, b) => Number(b.timestampMs ?? 0) - Number(a.timestampMs ?? 0))

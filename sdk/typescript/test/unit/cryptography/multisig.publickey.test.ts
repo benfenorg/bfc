@@ -1,12 +1,13 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { fromB64 } from '@mysten/bcs';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bytesToHex } from '@noble/hashes/utils';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { bcs, fromB64 } from '../../../src/bcs/index.js';
-import { IntentScope, messageWithIntent } from '../../../src/cryptography/intent';
+import { bcs } from '../../../src/bcs/index.js';
+import { messageWithIntent } from '../../../src/cryptography/intent';
 import { PublicKey } from '../../../src/cryptography/publickey';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../../src/cryptography/signature-scheme.js';
 import { parseSerializedSignature } from '../../../src/cryptography/signature.js';
@@ -19,7 +20,7 @@ import {
 	MultiSigStruct,
 	parsePartialSignatures,
 } from '../../../src/multisig/publickey';
-import { normalizeHexAddress } from '../../../src/utils/bf-types.js';
+import { normalizeSuiAddress } from '../../../src/utils/sui-types.js';
 
 describe('Publickey', () => {
 	let k1: Ed25519Keypair,
@@ -235,7 +236,7 @@ describe('Publickey', () => {
 		]);
 	});
 
-	it('`toHexAddress()` should return correct benfen address associated with multisig publickey', async () => {
+	it('`toSuiAddress()` should return correct sui address associated with multisig publickey', async () => {
 		const multiSigPublicKey = MultiSigPublicKey.fromPublicKeys({
 			threshold: 3,
 			publicKeys: [
@@ -248,20 +249,20 @@ describe('Publickey', () => {
 		const maxLength = 1 + (64 + 1) * MAX_SIGNER_IN_MULTISIG + 2;
 		const tmp = new Uint8Array(maxLength);
 		tmp.set([0x03]);
-		tmp.set(bcs.ser('u16', 3).toBytes(), 1);
+		tmp.set(bcs.U16.serialize(3).toBytes(), 1);
 		let i = 3;
 		for (const { publicKey, weight } of multiSigPublicKey.getPublicKeys()) {
-			const bytes = publicKey.toBenfenBytes();
+			const bytes = publicKey.toSuiBytes();
 			tmp.set(bytes, i);
 			i += bytes.length;
 			tmp.set([weight], i++);
 		}
-		const multisigBenfenAddress = normalizeHexAddress(
+		const multisigSuiAddress = normalizeSuiAddress(
 			bytesToHex(blake2b(tmp.slice(0, i), { dkLen: 32 })),
 		);
 
-		expect(multiSigPublicKey.toHexAddress()).toEqual(multisigBenfenAddress);
-		expect(multiSigPublicKey.toHexAddress()).toEqual(
+		expect(multiSigPublicKey.toSuiAddress()).toEqual(multisigSuiAddress);
+		expect(multiSigPublicKey.toSuiAddress()).toEqual(
 			'0x8ee027fe556a3f6c0a23df64f090d2429fec0bb21f55594783476e81de2dec27',
 		);
 	});
@@ -298,8 +299,8 @@ describe('Publickey', () => {
 		let multisig = multiSigPublicKey.combinePartialSignatures([sig1.signature, sig2.signature]);
 
 		const intentMessage = messageWithIntent(
-			IntentScope.PersonalMessage,
-			bcs.ser(['vector', 'u8'], data).toBytes(),
+			'PersonalMessage',
+			bcs.vector(bcs.U8).serialize(data).toBytes(),
 		);
 		const digest = blake2b(intentMessage, { dkLen: 32 });
 
@@ -324,8 +325,8 @@ describe('Publickey', () => {
 		multiSigPublicKey.combinePartialSignatures([sig1.signature, sig2.signature]);
 
 		const intentMessage = messageWithIntent(
-			IntentScope.PersonalMessage,
-			bcs.ser(['vector', 'u8'], data).toBytes(),
+			'PersonalMessage',
+			bcs.vector(bcs.U8).serialize(data).toBytes(),
 		);
 		const digest = blake2b(intentMessage, { dkLen: 32 });
 
@@ -361,11 +362,13 @@ describe('Publickey', () => {
 			bitmap: 3,
 			sigs: [
 				{
+					$kind: 'ED25519',
 					ED25519: Array.from(
 						parseSerializedSignature((await k1.signPersonalMessage(data)).signature).signature!,
 					),
 				},
 				{
+					$kind: 'Secp256k1',
 					Secp256k1: Array.from(
 						parseSerializedSignature((await k2.signPersonalMessage(data)).signature).signature!,
 					),
@@ -423,7 +426,7 @@ describe('Publickey', () => {
 		const multisig = multiSigPublicKey.combinePartialSignatures([sig1.signature, sig2.signature]);
 
 		const bytes = fromB64(multisig);
-		const multiSigStruct: MultiSigStruct = bcs.de('MultiSig', bytes.slice(1));
+		const multiSigStruct: MultiSigStruct = bcs.MultiSig.parse(bytes.slice(1));
 
 		const parsedPartialSignatures = parsePartialSignatures(multiSigStruct);
 

@@ -15,7 +15,7 @@ use sui_types::clock::Clock;
 use sui_types::collection_types::{Entry, VecMap};
 use sui_types::committee::CommitteeWithNetworkMetadata;
 use sui_types::crypto::DefaultHash;
-use sui_types::deny_list::{get_coin_deny_list, PerTypeDenyList};
+use sui_types::deny_list_v1::{get_coin_deny_list, PerTypeDenyList};
 use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::gas_coin::TOTAL_SUPPLY_MIST;
 use sui_types::messages_checkpoint::{
@@ -27,12 +27,13 @@ use sui_types::sui_system_state::{
     SuiSystemStateWrapper, SuiValidatorGenesis,
 };
 use sui_types::transaction::Transaction;
-use sui_types::SUI_RANDOMNESS_STATE_OBJECT_ID;
 use sui_types::{
     committee::{Committee, EpochId, ProtocolVersion},
     error::SuiResult,
     object::Object,
 };
+use sui_types::{SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
+use tracing::trace;
 
 pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
 #[derive(Clone, Debug)]
@@ -386,9 +387,9 @@ impl Genesis {
         self.sui_system_object().reference_gas_price()
     }
 
-    // TODO: No need to return SuiResult.
+    // TODO: No need to return SuiResult. Also consider return &.
     pub fn committee(&self) -> SuiResult<Committee> {
-        Ok(self.committee_with_network().committee)
+        Ok(self.committee_with_network().committee().clone())
     }
 
     pub fn sui_system_wrapper_object(&self) -> SuiSystemStateWrapper {
@@ -578,12 +579,19 @@ impl UnsignedGenesis {
     }
 
     pub fn authenticator_state_object(&self) -> Option<AuthenticatorStateInner> {
-        get_authenticator_state(&self.objects()).expect("read from genesis cannot fail")
+        get_authenticator_state(self.objects()).expect("read from genesis cannot fail")
     }
 
     pub fn has_randomness_state_object(&self) -> bool {
         self.objects()
             .get_object(&SUI_RANDOMNESS_STATE_OBJECT_ID)
+            .expect("read from genesis cannot fail")
+            .is_some()
+    }
+
+    pub fn has_bridge_object(&self) -> bool {
+        self.objects()
+            .get_object(&SUI_BRIDGE_OBJECT_ID)
             .expect("read from genesis cannot fail")
             .is_some()
     }

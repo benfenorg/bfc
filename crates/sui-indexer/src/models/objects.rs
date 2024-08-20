@@ -51,8 +51,13 @@ pub struct StoredObject {
     pub checkpoint_sequence_number: i64,
     pub owner_type: i16,
     pub owner_id: Option<Vec<u8>>,
-    /// The type of this object. This will be None if the object is a Package
+    /// The full type of this object, including package id, module, name and type parameters.
+    /// This and following three fields will be None if the object is a Package
     pub object_type: Option<String>,
+    pub object_type_package: Option<Vec<u8>>,
+    pub object_type_module: Option<String>,
+    /// Name of the object type, e.g., "Coin", without type parameters.
+    pub object_type_name: Option<String>,
     pub serialized_object: Vec<u8>,
     pub coin_type: Option<String>,
     // TODO deal with overflow
@@ -63,7 +68,7 @@ pub struct StoredObject {
     pub df_object_id: Option<Vec<u8>>,
 }
 
-#[derive(Queryable, Insertable, Debug, Identifiable, Clone, QueryableByName)]
+#[derive(Queryable, Insertable, Selectable, Debug, Identifiable, Clone, QueryableByName)]
 #[diesel(table_name = objects_snapshot, primary_key(object_id))]
 pub struct StoredObjectSnapshot {
     pub object_id: Vec<u8>,
@@ -74,6 +79,9 @@ pub struct StoredObjectSnapshot {
     pub owner_type: Option<i16>,
     pub owner_id: Option<Vec<u8>>,
     pub object_type: Option<String>,
+    pub object_type_package: Option<Vec<u8>>,
+    pub object_type_module: Option<String>,
+    pub object_type_name: Option<String>,
     pub serialized_object: Option<Vec<u8>>,
     pub coin_type: Option<String>,
     pub coin_balance: Option<i64>,
@@ -92,6 +100,9 @@ impl From<StoredObject> for StoredObjectSnapshot {
             object_digest: Some(o.object_digest),
             checkpoint_sequence_number: o.checkpoint_sequence_number,
             owner_type: Some(o.owner_type),
+            object_type_package: o.object_type_package,
+            object_type_module: o.object_type_module,
+            object_type_name: o.object_type_name,
             owner_id: o.owner_id,
             object_type: o.object_type,
             serialized_object: Some(o.serialized_object),
@@ -116,6 +127,9 @@ impl From<StoredDeletedObject> for StoredObjectSnapshot {
             owner_type: None,
             owner_id: None,
             object_type: None,
+            object_type_package: None,
+            object_type_module: None,
+            object_type_name: None,
             serialized_object: None,
             coin_type: None,
             coin_balance: None,
@@ -127,7 +141,7 @@ impl From<StoredDeletedObject> for StoredObjectSnapshot {
     }
 }
 
-#[derive(Queryable, Insertable, Debug, Identifiable, Clone, QueryableByName)]
+#[derive(Queryable, Insertable, Selectable, Debug, Identifiable, Clone, QueryableByName)]
 #[diesel(table_name = objects_history, primary_key(object_id, object_version, checkpoint_sequence_number))]
 pub struct StoredHistoryObject {
     pub object_id: Vec<u8>,
@@ -138,6 +152,9 @@ pub struct StoredHistoryObject {
     pub owner_type: Option<i16>,
     pub owner_id: Option<Vec<u8>>,
     pub object_type: Option<String>,
+    pub object_type_package: Option<Vec<u8>>,
+    pub object_type_module: Option<String>,
+    pub object_type_name: Option<String>,
     pub serialized_object: Option<Vec<u8>>,
     pub coin_type: Option<String>,
     pub coin_balance: Option<i64>,
@@ -156,6 +173,9 @@ impl From<StoredObject> for StoredHistoryObject {
             object_digest: Some(o.object_digest),
             checkpoint_sequence_number: o.checkpoint_sequence_number,
             owner_type: Some(o.owner_type),
+            object_type_package: o.object_type_package,
+            object_type_module: o.object_type_module,
+            object_type_name: o.object_type_name,
             owner_id: o.owner_id,
             object_type: o.object_type,
             serialized_object: Some(o.serialized_object),
@@ -220,6 +240,9 @@ impl From<IndexedObject> for StoredObject {
                 .object
                 .type_()
                 .map(|t| t.to_canonical_string(/* with_prefix */ true)),
+            object_type_package: o.object.type_().map(|t| t.address().to_vec()),
+            object_type_module: o.object.type_().map(|t| t.module().to_string()),
+            object_type_name: o.object.type_().map(|t| t.name().to_string()),
             serialized_object: bcs::to_bytes(&o.object).unwrap(),
             coin_type: o.coin_type,
             coin_balance: o.coin_balance.map(|b| b as i64),

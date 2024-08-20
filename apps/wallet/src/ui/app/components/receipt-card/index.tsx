@@ -1,9 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { useRecognizedPackages } from '_src/ui/app/hooks/useRecognizedPackages';
-import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
 import { useTransactionSummary } from '@mysten/core';
+import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
 
 import { DateCard } from '../../shared/date-card';
 import { TransactionSummary } from '../../shared/transaction-summary';
@@ -14,7 +14,7 @@ import { StatusIcon } from './StatusIcon';
 import { UnStakeTxnCard } from './UnstakeTxnCard';
 
 type ReceiptCardProps = {
-	txn: BenfenTransactionBlockResponse;
+	txn: SuiTransactionBlockResponse;
 	activeAddress: string;
 };
 

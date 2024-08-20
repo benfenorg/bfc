@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { useActiveAddress } from '_app/hooks/useActiveAddress';
@@ -11,14 +11,14 @@ import { LabelValuesContainer } from '_components/LabelValuesContainer';
 import Loading from '_components/loading';
 import { NFTDisplayCard } from '_components/nft-display';
 import { useGetNFTMeta, useNFTBasicData, useOwnedNFT } from '_hooks';
-import { useBuyNLargeAsset } from '_src/ui/app/components/buynlarge/useBuyNLargeAsset';
-import { useConfig } from '_src/ui/app/components/buynlarge/useConfig';
+import { useBuyNLargeAssets } from '_src/ui/app/components/buynlarge/useBuyNLargeAssets';
 import { useExplorerLink } from '_src/ui/app/hooks/useExplorerLink';
 import { useUnlockedGuard } from '_src/ui/app/hooks/useUnlockedGuard';
 import PageTitle from '_src/ui/app/shared/PageTitle';
 import { Text } from '_src/ui/app/shared/text';
-import { formatAddress } from '@benfen/bfc.js/utils';
+import { useGetKioskContents } from '@mysten/core';
 import { ArrowRight16, ArrowUpRight12 } from '@mysten/icons';
+import { formatAddress } from '@mysten/sui/utils';
 import cl from 'clsx';
 import { Navigate, useNavigate, useSearchParams } from 'react-router-dom';
 
@@ -36,10 +36,14 @@ function NFTDetailsPage() {
 		objectData.content?.dataType === 'moveObject' &&
 		objectData.content?.hasPublicTransfer;
 	const { nftFields, fileExtensionType, filePath } = useNFTBasicData(objectData);
+	const address = useActiveAddress();
+	const { data } = useGetKioskContents(address);
+
+	const isContainedInKiosk = data?.lookup.get(nftId!);
+	const kioskItem = data?.list.find((k) => k.data?.objectId === nftId);
 
 	const navigate = useNavigate();
-	const buyNLargeConfig = useConfig();
-	const { objectType } = useBuyNLargeAsset();
+	const bnl = useBuyNLargeAssets();
 
 	// Extract either the attributes, or use the top-level NFT fields:
 	const metaFields =
@@ -74,7 +78,8 @@ function NFTDetailsPage() {
 	const isGuardLoading = useUnlockedGuard();
 	const isPending = isNftLoading || isPendingDisplay || isGuardLoading;
 
-	const isBuyNLarge = objectData?.type === objectType;
+	const buyNLargeConfig = bnl.find((item) => item?.objectType === objectData?.type);
+	const isBuyNLarge = !!buyNLargeConfig;
 
 	return (
 		<div
@@ -159,9 +164,9 @@ function NFTDetailsPage() {
 												value={nftDisplayData?.description}
 												multiline
 											/>
-											<LabelValueItem label="Creator" value={nftDisplayData?.creator} parseUrl />
-											<LabelValueItem label="Link" value={nftDisplayData?.link} parseUrl />
-											<LabelValueItem label="Website" value={nftDisplayData?.projectUrl} parseUrl />
+											<LabelValueItem label="Creator" value={nftDisplayData?.creator} />
+											<LabelValueItem label="Link" value={nftDisplayData?.link} />
+											<LabelValueItem label="Website" value={nftDisplayData?.projectUrl} />
 										</LabelValuesContainer>
 									</Collapsible>
 									{metaKeys.length ? (
@@ -182,21 +187,38 @@ function NFTDetailsPage() {
 										</Collapsible>
 									) : null}
 
-									<div className="mb-3 flex flex-1 items-end">
-										<Button
-											variant="primary"
-											size="tall"
-											disabled={!isTransferable}
-											to={`/nft-transfer/${nftId}`}
-											title={
-												isTransferable
-													? undefined
-													: "Unable to send. NFT doesn't have public transfer method"
-											}
-											text="Send NFT"
-											after={<ArrowRight16 />}
-										/>
-									</div>
+									{isContainedInKiosk && kioskItem?.isLocked ? (
+										<div className="flex flex-col gap-2 mb-3">
+											<Button
+												after={<ArrowUpRight12 />}
+												variant="outline"
+												href="https://docs.sui.io/build/sui-kiosk"
+												text="Learn more about Kiosks"
+											/>
+											<Button
+												after={<ArrowUpRight12 />}
+												variant="outline"
+												href={`https://sui.hyperspace.xyz/wallet/sui/${accountAddress}?tokenAddress=${nftId}`}
+												text="Marketplace"
+											/>
+										</div>
+									) : (
+										<div className="mb-3 flex flex-1 items-end">
+											<Button
+												variant="primary"
+												size="tall"
+												disabled={!isTransferable}
+												to={`/nft-transfer/${nftId}`}
+												title={
+													isTransferable
+														? undefined
+														: "Unable to send. NFT doesn't have public transfer method"
+												}
+												text="Send NFT"
+												after={<ArrowRight16 />}
+											/>
+										</div>
+									)}
 								</>
 							) : (
 								<Button variant="secondary" onClick={() => navigate(-1)} text="Okay" />

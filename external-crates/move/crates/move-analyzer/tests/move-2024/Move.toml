@@ -1,6 +1,5 @@
 [package]
 name = "Move2024"
-version = "0.0.1"
 edition = "2024.beta"
 
 [dependencies]
@@ -8,4 +7,3 @@ MoveStdlib = { local = "../../../move-stdlib/", addr_subst = { "std" = "0x1" } }
 
 [addresses]
 Move2024 = "0xCAFE"
-Sui = "0x2"

@@ -16,6 +16,7 @@ use sui_json_rpc_types::{
 };
 use sui_keys::keystore::AccountKeystore;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use sui_types::crypto::SuiKeyPair;
 use sui_types::gas_coin::GasCoin;
 use sui_types::transaction::{Transaction, TransactionData, TransactionDataAPI};
 use tokio::sync::RwLock;
@@ -182,7 +183,7 @@ impl WalletContext {
         budget: u64,
         forbidden_gas_objects: BTreeSet<ObjectID>,
     ) -> Result<(u64, SuiObjectData), anyhow::Error> {
-        for o in self.gas_objects(address).await.unwrap() {
+        for o in self.gas_objects(address).await? {
             if o.0 >= budget && !forbidden_gas_objects.contains(&o.1.object_id) {
                 return Ok((o.0, o.1));
             }
@@ -282,6 +283,11 @@ impl WalletContext {
         let client = self.get_client().await?;
         let rate = client.read_api().get_stable_rate(tag).await?;
         Ok(rate)
+    }
+
+    /// Add an account
+    pub fn add_account(&mut self, alias: Option<String>, keypair: SuiKeyPair) {
+        self.config.keystore.add_key(alias, keypair).unwrap();
     }
 
     /// Sign a transaction with a key currently managed by the WalletContext

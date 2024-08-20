@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import {
@@ -7,8 +7,8 @@ import {
 } from '_src/ui/app/helpers/errorMessages';
 import { Link } from '_src/ui/app/shared/Link';
 import { Text } from '_src/ui/app/shared/text';
-import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import { Check12, X12 } from '@mysten/icons';
+import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 import { useState } from 'react';
 import toast from 'react-hot-toast';
 
@@ -60,7 +60,7 @@ export function VerifyLedgerConnectionStatus({
 							const suiLedgerClient = await connectToLedger();
 							const publicKeyResult = await suiLedgerClient.getPublicKey(derivationPath, true);
 							const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-							const suiAddress = publicKey.toHexAddress();
+							const suiAddress = publicKey.toSuiAddress();
 
 							setVerificationStatus(
 								accountAddress === suiAddress

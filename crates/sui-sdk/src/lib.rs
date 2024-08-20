@@ -76,6 +76,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use async_trait::async_trait;
+use base64::Engine;
 use jsonrpsee::core::client::ClientT;
 use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
 use jsonrpsee::rpc_params;
@@ -106,6 +107,7 @@ pub mod sui_client_config;
 pub mod wallet_context;
 pub const SUI_COIN_TYPE: &str = "0x2::bfc::BFC";
 pub const SUI_LOCAL_NETWORK_URL: &str = "http://127.0.0.1:9000";
+pub const SUI_LOCAL_NETWORK_URL_0: &str = "http://0.0.0.0:9000";
 pub const SUI_LOCAL_NETWORK_GAS_URL: &str = "http://127.0.0.1:5003/gas";
 pub const SUI_DEVNET_URL: &str = "https://testrpc.benfen.org/";
 pub const SUI_TESTNET_URL: &str = "https://fullnode.testnet.sui.io:443";
@@ -138,6 +140,7 @@ pub struct SuiClientBuilder {
     max_concurrent_requests: usize,
     ws_url: Option<String>,
     ws_ping_interval: Option<Duration>,
+    basic_auth: Option<(String, String)>,
 }
 
 impl Default for SuiClientBuilder {
@@ -147,6 +150,7 @@ impl Default for SuiClientBuilder {
             max_concurrent_requests: 256,
             ws_url: None,
             ws_ping_interval: None,
+            basic_auth: None,
         }
     }
 }
@@ -173,6 +177,12 @@ impl SuiClientBuilder {
     /// Set the WebSocket ping interval
     pub fn ws_ping_interval(mut self, duration: Duration) -> Self {
         self.ws_ping_interval = Some(duration);
+        self
+    }
+
+    /// Set the basic auth credentials for the HTTP client
+    pub fn basic_auth(mut self, username: impl AsRef<str>, password: impl AsRef<str>) -> Self {
+        self.basic_auth = Some((username.as_ref().to_string(), password.as_ref().to_string()));
         self
     }
 
@@ -207,6 +217,16 @@ impl SuiClientBuilder {
         );
         headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("rust"));
 
+        if let Some((username, password)) = self.basic_auth {
+            let auth = base64::engine::general_purpose::STANDARD
+                .encode(format!("{}:{}", username, password));
+            headers.insert(
+                "authorization",
+                // reqwest::header::AUTHORIZATION,
+                HeaderValue::from_str(&format!("Basic {}", auth)).unwrap(),
+            );
+        }
+
         let ws = if let Some(url) = self.ws_url {
             let mut builder = WsClientBuilder::default()
                 .max_request_body_size(2 << 30)
@@ -218,7 +238,7 @@ impl SuiClientBuilder {
                 builder = builder.ping_interval(duration)
             }
 
-            Some(builder.build(url).await?)
+            builder.build(url).await.ok()
         } else {
             None
         };
@@ -340,8 +360,10 @@ impl SuiClientBuilder {
         let rpc_methods = Self::parse_methods(&rpc_spec)?;
 
         let subscriptions = if let Some(ws) = ws {
-            let rpc_spec: Value = ws.request("rpc.discover", rpc_params![]).await?;
-            Self::parse_methods(&rpc_spec)?
+            match ws.request("rpc.discover", rpc_params![]).await {
+                Ok(rpc_spec) => Self::parse_methods(&rpc_spec)?,
+                Err(_) => Vec::new(),
+            }
         } else {
             Vec::new()
         };

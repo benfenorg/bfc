@@ -1,15 +1,15 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
-
-import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
-import { useMutation } from '@tanstack/react-query';
 
 import type {
 	StandardConnectInput,
 	StandardConnectOutput,
 	WalletAccount,
 	WalletWithRequiredFeatures,
-} from '../../../wallet-standard/index.js';
+} from '@mysten/wallet-standard';
+import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+
 import { walletMutationKeys } from '../../constants/walletMutationKeys.js';
 import { useWalletStore } from './useWalletStore.js';
 
@@ -50,14 +50,19 @@ export function useConnectWallet({
 				setConnectionStatus('connecting');
 
 				const connectResult = await wallet.features['standard:connect'].connect(connectArgs);
-				const connectedBenfenAccounts = connectResult.accounts.filter((account) =>
-					account.chains.some((chain) => chain.split(':')[0] === 'bfc'),
+				const connectedSuiAccounts = connectResult.accounts.filter((account) =>
+					account.chains.some((chain) => chain.split(':')[0] === 'sui'),
 				);
-				const selectedAccount = getSelectedAccount(connectedBenfenAccounts, accountAddress);
+				const selectedAccount = getSelectedAccount(connectedSuiAccounts, accountAddress);
 
-				setWalletConnected(wallet, connectedBenfenAccounts, selectedAccount);
+				setWalletConnected(
+					wallet,
+					connectedSuiAccounts,
+					selectedAccount,
+					connectResult.supportedIntents,
+				);
 
-				return { accounts: connectedBenfenAccounts };
+				return { accounts: connectedSuiAccounts };
 			} catch (error) {
 				setConnectionStatus('disconnected');
 				throw error;

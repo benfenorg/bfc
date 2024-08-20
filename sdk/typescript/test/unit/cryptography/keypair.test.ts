@@ -1,10 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { toB64 } from '@mysten/bcs';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { bcs, toB64 } from '../../../src/bcs/index.js';
-import { IntentScope } from '../../../src/cryptography/intent';
+import { bcs } from '../../../src/bcs/index.js';
 import { PublicKey } from '../../../src/cryptography/publickey';
 import { Ed25519Keypair, Ed25519PublicKey } from '../../../src/keypairs/ed25519';
 import { Secp256k1Keypair } from '../../../src/keypairs/secp256k1';
@@ -44,11 +44,11 @@ describe('Keypair', () => {
 
 	it('`signWithIntent()` should return the correct signature', async () => {
 		const data = new Uint8Array([0, 0, 0, 5, 72, 101, 108, 108, 111]);
-		const bytes = bcs.ser(['vector', 'u8'], data).toBytes();
+		const bytes = bcs.vector(bcs.U8).serialize(data).toBytes();
 
-		const sig1 = await k1.signWithIntent(bytes, IntentScope.PersonalMessage);
-		const sig2 = await k2.signWithIntent(data, IntentScope.TransactionData);
-		const sig3 = await k3.signWithIntent(bytes, IntentScope.PersonalMessage);
+		const sig1 = await k1.signWithIntent(bytes, 'PersonalMessage');
+		const sig2 = await k2.signWithIntent(data, 'TransactionData');
+		const sig3 = await k3.signWithIntent(bytes, 'PersonalMessage');
 
 		expect(sig1.bytes).toEqual(toB64(bytes));
 		expect(sig1.bytes).toEqual('CQAAAAVIZWxsbw==');
@@ -69,12 +69,12 @@ describe('Keypair', () => {
 		);
 	});
 
-	it('`signTransactionBlock()` should correctly sign a transaction block', async () => {
+	it('`signTransaction()` should correctly sign a transaction block', async () => {
 		const data = new Uint8Array([0, 0, 0, 5, 72, 101, 108, 108, 111]);
 
-		const sig1 = await k1.signTransactionBlock(data);
-		const sig2 = await k2.signTransactionBlock(data);
-		const sig3 = await k3.signTransactionBlock(data);
+		const sig1 = await k1.signTransaction(data);
+		const sig2 = await k2.signTransaction(data);
+		const sig3 = await k3.signTransaction(data);
 
 		expect(sig1.bytes).toEqual(toB64(data));
 		expect(sig1.bytes).toEqual('AAAABUhlbGxv');
@@ -102,40 +102,38 @@ describe('Keypair', () => {
 		const sig2 = await k2.signPersonalMessage(data);
 		const sig3 = await k3.signPersonalMessage(data);
 
-		const bytes = bcs.ser(['vector', 'u8'], data).toBytes();
-
-		expect(sig1.bytes).toEqual(toB64(bytes));
-		expect(sig1.bytes).toEqual('CQAAAAVIZWxsbw==');
+		expect(sig1.bytes).toEqual(toB64(data));
+		expect(sig1.bytes).toEqual('AAAABUhlbGxv');
 		expect(sig1.signature).toEqual(
 			'ADXvYCSZk+ZtVL6VfB4+5zson++q0uWYINW4u1QKbbPisLUnNgYPFieiwXxp2SroKzqrULJOXdkPiDESw+IWJgVa4iC0svZel3wS7eYVef9RcLbCLABhaMN7XnxhrwGAgw==',
 		);
 
-		expect(sig2.bytes).toEqual(toB64(bytes));
-		expect(sig2.bytes).toEqual('CQAAAAVIZWxsbw==');
+		expect(sig2.bytes).toEqual(toB64(data));
+		expect(sig2.bytes).toEqual('AAAABUhlbGxv');
 		expect(sig2.signature).toEqual(
 			'AViWuVdzTX9lJ2DBIPd4YR2bqTHC07AC9NZ1vbA1k/YeeSCuH6Kd1g3izZB332JgLP7GxjppPmWk4GwNlvbH0vICHRUjB8a3Kw7QQYsOcM2A5/UpW42G9XItP1IT+9I5TzY=',
 		);
 
-		expect(sig3.bytes).toEqual(toB64(bytes));
-		expect(sig3.bytes).toEqual('CQAAAAVIZWxsbw==');
+		expect(sig3.bytes).toEqual(toB64(data));
+		expect(sig3.bytes).toEqual('AAAABUhlbGxv');
 		expect(sig3.signature).toEqual(
 			'Apd48/4qVHSja5u2i7ZxobPL6iTLulNIuCxbd5GhfWVvcd69k9BtIqpFGMYXYyn7zapyvnJbtUZsF2ILc7Rp/X0CJzIrOokaCigNa8H7LLsj0o9UkG/WQH9fdB9t71diYJo=',
 		);
 	});
 
-	it('`toHexAddress()` should return a valid benfen address', async () => {
-		expect(k1.toHexAddress()).toEqual(pk1.toHexAddress());
-		expect(k1.toHexAddress()).toEqual(
+	it('`toSuiAddress()` should return a valid sui address', async () => {
+		expect(k1.toSuiAddress()).toEqual(pk1.toSuiAddress());
+		expect(k1.toSuiAddress()).toEqual(
 			'0xafedf3bc60bd296aa6830d7c48ca44e0f7a32478ae4bd7b9a6ac1dc81ff7b29b',
 		);
 
-		expect(k2.toHexAddress()).toEqual(pk2.toHexAddress());
-		expect(k2.toHexAddress()).toEqual(
+		expect(k2.toSuiAddress()).toEqual(pk2.toSuiAddress());
+		expect(k2.toSuiAddress()).toEqual(
 			'0x7e4f9a35bf3b5383802d990956d6f3c93e6184ebbbcf0820c124ab3a59ef77ac',
 		);
 
-		expect(k3.toHexAddress()).toEqual(pk3.toHexAddress());
-		expect(k3.toHexAddress()).toEqual(
+		expect(k3.toSuiAddress()).toEqual(pk3.toSuiAddress());
+		expect(k3.toSuiAddress()).toEqual(
 			'0x318f591092f10b67a81963954fb9539ea3919444417726be4e1b95ce44fe2fc0',
 		);
 	});

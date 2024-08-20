@@ -8,9 +8,12 @@ use std::str::FromStr;
 use axum::body::Full;
 use axum::http::{Response, StatusCode};
 //use axum::response::IntoResponse;
+
+use axum::body::Body;
 use hyper::header::HeaderName;
 use hyper::header::HeaderValue;
 use hyper::{Body, header, Method};
+use hyper::Method;
 use hyper::Request;
 use jsonrpsee::RpcModule;
 use bytes::Bytes;
@@ -29,6 +32,8 @@ use tracing::error;
 pub use balance_changes::*;
 pub use object_changes::*;
 pub use sui_json_rpc_api::{
+pub use sui_config::node::ServerType;
+use sui_json_rpc_api::{
     CLIENT_SDK_TYPE_HEADER, CLIENT_SDK_VERSION_HEADER, CLIENT_TARGET_API_VERSION_HEADER,
 };
 use sui_open_rpc::{Module, Project};
@@ -40,6 +45,7 @@ use crate::routing_layer::RpcRouter;
 pub mod authority_state;
 pub mod axum_router;
 mod balance_changes;
+pub mod bridge_api;
 pub mod coin_api;
 pub mod error;
 pub mod governance_api;
@@ -89,11 +95,6 @@ pub fn sui_rpc_doc(version: &str) -> Project {
         "Apache-2.0",
         "https://www.benfen.org/",
     )
-}
-
-pub enum ServerType {
-    WebSocket,
-    Http,
 }
 
 impl JsonRpcServerBuilder {
@@ -147,7 +148,7 @@ impl JsonRpcServerBuilder {
 
     fn trace_layer() -> TraceLayer<
         tower_http::classify::SharedClassifier<tower_http::classify::ServerErrorsAsFailures>,
-        impl tower_http::trace::MakeSpan<hyper::Body> + Clone,
+        impl tower_http::trace::MakeSpan<Body> + Clone,
         (),
         (),
         (),
@@ -171,7 +172,7 @@ impl JsonRpcServerBuilder {
             .on_failure(())
     }
 
-    pub async fn to_router(&self, server_type: Option<ServerType>) -> Result<axum::Router, Error> {
+    pub async fn to_router(&self, server_type: ServerType) -> Result<axum::Router, Error> {
         let routing = self.rpc_doc.method_routing.clone();
 
         let disable_routing = env::var("DISABLE_BACKWARD_COMPATIBILITY")
@@ -236,7 +237,7 @@ impl JsonRpcServerBuilder {
         let mut router = axum::Router::new();
 
         match server_type {
-            Some(ServerType::WebSocket) => {
+            ServerType::WebSocket => {
                 router = router
                     .route(
                         "/",
@@ -247,7 +248,7 @@ impl JsonRpcServerBuilder {
                         axum::routing::get(crate::axum_router::ws::ws_json_rpc_upgrade),
                     );
             }
-            Some(ServerType::Http) => {
+            ServerType::Http => {
                 router = router
                     .route(
                         "/",
@@ -262,7 +263,7 @@ impl JsonRpcServerBuilder {
                         axum::routing::post(crate::axum_router::json_rpc_handler),
                     );
             }
-            None => {
+            ServerType::Both => {
                 router = router
                     .route(
                         "/",
@@ -299,18 +300,23 @@ impl JsonRpcServerBuilder {
         self,
         listen_address: SocketAddr,
         _custom_runtime: Option<Handle>,
-        server_type: Option<ServerType>,
+        server_type: ServerType,
         cancel: Option<CancellationToken>,
     ) -> Result<ServerHandle, Error> {
         let app = self.to_router(server_type).await?;
 
-        let server = axum::Server::bind(&listen_address)
-            .serve(app.into_make_service_with_connect_info::<SocketAddr>());
-
-        let addr = server.local_addr();
+        let listener = tokio::net::TcpListener::bind(&listen_address)
+            .await
+            .unwrap();
+        let addr = listener.local_addr().unwrap();
 
         let handle = tokio::spawn(async move {
-            server.await.unwrap();
+            axum::serve(
+                listener,
+                app.into_make_service_with_connect_info::<SocketAddr>(),
+            )
+            .await
+            .unwrap();
             if let Some(cancel) = cancel {
                 // Signal that the server is shutting down, so other tasks can clean-up.
                 cancel.cancel();

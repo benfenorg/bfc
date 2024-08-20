@@ -1,11 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { resolve } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { BenfenObjectData } from '../../src/client';
-import { bfc2HexAddress } from '../../src/utils/index.js';
-import { publishPackage, setup, TestToolbox } from './utils/setup';
+import { SuiObjectData } from '../../src/client';
+import { setup, TestToolbox } from './utils/setup';
 
 describe('Test Object Display Standard', () => {
 	let toolbox: TestToolbox;
@@ -13,8 +13,7 @@ describe('Test Object Display Standard', () => {
 
 	beforeAll(async () => {
 		toolbox = await setup();
-		const packagePath = __dirname + '/./data/display_test';
-		({ packageId } = await publishPackage(packagePath, toolbox));
+		packageId = await toolbox.getPackage(resolve(__dirname, './data/display_test'));
 	});
 
 	it('Test getting Display fields with error object', async () => {
@@ -25,7 +24,7 @@ describe('Test Object Display Standard', () => {
 				filter: { StructType: `${packageId}::boars::Boar` },
 			})
 		).data;
-		const data = resp[0].data as BenfenObjectData;
+		const data = resp[0].data as SuiObjectData;
 		const boarId = data.objectId;
 		const display = (
 			await toolbox.client.getObject({
@@ -36,11 +35,9 @@ describe('Test Object Display Standard', () => {
 		const expectedData = {
 			data: {
 				age: '10',
-				buyer: bfc2HexAddress(toolbox.address()),
+				buyer: toolbox.address(),
 				creator: 'Chris',
-				description: `Unique Boar from the Boars collection with First Boar and ${bfc2HexAddress(
-					boarId,
-				)}`,
+				description: `Unique Boar from the Boars collection with First Boar and ${boarId}`,
 				img_url: 'https://get-a-boar.com/first.png',
 				name: 'First Boar',
 				price: '',

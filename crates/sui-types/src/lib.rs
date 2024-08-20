@@ -35,8 +35,10 @@ pub mod clock;
 pub mod coin;
 pub mod collection_types;
 pub mod committee;
+pub mod config;
 pub mod crypto;
-pub mod deny_list;
+pub mod deny_list_v1;
+pub mod deny_list_v2;
 pub mod digests;
 pub mod display;
 pub mod dynamic_field;
@@ -46,7 +48,6 @@ pub mod event;
 pub mod executable_transaction;
 pub mod execution;
 pub mod execution_config_utils;
-pub mod execution_mode;
 pub mod execution_status;
 pub mod full_checkpoint_content;
 pub mod gas;
@@ -59,6 +60,7 @@ pub mod dao_manager;
 pub mod id;
 pub mod in_memory_storage;
 pub mod inner_temporary_store;
+pub mod layout_resolver;
 pub mod message_envelope;
 pub mod messages_checkpoint;
 pub mod messages_consensus;
@@ -70,18 +72,20 @@ pub mod move_package;
 pub mod multisig;
 pub mod multisig_legacy;
 pub mod object;
+pub mod passkey_authenticator;
 pub mod programmable_transaction_builder;
 pub mod quorum_driver_types;
 pub mod randomness_state;
 pub mod signature;
 pub mod signature_verification;
 pub mod storage;
+pub mod sui_sdk2_conversions;
 pub mod sui_serde;
 pub mod sui_system_state;
+pub mod supported_protocol_versions;
 pub mod traffic_control;
 pub mod transaction;
 pub mod transfer;
-pub mod type_resolver;
 pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
@@ -298,6 +302,8 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
 
             S::Struct(idx) => [RESOLVED_SUI_ID, RESOLVED_ASCII_STR, RESOLVED_UTF8_STR]
                 .contains(&resolve_struct(view, *idx)),
+        S::Datatype(idx) => [RESOLVED_SUI_ID, RESOLVED_ASCII_STR, RESOLVED_UTF8_STR]
+            .contains(&resolve_struct(view, *idx)),
 
             S::StructInstantiation(s) => {
                 let (idx, targs) = &**s;
@@ -307,6 +313,14 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
                     && targs.len() == 1
                     && is_primitive(view, function_type_args, &targs[0])
             }
+        S::DatatypeInstantiation(inst) => {
+            let (idx, targs) = &**inst;
+            let resolved_struct = resolve_struct(view, *idx);
+            // option is a primitive
+            resolved_struct == RESOLVED_STD_OPTION
+                && targs.len() == 1
+                && is_primitive(view, function_type_args, &targs[0])
+        }
 
             S::Vector(inner) => is_primitive(view, function_type_args, inner),
             S::Reference(_) | S::MutableReference(_) => false,
@@ -370,6 +384,37 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
             }
         }
     }
+fn is_object_struct(
+    view: &CompiledModule,
+    function_type_args: &[AbilitySet],
+    s: &SignatureToken,
+) -> Result<bool, String> {
+    use SignatureToken as S;
+    match s {
+        S::Bool
+        | S::U8
+        | S::U16
+        | S::U32
+        | S::U64
+        | S::U128
+        | S::U256
+        | S::Address
+        | S::Signer
+        | S::Vector(_)
+        | S::Reference(_)
+        | S::MutableReference(_) => Ok(false),
+        S::TypeParameter(idx) => Ok(function_type_args
+            .get(*idx as usize)
+            .map(|abs| abs.has_key())
+            .unwrap_or(false)),
+        S::Datatype(_) | S::DatatypeInstantiation(_) => {
+            let abilities = view
+                .abilities(s, function_type_args)
+                .map_err(|vm_err| vm_err.to_string())?;
+            Ok(abilities.has_key())
+        }
+    }
+}
 
     #[cfg(test)]
     mod tests {

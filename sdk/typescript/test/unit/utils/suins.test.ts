@@ -1,92 +1,98 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, test } from 'vitest';
 
-import { isValidBenfenNSName, normalizeBenfenNSName } from '../../../src/utils';
+import { isValidSuiNSName, normalizeSuiNSName } from '../../../src/utils';
 
-describe('isValidBenfenNSName', () => {
-	test('valid BenfenNS names', () => {
-		expect(isValidBenfenNSName('example.benfen')).toBe(true);
-		expect(isValidBenfenNSName('EXAMPLE.benfen')).toBe(true);
-		expect(isValidBenfenNSName('@example')).toBe(true);
-		expect(isValidBenfenNSName('1.example.benfen')).toBe(true);
-		expect(isValidBenfenNSName('1@example')).toBe(true);
-		expect(isValidBenfenNSName('a.b.c.example.benfen')).toBe(true);
-		expect(isValidBenfenNSName('A.B.c.123@Example')).toBe(true);
-		expect(isValidBenfenNSName('1-a@1-b')).toBe(true);
-		expect(isValidBenfenNSName('1-a.1-b.benfen')).toBe(true);
-		expect(isValidBenfenNSName('-@test')).toBe(false);
-		expect(isValidBenfenNSName('-1@test')).toBe(false);
-		expect(isValidBenfenNSName('test@-')).toBe(false);
-		expect(isValidBenfenNSName('test@-1')).toBe(false);
-		expect(isValidBenfenNSName('test@-a')).toBe(false);
-		expect(isValidBenfenNSName('test.benfen2')).toBe(false);
-		expect(isValidBenfenNSName('.benfen2')).toBe(false);
-		expect(isValidBenfenNSName('test@')).toBe(false);
-		expect(isValidBenfenNSName('@@')).toBe(false);
-		expect(isValidBenfenNSName('@@test')).toBe(false);
-		expect(isValidBenfenNSName('test@test.test')).toBe(false);
-		expect(isValidBenfenNSName('@test.test')).toBe(false);
-		expect(isValidBenfenNSName('#@test')).toBe(false);
-		expect(isValidBenfenNSName('test@#')).toBe(false);
-		expect(isValidBenfenNSName('test.#.benfen')).toBe(false);
-		expect(isValidBenfenNSName('#.benfen')).toBe(false);
-		expect(isValidBenfenNSName('@.test.sue')).toBe(false);
+describe('isValidSuiNSName', () => {
+	test('valid SuiNS names', () => {
+		expect(isValidSuiNSName('example.sui')).toBe(true);
+		expect(isValidSuiNSName('EXAMPLE.sui')).toBe(true);
+		expect(isValidSuiNSName('@example')).toBe(true);
+		expect(isValidSuiNSName('1.example.sui')).toBe(true);
+		expect(isValidSuiNSName('1@example')).toBe(true);
+		expect(isValidSuiNSName('a.b.c.example.sui')).toBe(true);
+		expect(isValidSuiNSName('A.B.c.123@Example')).toBe(true);
+		expect(isValidSuiNSName('1-a@1-b')).toBe(true);
+		expect(isValidSuiNSName('1-a.1-b.sui')).toBe(true);
+		expect(isValidSuiNSName('-@test')).toBe(false);
+		expect(isValidSuiNSName('-1@test')).toBe(false);
+		expect(isValidSuiNSName('test@-')).toBe(false);
+		expect(isValidSuiNSName('test@-1')).toBe(false);
+		expect(isValidSuiNSName('test@-a')).toBe(false);
+		expect(isValidSuiNSName('test.sui2')).toBe(false);
+		expect(isValidSuiNSName('.sui2')).toBe(false);
+		expect(isValidSuiNSName('test@')).toBe(false);
+		expect(isValidSuiNSName('@@')).toBe(false);
+		expect(isValidSuiNSName('@@test')).toBe(false);
+		expect(isValidSuiNSName('test@test.test')).toBe(false);
+		expect(isValidSuiNSName('@test.test')).toBe(false);
+		expect(isValidSuiNSName('#@test')).toBe(false);
+		expect(isValidSuiNSName('test@#')).toBe(false);
+		expect(isValidSuiNSName('test.#.sui')).toBe(false);
+		expect(isValidSuiNSName('#.sui')).toBe(false);
+		expect(isValidSuiNSName('@.test.sue')).toBe(false);
+
+		expect(isValidSuiNSName('hello-.sui')).toBe(false);
+		expect(isValidSuiNSName('hello--.sui')).toBe(false);
+		expect(isValidSuiNSName('hello.-sui')).toBe(false);
+		expect(isValidSuiNSName('hello.--sui')).toBe(false);
+		expect(isValidSuiNSName('hello.sui-')).toBe(false);
+		expect(isValidSuiNSName('hello.sui--')).toBe(false);
+		expect(isValidSuiNSName('hello-@sui')).toBe(false);
+		expect(isValidSuiNSName('hello--@sui')).toBe(false);
+		expect(isValidSuiNSName('hello@-sui')).toBe(false);
+		expect(isValidSuiNSName('hello@--sui')).toBe(false);
+		expect(isValidSuiNSName('hello@sui-')).toBe(false);
+		expect(isValidSuiNSName('hello@sui--')).toBe(false);
+		expect(isValidSuiNSName('hello--world@sui')).toBe(false);
 	});
 });
 
-describe('normalizeBenfenNSName', () => {
-	test('normalize BenfenNS names', () => {
-		expect(normalizeBenfenNSName('example.benfen')).toMatch('@example');
-		expect(normalizeBenfenNSName('EXAMPLE.benfen')).toMatch('@example');
-		expect(normalizeBenfenNSName('@example')).toMatch('@example');
-		expect(normalizeBenfenNSName('1.example.benfen')).toMatch('1@example');
-		expect(normalizeBenfenNSName('1@example')).toMatch('1@example');
-		expect(normalizeBenfenNSName('a.b.c.example.benfen')).toMatch('a.b.c@example');
-		expect(normalizeBenfenNSName('A.B.c.123@Example')).toMatch('a.b.c.123@example');
-		expect(normalizeBenfenNSName('1-a@1-b')).toMatch('1-a@1-b');
-		expect(normalizeBenfenNSName('1-a.1-b.benfen')).toMatch('1-a@1-b');
+describe('normalizeSuiNSName', () => {
+	test('normalize SuiNS names', () => {
+		expect(normalizeSuiNSName('example.sui')).toMatch('@example');
+		expect(normalizeSuiNSName('EXAMPLE.sui')).toMatch('@example');
+		expect(normalizeSuiNSName('@example')).toMatch('@example');
+		expect(normalizeSuiNSName('1.example.sui')).toMatch('1@example');
+		expect(normalizeSuiNSName('1@example')).toMatch('1@example');
+		expect(normalizeSuiNSName('a.b.c.example.sui')).toMatch('a.b.c@example');
+		expect(normalizeSuiNSName('A.B.c.123@Example')).toMatch('a.b.c.123@example');
+		expect(normalizeSuiNSName('1-a@1-b')).toMatch('1-a@1-b');
+		expect(normalizeSuiNSName('1-a.1-b.sui')).toMatch('1-a@1-b');
 
-		expect(normalizeBenfenNSName('example.benfen', 'dot')).toMatch('example.benfen');
-		expect(normalizeBenfenNSName('EXAMPLE.benfen', 'dot')).toMatch('example.benfen');
-		expect(normalizeBenfenNSName('@example', 'dot')).toMatch('example.benfen');
-		expect(normalizeBenfenNSName('1.example.benfen', 'dot')).toMatch('1.example.benfen');
-		expect(normalizeBenfenNSName('1@example', 'dot')).toMatch('1.example.benfen');
-		expect(normalizeBenfenNSName('a.b.c.example.benfen', 'dot')).toMatch('a.b.c.example.benfen');
-		expect(normalizeBenfenNSName('A.B.c.123@Example', 'dot')).toMatch('a.b.c.123.example.benfen');
-		expect(normalizeBenfenNSName('1-a@1-b', 'dot')).toMatch('1-a.1-b.benfen');
-		expect(normalizeBenfenNSName('1-a.1-b.benfen', 'dot')).toMatch('1-a.1-b.benfen');
+		expect(normalizeSuiNSName('example.sui', 'dot')).toMatch('example.sui');
+		expect(normalizeSuiNSName('EXAMPLE.sui', 'dot')).toMatch('example.sui');
+		expect(normalizeSuiNSName('@example', 'dot')).toMatch('example.sui');
+		expect(normalizeSuiNSName('1.example.sui', 'dot')).toMatch('1.example.sui');
+		expect(normalizeSuiNSName('1@example', 'dot')).toMatch('1.example.sui');
+		expect(normalizeSuiNSName('a.b.c.example.sui', 'dot')).toMatch('a.b.c.example.sui');
+		expect(normalizeSuiNSName('A.B.c.123@Example', 'dot')).toMatch('a.b.c.123.example.sui');
+		expect(normalizeSuiNSName('1-a@1-b', 'dot')).toMatch('1-a.1-b.sui');
+		expect(normalizeSuiNSName('1-a.1-b.sui', 'dot')).toMatch('1-a.1-b.sui');
 
-		expect(() => normalizeBenfenNSName('-@test')).toThrowError('Invalid BenfenNS name -@test');
-		expect(normalizeBenfenNSName('1-a@1-b')).toMatchInlineSnapshot('"1-a@1-b"');
-		expect(normalizeBenfenNSName('1-a.1-b.benfen')).toMatchInlineSnapshot('"1-a@1-b"');
-		expect(() => normalizeBenfenNSName('-@test')).toThrowError('Invalid BenfenNS name -@test');
-		expect(() => normalizeBenfenNSName('-1@test')).toThrowError('Invalid BenfenNS name -1@test');
-		expect(() => normalizeBenfenNSName('test@-')).toThrowError('Invalid BenfenNS name test@-');
-		expect(() => normalizeBenfenNSName('test@-1')).toThrowError('Invalid BenfenNS name test@-1');
-		expect(() => normalizeBenfenNSName('test@-a')).toThrowError('Invalid BenfenNS name test@-a');
-		expect(() => normalizeBenfenNSName('test.benfen2')).toThrowError(
-			'Invalid BenfenNS name test.benfen2',
+		expect(() => normalizeSuiNSName('-@test')).toThrowError('Invalid SuiNS name -@test');
+		expect(normalizeSuiNSName('1-a@1-b')).toMatchInlineSnapshot('"1-a@1-b"');
+		expect(normalizeSuiNSName('1-a.1-b.sui')).toMatchInlineSnapshot('"1-a@1-b"');
+		expect(() => normalizeSuiNSName('-@test')).toThrowError('Invalid SuiNS name -@test');
+		expect(() => normalizeSuiNSName('-1@test')).toThrowError('Invalid SuiNS name -1@test');
+		expect(() => normalizeSuiNSName('test@-')).toThrowError('Invalid SuiNS name test@-');
+		expect(() => normalizeSuiNSName('test@-1')).toThrowError('Invalid SuiNS name test@-1');
+		expect(() => normalizeSuiNSName('test@-a')).toThrowError('Invalid SuiNS name test@-a');
+		expect(() => normalizeSuiNSName('test.sui2')).toThrowError('Invalid SuiNS name test.sui2');
+		expect(() => normalizeSuiNSName('.sui2')).toThrowError('Invalid SuiNS name .sui2');
+		expect(() => normalizeSuiNSName('test@')).toThrowError('Invalid SuiNS name test@');
+		expect(() => normalizeSuiNSName('@@')).toThrowError('Invalid SuiNS name @@');
+		expect(() => normalizeSuiNSName('@@test')).toThrowError('Invalid SuiNS name @@test');
+		expect(() => normalizeSuiNSName('test@test.test')).toThrowError(
+			'Invalid SuiNS name test@test.test',
 		);
-		expect(() => normalizeBenfenNSName('.benfen2')).toThrowError('Invalid BenfenNS name .benfen2');
-		expect(() => normalizeBenfenNSName('test@')).toThrowError('Invalid BenfenNS name test@');
-		expect(() => normalizeBenfenNSName('@@')).toThrowError('Invalid BenfenNS name @@');
-		expect(() => normalizeBenfenNSName('@@test')).toThrowError('Invalid BenfenNS name @@test');
-		expect(() => normalizeBenfenNSName('test@test.test')).toThrowError(
-			'Invalid BenfenNS name test@test.test',
-		);
-		expect(() => normalizeBenfenNSName('@test.test')).toThrowError(
-			'Invalid BenfenNS name @test.test',
-		);
-		expect(() => normalizeBenfenNSName('#@test')).toThrowError('Invalid BenfenNS name #@test');
-		expect(() => normalizeBenfenNSName('test@#')).toThrowError('Invalid BenfenNS name test@#');
-		expect(() => normalizeBenfenNSName('test.#.benfen')).toThrowError(
-			'Invalid BenfenNS name test.#.benfen',
-		);
-		expect(() => normalizeBenfenNSName('#.benfen')).toThrowError('Invalid BenfenNS name #.benfen');
-		expect(() => normalizeBenfenNSName('@.test.sue')).toThrowError(
-			'Invalid BenfenNS name @.test.sue',
-		);
+		expect(() => normalizeSuiNSName('@test.test')).toThrowError('Invalid SuiNS name @test.test');
+		expect(() => normalizeSuiNSName('#@test')).toThrowError('Invalid SuiNS name #@test');
+		expect(() => normalizeSuiNSName('test@#')).toThrowError('Invalid SuiNS name test@#');
+		expect(() => normalizeSuiNSName('test.#.sui')).toThrowError('Invalid SuiNS name test.#.sui');
+		expect(() => normalizeSuiNSName('#.sui')).toThrowError('Invalid SuiNS name #.sui');
+		expect(() => normalizeSuiNSName('@.test.sue')).toThrowError('Invalid SuiNS name @.test.sue');
 	});
 });

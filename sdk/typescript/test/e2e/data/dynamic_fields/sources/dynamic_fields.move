@@ -1,12 +1,10 @@
-// Copyright (c) Benfen.
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 module dynamic_fields::dynamic_fields_test {
-    use bfc::dynamic_field as dfield;
-    use bfc::dynamic_object_field as dof;
-    use bfc::object::{Self, UID};
-    use bfc::tx_context::{Self, TxContext};
-    use bfc::transfer;
+    use sui::dynamic_field as dfield;
+    use sui::dynamic_object_field as dof;
+    use sui::transfer;
 
     public struct Test has key {
         id: UID,

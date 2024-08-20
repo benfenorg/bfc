@@ -7,7 +7,6 @@ import { sha256 } from '@noble/hashes/sha256';
 import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
-import type { SerializedSignature } from '../../cryptography/signature.js';
 import { parseSerializedSignature } from '../../cryptography/signature.js';
 import { fromB64 } from '../../utils/index.js';
 
@@ -66,7 +65,7 @@ export class Secp256r1PublicKey extends PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided message
 	 */
-	async verify(message: Uint8Array, signature: Uint8Array | SerializedSignature): Promise<boolean> {
+	async verify(message: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
 		let bytes;
 		if (typeof signature === 'string') {
 			const parsed = parseSerializedSignature(signature);

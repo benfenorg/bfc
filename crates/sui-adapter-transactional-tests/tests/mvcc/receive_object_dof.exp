@@ -3,18 +3,21 @@ processed 24 tasks
 init:
 A: object(0,0)
 
-task 1 'publish'. lines 6-58:
+task 1, lines 6-58:
+//# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 10852800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 10533600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 2 'run'. lines 60-60:
+task 2, line 60:
+//# run tto::M1::start --sender A
 created: object(2,0), object(2,1), object(2,2), object(2,3)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 7592400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7273200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
-task 3 'view-object'. lines 62-62:
-Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+task 3, line 62:
+//# view-object 2,0
+Owner: Object ID: ( fake(2,1) )
 Version: 2
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -30,8 +33,9 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
     },
 }
 
-task 4 'view-object'. lines 64-64:
-Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
+task 4, line 64:
+//# view-object 2,3
+Owner: Object ID: ( fake(2,0) )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -42,8 +46,9 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 5 'view-object'. lines 66-66:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
+task 5, line 66:
+//# view-object 2,1
+Owner: Account Address ( fake(2,2) )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -54,8 +59,9 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 6 'view-object'. lines 68-68:
-Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
+task 6, line 68:
+//# view-object 2,2
+Owner: Account Address ( A )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -66,11 +72,15 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 7 'run'. lines 70-70:
-Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+task 7, line 70:
+//# run tto::M1::receive --args object(2,2) receiving(2,1) --sender A
+created: object(7,0)
+mutated: object(0,0), object(2,1), object(2,2)
+gas summary: computation_cost: 1000000, storage_cost: 5996400,  storage_rebate: 3506184, non_refundable_storage_fee: 35416
 
-task 8 'view-object'. lines 72-74:
-Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+task 8, lines 72-74:
+//# view-object 2,0
+Owner: Object ID: ( fake(2,1) )
 Version: 2
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -86,8 +96,9 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
     },
 }
 
-task 9 'view-object'. lines 75-75:
-Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
+task 9, line 75:
+//# view-object 2,3
+Owner: Object ID: ( fake(2,0) )
 Version: 2
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -98,9 +109,10 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 10 'view-object'. lines 77-77:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
-Version: 2
+task 10, line 77:
+//# view-object 2,1
+Owner: Object ID: ( fake(7,0) )
+Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
         id: sui::object::ID {
@@ -110,9 +122,10 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 11 'view-object'. lines 79-79:
-Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
-Version: 2
+task 11, line 79:
+//# view-object 2,2
+Owner: Account Address ( A )
+Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
         id: sui::object::ID {
@@ -122,11 +135,15 @@ Contents: tto::M1::A {
     value: 0u64,
 }
 
-task 12 'programmable'. lines 81-82:
-Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+task 12, lines 81-82:
+//# programmable --sender A --inputs object(2,2) 1 2 3
+//> tto::M1::set(Input(0), Input(1), Input(2), Input(3))
+mutated: object(0,0), object(2,1), object(2,2), object(2,3)
+gas summary: computation_cost: 1000000, storage_cost: 4818400,  storage_rebate: 4770216, non_refundable_storage_fee: 48184
 
-task 13 'view-object'. lines 84-86:
-Owner: Object ID: ( BFC524d6d8bcc996f44069c96b178de951a7101e0a63864be37aef12fdbe0bfe41d1799 )
+task 13, lines 84-86:
+//# view-object 2,0
+Owner: Object ID: ( fake(2,1) )
 Version: 2
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -142,59 +159,86 @@ Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui
     },
 }
 
-task 14 'view-object'. lines 87-87:
-Owner: Object ID: ( BFC9a860864495ee17c01896280573b1dd56c90fcbfc6db11b19dd442f91a0f83c3a4fc )
-Version: 2
+task 14, line 87:
+//# view-object 2,3
+Owner: Object ID: ( fake(2,0) )
+Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(2,3),
         },
     },
-    value: 0u64,
+    value: 3u64,
 }
 
-task 15 'view-object'. lines 89-89:
-Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
-Version: 2
+task 15, line 89:
+//# view-object 2,1
+Owner: Object ID: ( fake(7,0) )
+Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(2,1),
         },
     },
-    value: 0u64,
+    value: 2u64,
 }
 
-task 16 'view-object'. lines 91-91:
-Owner: Account Address ( BFC00ab340fb31f0174cba64ca258e9e2c162d822ec582f65ef6aac52b996b281299a01 )
-Version: 2
+task 16, line 91:
+//# view-object 2,2
+Owner: Account Address ( A )
+Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(2,2),
         },
     },
-    value: 0u64,
+    value: 1u64,
 }
 
-task 17 'programmable'. lines 93-96:
-Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(2,2) is owned by account address object(2,1), but given owner/signer address is @A" }
+task 17, lines 93-96:
+//# programmable --sender A --inputs object(2,2)
+//> tto::M1::remove(Input(0))
+// dev-inspect with 'check' and correct values
+mutated: object(0,0), object(2,2)
+deleted: object(2,0), object(2,3)
+gas summary: computation_cost: 1000000, storage_cost: 2264800,  storage_rebate: 5936436, non_refundable_storage_fee: 59964
 
-task 18 'programmable'. lines 98-99:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 18, lines 98-99:
+//# programmable --sender A --inputs object(2,2)@3 0 0 vector[0] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 2264800,  storage_rebate: 1264032, non_refundable_storage_fee: 12768
 
-task 19 'programmable'. lines 101-102:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 19, lines 101-102:
+//# programmable --sender A --inputs object(2,2)@4 1 2 vector[3] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 2264800,  storage_rebate: 1264032, non_refundable_storage_fee: 12768
 
-task 20 'programmable'. lines 104-107:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 20, lines 104-107:
+//# programmable --sender A --inputs object(2,2)@5 1 2 vector[] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+// dev-inspect with 'check' and _incorrect_ values
+mutated: object(_), object(2,2)
+gas summary: computation_cost: 500000, storage_cost: 2264800,  storage_rebate: 1264032, non_refundable_storage_fee: 12768
 
-task 21 'programmable'. lines 109-110:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 21, lines 109-110:
+//# programmable --sender A --inputs object(2,2)@4 0 0 vector[0] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: tto, name: Identifier("M1") }, function: 4, instruction: 10, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: tto, name: Identifier("M1") }, function: 4, instruction: 10, function_name: Some("check") }, 0) in command 0
 
-task 22 'programmable'. lines 112-113:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 22, lines 112-113:
+//# programmable --sender A --inputs object(2,2)@5 1 2 vector[3] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("dynamic_field") }, function: 11, instruction: 0, function_name: Some("borrow_child_object") }, 1) in command 0
 
-task 23 'programmable'. lines 115-116:
-Error: INVALID TEST. Could not load object argument object(2,2)
+task 23, lines 115-116:
+//# programmable --sender A --inputs object(2,2)@3 1 2 vector[] --dev-inspect
+//> tto::M1::check(Input(0), Input(1), Input(2), Input(3))
+Error: Transaction Effects Status: MoveAbort(MoveLocation { module: ModuleId { address: tto, name: Identifier("M1") }, function: 4, instruction: 10, function_name: Some("check") }, 0) in command 0
+Execution Error: MoveAbort(MoveLocation { module: ModuleId { address: tto, name: Identifier("M1") }, function: 4, instruction: 10, function_name: Some("check") }, 0) in command 0

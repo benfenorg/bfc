@@ -1,12 +1,12 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { getAmount } from '_helpers';
-import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
 import { useMemo } from 'react';
 
 type Props = {
-	txn: BenfenTransactionBlockResponse;
+	txn: SuiTransactionBlockResponse;
 	address: string;
 };
 

@@ -13,9 +13,8 @@ fn test_publish_module_with_custom_max_binary_format_version() {
     let m = basic_test_module();
     let mut b_new = vec![];
     let mut b_old = vec![];
-    m.serialize_for_version(Some(VERSION_MAX), &mut b_new)
-        .unwrap();
-    m.serialize_for_version(Some(VERSION_MAX.checked_sub(1).unwrap()), &mut b_old)
+    m.serialize_with_version(VERSION_MAX, &mut b_new).unwrap();
+    m.serialize_with_version(VERSION_MAX.checked_sub(1).unwrap(), &mut b_old)
         .unwrap();
 
     // Should accept both modules with the default settings
@@ -24,6 +23,7 @@ fn test_publish_module_with_custom_max_binary_format_version() {
         let vm = MoveVM::new(move_stdlib_natives::all_natives(
             AccountAddress::from_hex_literal("0x1").unwrap(),
             move_stdlib_natives::GasParameters::zeros(),
+            /* silent debug */ true,
         ))
         .unwrap();
         let mut sess = vm.new_session(&storage);
@@ -56,6 +56,7 @@ fn test_publish_module_with_custom_max_binary_format_version() {
             move_stdlib_natives::all_natives(
                 AccountAddress::from_hex_literal("0x1").unwrap(),
                 move_stdlib_natives::GasParameters::zeros(),
+                /* silent debug */ true,
             ),
             vm_config,
         )

@@ -1,19 +1,19 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import type { ResolvedNameServiceNames } from '@mysten/sui/client';
 import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
 
-import type { ResolvedNameServiceNames } from '../../client/index.js';
-import { useBenfenClientQuery } from './useBenfenClientQuery.js';
+import { useSuiClientQuery } from './useSuiClientQuery.js';
 
-export function useResolveBenfenNSName(
+export function useResolveSuiNSName(
 	address?: string | null,
 	options?: Omit<
 		UseQueryOptions<ResolvedNameServiceNames, Error, string | null, unknown[]>,
 		'queryFn' | 'queryKey' | 'select'
 	>,
 ): UseQueryResult<string | null, Error> {
-	return useBenfenClientQuery(
+	return useSuiClientQuery(
 		'resolveNameServiceNames',
 		{
 			address: address!,

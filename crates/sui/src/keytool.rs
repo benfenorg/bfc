@@ -33,6 +33,7 @@ use std::fmt::{Debug, Display, Formatter};
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::str::FromStr;
+use std::sync::Arc;
 use sui_keys::key_derive::generate_new_key;
 use sui_keys::keypair_file::{
     read_authority_keypair_from_file, read_keypair_from_file, write_authority_keypair_to_file,
@@ -51,6 +52,7 @@ use sui_types::multisig::{MultiSig, MultiSigPublicKey, ThresholdUnit, WeightUnit
 use sui_types::multisig_legacy::{MultiSigLegacy, MultiSigPublicKeyLegacy};
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_evm_address, sui_address_to_bfc_address};
 use sui_types::signature::{GenericSignature, VerifyParams};
+use sui_types::signature_verification::VerifiedDigestCache;
 use sui_types::transaction::{TransactionData, TransactionDataAPI};
 use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
 use tabled::builder::Builder;
@@ -256,9 +258,9 @@ pub enum KeyToolCommand {
         max_epoch: EpochId,
         #[clap(long, default_value = "devnet")]
         network: String,
-        #[clap(long, default_value = "true")]
+        #[clap(long, default_value = "false")]
         fixed: bool, // if true, use a fixed kp generated from [0; 32] seed.
-        #[clap(long, default_value = "true")]
+        #[clap(long, default_value = "false")]
         test_multisig: bool, // if true, use a multisig address with zklogin and a traditional kp.
         #[clap(long, default_value = "false")]
         sign_with_sk: bool, // if true, execute tx with the traditional sig (in the multisig), otherwise with the zklogin sig.
@@ -278,7 +280,7 @@ pub enum KeyToolCommand {
         ephemeral_key_identifier: SuiAddress,
         #[clap(long, default_value = "devnet")]
         network: String,
-        #[clap(long, default_value = "true")]
+        #[clap(long, default_value = "false")]
         test_multisig: bool,
         #[clap(long, default_value = "false")]
         sign_with_sk: bool,
@@ -341,7 +343,7 @@ pub struct DecodedMultiSigOutput {
     participating_keys_signatures: Vec<DecodedMultiSig>,
     pub_keys: Vec<MultiSigOutput>,
     threshold: usize,
-    transaction_result: String,
+    sig_verify_result: String,
 }
 
 #[derive(Serialize)]
@@ -544,7 +546,7 @@ impl KeyToolCommand {
                     participating_keys_signatures: vec![],
                     pub_keys,
                     threshold,
-                    transaction_result: "".to_string(),
+                    sig_verify_result: "".to_string(),
                 };
 
                 for (sig, i) in sigs.iter().zip(bitmap) {
@@ -568,8 +570,13 @@ impl KeyToolCommand {
                         address,
                         cur_epoch,
                         &VerifyParams::default(),
+                        Arc::new(VerifiedDigestCache::new_empty()),
                     );
-                    output.transaction_result = format!("{:?}", res);
+
+                    match res {
+                        Ok(()) => output.sig_verify_result = "OK".to_string(),
+                        Err(e) => output.sig_verify_result = format!("{:?}", e),
+                    };
                 };
 
                 CommandOutput::DecodeMultiSig(output)
@@ -604,6 +611,7 @@ impl KeyToolCommand {
                             tx_data.sender(),
                             cur_epoch,
                             &VerifyParams::default(),
+                            Arc::new(VerifiedDigestCache::new_empty()),
                         );
                         CommandOutput::DecodeOrVerifyTx(DecodeOrVerifyTxOutput {
                             tx: tx_data,
@@ -702,6 +710,7 @@ impl KeyToolCommand {
                             &input_string,
                             key_scheme,
                             derivation_path,
+                            alias,
                         )?;
                         let skp = keystore.get_key(&sui_address)?;
                         let key = Key::from(skp);
@@ -1142,6 +1151,49 @@ impl KeyToolCommand {
                     "$YOUR_AUTH_CODE",
                     "39b955a118f2f21110939bf3dff1de90",
                 )?;
+                let url_9 = get_oidc_url(
+                    OIDCProvider::AwsTenant((
+                        "us-east-1".to_string(),
+                        "zklogin-example".to_string(),
+                    )),
+                    &eph_pk_bytes,
+                    max_epoch,
+                    "6c56t7re6ekgmv23o7to8r0sic",
+                    "https://www.sui.io/",
+                    &jwt_randomness,
+                )?;
+                let url_10 = get_oidc_url(
+                    OIDCProvider::Microsoft,
+                    &eph_pk_bytes,
+                    max_epoch,
+                    "2e3e87cb-bf24-4399-ab98-48343d457124",
+                    "https://www.sui.io",
+                    &jwt_randomness,
+                )?;
+                let url_11 = get_oidc_url(
+                    OIDCProvider::KarrierOne,
+                    &eph_pk_bytes,
+                    max_epoch,
+                    "kns-dev",
+                    "https://sui.io/", // placeholder
+                    &jwt_randomness,
+                )?;
+                let url_12 = get_oidc_url(
+                    OIDCProvider::Credenza3,
+                    &eph_pk_bytes,
+                    max_epoch,
+                    "65954ec5d03dba0198ac343a",
+                    "https://example.com/callback",
+                    &jwt_randomness,
+                )?;
+                let url_13 = get_oidc_url(
+                    OIDCProvider::AwsTenant(("us-east-1".to_string(), "ambrus".to_string())),
+                    &eph_pk_bytes,
+                    max_epoch,
+                    "t1eouauaitlirg57nove8kvj8",
+                    "https://api.ambrus.studio/callback",
+                    &jwt_randomness,
+                )?;
                 println!("Visit URL (Google): {url}");
                 println!("Visit URL (Twitch): {url_2}");
                 println!("Visit URL (Facebook): {url_3}");
@@ -1150,6 +1202,12 @@ impl KeyToolCommand {
                 println!("Visit URL (Apple): {url_6}");
                 println!("Visit URL (Slack): {url_7}");
                 println!("Token exchange URL (Slack): {url_8}");
+
+                println!("Visit URL (AWS): {url_9}");
+                println!("Visit URL (Microsoft): {url_10}");
+                println!("Visit URL (KarrierOne): {url_11}");
+                println!("Visit URL (Credenza3): {url_12}");
+                println!("Visit URL (AWS - Ambrus): {url_13}");
 
                 println!("Finish login and paste the entire URL here (e.g. https://sui.io/#id_token=...):");
 
@@ -1241,6 +1299,7 @@ impl KeyToolCommand {
                                     tx_data.execution_parts().1,
                                     cur_epoch.unwrap(),
                                     &verify_params,
+                                    Arc::new(VerifiedDigestCache::new_empty()),
                                 );
                                 (serde_json::to_string(&tx_data)?, res)
                             }
@@ -1257,6 +1316,7 @@ impl KeyToolCommand {
                                     (&zk).try_into()?,
                                     cur_epoch.unwrap(),
                                     &verify_params,
+                                    Arc::new(VerifiedDigestCache::new_empty()),
                                 );
                                 (serde_json::to_string(&data)?, res)
                             }

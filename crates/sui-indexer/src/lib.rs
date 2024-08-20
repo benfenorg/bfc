@@ -14,6 +14,7 @@ use mysten_metrics::spawn_monitored_task;
 use prometheus::Registry;
 use secrecy::{ExposeSecret, Secret};
 use std::path::PathBuf;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use system_package_task::SystemPackageTask;
 use tokio::runtime::Handle;
 use tokio_util::sync::CancellationToken;
@@ -34,7 +35,6 @@ use errors::IndexerError;
 pub mod apis;
 pub mod db;
 pub mod errors;
-pub mod framework;
 pub mod handlers;
 pub mod indexer;
 pub mod indexer_reader;
@@ -85,6 +85,12 @@ pub struct IndexerConfig {
     pub rpc_server_worker: bool,
     #[clap(long)]
     pub data_ingestion_path: Option<PathBuf>,
+    #[clap(long)]
+    pub name_service_package_address: Option<SuiAddress>,
+    #[clap(long)]
+    pub name_service_registry_id: Option<ObjectID>,
+    #[clap(long)]
+    pub name_service_reverse_registry_id: Option<ObjectID>,
 }
 
 impl IndexerConfig {
@@ -138,6 +144,9 @@ impl Default for IndexerConfig {
             fullnode_sync_worker: true,
             rpc_server_worker: true,
             data_ingestion_path: None,
+            name_service_package_address: None,
+            name_service_registry_id: None,
+            name_service_reverse_registry_id: None,
         }
     }
 }
@@ -152,13 +161,27 @@ pub async fn build_json_rpc_server<T: R2D2Connection>(
         JsonRpcServerBuilder::new(env!("CARGO_PKG_VERSION"), prometheus_registry, None, None);
     let http_client = crate::get_http_client(config.rpc_client_url.as_str())?;
 
+    let name_service_config =
+        if let (Some(package_address), Some(registry_id), Some(reverse_registry_id)) = (
+            config.name_service_package_address,
+            config.name_service_registry_id,
+            config.name_service_reverse_registry_id,
+        ) {
+            sui_json_rpc::name_service::NameServiceConfig::new(
+                package_address,
+                registry_id,
+                reverse_registry_id,
+            )
+        } else {
+            sui_json_rpc::name_service::NameServiceConfig::default()
+        };
 
     builder.register_module(WriteApi::new(http_client.clone()))?;
-    builder.register_module(IndexerApi::new(reader.clone()))?;
+    builder.register_module(IndexerApi::new(reader.clone(), name_service_config))?;
     builder.register_module(TransactionBuilderApi::new(reader.clone()))?;
     builder.register_module(MoveUtilsApi::new(reader.clone()))?;
     builder.register_module(GovernanceReadApi::new(reader.clone()))?;
-    builder.register_module(ReadApi::new(reader.clone(),http_client.clone()))?;
+    builder.register_module(ReadApi::new(reader.clone()))?;
     builder.register_module(CoinReadApi::new(reader.clone()))?;
     builder.register_module(ExtendedApi::new(reader.clone()))?;
 
@@ -179,7 +202,7 @@ pub async fn build_json_rpc_server<T: R2D2Connection>(
         .start(
             default_socket_addr,
             custom_runtime,
-            Some(ServerType::Http),
+            ServerType::Http,
             Some(cancel),
         )
         .await?)

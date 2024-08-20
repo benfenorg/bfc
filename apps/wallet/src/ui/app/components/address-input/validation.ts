@@ -1,14 +1,14 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { type BenfenClient } from '@benfen/bfc.js/client';
-import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { isValidBenfenAddress } from '@benfen/bfc.js/utils';
-import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
+import { useSuiNSEnabled } from '@mysten/core';
+import { useSuiClient } from '@mysten/dapp-kit';
+import { type SuiClient } from '@mysten/sui/client';
+import { isValidSuiAddress, isValidSuiNSName } from '@mysten/sui/utils';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
 
-export function createSuiAddressValidation(client: BenfenClient, suiNSEnabled: boolean) {
+export function createSuiAddressValidation(client: SuiClient, suiNSEnabled: boolean) {
 	const resolveCache = new Map<string, boolean>();
 
 	return Yup.string()
@@ -16,7 +16,7 @@ export function createSuiAddressValidation(client: BenfenClient, suiNSEnabled: b
 		.trim()
 		.required()
 		.test('is-sui-address', 'Invalid address. Please check again.', async (value) => {
-			if (suiNSEnabled && isSuiNSName(value)) {
+			if (suiNSEnabled && isValidSuiNSName(value)) {
 				if (resolveCache.has(value)) {
 					return resolveCache.get(value)!;
 				}
@@ -30,13 +30,13 @@ export function createSuiAddressValidation(client: BenfenClient, suiNSEnabled: b
 				return !!address;
 			}
 
-			return isValidBenfenAddress(value);
+			return isValidSuiAddress(value);
 		})
 		.label("Recipient's address");
 }
 
 export function useSuiAddressValidation() {
-	const client = useBenfenClient();
+	const client = useSuiClient();
 	const suiNSEnabled = useSuiNSEnabled();
 
 	return useMemo(() => {

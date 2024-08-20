@@ -5,16 +5,16 @@
 //! This module contains the public APIs supported by the bytecode verifier.
 use crate::{
     ability_field_requirements, check_duplication::DuplicationChecker,
-    code_unit_verifier::CodeUnitVerifier, constants, friends,
+    code_unit_verifier::CodeUnitVerifier, constants, data_defs::RecursiveDataDefChecker, friends,
     instantiation_loops::InstantiationLoopChecker, instruction_consistency::InstructionConsistency,
     limits::LimitsVerifier, script_signature,
     script_signature::no_additional_script_signature_checks, signature::SignatureChecker,
-    struct_defs::RecursiveStructDefChecker,
 };
 use move_binary_format::{
     check_bounds::BoundsChecker,
     errors::{Location, VMResult},
     file_format::CompiledModule,
+    file_format_common::VERSION_6,
 };
 use move_bytecode_verifier_meter::{dummy::DummyMeter, Meter};
 use move_vm_config::verifier::VerifierConfig;
@@ -42,7 +42,12 @@ pub fn verify_module_with_config_for_test(
 ) -> VMResult<()> {
     const MAX_MODULE_SIZE: usize = 65355;
     let mut bytes = vec![];
-    module.serialize(&mut bytes).unwrap();
+    let version = if config.bytecode_version > VERSION_6 {
+        module.version
+    } else {
+        VERSION_6
+    };
+    module.serialize_with_version(version, &mut bytes).unwrap();
     let now = Instant::now();
     let result = verify_module_with_config_metered(config, module, meter);
     eprintln!(
@@ -83,7 +88,7 @@ pub fn verify_module_with_config_metered(
     constants::verify_module(module)?;
     friends::verify_module(module)?;
     ability_field_requirements::verify_module(module)?;
-    RecursiveStructDefChecker::verify_module(module)?;
+    RecursiveDataDefChecker::verify_module(module)?;
     InstantiationLoopChecker::verify_module(module)?;
     CodeUnitVerifier::verify_module(config, module, meter)?;
 

@@ -52,22 +52,19 @@ CallArg:
       Object:
         NEWTYPE:
           TYPENAME: ObjectArg
+ChainIdentifier:
+  NEWTYPESTRUCT:
+    TYPENAME: CheckpointDigest
 ChangeEpoch:
   STRUCT:
     - epoch: U64
     - protocol_version:
         TYPENAME: ProtocolVersion
-    - bfc_storage_charge: U64
-    - bfc_computation_charge: U64
-    - bfc_storage_rebate: U64
-    - bfc_non_refundable_storage_fee: U64
-    - stable_gas_summarys:
-        SEQ:
-          TUPLE:
-            - TYPENAME: TypeTag
-            - TYPENAME: GasCostSummaryAdjusted
+    - storage_charge: U64
+    - computation_charge: U64
+    - storage_rebate: U64
+    - non_refundable_storage_fee: U64
     - epoch_start_timestamp_ms: U64
-    - epoch_duration_ms: U64
     - system_packages:
         SEQ:
           TUPLE:
@@ -113,14 +110,8 @@ CheckpointSummary:
     - previous_digest:
         OPTION:
           TYPENAME: CheckpointDigest
-    - epoch_rolling_bfc_gas_cost_summary:
+    - epoch_rolling_gas_cost_summary:
         TYPENAME: GasCostSummary
-    - epoch_rolling_stable_gas_cost_summary_map:
-        MAP:
-          KEY:
-            TYPENAME: TypeTag
-          VALUE:
-            TYPENAME: GasCostSummaryAdjusted
     - timestamp_ms: U64
     - checkpoint_commitments:
         SEQ:
@@ -234,6 +225,10 @@ CompressedSignature:
       ZkLogin:
         NEWTYPE:
           TYPENAME: ZkLoginAuthenticatorAsBytes
+CongestedObjects:
+  NEWTYPESTRUCT:
+    SEQ:
+      TYPENAME: ObjectID
 ConsensusCommitDigest:
   NEWTYPESTRUCT:
     TYPENAME: Digest
@@ -249,6 +244,29 @@ ConsensusCommitPrologueV2:
     - commit_timestamp_ms: U64
     - consensus_commit_digest:
         TYPENAME: ConsensusCommitDigest
+ConsensusCommitPrologueV3:
+  STRUCT:
+    - epoch: U64
+    - round: U64
+    - sub_dag_index:
+        OPTION: U64
+    - commit_timestamp_ms: U64
+    - consensus_commit_digest:
+        TYPENAME: ConsensusCommitDigest
+    - consensus_determined_version_assignments:
+        TYPENAME: ConsensusDeterminedVersionAssignments
+ConsensusDeterminedVersionAssignments:
+  ENUM:
+    0:
+      CancelledTransactions:
+        NEWTYPE:
+          SEQ:
+            TUPLE:
+              - TYPENAME: TransactionDigest
+              - SEQ:
+                  TUPLE:
+                    - TYPENAME: ObjectID
+                    - TYPENAME: SequenceNumber
 Data:
   ENUM:
     0:
@@ -314,6 +332,14 @@ EndOfEpochTransactionKind:
       RandomnessStateCreate: UNIT
     4:
       DenyListStateCreate: UNIT
+    5:
+      BridgeStateCreate:
+        NEWTYPE:
+          TYPENAME: ChainIdentifier
+    6:
+      BridgeCommitteeInit:
+        NEWTYPE:
+          TYPENAME: SequenceNumber
 Envelope:
   STRUCT:
     - data:
@@ -437,8 +463,22 @@ ExecutionFailureStatus:
     32:
       InputObjectDeleted: UNIT
     33:
-      StableCoinRateErr:
-        NEWTYPE: STR
+      ExecutionCancelledDueToSharedObjectCongestion:
+        STRUCT:
+          - congested_objects:
+              TYPENAME: CongestedObjects
+    34:
+      AddressDeniedForCoin:
+        STRUCT:
+          - address:
+              TYPENAME: SuiAddress
+          - coin_type: STR
+    35:
+      CoinTypeGlobalPause:
+        STRUCT:
+          - coin_type: STR
+    36:
+      ExecutionCancelledDueToRandomnessUnavailable: UNIT
 ExecutionStatus:
   ENUM:
     0:
@@ -461,18 +501,10 @@ FullCheckpointContents:
             TYPENAME: GenericSignature
 GasCostSummary:
   STRUCT:
-    - basePoint: U64
-    - rate: U64
     - computationCost: U64
     - storageCost: U64
     - storageRebate: U64
     - nonRefundableStorageFee: U64
-GasCostSummaryAdjusted:
-  STRUCT:
-    - gasByBfc:
-        TYPENAME: GasCostSummary
-    - gasByStable:
-        TYPENAME: GasCostSummary
 GasData:
   STRUCT:
     - payment:
@@ -569,9 +601,7 @@ MoveObjectType_:
         NEWTYPE:
           TYPENAME: StructTag
     1:
-      GasCoin:
-        NEWTYPE:
-          TYPENAME: TypeTag
+      GasCoin: UNIT
     2:
       StakedSui: UNIT
     3:
@@ -998,6 +1028,10 @@ TransactionKind:
       ConsensusCommitPrologueV2:
         NEWTYPE:
           TYPENAME: ConsensusCommitPrologueV2
+    8:
+      ConsensusCommitPrologueV3:
+        NEWTYPE:
+          TYPENAME: ConsensusCommitPrologueV3
 TypeArgumentError:
   ENUM:
     0:
@@ -1007,7 +1041,7 @@ TypeArgumentError:
 TypeOrigin:
   STRUCT:
     - module_name: STR
-    - struct_name: STR
+    - datatype_name: STR
     - package:
         TYPENAME: ObjectID
 TypeTag:
@@ -1071,6 +1105,12 @@ UnchangedSharedKind:
       ReadDeleted:
         NEWTYPE:
           TYPENAME: SequenceNumber
+    3:
+      Cancelled:
+        NEWTYPE:
+          TYPENAME: SequenceNumber
+    4:
+      PerEpochConfig: UNIT
 UpgradeInfo:
   STRUCT:
     - upgraded_id:

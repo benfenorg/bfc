@@ -10,7 +10,7 @@ use std::sync::Arc;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::layout::TypeLayoutBuilder;
 use move_bytecode_utils::module_cache::GetModule;
-use move_core_types::annotated_value::{MoveStruct, MoveStructLayout, MoveTypeLayout};
+use move_core_types::annotated_value::{MoveStruct, MoveStructLayout, MoveTypeLayout, MoveValue};
 use move_core_types::language_storage::StructTag;
 use move_core_types::language_storage::TypeTag;
 use schemars::JsonSchema;
@@ -25,8 +25,8 @@ use crate::error::{ExecutionError, ExecutionErrorKind, UserInputError, UserInput
 use crate::error::{SuiError, SuiResult};
 use crate::gas_coin::GAS;
 use crate::is_system_package;
+use crate::layout_resolver::LayoutResolver;
 use crate::move_package::MovePackage;
-use crate::type_resolver::LayoutResolver;
 use crate::{
     balance::Balance,
     base_types::{
@@ -331,10 +331,10 @@ impl MoveObject {
     /// The `resolver` value must contain the module that declares `self.type_` and the (transitive)
     /// dependencies of `self.type_` in order for this to succeed. Failure will result in an `ObjectSerializationError`
     pub fn get_layout(&self, resolver: &impl GetModule) -> Result<MoveStructLayout, SuiError> {
-        Self::get_layout_from_struct_tag(self.type_().clone().into(), resolver)
+        Self::get_struct_layout_from_struct_tag(self.type_().clone().into(), resolver)
     }
 
-    pub fn get_layout_from_struct_tag(
+    pub fn get_struct_layout_from_struct_tag(
         struct_tag: StructTag,
         resolver: &impl GetModule,
     ) -> Result<MoveStructLayout, SuiError> {
@@ -372,7 +372,6 @@ impl MoveObject {
     pub fn to_rust<'de, T: Deserialize<'de>>(&'de self) -> Option<T> {
         bcs::from_bytes(self.contents()).ok()
     }
-
 
     /// Approximate size of the object in bytes. This is used for gas metering.
     /// For the type tag field, we serialize it on the spot to get the accurate size.
@@ -428,11 +427,10 @@ impl MoveObject {
             let layout = layout_resolver.get_annotated_layout(&self.type_().clone().into())?;
 
             let mut traversal = BalanceTraversal::default();
-            MoveStruct::visit_deserialize(&self.contents, &layout, &mut traversal).map_err(
-                |e| SuiError::ObjectSerializationError {
+            MoveValue::visit_deserialize(&self.contents, &layout.into_layout(), &mut traversal)
+                .map_err(|e| SuiError::ObjectSerializationError {
                     error: e.to_string(),
-                },
-            )?;
+                })?;
 
             Ok(traversal.finish())
         }
@@ -603,8 +601,10 @@ impl Display for Owner {
             Self::Immutable => {
                 write!(f, "Immutable")
             }
-            Self::Shared { .. } => {
-                write!(f, "Shared")
+            Self::Shared {
+                initial_shared_version,
+            } => {
+                write!(f, "Shared( {} )", initial_shared_version.value())
             }
         }
     }
@@ -644,6 +644,10 @@ impl Object {
 
     pub fn as_inner(&self) -> &ObjectInner {
         &self.0
+    }
+
+    pub fn owner(&self) -> &Owner {
+        &self.0.owner
     }
 
     pub fn new_from_genesis(
@@ -691,11 +695,14 @@ impl Object {
         previous_transaction: TransactionDigest,
         max_move_package_size: u64,
         dependencies: impl IntoIterator<Item=&'p MovePackage>,
+        move_binary_format_version: u32,
+        dependencies: impl IntoIterator<Item = &'p MovePackage>,
     ) -> Result<Self, ExecutionError> {
         Ok(Self::new_package_from_data(
             Data::Package(MovePackage::new_initial(
                 modules,
                 max_move_package_size,
+                move_binary_format_version,
                 dependencies,
             )?),
             previous_transaction,
@@ -727,10 +734,12 @@ impl Object {
         dependencies: impl IntoIterator<Item=MovePackage>,
     ) -> Result<Self, ExecutionError> {
         let dependencies: Vec<_> = dependencies.into_iter().collect();
+        let config = ProtocolConfig::get_for_max_version_UNSAFE();
         Self::new_package(
             modules,
             previous_transaction,
-            ProtocolConfig::get_for_max_version_UNSAFE().max_move_package_size(),
+            config.max_move_package_size(),
+            config.move_binary_format_version(),
             &dependencies,
         )
     }
@@ -995,7 +1004,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-            .into()
+        .into()
     }
 
     pub fn immutable_for_testing() -> Self {
@@ -1006,17 +1015,9 @@ impl Object {
         Self::immutable_with_id_for_testing(IMMUTABLE_OBJECT_ID.with(|id| *id))
     }
 
-    /// Make a test shared object. Note that this function returns the same object called from the same thread.
+    /// Make a new random test shared object.
     pub fn shared_for_testing() -> Object {
-        thread_local! {
-            static SHARED_OBJECT_ID: ObjectID = ObjectID::random();
-        }
-
-        Object::with_id_shared_for_testing(SHARED_OBJECT_ID.with(|id| *id))
-    }
-
-    /// Make a new test sahred object.
-    pub fn with_id_shared_for_testing(id: ObjectID) -> Object {
+        let id = ObjectID::random();
         let obj = MoveObject::new_gas_coin(OBJECT_START_VERSION, id, 10);
         let owner = Owner::Shared {
             initial_shared_version: obj.version(),
@@ -1052,7 +1053,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-            .into()
+        .into()
     }
 
     pub fn treasury_cap_for_testing(struct_tag: StructTag, treasury_cap: TreasuryCap) -> Self {
@@ -1068,7 +1069,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-            .into()
+        .into()
     }
 
     pub fn coin_metadata_for_testing(struct_tag: StructTag, metadata: CoinMetadata) -> Self {
@@ -1084,7 +1085,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-            .into()
+        .into()
     }
 
     pub fn with_object_owner_for_testing(id: ObjectID, owner: ObjectID) -> Self {
@@ -1100,7 +1101,7 @@ impl Object {
             previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }
-            .into()
+        .into()
     }
 
     pub fn with_id_owner_for_testing(id: ObjectID, owner: SuiAddress) -> Self {

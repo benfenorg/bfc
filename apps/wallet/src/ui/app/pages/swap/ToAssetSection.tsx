@@ -1,15 +1,23 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
+import { useRecognizedCoins } from '_app/hooks/deepbook';
 import { Button } from '_app/shared/ButtonUI';
 import { InputWithActionButton } from '_app/shared/InputWithAction';
 import { Text } from '_app/shared/text';
 import Alert from '_components/alert';
 import { AssetData } from '_pages/swap/AssetData';
-import { SUI_CONVERSION_RATE, USDC_CONVERSION_RATE, type FormValues } from '_pages/swap/constants';
+import {
+	Coins,
+	SUI_CONVERSION_RATE,
+	USDC_CONVERSION_RATE,
+	type FormValues,
+} from '_pages/swap/constants';
 import { MaxSlippage, MaxSlippageModal } from '_pages/swap/MaxSlippage';
+import { ToAssets } from '_pages/swap/ToAssets';
 import { getUSDCurrency, useSwapData } from '_pages/swap/utils';
-import { type BalanceChange } from '@benfen/bfc.js/client';
-import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
+import { useDeepBookContext } from '_shared/deepBook/context';
+import { type BalanceChange } from '@mysten/sui/client';
+import { SUI_TYPE_ARG } from '@mysten/sui/utils';
 import BigNumber from 'bignumber.js';
 import clsx from 'clsx';
 import { useEffect, useState } from 'react';
@@ -34,8 +42,11 @@ export function ToAssetSection({
 	refetch: () => void;
 	error: Error | null;
 }) {
+	const coinsMap = useDeepBookContext().configs.coinsMap;
+	const recognizedCoins = useRecognizedCoins();
+	const [isToAssetOpen, setToAssetOpen] = useState(false);
 	const [isSlippageModalOpen, setSlippageModalOpen] = useState(false);
-	const isAsk = activeCoinType === BFC_TYPE_ARG;
+	const isAsk = activeCoinType === SUI_TYPE_ARG;
 
 	const { formattedBaseBalance, formattedQuoteBalance, baseCoinMetadata, quoteCoinMetadata } =
 		useSwapData({
@@ -62,9 +73,9 @@ export function ToAssetSection({
 		.toNumber();
 
 	useEffect(() => {
-		const newToAsset = BFC_TYPE_ARG;
+		const newToAsset = isAsk ? coinsMap[Coins.USDC] : SUI_TYPE_ARG;
 		setValue('toAssetType', newToAsset);
-	}, [isAsk, setValue]);
+	}, [coinsMap, isAsk, setValue]);
 
 	const toAssetSymbol = toAssetMetaData.data?.symbol ?? '';
 	const amount = watch('amount');
@@ -80,11 +91,22 @@ export function ToAssetSection({
 				{ 'bg-sui-primaryBlue2023/10': isValid },
 			)}
 		>
+			<ToAssets
+				recognizedCoins={recognizedCoins}
+				isOpen={isToAssetOpen}
+				onClose={() => setToAssetOpen(false)}
+				onRowClick={(coinType) => {
+					setToAssetOpen(false);
+				}}
+			/>
 			<AssetData
 				disabled
 				tokenBalance={toAssetBalance}
 				coinType={toAssetType}
 				symbol={toAssetSymbol}
+				onClick={() => {
+					setToAssetOpen(true);
+				}}
 			/>
 
 			<InputWithActionButton

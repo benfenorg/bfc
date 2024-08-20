@@ -1,28 +1,32 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { execSync } from 'child_process';
+import { mkdtemp } from 'fs/promises';
+import { tmpdir } from 'os';
+import path from 'path';
 import tmp from 'tmp';
 import { retry } from 'ts-retry-promise';
 import { expect } from 'vitest';
 import { WebSocket } from 'ws';
 
-import type { BenfenObjectChangePublished } from '../../../src/client/index.js';
-import { BenfenClient, BenfenHTTPTransport, getFullnodeUrl } from '../../../src/client/index.js';
+import type { SuiObjectChangePublished } from '../../../src/client/index.js';
+import { getFullnodeUrl, SuiClient, SuiHTTPTransport } from '../../../src/client/index.js';
 import type { Keypair } from '../../../src/cryptography/index.js';
 import {
 	FaucetRateLimitError,
 	getFaucetHost,
-	requestBfcFromFaucetV0,
+	requestSuiFromFaucetV1,
 } from '../../../src/faucet/index.js';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519/index.js';
-import { TransactionBlock, UpgradePolicy } from '../../../src/transactions/index.js';
-import { BFC_TYPE_ARG, bfc2HexAddress, hex2BfcAddress } from '../../../src/utils/index.js';
+import { Transaction, UpgradePolicy } from '../../../src/transactions/index.js';
+import { SUI_TYPE_ARG } from '../../../src/utils/index.js';
 
 const DEFAULT_FAUCET_URL = import.meta.env.VITE_FAUCET_URL ?? getFaucetHost('localnet');
 const DEFAULT_FULLNODE_URL = import.meta.env.VITE_FULLNODE_URL ?? getFullnodeUrl('localnet');
 
-const BFC_BIN = import.meta.env.VITE_BFC_BIN ?? 'cargo run --bin bfc';
+const SUI_BIN =
+	import.meta.env.VITE_SUI_BIN ?? path.resolve(__dirname, '../../../../../target/debug/sui');
 
 export const DEFAULT_RECIPIENT =
 	'0x0c567ffdf8162cb6d51af74be0199443b92e823d4ba6ced24de5c6c463797d46';
@@ -31,34 +35,82 @@ export const DEFAULT_RECIPIENT_2 =
 export const DEFAULT_GAS_BUDGET = 10000000;
 export const DEFAULT_SEND_AMOUNT = 1000;
 
+class TestPackageRegistry {
+	static registries: Map<string, TestPackageRegistry> = new Map();
+
+	static forUrl(url: string) {
+		if (!this.registries.has(url)) {
+			this.registries.set(url, new TestPackageRegistry());
+		}
+		return this.registries.get(url)!;
+	}
+
+	#packages: Map<string, string>;
+
+	constructor() {
+		this.#packages = new Map();
+	}
+
+	async getPackage(path: string, toolbox?: TestToolbox) {
+		if (!this.#packages.has(path)) {
+			this.#packages.set(path, (await publishPackage(path, toolbox)).packageId);
+		}
+
+		return this.#packages.get(path)!;
+	}
+}
+
 export class TestToolbox {
 	keypair: Ed25519Keypair;
-	client: BenfenClient;
+	client: SuiClient;
+	registry: TestPackageRegistry;
+	configPath: string;
 
-	constructor(keypair: Ed25519Keypair, client: BenfenClient) {
+	constructor(keypair: Ed25519Keypair, url: string = DEFAULT_FULLNODE_URL, configPath: string) {
 		this.keypair = keypair;
-		this.client = client;
+		this.client = new SuiClient({
+			transport: new SuiHTTPTransport({
+				url,
+				WebSocketConstructor: WebSocket as never,
+			}),
+		});
+		this.registry = TestPackageRegistry.forUrl(url);
+		this.configPath = configPath;
 	}
 
 	address() {
-		return hex2BfcAddress(this.keypair.getPublicKey().toHexAddress());
+		return this.keypair.getPublicKey().toSuiAddress();
 	}
 
 	async getGasObjectsOwnedByAddress() {
 		return await this.client.getCoins({
 			owner: this.address(),
-			coinType: BFC_TYPE_ARG,
+			coinType: SUI_TYPE_ARG,
 		});
 	}
 
 	public async getActiveValidators() {
-		return (await this.client.getLatestBenfeSystemState()).activeValidators;
+		return (await this.client.getLatestSuiSystemState()).activeValidators;
+	}
+
+	public async getPackage(path: string) {
+		return this.registry.getPackage(path, this);
+	}
+
+	async mintNft(name: string = 'Test NFT') {
+		const packageId = await this.getPackage(path.resolve(__dirname, '../data/demo-bear'));
+		return (tx: Transaction) => {
+			return tx.moveCall({
+				target: `${packageId}::demo_bear::new`,
+				arguments: [tx.pure.string(name)],
+			});
+		};
 	}
 }
 
-export function getClient(url = DEFAULT_FULLNODE_URL): BenfenClient {
-	return new BenfenClient({
-		transport: new BenfenHTTPTransport({
+export function getClient(url = DEFAULT_FULLNODE_URL): SuiClient {
+	return new SuiClient({
+		transport: new SuiHTTPTransport({
 			url,
 			WebSocketConstructor: WebSocket as never,
 		}),
@@ -67,17 +119,21 @@ export function getClient(url = DEFAULT_FULLNODE_URL): BenfenClient {
 
 export async function setup(options: { graphQLURL?: string; rpcURL?: string } = {}) {
 	const keypair = Ed25519Keypair.generate();
-	const address = keypair.getPublicKey().toHexAddress();
-	return setupWithFundedAddress(keypair, address, options);
+	const address = keypair.getPublicKey().toSuiAddress();
+	const tmpDirPath = path.join(tmpdir(), 'config-');
+	const tmpDir = await mkdtemp(tmpDirPath);
+	const configPath = path.join(tmpDir, 'client.yaml');
+	return setupWithFundedAddress(keypair, address, configPath, options);
 }
 
 export async function setupWithFundedAddress(
 	keypair: Ed25519Keypair,
 	address: string,
+	configPath: string,
 	{ rpcURL }: { graphQLURL?: string; rpcURL?: string } = {},
 ) {
 	const client = getClient(rpcURL);
-	await retry(() => requestBfcFromFaucetV0({ host: DEFAULT_FAUCET_URL, recipient: address }), {
+	await retry(() => requestSuiFromFaucetV1({ host: DEFAULT_FAUCET_URL, recipient: address }), {
 		backoff: 'EXPONENTIAL',
 		// overall timeout in 60 seconds
 		timeout: 1000 * 60,
@@ -95,12 +151,14 @@ export async function setupWithFundedAddress(
 			}
 		},
 		{
-			backoff: () => 1000,
-			timeout: 30 * 1000,
+			backoff: () => 3000,
+			timeout: 60 * 1000,
 			retryIf: () => true,
 		},
 	);
-	return new TestToolbox(keypair, client);
+
+	execSync(`${SUI_BIN} client --yes --client.config ${configPath}`, { encoding: 'utf-8' });
+	return new TestToolbox(keypair, rpcURL, configPath);
 }
 
 export async function publishPackage(packagePath: string, toolbox?: TestToolbox) {
@@ -116,37 +174,34 @@ export async function publishPackage(packagePath: string, toolbox?: TestToolbox)
 
 	const { modules, dependencies } = JSON.parse(
 		execSync(
-			`${BFC_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
+			`${SUI_BIN} move --client.config ${toolbox.configPath} build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
 			{ encoding: 'utf-8' },
 		),
 	);
-	const tx = new TransactionBlock();
+	const tx = new Transaction();
 	const cap = tx.publish({
 		modules,
 		dependencies,
 	});
 
 	// Transfer the upgrade capability to the sender so they can upgrade the package later if they want.
-	tx.transferObjects([cap], tx.pure(await toolbox.address()));
+	tx.transferObjects([cap], tx.pure.address(await toolbox.address()));
 
-	const publishTxn = await toolbox.client.signAndExecuteTransactionBlock({
-		transactionBlock: tx,
+	const { digest } = await toolbox.client.signAndExecuteTransaction({
+		transaction: tx,
 		signer: toolbox.keypair,
-		options: {
-			showEffects: true,
-			showObjectChanges: true,
-		},
 	});
 
-	await toolbox.client.waitForTransactionBlock({ digest: publishTxn.digest });
+	const publishTxn = await toolbox.client.waitForTransaction({
+		digest: digest,
+		options: { showObjectChanges: true, showEffects: true },
+	});
 
 	expect(publishTxn.effects?.status.status).toEqual('success');
 
-	const packageId = bfc2HexAddress(
-		((publishTxn.objectChanges?.filter(
-			(a) => a.type === 'published',
-		) as BenfenObjectChangePublished[]) ?? [])[0].packageId,
-	).replace(/^(0x)(0+)/, '0x') as string;
+	const packageId = ((publishTxn.objectChanges?.filter(
+		(a) => a.type === 'published',
+	) as SuiObjectChangePublished[]) ?? [])[0]?.packageId.replace(/^(0x)(0+)/, '0x') as string;
 
 	expect(packageId).toBeTypeOf('string');
 
@@ -173,23 +228,23 @@ export async function upgradePackage(
 
 	const { modules, dependencies, digest } = JSON.parse(
 		execSync(
-			`${BFC_BIN} move build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
+			`${SUI_BIN} move --client.config ${toolbox.configPath} build --dump-bytecode-as-base64 --path ${packagePath} --install-dir ${tmpobj.name}`,
 			{ encoding: 'utf-8' },
 		),
 	);
 
-	const tx = new TransactionBlock();
+	const tx = new Transaction();
 
 	const cap = tx.object(capId);
 	const ticket = tx.moveCall({
 		target: '0x2::package::authorize_upgrade',
-		arguments: [cap, tx.pure(UpgradePolicy.COMPATIBLE), tx.pure(digest)],
+		arguments: [cap, tx.pure.u8(UpgradePolicy.COMPATIBLE), tx.pure.vector('u8', digest)],
 	});
 
 	const receipt = tx.upgrade({
 		modules,
 		dependencies,
-		packageId,
+		package: packageId,
 		ticket,
 	});
 
@@ -198,8 +253,8 @@ export async function upgradePackage(
 		arguments: [cap, receipt],
 	});
 
-	const result = await toolbox.client.signAndExecuteTransactionBlock({
-		transactionBlock: tx,
+	const result = await toolbox.client.signAndExecuteTransaction({
+		transaction: tx,
 		signer: toolbox.keypair,
 		options: {
 			showEffects: true,
@@ -215,19 +270,19 @@ export function getRandomAddresses(n: number): string[] {
 		.fill(null)
 		.map(() => {
 			const keypair = Ed25519Keypair.generate();
-			return keypair.getPublicKey().toHexAddress();
+			return keypair.getPublicKey().toSuiAddress();
 		});
 }
 
-export async function payBfc(
-	client: BenfenClient,
+export async function paySui(
+	client: SuiClient,
 	signer: Keypair,
 	numRecipients: number = 1,
 	recipients?: string[],
 	amounts?: number[],
 	coinId?: string,
 ) {
-	const tx = new TransactionBlock();
+	const tx = new Transaction();
 
 	recipients = recipients ?? getRandomAddresses(numRecipients);
 	amounts = amounts ?? Array(numRecipients).fill(DEFAULT_SEND_AMOUNT);
@@ -238,30 +293,34 @@ export async function payBfc(
 		coinId ??
 		(
 			await client.getCoins({
-				owner: signer.getPublicKey().toHexAddress(),
-				coinType: '0x2::bfc::BFC',
+				owner: signer.getPublicKey().toSuiAddress(),
+				coinType: '0x2::sui::SUI',
 			})
 		).data[0].coinObjectId;
 
 	recipients.forEach((recipient, i) => {
-		const coin = tx.splitCoins(coinId!, [tx.pure(amounts![i])]);
-		tx.transferObjects([coin], tx.pure(recipient));
+		const coin = tx.splitCoins(coinId!, [amounts![i]]);
+		tx.transferObjects([coin], tx.pure.address(recipient));
 	});
 
-	const txn = await client.signAndExecuteTransactionBlock({
-		transactionBlock: tx,
+	const txn = await client.signAndExecuteTransaction({
+		transaction: tx,
 		signer,
 		options: {
 			showEffects: true,
 			showObjectChanges: true,
 		},
 	});
+
+	await client.waitForTransaction({
+		digest: txn.digest,
+	});
 	expect(txn.effects?.status.status).toEqual('success');
 	return txn;
 }
 
-export async function executePayBfcNTimes(
-	client: BenfenClient,
+export async function executePaySuiNTimes(
+	client: SuiClient,
 	signer: Keypair,
 	nTimes: number,
 	numRecipientsPerTxn: number = 1,
@@ -271,7 +330,7 @@ export async function executePayBfcNTimes(
 	const txns = [];
 	for (let i = 0; i < nTimes; i++) {
 		// must await here to make sure the txns are executed in order
-		txns.push(await payBfc(client, signer, numRecipientsPerTxn, recipients, amounts));
+		txns.push(await paySui(client, signer, numRecipientsPerTxn, recipients, amounts));
 	}
 	return txns;
 }

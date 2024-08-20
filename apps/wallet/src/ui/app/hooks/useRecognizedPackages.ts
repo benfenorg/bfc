@@ -1,13 +1,13 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { API_ENV } from '_src/shared/api-env';
-import { BENFEN_FRAMEWORK_ADDRESS, BENFEN_SYSTEM_ADDRESS } from '@benfen/bfc.js/utils';
 import { useFeatureValue } from '@growthbook/growthbook-react';
+import { SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS } from '@mysten/sui/utils';
 
 import useAppSelector from './useAppSelector';
 
-const DEFAULT_RECOGNIZED_PACKAGES = [BENFEN_FRAMEWORK_ADDRESS, BENFEN_SYSTEM_ADDRESS];
+const DEFAULT_RECOGNIZED_PACKAGES = [SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS];
 
 export function useRecognizedPackages() {
 	const apiEnv = useAppSelector((app) => app.app.apiEnv);

@@ -14,6 +14,7 @@ bcs.workspace = true
 byteorder.workspace = true
 chrono.workspace = true
 consensus-config.workspace = true
+num_enum.workspace = true
 im.workspace = true
 itertools.workspace = true
 nonempty.workspace = true
@@ -70,12 +71,16 @@ sui-enum-compat-util.workspace = true
 fastcrypto = { workspace = true, features = ["copy_key"] }
 fastcrypto-tbls.workspace = true
 fastcrypto-zkp.workspace = true
+passkey-types.workspace = true
 
 typed-store-error.workspace = true
 derive_more.workspace = true
 proptest.workspace = true
 proptest-derive.workspace = true
 better_any.workspace = true
+lru.workspace = true
+
+sui-sdk2.workspace = true
 
 [dev-dependencies]
 bincode.workspace = true
@@ -84,6 +89,14 @@ proptest.workspace = true
 proptest-derive.workspace = true
 serde_yaml.workspace = true
 expect-test.workspace = true
+
+coset.workspace = true
+url.workspace = true
+tokio.workspace = true
+async-trait.workspace = true
+p256.workspace = true
+passkey-client.workspace = true
+passkey-authenticator.workspace = true
 
 [[bench]]
 name = "accumulator_bench"

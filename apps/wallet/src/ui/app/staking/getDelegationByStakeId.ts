@@ -1,7 +1,7 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { DelegatedStake } from '@benfen/bfc.js/client';
+import type { DelegatedStake } from '@mysten/sui/client';
 
 // Helper function to get the delegation by stakedSuiId
 export const getDelegationDataByStakeId = (
@@ -10,7 +10,7 @@ export const getDelegationDataByStakeId = (
 ) => {
 	let stake = null;
 	for (const { stakes } of delegationsStake) {
-		stake = stakes.find(({ stakedBfcId }) => stakedBfcId === stakeSuiId) || null;
+		stake = stakes.find(({ stakedSuiId }) => stakedSuiId === stakeSuiId) || null;
 		if (stake) return stake;
 	}
 

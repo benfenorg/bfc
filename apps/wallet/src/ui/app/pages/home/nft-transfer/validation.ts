@@ -1,12 +1,12 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { createSuiAddressValidation } from '_components/address-input/validation';
-import { type BenfenClient } from '@benfen/bfc.js/client';
+import { type SuiClient } from '@mysten/sui/client';
 import * as Yup from 'yup';
 
 export function createValidationSchema(
-	client: BenfenClient,
+	client: SuiClient,
 	suiNSEnabled: boolean,
 	senderAddress: string,
 	objectId: string,

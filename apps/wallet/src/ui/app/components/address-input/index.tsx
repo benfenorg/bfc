@@ -1,11 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { Text } from '_app/shared/text';
 import Alert from '_src/ui/app/components/alert';
-import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
-import { isValidBenfenAddress } from '@benfen/bfc.js/utils';
+import { useSuiClient } from '@mysten/dapp-kit';
 import { QrCode, X12 } from '@mysten/icons';
+import { isValidSuiAddress } from '@mysten/sui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { cx } from 'class-variance-authority';
 import { useField, useFormikContext } from 'formik';
@@ -33,12 +33,12 @@ export function AddressInput({
 }: AddressInputProps) {
 	const [field, meta] = useField(name);
 
-	const client = useBenfenClient();
+	const client = useSuiClient();
 	const { data: warningData } = useQuery({
 		queryKey: ['address-input-warning', field.value],
 		queryFn: async () => {
 			// We assume this validation will happen elsewhere:
-			if (!isValidBenfenAddress(field.value)) {
+			if (!isValidSuiAddress(field.value)) {
 				return null;
 			}
 

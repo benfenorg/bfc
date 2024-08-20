@@ -1,45 +1,48 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
-	BenfenTransactionBlockResponse,
-	BenfenTransactionBlockResponseOptions,
 	ExecuteTransactionRequestType,
-} from '../../client/index.js';
-import type { BenfenSignTransactionBlockInput } from './bfcSignTransactionBlock.js';
+	SuiTransactionBlockResponse,
+	SuiTransactionBlockResponseOptions,
+} from '@mysten/sui/client';
+
+import type { SuiSignTransactionBlockInput } from './suiSignTransactionBlock.js';
 
 /** The latest API version of the signAndExecuteTransactionBlock API. */
-export type BenfenSignAndExecuteTransactionBlockVersion = '1.0.0';
+export type SuiSignAndExecuteTransactionBlockVersion = '1.0.0';
 
 /**
+ * @deprecated Use `sui:signAndExecuteTransaction` instead.
+ *
  * A Wallet Standard feature for signing a transaction, and submitting it to the
  * network. The wallet is expected to submit the transaction to the network via RPC,
  * and return the transaction response.
  */
-export type BenfenSignAndExecuteTransactionBlockFeature = {
+export type SuiSignAndExecuteTransactionBlockFeature = {
 	/** Namespace for the feature. */
-	'bfc:signAndExecuteTransactionBlock': {
+	'sui:signAndExecuteTransactionBlock': {
 		/** Version of the feature API. */
-		version: BenfenSignAndExecuteTransactionBlockVersion;
-		signAndExecuteTransactionBlock: BenfenSignAndExecuteTransactionBlockMethod;
+		version: SuiSignAndExecuteTransactionBlockVersion;
+		/** @deprecated Use `sui:signAndExecuteTransaction` instead. */
+		signAndExecuteTransactionBlock: SuiSignAndExecuteTransactionBlockMethod;
 	};
 };
 
-export type BenfenSignAndExecuteTransactionBlockMethod = (
-	input: BenfenSignAndExecuteTransactionBlockInput,
-) => Promise<BenfenSignAndExecuteTransactionBlockOutput>;
+/** @deprecated Use `sui:signAndExecuteTransaction` instead. */
+export type SuiSignAndExecuteTransactionBlockMethod = (
+	input: SuiSignAndExecuteTransactionBlockInput,
+) => Promise<SuiSignAndExecuteTransactionBlockOutput>;
 
 /** Input for signing and sending transactions. */
-export interface BenfenSignAndExecuteTransactionBlockInput extends BenfenSignTransactionBlockInput {
+export interface SuiSignAndExecuteTransactionBlockInput extends SuiSignTransactionBlockInput {
 	/**
-	 * `WaitForEffectsCert` or `WaitForLocalExecution`, see details in `ExecuteTransactionRequestType`.
-	 * Defaults to `WaitForLocalExecution` if options.showEffects or options.showEvents is true
+	 * @deprecated requestType will be ignored by JSON RPC in the future
 	 */
 	requestType?: ExecuteTransactionRequestType;
 	/** specify which fields to return (e.g., transaction, effects, events, etc). By default, only the transaction digest will be returned. */
-	options?: BenfenTransactionBlockResponseOptions;
+	options?: SuiTransactionBlockResponseOptions;
 }
 
 /** Output of signing and sending transactions. */
-export interface BenfenSignAndExecuteTransactionBlockOutput
-	extends BenfenTransactionBlockResponse {}
+export interface SuiSignAndExecuteTransactionBlockOutput extends SuiTransactionBlockResponse {}

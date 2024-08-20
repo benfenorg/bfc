@@ -9,11 +9,11 @@ use rand::rngs::OsRng;
 use sui_config::genesis::{TokenAllocation, TokenDistributionScheduleBuilder};
 use sui_config::node::AuthorityOverloadConfig;
 use sui_macros::nondeterministic;
-use sui_protocol_config::SupportedProtocolVersions;
 use sui_types::base_types::{AuthorityName, SuiAddress};
 use sui_types::committee::{Committee, ProtocolVersion};
 use sui_types::crypto::{get_key_pair_from_rng, AccountKeyPair, KeypairTraits, PublicKey};
 use sui_types::object::Object;
+use sui_types::supported_protocol_versions::SupportedProtocolVersions;
 use sui_types::traffic_control::{PolicyConfig, RemoteFirewallConfig};
 
 use crate::genesis_config::{AccountConfig, ValidatorGenesisConfigBuilder, DEFAULT_GAS_AMOUNT};
@@ -51,6 +51,14 @@ pub enum ProtocolVersionsConfig {
     PerValidator(SupportedProtocolVersionsCallback),
 }
 
+pub type StateAccumulatorV2EnabledCallback = Arc<dyn Fn(usize) -> bool + Send + Sync + 'static>;
+
+#[derive(Clone)]
+pub enum StateAccumulatorV2EnabledConfig {
+    Global(bool),
+    PerValidator(StateAccumulatorV2EnabledCallback),
+}
+
 pub struct ConfigBuilder<R = OsRng> {
     rng: Option<R>,
     config_directory: PathBuf,
@@ -65,6 +73,9 @@ pub struct ConfigBuilder<R = OsRng> {
     data_ingestion_dir: Option<PathBuf>,
     policy_config: Option<PolicyConfig>,
     firewall_config: Option<RemoteFirewallConfig>,
+    max_submit_position: Option<usize>,
+    submit_delay_step_override_millis: Option<u64>,
+    state_accumulator_v2_enabled_config: Option<StateAccumulatorV2EnabledConfig>,
 }
 
 impl ConfigBuilder {
@@ -83,6 +94,9 @@ impl ConfigBuilder {
             data_ingestion_dir: None,
             policy_config: None,
             firewall_config: None,
+            max_submit_position: None,
+            submit_delay_step_override_millis: None,
+            state_accumulator_v2_enabled_config: None,
         }
     }
 
@@ -200,6 +214,29 @@ impl<R> ConfigBuilder<R> {
         self
     }
 
+    pub fn with_state_accumulator_v2_enabled(mut self, enabled: bool) -> Self {
+        self.state_accumulator_v2_enabled_config =
+            Some(StateAccumulatorV2EnabledConfig::Global(enabled));
+        self
+    }
+
+    pub fn with_state_accumulator_v2_enabled_callback(
+        mut self,
+        func: StateAccumulatorV2EnabledCallback,
+    ) -> Self {
+        self.state_accumulator_v2_enabled_config =
+            Some(StateAccumulatorV2EnabledConfig::PerValidator(func));
+        self
+    }
+
+    pub fn with_state_accumulator_v2_enabled_config(
+        mut self,
+        c: StateAccumulatorV2EnabledConfig,
+    ) -> Self {
+        self.state_accumulator_v2_enabled_config = Some(c);
+        self
+    }
+
     pub fn with_authority_overload_config(mut self, c: AuthorityOverloadConfig) -> Self {
         self.authority_overload_config = Some(c);
         self
@@ -212,6 +249,19 @@ impl<R> ConfigBuilder<R> {
 
     pub fn with_firewall_config(mut self, config: Option<RemoteFirewallConfig>) -> Self {
         self.firewall_config = config;
+        self
+    }
+
+    pub fn with_max_submit_position(mut self, max_submit_position: usize) -> Self {
+        self.max_submit_position = Some(max_submit_position);
+        self
+    }
+
+    pub fn with_submit_delay_step_override_millis(
+        mut self,
+        submit_delay_step_override_millis: u64,
+    ) -> Self {
+        self.submit_delay_step_override_millis = Some(submit_delay_step_override_millis);
         self
     }
 
@@ -230,6 +280,9 @@ impl<R> ConfigBuilder<R> {
             data_ingestion_dir: self.data_ingestion_dir,
             policy_config: self.policy_config,
             firewall_config: self.firewall_config,
+            max_submit_position: self.max_submit_position,
+            submit_delay_step_override_millis: self.submit_delay_step_override_millis,
+            state_accumulator_v2_enabled_config: self.state_accumulator_v2_enabled_config,
         }
     }
 
@@ -374,6 +427,17 @@ impl<R: rand::RngCore + rand::CryptoRng> ConfigBuilder<R> {
                     .with_policy_config(self.policy_config.clone())
                     .with_firewall_config(self.firewall_config.clone());
 
+                if let Some(max_submit_position) = self.max_submit_position {
+                    builder = builder.with_max_submit_position(max_submit_position);
+                }
+
+                if let Some(submit_delay_step_override_millis) =
+                    self.submit_delay_step_override_millis
+                {
+                    builder = builder
+                        .with_submit_delay_step_override_millis(submit_delay_step_override_millis);
+                }
+
                 if let Some(jwk_fetch_interval) = self.jwk_fetch_interval {
                     builder = builder.with_jwk_fetch_interval(jwk_fetch_interval);
                 }
@@ -398,6 +462,14 @@ impl<R: rand::RngCore + rand::CryptoRng> ConfigBuilder<R> {
                         }
                     };
                     builder = builder.with_supported_protocol_versions(supported_versions);
+                }
+                if let Some(acc_v2_config) = &self.state_accumulator_v2_enabled_config {
+                    let state_accumulator_v2_enabled: bool = match acc_v2_config {
+                        StateAccumulatorV2EnabledConfig::Global(enabled) => *enabled,
+                        StateAccumulatorV2EnabledConfig::PerValidator(func) => func(idx),
+                    };
+                    builder =
+                        builder.with_state_accumulator_v2_enabled(state_accumulator_v2_enabled);
                 }
                 if let Some(num_unpruned_validators) = self.num_unpruned_validators {
                     if idx < num_unpruned_validators {

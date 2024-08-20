@@ -1,9 +1,10 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { exec } from 'child_process';
 import { resolve } from 'path';
 import { randomBytes } from '@noble/hashes/utils';
+import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import DotEnv from 'dotenv-webpack';
 import gitRevSync from 'git-rev-sync';
@@ -39,12 +40,9 @@ const SRC_ROOT = resolve(PROJECT_ROOT, 'src');
 const OUTPUT_ROOT = resolve(PROJECT_ROOT, 'dist');
 const TS_CONFIGS_ROOT = resolve(CONFIGS_ROOT, 'ts');
 const IS_DEV = process.env.NODE_ENV === 'development';
+const IS_PROD = process.env.NODE_ENV === 'production';
 const TS_CONFIG_FILE = resolve(TS_CONFIGS_ROOT, `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`);
-const APP_NAME = WALLET_BETA
-	? 'Benfen Wallet (BETA)'
-	: IS_DEV
-	? 'Benfen Wallet (DEV)'
-	: 'Benfen Wallet';
+const APP_NAME = WALLET_BETA ? 'Sui Wallet (BETA)' : IS_DEV ? 'Sui Wallet (DEV)' : 'Sui Wallet';
 
 function loadTsConfig(tsConfigFilePath: string) {
 	return new Promise<string>((res, rej) => {
@@ -91,6 +89,7 @@ async function generateAliasFromTs() {
 const commonConfig: () => Promise<Configuration> = async () => {
 	const alias = await generateAliasFromTs();
 	const walletVersionDetails = generateDateVersion(PATCH_VERISON);
+	const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 	return {
 		context: SRC_ROOT,
 		entry: {
@@ -111,7 +110,7 @@ const commonConfig: () => Promise<Configuration> = async () => {
 		},
 		resolve: {
 			extensions: ['.ts', '.tsx', '.js'],
-			// Fix .js imports from @benfen/bfc.js since we are importing it from source
+			// Fix .js imports from @mysten/sui since we are importing it from source
 			extensionAlias: {
 				'.js': ['.js', '.ts', '.tsx', '.jsx'],
 				'.mjs': ['.mjs', '.mts'],
@@ -189,7 +188,7 @@ const commonConfig: () => Promise<Configuration> = async () => {
 								...(IS_DEV
 									? {
 											key: 'MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA2HTQu/66edl64fM/SKDnHJmCz9SIYqM/QK7NM3vD1LTE2UNXzHX5Clj8geuoWAYS6HE/aFcd//qPnAh8TnPgqTS3IX+IbZsY/+kcokxIEWHly3eKEHWB32tQsGdJx6tgDzx8TRkFZEcCCdE4pFqQO68W3I/+8AQPosdd5fsIoF6OGKZ/i29mpGkYJSmMroCN5zYCQqvpjTBIkiTkI9TTjxmBid77pHyG4TsHz0wda4KxHV9ZtzZQXB4vexTku/Isczdtif7pDqFEDCAqEkpiGPyKoIuqrxc75IfpzIGFsIylycBr0fZellSsl2M6FM34R99/vUrGj5iWcjNmhYvZ8QIDAQAB',
-									  }
+										}
 									: undefined),
 							};
 							return JSON.stringify(manifestJson, null, 4);
@@ -216,6 +215,15 @@ const commonConfig: () => Promise<Configuration> = async () => {
 			}),
 			new ProvidePlugin({
 				Buffer: ['buffer', 'Buffer'],
+			}),
+			new SentryWebpackPlugin({
+				org: 'mysten-labs',
+				project: 'wallet',
+				include: OUTPUT_ROOT,
+				dryRun: !IS_PROD || !sentryAuthToken,
+				authToken: sentryAuthToken,
+				release: walletVersionDetails.version,
+				silent: true,
 			}),
 		],
 	};

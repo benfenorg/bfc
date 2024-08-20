@@ -1,23 +1,24 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::time::Instant;
 use std::{
     collections::{BTreeMap, BTreeSet},
     iter,
     sync::Arc,
+    time::Instant,
 };
 
 use itertools::Itertools as _;
 use mysten_metrics::monitored_scope;
 use parking_lot::RwLock;
-use tracing::{debug, warn};
+use tracing::{debug, trace, warn};
 
 use crate::{
     block::{BlockAPI, BlockRef, VerifiedBlock},
     block_verifier::BlockVerifier,
     context::Context,
     dag_state::DagState,
+    Round,
 };
 
 struct SuspendedBlock {
@@ -57,6 +58,9 @@ pub(crate) struct BlockManager {
     /// Keeps all the blocks that we actually miss and haven't fetched them yet. That set will basically contain all the
     /// keys from the `missing_ancestors` minus any keys that exist in `suspended_blocks`.
     missing_blocks: BTreeSet<BlockRef>,
+    /// A vector that holds a tuple of (lowest_round, highest_round) of received blocks per authority.
+    /// This is used for metrics reporting purposes and resets during restarts.
+    received_block_rounds: Vec<Option<(Round, Round)>>,
 }
 
 impl BlockManager {
@@ -65,6 +69,7 @@ impl BlockManager {
         dag_state: Arc<RwLock<DagState>>,
         block_verifier: Arc<dyn BlockVerifier>,
     ) -> Self {
+        let committee_size = context.committee.size();
         Self {
             context,
             dag_state,
@@ -72,6 +77,7 @@ impl BlockManager {
             suspended_blocks: BTreeMap::new(),
             missing_ancestors: BTreeMap::new(),
             missing_blocks: BTreeSet::new(),
+            received_block_rounds: vec![None; committee_size],
         }
     }
 
@@ -94,10 +100,17 @@ impl BlockManager {
         let mut missing_blocks = BTreeSet::new();
 
         for block in blocks {
+            self.update_block_received_metrics(&block);
+
             // Try to accept the input block.
+            let block_ref = block.reference();
             let block = match self.try_accept_one_block(block) {
                 TryAcceptResult::Accepted(block) => block,
                 TryAcceptResult::Suspended(ancestors_to_fetch) => {
+                    trace!(
+                        "Missing ancestors for block {block_ref}: {}",
+                        ancestors_to_fetch.iter().map(|b| b.to_string()).join(",")
+                    );
                     missing_blocks.extend(ancestors_to_fetch);
                     continue;
                 }
@@ -337,18 +350,42 @@ impl BlockManager {
         self.missing_blocks.clone()
     }
 
-    /// Returns all the suspended blocks whose causal history we miss hence we can't accept them yet.
-    #[cfg(test)]
-    fn suspended_blocks(&self) -> Vec<BlockRef> {
-        self.suspended_blocks.keys().cloned().collect()
+    fn update_block_received_metrics(&mut self, block: &VerifiedBlock) {
+        let (min_round, max_round) =
+            if let Some((curr_min, curr_max)) = self.received_block_rounds[block.author()] {
+                (curr_min.min(block.round()), curr_max.max(block.round()))
+            } else {
+                (block.round(), block.round())
+            };
+        self.received_block_rounds[block.author()] = Some((min_round, max_round));
+
+        let hostname = &self.context.committee.authority(block.author()).hostname;
+        self.context
+            .metrics
+            .node_metrics
+            .lowest_verified_authority_round
+            .with_label_values(&[hostname])
+            .set(min_round.into());
+        self.context
+            .metrics
+            .node_metrics
+            .highest_verified_authority_round
+            .with_label_values(&[hostname])
+            .set(max_round.into());
     }
 
     /// Checks if block manager is empty.
     #[cfg(test)]
-    fn is_empty(&self) -> bool {
+    pub(crate) fn is_empty(&self) -> bool {
         self.suspended_blocks.is_empty()
             && self.missing_ancestors.is_empty()
             && self.missing_blocks.is_empty()
+    }
+
+    /// Returns all the suspended blocks whose causal history we miss hence we can't accept them yet.
+    #[cfg(test)]
+    fn suspended_blocks(&self) -> Vec<BlockRef> {
+        self.suspended_blocks.keys().cloned().collect()
     }
 }
 
@@ -367,21 +404,23 @@ enum TryAcceptResult {
 mod tests {
     use std::{collections::BTreeSet, sync::Arc};
 
+    use consensus_config::AuthorityIndex;
     use parking_lot::RwLock;
     use rand::{prelude::StdRng, seq::SliceRandom, SeedableRng};
 
     use crate::{
-        block::{genesis_blocks, BlockAPI, BlockRef, Round, SignedBlock, TestBlock, VerifiedBlock},
+        block::{BlockAPI, BlockRef, SignedBlock, VerifiedBlock},
         block_manager::BlockManager,
         block_verifier::{BlockVerifier, NoopBlockVerifier},
         context::Context,
         dag_state::DagState,
         error::{ConsensusError, ConsensusResult},
         storage::mem_store::MemStore,
+        test_dag_builder::DagBuilder,
     };
 
-    #[test]
-    fn suspend_blocks_with_missing_ancestors() {
+    #[tokio::test]
+    async fn suspend_blocks_with_missing_ancestors() {
         // GIVEN
         let (context, _key_pairs) = Context::new_for_test(4);
         let context = Arc::new(context);
@@ -391,13 +430,22 @@ mod tests {
         let mut block_manager =
             BlockManager::new(context.clone(), dag_state, Arc::new(NoopBlockVerifier));
 
-        // create a DAG of 2 rounds
-        let all_blocks = dag(context, 2);
+        // create a DAG
+        let mut dag_builder = DagBuilder::new(context.clone());
+        dag_builder
+            .layers(1..=2) // 2 rounds
+            .authorities(vec![
+                AuthorityIndex::new_for_test(0),
+                AuthorityIndex::new_for_test(2),
+            ]) // Create equivocating blocks for 2 authorities
+            .equivocate(3)
+            .build();
 
         // Take only the blocks of round 2 and try to accept them
-        let round_2_blocks = all_blocks
+        let round_2_blocks = dag_builder
+            .blocks
             .into_iter()
-            .filter(|block| block.round() == 2)
+            .filter_map(|(_, block)| (block.round() == 2).then_some(block))
             .collect::<Vec<VerifiedBlock>>();
 
         // WHEN
@@ -425,8 +473,8 @@ mod tests {
         );
     }
 
-    #[test]
-    fn try_accept_block_returns_missing_blocks() {
+    #[tokio::test]
+    async fn try_accept_block_returns_missing_blocks() {
         let (context, _key_pairs) = Context::new_for_test(4);
         let context = Arc::new(context);
         let store = Arc::new(MemStore::new());
@@ -435,15 +483,24 @@ mod tests {
         let mut block_manager =
             BlockManager::new(context.clone(), dag_state, Arc::new(NoopBlockVerifier));
 
-        // create a DAG of 4 rounds
-        let all_blocks = dag(context, 4);
+        // create a DAG
+        let mut dag_builder = DagBuilder::new(context.clone());
+        dag_builder
+            .layers(1..=4) // 4 rounds
+            .authorities(vec![
+                AuthorityIndex::new_for_test(0),
+                AuthorityIndex::new_for_test(2),
+            ]) // Create equivocating blocks for 2 authorities
+            .equivocate(3) // Use 3 equivocations blocks per authority
+            .build();
 
         // Take the blocks from round 4 up to 2 (included). Only the first block of each round should return missing
         // ancestors when try to accept
-        for block in all_blocks
+        for (_, block) in dag_builder
+            .blocks
             .into_iter()
             .rev()
-            .take_while(|block| block.round() >= 2)
+            .take_while(|(_, block)| block.round() >= 2)
         {
             // WHEN
             let (accepted_blocks, missing) = block_manager.try_accept_blocks(vec![block.clone()]);
@@ -456,8 +513,8 @@ mod tests {
         }
     }
 
-    #[test]
-    fn accept_blocks_with_complete_causal_history() {
+    #[tokio::test]
+    async fn accept_blocks_with_complete_causal_history() {
         // GIVEN
         let (context, _key_pairs) = Context::new_for_test(4);
         let context = Arc::new(context);
@@ -468,7 +525,10 @@ mod tests {
             BlockManager::new(context.clone(), dag_state, Arc::new(NoopBlockVerifier));
 
         // create a DAG of 2 rounds
-        let all_blocks = dag(context, 2);
+        let mut dag_builder = DagBuilder::new(context.clone());
+        dag_builder.layers(1..=2).build();
+
+        let all_blocks = dag_builder.blocks.values().cloned().collect::<Vec<_>>();
 
         // WHEN
         let (accepted_blocks, missing) = block_manager.try_accept_blocks(all_blocks.clone());
@@ -491,14 +551,17 @@ mod tests {
         assert!(accepted_blocks.is_empty());
     }
 
-    #[test]
-    fn accept_blocks_unsuspend_children_blocks() {
+    #[tokio::test]
+    async fn accept_blocks_unsuspend_children_blocks() {
         // GIVEN
         let (context, _key_pairs) = Context::new_for_test(4);
         let context = Arc::new(context);
 
         // create a DAG of rounds 1 ~ 3
-        let mut all_blocks = dag(context.clone(), 3);
+        let mut dag_builder = DagBuilder::new(context.clone());
+        dag_builder.layers(1..=3).build();
+
+        let mut all_blocks = dag_builder.blocks.values().cloned().collect::<Vec<_>>();
 
         // Now randomize the sequence of sending the blocks to block manager. In the end all the blocks should be uniquely
         // suspended and no missing blocks should exist.
@@ -532,27 +595,6 @@ mod tests {
         }
     }
 
-    /// Creates all the blocks to produce a fully connected DAG from round 0 up to `end_round`.
-    /// Note: this method also returns the genesis blocks.
-    fn dag(context: Arc<Context>, end_round: u64) -> Vec<VerifiedBlock> {
-        let mut last_round_blocks = genesis_blocks(context.clone());
-        let mut all_blocks = vec![];
-        for round in 1..=end_round {
-            let mut this_round_blocks = Vec::new();
-            for (index, _authority) in context.committee.authorities() {
-                let block = TestBlock::new(round as Round, index.value() as u32)
-                    .set_timestamp_ms(round * 1000)
-                    .set_ancestors(last_round_blocks.iter().map(|b| b.reference()).collect())
-                    .build();
-
-                this_round_blocks.push(VerifiedBlock::new_for_test(block));
-            }
-            all_blocks.extend(this_round_blocks.clone());
-            last_round_blocks = this_round_blocks;
-        }
-        all_blocks
-    }
-
     struct TestBlockVerifier {
         fail: BTreeSet<BlockRef>,
     }
@@ -584,13 +626,16 @@ mod tests {
         }
     }
 
-    #[test]
-    fn reject_blocks_failing_verifications() {
+    #[tokio::test]
+    async fn reject_blocks_failing_verifications() {
         let (context, _key_pairs) = Context::new_for_test(4);
         let context = Arc::new(context);
 
         // create a DAG of rounds 1 ~ 5.
-        let all_blocks = dag(context.clone(), 5);
+        let mut dag_builder = DagBuilder::new(context.clone());
+        dag_builder.layers(1..=5).build();
+
+        let all_blocks = dag_builder.blocks.values().cloned().collect::<Vec<_>>();
 
         // Create a test verifier that fails the blocks of round 3
         let test_verifier = TestBlockVerifier::new(

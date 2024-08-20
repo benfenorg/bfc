@@ -1,12 +1,12 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { BenfenObjectData } from '@benfen/bfc.js/client';
+import type { SuiObjectData } from '@mysten/sui/client';
 
 import useFileExtensionType from './useFileExtensionType';
 import useMediaUrl from './useMediaUrl';
 
-export default function useNFTBasicData(nftObj: BenfenObjectData | null) {
+export default function useNFTBasicData(nftObj: SuiObjectData | null) {
 	const nftObjectID = nftObj?.objectId || null;
 	const filePath = useMediaUrl(nftObj?.content || null);
 	let objType = null;

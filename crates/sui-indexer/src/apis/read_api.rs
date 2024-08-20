@@ -8,8 +8,7 @@ use jsonrpsee::RpcModule;
 use sui_json_rpc::error::SuiRpcInputError;
 use sui_types::error::SuiObjectResponseError;
 use sui_types::object::ObjectRead;
-use crate::HttpClient;
-use sui_json_rpc_api::ReadApiClient;
+
 use crate::errors::IndexerError;
 use crate::indexer_reader::IndexerReader;
 use sui_json_rpc::SuiRpcModule;
@@ -25,22 +24,14 @@ use sui_types::base_types::{ObjectID, SequenceNumber};
 use sui_types::digests::{ChainIdentifier, TransactionDigest};
 use sui_types::sui_serde::BigInt;
 
-use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
-use sui_types::dao::DaoRPC;
 #[derive(Clone)]
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
-    fullnode: HttpClient,
-
 }
 
 impl<T: R2D2Connection + 'static> ReadApi<T> {
-    pub fn new(inner: IndexerReader<T>, fullnode_client: HttpClient) -> Self {
-
-        Self {
-            inner,
-            fullnode: fullnode_client,
-        }
+    pub fn new(inner: IndexerReader<T>) -> Self {
+        Self { inner }
     }
 
     async fn get_checkpoint(&self, id: CheckpointId) -> Result<Checkpoint, IndexerError> {
@@ -194,15 +185,16 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
         .into())
     }
 
-    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
-        self.fullnode.get_inner_dao_info().await
+    async fn try_get_object_before_version(
+        &self,
+        _: ObjectID,
+        _: SequenceNumber,
+    ) -> RpcResult<SuiPastObjectResponse> {
+        Err(jsonrpsee::types::error::CallError::Custom(
+            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
+        )
+        .into())
     }
-
-    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
-        self.fullnode.get_bfc_zklogin_salt(seed, iss, sub).await
-    }
-
-
 
     async fn try_multi_get_past_objects(
         &self,
@@ -273,16 +265,6 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
             .get_transaction_events_in_blocking_task(transaction_digest)
             .await
             .map_err(Into::into)
-    }
-
-    async fn get_loaded_child_objects(
-        &self,
-        _digest: TransactionDigest,
-    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
-        Err(jsonrpsee::types::error::CallError::Custom(
-            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
-        )
-        .into())
     }
 
     async fn get_protocol_config(
