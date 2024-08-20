@@ -353,37 +353,6 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
         }
     }
 
-    fn is_object_struct(
-        view: &CompiledModule,
-        function_type_args: &[AbilitySet],
-        s: &SignatureToken,
-    ) -> Result<bool, String> {
-        use SignatureToken as S;
-        match s {
-            S::Bool
-            | S::U8
-            | S::U16
-            | S::U32
-            | S::U64
-            | S::U128
-            | S::U256
-            | S::Address
-            | S::Signer
-            | S::Vector(_)
-            | S::Reference(_)
-            | S::MutableReference(_) => Ok(false),
-            S::TypeParameter(idx) => Ok(function_type_args
-                .get(*idx as usize)
-                .map(|abs| abs.has_key())
-                .unwrap_or(false)),
-            S::Struct(_) | S::StructInstantiation(_) => {
-                let abilities = view
-                    .abilities(s, function_type_args)
-                    .map_err(|vm_err| vm_err.to_string())?;
-                Ok(abilities.has_key())
-            }
-        }
-    }
 fn is_object_struct(
     view: &CompiledModule,
     function_type_args: &[AbilitySet],

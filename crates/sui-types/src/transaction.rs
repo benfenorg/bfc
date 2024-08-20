@@ -27,7 +27,6 @@ use crate::signature::{GenericSignature, VerifyParams};
 use crate::{BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION};
 
 use std::iter;
-use crate::signature_verification::verify_sender_signed_data_message_signatures;
 use crate::signature_verification::{
     verify_sender_signed_data_message_signatures, VerifiedDigestCache,
 };
@@ -1336,7 +1335,6 @@ impl TransactionKind {
     /// TODO: We should use GasCostSummary directly in ChangeEpoch struct, and return that
     /// directly.
     pub fn get_advance_epoch_tx_gas_summary(&self) -> Option<(u64, u64)> {
-
         let e = match self {
             Self::ChangeEpoch(e) => {
                 e
@@ -1362,8 +1360,8 @@ impl TransactionKind {
 
     /// Returns an iterator of all shared input objects used by this transaction.
     /// It covers both Call and ChangeEpoch transaction kind, because both makes Move calls.
-    pub fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
-        match &self {
+    fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
+        match self {
             Self::ChangeEpoch(_) => {
                 let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
                                 SharedInputObject::BFC_SYSTEM_OBJ,
@@ -1372,47 +1370,44 @@ impl TransactionKind {
                                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                                     mutable: true,
                                 }];
-                //Either::Left(Either::Left(objs.into_iter()))
-                Either::Right(Either::Right(objs.into_iter()))
-
+                Either::Left(Either::Left(objs.into_iter()))
             }
-
-            Self::ConsensusCommitPrologue(_) | Self::ConsensusCommitPrologueV2(_) => {
-
-            Either::Left(Either::Left(iter::once(SharedInputObject {
-            Self::ConsensusCommitPrologue(_)
-            | Self::ConsensusCommitPrologueV2(_)
-            | Self::ConsensusCommitPrologueV3(_) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject {
+            Self::ConsensusCommitPrologue(_) => {
+                Either::Left(Either::Right(iter::once(SharedInputObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
                 })))
             }
-
-            Self::AuthenticatorStateUpdate(update) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject {
-                    id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
-                    initial_shared_version: update.authenticator_obj_initial_shared_version,
-                    mutable: true,
-                })))
-            }
-            Self::RandomnessStateUpdate(update) => {
-                Either::Left(Either::Left(iter::once(SharedInputObject {
-                    id: SUI_RANDOMNESS_STATE_OBJECT_ID,
-                    initial_shared_version: update.randomness_obj_initial_shared_version,
-                    mutable: true,
-                })))
-            }
-            Self::EndOfEpochTransaction(txns) => Either::Left(Either::Right(
-                txns.iter().flat_map(|txn| txn.shared_input_objects()),
-            )),
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-            _ => Either::Right(Either::Right(vec![].into_iter())),
+            Self::AuthenticatorStateExpire(expire) => Either::Left(
+                vec![SharedInputObject {
+                    id: SUI_AUTHENTICATOR_STATE_OBJECT_ID,
+                    initial_shared_version: expire.authenticator_obj_initial_shared_version(),
+                    mutable: true,
+                }]
+                    .into_iter(),
+            ),
+            Self::AuthenticatorStateCreate => Either::Right(iter::empty()),
+            Self::RandomnessStateCreate => Either::Right(iter::empty()),
+            Self::DenyListStateCreate => Either::Right(iter::empty()),
+            Self::BridgeStateCreate(_) => Either::Right(iter::empty()),
+            Self::BridgeCommitteeInit(bridge_version) => Either::Left(
+                vec![
+                    SharedInputObject {
+                        id: SUI_BRIDGE_OBJECT_ID,
+                        initial_shared_version: *bridge_version,
+                        mutable: true,
+                    },
+                    SharedInputObject::SUI_SYSTEM_OBJ,
+                ]
+                    .into_iter(),
+            ),
         }
     }
+
 
     fn move_calls(&self) -> Vec<(&ObjectID, &IdentStr, &IdentStr)> {
         match &self {
@@ -1439,7 +1434,7 @@ impl TransactionKind {
     /// For a Move object, we attach the object reference;
     /// for a Move package, we provide the object id only since they never change on chain.
     /// TODO: use an iterator over references here instead of a Vec to avoid allocations.
-       pub fn input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
+    pub fn input_objects(&self) -> UserInputResult<Vec<InputObjectKind>> {
         let input_objects = match &self {
             Self::ChangeEpoch(_) => {
                 vec![InputObjectKind::SharedMoveObject {
@@ -1476,26 +1471,13 @@ impl TransactionKind {
                 }]
             }
             Self::RandomnessStateUpdate(update) => {
-                    vec![InputObjectKind::SharedMoveObject {
-                        id: SUI_RANDOMNESS_STATE_OBJECT_ID,
-                        initial_shared_version: update.randomness_obj_initial_shared_version(),
-                        mutable: true,
-                    }]
-                }
+                vec![InputObjectKind::SharedMoveObject {
+                    id: SUI_RANDOMNESS_STATE_OBJECT_ID,
+                    initial_shared_version: update.randomness_obj_initial_shared_version(),
+                    mutable: true,
+                }]
+            }
             Self::EndOfEpochTransaction(txns) => {
-                    let mut transaction: Vec<_> = txns.iter().flat_map(|txn| txn.input_objects()).collect();
-                    transaction.push(InputObjectKind::SharedMoveObject {
-                        id: BFC_SYSTEM_STATE_OBJECT_ID,
-                        initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-                        mutable: true,
-                    });
-                    transaction.push(InputObjectKind::SharedMoveObject {
-                        id: SUI_CLOCK_OBJECT_ID,
-                        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                        mutable: true,
-                    });
-                    transaction
-                }
                 // Dedup since transactions may have a overlap in input objects.
                 // Note: it's critical to ensure the order of inputs are deterministic.
                 let before_dedup: Vec<_> =
@@ -1510,96 +1492,66 @@ impl TransactionKind {
                 after_dedup
             }
             Self::ProgrammableTransaction(p) => return p.input_objects(),
-            };
-            // Ensure that there are no duplicate inputs. This cannot be removed because:
-            // In [`AuthorityState::check_locks`], we check that there are no duplicate mutable
-            // input objects, which would have made this check here unnecessary. However we
-            // do plan to allow shared objects show up more than once in multiple single
-            // transactions down the line. Once we have that, we need check here to make sure
-            // the same shared object doesn't show up more than once in the same single
-            // transaction.
-            let mut used = HashSet::new();
-            if ! input_objects.iter().all(| o | used.insert(o.object_id())) {
-                return Err(UserInputError::DuplicateObjectRefInput);
-            }
-            Ok(input_objects)
-        }
-
-
-        pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
-            match self {
-                TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
-                // All transactiond kinds below are assumed to be system,
-                // and no validity or limit checks are performed.
-                TransactionKind::ChangeEpoch(_)
-                | TransactionKind::Genesis(_)
-                | TransactionKind::ConsensusCommitPrologue(_)
-                | TransactionKind::ConsensusCommitPrologueV2(_) => (),
-                TransactionKind::EndOfEpochTransaction(txns) => {
-                    // The transaction should have been rejected earlier if the feature is not enabled.
-                    assert!(config.end_of_epoch_transaction_supported());
-    pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
-        match self {
-            TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
-            // All transactiond kinds below are assumed to be system,
-            // and no validity or limit checks are performed.
-            TransactionKind::ChangeEpoch(_)
-            | TransactionKind::Genesis(_)
-            | TransactionKind::ConsensusCommitPrologue(_) => (),
-            TransactionKind::ConsensusCommitPrologueV2(_) => {
-                if !config.include_consensus_digest_in_prologue() {
-                    return Err(UserInputError::Unsupported(
-                        "ConsensusCommitPrologueV2 is not supported".to_string(),
-                    ));
-                }
-            }
-            TransactionKind::ConsensusCommitPrologueV3(_) => {
-                if !config.record_consensus_determined_version_assignments_in_prologue() {
-                    return Err(UserInputError::Unsupported(
-                        "ConsensusCommitPrologueV3 is not supported".to_string(),
-                    ));
-                }
-            }
-            TransactionKind::EndOfEpochTransaction(txns) => {
-                if !config.end_of_epoch_transaction_supported() {
-                    return Err(UserInputError::Unsupported(
-                        "EndOfEpochTransaction is not supported".to_string(),
-                    ));
-                }
-
-                    for tx in txns {
-                        tx.validity_check(config)?;
-                    }
-                }
-
-                TransactionKind::AuthenticatorStateUpdate(_) => {
-                    // The transaction should have been rejected earlier if the feature is not enabled.
-                    assert!(config.enable_jwk_consensus_updates());
-                }
-                TransactionKind::RandomnessStateUpdate(_) => {
-                    // The transaction should have been rejected earlier if the feature is not enabled.
-                    assert!(config.random_beacon());
-                }
-            };
-            Ok(())
-        }
-            TransactionKind::AuthenticatorStateUpdate(_) => {
-                if !config.enable_jwk_consensus_updates() {
-                    return Err(UserInputError::Unsupported(
-                        "authenticator state updates not enabled".to_string(),
-                    ));
-                }
-            }
-            TransactionKind::RandomnessStateUpdate(_) => {
-                if !config.random_beacon() {
-                    return Err(UserInputError::Unsupported(
-                        "randomness state updates not enabled".to_string(),
-                    ));
-                }
-            }
         };
-        Ok(())
+        // Ensure that there are no duplicate inputs. This cannot be removed because:
+        // In [`AuthorityState::check_locks`], we check that there are no duplicate mutable
+        // input objects, which would have made this check here unnecessary. However we
+        // do plan to allow shared objects show up more than once in multiple single
+        // transactions down the line. Once we have that, we need check here to make sure
+        // the same shared object doesn't show up more than once in the same single
+        // transaction.
+        let mut used = HashSet::new();
+        if !input_objects.iter().all(|o| used.insert(o.object_id())) {
+            return Err(UserInputError::DuplicateObjectRefInput);
+        }
+        Ok(input_objects)
     }
+                pub fn validity_check(&self, config: &ProtocolConfig) -> UserInputResult {
+                    match self {
+                        TransactionKind::ProgrammableTransaction(p) => p.validity_check(config)?,
+                        // All transactiond kinds below are assumed to be system,
+                        // and no validity or limit checks are performed.
+                        TransactionKind::ChangeEpoch(_)
+                        | TransactionKind::Genesis(_)
+                        | TransactionKind::ConsensusCommitPrologue(_) => (),
+                        TransactionKind::ConsensusCommitPrologueV2(_) => {
+                            if !config.include_consensus_digest_in_prologue() {
+                                return Err(UserInputError::Unsupported(
+                                    "ConsensusCommitPrologueV2 is not supported".to_string(),
+                                ));
+                            }
+                        }
+                        TransactionKind::ConsensusCommitPrologueV3(_) => {
+                            if !config.record_consensus_determined_version_assignments_in_prologue() {
+                                return Err(UserInputError::Unsupported(
+                                    "ConsensusCommitPrologueV3 is not supported".to_string(),
+                                ));
+                            }
+                        }
+                        TransactionKind::EndOfEpochTransaction(txns) => {
+                            if !config.end_of_epoch_transaction_supported() {
+                                return Err(UserInputError::Unsupported(
+                                    "EndOfEpochTransaction is not supported".to_string(),
+                                ));
+                            }
+
+                            for tx in txns {
+                                tx.validity_check(config)?;
+                            }
+                        }
+
+                        TransactionKind::AuthenticatorStateUpdate(_) => {
+                            // The transaction should have been rejected earlier if the feature is not enabled.
+                            assert!(config.enable_jwk_consensus_updates());
+                        }
+                        TransactionKind::RandomnessStateUpdate(_) => {
+                            // The transaction should have been rejected earlier if the feature is not enabled.
+                            assert!(config.random_beacon());
+                        }
+                    };
+                    Ok(())
+                }
+
 
         /// number of commands, or 0 if it is a system transaction
         pub fn num_commands(&self) -> usize {
@@ -1623,35 +1575,20 @@ impl TransactionKind {
                 _ => 1,
             }
         }
-
         pub fn name(&self) -> &'static str {
             match self {
                 Self::ChangeEpoch(_) => "ChangeEpoch",
                 Self::Genesis(_) => "Genesis",
                 Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
                 Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
+                Self::ConsensusCommitPrologueV3(_) => "ConsensusCommitPrologueV3",
                 Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
                 Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
                 Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
                 Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
             }
         }
-    pub fn name(&self) -> &'static str {
-        match self {
-            Self::ChangeEpoch(_) => "ChangeEpoch",
-            Self::Genesis(_) => "Genesis",
-            Self::ConsensusCommitPrologue(_) => "ConsensusCommitPrologue",
-            Self::ConsensusCommitPrologueV2(_) => "ConsensusCommitPrologueV2",
-            Self::ConsensusCommitPrologueV3(_) => "ConsensusCommitPrologueV3",
-            Self::ProgrammableTransaction(_) => "ProgrammableTransaction",
-            Self::AuthenticatorStateUpdate(_) => "AuthenticatorStateUpdate",
-            Self::RandomnessStateUpdate(_) => "RandomnessStateUpdate",
-            Self::EndOfEpochTransaction(_) => "EndOfEpochTransaction",
-        }
     }
-}
-
-}
 impl Display for TransactionKind {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         let mut writer = String::new();
