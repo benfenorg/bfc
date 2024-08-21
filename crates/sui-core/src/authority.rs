@@ -656,6 +656,12 @@ impl AuthorityMetrics {
                 registry,
             )
                 .unwrap(),
+            consensus_handler_processed_bytes: register_int_counter_with_registry!(
+                "consensus_handler_processed_bytes",
+                "Number of bytes processed by consensus_handler",
+                registry,
+            )
+            .unwrap(),
             consensus_handler_processed: register_int_counter_vec_with_registry!(
                 "consensus_handler_processed",
                 "Number of transactions processed by consensus handler",
