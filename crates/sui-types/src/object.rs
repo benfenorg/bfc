@@ -696,7 +696,6 @@ impl Object {
         max_move_package_size: u64,
         dependencies: impl IntoIterator<Item=&'p MovePackage>,
         move_binary_format_version: u32,
-        dependencies: impl IntoIterator<Item = &'p MovePackage>,
     ) -> Result<Self, ExecutionError> {
         Ok(Self::new_package_from_data(
             Data::Package(MovePackage::new_initial(

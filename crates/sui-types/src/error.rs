@@ -118,9 +118,7 @@ pub enum UserInputError {
     ImmutableParameterExpectedError { object_id: ObjectID },
     #[error("Size limit exceeded: {limit} is {value}")]
     SizeLimitExceeded { limit: String, value: String },
-    #[error(
-    "Object {child_id:?} is owned by object {parent_id:?}. \
-        Objects owned by other objects cannot be used as input arguments"
+    #[error("Object {:?} is owned by object {:?}. Objects owned by other objects cannot be used as input arguments",
     objects_id_to_bfc_address(*child_id),
     objects_id_to_bfc_address(*parent_id)
     )]
@@ -129,7 +127,7 @@ pub enum UserInputError {
         parent_id: ObjectID,
     },
     #[error(
-    "Invalid Object digest for object {object_id:?}. Expected digest : {expected_digest:?}"
+    "Invalid Object digest for object {:?}. Expected digest : {:?}",
     objects_id_to_bfc_address(*object_id),
     expected_digest
     )]
@@ -170,9 +168,6 @@ pub enum UserInputError {
     NoRateFoundInBfcSystem{ coin_type: String },
 
     #[error(
-    "Balance of gas object {:?} is lower than the needed amount: {:?}.",
-    gas_balance,
-    needed_gas_amount
         "Balance of gas object {:?} is lower than the needed amount: {:?}",
         gas_balance,
         needed_gas_amount
