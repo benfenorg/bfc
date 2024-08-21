@@ -687,10 +687,11 @@ mod checked {
                             assert!(protocol_config.random_beacon());
                             builder = setup_randomness_state_create(builder);
                         }
+
                         EndOfEpochTransactionKind::DenyListStateCreate => {
-                            assert!(protocol_config.enable_coin_deny_list());
-                            builder = setup_coin_deny_list_state_create(builder);
+                            panic!("EndOfEpochTransactionKind::CoinDenyListStateCreate should not exist in v1");
                         }
+
                         EndOfEpochTransactionKind::BridgeStateCreate(_) => {
                             panic!(
                                 "EndOfEpochTransactionKind::BridgeStateCreate should not exist in v1"

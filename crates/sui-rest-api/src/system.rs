@@ -370,7 +370,7 @@ impl From<sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSum
             pending_pool_token_withdraw,
             exchange_rates_id,
             exchange_rates_size,
-            stable_pools
+            stable_pools:_,
         } = value;
 
         Self {

@@ -1697,54 +1697,55 @@ mod tests {
                 amount: None,
                 opts: Opts::for_testing(50_000_000),
             }
-            .execute(&mut context)
-            .await
-            .expect("transfer failed");
-        for gas in gas_coins.iter().take(gas_coins.len() - 1) {
-            let tx_data = client
-                .transaction_builder()
-                .transfer_sui(address, gas.0, gas_budget, destination_address, None)
+                .execute(&mut context)
+                .await
+                .expect("transfer failed");
+            for gas in gas_coins.iter().take(gas_coins.len() - 1) {
+                let tx_data = client
+                    .transaction_builder()
+                    .transfer_sui(address, gas.0, gas_budget, destination_address, None)
+                    .await
+                    .unwrap();
+                execute_tx(&mut context, tx_data).await.unwrap();
+            }
+
+            // Assert that the coins were transferred away successfully to destination address
+            let gas_coins = context
+                .get_all_gas_objects_owned_by_address(address)
                 .await
                 .unwrap();
-            execute_tx(&mut context, tx_data).await.unwrap();
-        }
+            assert!(!gas_coins.is_empty());
 
-        // Assert that the coins were transferred away successfully to destination address
-        let gas_coins = context
-            .get_all_gas_objects_owned_by_address(address)
-            .await
-            .unwrap();
-        assert!(!gas_coins.is_empty());
-
-        let tmp = tempfile::tempdir().unwrap();
-        let prom_registry = Registry::new();
-        let config = FaucetConfig::default();
-        let faucet = SimpleFaucet::new(
-            context,
-            &prom_registry,
-            &tmp.path().join("faucet.wal"),
-            config,
-        )
-        .await
-        .unwrap();
-
-        // We traverse the list twice, which must trigger the split gas to be kicked out
-        futures::future::join_all((0..2).map(|_| {
-            faucet.send(
-                Uuid::new_v4(),
-                SuiAddress::random_for_testing_only(),
-                &[30000000000],
+            let tmp = tempfile::tempdir().unwrap();
+            let prom_registry = Registry::new();
+            let config = FaucetConfig::default();
+            let faucet = SimpleFaucet::new(
+                context,
+                &prom_registry,
+                &tmp.path().join("faucet.wal"),
+                config,
             )
-        }))
-        .await;
+                .await
+                .unwrap();
 
-        // Check that the gas was discarded for being too small
-        let discarded = faucet.metrics.total_discarded_coins.get();
-        assert_eq!(discarded, 1);
+            // We traverse the list twice, which must trigger the split gas to be kicked out
+            futures::future::join_all((0..2).map(|_| {
+                faucet.send(
+                    Uuid::new_v4(),
+                    SuiAddress::random_for_testing_only(),
+                    &[30000000000],
+                )
+            }))
+                .await;
 
-        // Check that the WAL is empty so we don't retry bad requests
-        let wal = faucet.wal.lock().await;
-        assert!(wal.log.is_empty());
+            // Check that the gas was discarded for being too small
+            let discarded = faucet.metrics.total_discarded_coins.get();
+            assert_eq!(discarded, 1);
+
+            // Check that the WAL is empty so we don't retry bad requests
+            let wal = faucet.wal.lock().await;
+            assert!(wal.log.is_empty());
+        }
     }
 
     #[tokio::test]
@@ -1787,44 +1788,45 @@ mod tests {
                 amount: None,
                 opts: Opts::for_testing(50_000_000),
             }
-            .execute(&mut context)
-            .await
-            .expect("transfer failed");
-        for gas in gas_coins {
-            let tx_data = client
-                .transaction_builder()
-                .transfer_sui(address, gas.0, gas_budget, destination_address, None)
+                .execute(&mut context)
+                .await
+                .expect("transfer failed");
+            for gas in gas_coins {
+                let tx_data = client
+                    .transaction_builder()
+                    .transfer_sui(address, gas.0, gas_budget, destination_address, None)
+                    .await
+                    .unwrap();
+                execute_tx(&mut context, tx_data).await.unwrap();
+            }
+
+            // Assert that the coins were transferred away successfully to destination address
+            let gas_coins = context
+                .get_all_gas_objects_owned_by_address(destination_address)
                 .await
                 .unwrap();
-            execute_tx(&mut context, tx_data).await.unwrap();
+            assert!(!gas_coins.is_empty());
+
+            let tmp = tempfile::tempdir().unwrap();
+            let prom_registry = Registry::new();
+            let faucet = SimpleFaucet::new(
+                context,
+                &prom_registry,
+                &tmp.path().join("faucet.wal"),
+                config,
+            )
+                .await
+                .unwrap();
+
+            let destination_address = SuiAddress::random_for_testing_only();
+            // Assert that faucet will discard and also terminate
+            let res = faucet
+                .send(Uuid::new_v4(), destination_address, &[30000000000])
+                .await;
+
+            // Assert that the result is an Error
+            assert!(matches!(res, Err(FaucetError::NoGasCoinAvailable)));
         }
-
-        // Assert that the coins were transferred away successfully to destination address
-        let gas_coins = context
-            .get_all_gas_objects_owned_by_address(destination_address)
-            .await
-            .unwrap();
-        assert!(!gas_coins.is_empty());
-
-        let tmp = tempfile::tempdir().unwrap();
-        let prom_registry = Registry::new();
-        let faucet = SimpleFaucet::new(
-            context,
-            &prom_registry,
-            &tmp.path().join("faucet.wal"),
-            config,
-        )
-        .await
-        .unwrap();
-
-        let destination_address = SuiAddress::random_for_testing_only();
-        // Assert that faucet will discard and also terminate
-        let res = faucet
-            .send(Uuid::new_v4(), destination_address, &[30000000000])
-            .await;
-
-        // Assert that the result is an Error
-        assert!(matches!(res, Err(FaucetError::NoGasCoinAvailable)));
     }
 
     #[tokio::test]
@@ -2024,3 +2026,4 @@ mod tests {
         assert_eq!(actual_amounts, amounts);
     }
 }
+
