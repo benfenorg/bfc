@@ -22,7 +22,6 @@ use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::storage::{BackingStore, PackageObject};
 use sui_types::sui_system_state::SuiSystemState;
 use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams, get_sui_system_state, SuiSystemStateTrait};
-use sui_types::type_resolver::LayoutResolver;
 use sui_types::{base_types::{
     ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
 }, error::{ExecutionError, SuiError, SuiResult},
