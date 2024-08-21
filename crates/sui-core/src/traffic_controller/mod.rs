@@ -166,11 +166,8 @@ impl TrafficController {
         }
     }
 
-    /// Returns true if the connection is allowed, false if it is blocked
-    pub async fn check(&self, connection_ip: Option<IpAddr>, proxy_ip: Option<IpAddr>) -> bool {
-        let connection_check = self.check_and_clear_blocklist(
-            connection_ip,
-            self.blocklists.connection_ips.clone(),
+
+
     pub async fn check_impl(
         &self,
         client: &Option<IpAddr>,

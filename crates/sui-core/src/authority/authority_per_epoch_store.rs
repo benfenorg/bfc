@@ -2193,7 +2193,7 @@ impl AuthorityPerEpochStore {
     // ) -> Result<(), SuiError> {
     //     let key = transaction.key();
     //     self.finish_consensus_certificate_process(batch, key, certificate, consensus_index)
-    pub fn record_jwk_vote(
+    //pub fn record_jwk_vote(
     pub fn get_capabilities_v2(&self) -> SuiResult<Vec<AuthorityCapabilitiesV2>> {
         assert!(self.protocol_config.authority_capabilities_v2());
         let result: Result<Vec<AuthorityCapabilitiesV2>, TypedStoreError> = self

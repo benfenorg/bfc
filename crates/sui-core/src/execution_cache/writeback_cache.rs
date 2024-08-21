@@ -1193,6 +1193,7 @@ impl ExecutionCacheRead for WritebackCache {
     fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
         get_bfc_system_proposal_map(self)
     }
+}
 
 impl ObjectCacheRead for WritebackCache {
     fn get_package_object(&self, package_id: &ObjectID) -> SuiResult<Option<PackageObject>> {
