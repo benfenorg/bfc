@@ -48,10 +48,9 @@ use sui_types::messages_checkpoint::{
 };
 use sui_types::metrics::LimitsMetrics;
 use sui_types::object::{Object, Owner};
+use sui_types::BFC_SYSTEM_ADDRESS;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSystemStateTrait};
-use sui_types::{BFC_SYSTEM_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
-use tracing::{trace};
 use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };

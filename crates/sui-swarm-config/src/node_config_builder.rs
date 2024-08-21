@@ -442,7 +442,6 @@ impl FullnodeConfigBuilder {
                 .unwrap_or(local_ip_utils::get_available_port(&localhost)),
             json_rpc_address: self.json_rpc_address.unwrap_or(json_rpc_address),
             consensus_config: None,
-            enable_event_processing: true, // This is unused.
             enable_index_processing: default_enable_index_processing(),
             genesis: self.genesis.unwrap_or(sui_config::node::Genesis::new(
                 network_config.genesis.clone(),
@@ -479,9 +478,14 @@ impl FullnodeConfigBuilder {
             zklogin_oauth_providers: default_zklogin_oauth_providers(),
             authority_overload_config: Default::default(),
             run_with_range: self.run_with_range,
-            websocket_only: false,
             policy_config: self.policy_config,
             firewall_config: self.fw_config,
+            enable_soft_bundle: true,
+            enable_validator_tx_finalizer: false, //TODO check this field
+            execution_cache: ExecutionCacheConfig::default(),
+            jsonrpc_server_type: None,
+            remove_deprecated_tables: false,
+            state_accumulator_v2: true, //TODO check this field
         }
     }
 
