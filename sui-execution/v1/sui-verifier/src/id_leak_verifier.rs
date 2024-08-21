@@ -36,11 +36,7 @@ use sui_types::bfc_system_state::BFC_SYSTEM_MODULE_NAME;
 use sui_types::bridge::BRIDGE_MODULE_NAME;
 use sui_types::{
     authenticator_state::AUTHENTICATOR_STATE_MODULE_NAME,
-    clock::CLOCK_MODULE_NAME,
-    error::{ExecutionError, VMMVerifierErrorSubStatusCode},
-    id::OBJECT_MODULE_NAME,
-    sui_system_state::SUI_SYSTEM_MODULE_NAME,
-    BRIDGE_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS,
+    BRIDGE_ADDRESS,
 };
 
 use crate::{

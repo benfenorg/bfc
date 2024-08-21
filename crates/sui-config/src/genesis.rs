@@ -33,7 +33,6 @@ use sui_types::{
     object::Object,
 };
 use sui_types::{SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
-use tracing::trace;
 
 pub const TOTAL_SUPPLY_WITH_ALLOCATION_MIST: u64 = TOTAL_SUPPLY_MIST / 2;
 #[derive(Clone, Debug)]

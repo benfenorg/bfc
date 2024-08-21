@@ -10,7 +10,6 @@ pub mod checked {
     use sui_protocol_config::ProtocolConfig;
     use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
     use sui_types::deny_list_v2::CONFIG_SETTING_DYNAMIC_FIELD_SIZE_FOR_GAS;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
     use sui_types::gas_model::gas_predicates::{
         charge_upgrades, dont_charge_budget_on_storage_oog,
     };

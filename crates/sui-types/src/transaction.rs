@@ -61,7 +61,7 @@ use tracing::trace;
 use crate::gas::GasCostSummaryAdjusted;
 use crate::stable_coin::stable::checked::STABLE;
 
-use crate::supported_protocol_versions::SupportedProtocolVersions;
+//use crate::supported_protocol_versions::SupportedProtocolVersions;
 
 
 pub const TEST_ONLY_GAS_UNIT_FOR_TRANSFER: u64 = 200_000;

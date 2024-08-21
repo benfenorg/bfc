@@ -25,13 +25,7 @@ use rand::rngs::StdRng;
 use rand::SeedableRng;
 use serde::Deserialize;
 use shared_crypto::intent::{Intent, IntentMessage};
-use std::collections::{BTreeMap, HashMap};
-use crate::messages_checkpoint::CertifiedCheckpointSummary;
-use crate::messages_checkpoint::SignedCheckpointSummary;
-use crate::messages_checkpoint::CheckpointContents;
-use crate::messages_checkpoint::CheckpointSummary;
-use crate::gas::GasCostSummary;
-use crate::base_types::ExecutionDigests;
+use std::collections::{BTreeMap};
 
 #[derive(Deserialize)]
 pub struct TestData {

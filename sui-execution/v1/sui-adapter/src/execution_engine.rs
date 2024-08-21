@@ -22,8 +22,9 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     }, SUI_RANDOMNESS_STATE_OBJECT_ID};
+
     use sui_types::execution_mode::{self, ExecutionMode};
-    };
+
     use sui_types::base_types::SequenceNumber;
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
@@ -72,11 +73,7 @@ mod checked {
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME,
                            DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME},
         SUI_FRAMEWORK_ADDRESS,
-        base_types::{ObjectID, ObjectRef, SuiAddress, TransactionDigest, TxContext},
-        object::{Object, ObjectInner},
-        sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
-        SUI_SYSTEM_PACKAGE_ID,
+        base_types::{ObjectID},
     };
 
     use sui_types::{ BFC_SYSTEM_PACKAGE_ID};
@@ -1380,4 +1377,5 @@ mod checked {
         builder
     }
 }
+
 

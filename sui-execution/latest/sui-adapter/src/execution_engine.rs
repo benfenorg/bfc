@@ -23,7 +23,6 @@ mod checked {
         BALANCE_MODULE_NAME,
     };
     use sui_types::execution_mode::{self, ExecutionMode};
-    use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
@@ -39,7 +38,6 @@ mod checked {
     use crate::programmable_transactions;
     use crate::type_layout_resolver::TypeLayoutResolver;
     //use move_binary_format::access::ModuleAccess;
-    use crate::{gas_charger::GasCharger};
     use crate::{gas_charger::GasCharger, temporary_store::TemporaryStore};
     use move_core_types::ident_str;
     use sui_move_natives::all_natives;
