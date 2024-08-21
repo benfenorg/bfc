@@ -49,9 +49,7 @@ use writeback_cache::WritebackCache;
 use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::collection_types::VecMap;
 use sui_types::proposal::ProposalStatus;
-pub use passthrough_cache::PassthroughCache;
 pub use proxy_cache::ProxyCache;
-pub use writeback_cache::WritebackCache;
 
 use metrics::ExecutionCacheMetrics;
 
@@ -392,6 +390,7 @@ pub trait ObjectCacheRead: Send + Sync {
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge>;
 
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState>;
     // Marker methods
 
     /// Get the marker at a specific version
@@ -611,6 +610,7 @@ pub trait TransactionCacheRead: Send + Sync {
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
+
     fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
 
         // Marker methods

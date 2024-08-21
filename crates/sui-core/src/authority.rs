@@ -41,9 +41,12 @@ use std::{
     vec,
 };
 use sui_config::node::{AuthorityOverloadConfig, StateDebugDumpConfig};
+use sui_config::transaction_deny_config::TransactionDenyConfig;
 use sui_config::NodeConfig;
+use sui_config::certificate_deny_config::CertificateDenyConfig;
 use sui_types::crypto::RandomnessRound;
 use sui_types::execution_status::ExecutionStatus;
+use sui_types::BFC_SYSTEM_ADDRESS;
 use sui_types::inner_temporary_store::PackageStoreWithFallback;
 use sui_types::layout_resolver::into_struct_layout;
 use sui_types::layout_resolver::LayoutResolver;
@@ -93,6 +96,7 @@ use sui_types::gas::{GasCostSummary, GasCostSummaryAdjusted, SuiGasStatus};
 use sui_types::inner_temporary_store::{
     InnerTemporaryStore, ObjectMap, TemporaryModuleResolver, TxCoins, WrittenObjects,
 };
+use sui_types::crypto::AuthoritySignature;
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointCommitment, CheckpointContents, CheckpointContentsDigest,
@@ -112,15 +116,12 @@ use sui_types::storage::{
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemStateTrait;
 use sui_types::sui_system_state::SuiSystemStateTrait;
 
-use sui_types::{base_types::*, committee::Committee, crypto::AuthoritySignature,
-                error::{SuiError, SuiResult}, fp_ensure,
-                object::{Object, ObjectRead}, transaction::*, SUI_SYSTEM_ADDRESS, BFC_SYSTEM_ADDRESS};
+
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::supported_protocol_versions::{ProtocolConfig, SupportedProtocolVersions};
 use sui_types::{
     base_types::*,
     committee::Committee,
-    crypto::AuthoritySignature,
     error::{SuiError, SuiResult},
     fp_ensure,
     object::{Object, ObjectRead},
@@ -585,7 +586,7 @@ impl AuthorityMetrics {
                 "Number of times each source indicates transaction overload.",
                 &["source"],
                 registry)
-            .unwrap(),
+                .unwrap(),
             execution_driver_executed_transactions: register_int_counter_with_registry!(
                 "execution_driver_executed_transactions",
                 "Cumulative number of transaction executed by execution driver",
@@ -655,17 +656,12 @@ impl AuthorityMetrics {
                 registry,
             )
                 .unwrap(),
-            consensus_handler_processed_bytes: register_int_counter_with_registry!(
-                "consensus_handler_processed_bytes",
-                "Number of bytes processed by consensus_handler",
-            .unwrap(),
             consensus_handler_processed: register_int_counter_vec_with_registry!(
                 "consensus_handler_processed",
                 "Number of transactions processed by consensus handler",
                 &["class"],
                 registry
             ).unwrap(),
-
             consensus_handler_transaction_sizes: register_histogram_vec_with_registry!(
                 "consensus_handler_transaction_sizes",
                 "Sizes of each type of transactions processed by consensus handler",
@@ -673,7 +669,6 @@ impl AuthorityMetrics {
                 POSITIVE_INT_BUCKETS.to_vec(),
                 registry
             ).unwrap(),
-
             consensus_handler_num_low_scoring_authorities: register_int_gauge_with_registry!(
                 "consensus_handler_num_low_scoring_authorities",
                 "Number of low scoring authorities based on reputation scores from consensus",
@@ -760,7 +755,6 @@ impl AuthorityMetrics {
         }
     }
 }
-
 /// a Trait object for `Signer` that is:
 /// - Pin, i.e. confined to one place in memory (we don't want to copy private keys).
 /// - Sync, i.e. can be safely shared between threads.
@@ -2800,14 +2794,9 @@ impl AuthorityState {
             _pruner,
             _authority_per_epoch_pruner,
             db_checkpoint_config: db_checkpoint_config.clone(),
-            expensive_safety_check_config,
-            transaction_deny_config,
-            certificate_deny_config,
-            debug_dump_config,
             proposal_state_map: Mutex::new(VecMap {
                 contents: vec![],
             }),
-            authority_overload_config: authority_overload_config.clone(),
             config,
             overload_info: AuthorityOverloadInfo::default(),
             validator_tx_finalizer,
@@ -5764,13 +5753,15 @@ impl NodeStateDump {
         let file = File::open(path)?;
         serde_json::from_reader(file).map_err(|e| anyhow::anyhow!(e))
     }
-}
 
 
-fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
+
+    fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
     if current_version == 24 {
         //bfc protocol version start at 23, 24, 44,
         return 44;
     }
     return current_version + 1;
+}
+
 }

@@ -226,18 +226,6 @@ pub struct TrafficTally {
     pub spam_weight: Weight,
     pub timestamp: SystemTime,
 }
-
-impl TrafficTally {
-    pub fn new(connection_ip: Option<IpAddr>, proxy_ip: Option<IpAddr>, weight: Weight) -> Self {
-        Self {
-            connection_ip,
-            proxy_ip,
-            weight,
-            timestamp: SystemTime::now(),
-        }
-    }
-}
-
 impl TrafficTally {
     pub fn new(
         direct: Option<IpAddr>,

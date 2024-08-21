@@ -73,7 +73,6 @@ use sui_types::object::Object;
 use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, ObjectStore, PackageObject};
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
-use tracing::{debug, info, instrument, trace};
 use sui_types::bfc_system_state::get_bfc_system_state;
 use sui_types::bfc_system_state::BFCSystemState;
 use tap::TapOptional;
@@ -1188,11 +1187,6 @@ impl ExecutionCacheCommit for WritebackCache {
         WritebackCache::persist_transactions(self, digests).boxed()
     }
 }
-
-impl ExecutionCacheRead for WritebackCache {
-    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-        get_bfc_system_proposal_map(self)
-    }
 
 impl ObjectCacheRead for WritebackCache {
     fn get_package_object(&self, package_id: &ObjectID) -> SuiResult<Option<PackageObject>> {

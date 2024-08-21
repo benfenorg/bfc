@@ -14,10 +14,7 @@ use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use sui_types::bfc_system_state::BFCSystemState;
 use either::Either;
-use futures::{
-    future::{join_all, BoxFuture},
-    FutureExt,
-};
+use futures::future::join_all;
 
 use futures::{future::BoxFuture, FutureExt};
 use mysten_common::sync::notify_read::NotifyRead;

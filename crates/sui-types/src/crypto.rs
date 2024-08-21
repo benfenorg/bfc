@@ -9,6 +9,7 @@ use crate::sui_serde::{Readable, SuiBitmap};
 use anyhow::{anyhow, Error};
 use derive_more::{AsMut, AsRef, From};
 pub use enum_dispatch::enum_dispatch;
+
 use eyre::eyre;
 use fastcrypto::bls12381::min_sig::{
     BLS12381AggregateSignature, BLS12381AggregateSignatureAsBytes, BLS12381KeyPair,

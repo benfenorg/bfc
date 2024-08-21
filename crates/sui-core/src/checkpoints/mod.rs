@@ -50,10 +50,8 @@ use sui_types::committee::StakeUnit;
 use sui_types::crypto::AuthorityStrongQuorumSignInfo;
 use sui_types::digests::{CheckpointContentsDigest, CheckpointDigest};
 use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
-use sui_types::error::{SuiResult};
 use sui_types::gas::{BASE_RATE, calculate_bfc_to_stable_cost_with_base_point, DEFAULT_BASE_POINT_FOR_BFC, GasCostSummary, GasCostSummaryAdjusted};
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::gas::GasCostSummary;
 use sui_types::message_envelope::Message;
 use sui_types::messages_checkpoint::{
     CertifiedCheckpointSummary, CheckpointContents, CheckpointResponseV2, CheckpointSequenceNumber,
@@ -71,13 +69,10 @@ use tokio::{
     time::timeout,
 };
 use tracing::{debug, error, info, warn, instrument};
-use typed_store::rocks::{DBMap, MetricConf};
-use typed_store::TypedStoreError;
 
 use typed_store::traits::{TableSummary, TypedStoreDebug};
 use typed_store::DBMapUtils;
 use typed_store::Map;
-use typed_store_derive::DBMapUtils;
 use typed_store::{
     rocks::{DBMap, MetricConf},
     TypedStoreError,

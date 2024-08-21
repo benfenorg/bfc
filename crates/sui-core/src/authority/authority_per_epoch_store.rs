@@ -98,8 +98,6 @@ use sui_types::messages_checkpoint::{
 };
 use sui_types::messages_consensus::VersionedDkgConfirmation;
 use sui_types::messages_consensus::{
-    AuthorityCapabilities, ConsensusTransaction, ConsensusTransactionKind,
-    check_total_jwk_size, ConsensusTransactionKey,
     check_total_jwk_size, AuthorityCapabilitiesV1, AuthorityCapabilitiesV2, ConsensusTransaction,
     ConsensusTransactionKey, ConsensusTransactionKind,
 };
@@ -111,7 +109,6 @@ use tap::TapOptional;
 use tokio::time::Instant;
 use typed_store::DBMapUtils;
 use typed_store::{retry_transaction_forever, Map};
-use typed_store_derive::DBMapUtils;
 use crate::stake_aggregator::GenericMultiStakeAggregator;
 use sui_types::authenticator_state::{get_authenticator_state};
 
@@ -2193,7 +2190,6 @@ impl AuthorityPerEpochStore {
     // ) -> Result<(), SuiError> {
     //     let key = transaction.key();
     //     self.finish_consensus_certificate_process(batch, key, certificate, consensus_index)
-    pub fn record_jwk_vote(
     pub fn get_capabilities_v2(&self) -> SuiResult<Vec<AuthorityCapabilitiesV2>> {
         assert!(self.protocol_config.authority_capabilities_v2());
         let result: Result<Vec<AuthorityCapabilitiesV2>, TypedStoreError> = self

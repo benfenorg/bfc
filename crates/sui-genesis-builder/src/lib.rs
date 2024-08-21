@@ -58,7 +58,6 @@ use sui_types::transaction::{
 };
 use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
-
 pub mod validator_info;
 
 use tracing::info;
