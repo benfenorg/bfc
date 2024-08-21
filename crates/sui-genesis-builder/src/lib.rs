@@ -54,8 +54,7 @@ use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState, SuiSyste
 use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
-use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
-use tracing::trace;
+use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 
 pub mod validator_info;

@@ -42,6 +42,7 @@ impl TestTransactionBuilder {
             sender,
             gas_objects:vec![gas_object],
             gas_price,
+            gas_budget: None,
         }
     }
 
@@ -370,7 +371,7 @@ impl TestTransactionBuilder {
                 self.gas_objects[0],
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
-                self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
+                //self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
             TestTransactionData::TransferSui(data) => TransactionData::new_transfer_sui_with_gas_coins(
@@ -380,13 +381,12 @@ impl TestTransactionBuilder {
                 self.gas_objects,
                 self.gas_budget
                     .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
-                self.gas_price * TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
                 self.gas_price,
             ),
             TestTransactionData::Publish(data) => {
                 let (all_module_bytes, dependencies) = match data {
                     PublishData::Source(path, with_unpublished_deps) => {
-                        let compiled_package = BuildConfig::new_for_testing().build(path).unwrap();
+                        let compiled_package = BuildConfig::new_for_testing().build(&path).unwrap();
                         let all_module_bytes =
                             compiled_package.get_package_bytes(with_unpublished_deps);
                         let dependencies = compiled_package.get_dependency_original_package_ids();
