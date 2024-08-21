@@ -401,6 +401,16 @@ impl EndOfEpochTransactionKind {
                     id: SUI_SYSTEM_STATE_OBJECT_ID,
                     initial_shared_version: SUI_SYSTEM_STATE_OBJECT_SHARED_VERSION,
                     mutable: true,
+                },
+                    InputObjectKind::SharedMoveObject {
+                    id: BFC_SYSTEM_STATE_OBJECT_ID,
+                    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+                    mutable: true,
+                },
+                InputObjectKind::SharedMoveObject {
+                    id: SUI_CLOCK_OBJECT_ID,
+                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
+                    mutable: true,
                 }]
             }
             Self::AuthenticatorStateCreate => vec![],
@@ -432,7 +442,11 @@ impl EndOfEpochTransactionKind {
     fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
         match self {
             Self::ChangeEpoch(_) => {
-                Either::Left(vec![SharedInputObject::SUI_SYSTEM_OBJ].into_iter())
+                Either::Left(vec![
+                    SharedInputObject::SUI_SYSTEM_OBJ,
+                    SharedInputObject::BFC_SYSTEM_OBJ,
+                    SharedInputObject::SUI_CLOCK_OBJ,
+                ].into_iter())
             }
             Self::AuthenticatorStateExpire(expire) => Either::Left(
                 vec![SharedInputObject {
@@ -1293,6 +1307,12 @@ impl SharedInputObject {
     pub const BFC_SYSTEM_OBJ: Self = Self {
         id: BFC_SYSTEM_STATE_OBJECT_ID,
         initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+        mutable: true,
+    };
+
+    pub const SUI_CLOCK_OBJ: Self = Self {
+        id: SUI_CLOCK_OBJECT_ID,
+        initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
         mutable: true,
     };
 
