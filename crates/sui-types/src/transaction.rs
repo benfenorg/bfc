@@ -1361,24 +1361,19 @@ impl TransactionKind {
         self.shared_input_objects().next().is_some()
     }
 
+
     /// Returns an iterator of all shared input objects used by this transaction.
     /// It covers both Call and ChangeEpoch transaction kind, because both makes Move calls.
-    fn shared_input_objects(&self) -> impl Iterator<Item=SharedInputObject> + '_ {
-        match self {
+    pub fn shared_input_objects(&self) -> impl Iterator<Item = SharedInputObject> + '_ {
+        match &self {
             Self::ChangeEpoch(_) => {
-                let objs = vec![SharedInputObject::SUI_SYSTEM_OBJ,
-                                SharedInputObject::BFC_SYSTEM_OBJ,
-                                SharedInputObject {
-                                    id: SUI_CLOCK_OBJECT_ID,
-                                    initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
-                                    mutable: true,
-                                }];
-                Either::Left(Either::Left(objs.into_iter()))
+                Either::Left(Either::Left(iter::once(SharedInputObject::SUI_SYSTEM_OBJ)))
             }
+
             Self::ConsensusCommitPrologue(_)
             | Self::ConsensusCommitPrologueV2(_)
-            | Self::ConsensusCommitPrologueV3(_) =>  {
-                Either::Left(Either::Right(iter::once(SharedInputObject {
+            | Self::ConsensusCommitPrologueV3(_) => {
+                Either::Left(Either::Left(iter::once(SharedInputObject {
                     id: SUI_CLOCK_OBJECT_ID,
                     initial_shared_version: SUI_CLOCK_OBJECT_SHARED_VERSION,
                     mutable: true,
@@ -1391,18 +1386,22 @@ impl TransactionKind {
                     mutable: true,
                 })))
             }
-
+            Self::RandomnessStateUpdate(update) => {
+                Either::Left(Either::Left(iter::once(SharedInputObject {
+                    id: SUI_RANDOMNESS_STATE_OBJECT_ID,
+                    initial_shared_version: update.randomness_obj_initial_shared_version,
+                    mutable: true,
+                })))
+            }
             Self::EndOfEpochTransaction(txns) => Either::Left(Either::Right(
                 txns.iter().flat_map(|txn| txn.shared_input_objects()),
             )),
             Self::ProgrammableTransaction(pt) => {
                 Either::Right(Either::Left(pt.shared_input_objects()))
             }
-
             _ => Either::Right(Either::Right(iter::empty())),
         }
     }
-
 
     fn move_calls(&self) -> Vec<(&ObjectID, &IdentStr, &IdentStr)> {
         match &self {

@@ -131,36 +131,7 @@ pub fn to_sender_signed_transaction_with_multi_signers(
     Transaction::from_data_and_signer(data, signers)
 }
 
-pub fn mock_certified_checkpoint<'a>(
-    keys: impl Iterator<Item = &'a AuthorityKeyPair>,
-    committee: Committee,
-    seq_num: u64,
-) -> CertifiedCheckpointSummary {
-    let contents =
-        CheckpointContents::new_with_digests_only_for_tests([ExecutionDigests::random()]);
 
-    let summary = CheckpointSummary::new(
-        committee.epoch,
-        seq_num,
-        0,
-        &contents,
-        None,
-        GasCostSummary::default(),
-        HashMap::new(),
-        None,
-        0,
-    );
-
-    let sign_infos: Vec<_> = keys
-        .map(|k| {
-            let name = k.public().into();
-
-            SignedCheckpointSummary::sign(committee.epoch, &summary, k, name)
-        })
-        .collect();
-
-    CertifiedCheckpointSummary::new(summary, sign_infos, &committee).expect("Cert is OK")
-}
 
 mod zk_login {
     use fastcrypto_zkp::bn254::zk_login::ZkLoginInputs;
