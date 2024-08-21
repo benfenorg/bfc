@@ -13,5 +13,4 @@ pub mod gas_charger;
 pub mod programmable_transactions;
 pub mod type_layout_resolver;
 pub mod type_resolver;
-
 pub mod temporary_store;

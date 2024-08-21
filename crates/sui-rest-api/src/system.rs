@@ -421,6 +421,7 @@ impl From<sui_types::sui_system_state::sui_system_state_summary::SuiValidatorSum
             pending_pool_token_withdraw,
             exchange_rates_id: exchange_rates_id.into(),
             exchange_rates_size,
+            stable_pools,
         }
     }
 }
