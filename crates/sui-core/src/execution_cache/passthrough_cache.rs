@@ -319,6 +319,7 @@ impl ExecutionCacheWrite for PassthroughCache {
             .acquire_transaction_locks(epoch_store, owned_input_objects, transaction)
             .boxed()
     }
+    
 }
 
 impl AccumulatorStore for PassthroughCache {

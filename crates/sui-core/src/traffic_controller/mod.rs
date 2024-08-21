@@ -194,7 +194,6 @@ impl TrafficController {
 
     async fn check_and_clear_blocklist(
         &self,
-        ip: Option<IpAddr>,
         client: &Option<IpAddr>,
         blocklist: Blocklist,
         blocklist_len_gauge: &IntGauge,

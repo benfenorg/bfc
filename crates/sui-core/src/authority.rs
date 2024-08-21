@@ -810,20 +810,9 @@ pub struct AuthorityState {
     /// Take db checkpoints of different dbs
     db_checkpoint_config: DBCheckpointConfig,
 
-    /// Config controlling what kind of expensive safety checks to perform.
-    expensive_safety_check_config: ExpensiveSafetyCheckConfig,
-
-    transaction_deny_config: TransactionDenyConfig,
-
-    certificate_deny_config: CertificateDenyConfig,
-
-    /// Config for state dumping on forks
-    debug_dump_config: StateDebugDumpConfig,
 
     pub proposal_state_map: Mutex<VecMap<u64, ProposalStatus>>,
 
-    /// Config for when we consider the node overloaded.
-    authority_overload_config: AuthorityOverloadConfig,
     pub config: NodeConfig,
 
     /// Current overload status in this authority. Updated periodically.
@@ -4747,6 +4736,13 @@ impl AuthorityState {
         (next_protocol_version, system_packages)
     }
 
+    fn bfc_get_next_avail_protocol_version(&self, current_version: u64) -> u64 {
+        if current_version == 24 {
+            return 44;
+        }
+        return current_version + 1;
+    }
+
     async fn get_proposal_state(&self, version_id: u64) -> bool {
         let mut proposal_result = false;
         // todo judge proposal.value
@@ -4945,27 +4941,16 @@ impl AuthorityState {
                     buffer_stake_bps,
                 )
             };
-        let (_next_epoch_protocol_version, _next_epoch_system_packages) =
-            Self::choose_protocol_version_and_system_packages(
-                epoch_store.protocol_version(),
-                epoch_store.protocol_config(),
-                epoch_store.committee(),
-                epoch_store
-                    .get_capabilities()
-                    .expect("read capabilities from db cannot fail"),
-                buffer_stake_bps,
-            );
-
 
         //if proposal fail , empty and next_epoch_system_packages,
         // and if the next_protocol_version is update + 1, roll back next
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let next_bfc_p_version = bfc_get_next_avail_protocol_version(version);
+        let next_bfc_p_version = self.bfc_get_next_avail_protocol_version(version);
         let _proposal_result = self.get_proposal_state(next_bfc_p_version).await;
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
-        info!("===========system package size {:?}", _next_epoch_system_packages.len());
+        info!("===========system package size {:?}", next_epoch_system_packages.len());
 
         // if cfg!(feature="bfc_skip_dao_update") {
         //     info!("===========msim test skip ========");
@@ -4982,13 +4967,13 @@ impl AuthorityState {
         let config = epoch_store.protocol_config();
         let binary_config = to_binary_config(config);
         let Some(next_epoch_system_package_bytes) = self
-            .get_system_package_bytes(_next_epoch_system_packages.clone(), &binary_config)
+            .get_system_package_bytes(next_epoch_system_packages.clone(), &binary_config)
             .await
         else {
             error!(
                 "upgraded system packages {:?} are not locally available, cannot create \
                 ChangeEpochTx. validator binary must be upgraded to the correct version!",
-                _next_epoch_system_packages
+                next_epoch_system_packages
             );
             // the checkpoint builder will keep retrying forever when it hits this error.
             // Eventually, one of two things will happen:
@@ -5014,7 +4999,7 @@ impl AuthorityState {
             //println!("===========end_of_epoch_transaction_supported: EndOfEpochTransactionKind======= running with new txns pushed");
             txns.push(EndOfEpochTransactionKind::new_change_epoch(
                 next_epoch,
-                _next_epoch_protocol_version,
+                next_epoch_protocol_version,
                 bfc_gas_cost_summary.storage_cost,
                 bfc_gas_cost_summary.computation_cost,
                 bfc_gas_cost_summary.storage_rebate,
@@ -5031,7 +5016,7 @@ impl AuthorityState {
 
             VerifiedTransaction::new_change_epoch(
                 next_epoch,
-                _next_epoch_protocol_version,
+                next_epoch_protocol_version,
                 bfc_gas_cost_summary.storage_cost,
                 bfc_gas_cost_summary.computation_cost,
                 bfc_gas_cost_summary.storage_rebate,
@@ -5053,8 +5038,8 @@ impl AuthorityState {
 
         info!(
             ?next_epoch,
-            ?_next_epoch_protocol_version,
-            ?_next_epoch_system_packages,
+            ?next_epoch_protocol_version,
+            ?next_epoch_system_packages,
             computation_cost=?bfc_gas_cost_summary.computation_cost,
             storage_cost=?bfc_gas_cost_summary.storage_cost,
             storage_rebate=?bfc_gas_cost_summary.storage_rebate,
@@ -5762,12 +5747,6 @@ impl NodeStateDump {
 
 
 
-    fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
-    if current_version == 24 {
-        //bfc protocol version start at 23, 24, 44,
-        return 44;
-    }
-    return current_version + 1;
-}
+
 
 }
