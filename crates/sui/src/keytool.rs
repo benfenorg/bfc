@@ -1123,8 +1123,8 @@ impl KeyToolCommand {
                     OIDCProvider::Apple,
                     &eph_pk_bytes,
                     max_epoch,
-                    "nl.digkas.wallet.client",
-                    "https://sui.io/",
+                    "com.benfen.web",
+                    "https://www.benfen.org/",
                     &jwt_randomness,
                 )?;
                 let url_7 = get_oidc_url(
