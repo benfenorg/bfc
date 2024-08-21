@@ -15,7 +15,7 @@ mod checked {
         BALANCE_MODULE_NAME,
     };
 
-    use sui_types::execution_mode::{self, ExecutionMode};
+    //use sui_types::execution_mode::{self, ExecutionMode};
     use sui_types::base_types::SequenceNumber;
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;

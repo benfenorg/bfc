@@ -23,7 +23,7 @@ mod checked {
         BALANCE_MODULE_NAME,
     }, SUI_RANDOMNESS_STATE_OBJECT_ID};
 
-    use sui_types::execution_mode::{self, ExecutionMode};
+    //use sui_types::execution_mode::{self, ExecutionMode};
 
     use sui_types::base_types::SequenceNumber;
     use sui_types::gas_coin::GAS;
@@ -75,9 +75,10 @@ mod checked {
         SUI_FRAMEWORK_ADDRESS,
         base_types::{ObjectID},
     };
-
+    use sui_types::deny_list_v1::DENY_LIST_MODULE;
+    use sui_types::deny_list_v1::DENY_LIST_CREATE_FUNC;
     use sui_types::{ BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::deny_list::{DENY_LIST_CREATE_FUNC, DENY_LIST_MODULE};
+    //use sui_types::deny_list::{DENY_LIST_CREATE_FUNC, DENY_LIST_MODULE};
     use sui_types::randomness_state::{RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME, RANDOMNESS_STATE_UPDATE_FUNCTION_NAME};
 
 
