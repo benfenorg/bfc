@@ -49,12 +49,7 @@ use sui_types::{base_types::ObjectID,
 use sui_package_management::{resolve_published_id, PublishedAtError};
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
 use sui_types::{
-    base_types::ObjectID,
-    error::{SuiError, SuiResult},
-    is_system_package,
-    move_package::{FnInfo, FnInfoKey, FnInfoMap, MovePackage},
-    BRIDGE_ADDRESS, DEEPBOOK_ADDRESS, MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS,
-    SUI_SYSTEM_ADDRESS,
+    BRIDGE_ADDRESS
 };
 use sui_verifier::verifier as sui_bytecode_verifier;
 
