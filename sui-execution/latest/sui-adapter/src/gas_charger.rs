@@ -13,6 +13,7 @@ pub mod checked {
     use sui_types::gas_model::gas_predicates::{
         charge_upgrades, dont_charge_budget_on_storage_oog,
     };
+    use crate::temporary_store::TemporaryStore;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
         digests::TransactionDigest,

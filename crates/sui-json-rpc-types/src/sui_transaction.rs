@@ -54,7 +54,6 @@ use sui_types::transaction::{
 };
 use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 
-use sui_types::type_resolver::LayoutResolver;
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use std::str::FromStr;
 
