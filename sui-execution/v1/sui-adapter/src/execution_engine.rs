@@ -688,7 +688,7 @@ mod checked {
                             builder = setup_randomness_state_create(builder);
                         }
                         EndOfEpochTransactionKind::DenyListStateCreate => {
-                            assert!(protocol_config.enable_coin_deny_list());
+                            assert!(protocol_config.enable_coin_deny_list_v1());
                             builder = setup_coin_deny_list_state_create(builder);
                         }
                         EndOfEpochTransactionKind::BridgeStateCreate(_) => {
