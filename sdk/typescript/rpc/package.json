@@ -1,0 +1,5 @@
+{
+	"private": true,
+	"import": "../dist/esm/rpc/index.js",
+	"main": "../dist/cjs/rpc/index.js"
+}

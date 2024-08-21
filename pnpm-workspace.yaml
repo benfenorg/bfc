@@ -18,3 +18,5 @@ packages:
   - '!sdk/typescript/dapp-kit'
   - '!sdk/typescript/wallet-standard'
   - '!sdk/typescript/wallet-kit-core'
+  - '!sdk/typescript/rpc'
+  - '!sdk/typescript/providers'

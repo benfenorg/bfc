@@ -2,7 +2,7 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
-	"version": "0.1.13",
+	"version": "0.1.14",
 	"license": "Apache-2.0",
 	"files": [
 		"CHANGElOG.md",
@@ -17,6 +17,8 @@
 		"faucet",
 		"keypairs",
 		"multisig",
+		"providers",
+		"rpc",
 		"src",
 		"transactions",
 		"utils",
@@ -42,6 +44,21 @@
 			"source": "./src/bcs/index.ts",
 			"import": "./dist/esm/bcs/index.js",
 			"require": "./dist/cjs/bcs/index.js"
+		},
+		"./builder": {
+			"source": "./src/builder/index.ts",
+			"import": "./dist/esm/builder/index.js",
+			"require": "./dist/cjs/builder/index.js"
+		},
+		"./rpc": {
+			"source": "./src/rpc/index.ts",
+			"import": "./dist/esm/rpc/index.js",
+			"require": "./dist/cjs/rpc/index.js"
+		},
+		"./providers": {
+			"source": "./src/providers/index.ts",
+			"import": "./dist/esm/providers/index.js",
+			"require": "./dist/cjs/providers/index.js"
 		},
 		"./client": {
 			"source": "./src/client/index.ts",

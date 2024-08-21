@@ -1,0 +1,5 @@
+{
+	"private": true,
+	"import": "../dist/esm/providers/index.js",
+	"main": "../dist/cjs/providers/index.js"
+}
