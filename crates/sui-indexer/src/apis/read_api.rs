@@ -32,7 +32,6 @@ use sui_types::sui_serde::BigInt;
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
     fullnode: HttpClient,
-
 }
 
 impl<T: R2D2Connection + 'static> ReadApi<T> {
@@ -212,6 +211,7 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
         )
         .into())
     }
+
 
     async fn try_multi_get_past_objects(
         &self,

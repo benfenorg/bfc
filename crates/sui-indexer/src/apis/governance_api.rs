@@ -22,7 +22,7 @@ use sui_types::{
     sui_serde::BigInt,
     sui_system_state::{sui_system_state_summary::SuiSystemStateSummary, PoolTokenExchangeRate},
 };
-
+use sui_types::proposal::Proposal;
 #[derive(Clone)]
 pub struct GovernanceReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
@@ -274,6 +274,14 @@ impl<T: R2D2Connection + 'static> GovernanceReadApiServer for GovernanceReadApi<
 
     async fn get_stakes(&self, owner: SuiAddress) -> RpcResult<Vec<DelegatedStake>> {
         self.get_staked_by_owner(owner).await.map_err(Into::into)
+    }
+
+    async fn get_stable_rate(&self, _tag: String) -> RpcResult<BigInt<u64>> {
+        todo!()
+    }
+
+    async fn get_proposal(&self, _owner: SuiAddress) -> RpcResult<Proposal> {
+        todo!()
     }
 
     async fn get_committee_info(&self, epoch: Option<BigInt<u64>>) -> RpcResult<SuiCommittee> {
