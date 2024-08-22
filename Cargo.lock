@@ -14810,6 +14810,7 @@ dependencies = [
  "eyre",
  "fastcrypto",
  "futures",
+ "git-version",
  "hex",
  "indicatif",
  "itertools 0.10.5",

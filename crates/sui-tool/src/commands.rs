@@ -42,6 +42,23 @@ pub enum Verbosity {
     Concise,
     Verbose,
 }
+
+const GIT_REVISION: &str = {
+    if let Some(revision) = option_env!("GIT_REVISION") {
+        revision
+    } else {
+        let version = git_version::git_version!(
+            args = ["--always", "--abbrev=12", "--dirty", "--exclude", "*"],
+            fallback = ""
+        );
+
+        if version.is_empty() {
+            panic!("unable to query git revision");
+        }
+        version
+    }
+};
+
 const VERSION: &str = const_str::concat!(env!("CARGO_PKG_VERSION"), "-", GIT_REVISION);
 
 #[derive(Parser)]
