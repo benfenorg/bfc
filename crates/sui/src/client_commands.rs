@@ -104,9 +104,6 @@ mod profiler_tests;
 /// Only to be used within CLI
 pub const GAS_SAFE_OVERHEAD: u64 = 1000;
 
-/// Only to be used within CLI
-pub const GAS_SAFE_OVERHEAD: u64 = 1000;
-
 #[derive(Parser)]
 #[clap(rename_all = "kebab-case")]
 pub enum SuiClientCommands {
@@ -1241,7 +1238,6 @@ impl SuiClientCommands {
                     signer,
                     tx_kind,
                     context,
-                    TransferBfc,
                     None,
                     None,
                     Some(object_id),
@@ -2584,6 +2580,7 @@ pub async fn request_tokens_from_faucet(
     match resp.status() {
         StatusCode::ACCEPTED | StatusCode::CREATED => {
             let faucet_resp: FaucetResponse = resp.json().await?;
+
             if let Some(err) = faucet_resp.error {
                 bail!("Faucet request was unsuccessful: {err}")
             } else {
