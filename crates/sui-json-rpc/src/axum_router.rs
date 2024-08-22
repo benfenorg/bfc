@@ -26,7 +26,7 @@ use sui_core::traffic_controller::{
 };
 use sui_types::traffic_control::ClientIdSource;
 use sui_types::traffic_control::{PolicyConfig, Weight};
-use tracing::warn;
+//use tracing::warn;
 use tracing::error;
 
 use crate::routing_layer::RpcRouter;
@@ -358,70 +358,6 @@ async fn process_request<L: Logger>(
     response
 }
 
-pub fn monitored_reroute(
-    raw_params: Option<&RawValue>,
-    name: &str,
-    client_addr: SocketAddr,
-) -> SuiResult<(String, String)> {
-    match name {
-        "bfc_executeTransactionBlock" => {
-            // add client IP arg to the params, as this is a router redirect
-            // from `execute_transaction_block`, which does require the client IP
-            let params = if let Some(params) = raw_params {
-                params.get()
-            } else {
-                return Err(SuiError::Unknown(String::from(
-                    "Params not found for executeTransactionBlock",
-                )));
-            };
-            let parsed_value: Value = serde_json::from_str(params).map_err(|err| {
-                SuiError::Unknown(format!("Failed to parse jsonrpsee params: {:?}", err))
-            })?;
-
-            let params_str = match parsed_value {
-                Value::Array(mut params_vec) => {
-                    params_vec.push(Value::String(client_addr.to_string()));
-                    serde_json::to_string(&params_vec).map_err(|err| {
-                        SuiError::Unknown(format!("Failed to serialize params: {:?}", err))
-                    })?
-                }
-                Value::Object(mut params_map) => {
-                    params_map.insert(
-                        String::from("client_addr"),
-                        Value::String(client_addr.to_string()),
-                    );
-                    serde_json::to_string(&params_map).map_err(|err| {
-                        SuiError::Unknown(format!("Failed to serialize params: {:?}", err))
-                    })?
-                }
-                _ => {
-                    return Err(SuiError::Unknown(String::from(
-                        "Failed to parse jsonrpsee params: expected array",
-                    )));
-                }
-            };
-
-            Ok((
-                params_str,
-                String::from("bfc_monitoredExecuteTransactionBlock"),
-            ))
-        }
-        "bfc_monitoredExecuteTransactionBlock" => {
-            // Prevent an attacker calling it directly with a different
-            // client IP in order to bypass monitoring
-            Err(SuiError::InvalidRpcMethodError)
-        }
-        // in this case params_string should not be read below. We do this as Params<>
-        // object requires a slice whose lifetime is at least as long as this function call,
-        // therefore we cannot create a Params object within an if block scope
-        other_name => Ok((
-            raw_params
-                .map(|params| String::from(params.get()))
-                .unwrap_or_default(),
-            String::from(other_name),
-        )),
-    }
-}
 
 /// Figure out if this is a sufficiently complete request that we can extract an [`Id`] out of, or just plain
 /// unparsable garbage.
