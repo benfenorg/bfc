@@ -181,7 +181,7 @@ pub async fn build_json_rpc_server<T: R2D2Connection>(
     builder.register_module(TransactionBuilderApi::new(reader.clone()))?;
     builder.register_module(MoveUtilsApi::new(reader.clone()))?;
     builder.register_module(GovernanceReadApi::new(reader.clone()))?;
-    builder.register_module(ReadApi::new(reader.clone()))?;
+    builder.register_module(ReadApi::new(reader.clone(), http_client.clone()))?;
     builder.register_module(CoinReadApi::new(reader.clone()))?;
     builder.register_module(ExtendedApi::new(reader.clone()))?;
 

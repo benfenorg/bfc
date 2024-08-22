@@ -2,8 +2,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use async_trait::async_trait;
+use sui_types::dao::DaoRPC;
+use sui_json_rpc_api::ReadApiClient;
+
 use diesel::r2d2::R2D2Connection;
 use jsonrpsee::core::RpcResult;
+use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
 use sui_json_rpc::error::SuiRpcInputError;
 use sui_types::error::SuiObjectResponseError;
@@ -27,11 +31,17 @@ use sui_types::sui_serde::BigInt;
 #[derive(Clone)]
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
     inner: IndexerReader<T>,
+    fullnode: HttpClient,
+
 }
 
 impl<T: R2D2Connection + 'static> ReadApi<T> {
-    pub fn new(inner: IndexerReader<T>) -> Self {
-        Self { inner }
+    pub fn new(inner: IndexerReader<T>, fullnode_client: HttpClient) -> Self {
+        Self {
+            inner,
+            fullnode: fullnode_client,
+
+        }
     }
 
     async fn get_checkpoint(&self, id: CheckpointId) -> Result<Checkpoint, IndexerError> {
@@ -185,6 +195,13 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
         .into())
     }
 
+    async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
+        self.fullnode.get_inner_dao_info().await
+    }
+
+    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
+        self.fullnode.get_bfc_zklogin_salt(seed, iss, sub).await
+    }
     async fn try_get_object_before_version(
         &self,
         _: ObjectID,

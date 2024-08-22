@@ -23,11 +23,6 @@ use sui_core::{
     },
 };
 use sui_json_rpc_types::{SuiGasCostSummary, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
-use sui_network::{DEFAULT_CONNECT_TIMEOUT_SEC, DEFAULT_REQUEST_TIMEOUT_SEC};
-use sui_json_rpc_types::{
-    SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects,
-    SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions,
-};
 use sui_sdk::{SuiClient, SuiClientBuilder};
 use sui_types::base_types::ConciseableName;
 use sui_types::committee::CommitteeTrait;
