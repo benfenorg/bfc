@@ -3,7 +3,6 @@
 
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::proc_macros::rpc;
-
 use sui_json_rpc_types::ProtocolConfigResponse;
 use sui_json_rpc_types::{
     Checkpoint, CheckpointId, CheckpointPage, SuiEvent, SuiGetPastObjectRequest,
