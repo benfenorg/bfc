@@ -656,12 +656,7 @@ impl AuthorityMetrics {
                 registry,
             )
                 .unwrap(),
-            consensus_handler_processed_bytes: register_int_counter_with_registry!(
-                "consensus_handler_processed_bytes",
-                "Number of bytes processed by consensus_handler",
-                registry,
-            )
-            .unwrap(),
+
             consensus_handler_processed: register_int_counter_vec_with_registry!(
                 "consensus_handler_processed",
                 "Number of transactions processed by consensus handler",
@@ -1654,13 +1649,13 @@ impl AuthorityState {
         let mut proposal_map = None;
 
         if transaction_data.is_end_of_epoch_tx() {
-            let proposal_map_result = self.get_bfc_system_proposal_state_map();
-            match proposal_map_result {
-                Ok(map) => { proposal_map = Some(map); }
-                Err(_) => {
-                    info!("No proposal map in epoch {:?}", epoch_store.epoch());
-                }
-            }
+            // let proposal_map_result = self.get_bfc_system_proposal_state_map();
+            // match proposal_map_result {
+            //     Ok(map) => { proposal_map = Some(map); }
+            //     Err(_) => {
+            //         info!("No proposal map in epoch {:?}", epoch_store.epoch());
+            //     }
+            // }
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -2300,10 +2295,6 @@ impl AuthorityState {
                 };
                 // When we process the index, the latest object hasn't been written yet so
                 // the old object must be present.
-                let Some(old_object) = self.execution_cache.get_object_by_key(id, *old_version)?
-                    else {
-                        panic!("tx_digest={:?}, error processing object owner index, cannot find owner for object {:?} at version {:?}", tx_digest, id, old_version);
-                    };
                 let Some(old_object) = self
                     .get_object_store()
                     .get_object_by_key(id, *old_version)?
@@ -3337,9 +3328,9 @@ impl AuthorityState {
     }
 
 
-    pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-        self.get_object_cache_reader().get_bfc_system_proposal_state_map()
-    }
+    // pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+    //     self.get_object_cache_reader().get_bfc_system_proposal_state_map()
+    // }
 
 
     #[instrument(level = "trace", skip_all)]
@@ -3684,27 +3675,6 @@ impl AuthorityState {
         let transaction = kv_store.get_tx(digest).await?;
         let effects = kv_store.get_fx_by_tx_digest(digest).await?;
         Ok((transaction, effects))
-    }
-
-    pub fn multi_get_transaction_checkpoint(
-        &self,
-        digests: &[TransactionDigest],
-        epoch_store: &AuthorityPerEpochStore,
-    ) -> SuiResult<Vec<Option<CheckpointSequenceNumber>>> {
-        if epoch_store.per_epoch_finalized_txns_enabled() {
-            epoch_store.multi_get_transaction_checkpoint(digests)
-        } else {
-            Ok(self
-                .execution_cache
-                .deprecated_multi_get_transaction_checkpoint(digests)?
-                .iter()
-                .map(|opt| match opt {
-                    Some((epoch_id, seq_num)) if *epoch_id == epoch_store.epoch() => Some(*seq_num),
-                    Some(_) => None,
-                    None => None,
-                })
-                .collect())
-        }
     }
 
     // pub fn multi_get_events(

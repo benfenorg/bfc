@@ -169,10 +169,9 @@ impl ObjectCacheRead for PassthroughCache {
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         get_bfc_system_state(self)
     }
-
-    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-        get_bfc_system_proposal_map(self)
-    }
+    // fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+    //     get_bfc_system_proposal_map(self)
+    // }
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {
         get_bridge(self)

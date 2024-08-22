@@ -607,17 +607,7 @@ pub trait TransactionCacheRead: Send + Sync {
         }
             .boxed()
     }
-
-    fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
-    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
-
-    fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
-
     // Marker methods
-
-
-
-
 }
 
 pub trait ExecutionCacheWrite: Send + Sync {

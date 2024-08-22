@@ -24,6 +24,7 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::error::{SuiError, SuiResult};
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::Object;
+use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, PackageObject};
 use sui_types::sui_system_state::SuiSystemState;
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
@@ -102,6 +103,10 @@ impl ObjectCacheRead for ProxyCache {
 
     fn force_reload_system_packages(&self, system_package_ids: &[ObjectID]) {
         delegate_method!(self.force_reload_system_packages(system_package_ids))
+    }
+
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+        delegate_method!(self.get_bfc_system_state_object())
     }
 
     fn get_object(&self, id: &ObjectID) -> SuiResult<Option<Object>> {

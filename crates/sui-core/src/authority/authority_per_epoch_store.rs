@@ -829,12 +829,6 @@ impl AuthorityPerEpochStore {
             info!("authenticator_state disabled");
         }
 
-        let is_validator = committee.authority_index(&name).is_some();
-        if is_validator {
-            assert!(epoch_start_configuration
-                .flags()
-                .contains(&EpochFlag::InMemoryCheckpointRoots));
-        }
         let mut jwk_aggregator = JwkAggregator::new(committee.clone());
 
         for ((authority, id, jwk), _) in tables.pending_jwks.unbounded_iter().seek_to_first() {
