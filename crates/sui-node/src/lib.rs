@@ -24,12 +24,9 @@ use futures::TryFutureExt;
 use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
-use std::path::PathBuf;
-use std::str::FromStr;
 #[cfg(msim)]
 use std::sync::atomic::Ordering;
-use std::sync::{Arc, Weak};
-use std::time::Duration;
+use std::sync::{Weak};
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::authority::RandomnessRoundReceiver;
 use sui_core::authority::CHAIN_IDENTIFIER;
@@ -133,9 +130,9 @@ use sui_types::base_types::{AuthorityName, EpochId};
 use sui_types::committee::Committee;
 use sui_types::crypto::KeypairTraits;
 use sui_types::error::{SuiError, SuiResult};
-use sui_types::messages_consensus::{AuthorityCapabilities, ConsensusTransaction};
+use sui_types::messages_consensus::{ConsensusTransaction};
 use sui_types::messages_consensus::{
-    check_total_jwk_size, AuthorityCapabilitiesV1, ConsensusTransaction,
+     AuthorityCapabilitiesV1,
 };
 use sui_types::quorum_driver_types::QuorumDriverEffectsQueueResult;
 use sui_types::sui_system_state::epoch_start_sui_system_state::EpochStartSystemState;
@@ -1699,11 +1696,11 @@ impl SuiNode {
                     )
                     .await;
 
-                if next_epoch > 3 {
-                    consensus_epoch_data_remover
-                        .remove_old_data(next_epoch - 3)
-                        .await;
-                }
+                // if next_epoch > 3 {
+                //     consensus_epoch_data_remover
+                //         .remove_old_data(next_epoch - 3)
+                //         .await;
+                // }
 
                 // No other components should be holding a strong reference to state accumulator
                 // at this point. Confirm here before we swap in the new accumulator.

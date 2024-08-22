@@ -758,6 +758,8 @@ impl LocalExec {
             tx_info.gas_price,
             tx_info.reference_gas_price,
             protocol_config,
+            None,
+            None,
         ) {
             executor.execute_transaction_to_effects(
                 &self,
@@ -843,6 +845,8 @@ impl LocalExec {
                                 tx_info.gas_price,
                                 tx_info.reference_gas_price,
                                 protocol_config,
+                                None,
+                                None,
                             )?,
                             transaction_kind.clone(),
                             tx_info.sender,
@@ -918,6 +922,8 @@ impl LocalExec {
             input_objects,
             &protocol_config,
             reference_gas_price,
+            None,
+            None,
         )
         .unwrap();
         let (kind, signer, gas) = executable.transaction_data().execution_parts();
