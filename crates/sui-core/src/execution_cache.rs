@@ -47,8 +47,6 @@ pub mod writeback_cache;
 use passthrough_cache::PassthroughCache;
 use writeback_cache::WritebackCache;
 use sui_types::bfc_system_state::BFCSystemState;
-use sui_types::collection_types::VecMap;
-use sui_types::proposal::ProposalStatus;
 pub use proxy_cache::ProxyCache;
 
 use metrics::ExecutionCacheMetrics;

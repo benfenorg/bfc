@@ -1646,7 +1646,7 @@ impl AuthorityState {
 
 
         let transaction_data = &certificate.data().intent_message().value;
-        let mut proposal_map = None;
+        let proposal_map = None;
 
         if transaction_data.is_end_of_epoch_tx() {
             // let proposal_map_result = self.get_bfc_system_proposal_state_map();
