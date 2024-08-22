@@ -75,8 +75,8 @@ pub struct ExecutionCacheTraitPointers {
 
 impl ExecutionCacheTraitPointers {
     pub fn new<T>(cache: Arc<T>) -> Self
-    where
-        T: ObjectCacheRead
+        where
+            T: ObjectCacheRead
             + TransactionCacheRead
             + ExecutionCacheWrite
             + BackingStore
@@ -229,7 +229,7 @@ pub trait ObjectCacheRead: Send + Sync {
     ) -> SuiResult<Option<Object>>;
 
     fn multi_get_objects_by_key(&self, object_keys: &[ObjectKey])
-        -> SuiResult<Vec<Option<Object>>>;
+                                -> SuiResult<Vec<Option<Object>>>;
 
     fn object_exists_by_key(
         &self,
@@ -302,7 +302,7 @@ pub trait ObjectCacheRead: Send + Sync {
                     .map(|(_, k)| ObjectKey(k.id(), k.version().unwrap()))
                     .collect::<Vec<_>>(),
             )?
-            .into_iter(),
+                .into_iter(),
         ) {
             assert!(
                 input_key.version().is_none() || input_key.version().unwrap().is_valid(),
@@ -325,10 +325,10 @@ pub trait ObjectCacheRead: Send + Sync {
                     .map(|obj| obj.version() >= input_key.version().unwrap())
                     .unwrap_or(false)
                     || self.have_deleted_owned_object_at_version_or_after(
-                        &input_key.id(),
-                        input_key.version().unwrap(),
-                        epoch,
-                    )?;
+                    &input_key.id(),
+                    input_key.version().unwrap(),
+                    epoch,
+                )?;
                 versioned_results.push((*idx, is_available));
             } else if self
                 .get_deleted_shared_object_previous_tx_digest(
@@ -499,7 +499,7 @@ pub trait TransactionCacheRead: Send + Sync {
                         Err(e) => Err(e),
                     }
                 })
-                .transpose()
+                    .transpose()
             })
             .collect::<Result<Vec<_>, _>>()
     }
@@ -605,7 +605,7 @@ pub trait TransactionCacheRead: Send + Sync {
                     .collect()
             })
         }
-        .boxed()
+            .boxed()
     }
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
@@ -613,73 +613,11 @@ pub trait TransactionCacheRead: Send + Sync {
 
     fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
 
-        // Marker methods
+    // Marker methods
 
-    /// Get the marker at a specific version
-    fn get_marker_value(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<MarkerValue>>;
 
-    /// Get the latest marker for a given object.
-    fn get_latest_marker(
-        &self,
-        object_id: &ObjectID,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>>;
 
-    /// If the shared object was deleted, return deletion info for the current live version
-    fn get_last_shared_object_deletion_info(
-        &self,
-        object_id: &ObjectID,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<(SequenceNumber, TransactionDigest)>> {
-        match self.get_latest_marker(object_id, epoch_id)? {
-            Some((version, MarkerValue::SharedDeleted(digest))) => Ok(Some((version, digest))),
-            _ => Ok(None),
-        }
-    }
 
-    /// If the shared object was deleted, return deletion info for the specified version.
-    fn get_deleted_shared_object_previous_tx_digest(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<TransactionDigest>> {
-        match self.get_marker_value(object_id, version, epoch_id)? {
-            Some(MarkerValue::SharedDeleted(digest)) => Ok(Some(digest)),
-            _ => Ok(None),
-        }
-    }
-
-    fn have_received_object_at_version(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<bool> {
-        match self.get_marker_value(object_id, version, epoch_id)? {
-            Some(MarkerValue::Received) => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
-    fn have_deleted_owned_object_at_version_or_after(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<bool> {
-        match self.get_latest_marker(object_id, epoch_id)? {
-            Some((marker_version, MarkerValue::OwnedDeleted)) if marker_version >= version => {
-                Ok(true)
-            }
-            _ => Ok(false),
-        }
-    }
 }
 
 pub trait ExecutionCacheWrite: Send + Sync {
@@ -1022,11 +960,11 @@ implement_storage_traits!(WritebackCache);
 implement_storage_traits!(ProxyCache);
 
 pub trait ExecutionCacheAPI:
-    ObjectCacheRead
-    + ExecutionCacheWrite
-    + ExecutionCacheCommit
-    + ExecutionCacheReconfigAPI
-    + CheckpointCache
-    + StateSyncAPI
+ObjectCacheRead
++ ExecutionCacheWrite
++ ExecutionCacheCommit
++ ExecutionCacheReconfigAPI
++ CheckpointCache
++ StateSyncAPI
 {
 }

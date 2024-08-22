@@ -41,9 +41,9 @@ use std::{
     vec,
 };
 use sui_config::node::{AuthorityOverloadConfig, StateDebugDumpConfig};
-use sui_config::transaction_deny_config::TransactionDenyConfig;
+//use sui_config::transaction_deny_config::TransactionDenyConfig;
 use sui_config::NodeConfig;
-use sui_config::certificate_deny_config::CertificateDenyConfig;
+//use sui_config::certificate_deny_config::CertificateDenyConfig;
 use sui_types::crypto::RandomnessRound;
 use sui_types::execution_status::ExecutionStatus;
 use sui_types::BFC_SYSTEM_ADDRESS;
@@ -3329,16 +3329,16 @@ impl AuthorityState {
     }
 
     pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
-        self.execution_cache.get_bfc_system_state_object()
+        self.get_object_cache_reader().get_bfc_system_state_object()
     }
 
     pub fn get_bfc_system_state(&self) -> SuiResult<BFCSystemState> {
-        self.execution_cache.get_bfc_system_state_object()
+        self.get_object_cache_reader().get_bfc_system_state_object()
     }
 
 
     pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-        self.execution_cache.get_bfc_system_proposal_state_map()
+        self.get_object_cache_reader().get_bfc_system_proposal_state_map()
     }
 
 

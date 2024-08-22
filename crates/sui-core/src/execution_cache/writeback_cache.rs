@@ -84,9 +84,9 @@ use super::{
     CheckpointCache, ExecutionCacheCommit, ExecutionCacheMetrics, ExecutionCacheReconfigAPI,
     ExecutionCacheWrite, ObjectCacheRead, StateSyncAPI, TestingAPI, TransactionCacheRead,
 };
-use sui_types::collection_types::VecMap;
-use sui_types::sui_system_state::{get_bfc_system_proposal_map};
-use sui_types::proposal::ProposalStatus;
+//use sui_types::collection_types::VecMap;
+//use sui_types::sui_system_state::{get_bfc_system_proposal_map};
+//use sui_types::proposal::ProposalStatus;
 
 #[cfg(test)]
 #[path = "unit_tests/writeback_cache_tests.rs"]

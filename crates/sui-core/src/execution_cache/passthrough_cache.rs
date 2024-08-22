@@ -3,9 +3,9 @@
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::authority_store::{ExecutionLockWriteGuard, SuiLockResult};
-use crate::authority::authority_store_pruner::{
-    AuthorityStorePruner, AuthorityStorePruningMetrics, EPOCH_DURATION_MS_FOR_TESTING,
-};
+// use crate::authority::authority_store_pruner::{
+//     AuthorityStorePruner, AuthorityStorePruningMetrics, EPOCH_DURATION_MS_FOR_TESTING,
+// };
 use sui_types::collection_types::VecMap;
 use crate::authority::epoch_start_configuration::EpochFlag;
 use crate::authority::epoch_start_configuration::EpochStartConfiguration;
@@ -13,8 +13,8 @@ use crate::authority::AuthorityStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use sui_types::bfc_system_state::BFCSystemState;
-use either::Either;
-use futures::future::join_all;
+//use either::Either;
+//use futures::future::join_all;
 
 use futures::{future::BoxFuture, FutureExt};
 use mysten_common::sync::notify_read::NotifyRead;
@@ -166,6 +166,13 @@ impl ObjectCacheRead for PassthroughCache {
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {
         get_sui_system_state(self)
     }
+    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+        get_bfc_system_state(self)
+    }
+
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_map(self)
+    }
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {
         get_bridge(self)
@@ -238,36 +245,24 @@ impl TransactionCacheRead for PassthroughCache {
         self.store.multi_get_events(event_digests)
     }
 
-    fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {
-        get_sui_system_state(self)
-    }
 
 
-
-    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
-        get_bfc_system_state(self)
-    }
-
-    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-        get_bfc_system_proposal_map(self)
-    }
-
-    fn get_marker_value(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<MarkerValue>> {
-        self.store.get_marker_value(object_id, &version, epoch_id)
-    }
-
-    fn get_latest_marker(
-        &self,
-        object_id: &ObjectID,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>> {
-        self.store.get_latest_marker(object_id, epoch_id)
-    }
+    // fn get_marker_value(
+    //     &self,
+    //     object_id: &ObjectID,
+    //     version: SequenceNumber,
+    //     epoch_id: EpochId,
+    // ) -> SuiResult<Option<MarkerValue>> {
+    //     self.store.get_marker_value(object_id, &version, epoch_id)
+    // }
+    //
+    // fn get_latest_marker(
+    //     &self,
+    //     object_id: &ObjectID,
+    //     epoch_id: EpochId,
+    // ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>> {
+    //     self.store.get_latest_marker(object_id, epoch_id)
+    // }
 }
 
 impl ExecutionCacheWrite for PassthroughCache {
