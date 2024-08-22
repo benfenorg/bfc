@@ -16,6 +16,8 @@ use std::sync::Arc;
 use std::time::Duration;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::accumulator::Accumulator;
+use sui_types::collection_types::VecMap;
+use sui_types::proposal::ProposalStatus;
 use sui_types::base_types::VerifiedExecutionData;
 use sui_types::base_types::{EpochId, ObjectID, ObjectRef, SequenceNumber};
 use sui_types::bridge::Bridge;
@@ -107,6 +109,10 @@ impl ObjectCacheRead for ProxyCache {
 
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         delegate_method!(self.get_bfc_system_state_object())
+    }
+
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        delegate_method!(self.get_bfc_system_proposal_state_map())
     }
 
     fn get_object(&self, id: &ObjectID) -> SuiResult<Option<Object>> {
