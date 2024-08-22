@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::{fmt::{Debug, Display, Formatter, Write}, path::PathBuf, sync::Arc};
+use std::{fmt::{Debug, Display, Formatter, Write}, sync::Arc};
 use crate::{
     clever_error_rendering::render_clever_error_opt,
     client_ptb::ptb::PTB,
@@ -24,7 +24,6 @@ use fastcrypto::{
     encoding::{Base64, Encoding},
     traits::ToFromBytes,
 };
-use crate::validator_commands::write_transaction_response;
 use reqwest::StatusCode;
 
 use move_binary_format::CompiledModule;
@@ -45,7 +44,7 @@ use sui_json_rpc_types::{
     SuiExecutionStatus, SuiObjectData, SuiObjectDataOptions, SuiObjectResponse,
     SuiObjectResponseQuery, SuiParsedData, SuiProtocolConfigValue, SuiRawData,
     SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse,
-    SuiTransactionBlockResponseOptions,
+    SuiTransactionBlockResponseOptions, SuiGasCostSummary
 };
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, sui_address_to_bfc_address};
 use sui_keys::keystore::AccountKeystore;
@@ -59,7 +58,7 @@ use sui_sdk::{
     apis::ReadApi,
     sui_client_config::{SuiClientConfig, SuiEnv},
     wallet_context::WalletContext,
-    SuiClient, SUI_COIN_TYPE, SUI_DEVNET_URL, SUI_LOCAL_NETWORK_URL, SUI_LOCAL_NETWORK_URL_0,
+    SuiClient, SUI_COIN_TYPE, SUI_DEVNET_URL, SUI_LOCAL_NETWORK_URL,
     SUI_TESTNET_URL,
 };
 use sui_types::{
@@ -68,7 +67,6 @@ use sui_types::{
     digests::TransactionDigest,
     dynamic_field::DynamicFieldInfo,
     error::SuiError,
-    gas::GasCostSummary,
     gas_coin::GasCoin,
     message_envelope::Envelope,
     metrics::BytecodeVerifierMetrics,
@@ -264,7 +262,17 @@ pub enum SuiClientCommands {
         basic_auth: Option<String>,
     },
 
+    /// Get object info
+    #[clap(name = "object")]
+    Object {
+        /// Object ID of the object to fetch
+        #[clap(name = "object_id")]
+        id: ObjectID,
 
+        /// Return the bcs serialized version of the object
+        #[clap(long)]
+        bcs: bool,
+    },
 
     /// Obtain all objects owned by the address. It also accepts an address by its alias.
     #[clap(name = "objects")]
@@ -1439,7 +1447,6 @@ impl SuiClientCommands {
                             SUI_TESTNET_URL => "https://faucet.testnet.sui.io/v1/gas",
                             // TODO when using sui-test-validator, and 5003 when using bfc start
                             SUI_LOCAL_NETWORK_URL => "http://127.0.0.1:9123/gas",
-                            SUI_LOCAL_NETWORK_URL | SUI_LOCAL_NETWORK_URL_0 => "http://127.0.0.1:9123/gas",
                             _ => bail!("Cannot recognize the active network. Please provide the gas faucet full URL.")
                         };
                         network.to_string()
@@ -2085,21 +2092,6 @@ impl Display for SuiClientCommandResult {
                     fastcrypto::encoding::Base64::encode(bcs::to_bytes(sender_signed_tx).unwrap())
                 )?;
             }
-            SuiClientCommandResult::Transfer(response) => {
-                write!(writer, "{}", response)?;
-            }
-            SuiClientCommandResult::TransferBfc(response) => {
-                write!(writer, "{}", write_transaction_response(response)?)?;
-            }
-            SuiClientCommandResult::Pay(response) => {
-                write!(writer, "{}", response)?;
-            }
-            SuiClientCommandResult::PayBfc(response) => {
-                write!(writer, "{}", write_transaction_response(response)?)?;
-            }
-            SuiClientCommandResult::PayAllBfc(response) => {
-                write!(writer, "{}", write_transaction_response(response)?)?;
-            }
             SuiClientCommandResult::SyncClientState => {
                 writeln!(writer, "Client state sync complete.")?;
             }
@@ -2242,21 +2234,6 @@ impl Display for SuiClientCommandResult {
     }
 }
 
-
-fn write_obj_changes<T: Display>(
-    values: Vec<T>,
-    output_string: &str,
-    builder: &mut TableBuilder,
-) -> std::fmt::Result {
-    if !values.is_empty() {
-        builder.push_record(vec![format!("{} Objects: ", output_string)]);
-        for obj in values {
-            builder.push_record(vec![format!("{}", obj)]);
-        }
-    }
-    Ok(())
-}
-
 fn convert_number_to_string(value: Value) -> Value {
     match value {
         Value::Number(n) => Value::String(n.to_string()),
@@ -2328,9 +2305,6 @@ impl SuiClientCommandResult {
     pub fn tx_block_response(&self) -> Option<&SuiTransactionBlockResponse> {
         use SuiClientCommandResult::*;
         match self {
-            Upgrade(b) | Publish(b) | TransactionBlock(b) | Call(b) | Transfer(b)
-            | TransferBfc(b) | Pay(b) | PayBfc(b) | PayAllBfc(b) | SplitCoin(b) | MergeCoin(b)
-            | ExecuteSignedTx(b) => Some(b),
             TransactionBlock(b) => Some(b),
             _ => None,
         }
@@ -2340,14 +2314,14 @@ impl SuiClientCommandResult {
         match &mut self {
             SuiClientCommandResult::DryRun(DryRunTransactionBlockResponse { effects, .. })
             | SuiClientCommandResult::TransactionBlock(SuiTransactionBlockResponse {
-                effects: Some(effects),
-                ..
-            }) => prerender_clever_errors(effects, read_api).await,
+                                                           effects: Some(effects),
+                                                           ..
+                                                       }) => prerender_clever_errors(effects, read_api).await,
 
             SuiClientCommandResult::TransactionBlock(SuiTransactionBlockResponse {
-                effects: None,
-                ..
-            }) => (),
+                                                         effects: None,
+                                                         ..
+                                                     }) => (),
             SuiClientCommandResult::ActiveAddress(_)
             | SuiClientCommandResult::ActiveEnv(_)
             | SuiClientCommandResult::Addresses(_)
@@ -2510,20 +2484,12 @@ pub enum SuiClientCommandResult {
     NoOutput,
     Object(SuiObjectResponse),
     Objects(Vec<SuiObjectResponse>),
-    Pay(SuiTransactionBlockResponse),
-    PTB(SuiTransactionBlockResponse),
-    PayAllBfc(SuiTransactionBlockResponse),
-    PayBfc(SuiTransactionBlockResponse),
-    Publish(SuiTransactionBlockResponse),
     RawObject(SuiObjectResponse),
     SerializedSignedTransaction(SenderSignedData),
     SerializedUnsignedTransaction(TransactionData),
     Switch(SwitchResponse),
     SyncClientState,
     TransactionBlock(SuiTransactionBlockResponse),
-    Transfer(SuiTransactionBlockResponse),
-    TransferBfc(SuiTransactionBlockResponse),
-    Upgrade(SuiTransactionBlockResponse),
     VerifyBytecodeMeter {
         success: bool,
         max_package_ticks: Option<u128>,
@@ -2737,7 +2703,7 @@ pub async fn execute_dry_run(
     client: &SuiClient,
     signer: SuiAddress,
     kind: TransactionKind,
-    gas_budget: u64,
+    gas_budget: Option<u64>,
     gas_price: u64,
     gas_payment: Option<Vec<ObjectID>>,
     sponsor: Option<SuiAddress>,
@@ -2793,7 +2759,7 @@ pub async fn estimate_gas_budget(
 }
 
 pub fn estimate_gas_budget_from_gas_cost(
-    gas_cost_summary: &GasCostSummary,
+    gas_cost_summary: &SuiGasCostSummary,
     reference_gas_price: u64,
 ) -> u64 {
     let safe_overhead = GAS_SAFE_OVERHEAD * reference_gas_price;
@@ -2801,18 +2767,6 @@ pub fn estimate_gas_budget_from_gas_cost(
 
     let gas_usage = gas_cost_summary.net_gas_usage() + safe_overhead as i64;
     computation_cost_with_overhead.max(if gas_usage < 0 { 0 } else { gas_usage as u64 })
-}
-
-/// Queries the protocol config for the maximum gas allowed in a transaction.
-pub async fn max_gas_budget(client: &SuiClient) -> Result<u64, anyhow::Error> {
-    let cfg = client.read_api().get_protocol_config(None).await?;
-    Ok(match cfg.attributes.get("max_tx_gas") {
-        Some(Some(sui_json_rpc_types::SuiProtocolConfigValue::U64(y))) => *y,
-        _ => bail!(
-            "Could not automatically find the maximum gas allowed in a transaction from the \
-            protocol config. Please provide a gas budget with the --gas-budget flag."
-        ),
-    })
 }
 
 /// Dry run, execute, or serialize a transaction.
@@ -2938,16 +2892,9 @@ pub(crate) async fn prerender_clever_errors(
     }
 }
 
-
-
 /// Queries the protocol config for the maximum gas allowed in a transaction.
-pub async fn max_gas_budget(context: &mut WalletContext) -> Result<u64, anyhow::Error> {
-    let cfg = context
-        .get_client()
-        .await?
-        .read_api()
-        .get_protocol_config(None)
-        .await?;
+pub async fn max_gas_budget(client: &SuiClient) -> Result<u64, anyhow::Error> {
+    let cfg = client.read_api().get_protocol_config(None).await?;
     Ok(match cfg.attributes.get("max_tx_gas") {
         Some(Some(sui_json_rpc_types::SuiProtocolConfigValue::U64(y))) => *y,
         _ => bail!(
@@ -2956,3 +2903,7 @@ pub async fn max_gas_budget(context: &mut WalletContext) -> Result<u64, anyhow::
         ),
     })
 }
+
+
+
+

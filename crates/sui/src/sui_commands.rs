@@ -10,7 +10,6 @@ use crate::validator_commands::SuiValidatorCommand;
 use anyhow::{anyhow, bail, ensure};
 use clap::*;
 use fastcrypto::traits::{EncodeDecodeBase64, KeyPair};
-use fastcrypto::traits::KeyPair;
 use move_analyzer::analyzer;
 use move_package::BuildConfig;
 use rand::rngs::OsRng;
@@ -25,7 +24,6 @@ use sui_config::node::{DEFAULT_COMMISSION_RATE, Genesis};
 use sui_bridge::config::BridgeCommitteeConfig;
 use sui_bridge::sui_client::SuiBridgeClient;
 use sui_bridge::sui_transaction_builder::build_committee_register_transaction;
-use sui_config::node::Genesis;
 use sui_config::p2p::SeedPeer;
 use sui_genesis_builder::Builder;
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
@@ -33,11 +31,7 @@ use sui_swarm_config::genesis_config::{ValidatorGenesisConfig};
 use camino::Utf8PathBuf;
 use sui_config::{sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH, SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG, local_ip_utils};
 use sui_config::{
-    genesis_blob_exists, sui_config_dir, Config, PersistedConfig, FULL_NODE_DB_PATH,
-    SUI_CLIENT_CONFIG, SUI_FULLNODE_CONFIG, SUI_NETWORK_CONFIG,
-};
-use sui_config::{
-    SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME,
+    SUI_BENCHMARK_GENESIS_GAS_KEYSTORE_FILENAME, SUI_GENESIS_FILENAME, SUI_KEYSTORE_FILENAME, genesis_blob_exists
 };
 use sui_faucet::{create_wallet_context, start_faucet, AppState, FaucetConfig, SimpleFaucet};
 #[cfg(feature = "indexer")]
@@ -57,10 +51,9 @@ use sui_swarm_config::genesis_config::{GenesisConfig, DEFAULT_NUMBER_OF_AUTHORIT
 use sui_swarm_config::network_config::NetworkConfig;
 use sui_swarm_config::network_config_builder::ConfigBuilder;
 use sui_swarm_config::node_config_builder::FullnodeConfigBuilder;
-use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair};
+use sui_types::crypto::{AuthorityKeyPair, NetworkKeyPair, SignatureScheme, SuiKeyPair, ToFromBytes};
 use sui_types::multiaddr::Multiaddr;
 use sui_types::base_types::SuiAddress;
-use sui_types::crypto::{SignatureScheme, SuiKeyPair, ToFromBytes};
 use tempfile::tempdir;
 use tracing;
 use tracing::info;
@@ -241,9 +234,7 @@ pub enum SuiCommand {
         benchmark_ips: Option<Vec<String>>,
         #[clap(
         long,
-        help = "Creates an extra faucet configuration for bfc-test-validator persisted runs."
-            long,
-            help = "Creates an extra faucet configuration for sui persisted runs."
+        help = "Creates an extra faucet configuration for sui persisted runs."
         )]
         with_faucet: bool,
     },
@@ -392,60 +383,6 @@ impl SuiCommand {
     pub async fn execute(self) -> Result<(), anyhow::Error> {
         move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
         match self {
-            SuiCommand::Start {
-                config,
-                no_full_node,
-            } => {
-                // Auto genesis if path is none and bfc directory doesn't exists.
-                if config.is_none() && !sui_config_dir()?.join(SUI_NETWORK_CONFIG).exists() {
-                    genesis(None, None, None, false, None, None, false).await?;
-                }
-
-                // Load the config of the Bfc authority.
-                let network_config_path = config
-                    .clone()
-                    .unwrap_or(sui_config_dir()?.join(SUI_NETWORK_CONFIG));
-                let network_config: NetworkConfig = PersistedConfig::read(&network_config_path)
-                    .map_err(|err| {
-                        err.context(format!(
-                            "Cannot open Bfc network config file at {:?}",
-                            network_config_path
-                        ))
-                    })?;
-                let mut swarm_builder = Swarm::builder()
-                    .dir(sui_config_dir()?)
-                    .with_network_config(network_config);
-                if no_full_node {
-                    swarm_builder = swarm_builder.with_fullnode_count(0);
-                } else {
-                    swarm_builder = swarm_builder
-                        .with_fullnode_count(1)
-                        .with_fullnode_rpc_addr(sui_config::node::default_json_rpc_address());
-                }
-                let mut swarm = swarm_builder.build();
-                swarm.launch().await?;
-
-                let mut interval = tokio::time::interval(std::time::Duration::from_secs(3));
-                let mut unhealthy_cnt = 0;
-                loop {
-                    for node in swarm.validator_nodes() {
-                        if let Err(err) = node.health_check(true).await {
-                            unhealthy_cnt += 1;
-                            if unhealthy_cnt > 3 {
-                                // The network could temporarily go down during reconfiguration.
-                                // If we detect a failed validator 3 times in a row, give up.
-                                return Err(err.into());
-                            }
-                            // Break the inner loop so that we could retry latter.
-                            break;
-                        } else {
-                            unhealthy_cnt = 0;
-                        }
-                    }
-
-                    interval.tick().await;
-                }
-            }
             SuiCommand::Network {
                 config,
                 dump_addresses,
@@ -489,7 +426,7 @@ impl SuiCommand {
                     fullnode_rpc_port,
                     no_full_node,
                 )
-                .await?;
+                    .await?;
 
                 Ok(())
             }
@@ -1210,10 +1147,24 @@ pub async fn genesis(
     if client_config.active_address.is_none() {
         client_config.active_address = active_address;
     }
+
+    // On windows, using 0.0.0.0 will usually yield in an networking error. This localnet ip
+    // address must bind to 127.0.0.1 if the default 0.0.0.0 is used.
+    let localnet_ip =
+        if fullnode_config.json_rpc_address.ip() == IpAddr::V4(Ipv4Addr::new(0, 0, 0, 0)) {
+            "127.0.0.1".to_string()
+        } else {
+            fullnode_config.json_rpc_address.ip().to_string()
+        };
     client_config.add_env(SuiEnv {
         alias: "localnet".to_string(),
-        rpc: format!("http://{}", fullnode_config.json_rpc_address),
+        rpc: format!(
+            "http://{}:{}",
+            localnet_ip,
+            fullnode_config.json_rpc_address.port()
+        ),
         ws: None,
+        basic_auth: None,
     });
     client_config.add_env(SuiEnv::devnet());
 
@@ -1409,7 +1360,6 @@ pub async fn genesis_private(
             narwhal_primary_address: validator.info.narwhal_primary_address.clone(),
             narwhal_worker_address: validator.info.narwhal_worker_address.clone(),
             consensus_address: local_ip_utils::new_tcp_address_for_local_testing(),
-            consensus_internal_worker_address: None,
             stake: sui_types::governance::VALIDATOR_LOW_STAKE_THRESHOLD_MIST,
             name: None,
         };

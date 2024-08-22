@@ -28,13 +28,9 @@ use move_core_types::ident_str;
 use serde::Serialize;
 use shared_crypto::intent::{Intent, IntentMessage, IntentScope};
 use sui_json_rpc_types::{SuiObjectDataOptions, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
-use sui_keys::keystore::AccountKeystore;
 use sui_bridge::sui_client::SuiClient as SuiBridgeClient;
 use sui_bridge::sui_transaction_builder::{
     build_committee_register_transaction, build_committee_update_url_transaction,
-};
-use sui_json_rpc_types::{
-    SuiObjectDataOptions, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
 use sui_keys::{
     key_derive::generate_new_key,
