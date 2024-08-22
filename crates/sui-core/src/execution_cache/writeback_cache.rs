@@ -74,7 +74,11 @@ use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, ObjectStore,
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::collection_types::VecMap;
+use sui_types::bfc_system_state::get_bfc_system_proposal_state_map;
 use sui_types::bfc_system_state::BFCSystemState;
+use sui_types::proposal::ProposalStatus;
+
 use tap::TapOptional;
 use tracing::{debug, info, instrument, trace, warn};
 
@@ -1512,6 +1516,10 @@ impl ObjectCacheRead for WritebackCache {
     }
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         get_bfc_system_state(self)
+    }
+
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_state_map(self)
     }
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {

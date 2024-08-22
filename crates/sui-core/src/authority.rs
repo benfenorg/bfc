@@ -1646,16 +1646,16 @@ impl AuthorityState {
 
 
         let transaction_data = &certificate.data().intent_message().value;
-        let proposal_map = None;
+        let mut proposal_map = None;
 
         if transaction_data.is_end_of_epoch_tx() {
-            // let proposal_map_result = self.get_bfc_system_proposal_state_map();
-            // match proposal_map_result {
-            //     Ok(map) => { proposal_map = Some(map); }
-            //     Err(_) => {
-            //         info!("No proposal map in epoch {:?}", epoch_store.epoch());
-            //     }
-            // }
+            let proposal_map_result = self.get_bfc_system_proposal_state_map();
+            match proposal_map_result {
+                Ok(map) => { proposal_map = Some(map); }
+                Err(_) => {
+                    info!("No proposal map in epoch {:?}", epoch_store.epoch());
+                }
+            }
         };
 
         let (kind, signer, gas) = transaction_data.execution_parts();
@@ -3328,9 +3328,9 @@ impl AuthorityState {
     }
 
 
-    // pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-    //     self.get_object_cache_reader().get_bfc_system_proposal_state_map()
-    // }
+    pub fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        self.get_object_cache_reader().get_bfc_system_proposal_state_map()
+    }
 
 
     #[instrument(level = "trace", skip_all)]

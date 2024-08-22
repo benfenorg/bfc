@@ -37,7 +37,10 @@ use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use tap::TapFallible;
 use tracing::instrument;
 use typed_store::Map;
+use sui_types::sui_system_state::get_bfc_system_proposal_map;
 use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::collection_types::VecMap;
+use sui_types::proposal::ProposalStatus;
 
 use super::{
     implement_passthrough_traits, CheckpointCache, ExecutionCacheCommit, ExecutionCacheMetrics,
@@ -167,9 +170,10 @@ impl ObjectCacheRead for PassthroughCache {
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         get_bfc_system_state(self)
     }
-    // fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
-    //     get_bfc_system_proposal_map(self)
-    // }
+
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_map(self)
+    }
 
     fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge> {
         get_bridge(self)
