@@ -1956,7 +1956,6 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
     };
     let fully_compiled_res = move_compiler::construct_pre_compiled_lib(
         vec![PackagePaths {
-            paths: vec![bfc_system_sources,sui_system_sources, sui_sources, sui_deps,],
             name: Some(("sui-framework".into(), config)),
             paths: vec![
                 sui_system_sources,

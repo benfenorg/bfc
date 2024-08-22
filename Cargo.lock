@@ -14805,6 +14805,7 @@ dependencies = [
  "clap",
  "colored",
  "comfy-table",
+ "const-str",
  "diesel",
  "eyre",
  "fastcrypto",
