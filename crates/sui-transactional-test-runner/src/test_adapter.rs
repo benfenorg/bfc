@@ -1961,6 +1961,7 @@ pub static PRE_COMPILED: Lazy<FullyCompiledProgram> = Lazy::new(|| {
                 sui_system_sources,
                 sui_sources,
                 sui_deps,
+                bfc_system_sources,
                 bridge_sources,
             ],
             named_address_map: NAMED_ADDRESSES.clone(),
