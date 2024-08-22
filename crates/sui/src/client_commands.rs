@@ -1241,7 +1241,7 @@ impl SuiClientCommands {
                     signer,
                     tx_kind,
                     context,
-                    TransferBfc
+                    TransferBfc,
                     None,
                     None,
                     Some(object_id),
@@ -2584,11 +2584,6 @@ pub async fn request_tokens_from_faucet(
     match resp.status() {
         StatusCode::ACCEPTED | StatusCode::CREATED => {
             let faucet_resp: FaucetResponse = resp.json().await?;
-
-    if let Some(err) = faucet_resp.error {
-        bail!("Faucet request was unsuccessful: {err}")
-    } else {
-        println!("Request successful. It can take up to 1 minute to get the coin. Run bfc client gas to check your gas coins.");
             if let Some(err) = faucet_resp.error {
                 bail!("Faucet request was unsuccessful: {err}")
             } else {
