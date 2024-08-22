@@ -2780,9 +2780,9 @@ pub async fn estimate_gas_budget(
 ) -> Result<u64, anyhow::Error> {
     let Ok(SuiClientCommandResult::DryRun(dry_run)) =
         execute_dry_run(client, signer, kind, None, gas_price, gas_payment, sponsor).await
-    else {
-        bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
-    };
+        else {
+            bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
+        };
 
     let rgp = client.read_api().get_reference_gas_price().await?;
 
@@ -2938,37 +2938,7 @@ pub(crate) async fn prerender_clever_errors(
     }
 }
 
-/// Call a dry run with the transaction data to estimate the gas budget.
-/// The estimated gas budget is computed as following:
-/// * the maximum between A and B, where:
-/// A = computation cost + GAS_SAFE_OVERHEAD * reference gas price
-/// B = computation cost + storage cost - storage rebate + GAS_SAFE_OVERHEAD * reference gas price
-/// overhead
-///
-/// This gas estimate is computed exactly as in the TypeScript SDK
-/// <https://github.com/MystenLabs/sui/blob/3c4369270605f78a243842098b7029daf8d883d9/sdk/typescript/src/transactions/TransactionBlock.ts#L845-L858>
-pub async fn estimate_gas_budget(
-    context: &mut WalletContext,
-    signer: SuiAddress,
-    kind: TransactionKind,
-    gas_price: u64,
-    gas_payment: Option<Vec<ObjectID>>,
-    sponsor: Option<SuiAddress>,
-) -> Result<u64, anyhow::Error> {
-    let client = context.get_client().await?;
-    let Ok(SuiClientCommandResult::DryRun(dry_run)) =
-        execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await
-    else {
-        bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
-    };
 
-    let safe_overhead = GAS_SAFE_OVERHEAD * client.read_api().get_reference_gas_price().await?;
-    let computation_cost_with_overhead =
-        dry_run.effects.gas_cost_summary().computation_cost + safe_overhead;
-
-    let gas_usage = dry_run.effects.gas_cost_summary().net_gas_usage() + safe_overhead as i64;
-    Ok(computation_cost_with_overhead.max(if gas_usage < 0 { 0 } else { gas_usage as u64 }))
-}
 
 /// Queries the protocol config for the maximum gas allowed in a transaction.
 pub async fn max_gas_budget(context: &mut WalletContext) -> Result<u64, anyhow::Error> {

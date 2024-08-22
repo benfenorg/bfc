@@ -136,19 +136,6 @@ impl PTB {
 
         // get all the metadata needed for executing the PTB: sender, gas, signing tx
         let gas = program_metadata.gas_object_id.map(|x| x.value);
-
-        let gas = program_metadata.gas_object_id.map(|x| x.value);
-
-        // the sender is the gas object if gas is provided, otherwise the active address
-        let sender = match gas {
-            Some(gas) => context
-                .get_object_owner(&gas)
-                .await
-                .map_err(|_| anyhow!("Could not find owner for gas object ID"))?,
-            None => context
-                .config
-                .active_address
-                .ok_or_else(|| anyhow!("No active address, cannot execute PTB"))?,
         // the sender is the gas object if gas is provided, otherwise the active address
         let sender = match gas {
             Some(gas) => context
