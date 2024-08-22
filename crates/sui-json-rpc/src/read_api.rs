@@ -1016,31 +1016,7 @@ impl ReadApiServer for ReadApi {
         })
     }
 
-    #[instrument(skip(self))]
-    async fn get_loaded_child_objects(
-        &self,
-        digest: TransactionDigest,
-    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
-        with_tracing!(async move {
-            Ok(SuiLoadedChildObjectsResponse {
-                loaded_child_objects: match self
-                    .state
-                    .loaded_child_object_versions(&digest)
-                    .map_err(|e| {
-                        error!(
-                            "Failed to get loaded child objects at {digest:?} with error: {e:?}"
-                        );
-                        Error::StateReadError(e)
-                    })? {
-                    Some(v) => v
-                        .into_iter()
-                        .map(|q| SuiLoadedChildObject::new(q.0, q.1))
-                        .collect::<Vec<_>>(),
-                    None => vec![],
-                },
-            })
-        })
-    }
+
 
     #[instrument(skip(self))]
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {

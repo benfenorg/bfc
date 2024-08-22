@@ -324,24 +324,12 @@ impl WriteApiServer for TransactionExecutionApi {
         request_type: Option<ExecuteTransactionRequestType>,
     ) -> RpcResult<SuiTransactionBlockResponse> {
         with_tracing!(Duration::from_secs(10), async move {
-            self.execute_transaction_block(tx_bytes, signatures, opts, request_type, None)
-                .await
-        })
-    }
-
-    #[instrument(skip(self))]
-    async fn monitored_execute_transaction_block(
-        &self,
-        tx_bytes: Base64,
-        signatures: Vec<Base64>,
-        opts: Option<SuiTransactionBlockResponseOptions>,
-        request_type: Option<ExecuteTransactionRequestType>,
-    ) -> RpcResult<SuiTransactionBlockResponse> {
-        with_tracing!(Duration::from_secs(10), async move {
             self.execute_transaction_block(tx_bytes, signatures, opts, request_type)
                 .await
         })
     }
+
+
 
     #[instrument(skip(self))]
     async fn dev_inspect_transaction_block(

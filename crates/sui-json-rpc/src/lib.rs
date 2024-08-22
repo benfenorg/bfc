@@ -1,37 +1,28 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::any::Any;
 use std::env;
 use std::net::SocketAddr;
 use std::str::FromStr;
-use axum::body::Full;
-use axum::http::{Response, StatusCode};
 //use axum::response::IntoResponse;
 
 use axum::body::Body;
 use hyper::header::HeaderName;
 use hyper::header::HeaderValue;
-use hyper::{Body, header, Method};
 use hyper::Method;
 use hyper::Request;
 use jsonrpsee::RpcModule;
-use bytes::Bytes;
 use prometheus::Registry;
 use sui_core::traffic_controller::metrics::TrafficControllerMetrics;
 use sui_types::traffic_control::PolicyConfig;
 use sui_types::traffic_control::RemoteFirewallConfig;
 use tokio::runtime::Handle;
-use tokio_util::bytes;
 use tokio_util::sync::CancellationToken;
-use tower_http::catch_panic::CatchPanicLayer;
 use tower_http::cors::{AllowOrigin, CorsLayer};
 use tower_http::trace::TraceLayer;
 use tracing::info;
-use tracing::error;
 pub use balance_changes::*;
 pub use object_changes::*;
-pub use sui_json_rpc_api::{
 pub use sui_config::node::ServerType;
 use sui_json_rpc_api::{
     CLIENT_SDK_TYPE_HEADER, CLIENT_SDK_VERSION_HEADER, CLIENT_TARGET_API_VERSION_HEADER,
@@ -197,32 +188,9 @@ impl JsonRpcServerBuilder {
         let metrics_logger = MetricsLogger::new(&self.registry, &methods_names);
         let traffic_controller_metrics = TrafficControllerMetrics::new(&self.registry);
 
-        fn handle_panic(err: Box<dyn Any + Send + 'static>) -> Response<Full<Bytes>> {
-            let details = if let Some(s) = err.downcast_ref::<String>() {
-                s.clone()
-            } else if let Some(s) = err.downcast_ref::<&str>() {
-                s.to_string()
-            } else {
-                "Unknown panic message".to_string()
-            };
-            error!("details {:?}", details);
-            let body = serde_json::json!({
-                "error": {
-                    "kind": "panic",
-                    "details": details,
-                }
-            });
-            let body = serde_json::to_string(&body).unwrap();
-            Response::builder()
-                .status(StatusCode::INTERNAL_SERVER_ERROR)
-                .header(header::CONTENT_TYPE, "application/json")
-                .body(Full::from(body))
-                .unwrap()
-        }
 
         let middleware = tower::ServiceBuilder::new()
             .layer(Self::trace_layer())
-            .layer(CatchPanicLayer::custom(handle_panic))
             .layer(Self::cors()?);
 
         let service = crate::axum_router::JsonRpcService::new(
