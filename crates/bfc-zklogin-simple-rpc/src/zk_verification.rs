@@ -1,5 +1,7 @@
 //use std::env;
 use std::str::FromStr;
+use std::sync::Arc;
+use sui_types::signature_verification::VerifiedDigestCache;
 use anyhow::anyhow;
 use axum::Json;
 use axum::response::IntoResponse;
@@ -97,6 +99,7 @@ pub async fn verify_zk_login_sig(
                 author_address,
                 cur_epoch_id,
                 &verify_params,
+                Arc::new(VerifiedDigestCache::new_empty()),
             );
             (serde_json::to_string(&tx_data)?, res)
         }
@@ -113,6 +116,7 @@ pub async fn verify_zk_login_sig(
                 author_address,
                 cur_epoch_id,
                 &verify_params,
+                Arc::new(VerifiedDigestCache::new_empty()),
             );
             (serde_json::to_string(&data)?, res)
         }

@@ -6,8 +6,6 @@ use std::net::SocketAddr;
 use bfc_zklogin_simple_rpc::{verify_zk_signature, hello};
 use std::env;
 use std::process::exit;
-
-
 #[tokio::main]
 async fn main() {
     let args: Vec<String> = env::args().collect();

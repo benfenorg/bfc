@@ -42,6 +42,7 @@ pub enum Verbosity {
     Concise,
     Verbose,
 }
+const VERSION: &str = const_str::concat!(env!("CARGO_PKG_VERSION"), "-", GIT_REVISION);
 
 #[derive(Parser)]
 #[command(

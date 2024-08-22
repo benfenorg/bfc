@@ -268,10 +268,7 @@ pub enum SuiClientCommands {
     },
 
 
-        /// Return the bcs serialized version of the object
-        #[clap(long)]
-        bcs: bool,
-    },
+
     /// Obtain all objects owned by the address. It also accepts an address by its alias.
     #[clap(name = "objects")]
     Objects {

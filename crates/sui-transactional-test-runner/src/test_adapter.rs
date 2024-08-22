@@ -86,7 +86,7 @@ use sui_types::{
     transaction::{Transaction, TransactionData, TransactionDataAPI, VerifiedTransaction},
     MOVE_STDLIB_ADDRESS, SUI_CLOCK_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_STATE_OBJECT_ID,
 };
-use sui_types::{SUI_SYSTEM_ADDRESS,BFC_SYSTEM_ADDRESS};
+use sui_types::{BFC_SYSTEM_ADDRESS};
 use sui_types::{execution_status::ExecutionStatus, transaction::TransactionKind};
 use sui_types::{object::GAS_VALUE_FOR_TESTING};
 use sui_types::{
@@ -98,8 +98,7 @@ use sui_types::{
 };
 use sui_types::{utils::to_sender_signed_transaction, SUI_SYSTEM_PACKAGE_ID};
 use sui_types::SUI_DENY_LIST_OBJECT_ID;
-use sui_types::{BRIDGE_ADDRESS, MOVE_STDLIB_PACKAGE_ID};
-use sui_types::{DEEPBOOK_ADDRESS, SUI_DENY_LIST_OBJECT_ID};
+use sui_types::{BRIDGE_ADDRESS};
 use sui_types::{DEEPBOOK_PACKAGE_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
 use tempfile::{tempdir, NamedTempFile};
 
