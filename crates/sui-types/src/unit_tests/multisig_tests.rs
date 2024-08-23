@@ -36,7 +36,7 @@ use std::str::FromStr;
 use fastcrypto::traits::KeyPair;
 use num_bigint::BigUint;
 
-use std::{str::FromStr, sync::Arc};
+use std::{sync::Arc};
 #[test]
 fn test_combine_sigs() {
     let kp1: SuiKeyPair = SuiKeyPair::Ed25519(get_key_pair().1);

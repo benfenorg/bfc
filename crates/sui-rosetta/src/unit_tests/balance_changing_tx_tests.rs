@@ -36,7 +36,7 @@ use sui_types::transaction::{
     TEST_ONLY_GAS_UNIT_FOR_STAKING, TEST_ONLY_GAS_UNIT_FOR_TRANSFER,
 };
 use sui_types::TypeTag;
-use sui_types::transaction::{CallArg, InputObjectKind, ObjectArg, ProgrammableTransaction, Transaction, TransactionData, TransactionDataAPI, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_GENERIC, TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE, TEST_ONLY_GAS_UNIT_FOR_SPLIT_COIN, TEST_ONLY_GAS_UNIT_FOR_STAKING, TEST_ONLY_GAS_UNIT_FOR_TRANSFER, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{ TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestClusterBuilder;
 
 #[tokio::test]

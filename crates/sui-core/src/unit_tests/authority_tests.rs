@@ -4211,7 +4211,6 @@ pub async fn init_state_with_ids_and_objects_basics<
     publish_object_basics(state).await
 }
 
-pub(crate) async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
 pub async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<AuthorityState>, ObjectRef) {
     use sui_move_build::BuildConfig;
 
@@ -6670,7 +6669,7 @@ async fn test_stable_for_inc_201_dev_inspect() {
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     path.push("src/unit_tests/data/publish_with_event");
     let modules = BuildConfig::new_for_testing()
-        .build(path)
+        .build(&path)
         .unwrap()
         .get_package_bytes(false);
 
@@ -9992,7 +9991,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
         .insert("c".to_string(), AccountAddress::ZERO);
 
     let modules = build_config
-        .build(package_c_path)
+        .build(&package_c_path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10026,7 +10025,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
     ]);
 
     let modules = build_config
-        .build(package_b_path)
+        .build(&package_b_path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10063,7 +10062,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
     ]);
 
     let modules = build_config
-        .build(package_a_path)
+        .build(&package_a_path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10107,7 +10106,7 @@ async fn test_stable_publish_transitive_dependencies_ok() {
     ]);
 
     let modules = build_config
-        .build(package_root_path)
+        .build(&package_root_path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10154,7 +10153,7 @@ async fn test_stable_publish_missing_dependency() {
     path.extend(["src", "unit_tests", "data", "object_basics"]);
 
     let modules = BuildConfig::new_for_testing()
-        .build(path)
+        .build(&path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10203,7 +10202,7 @@ async fn test_stable_publish_missing_transitive_dependency() {
     path.extend(["src", "unit_tests", "data", "object_basics"]);
 
     let modules = BuildConfig::new_for_testing()
-        .build(path)
+        .build(&path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10252,7 +10251,7 @@ async fn test_stable_publish_not_a_package_dependency() {
     path.extend(["src", "unit_tests", "data", "object_basics"]);
 
     let modules = BuildConfig::new_for_testing()
-        .build(path)
+        .build(&path)
         .unwrap()
         .get_package_bytes(/* with_unpublished_deps */ false);
 
@@ -10413,8 +10412,8 @@ async fn construct_stable_shared_object_transaction_with_sequence_number(
     )
 }
 
-#[sim_test]
-async fn test_per_object_congestion_control() {
+//#[sim_test]
+//async fn test_per_object_congestion_control() {
 async fn test_consensus_handler_per_object_congestion_control(
     mode: PerObjectCongestionControlMode,
 ) {

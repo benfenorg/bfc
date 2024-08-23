@@ -266,10 +266,10 @@ async fn test_user_sends_change_epoch_transaction() {
     test_user_sends_system_transaction_impl(TransactionKind::ChangeEpoch(ChangeEpoch {
         epoch: 0,
         protocol_version: ProtocolVersion::MIN,
-        storage_charge: 0,
-        computation_charge: 0,
-        storage_rebate: 0,
-        non_refundable_storage_fee: 0,
+        bfc_storage_charge: 0,
+        bfc_computation_charge: 0,
+        bfc_storage_rebate: 0,
+        bfc_non_refundable_storage_fee: 0,
         epoch_start_timestamp_ms: 0,
         system_packages: vec![],
     }))

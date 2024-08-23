@@ -998,32 +998,7 @@ impl RpcExampleProvider {
         )
     }
 
-    fn sui_get_loaded_child_objects(&mut self) -> Examples {
-        let mut sequence = SequenceNumber::from_u64(self.rng.gen_range(24506..6450624));
-        let seqs = (0..6)
-            .map(|x| {
-                if x % 2 == 0 || x % 3 == 0 {
-                    sequence = SequenceNumber::from_u64(self.rng.gen_range(24506..6450624));
-                }
 
-                SuiLoadedChildObject::new(ObjectID::new(self.rng.gen()), sequence)
-            })
-            .collect::<Vec<_>>();
-        let result = {
-            SuiLoadedChildObjectsResponse {
-                loaded_child_objects: seqs,
-            }
-        };
-
-        Examples::new(
-            "bfc_getLoadedChildObjects",
-            vec![ExamplePairing::new(
-                "Gets loaded child objects associated with the transaction the request provides.",
-                vec![("digest", json!(ObjectDigest::new(self.rng.gen())))],
-                json!(result),
-            )],
-        )
-    }
 
     fn sui_get_move_function_arg_types(&mut self) -> Examples {
         let result = vec![
