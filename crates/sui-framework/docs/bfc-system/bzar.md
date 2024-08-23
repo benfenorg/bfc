@@ -26,7 +26,7 @@ title: Module `0xc8::bzar`
 
 
 
-<pre><code><b>struct</b> <a href="bzar.md#0xc8_bzar_BZAR">BZAR</a> <b>has</b> drop
+<pre><code><b>struct</b> <a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">BZAR</a> <b>has</b> drop
 </code></pre>
 
 
@@ -57,7 +57,7 @@ title: Module `0xc8::bzar`
 Sender is not @0x0 the system address.
 
 
-<pre><code><b>const</b> <a href="bzar.md#0xc8_bzar_ENotSystemAddress">ENotSystemAddress</a>: u64 = 1;
+<pre><code><b>const</b> <a href="../bfc-system/bzar.md#0xc8_bzar_ENotSystemAddress">ENotSystemAddress</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 
@@ -66,7 +66,7 @@ Sender is not @0x0 the system address.
 
 
 
-<pre><code><b>const</b> <a href="bzar.md#0xc8_bzar_EAlreadyMinted">EAlreadyMinted</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../bfc-system/bzar.md#0xc8_bzar_EAlreadyMinted">EAlreadyMinted</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 0;
 </code></pre>
 
 
@@ -77,7 +77,7 @@ Sender is not @0x0 the system address.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bzar.md#0xc8_bzar_new">new</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bzar.md#0xc8_bzar_new">new</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;
 </code></pre>
 
 
@@ -86,13 +86,13 @@ Sender is not @0x0 the system address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bzar.md#0xc8_bzar_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="bzar.md#0xc8_bzar_BZAR">BZAR</a>&gt; {
-    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="bzar.md#0xc8_bzar_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="bzar.md#0xc8_bzar_EAlreadyMinted">EAlreadyMinted</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bzar.md#0xc8_bzar_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">BZAR</a>&gt; {
+    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../bfc-system/bzar.md#0xc8_bzar_ENotSystemAddress">ENotSystemAddress</a>);
+    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="../bfc-system/bzar.md#0xc8_bzar_EAlreadyMinted">EAlreadyMinted</a>);
     <b>let</b> (cap, metadata) = <a href="../sui-framework/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
-        <a href="bzar.md#0xc8_bzar_BZAR">BZAR</a> {},
+        <a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">BZAR</a> {},
         9,
-        b"<a href="bzar.md#0xc8_bzar_BZAR">BZAR</a>",
+        b"<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">BZAR</a>",
         b"Benfen ZAR",
         b"",
         <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
@@ -113,7 +113,7 @@ Sender is not @0x0 the system address.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a>(c: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;, recipient: <b>address</b>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a>(c: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">bzar::BZAR</a>&gt;, recipient: <b>address</b>)
 </code></pre>
 
 
@@ -122,7 +122,7 @@ Sender is not @0x0 the system address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a>(c: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="bzar.md#0xc8_bzar_BZAR">BZAR</a>&gt;, recipient: <b>address</b>) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a>(c: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../bfc-system/bzar.md#0xc8_bzar_BZAR">BZAR</a>&gt;, recipient: <b>address</b>) {
     <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(c, recipient)
 }
 </code></pre>

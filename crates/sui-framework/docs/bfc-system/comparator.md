@@ -25,7 +25,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>struct</b> <a href="comparator.md#0xc8_comparator_Result">Result</a> <b>has</b> drop
+<pre><code><b>struct</b> <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> <b>has</b> drop
 </code></pre>
 
 
@@ -55,7 +55,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>const</b> <a href="comparator.md#0xc8_comparator_EQUAL">EQUAL</a>: u8 = 0;
+<pre><code><b>const</b> <a href="../bfc-system/comparator.md#0xc8_comparator_EQUAL">EQUAL</a>: u8 = 0;
 </code></pre>
 
 
@@ -64,7 +64,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>const</b> <a href="comparator.md#0xc8_comparator_GREATER">GREATER</a>: u8 = 2;
+<pre><code><b>const</b> <a href="../bfc-system/comparator.md#0xc8_comparator_GREATER">GREATER</a>: u8 = 2;
 </code></pre>
 
 
@@ -73,7 +73,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>const</b> <a href="comparator.md#0xc8_comparator_SMALLER">SMALLER</a>: u8 = 1;
+<pre><code><b>const</b> <a href="../bfc-system/comparator.md#0xc8_comparator_SMALLER">SMALLER</a>: u8 = 1;
 </code></pre>
 
 
@@ -84,7 +84,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_equal">is_equal</a>(result: &<a href="comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_equal">is_equal</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
 </code></pre>
 
 
@@ -93,8 +93,8 @@ Provides a framework for comparing two elements
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_equal">is_equal</a>(result: &<a href="comparator.md#0xc8_comparator_Result">Result</a>): bool {
-    <b>return</b> result.inner == <a href="comparator.md#0xc8_comparator_EQUAL">EQUAL</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_equal">is_equal</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a>): bool {
+    <b>return</b> result.inner == <a href="../bfc-system/comparator.md#0xc8_comparator_EQUAL">EQUAL</a>
 }
 </code></pre>
 
@@ -108,7 +108,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_smaller_than">is_smaller_than</a>(result: &<a href="comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_smaller_than">is_smaller_than</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
 </code></pre>
 
 
@@ -117,8 +117,8 @@ Provides a framework for comparing two elements
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_smaller_than">is_smaller_than</a>(result: &<a href="comparator.md#0xc8_comparator_Result">Result</a>): bool {
-    <b>return</b> result.inner == <a href="comparator.md#0xc8_comparator_SMALLER">SMALLER</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_smaller_than">is_smaller_than</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a>): bool {
+    <b>return</b> result.inner == <a href="../bfc-system/comparator.md#0xc8_comparator_SMALLER">SMALLER</a>
 }
 </code></pre>
 
@@ -132,7 +132,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_greater_than">is_greater_than</a>(result: &<a href="comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_greater_than">is_greater_than</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">comparator::Result</a>): bool
 </code></pre>
 
 
@@ -141,8 +141,8 @@ Provides a framework for comparing two elements
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_is_greater_than">is_greater_than</a>(result: &<a href="comparator.md#0xc8_comparator_Result">Result</a>): bool {
-    result.inner == <a href="comparator.md#0xc8_comparator_GREATER">GREATER</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_is_greater_than">is_greater_than</a>(result: &<a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a>): bool {
+    result.inner == <a href="../bfc-system/comparator.md#0xc8_comparator_GREATER">GREATER</a>
 }
 </code></pre>
 
@@ -156,7 +156,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_compare">compare</a>&lt;T&gt;(left: &T, right: &T): <a href="comparator.md#0xc8_comparator_Result">comparator::Result</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_compare">compare</a>&lt;T&gt;(left: &T, right: &T): <a href="../bfc-system/comparator.md#0xc8_comparator_Result">comparator::Result</a>
 </code></pre>
 
 
@@ -165,11 +165,11 @@ Provides a framework for comparing two elements
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_compare">compare</a>&lt;T&gt;(left: &T, right: &T): <a href="comparator.md#0xc8_comparator_Result">Result</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_compare">compare</a>&lt;T&gt;(left: &T, right: &T): <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> {
     <b>let</b> left_bytes = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(left);
     <b>let</b> right_bytes = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(right);
 
-    <a href="comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left_bytes, right_bytes)
+    <a href="../bfc-system/comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left_bytes, right_bytes)
 }
 </code></pre>
 
@@ -183,7 +183,7 @@ Provides a framework for comparing two elements
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, right: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="comparator.md#0xc8_comparator_Result">comparator::Result</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, right: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../bfc-system/comparator.md#0xc8_comparator_Result">comparator::Result</a>
 </code></pre>
 
 
@@ -192,7 +192,7 @@ Provides a framework for comparing two elements
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, right: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="comparator.md#0xc8_comparator_Result">Result</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/comparator.md#0xc8_comparator_compare_u8_vector">compare_u8_vector</a>(left: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, right: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> {
     <b>let</b> left_length = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&left);
     <b>let</b> right_length = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&right);
 
@@ -203,19 +203,19 @@ Provides a framework for comparing two elements
         <b>let</b> right_byte = *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&right, idx);
 
         <b>if</b> (left_byte &lt; right_byte) {
-            <b>return</b> <a href="comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="comparator.md#0xc8_comparator_SMALLER">SMALLER</a> }
+            <b>return</b> <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="../bfc-system/comparator.md#0xc8_comparator_SMALLER">SMALLER</a> }
         } <b>else</b> <b>if</b> (left_byte &gt; right_byte) {
-            <b>return</b> <a href="comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="comparator.md#0xc8_comparator_GREATER">GREATER</a> }
+            <b>return</b> <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="../bfc-system/comparator.md#0xc8_comparator_GREATER">GREATER</a> }
         };
         idx = idx + 1;
     };
 
     <b>if</b> (left_length &lt; right_length) {
-        <a href="comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="comparator.md#0xc8_comparator_SMALLER">SMALLER</a> }
+        <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="../bfc-system/comparator.md#0xc8_comparator_SMALLER">SMALLER</a> }
     } <b>else</b> <b>if</b> (left_length &gt; right_length) {
-        <a href="comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="comparator.md#0xc8_comparator_GREATER">GREATER</a> }
+        <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="../bfc-system/comparator.md#0xc8_comparator_GREATER">GREATER</a> }
     } <b>else</b> {
-        <a href="comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="comparator.md#0xc8_comparator_EQUAL">EQUAL</a> }
+        <a href="../bfc-system/comparator.md#0xc8_comparator_Result">Result</a> { inner: <a href="../bfc-system/comparator.md#0xc8_comparator_EQUAL">EQUAL</a> }
     }
 }
 </code></pre>

@@ -14,14 +14,14 @@ title: Module `0xc8::treasury_pool`
 -  [Function `get_balance`](#0xc8_treasury_pool_get_balance)
 
 
-<pre><code><b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
+<pre><code><b>use</b> <a href="../move-stdlib/u64.md#0x1_u64">0x1::u64</a>;
+<b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
-<b>use</b> <a href="../sui-framework/math.md#0x2_math">0x2::math</a>;
 <b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
-<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
+<b>use</b> <a href="../bfc-system/event.md#0xc8_event">0xc8::event</a>;
 </code></pre>
 
 
@@ -32,7 +32,7 @@ title: Module `0xc8::treasury_pool`
 
 
 
-<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> <b>has</b> store, key
 </code></pre>
 
 
@@ -65,7 +65,7 @@ title: Module `0xc8::treasury_pool`
 
 
 
-<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -76,19 +76,19 @@ title: Module `0xc8::treasury_pool`
 
 <dl>
 <dt>
-<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: u64</code>
+<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>request_amount: u64</code>
+<code>request_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>amount: u64</code>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -104,7 +104,7 @@ title: Module `0xc8::treasury_pool`
 
 
 
-<pre><code><b>struct</b> <a href="treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -115,13 +115,13 @@ title: Module `0xc8::treasury_pool`
 
 <dl>
 <dt>
-<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: u64</code>
+<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>deposit_amount: u64</code>
+<code>deposit_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -141,7 +141,7 @@ title: Module `0xc8::treasury_pool`
 The <code>withdraw</code> function only called by 0x0 address.
 
 
-<pre><code><b>const</b> <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>: u64 = 900;
+<pre><code><b>const</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 900;
 </code></pre>
 
 
@@ -152,7 +152,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>
 </code></pre>
 
 
@@ -161,18 +161,18 @@ The <code>withdraw</code> function only called by 0x0 address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_create_treasury_pool">create_treasury_pool</a>(
     <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;BFC&gt;,
     ctx: &<b>mut</b> TxContext
-): <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>
+): <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>
 {
-    <b>let</b> <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a> = <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> {
+    <b>let</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool">treasury_pool</a> = <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
         <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance">balance</a>,
     };
-    <b>let</b> treasury_pool_id = <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(&<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
+    <b>let</b> treasury_pool_id = <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(&<a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
     event::init_treasury_pool(treasury_pool_id);
-    <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>
+    <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>
 }
 </code></pre>
 
@@ -186,7 +186,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, bfc_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(self: &<b>mut</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, bfc_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -195,15 +195,15 @@ The <code>withdraw</code> function only called by 0x0 address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(
-    self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_deposit_to_treasury_pool">deposit_to_treasury_pool</a>(
+    self: &<b>mut</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
     bfc_coin: Coin&lt;BFC&gt;
 )
 {
     <b>let</b> origin_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>);
     <b>let</b> deposit_amount = <a href="../sui-framework/coin.md#0x2_coin_value">coin::value</a>(&bfc_coin);
     <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(bfc_coin));
-    emit(<a href="treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> {
+    emit(<a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_DepositEvent">DepositEvent</a> {
         <a href="../sui-framework/balance.md#0x2_balance">balance</a>: origin_amount,
         deposit_amount
     });
@@ -220,7 +220,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, amount: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(self: &<b>mut</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -229,20 +229,20 @@ The <code>withdraw</code> function only called by 0x0 address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(
-    self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
-    amount: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">withdraw_to_treasury</a>(
+    self: &<b>mut</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &<b>mut</b> TxContext
 ): Balance&lt;BFC&gt;
 {
-    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
+    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_ERR_NOT_ZERO_ADDRESS">ERR_NOT_ZERO_ADDRESS</a>);
     // Take the minimum of the amount and the remaining <a href="../sui-framework/balance.md#0x2_balance">balance</a> in
     // order <b>to</b> ensure we don't overdraft the remaining <a href="../sui-framework/balance.md#0x2_balance">balance</a>
     <b>let</b> current_balance = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>);
-    <b>let</b> to_withdraw = <a href="../sui-framework/math.md#0x2_math_min">math::min</a>(amount, current_balance);
+    <b>let</b> to_withdraw = std::u64::min(amount, current_balance);
 
     <b>let</b> withdraw_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>, to_withdraw);
-    emit(<a href="treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> {
+    emit(<a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_WithdrawEvent">WithdrawEvent</a> {
         <a href="../sui-framework/balance.md#0x2_balance">balance</a>: current_balance,
         request_amount: amount,
         amount: to_withdraw,
@@ -261,7 +261,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -270,7 +270,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="../bfc-system/treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>

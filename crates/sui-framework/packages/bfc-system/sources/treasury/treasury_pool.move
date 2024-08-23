@@ -6,7 +6,6 @@ module bfc_system::treasury_pool {
     use sui::coin;
     use sui::coin::Coin;
     use sui::event::emit;
-    use sui::math;
 
     use bfc_system::event;
 
@@ -72,7 +71,7 @@ module bfc_system::treasury_pool {
         // Take the minimum of the amount and the remaining balance in
         // order to ensure we don't overdraft the remaining balance
         let current_balance = balance::value(&self.balance);
-        let to_withdraw = math::min(amount, current_balance);
+        let to_withdraw = std::u64::min(amount, current_balance);
 
         let withdraw_balance = balance::split(&mut self.balance, to_withdraw);
         emit(WithdrawEvent {

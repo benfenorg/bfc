@@ -432,7 +432,7 @@ Operation is irreversible. Supply cannot be converted into a <code><a href="../s
 to different security guarantees (TreasuryCap can be created only once for a type)
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">treasury_into_supply</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">treasury_into_supply</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
 </code></pre>
 
 
@@ -441,8 +441,8 @@ to different security guarantees (TreasuryCap can be created only once for a typ
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">treasury_into_supply</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): Supply&lt;T&gt; {
-    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a> { id, total_supply } = <a href="../../treasury.md#0xc8_treasury">treasury</a>;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">treasury_into_supply</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): Supply&lt;T&gt; {
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a> { id, total_supply } = <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>;
     id.delete();
     total_supply
 }
@@ -459,7 +459,7 @@ to different security guarantees (TreasuryCap can be created only once for a typ
 Get immutable reference to the treasury's <code>Supply</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_immut">supply_immut</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_immut">supply_immut</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
 </code></pre>
 
 
@@ -468,8 +468,8 @@ Get immutable reference to the treasury's <code>Supply</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_immut">supply_immut</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &Supply&lt;T&gt; {
-    &<a href="../../treasury.md#0xc8_treasury">treasury</a>.total_supply
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_immut">supply_immut</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &Supply&lt;T&gt; {
+    &<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.total_supply
 }
 </code></pre>
 
@@ -484,7 +484,7 @@ Get immutable reference to the treasury's <code>Supply</code>.
 Get mutable reference to the treasury's <code>Supply</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_mut">supply_mut</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_mut">supply_mut</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
 </code></pre>
 
 
@@ -493,8 +493,8 @@ Get mutable reference to the treasury's <code>Supply</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_mut">supply_mut</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &<b>mut</b> Supply&lt;T&gt; {
-    &<b>mut</b> <a href="../../treasury.md#0xc8_treasury">treasury</a>.total_supply
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply_mut">supply_mut</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &<b>mut</b> Supply&lt;T&gt; {
+    &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.total_supply
 }
 </code></pre>
 
@@ -1581,7 +1581,7 @@ Update the url of the coin in <code><a href="../sui-framework/coin.md#0x2_coin_C
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply">supply</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply">supply</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;): &<a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;T&gt;
 </code></pre>
 
 
@@ -1590,8 +1590,8 @@ Update the url of the coin in <code><a href="../sui-framework/coin.md#0x2_coin_C
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply">supply</a>&lt;T&gt;(<a href="../../treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &Supply&lt;T&gt; {
-    &<a href="../../treasury.md#0xc8_treasury">treasury</a>.total_supply
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/coin.md#0x2_coin_supply">supply</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &Supply&lt;T&gt; {
+    &<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.total_supply
 }
 </code></pre>
 

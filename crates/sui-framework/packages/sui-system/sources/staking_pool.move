@@ -5,7 +5,6 @@
 module sui_system::staking_pool {
     use sui::balance::{Self, Balance};
     use sui::bfc::BFC;
-    use sui::math;
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
@@ -260,7 +259,7 @@ module sui_system::staking_pool {
         // This may happen when we are withdrawing everything from the pool and
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
-        reward_withdraw_amount = math::min(reward_withdraw_amount, pool.rewards_pool.value());
+        reward_withdraw_amount = std::u64::min(reward_withdraw_amount, pool.rewards_pool.value());
         pool.rewards_pool.split(reward_withdraw_amount)
     }
 
@@ -373,7 +372,7 @@ module sui_system::staking_pool {
             return initial_exchange_rate()
         };
         let clamped_epoch = pool.deactivation_epoch.get_with_default(epoch);
-        let mut epoch = math::min(clamped_epoch, epoch);
+        let mut epoch = std::u64::min(clamped_epoch, epoch);
         let activation_epoch = *pool.activation_epoch.borrow();
 
         // Find the latest epoch that's earlier than the given epoch with an entry in the table

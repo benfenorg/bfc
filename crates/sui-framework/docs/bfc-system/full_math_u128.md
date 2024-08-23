@@ -22,7 +22,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_floor">mul_div_floor</a>(num1: u128, num2: u128, denom: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_floor">mul_div_floor</a>(num1: u128, num2: u128, denom: u128): u128
 </code></pre>
 
 
@@ -31,8 +31,8 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_floor">mul_div_floor</a>(num1: u128, num2: u128, denom: u128): u128 {
-    <b>let</b> r = <a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) / (denom <b>as</b> u256);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_floor">mul_div_floor</a>(num1: u128, num2: u128, denom: u128): u128 {
+    <b>let</b> r = <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) / (denom <b>as</b> u256);
     (r <b>as</b> u128)
 }
 </code></pre>
@@ -47,7 +47,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_round">mul_div_round</a>(num1: u128, num2: u128, denom: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_round">mul_div_round</a>(num1: u128, num2: u128, denom: u128): u128
 </code></pre>
 
 
@@ -56,8 +56,8 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_round">mul_div_round</a>(num1: u128, num2: u128, denom: u128): u128 {
-    <b>let</b> r = (<a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) + ((denom <b>as</b> u256) &gt;&gt; 1)) / (denom <b>as</b> u256);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_round">mul_div_round</a>(num1: u128, num2: u128, denom: u128): u128 {
+    <b>let</b> r = (<a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) + ((denom <b>as</b> u256) &gt;&gt; 1)) / (denom <b>as</b> u256);
     (r <b>as</b> u128)
 }
 </code></pre>
@@ -72,7 +72,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_ceil">mul_div_ceil</a>(num1: u128, num2: u128, denom: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_ceil">mul_div_ceil</a>(num1: u128, num2: u128, denom: u128): u128
 </code></pre>
 
 
@@ -81,8 +81,8 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_div_ceil">mul_div_ceil</a>(num1: u128, num2: u128, denom: u128): u128 {
-    <b>let</b> r = (<a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) + ((denom <b>as</b> u256) - 1)) / (denom <b>as</b> u256);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_div_ceil">mul_div_ceil</a>(num1: u128, num2: u128, denom: u128): u128 {
+    <b>let</b> r = (<a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) + ((denom <b>as</b> u256) - 1)) / (denom <b>as</b> u256);
     (r <b>as</b> u128)
 }
 </code></pre>
@@ -97,7 +97,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_shr">mul_shr</a>(num1: u128, num2: u128, shift: u8): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_shr">mul_shr</a>(num1: u128, num2: u128, shift: u8): u128
 </code></pre>
 
 
@@ -106,8 +106,8 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_shr">mul_shr</a>(num1: u128, num2: u128, shift: u8): u128 {
-    <b>let</b> product = <a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) &gt;&gt; shift;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_shr">mul_shr</a>(num1: u128, num2: u128, shift: u8): u128 {
+    <b>let</b> product = <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) &gt;&gt; shift;
     (product <b>as</b> u128)
 }
 </code></pre>
@@ -122,7 +122,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_shl">mul_shl</a>(num1: u128, num2: u128, shift: u8): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_shl">mul_shl</a>(num1: u128, num2: u128, shift: u8): u128
 </code></pre>
 
 
@@ -131,8 +131,8 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_mul_shl">mul_shl</a>(num1: u128, num2: u128, shift: u8): u128 {
-    <b>let</b> product = <a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) &lt;&lt; shift;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_mul_shl">mul_shl</a>(num1: u128, num2: u128, shift: u8): u128 {
+    <b>let</b> product = <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1, num2) &lt;&lt; shift;
     (product <b>as</b> u128)
 }
 </code></pre>
@@ -147,7 +147,7 @@ title: Module `0xc8::full_math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1: u128, num2: u128): u256
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1: u128, num2: u128): u256
 </code></pre>
 
 
@@ -156,7 +156,7 @@ title: Module `0xc8::full_math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1: u128, num2: u128): u256 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/full_math_u128.md#0xc8_full_math_u128_full_mul">full_mul</a>(num1: u128, num2: u128): u256 {
     (num1 <b>as</b> u256) * (num2 <b>as</b> u256)
 }
 </code></pre>

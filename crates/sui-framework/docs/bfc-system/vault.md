@@ -68,15 +68,15 @@ title: Module `0xc8::vault`
 <b>use</b> <a href="../sui-framework/curve.md#0x2_curve">0x2::curve</a>;
 <b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
-<b>use</b> <a href="clmm_math.md#0xc8_clmm_math">0xc8::clmm_math</a>;
-<b>use</b> <a href="event.md#0xc8_event">0xc8::event</a>;
-<b>use</b> <a href="i32.md#0xc8_i32">0xc8::i32</a>;
-<b>use</b> <a href="math_u128.md#0xc8_math_u128">0xc8::math_u128</a>;
-<b>use</b> <a href="math_u64.md#0xc8_math_u64">0xc8::math_u64</a>;
-<b>use</b> <a href="option_u64.md#0xc8_option_u64">0xc8::option_u64</a>;
-<b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
-<b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
-<b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
+<b>use</b> <a href="../bfc-system/clmm_math.md#0xc8_clmm_math">0xc8::clmm_math</a>;
+<b>use</b> <a href="../bfc-system/event.md#0xc8_event">0xc8::event</a>;
+<b>use</b> <a href="../bfc-system/i32.md#0xc8_i32">0xc8::i32</a>;
+<b>use</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128">0xc8::math_u128</a>;
+<b>use</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64">0xc8::math_u64</a>;
+<b>use</b> <a href="../bfc-system/option_u64.md#0xc8_option_u64">0xc8::option_u64</a>;
+<b>use</b> <a href="../bfc-system/position.md#0xc8_position">0xc8::position</a>;
+<b>use</b> <a href="../bfc-system/tick.md#0xc8_tick">0xc8::tick</a>;
+<b>use</b> <a href="../bfc-system/tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
 </code></pre>
 
 
@@ -87,7 +87,7 @@ title: Module `0xc8::vault`
 
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; <b>has</b> store, key
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; <b>has</b> store, key
 </code></pre>
 
 
@@ -176,19 +176,19 @@ title: Module `0xc8::vault`
  The current sqrt price
 </dd>
 <dt>
-<code>current_tick_index: <a href="i32.md#0xc8_i32_I32">i32::I32</a></code>
+<code>current_tick_index: <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a></code>
 </dt>
 <dd>
  The current tick index
 </dd>
 <dt>
-<code>tick_manager: <a href="tick.md#0xc8_tick_TickManager">tick::TickManager</a></code>
+<code>tick_manager: <a href="../bfc-system/tick.md#0xc8_tick_TickManager">tick::TickManager</a></code>
 </dt>
 <dd>
  The tick manager
 </dd>
 <dt>
-<code>position_manager: <a href="position.md#0xc8_position_PositionManager">position::PositionManager</a></code>
+<code>position_manager: <a href="../bfc-system/position.md#0xc8_position_PositionManager">position::PositionManager</a></code>
 </dt>
 <dd>
  The position manager
@@ -200,25 +200,25 @@ title: Module `0xc8::vault`
  is the vault pause
 </dd>
 <dt>
-<code>index: u64</code>
+<code>index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
  The vault index
 </dd>
 <dt>
-<code>base_point: u64</code>
+<code>base_point: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>coin_market_cap: u64</code>
+<code>coin_market_cap: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
  stable coin market cap
 </dd>
 <dt>
-<code>last_bfc_rebalance_amount: u64</code>
+<code>last_bfc_rebalance_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
  last rebalance bfc amount
@@ -234,7 +234,7 @@ title: Module `0xc8::vault`
 
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_VaultInfo">VaultInfo</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -287,13 +287,13 @@ title: Module `0xc8::vault`
 
 </dd>
 <dt>
-<code>coin_a_balance: u64</code>
+<code>coin_a_balance: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>coin_b_balance: u64</code>
+<code>coin_b_balance: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -347,25 +347,25 @@ title: Module `0xc8::vault`
 
 </dd>
 <dt>
-<code>index: u64</code>
+<code>index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>base_point: u64</code>
+<code>base_point: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>coin_market_cap: u64</code>
+<code>coin_market_cap: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>last_bfc_rebalance_amount: u64</code>
+<code>last_bfc_rebalance_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -382,7 +382,7 @@ title: Module `0xc8::vault`
 Flash loan resource for add_liquidity
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -399,13 +399,13 @@ Flash loan resource for add_liquidity
 
 </dd>
 <dt>
-<code>amount_a: u64</code>
+<code>amount_a: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>amount_b: u64</code>
+<code>amount_b: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -422,7 +422,7 @@ Flash loan resource for add_liquidity
 The step swap result
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a> <b>has</b> <b>copy</b>, drop, store
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a> <b>has</b> <b>copy</b>, drop, store
 </code></pre>
 
 
@@ -451,25 +451,25 @@ The step swap result
 
 </dd>
 <dt>
-<code>current_tick_index: <a href="i32.md#0xc8_i32_I32">i32::I32</a></code>
+<code>current_tick_index: <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>amount_in: u64</code>
+<code>amount_in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>amount_out: u64</code>
+<code>amount_out: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>remainer_amount: u64</code>
+<code>remainer_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -486,7 +486,7 @@ The step swap result
 The calculated swap result
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> <b>has</b> <b>copy</b>, drop, store
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> <b>has</b> <b>copy</b>, drop, store
 </code></pre>
 
 
@@ -497,13 +497,13 @@ The calculated swap result
 
 <dl>
 <dt>
-<code>amount_in: u64</code>
+<code>amount_in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>amount_out: u64</code>
+<code>amount_out: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -527,13 +527,13 @@ The calculated swap result
 
 </dd>
 <dt>
-<code>step_results: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="vault.md#0xc8_vault_SwapStepResult">vault::SwapStepResult</a>&gt;</code>
+<code>step_results: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/vault.md#0xc8_vault_SwapStepResult">vault::SwapStepResult</a>&gt;</code>
 </dt>
 <dd>
 
 </dd>
 <dt>
-<code>steps: u64</code>
+<code>steps: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -553,7 +553,7 @@ To make the execution into a single transaction, the flash loan function must re
 that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
-<pre><code><b>struct</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
+<pre><code><b>struct</b> <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -576,7 +576,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 </dd>
 <dt>
-<code>pay_amount: u64</code>
+<code>pay_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -595,7 +595,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_AMOUNT_INSUFFICIENT">ERR_AMOUNT_INSUFFICIENT</a>: u64 = 200;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_INSUFFICIENT">ERR_AMOUNT_INSUFFICIENT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 200;
 </code></pre>
 
 
@@ -604,7 +604,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_AMOUNT_IS_ZERO">ERR_AMOUNT_IS_ZERO</a>: u64 = 206;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_IS_ZERO">ERR_AMOUNT_IS_ZERO</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 206;
 </code></pre>
 
 
@@ -613,7 +613,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>: u64 = 210;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 210;
 </code></pre>
 
 
@@ -622,7 +622,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_INVALID_SHAPE_KINDS">ERR_INVALID_SHAPE_KINDS</a>: u64 = 212;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_INVALID_SHAPE_KINDS">ERR_INVALID_SHAPE_KINDS</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 212;
 </code></pre>
 
 
@@ -631,7 +631,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_LIQUIDITY_DELTA_IS_ZERO">ERR_LIQUIDITY_DELTA_IS_ZERO</a>: u64 = 205;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_LIQUIDITY_DELTA_IS_ZERO">ERR_LIQUIDITY_DELTA_IS_ZERO</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 205;
 </code></pre>
 
 
@@ -640,7 +640,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>: u64 = 201;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 201;
 </code></pre>
 
 
@@ -649,7 +649,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_MAX_LIQUIDITY">ERR_MAX_LIQUIDITY</a>: u64 = 202;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_MAX_LIQUIDITY">ERR_MAX_LIQUIDITY</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 202;
 </code></pre>
 
 
@@ -658,7 +658,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>: u64 = 204;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 204;
 </code></pre>
 
 
@@ -667,7 +667,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>: u64 = 203;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 203;
 </code></pre>
 
 
@@ -676,7 +676,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>: u64 = 207;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 207;
 </code></pre>
 
 
@@ -685,7 +685,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>: u64 = 211;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 211;
 </code></pre>
 
 
@@ -694,7 +694,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_POSITION_LENGTH_MISMATCH">ERR_POSITION_LENGTH_MISMATCH</a>: u64 = 213;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_POSITION_LENGTH_MISMATCH">ERR_POSITION_LENGTH_MISMATCH</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 213;
 </code></pre>
 
 
@@ -703,7 +703,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>: u64 = 208;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 208;
 </code></pre>
 
 
@@ -712,7 +712,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>: u64 = 209;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 209;
 </code></pre>
 
 
@@ -721,7 +721,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_Q64">Q64</a>: u128 = 18446744073709551616;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_Q64">Q64</a>: u128 = 18446744073709551616;
 </code></pre>
 
 
@@ -730,7 +730,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>: u8 = 1;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>: u8 = 1;
 </code></pre>
 
 
@@ -739,7 +739,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>: u8 = 0;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>: u8 = 0;
 </code></pre>
 
 
@@ -748,7 +748,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>const</b> <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>: u8 = 2;
+<pre><code><b>const</b> <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>: u8 = 2;
 </code></pre>
 
 
@@ -759,7 +759,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(_index: u64, _tick_spacing: u32, _spacing_times: u32, _position_number: u32, _initialize_price: u128, _base_point: u64, _max_counter_times: u32, _ts: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(_index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _tick_spacing: u32, _spacing_times: u32, _position_number: u32, _initialize_price: u128, _base_point: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _max_counter_times: u32, _ts: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -768,23 +768,23 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(
-    _index: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_create_vault">create_vault</a>&lt;StableCoinType&gt;(
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _tick_spacing: u32,
     _spacing_times: u32,
     _position_number: u32,
     _initialize_price: u128,
-    _base_point: u64,
+    _base_point: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _max_counter_times: u32,
-    _ts: u64,
+    _ts: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _ctx: &<b>mut</b> TxContext,
-): <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; {
-    <b>let</b> current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(_initialize_price);
-    <b>let</b> valid_index = <a href="tick_math.md#0xc8_tick_math_get_next_valid_tick_index">tick_math::get_next_valid_tick_index</a>(current_tick_index, _tick_spacing);
+): <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt; {
+    <b>let</b> current_tick_index = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(_initialize_price);
+    <b>let</b> valid_index = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_next_valid_tick_index">tick_math::get_next_valid_tick_index</a>(current_tick_index, _tick_spacing);
     <b>let</b> uid = <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(_ctx);
     <b>let</b> pid = <a href="../sui-framework/object.md#0x2_object_uid_to_inner">object::uid_to_inner</a>(&uid);
-    <b>let</b> current_sqrt_price = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index);
-    <a href="vault.md#0xc8_vault_Vault">Vault</a> {
+    <b>let</b> current_sqrt_price = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(valid_index);
+    <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a> {
         id: uid,
         position_number: _position_number,
         state: 0,
@@ -798,8 +798,8 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
         liquidity: 0,
         current_sqrt_price,
         current_tick_index: valid_index,
-        tick_manager: <a href="tick.md#0xc8_tick_create_tick_manager">tick::create_tick_manager</a>(_tick_spacing, _ts, _ctx),
-        position_manager: <a href="position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
+        tick_manager: <a href="../bfc-system/tick.md#0xc8_tick_create_tick_manager">tick::create_tick_manager</a>(_tick_spacing, _ts, _ctx),
+        position_manager: <a href="../bfc-system/position.md#0xc8_position_create_position_manager">position::create_position_manager</a>(pid, _tick_spacing, _ctx),
         is_pause: <b>false</b>,
         index: _index,
         base_point: _base_point,
@@ -820,7 +820,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _pause: bool)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _pause: bool)
 </code></pre>
 
 
@@ -829,12 +829,12 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_set_pause">set_pause</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _pause: bool,
 ) {
     _vault.is_pause = _pause;
-    event::set_pause(<a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _pause);
+    event::set_pause(<a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault), _pause);
 }
 </code></pre>
 
@@ -849,7 +849,7 @@ that cannot be copied, cannot be saved, cannot be dropped, or cloned.
 open <code>position_number</code> positions
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _spacing_times: u32, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;
 </code></pre>
 
 
@@ -858,13 +858,13 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_init_positions">init_positions</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _spacing_times: u32,
     _ctx: &<b>mut</b> TxContext
 ): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt; {
-    <b>assert</b>!(<a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager) == 0, <a href="vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>);
-    <b>let</b> ticks = <a href="tick.md#0xc8_tick_get_ticks">tick::get_ticks</a>(
+    <b>assert</b>!(<a href="../bfc-system/position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager) == 0, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POSITIONS_IS_NOT_EMPTY">ERR_POSITIONS_IS_NOT_EMPTY</a>);
+    <b>let</b> ticks = <a href="../bfc-system/tick.md#0xc8_tick_get_ticks">tick::get_ticks</a>(
         &_vault.tick_manager,
         _vault.current_tick_index,
         _spacing_times,
@@ -873,7 +873,7 @@ open <code>position_number</code> positions
     <b>let</b> <b>mut</b> index = 0;
     <b>while</b> (index &lt; <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&ticks)) {
         <b>let</b> current = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&ticks, index);
-        <a href="vault.md#0xc8_vault_open_position">open_position</a>(
+        <a href="../bfc-system/vault.md#0xc8_vault_open_position">open_position</a>(
             _vault,
             *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(current, 0),
             *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(current, 1),
@@ -895,7 +895,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _tick_lower: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _tick_upper: <a href="i32.md#0xc8_i32_I32">i32::I32</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _tick_lower: <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>, _tick_upper: <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -904,14 +904,14 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_open_position">open_position</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _tick_lower: I32,
     _tick_upper: I32,
     _ctx: &<b>mut</b> TxContext
 ) {
-    <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <a href="position.md#0xc8_position_open_position">position::open_position</a>&lt;StableCoinType&gt;(
+    <b>assert</b>!(!_vault.is_pause, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
+    <a href="../bfc-system/position.md#0xc8_position_open_position">position::open_position</a>&lt;StableCoinType&gt;(
         &<b>mut</b> _vault.position_manager,
         _vault.index,
         _tick_lower,
@@ -931,7 +931,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -940,13 +940,13 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_close_position">close_position</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 )
 {
-    <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <a href="position.md#0xc8_position_close_position">position::close_position</a>(
+    <b>assert</b>!(!_vault.is_pause, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
+    <a href="../bfc-system/position.md#0xc8_position_close_position">position::close_position</a>(
         &<b>mut</b> _vault.position_manager,
         _index
     );
@@ -963,7 +963,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _use_amount: bool, _liquidity_delta: u128, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _use_amount: bool, _liquidity_delta: u128, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _fix_amount_a: bool): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -972,28 +972,28 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _use_amount: bool,
     _liquidity_delta: u128,
-    _amount: u64,
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _fix_amount_a: bool
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
-    <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> expect_vault_id = <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
-    <b>let</b> mut_position = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
+): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
+    <b>assert</b>!(!_vault.is_pause, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
+    <b>let</b> expect_vault_id = <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
+    <b>let</b> mut_position = <a href="../bfc-system/position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
         &<b>mut</b> _vault.position_manager,
         _index
     );
-    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
-    <b>let</b> _vault_id = <a href="position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
-    <b>assert</b>!(_vault_id == expect_vault_id, <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
+    <b>let</b> (tick_lower, tick_upper) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
+    <b>let</b> _vault_id = <a href="../bfc-system/position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
+    <b>assert</b>!(_vault_id == expect_vault_id, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
     <b>let</b> liquidity_delta: u128;
-    <b>let</b> amount_a: u64;
-    <b>let</b> amount_b: u64;
+    <b>let</b> amount_a: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
+    <b>let</b> amount_b: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
     <b>if</b> (_use_amount) {
-        (liquidity_delta, amount_a, amount_b) = <a href="clmm_math.md#0xc8_clmm_math_get_liquidity_by_amount">clmm_math::get_liquidity_by_amount</a>(
+        (liquidity_delta, amount_a, amount_b) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_get_liquidity_by_amount">clmm_math::get_liquidity_by_amount</a>(
             tick_lower,
             tick_upper,
             _vault.current_tick_index,
@@ -1003,7 +1003,7 @@ open <code>position_number</code> positions
         );
     } <b>else</b> {
         liquidity_delta = _liquidity_delta;
-        (amount_a, amount_b) = <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
+        (amount_a, amount_b) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
             tick_lower,
             tick_upper,
             _vault.current_tick_index,
@@ -1012,8 +1012,8 @@ open <code>position_number</code> positions
             <b>true</b>,
         );
     };
-    <b>let</b> liquidity = <a href="position.md#0xc8_position_increase_liquidity">position::increase_liquidity</a>(mut_position, liquidity_delta);
-    <a href="tick.md#0xc8_tick_increase_liquidity">tick::increase_liquidity</a>(
+    <b>let</b> liquidity = <a href="../bfc-system/position.md#0xc8_position_increase_liquidity">position::increase_liquidity</a>(mut_position, liquidity_delta);
+    <a href="../bfc-system/tick.md#0xc8_tick_increase_liquidity">tick::increase_liquidity</a>(
         &<b>mut</b> _vault.tick_manager,
         _vault.current_tick_index,
         tick_lower,
@@ -1021,15 +1021,15 @@ open <code>position_number</code> positions
         liquidity_delta,
     );
     <b>let</b> <b>mut</b>  is_in = <b>false</b>;
-    <b>if</b> (<a href="i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tick_lower)) {
-        is_in = <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper);
+    <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tick_lower)) {
+        is_in = <a href="../bfc-system/i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper);
     };
 
     <b>if</b> (is_in) {
-        <b>assert</b>!(<a href="math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(_vault.liquidity, liquidity), <a href="vault.md#0xc8_vault_ERR_MAX_LIQUIDITY">ERR_MAX_LIQUIDITY</a>);
+        <b>assert</b>!(<a href="../bfc-system/math_u128.md#0xc8_math_u128_add_check">math_u128::add_check</a>(_vault.liquidity, liquidity), <a href="../bfc-system/vault.md#0xc8_vault_ERR_MAX_LIQUIDITY">ERR_MAX_LIQUIDITY</a>);
         _vault.liquidity = _vault.liquidity + liquidity;
     };
-    <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
+    <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
         vault_id: _vault_id,
         amount_a,
         amount_b,
@@ -1047,7 +1047,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _delta_liquidity: u128): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -1056,13 +1056,13 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity">add_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _delta_liquidity: u128
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
-    <b>assert</b>!(_delta_liquidity &gt; 0, <a href="vault.md#0xc8_vault_ERR_LIQUIDITY_DELTA_IS_ZERO">ERR_LIQUIDITY_DELTA_IS_ZERO</a>);
-    <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
+): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
+    <b>assert</b>!(_delta_liquidity &gt; 0, <a href="../bfc-system/vault.md#0xc8_vault_ERR_LIQUIDITY_DELTA_IS_ZERO">ERR_LIQUIDITY_DELTA_IS_ZERO</a>);
+    <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
         _vault,
         _index,
         <b>false</b>,
@@ -1083,7 +1083,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _delta_liquidity: u128): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _delta_liquidity: u128): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1092,33 +1092,33 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_remove_liquidity">remove_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _delta_liquidity: u128
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;) {
-    <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
-    <b>let</b> expect_vault_id = <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
-    <b>let</b> mut_position = <a href="position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
+    <b>assert</b>!(!_vault.is_pause, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
+    <b>let</b> expect_vault_id = <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault);
+    <b>let</b> mut_position = <a href="../bfc-system/position.md#0xc8_position_borrow_mut_position">position::borrow_mut_position</a>(
         &<b>mut</b> _vault.position_manager,
         _index
     );
-    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
-    <b>let</b> _vault_id = <a href="position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
-    <b>assert</b>!(_vault_id == expect_vault_id, <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
-    <b>let</b> _ = <a href="position.md#0xc8_position_decrease_liquidity">position::decrease_liquidity</a>(mut_position, _delta_liquidity);
-    <a href="tick.md#0xc8_tick_decrease_liquidity">tick::decrease_liquidity</a>(
+    <b>let</b> (tick_lower, tick_upper) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(mut_position);
+    <b>let</b> _vault_id = <a href="../bfc-system/position.md#0xc8_position_get_vault_id">position::get_vault_id</a>(mut_position);
+    <b>assert</b>!(_vault_id == expect_vault_id, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
+    <b>let</b> _ = <a href="../bfc-system/position.md#0xc8_position_decrease_liquidity">position::decrease_liquidity</a>(mut_position, _delta_liquidity);
+    <a href="../bfc-system/tick.md#0xc8_tick_decrease_liquidity">tick::decrease_liquidity</a>(
         &<b>mut</b> _vault.tick_manager,
         _vault.current_tick_index,
         tick_lower,
         tick_upper,
         _delta_liquidity,
     );
-    <b>if</b> (<a href="i32.md#0xc8_i32_gt">i32::gt</a>(_vault.current_tick_index, tick_lower) && <a href="i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
+    <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_gt">i32::gt</a>(_vault.current_tick_index, tick_lower) && <a href="../bfc-system/i32.md#0xc8_i32_lt">i32::lt</a>(_vault.current_tick_index, tick_upper)) {
         _vault.liquidity = _vault.liquidity - _delta_liquidity;
     };
 
-    <b>let</b> (amount_a, amount_b) = <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
+    <b>let</b> (amount_a, amount_b) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
         tick_lower,
         tick_upper,
         _vault.current_tick_index,
@@ -1142,7 +1142,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _amount: u64, _fix_amount_a: bool): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _fix_amount_a: bool): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -1151,14 +1151,14 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
-    _amount: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_fix_coin">add_liquidity_fix_coin</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _fix_amount_a: bool
-): <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
-    <b>assert</b>!(_amount &gt; 0, <a href="vault.md#0xc8_vault_ERR_AMOUNT_IS_ZERO">ERR_AMOUNT_IS_ZERO</a>);
-    <a href="vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
+): <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt; {
+    <b>assert</b>!(_amount &gt; 0, <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_IS_ZERO">ERR_AMOUNT_IS_ZERO</a>);
+    <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity_internal">add_liquidity_internal</a>(
         _vault,
         _index,
         <b>true</b>,
@@ -1179,7 +1179,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _balance_a: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance_b: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _balance_a: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance_b: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _receipt: <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">vault::AddLiquidityReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1188,17 +1188,17 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_repay_add_liquidity">repay_add_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _balance_a: Balance&lt;StableCoinType&gt;,
     _balance_b: Balance&lt;BFC&gt;,
-    _receipt: <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
+    _receipt: <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a>&lt;StableCoinType&gt;
 )
 {
-    <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id, amount_a, amount_b } = _receipt;
-    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_balance_a) == amount_a, <a href="vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>);
-    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_balance_b) == amount_b, <a href="vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>);
-    <b>assert</b>!(vault_id == <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(_vault), <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
+    <b>let</b> <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id, amount_a, amount_b } = _receipt;
+    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_balance_a) == amount_a, <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>);
+    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_balance_b) == amount_b, <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_MISMATCH">ERR_AMOUNT_MISMATCH</a>);
+    <b>assert</b>!(vault_id == <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(_vault), <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
     <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, _balance_a);
     <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_b, _balance_b);
 }
@@ -1214,7 +1214,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">calculated_swap_result_amount_out</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_amount_out">calculated_swap_result_amount_out</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -1223,7 +1223,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_amount_out">calculated_swap_result_amount_out</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_amount_out">calculated_swap_result_amount_out</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     _calculatedSwapResult.amount_out
 }
 </code></pre>
@@ -1238,7 +1238,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_is_exceed">calculated_swap_result_is_exceed</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_is_exceed">calculated_swap_result_is_exceed</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): bool
 </code></pre>
 
 
@@ -1247,7 +1247,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_is_exceed">calculated_swap_result_is_exceed</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_is_exceed">calculated_swap_result_is_exceed</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): bool {
     _calculatedSwapResult.is_exceed
 }
 </code></pre>
@@ -1262,7 +1262,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_amount_in">calculated_swap_result_amount_in</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_amount_in">calculated_swap_result_amount_in</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -1271,7 +1271,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_amount_in">calculated_swap_result_amount_in</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_amount_in">calculated_swap_result_amount_in</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     _calculatedSwapResult.amount_in
 }
 </code></pre>
@@ -1286,7 +1286,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_after_sqrt_price">calculated_swap_result_after_sqrt_price</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_after_sqrt_price">calculated_swap_result_after_sqrt_price</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): u128
 </code></pre>
 
 
@@ -1295,7 +1295,7 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculated_swap_result_after_sqrt_price">calculated_swap_result_after_sqrt_price</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_after_sqrt_price">calculated_swap_result_after_sqrt_price</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>): u128 {
     _calculatedSwapResult.after_sqrt_price
 }
 </code></pre>
@@ -1310,7 +1310,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result_step_results">calculate_swap_result_step_results</a>(_calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="vault.md#0xc8_vault_SwapStepResult">vault::SwapStepResult</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculate_swap_result_step_results">calculate_swap_result_step_results</a>(_calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/vault.md#0xc8_vault_SwapStepResult">vault::SwapStepResult</a>&gt;
 </code></pre>
 
 
@@ -1319,9 +1319,9 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result_step_results">calculate_swap_result_step_results</a>(
-    _calculatedSwapResult: &<a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>
-): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a>&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculate_swap_result_step_results">calculate_swap_result_step_results</a>(
+    _calculatedSwapResult: &<a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>
+): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a>&gt; {
     &_calculatedSwapResult.step_results
 }
 </code></pre>
@@ -1336,7 +1336,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1345,8 +1345,8 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
-    <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>(): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
+    <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
         amount_in: 0,
         amount_out: 0,
         steps: 0,
@@ -1368,7 +1368,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(amount: u64, amount_in: u64): u64
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, amount_in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -1377,8 +1377,8 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(amount: u64, amount_in: u64): u64 {
-    <b>assert</b>!(amount &gt;= amount_in, <a href="vault.md#0xc8_vault_ERR_AMOUNT_INSUFFICIENT">ERR_AMOUNT_INSUFFICIENT</a>);
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, amount_in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>assert</b>!(amount &gt;= amount_in, <a href="../bfc-system/vault.md#0xc8_vault_ERR_AMOUNT_INSUFFICIENT">ERR_AMOUNT_INSUFFICIENT</a>);
     amount - amount_in
 }
 </code></pre>
@@ -1393,7 +1393,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(_swap_result: &<b>mut</b> <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>, _in: u64, _out: u64)
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(_swap_result: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>, _in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _out: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -1402,9 +1402,9 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(_swap_result: &<b>mut</b> <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>, _in: u64, _out: u64) {
-    <b>assert</b>!(<a href="math_u64.md#0xc8_math_u64_add_check">math_u64::add_check</a>(_swap_result.amount_in, _in), <a href="vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>);
-    <b>assert</b>!(<a href="math_u64.md#0xc8_math_u64_add_check">math_u64::add_check</a>(_swap_result.amount_out, _out), <a href="vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>);
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(_swap_result: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>, _in: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _out: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) {
+    <b>assert</b>!(<a href="../bfc-system/math_u64.md#0xc8_math_u64_add_check">math_u64::add_check</a>(_swap_result.amount_in, _in), <a href="../bfc-system/vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>);
+    <b>assert</b>!(<a href="../bfc-system/math_u64.md#0xc8_math_u64_add_check">math_u64::add_check</a>(_swap_result.amount_out, _out), <a href="../bfc-system/vault.md#0xc8_vault_ERR_MAX_AMOUNT">ERR_MAX_AMOUNT</a>);
     _swap_result.amount_in = _swap_result.amount_in + _in;
     _swap_result.amount_out = _swap_result.amount_out + _out;
 }
@@ -1420,7 +1420,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1429,39 +1429,39 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
-    _amount: u64,
-): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
-    <b>let</b> <b>mut</b> swap_result = <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a> {
+    <b>let</b> <b>mut</b> swap_result = <a href="../bfc-system/vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
     swap_result.vault_sqrt_price = _vault.current_sqrt_price;
     swap_result.after_sqrt_price = _vault.current_sqrt_price;
     <b>let</b> <b>mut</b> liquidity = _vault.liquidity;
     <b>let</b> <b>mut</b> current_sqrt_price = _vault.current_sqrt_price;
     <b>let</b> <b>mut</b> remainer_amount = _amount;
     <b>let</b> <b>mut</b> tick_index = _vault.current_tick_index;
-    <b>let</b> <b>mut</b> start_score = <a href="tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(
+    <b>let</b> <b>mut</b> start_score = <a href="../bfc-system/tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(
         &_vault.tick_manager,
         tick_index,
         _a2b,
     );
     <b>while</b> (remainer_amount &gt; 0) {
-        <b>if</b> (<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&start_score)) {
+        <b>if</b> (<a href="../bfc-system/option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&start_score)) {
             swap_result.is_exceed = <b>true</b>;
             <b>break</b>
         };
-        // get next <a href="tick.md#0xc8_tick">tick</a>
-        <b>let</b> (next_tick, next_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
+        // get next <a href="../bfc-system/tick.md#0xc8_tick">tick</a>
+        <b>let</b> (next_tick, next_score) = <a href="../bfc-system/tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
             &_vault.tick_manager,
-            <a href="option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&start_score),
+            <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&start_score),
             _a2b,
         );
         start_score = next_score;
 
-        <b>let</b> target_sqrt_price = <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(next_tick);
-        <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
+        <b>let</b> target_sqrt_price = <a href="../bfc-system/tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(next_tick);
+        <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
             current_sqrt_price,
             target_sqrt_price,
             liquidity,
@@ -1472,13 +1472,13 @@ open <code>position_number</code> positions
 
         <b>if</b> (amount_in != 0) {
             <b>if</b> (_by_amount_in) {
-                remainer_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remainer_amount, amount_in);
+                remainer_amount = <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remainer_amount, amount_in);
             } <b>else</b> {
-                remainer_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remainer_amount, amount_out);
+                remainer_amount = <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remainer_amount, amount_out);
             };
-            <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
+            <a href="../bfc-system/vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
         };
-        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> swap_result.step_results, <a href="vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a> {
+        <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> swap_result.step_results, <a href="../bfc-system/vault.md#0xc8_vault_SwapStepResult">SwapStepResult</a> {
             current_sqrt_price,
             target_sqrt_price,
             current_liquidity: liquidity,
@@ -1489,8 +1489,8 @@ open <code>position_number</code> positions
         });
         <b>if</b> (target_sqrt_price == next_sqrt_price) {
             current_sqrt_price = target_sqrt_price;
-            liquidity = <a href="tick.md#0xc8_tick_cross_by_tick">tick::cross_by_tick</a>(next_tick, _a2b, liquidity);
-            tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(next_tick);
+            liquidity = <a href="../bfc-system/tick.md#0xc8_tick_cross_by_tick">tick::cross_by_tick</a>(next_tick, _a2b, liquidity);
+            tick_index = <a href="../bfc-system/tick.md#0xc8_tick_tick_index">tick::tick_index</a>(next_tick);
         } <b>else</b> {
             current_sqrt_price = next_sqrt_price
         };
@@ -1511,7 +1511,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _amount_limit: u64, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _coin_a: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _coin_b: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _a2b: bool, _by_amount_in: bool, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _amount_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _sqrt_price_limit: u128, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
 </code></pre>
 
 
@@ -1520,23 +1520,23 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_swap">swap</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     <b>mut</b> _coin_a: Coin&lt;StableCoinType&gt;,
     <b>mut</b> _coin_b: Coin&lt;BFC&gt;,
     _a2b: bool,
     _by_amount_in: bool,
-    _amount: u64,
-    _amount_limit: u64,
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    _amount_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _sqrt_price_limit: u128,
     _ctx: &<b>mut</b> TxContext
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;) {
-    <b>assert</b>!(!_vault.is_pause, <a href="vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
+    <b>assert</b>!(!_vault.is_pause, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_IS_PAUSE">ERR_POOL_IS_PAUSE</a>);
     <b>let</b> (
         receive_a,
         receive_b,
         flash_receipt
-    ) = <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
+    ) = <a href="../bfc-system/vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
         _vault,
         _a2b,
         _by_amount_in,
@@ -1559,7 +1559,7 @@ open <code>position_number</code> positions
     <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(&<b>mut</b> _coin_a, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(receive_a, _ctx));
     <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(&<b>mut</b> _coin_b, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(receive_b, _ctx));
 
-    <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
+    <a href="../bfc-system/vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
         _vault,
         pay_coin_a,
         pay_coin_b,
@@ -1579,7 +1579,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, balance_a: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, balance_b: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, balance_a: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, balance_b: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, receipt: <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1588,28 +1588,28 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
-    <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_repay_flash_swap">repay_flash_swap</a>&lt;StableCoinType&gt;(
+    <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     balance_a: Balance&lt;StableCoinType&gt;,
     balance_b: Balance&lt;BFC&gt;,
-    receipt: <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
+    receipt: <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;
 ) {
-    <b>let</b> <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
+    <b>let</b> <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
         vault_id: _vault_id,
         a2b,
         pay_amount
     } = receipt;
 
-    <b>assert</b>!(_vault_id == <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(<a href="vault.md#0xc8_vault">vault</a>), <a href="vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
-    <b>assert</b>!(pay_amount &gt; 0, <a href="vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
+    <b>assert</b>!(_vault_id == <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>), <a href="../bfc-system/vault.md#0xc8_vault_ERR_POOL_INVALID">ERR_POOL_INVALID</a>);
+    <b>assert</b>!(pay_amount &gt; 0, <a href="../bfc-system/vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
 
     <b>if</b> (a2b) {
-        <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&balance_a) == pay_amount, <a href="vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
-        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="vault.md#0xc8_vault">vault</a>.coin_a, balance_a);
+        <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&balance_a) == pay_amount, <a href="../bfc-system/vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
+        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault">vault</a>.coin_a, balance_a);
         <a href="../sui-framework/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(balance_b);
     } <b>else</b> {
-        <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&balance_b) == pay_amount, <a href="vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
-        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="vault.md#0xc8_vault">vault</a>.coin_b, balance_b);
+        <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&balance_b) == pay_amount, <a href="../bfc-system/vault.md#0xc8_vault_ERR_PAY_AMOUNT_INVALID">ERR_PAY_AMOUNT_INVALID</a>);
+        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault">vault</a>.coin_b, balance_b);
         <a href="../sui-framework/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(balance_a);
     };
 }
@@ -1625,7 +1625,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: u64, _sqrt_price_limit: u128): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _sqrt_price_limit: u128): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">vault::FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -1634,29 +1634,29 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_flash_swap_internal">flash_swap_internal</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
-    _amount: u64,
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _sqrt_price_limit: u128
-): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;)
+): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt;)
 {
-    <b>let</b> min_price = <a href="tick_math.md#0xc8_tick_math_min_sqrt_price">tick_math::min_sqrt_price</a>();
-    <b>let</b> max_price = <a href="tick_math.md#0xc8_tick_math_max_sqrt_price">tick_math::max_sqrt_price</a>();
+    <b>let</b> min_price = <a href="../bfc-system/tick_math.md#0xc8_tick_math_min_sqrt_price">tick_math::min_sqrt_price</a>();
+    <b>let</b> max_price = <a href="../bfc-system/tick_math.md#0xc8_tick_math_max_sqrt_price">tick_math::max_sqrt_price</a>();
     <b>if</b> (_a2b) {
         <b>assert</b>!(
             min_price &lt;= _sqrt_price_limit && _sqrt_price_limit &lt; _vault.current_sqrt_price,
-            <a href="vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
+            <a href="../bfc-system/vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
         );
     } <b>else</b> {
         <b>assert</b>!(
             _vault.current_sqrt_price &lt; _sqrt_price_limit && _sqrt_price_limit &lt;= max_price,
-            <a href="vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
+            <a href="../bfc-system/vault.md#0xc8_vault_ERR_SQRT_PRICE_LIMIT_INVALID">ERR_SQRT_PRICE_LIMIT_INVALID</a>
         );
     };
     <b>let</b> before_sqrt_price = _vault.current_sqrt_price;
-    <b>let</b> swap_res = <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>(_vault, _a2b, _by_amount_in, _sqrt_price_limit, _amount);
+    <b>let</b> swap_res = <a href="../bfc-system/vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>(_vault, _a2b, _by_amount_in, _sqrt_price_limit, _amount);
     <b>let</b> balance_a_ret;
     <b>let</b> balance_b_ret;
     <b>let</b> coin_type_in: String;
@@ -1681,7 +1681,7 @@ open <code>position_number</code> positions
         coin_type_out = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;());
     };
     event::swap(
-        <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
+        <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         _a2b,
         coin_type_in,
         coin_type_out,
@@ -1693,8 +1693,8 @@ open <code>position_number</code> positions
         _vault.current_sqrt_price,
         swap_res.steps
     );
-    (balance_a_ret, balance_b_ret, <a href="vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
-        vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
+    (balance_a_ret, balance_b_ret, <a href="../bfc-system/vault.md#0xc8_vault_FlashSwapReceipt">FlashSwapReceipt</a>&lt;StableCoinType&gt; {
+        vault_id: <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         a2b: _a2b,
         pay_amount: swap_res.amount_in
     })
@@ -1711,7 +1711,7 @@ open <code>position_number</code> positions
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _sqrt_price_limit: u128, _amount: u64): <a href="vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _a2b: bool, _by_amount_in: bool, _sqrt_price_limit: u128, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">vault::CalculatedSwapResult</a>
 </code></pre>
 
 
@@ -1720,34 +1720,34 @@ open <code>position_number</code> positions
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_swap_in_vault">swap_in_vault</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _a2b: bool,
     _by_amount_in: bool,
     _sqrt_price_limit: u128,
-    _amount: u64,
-): <a href="vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+): <a href="../bfc-system/vault.md#0xc8_vault_CalculatedSwapResult">CalculatedSwapResult</a>
 {
-    <b>let</b> <b>mut</b> swap_result = <a href="vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
-    <b>let</b> <b>mut</b> next_score = <a href="tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
+    <b>let</b> <b>mut</b> swap_result = <a href="../bfc-system/vault.md#0xc8_vault_default_calculated_swap_result">default_calculated_swap_result</a>();
+    <b>let</b> <b>mut</b> next_score = <a href="../bfc-system/tick.md#0xc8_tick_first_score_for_swap">tick::first_score_for_swap</a>(&_vault.tick_manager, _vault.current_tick_index, _a2b);
     <b>let</b> <b>mut</b> remaining_amount = _amount;
     swap_result.vault_sqrt_price = _vault.current_sqrt_price;
     <b>while</b> (remaining_amount &gt; 0 && _vault.current_sqrt_price != _sqrt_price_limit) {
-        <b>assert</b>!(!<a href="option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
-        <b>let</b> (<a href="tick.md#0xc8_tick">tick</a>, tick_score) = <a href="tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
+        <b>assert</b>!(!<a href="../bfc-system/option_u64.md#0xc8_option_u64_is_none">option_u64::is_none</a>(&next_score), <a href="../bfc-system/vault.md#0xc8_vault_ERR_TICK_INDEX_OPTION_IS_NONE">ERR_TICK_INDEX_OPTION_IS_NONE</a>);
+        <b>let</b> (<a href="../bfc-system/tick.md#0xc8_tick">tick</a>, tick_score) = <a href="../bfc-system/tick.md#0xc8_tick_borrow_tick_for_swap">tick::borrow_tick_for_swap</a>(
             &_vault.tick_manager,
-            <a href="option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&next_score),
+            <a href="../bfc-system/option_u64.md#0xc8_option_u64_borrow">option_u64::borrow</a>(&next_score),
             _a2b
         );
         next_score = tick_score;
-        <b>let</b> next_tick_index = <a href="tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="tick.md#0xc8_tick">tick</a>);
-        <b>let</b> next_tick_sqrt_price = <a href="tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="tick.md#0xc8_tick">tick</a>);
+        <b>let</b> next_tick_index = <a href="../bfc-system/tick.md#0xc8_tick_tick_index">tick::tick_index</a>(<a href="../bfc-system/tick.md#0xc8_tick">tick</a>);
+        <b>let</b> next_tick_sqrt_price = <a href="../bfc-system/tick.md#0xc8_tick_sqrt_price">tick::sqrt_price</a>(<a href="../bfc-system/tick.md#0xc8_tick">tick</a>);
         <b>let</b> target_sqrt_price = <b>if</b> (_a2b) {
-            <a href="math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, next_tick_sqrt_price)
+            <a href="../bfc-system/math_u128.md#0xc8_math_u128_max">math_u128::max</a>(_sqrt_price_limit, next_tick_sqrt_price)
         } <b>else</b> {
-            <a href="math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, next_tick_sqrt_price)
+            <a href="../bfc-system/math_u128.md#0xc8_math_u128_min">math_u128::min</a>(_sqrt_price_limit, next_tick_sqrt_price)
         };
-        <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
+        <b>let</b> (amount_in, amount_out, next_sqrt_price) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_compute_swap_step">clmm_math::compute_swap_step</a>(
             _vault.current_sqrt_price,
             target_sqrt_price,
             _vault.liquidity,
@@ -1757,21 +1757,21 @@ open <code>position_number</code> positions
         );
         <b>if</b> (amount_in != 0) {
             <b>if</b> (_by_amount_in) {
-                remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_in);
+                remaining_amount = <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_in);
             } <b>else</b> {
-                remaining_amount = <a href="vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_out);
+                remaining_amount = <a href="../bfc-system/vault.md#0xc8_vault_check_remainer_amount_sub">check_remainer_amount_sub</a>(remaining_amount, amount_out);
             };
-            <a href="vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
+            <a href="../bfc-system/vault.md#0xc8_vault_update_swap_result">update_swap_result</a>(&<b>mut</b> swap_result, amount_in, amount_out);
         };
         <b>if</b> (next_sqrt_price == next_tick_sqrt_price) {
             _vault.current_sqrt_price = target_sqrt_price;
             <b>let</b> next_tick = <b>if</b> (_a2b) {
-                <a href="i32.md#0xc8_i32_sub">i32::sub</a>(next_tick_index, <a href="i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
+                <a href="../bfc-system/i32.md#0xc8_i32_sub">i32::sub</a>(next_tick_index, <a href="../bfc-system/i32.md#0xc8_i32_from_u32">i32::from_u32</a>(1))
             } <b>else</b> {
                 next_tick_index
             };
             _vault.current_tick_index = next_tick;
-            _vault.liquidity = <a href="tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
+            _vault.liquidity = <a href="../bfc-system/tick.md#0xc8_tick_cross_by_swap">tick::cross_by_swap</a>(
                 &<b>mut</b> _vault.tick_manager,
                 next_tick_index,
                 _a2b,
@@ -1780,7 +1780,7 @@ open <code>position_number</code> positions
         } <b>else</b> {
             <b>if</b> (_vault.current_sqrt_price != next_tick_sqrt_price) {
                 _vault.current_sqrt_price = next_sqrt_price;
-                _vault.current_tick_index = <a href="tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
+                _vault.current_tick_index = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_tick_at_sqrt_price">tick_math::get_tick_at_sqrt_price</a>(next_sqrt_price);
             }
         };
     };
@@ -1799,14 +1799,14 @@ open <code>position_number</code> positions
 Read Functions
 Calculate the position's amount_a/amount_b
 Params
-- <code><a href="vault.md#0xc8_vault">vault</a></code> The clmm vault object.
+- <code><a href="../bfc-system/vault.md#0xc8_vault">vault</a></code> The clmm vault object.
 - <code>_index</code> The index of position.
 Returns
 - <code>amount_a</code> The amount of <code>StableCoinType</code>
 - <code>amount_b</code> The amount of <code>BFC</code>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64, _round_up: bool): (u64, u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _round_up: bool): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -1815,22 +1815,22 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_amounts">get_position_amounts</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _round_up: bool
-): (u64, u64) {
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) {
+    <b>let</b> <a href="../bfc-system/position.md#0xc8_position">position</a> = <a href="../bfc-system/position.md#0xc8_position_borrow_position">position::borrow_position</a>(
         &_vault.position_manager,
         _index
     );
-    <b>let</b> (tick_lower, tick_upper) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
-    <a href="clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
+    <b>let</b> (tick_lower, tick_upper) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="../bfc-system/position.md#0xc8_position">position</a>);
+    <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_get_amount_by_liquidity">clmm_math::get_amount_by_liquidity</a>(
         tick_lower,
         tick_upper,
         _vault.current_tick_index,
         _vault.current_sqrt_price,
-        <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>),
+        <a href="../bfc-system/position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="../bfc-system/position.md#0xc8_position">position</a>),
         _round_up
     )
 }
@@ -1846,7 +1846,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): u128
 </code></pre>
 
 
@@ -1855,16 +1855,16 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_liquidity">get_position_liquidity</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 ): u128
 {
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+    <b>let</b> <a href="../bfc-system/position.md#0xc8_position">position</a> = <a href="../bfc-system/position.md#0xc8_position_borrow_position">position::borrow_position</a>(
         &_vault.position_manager,
         _index
     );
-    <a href="position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="position.md#0xc8_position">position</a>)
+    <a href="../bfc-system/position.md#0xc8_position_get_liquidity">position::get_liquidity</a>(<a href="../bfc-system/position.md#0xc8_position">position</a>)
 }
 </code></pre>
 
@@ -1878,7 +1878,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: u64): (<a href="i32.md#0xc8_i32_I32">i32::I32</a>, <a href="i32.md#0xc8_i32_I32">i32::I32</a>, u128, u128)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>, <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>, u128, u128)
 </code></pre>
 
 
@@ -1887,18 +1887,18 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    _index: u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_position_tick_range_and_price">get_position_tick_range_and_price</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    _index: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 ): (I32, I32, u128, u128)
 {
-    <b>let</b> <a href="position.md#0xc8_position">position</a> = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(
+    <b>let</b> <a href="../bfc-system/position.md#0xc8_position">position</a> = <a href="../bfc-system/position.md#0xc8_position_borrow_position">position::borrow_position</a>(
         &_vault.position_manager,
         _index
     );
-    <b>let</b> (tick_lower_index, tick_upper_index) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="position.md#0xc8_position">position</a>);
-    <b>let</b> price_lower = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
-    <b>let</b> price_upper = <a href="tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
+    <b>let</b> (tick_lower_index, tick_upper_index) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(<a href="../bfc-system/position.md#0xc8_position">position</a>);
+    <b>let</b> price_lower = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_lower_index);
+    <b>let</b> price_upper = <a href="../bfc-system/tick_math.md#0xc8_tick_math_get_sqrt_price_at_tick">tick_math::get_sqrt_price_at_tick</a>(tick_upper_index);
     (tick_lower_index, tick_upper_index, price_lower, price_upper)
 }
 </code></pre>
@@ -1913,7 +1913,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/tick.md#0xc8_tick_Tick">tick::Tick</a>&gt;
 </code></pre>
 
 
@@ -1922,8 +1922,8 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Tick&gt; {
-    <a href="tick.md#0xc8_tick_fetch_ticks">tick::fetch_ticks</a>(&_vault.tick_manager)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_fetch_ticks">fetch_ticks</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Tick&gt; {
+    <a href="../bfc-system/tick.md#0xc8_tick_fetch_ticks">tick::fetch_ticks</a>(&_vault.tick_manager)
 }
 </code></pre>
 
@@ -1937,7 +1937,7 @@ Returns
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="position.md#0xc8_position_Position">position::Position</a>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/position.md#0xc8_position_Position">position::Position</a>&gt;
 </code></pre>
 
 
@@ -1946,8 +1946,8 @@ Returns
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Position&gt; {
-    <a href="position.md#0xc8_position_fetch_positions">position::fetch_positions</a>(&_vault.position_manager, 1, (_vault.position_number <b>as</b> u64))
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_fetch_positions">fetch_positions</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Position&gt; {
+    <a href="../bfc-system/position.md#0xc8_position_fetch_positions">position::fetch_positions</a>(&_vault.position_manager, 1, (_vault.position_number <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>))
 }
 </code></pre>
 
@@ -1962,7 +1962,7 @@ Returns
 vault info
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../bfc-system/vault.md#0xc8_vault_VaultInfo">vault::VaultInfo</a>
 </code></pre>
 
 
@@ -1971,9 +1971,9 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
-    <a href="vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
-        vault_id: <a href="vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_info">vault_info</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../bfc-system/vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
+    <a href="../bfc-system/vault.md#0xc8_vault_VaultInfo">VaultInfo</a> {
+        vault_id: <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>(_vault),
         position_number: _vault.position_number,
         state: _vault.state,
         last_rebalance_state: _vault.last_rebalance_state,
@@ -1988,7 +1988,7 @@ vault info
         spacing_times: _vault.spacing_times,
         liquidity: _vault.liquidity,
         current_sqrt_price: _vault.current_sqrt_price,
-        current_tick_index: <a href="i32.md#0xc8_i32_abs_u32">i32::abs_u32</a>(_vault.current_tick_index),
+        current_tick_index: <a href="../bfc-system/i32.md#0xc8_i32_abs_u32">i32::abs_u32</a>(_vault.current_tick_index),
         is_pause: _vault.is_pause,
         index: _vault.index,
         base_point: _vault.base_point,
@@ -2007,7 +2007,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../sui-framework/object.md#0x2_object_ID">object::ID</a>
 </code></pre>
 
 
@@ -2016,7 +2016,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): ID {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_id">vault_id</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): ID {
     <a href="../sui-framework/object.md#0x2_object_id">object::id</a>(_vault)
 }
 </code></pre>
@@ -2031,7 +2031,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
 </code></pre>
 
 
@@ -2040,7 +2040,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_current_sqrt_price">vault_current_sqrt_price</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
     _vault.current_sqrt_price
 }
 </code></pre>
@@ -2055,7 +2055,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="i32.md#0xc8_i32_I32">i32::I32</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>
 </code></pre>
 
 
@@ -2064,7 +2064,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): I32 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_vault_current_tick_index">vault_current_tick_index</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): I32 {
     _vault.current_tick_index
 }
 </code></pre>
@@ -2079,7 +2079,7 @@ vault info
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -2088,7 +2088,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u64 {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_last_bfc_rebalance_amount">last_bfc_rebalance_amount</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     _vault.last_bfc_rebalance_amount
 }
 </code></pre>
@@ -2103,7 +2103,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): (u64, u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -2112,7 +2112,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): (u64, u64) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_balances">balances</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) {
     (
         <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>&lt;StableCoinType&gt;(&_vault.coin_a),
         <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&_vault.coin_b)
@@ -2130,7 +2130,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u128
 </code></pre>
 
 
@@ -2139,7 +2139,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_liquidity">get_liquidity</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u128 {
     _vault.liquidity
 }
 </code></pre>
@@ -2154,7 +2154,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
 </code></pre>
 
 
@@ -2163,7 +2163,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_vault_state">get_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8
 {
     _vault.state
 }
@@ -2179,7 +2179,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): u8
 </code></pre>
 
 
@@ -2188,7 +2188,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b>  <a href="vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8 {
+<pre><code><b>public</b> <b>fun</b>  <a href="../bfc-system/vault.md#0xc8_vault_get_last_rebalance_vault_state">get_last_rebalance_vault_state</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): u8 {
     _vault.last_rebalance_state
 }
 </code></pre>
@@ -2203,7 +2203,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -2212,10 +2212,10 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_bfc_required">bfc_required</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
-    <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> u64);
-    <b>let</b> total_required_amount = (_vault.position_number <b>as</b> u64) * base_point_amount;
+    <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="../bfc-system/vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="../bfc-system/vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>);
+    <b>let</b> total_required_amount = (_vault.position_number <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) * base_point_amount;
     <b>if</b> (total_required_amount &gt; <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b)) {
         total_required_amount - <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b)
     } <b>else</b> {
@@ -2234,7 +2234,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>(): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>(): u128
 </code></pre>
 
 
@@ -2243,7 +2243,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>(): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>(): u128 {
     6
 }
 </code></pre>
@@ -2258,7 +2258,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>(): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>(): u128
 </code></pre>
 
 
@@ -2267,7 +2267,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>(): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>(): u128 {
     14
 }
 </code></pre>
@@ -2282,7 +2282,7 @@ vault info
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128
 </code></pre>
 
 
@@ -2291,7 +2291,7 @@ vault info
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>(): u128 {
     10
 }
 </code></pre>
@@ -2308,7 +2308,7 @@ Rebalance
 State checker
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;)
 </code></pre>
 
 
@@ -2317,21 +2317,21 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_update_state">update_state</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;) {
     <b>let</b> price = _vault.current_sqrt_price;
     <b>let</b> last_price = _vault.last_sqrt_price;
     <b>if</b> (price &lt; last_price) {
         // down
-        <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
+        <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+            <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
                 // reset counter = 1  & set state = down
                 _vault.state_counter = 1;
-                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>;
             } <b>else</b> {
-                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
                     _vault.max_counter_times
                 } <b>else</b> {
                     0
@@ -2340,16 +2340,16 @@ State checker
         }
     } <b>else</b> <b>if</b> (price &gt; last_price) {
         // up
-        <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
+        <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>) {
             _vault.state_counter = _vault.state_counter + 1;
         } <b>else</b> {
-            <b>if</b> (_vault.state == <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+            <b>if</b> (_vault.state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
                 // reset counter = 1  & set state = up
                 _vault.state_counter = 1;
-                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>;
             } <b>else</b> {
-                _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
-                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
+                _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+                _vault.state_counter = <b>if</b> (_vault.last_rebalance_state == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
                     _vault.max_counter_times
                 } <b>else</b> {
                     0
@@ -2379,7 +2379,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;)
 </code></pre>
 
 
@@ -2388,8 +2388,8 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_clear_positions">clear_positions</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ctx: &<b>mut</b> TxContext
 ): (Balance&lt;StableCoinType&gt;, Balance&lt;BFC&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt;)
 {
@@ -2399,13 +2399,13 @@ State checker
     <b>let</b> amount_b = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
     <b>let</b> balance_b = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> _vault.coin_b, amount_b);
     <b>let</b> <b>mut</b> position_index = 1u64;
-    <b>while</b> (position_index &lt;= (_vault.position_number <b>as</b> u64)) {
-        <a href="position.md#0xc8_position_force_close_position">position::force_close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
+    <b>while</b> (position_index &lt;= (_vault.position_number <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)) {
+        <a href="../bfc-system/position.md#0xc8_position_force_close_position">position::force_close_position</a>(&<b>mut</b> _vault.position_manager, position_index);
         position_index = position_index + 1;
     };
-    <a href="tick.md#0xc8_tick_rebuild_ticks">tick::rebuild_ticks</a>(&<b>mut</b> _vault.tick_manager, _ctx);
+    <a href="../bfc-system/tick.md#0xc8_tick_rebuild_ticks">tick::rebuild_ticks</a>(&<b>mut</b> _vault.tick_manager, _ctx);
     <b>let</b> spacing_times = _vault.spacing_times;
-    <b>let</b> ticks = <a href="vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
+    <b>let</b> ticks = <a href="../bfc-system/vault.md#0xc8_vault_init_positions">init_positions</a>(_vault, spacing_times, _ctx);
     (balance_a, balance_b, ticks)
 }
 </code></pre>
@@ -2420,7 +2420,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _amount: u64): u128
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): u128
 </code></pre>
 
 
@@ -2429,15 +2429,15 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt;,
-    _amount: u64,
+    _amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ): u128
 {
-    <b>let</b> middle_tick = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(_ticks, (_vault.position_number / 2 <b>as</b> u64));
+    <b>let</b> middle_tick = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(_ticks, (_vault.position_number / 2 <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>));
     <b>let</b> (tick_lower_index, tick_upper_index) = (<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(middle_tick, 0), <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(middle_tick, 1));
-    <b>let</b> (liquidity, _, _) = <a href="clmm_math.md#0xc8_clmm_math_get_liquidity_by_amount">clmm_math::get_liquidity_by_amount</a>(
+    <b>let</b> (liquidity, _, _) = <a href="../bfc-system/clmm_math.md#0xc8_clmm_math_get_liquidity_by_amount">clmm_math::get_liquidity_by_amount</a>(
         *tick_lower_index,
         *tick_upper_index,
         _vault.current_tick_index,
@@ -2459,7 +2459,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(_vault: &<a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _shape: u8, _treasury_total_bfc_supply: u64): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u128&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(_vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../bfc-system/i32.md#0xc8_i32_I32">i32::I32</a>&gt;&gt;, _shape: u8, _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u128&gt;
 </code></pre>
 
 
@@ -2468,39 +2468,39 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(
-    _vault: &<a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>&lt;StableCoinType&gt;(
+    _vault: &<a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _ticks: &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;I32&gt;&gt;,
     _shape: u8,
-    _treasury_total_bfc_supply: u64,
+    _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u128&gt; {
-    // base point <a href="position.md#0xc8_position">position</a> liquidity
+    // base point <a href="../bfc-system/position.md#0xc8_position">position</a> liquidity
     <b>let</b> curve_dx_q64 = curve_dx((_vault.coin_market_cap <b>as</b> u128), (_treasury_total_bfc_supply <b>as</b> u128));
-    <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> u64);
-    <b>let</b> liquidity = <a href="vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>(_vault, _ticks, base_point_amount);
+    <b>let</b> base_point_amount = (((_vault.base_point <b>as</b> u128) * (<a href="../bfc-system/vault.md#0xc8_vault_Q64">Q64</a> + curve_dx_q64) / <a href="../bfc-system/vault.md#0xc8_vault_Q64">Q64</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>);
+    <b>let</b> liquidity = <a href="../bfc-system/vault.md#0xc8_vault_get_liquidity_from_base_point">get_liquidity_from_base_point</a>(_vault, _ticks, base_point_amount);
     <b>let</b> <b>mut</b> liquidities = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;u128&gt;();
     <b>let</b> <b>mut</b> index: u128 ;
     <b>let</b> length: u128;
-    <b>if</b> (_shape == <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
+    <b>if</b> (_shape == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>) {
         index = 0;
         length = (_vault.position_number <b>as</b> u128);
         <b>while</b> (index &lt; length) {
             <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity);
             index = index + 1;
         };
-    } <b>else</b> <b>if</b> (_shape == <a href="vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
-        index = <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
-        length = <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
+    } <b>else</b> <b>if</b> (_shape == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_INCREMENT_SIZE">SHAPE_INCREMENT_SIZE</a>) {
+        index = <a href="../bfc-system/vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
+        length = <a href="../bfc-system/vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
         <b>while</b> (index &lt;= length) {
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
+            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="../bfc-system/vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
             index = index + 1;
         };
     } <b>else</b> {
-        <b>assert</b>!(_shape == <a href="vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>, <a href="vault.md#0xc8_vault_ERR_INVALID_SHAPE_KINDS">ERR_INVALID_SHAPE_KINDS</a>);
-        index = <a href="vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
-        length = <a href="vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
+        <b>assert</b>!(_shape == <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_DECREMENT_SIZE">SHAPE_DECREMENT_SIZE</a>, <a href="../bfc-system/vault.md#0xc8_vault_ERR_INVALID_SHAPE_KINDS">ERR_INVALID_SHAPE_KINDS</a>);
+        index = <a href="../bfc-system/vault.md#0xc8_vault_max_liquidity_rate">max_liquidity_rate</a>();
+        length = <a href="../bfc-system/vault.md#0xc8_vault_min_liquidity_rate">min_liquidity_rate</a>();
         <b>while</b> (index &gt;= length) {
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
+            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> liquidities, liquidity * index / <a href="../bfc-system/vault.md#0xc8_vault_base_liquidity_rate">base_liquidity_rate</a>());
             index = index - 1;
         };
     };
@@ -2518,7 +2518,7 @@ State checker
 
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _liquidities: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u128&gt;)
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _balance0: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _balance1: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _liquidities: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u128&gt;)
 </code></pre>
 
 
@@ -2527,8 +2527,8 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _bfc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
     _balance0: Balance&lt;StableCoinType&gt;,
@@ -2542,15 +2542,15 @@ State checker
 
     <b>let</b> <b>mut</b>  index = 0u64;
     <b>let</b> length = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&_liquidities);
-    <b>let</b> position_length = <a href="position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager);
-    <b>assert</b>!(length == position_length, <a href="vault.md#0xc8_vault_ERR_POSITION_LENGTH_MISMATCH">ERR_POSITION_LENGTH_MISMATCH</a>);
+    <b>let</b> position_length = <a href="../bfc-system/position.md#0xc8_position_get_total_positions">position::get_total_positions</a>(&_vault.position_manager);
+    <b>assert</b>!(length == position_length, <a href="../bfc-system/vault.md#0xc8_vault_ERR_POSITION_LENGTH_MISMATCH">ERR_POSITION_LENGTH_MISMATCH</a>);
     <b>while</b> (index &lt; length) {
-        <b>let</b> receipt = <a href="vault.md#0xc8_vault_add_liquidity">add_liquidity</a>(
+        <b>let</b> receipt = <a href="../bfc-system/vault.md#0xc8_vault_add_liquidity">add_liquidity</a>(
             _vault,
-            index + 1, // <a href="position.md#0xc8_position">position</a> index
+            index + 1, // <a href="../bfc-system/position.md#0xc8_position">position</a> index
             *<a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&_liquidities, index)
         );
-        <b>let</b> <a href="vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id: _, amount_a, amount_b } = receipt;
+        <b>let</b> <a href="../bfc-system/vault.md#0xc8_vault_AddLiquidityReceipt">AddLiquidityReceipt</a> { vault_id: _, amount_a, amount_b } = receipt;
         <b>if</b> (amount_a &gt; 0) {
             <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(_supply, amount_a));
         };
@@ -2573,7 +2573,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, _bfc_balance: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _supply: &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;, _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -2582,34 +2582,34 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(
-    _vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_rebalance">rebalance</a>&lt;StableCoinType&gt;(
+    _vault: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     _bfc_balance: &<b>mut</b> Balance&lt;BFC&gt;,
     _supply: &<b>mut</b> Supply&lt;StableCoinType&gt;,
-    _treasury_total_bfc_supply: u64,
+    _treasury_total_bfc_supply: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     _ctx: &<b>mut</b> TxContext
-): u64 {
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <b>if</b> (_vault.state_counter &gt;= _vault.max_counter_times) {
         // reset state counter
         _vault.state_counter = 0;
     } <b>else</b> {
         <b>let</b> <b>mut</b> should_break = <b>false</b>;
-        <b>let</b> <b>mut</b> edge_position = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, 1);
-        <b>let</b> (_, tu) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
-        <b>if</b> (<a href="i32.md#0xc8_i32_lte">i32::lte</a>(_vault.current_tick_index, tu)) {
+        <b>let</b> <b>mut</b> edge_position = <a href="../bfc-system/position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, 1);
+        <b>let</b> (_, tu) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
+        <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_lte">i32::lte</a>(_vault.current_tick_index, tu)) {
             should_break = <b>true</b>;
         };
         <b>if</b> (!should_break) {
-            edge_position = <a href="position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, (_vault.position_number <b>as</b> u64));
-            <b>let</b> (tl, _) = <a href="position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
-            <b>if</b> (<a href="i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tl)) {
+            edge_position = <a href="../bfc-system/position.md#0xc8_position_borrow_position">position::borrow_position</a>(&_vault.position_manager, (_vault.position_number <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>));
+            <b>let</b> (tl, _) = <a href="../bfc-system/position.md#0xc8_position_get_tick_range">position::get_tick_range</a>(edge_position);
+            <b>if</b> (<a href="../bfc-system/i32.md#0xc8_i32_gte">i32::gte</a>(_vault.current_tick_index, tl)) {
                 should_break = <b>true</b>;
             };
         };
         <b>if</b> (!should_break) {
             <b>return</b> _vault.last_bfc_rebalance_amount
         } <b>else</b> {
-            _vault.state = <a href="vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
+            _vault.state = <a href="../bfc-system/vault.md#0xc8_vault_SHAPE_EQUAL_SIZE">SHAPE_EQUAL_SIZE</a>;
             // reset state counter
             _vault.state_counter = 0;
         };
@@ -2618,15 +2618,15 @@ State checker
         balance0,
         balance1,
         ticks
-    ) = <a href="vault.md#0xc8_vault_clear_positions">clear_positions</a>(_vault, _ctx);
+    ) = <a href="../bfc-system/vault.md#0xc8_vault_clear_positions">clear_positions</a>(_vault, _ctx);
     <b>let</b> shape = _vault.state;
-    <b>let</b> liquidities = <a href="vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(
+    <b>let</b> liquidities = <a href="../bfc-system/vault.md#0xc8_vault_positions_liquidity_size_balance">positions_liquidity_size_balance</a>(
         _vault,
         &ticks,
         shape,
         _treasury_total_bfc_supply
     );
-    <a href="vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(
+    <a href="../bfc-system/vault.md#0xc8_vault_rebalance_internal">rebalance_internal</a>(
         _vault,
         _bfc_balance,
         _supply,

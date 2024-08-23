@@ -3,7 +3,6 @@
 #[allow(unused_const)]
 module sui_system::stable_pool {
     use sui::balance::{Self, Balance};
-    use sui::math;
     use sui::table::{Self, Table};
     use sui::bag::Bag;
     use sui::bag;
@@ -257,7 +256,7 @@ module sui_system::stable_pool {
         // the rewards pool balance may be less than reward_withdraw_amount.
         // TODO: FIGURE OUT EXACTLY WHY THIS CAN HAPPEN.
         let reward_bfc = (reward_withdraw_amount as u128) * (rate as u128) / (1000000000 as u128);
-        reward_withdraw_amount = math::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
+        reward_withdraw_amount = std::u64::min((reward_bfc as u64),  balance::value(&pool.rewards_pool));
         (balance::split(&mut pool.rewards_pool, reward_withdraw_amount), stable_reward_amount)
     }
 
@@ -365,7 +364,7 @@ module sui_system::stable_pool {
             return initial_exchange_rate()
         };
         let clamped_epoch = option::get_with_default(&pool.deactivation_epoch, epoch);
-        let mut epoch = math::min(clamped_epoch, epoch);
+        let mut epoch = std::u64::min(clamped_epoch, epoch);
         let activation_epoch = *option::borrow(&pool.activation_epoch);
 
         // Find the latest epoch that's earlier than the given epoch with an entry in the table

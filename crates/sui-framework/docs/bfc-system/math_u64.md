@@ -24,11 +24,20 @@ title: Module `0xc8::math_u64`
 ## Constants
 
 
+<a name="0xc8_math_u64_MAX_U64"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 18446744073709551615;
+</code></pre>
+
+
+
 <a name="0xc8_math_u64_HI_64_MASK"></a>
 
 
 
-<pre><code><b>const</b> <a href="math_u64.md#0xc8_math_u64_HI_64_MASK">HI_64_MASK</a>: u128 = 340282366920938463444927863358058659840;
+<pre><code><b>const</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_HI_64_MASK">HI_64_MASK</a>: u128 = 340282366920938463444927863358058659840;
 </code></pre>
 
 
@@ -37,16 +46,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>const</b> <a href="math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>: u128 = 18446744073709551615;
-</code></pre>
-
-
-
-<a name="0xc8_math_u64_MAX_U64"></a>
-
-
-
-<pre><code><b>const</b> <a href="math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a>: u64 = 18446744073709551615;
+<pre><code><b>const</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>: u128 = 18446744073709551615;
 </code></pre>
 
 
@@ -57,7 +57,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_add">wrapping_add</a>(n1: u64, n2: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_add">wrapping_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -66,8 +66,8 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_add">wrapping_add</a>(n1: u64, n2: u64): u64 {
-    <b>let</b> (sum, _) = <a href="math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_add">wrapping_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> (sum, _) = <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1, n2);
     sum
 }
 </code></pre>
@@ -82,7 +82,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1: u64, n2: u64): (u64, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool)
 </code></pre>
 
 
@@ -91,12 +91,12 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1: u64, n2: u64): (u64, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_add">overflowing_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool) {
     <b>let</b> sum = (n1 <b>as</b> u128) + (n2 <b>as</b> u128);
-    <b>if</b> (sum &gt; (<a href="math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> <b>as</b> u128)) {
-        (((sum & <a href="math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> u64), <b>true</b>)
+    <b>if</b> (sum &gt; (<a href="../bfc-system/math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> <b>as</b> u128)) {
+        (((sum & <a href="../bfc-system/math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>), <b>true</b>)
     } <b>else</b> {
-        ((sum <b>as</b> u64), <b>false</b>)
+        ((sum <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>), <b>false</b>)
     }
 }
 </code></pre>
@@ -111,7 +111,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_sub">wrapping_sub</a>(n1: u64, n2: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_sub">wrapping_sub</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -120,8 +120,8 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_sub">wrapping_sub</a>(n1: u64, n2: u64): u64 {
-    <b>let</b> (result, _) = <a href="math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_sub">wrapping_sub</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> (result, _) = <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1, n2);
     result
 }
 </code></pre>
@@ -136,7 +136,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1: u64, n2: u64): (u64, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool)
 </code></pre>
 
 
@@ -145,11 +145,11 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1: u64, n2: u64): (u64, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_sub">overflowing_sub</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool) {
     <b>if</b> (n1 &gt;= n2) {
         ((n1 - n2), <b>false</b>)
     } <b>else</b> {
-        ((<a href="math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> - n2 + n1 + 1), <b>true</b>)
+        ((<a href="../bfc-system/math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> - n2 + n1 + 1), <b>true</b>)
     }
 }
 </code></pre>
@@ -164,7 +164,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_mul">wrapping_mul</a>(n1: u64, n2: u64): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_mul">wrapping_mul</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -173,8 +173,8 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_wrapping_mul">wrapping_mul</a>(n1: u64, n2: u64): u64 {
-    <b>let</b> (m, _) = <a href="math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_wrapping_mul">wrapping_mul</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> (m, _) = <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1, n2);
     m
 }
 </code></pre>
@@ -189,7 +189,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1: u64, n2: u64): (u64, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool)
 </code></pre>
 
 
@@ -198,9 +198,9 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1: u64, n2: u64): (u64, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_overflowing_mul">overflowing_mul</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool) {
     <b>let</b> m = (n1 <b>as</b> u128) * (n2 <b>as</b> u128);
-    (((m & <a href="math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> u64), (m & <a href="math_u64.md#0xc8_math_u64_HI_64_MASK">HI_64_MASK</a>) &gt; 0)
+    (((m & <a href="../bfc-system/math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>), (m & <a href="../bfc-system/math_u64.md#0xc8_math_u64_HI_64_MASK">HI_64_MASK</a>) &gt; 0)
 }
 </code></pre>
 
@@ -214,7 +214,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_carry_add">carry_add</a>(n1: u64, n2: u64, carry: u64): (u64, u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_carry_add">carry_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, carry: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -223,13 +223,13 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_carry_add">carry_add</a>(n1: u64, n2: u64, carry: u64): (u64, u64) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_carry_add">carry_add</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, carry: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): (<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) {
     <b>assert</b>!(carry &lt;= 1, 0);
     <b>let</b> sum = (n1 <b>as</b> u128) + (n2 <b>as</b> u128) + (carry <b>as</b> u128);
-    <b>if</b> (sum &gt; <a href="math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) {
-        (((sum & <a href="math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> u64), 1)
+    <b>if</b> (sum &gt; <a href="../bfc-system/math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) {
+        (((sum & <a href="../bfc-system/math_u64.md#0xc8_math_u64_LO_64_MASK">LO_64_MASK</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>), 1)
     } <b>else</b> {
-        ((sum <b>as</b> u64), 0)
+        ((sum <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>), 0)
     }
 }
 </code></pre>
@@ -244,7 +244,7 @@ title: Module `0xc8::math_u64`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_add_check">add_check</a>(n1: u64, n2: u64): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_add_check">add_check</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): bool
 </code></pre>
 
 
@@ -253,8 +253,8 @@ title: Module `0xc8::math_u64`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u64.md#0xc8_math_u64_add_check">add_check</a>(n1: u64, n2: u64): bool {
-    (<a href="math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> - n1 &gt;= n2)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u64.md#0xc8_math_u64_add_check">add_check</a>(n1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, n2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): bool {
+    (<a href="../bfc-system/math_u64.md#0xc8_math_u64_MAX_U64">MAX_U64</a> - n1 &gt;= n2)
 }
 </code></pre>
 

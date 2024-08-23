@@ -45,7 +45,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>struct</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store, key
+<pre><code><b>struct</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store, key
 </code></pre>
 
 
@@ -74,7 +74,7 @@ title: Module `0xc8::linked_table`
 
 </dd>
 <dt>
-<code>size: u64</code>
+<code>size: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -90,7 +90,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>struct</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store
+<pre><code><b>struct</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt; <b>has</b> store
 </code></pre>
 
 
@@ -132,7 +132,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>const</b> <a href="linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>: u64 = 1;
+<pre><code><b>const</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 
@@ -141,7 +141,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>const</b> <a href="linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>: u64 = 0;
+<pre><code><b>const</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 0;
 </code></pre>
 
 
@@ -152,7 +152,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_new">new</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_new">new</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;
 </code></pre>
 
 
@@ -161,8 +161,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_new">new</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(ctx: &<b>mut</b> TxContext): <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
-    <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_new">new</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(ctx: &<b>mut</b> TxContext): <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
+    <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt; {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
         head: none&lt;K&gt;(),
         tail: none&lt;K&gt;(),
@@ -181,7 +181,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): bool
 </code></pre>
 
 
@@ -190,7 +190,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): bool {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_is_empty">is_empty</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): bool {
     <a href="../sui-framework/table.md#0x2_table">table</a>.size == 0
 }
 </code></pre>
@@ -205,7 +205,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_length">length</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_length">length</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -214,7 +214,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_length">length</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_length">length</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <a href="../sui-framework/table.md#0x2_table">table</a>.size
 }
 </code></pre>
@@ -229,7 +229,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): bool
 </code></pre>
 
 
@@ -238,8 +238,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): bool {
-    field::exists_with_type&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_contains">contains</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): bool {
+    field::exists_with_type&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
 }
 </code></pre>
 
@@ -253,7 +253,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_head">head</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_head">head</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -262,7 +262,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_head">head</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_head">head</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt; {
     <a href="../sui-framework/table.md#0x2_table">table</a>.head
 }
 </code></pre>
@@ -277,7 +277,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -286,7 +286,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_tail">tail</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt; {
     <a href="../sui-framework/table.md#0x2_table">table</a>.tail
 }
 </code></pre>
@@ -301,7 +301,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_next">next</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_next">next</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -310,7 +310,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_next">next</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_next">next</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
     node.next
 }
 </code></pre>
@@ -325,7 +325,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;K&gt;
 </code></pre>
 
 
@@ -334,7 +334,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_prev">prev</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): Option&lt;K&gt; {
     node.prev
 }
 </code></pre>
@@ -349,7 +349,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &V
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &V
 </code></pre>
 
 
@@ -358,8 +358,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &V {
-    &field::borrow&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key).value
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow">borrow</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &V {
+    &field::borrow&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key).value
 }
 </code></pre>
 
@@ -373,7 +373,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V
 </code></pre>
 
 
@@ -382,8 +382,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V {
-    &<b>mut</b> field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key).value
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut">borrow_mut</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> V {
+    &<b>mut</b> field::borrow_mut&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key).value
 }
 </code></pre>
 
@@ -397,7 +397,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
 </code></pre>
 
 
@@ -406,8 +406,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
-    field::borrow&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    field::borrow&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
 }
 </code></pre>
 
@@ -421,7 +421,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;
 </code></pre>
 
 
@@ -430,11 +430,11 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
-    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
     key: K
-): &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
-    field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
+): &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    field::borrow_mut&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key)
 }
 </code></pre>
 
@@ -448,7 +448,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &V
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &V
 </code></pre>
 
 
@@ -457,7 +457,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &V {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &V {
     &node.value
 }
 </code></pre>
@@ -472,7 +472,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &<b>mut</b> V
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(node: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">linked_table::Node</a>&lt;K, V&gt;): &<b>mut</b> V
 </code></pre>
 
 
@@ -481,7 +481,7 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &<b>mut</b> V {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_value">borrow_mut_value</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(node: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;): &<b>mut</b> V {
     &<b>mut</b> node.value
 }
 </code></pre>
@@ -496,7 +496,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
 </code></pre>
 
 
@@ -505,8 +505,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
-    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_push_back">push_back</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
+    <b>let</b> node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
         prev: <a href="../sui-framework/table.md#0x2_table">table</a>.tail,
         next: none(),
         value
@@ -516,7 +516,7 @@ title: Module `0xc8::linked_table`
         swap_or_fill(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.head, key);
     };
     <b>if</b> (is_some(&node.prev)) {
-        <b>let</b> prev_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.prev));
+        <b>let</b> prev_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.prev));
         swap_or_fill(&<b>mut</b> prev_node.next, key);
     };
     field::add(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key, node);
@@ -534,7 +534,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K, value: V)
 </code></pre>
 
 
@@ -543,8 +543,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
-    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_push_front">push_front</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K, value: V) {
+    <b>let</b> node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
         prev: none(),
         next: <a href="../sui-framework/table.md#0x2_table">table</a>.head,
         value
@@ -554,7 +554,7 @@ title: Module `0xc8::linked_table`
         swap_or_fill(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.tail, key);
     };
     <b>if</b> (is_some(&node.next)) {
-        <b>let</b> next_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.next));
+        <b>let</b> next_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.next));
         swap_or_fill(&<b>mut</b> next_node.prev, key);
     };
     field::add(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key, node);
@@ -572,7 +572,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
 </code></pre>
 
 
@@ -581,21 +581,21 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
-    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_insert_before">insert_before</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
     current_key: K,
     key: K,
     value: V
 ) {
-    <b>let</b> current_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, current_key);
-    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    <b>let</b> current_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, current_key);
+    <b>let</b> node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
         prev: current_node.prev,
         next: some(current_key),
         value
     };
     swap_or_fill(&<b>mut</b> current_node.prev, key);
     <b>if</b> (is_some(&node.prev)) {
-        <b>let</b> prev_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.prev));
+        <b>let</b> prev_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.prev));
         swap_or_fill(&<b>mut</b> prev_node.next, key);
     } <b>else</b> {
         swap_or_fill(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.head, key);
@@ -615,7 +615,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, current_key: K, key: K, value: V)
 </code></pre>
 
 
@@ -624,14 +624,14 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
-    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_insert_after">insert_after</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(
+    <a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
     current_key: K,
     key: K,
     value: V
 ) {
-    <b>let</b> current_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, current_key);
-    <b>let</b> node = <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
+    <b>let</b> current_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, current_key);
+    <b>let</b> node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; {
         prev: some(current_key),
         next: current_node.next,
         value
@@ -639,7 +639,7 @@ title: Module `0xc8::linked_table`
     swap_or_fill(&<b>mut</b> current_node.next, key);
 
     <b>if</b> (is_some(&node.next)) {
-        <b>let</b> next_node = <a href="linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.next));
+        <b>let</b> next_node = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_mut_node">borrow_mut_node</a>(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&node.next));
         swap_or_fill(&<b>mut</b> next_node.prev, key);
     } <b>else</b> {
         swap_or_fill(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.tail, key);
@@ -659,7 +659,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): V
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, key: K): V
 </code></pre>
 
 
@@ -668,14 +668,14 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): V {
-    <b>let</b> <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; { prev, next, value } = field::remove(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_remove">remove</a>&lt;K: store + drop + <b>copy</b>, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<b>mut</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;, key: K): V {
+    <b>let</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt; { prev, next, value } = field::remove(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, key);
     <a href="../sui-framework/table.md#0x2_table">table</a>.size = <a href="../sui-framework/table.md#0x2_table">table</a>.size - 1;
     <b>if</b> (<a href="../move-stdlib/option.md#0x1_option_is_some">option::is_some</a>(&prev)) {
-        field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&prev)).next = next
+        field::borrow_mut&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&prev)).next = next
     };
     <b>if</b> (<a href="../move-stdlib/option.md#0x1_option_is_some">option::is_some</a>(&next)) {
-        field::borrow_mut&lt;K, <a href="linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&next)).prev = prev
+        field::borrow_mut&lt;K, <a href="../bfc-system/linked_table.md#0xc8_linked_table_Node">Node</a>&lt;K, V&gt;&gt;(&<b>mut</b> <a href="../sui-framework/table.md#0x2_table">table</a>.id, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&next)).prev = prev
     };
     <b>if</b> (<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&<a href="../sui-framework/table.md#0x2_table">table</a>.head) == &key) <a href="../sui-framework/table.md#0x2_table">table</a>.head = next;
     <b>if</b> (<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>(&<a href="../sui-framework/table.md#0x2_table">table</a>.tail) == &key) <a href="../sui-framework/table.md#0x2_table">table</a>.tail = prev;
@@ -693,7 +693,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: <b>copy</b>, drop, store, V: drop, store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: <b>copy</b>, drop, store, V: drop, store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
 </code></pre>
 
 
@@ -702,9 +702,9 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: store + <b>copy</b> + drop, V: store + drop&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
-    <b>let</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size, head: _, tail: _ } = <a href="../sui-framework/table.md#0x2_table">table</a>;
-    <b>assert</b>!(size == 0, <a href="linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_destroy_empty">destroy_empty</a>&lt;K: store + <b>copy</b> + drop, V: store + drop&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
+    <b>let</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size, head: _, tail: _ } = <a href="../sui-framework/table.md#0x2_table">table</a>;
+    <b>assert</b>!(size == 0, <a href="../bfc-system/linked_table.md#0xc8_linked_table_EListNotEmpty">EListNotEmpty</a>);
     <a href="../sui-framework/object.md#0x2_object_delete">object::delete</a>(id)
 }
 </code></pre>
@@ -719,7 +719,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: <b>copy</b>, drop, store, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;)
 </code></pre>
 
 
@@ -728,8 +728,8 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: store + <b>copy</b> + drop, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
-    <b>let</b> <a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size: _, head: _, tail: _ } = <a href="../sui-framework/table.md#0x2_table">table</a>;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_drop">drop</a>&lt;K: store + <b>copy</b> + drop, V: store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;) {
+    <b>let</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a> { id, size: _, head: _, tail: _ } = <a href="../sui-framework/table.md#0x2_table">table</a>;
     <a href="../sui-framework/object.md#0x2_object_delete">object::delete</a>(id)
 }
 </code></pre>
@@ -744,7 +744,7 @@ title: Module `0xc8::linked_table`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: <b>copy</b>, drop, store, V: <b>copy</b>, store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, start_key: K, limit: u64): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;V&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: <b>copy</b>, drop, store, V: <b>copy</b>, store&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;K, V&gt;, start_key: K, limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;V&gt;
 </code></pre>
 
 
@@ -753,21 +753,21 @@ title: Module `0xc8::linked_table`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: store + <b>copy</b> + drop, V: <b>copy</b> + store&gt;(
-    <a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/linked_table.md#0xc8_linked_table_fetch">fetch</a>&lt;K: store + <b>copy</b> + drop, V: <b>copy</b> + store&gt;(
+    <a href="../sui-framework/table.md#0x2_table">table</a>: &<a href="../bfc-system/linked_table.md#0xc8_linked_table_LinkedTable">LinkedTable</a>&lt;K, V&gt;,
     start_key: K,
-    limit: u64
+    limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 ): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;V&gt; {
-    <b>assert</b>!(limit &gt; 0, <a href="linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>);
+    <b>assert</b>!(limit &gt; 0, <a href="../bfc-system/linked_table.md#0xc8_linked_table_ELimitInvalid">ELimitInvalid</a>);
     <b>let</b> <b>mut</b> values = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;V&gt;();
-    <b>let</b> <b>mut</b> start = <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>, start_key);
-    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
+    <b>let</b> <b>mut</b> start = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>, start_key);
+    <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
     <b>let</b> <b>mut</b> idx = 1;
     <b>while</b> (idx &lt; limit) {
-        <b>let</b> next_key = <a href="linked_table.md#0xc8_linked_table_next">next</a>(start);
+        <b>let</b> next_key = <a href="../bfc-system/linked_table.md#0xc8_linked_table_next">next</a>(start);
         <b>if</b> (<a href="../move-stdlib/option.md#0x1_option_is_some">option::is_some</a>(&next_key)) {
-            start = <a href="linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>&lt;K&gt;(&next_key));
-            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
+            start = <a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_node">borrow_node</a>&lt;K, V&gt;(<a href="../sui-framework/table.md#0x2_table">table</a>, *<a href="../move-stdlib/option.md#0x1_option_borrow">option::borrow</a>&lt;K&gt;(&next_key));
+            <a href="../move-stdlib/vector.md#0x1_vector_push_back">vector::push_back</a>(&<b>mut</b> values, *<a href="../bfc-system/linked_table.md#0xc8_linked_table_borrow_value">borrow_value</a>(start));
         };
         idx = idx + 1;
     };

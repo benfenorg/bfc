@@ -247,7 +247,7 @@ Get the inner bytes of <code>id</code> as an address.
 ## Function `bfc_system_state`
 
 Create the <code><a href="../sui-framework/object.md#0x2_object_UID">UID</a></code> for the singleton <code>SuiSystemState</code> object.
-This should only be called once from <code>sui_system</code>.
+This should only be called once from <code><a href="../../sui_system.md#0x3_sui_system">sui_system</a></code>.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/object.md#0x2_object_bfc_system_state">bfc_system_state</a>(ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>
@@ -326,7 +326,7 @@ Make an <code><a href="../sui-framework/object.md#0x2_object_ID">ID</a></code> f
 ## Function `sui_system_state`
 
 Create the <code><a href="../sui-framework/object.md#0x2_object_UID">UID</a></code> for the singleton <code>SuiSystemState</code> object.
-This should only be called once from <code>sui_system</code>.
+This should only be called once from <code><a href="../../sui_system.md#0x3_sui_system">sui_system</a></code>.
 
 
 <pre><code><b>fun</b> <a href="../sui-framework/object.md#0x2_object_sui_system_state">sui_system_state</a>(ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>

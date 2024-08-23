@@ -235,7 +235,7 @@ title: Module `0xb::limiter`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="limiter.md#0xb_limiter_check_and_record_sending_transfer">check_and_record_sending_transfer</a>&lt;T&gt;(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, <a href="treasury.md#0xb_treasury">treasury</a>: &<a href="treasury.md#0xb_treasury_BridgeTreasury">treasury::BridgeTreasury</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, route: <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="limiter.md#0xb_limiter_check_and_record_sending_transfer">check_and_record_sending_transfer</a>&lt;T&gt;(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &treasury::BridgeTreasury, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, route: <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): bool
 </code></pre>
 
 
@@ -246,7 +246,7 @@ title: Module `0xb::limiter`
 
 <pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="limiter.md#0xb_limiter_check_and_record_sending_transfer">check_and_record_sending_transfer</a>&lt;T&gt;(
     self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>,
-    <a href="treasury.md#0xb_treasury">treasury</a>: &BridgeTreasury,
+    <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &BridgeTreasury,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     route: BridgeRoute,
     amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
@@ -270,17 +270,17 @@ title: Module `0xb::limiter`
     <b>assert</b>!(route_limit.is_some(), <a href="limiter.md#0xb_limiter_ELimitNotFoundForRoute">ELimitNotFoundForRoute</a>);
     <b>let</b> route_limit = route_limit.destroy_some();
     <b>let</b> route_limit_adjusted =
-        (route_limit <b>as</b> u128) * (<a href="treasury.md#0xb_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+        (route_limit <b>as</b> u128) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
 
     // Compute notional amount
     // Upcast <b>to</b> u128 <b>to</b> prevent overflow, <b>to</b> not miss out on small amounts.
-    <b>let</b> value = (<a href="treasury.md#0xb_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
+    <b>let</b> value = (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
     <b>let</b> notional_amount_with_token_multiplier = value * (amount <b>as</b> u128);
 
     // Check <b>if</b> <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> amount exceed limit
     // Upscale them <b>to</b> the token's decimal.
     <b>if</b> ((record.total_amount <b>as</b> u128)
-        * (<a href="treasury.md#0xb_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128)
+        * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128)
         + notional_amount_with_token_multiplier &gt; route_limit_adjusted
     ) {
         <b>return</b> <b>false</b>
@@ -288,7 +288,7 @@ title: Module `0xb::limiter`
 
     // Now scale down <b>to</b> notional value
     <b>let</b> notional_amount = notional_amount_with_token_multiplier
-        / (<a href="treasury.md#0xb_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+        / (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
     // Should be safe <b>to</b> downcast <b>to</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a> after dividing by the decimals
     <b>let</b> notional_amount = (notional_amount <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>);
 

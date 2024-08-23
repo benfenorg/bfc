@@ -36,7 +36,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>const</b> <a href="math_u128.md#0xc8_math_u128_DIV_BY_ZERO">DIV_BY_ZERO</a>: u64 = 1;
+<pre><code><b>const</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_DIV_BY_ZERO">DIV_BY_ZERO</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 
@@ -45,7 +45,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>const</b> <a href="math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>: u128 = 340282366920938463444927863358058659840;
+<pre><code><b>const</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>: u128 = 340282366920938463444927863358058659840;
 </code></pre>
 
 
@@ -54,7 +54,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>const</b> <a href="math_u128.md#0xc8_math_u128_LO_128_MASK">LO_128_MASK</a>: u256 = 340282366920938463463374607431768211455;
+<pre><code><b>const</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_LO_128_MASK">LO_128_MASK</a>: u256 = 340282366920938463463374607431768211455;
 </code></pre>
 
 
@@ -63,7 +63,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>const</b> <a href="math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>: u128 = 18446744073709551615;
+<pre><code><b>const</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>: u128 = 18446744073709551615;
 </code></pre>
 
 
@@ -72,7 +72,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>const</b> <a href="math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a>: u128 = 340282366920938463463374607431768211455;
+<pre><code><b>const</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a>: u128 = 340282366920938463463374607431768211455;
 </code></pre>
 
 
@@ -83,7 +83,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_add">wrapping_add</a>(n1: u128, n2: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_add">wrapping_add</a>(n1: u128, n2: u128): u128
 </code></pre>
 
 
@@ -92,8 +92,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_add">wrapping_add</a>(n1: u128, n2: u128): u128 {
-    <b>let</b> (sum, _) = <a href="math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_add">wrapping_add</a>(n1: u128, n2: u128): u128 {
+    <b>let</b> (sum, _) = <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1, n2);
     sum
 }
 </code></pre>
@@ -108,7 +108,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1: u128, n2: u128): (u128, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1: u128, n2: u128): (u128, bool)
 </code></pre>
 
 
@@ -117,10 +117,10 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1: u128, n2: u128): (u128, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_add">overflowing_add</a>(n1: u128, n2: u128): (u128, bool) {
     <b>let</b> sum = (n1 <b>as</b> u256) + (n2 <b>as</b> u256);
-    <b>if</b> (sum &gt; (<a href="math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> <b>as</b> u256)) {
-        (((sum & <a href="math_u128.md#0xc8_math_u128_LO_128_MASK">LO_128_MASK</a>) <b>as</b> u128), <b>true</b>)
+    <b>if</b> (sum &gt; (<a href="../bfc-system/math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> <b>as</b> u256)) {
+        (((sum & <a href="../bfc-system/math_u128.md#0xc8_math_u128_LO_128_MASK">LO_128_MASK</a>) <b>as</b> u128), <b>true</b>)
     } <b>else</b> {
         ((sum <b>as</b> u128), <b>false</b>)
     }
@@ -137,7 +137,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_sub">wrapping_sub</a>(n1: u128, n2: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_sub">wrapping_sub</a>(n1: u128, n2: u128): u128
 </code></pre>
 
 
@@ -146,8 +146,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_sub">wrapping_sub</a>(n1: u128, n2: u128): u128 {
-    <b>let</b> (result, _) = <a href="math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_sub">wrapping_sub</a>(n1: u128, n2: u128): u128 {
+    <b>let</b> (result, _) = <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1, n2);
     result
 }
 </code></pre>
@@ -162,7 +162,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1: u128, n2: u128): (u128, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1: u128, n2: u128): (u128, bool)
 </code></pre>
 
 
@@ -171,11 +171,11 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1: u128, n2: u128): (u128, bool) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_sub">overflowing_sub</a>(n1: u128, n2: u128): (u128, bool) {
     <b>if</b> (n1 &gt;= n2) {
         ((n1 - n2), <b>false</b>)
     } <b>else</b> {
-        ((<a href="math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> - n2 + n1 + 1), <b>true</b>)
+        ((<a href="../bfc-system/math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> - n2 + n1 + 1), <b>true</b>)
     }
 }
 </code></pre>
@@ -190,7 +190,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_mul">wrapping_mul</a>(n1: u128, n2: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_mul">wrapping_mul</a>(n1: u128, n2: u128): u128
 </code></pre>
 
 
@@ -199,8 +199,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_wrapping_mul">wrapping_mul</a>(n1: u128, n2: u128): u128 {
-    <b>let</b> (m, _) = <a href="math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_wrapping_mul">wrapping_mul</a>(n1: u128, n2: u128): u128 {
+    <b>let</b> (m, _) = <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1, n2);
     m
 }
 </code></pre>
@@ -215,7 +215,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1: u128, n2: u128): (u128, bool)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1: u128, n2: u128): (u128, bool)
 </code></pre>
 
 
@@ -224,8 +224,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1: u128, n2: u128): (u128, bool) {
-    <b>let</b> (c0, c1) = <a href="math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1, n2);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_overflowing_mul">overflowing_mul</a>(n1: u128, n2: u128): (u128, bool) {
+    <b>let</b> (c0, c1) = <a href="../bfc-system/math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1, n2);
     <b>if</b> (c1 &gt; 0) {
         (c0, <b>true</b>)
     } <b>else</b> {
@@ -244,7 +244,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1: u128, n2: u128): (u128, u128)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1: u128, n2: u128): (u128, u128)
 </code></pre>
 
 
@@ -253,7 +253,7 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1: u128, n2: u128): (u128, u128) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_full_mul">full_mul</a>(n1: u128, n2: u128): (u128, u128) {
     <b>let</b> hi_mask: u256 = 0xffffffffffffffffffffffffffffffff00000000000000000000000000000000;
     <b>let</b> lo_mask: u256 = 0x00000000000000000000000000000000ffffffffffffffffffffffffffffffff;
     <b>let</b> r = (n1 <b>as</b> u256) * (n2 <b>as</b> u256);
@@ -273,7 +273,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_hi">hi</a>(n: u128): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_hi">hi</a>(n: u128): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -282,8 +282,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_hi">hi</a>(n: u128): u64 {
-    (((n & <a href="math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>) &gt;&gt; 64) <b>as</b> u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_hi">hi</a>(n: u128): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    (((n & <a href="../bfc-system/math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>) &gt;&gt; 64) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 }
 </code></pre>
 
@@ -297,7 +297,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_lo">lo</a>(n: u128): u64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_lo">lo</a>(n: u128): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -306,8 +306,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_lo">lo</a>(n: u128): u64 {
-    ((n & <a href="math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>) <b>as</b> u64)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_lo">lo</a>(n: u128): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    ((n & <a href="../bfc-system/math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 }
 </code></pre>
 
@@ -321,7 +321,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_hi_u128">hi_u128</a>(n: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_hi_u128">hi_u128</a>(n: u128): u128
 </code></pre>
 
 
@@ -330,8 +330,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_hi_u128">hi_u128</a>(n: u128): u128 {
-    (n & <a href="math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>) &gt;&gt; 64
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_hi_u128">hi_u128</a>(n: u128): u128 {
+    (n & <a href="../bfc-system/math_u128.md#0xc8_math_u128_HI_64_MASK">HI_64_MASK</a>) &gt;&gt; 64
 }
 </code></pre>
 
@@ -345,7 +345,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_lo_u128">lo_u128</a>(n: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_lo_u128">lo_u128</a>(n: u128): u128
 </code></pre>
 
 
@@ -354,8 +354,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_lo_u128">lo_u128</a>(n: u128): u128 {
-    (n & <a href="math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_lo_u128">lo_u128</a>(n: u128): u128 {
+    (n & <a href="../bfc-system/math_u128.md#0xc8_math_u128_LO_64_MASK">LO_64_MASK</a>)
 }
 </code></pre>
 
@@ -369,7 +369,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_from_lo_hi">from_lo_hi</a>(lo: u64, hi: u64): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_from_lo_hi">from_lo_hi</a>(lo: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, hi: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): u128
 </code></pre>
 
 
@@ -378,7 +378,7 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_from_lo_hi">from_lo_hi</a>(lo: u64, hi: u64): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_from_lo_hi">from_lo_hi</a>(lo: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, hi: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): u128 {
     ((hi <b>as</b> u128) &lt;&lt; 64) + (lo <b>as</b> u128)
 }
 </code></pre>
@@ -393,7 +393,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_checked_div_round">checked_div_round</a>(num: u128, denom: u128, round_up: bool): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_checked_div_round">checked_div_round</a>(num: u128, denom: u128, round_up: bool): u128
 </code></pre>
 
 
@@ -402,9 +402,9 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_checked_div_round">checked_div_round</a>(num: u128, denom: u128, round_up: bool): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_checked_div_round">checked_div_round</a>(num: u128, denom: u128, round_up: bool): u128 {
     <b>if</b> (denom == 0) {
-        <b>abort</b> <a href="math_u128.md#0xc8_math_u128_DIV_BY_ZERO">DIV_BY_ZERO</a>
+        <b>abort</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_DIV_BY_ZERO">DIV_BY_ZERO</a>
     };
     <b>let</b> quotient = num / denom;
     <b>let</b> remainer = num % denom;
@@ -425,7 +425,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_max">max</a>(num1: u128, num2: u128): u128
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_max">max</a>(num1: u128, num2: u128): u128
 </code></pre>
 
 
@@ -434,7 +434,7 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_max">max</a>(num1: u128, num2: u128): u128 {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_max">max</a>(num1: u128, num2: u128): u128 {
     <b>if</b> (num1 &gt; num2) {
         num1
     } <b>else</b> {
@@ -481,7 +481,7 @@ title: Module `0xc8::math_u128`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_add_check">add_check</a>(num1: u128, num2: u128): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_add_check">add_check</a>(num1: u128, num2: u128): bool
 </code></pre>
 
 
@@ -490,8 +490,8 @@ title: Module `0xc8::math_u128`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="math_u128.md#0xc8_math_u128_add_check">add_check</a>(num1: u128, num2: u128): bool {
-    (<a href="math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> - num1 &gt;= num2)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u128.md#0xc8_math_u128_add_check">add_check</a>(num1: u128, num2: u128): bool {
+    (<a href="../bfc-system/math_u128.md#0xc8_math_u128_MAX_U128">MAX_U128</a> - num1 &gt;= num2)
 }
 </code></pre>
 

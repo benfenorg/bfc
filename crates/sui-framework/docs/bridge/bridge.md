@@ -143,7 +143,7 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
-<code><a href="treasury.md#0xb_treasury">treasury</a>: <a href="treasury.md#0xb_treasury_BridgeTreasury">treasury::BridgeTreasury</a></code>
+<code><a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: treasury::BridgeTreasury</code>
 </dt>
 <dd>
 
@@ -706,7 +706,7 @@ title: Module `0xb::bridge`
         chain_id,
         sequence_nums: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         <a href="committee.md#0xb_committee">committee</a>: <a href="committee.md#0xb_committee_create">committee::create</a>(ctx),
-        <a href="treasury.md#0xb_treasury">treasury</a>: <a href="treasury.md#0xb_treasury_create">treasury::create</a>(ctx),
+        <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: treasury::create(ctx),
         token_transfer_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
         <a href="limiter.md#0xb_limiter">limiter</a>: <a href="limiter.md#0xb_limiter_new">limiter::new</a>(),
         paused: <b>false</b>,
@@ -838,7 +838,7 @@ title: Module `0xb::bridge`
     metadata: &CoinMetadata&lt;T&gt;,
 ) {
     <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>)
-        .<a href="treasury.md#0xb_treasury">treasury</a>
+        .<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
         .<a href="bridge.md#0xb_bridge_register_foreign_token">register_foreign_token</a>&lt;T&gt;(tc, uc, metadata)
 }
 </code></pre>
@@ -875,7 +875,7 @@ title: Module `0xb::bridge`
     <b>assert</b>!(target_address.length() == <a href="bridge.md#0xb_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="bridge.md#0xb_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
 
     <b>let</b> bridge_seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="message_types.md#0xb_message_types_token">message_types::token</a>());
-    <b>let</b> token_id = inner.<a href="treasury.md#0xb_treasury">treasury</a>.token_id&lt;T&gt;();
+    <b>let</b> token_id = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.token_id&lt;T&gt;();
     <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
 
@@ -891,7 +891,7 @@ title: Module `0xb::bridge`
     );
 
     // burn / escrow token, unsupported coins will fail in this step
-    inner.<a href="treasury.md#0xb_treasury">treasury</a>.burn(token);
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
 
     // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
     inner.token_transfer_records.push_back(
@@ -1342,7 +1342,7 @@ title: Module `0xb::bridge`
     <b>let</b> route = <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
     // check token type
     <b>assert</b>!(
-        <a href="treasury.md#0xb_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="treasury.md#0xb_treasury">treasury</a>) == token_payload.token_type(),
+        treasury::token_id&lt;T&gt;(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>) == token_payload.token_type(),
         <a href="bridge.md#0xb_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
 
@@ -1351,7 +1351,7 @@ title: Module `0xb::bridge`
     <b>if</b> (!inner
         .<a href="limiter.md#0xb_limiter">limiter</a>
         .check_and_record_sending_transfer&lt;T&gt;(
-        &inner.<a href="treasury.md#0xb_treasury">treasury</a>,
+        &inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>,
         <a href="../sui-framework/clock.md#0x2_clock">clock</a>,
         route,
         amount,
@@ -1361,8 +1361,8 @@ title: Module `0xb::bridge`
         <b>return</b> (<a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(), owner)
     };
 
-    // claim from <a href="treasury.md#0xb_treasury">treasury</a>
-    <b>let</b> token = inner.<a href="treasury.md#0xb_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
+    // claim from <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
+    <b>let</b> token = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
 
     // Record changes
     record.claimed = <b>true</b>;
@@ -1461,7 +1461,7 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_update_asset_price">execute_update_asset_price</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: UpdateAssetPrice) {
-    inner.<a href="treasury.md#0xb_treasury">treasury</a>.update_asset_notional_price(
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.update_asset_notional_price(
         payload.update_asset_price_payload_token_id(),
         payload.update_asset_price_payload_new_price()
     )
@@ -1502,7 +1502,7 @@ title: Module `0xb::bridge`
         <b>let</b> token_id = token_ids.pop_back();
         <b>let</b> token_type_name = token_type_names.pop_back();
         <b>let</b> token_price = token_prices.pop_back();
-        inner.<a href="treasury.md#0xb_treasury">treasury</a>.add_new_token(token_type_name, token_id, native_token, token_price)
+        inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.add_new_token(token_type_name, token_id, native_token, token_price)
     }
 }
 </code></pre>

@@ -7,8 +7,6 @@ module sui_system::sui_system_state_inner {
     use sui::coin::{Self, Coin};
     use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
     use sui::bfc::BFC;
-    use sui::coin::Coin;
-    use sui_system::staking_pool::StakedSui;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
     use sui_system::validator_cap::{UnverifiedValidatorOperationCap, ValidatorOperationCap};
@@ -222,6 +220,7 @@ module sui_system::sui_system_state_inner {
     const ECannotReportOneself: u64 = 3;
     const EReportRecordNotFound: u64 = 4;
     const EBpsTooLarge: u64 = 5;
+    const EStakeWithdrawBeforeActivation: u64 = 6;
     const ESafeModeGasNotProcessed: u64 = 7;
     const EAdvancedToWrongEpoch: u64 = 8;
 
@@ -542,8 +541,8 @@ module sui_system::sui_system_state_inner {
         /// Withdraw some portion of a stake from a validator's staking pool.
         public(package) fun request_withdraw_stake(
             self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedBfc,
-        ctx: &mut TxContext,
+             staked_sui: StakedBfc,
+            ctx: &mut TxContext,
         ) : Balance<BFC> {
             assert!(
                 stake_activation_epoch(&staked_sui) <= ctx.epoch(),
@@ -551,14 +550,7 @@ module sui_system::sui_system_state_inner {
             );
             self.validators.request_withdraw_stake(staked_sui, ctx)
         }
-    /// Withdraw some portion of a stake from a validator's staking pool.
-    public(package) fun request_withdraw_stake(
-        self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedSui,
-        ctx: &TxContext,
-    ) : Balance<SUI> {
-        self.validators.request_withdraw_stake(staked_sui, ctx)
-    }
+
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
             self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,

@@ -710,7 +710,7 @@ indicate that the JWK has been validated in the current epoch and should not be 
     // any jwk below this epoch is not retained
     min_epoch: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &TxContext) {
-    // This will only be called by sui_system::advance_epoch
+    // This will only be called by <a href="../../sui_system.md#0x3_sui_system_advance_epoch">sui_system::advance_epoch</a>
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui-framework/authenticator_state.md#0x2_authenticator_state_ENotSystemAddress">ENotSystemAddress</a>);
 
     <b>let</b> inner = <a href="../sui-framework/authenticator_state.md#0x2_authenticator_state_load_inner_mut">load_inner_mut</a>(self);

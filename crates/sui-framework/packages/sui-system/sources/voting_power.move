@@ -4,8 +4,6 @@
 module sui_system::voting_power {
     use std::ascii;
     use sui_system::validator::Validator;
-    use sui::math;
-    use sui::math::divide_and_round_up;
     use sui::vec_map::VecMap;
     use sui_system::validator;
 
@@ -52,9 +50,9 @@ module sui_system::voting_power {
         stable_rate: VecMap<ascii::String, u64>) {
         // If threshold_pct is too small, it's possible that even when all validators reach the threshold we still don't
         // have 100%. So we bound the threshold_pct to be always enough to find a solution.
-        let threshold = math::min(
+        let threshold = std::u64::min(
             TOTAL_VOTING_POWER,
-            math::max(MAX_VOTING_POWER, divide_and_round_up(TOTAL_VOTING_POWER, validators.length())),
+            std::u64::max(MAX_VOTING_POWER, std::u64::divide_and_round_up(TOTAL_VOTING_POWER, validators.length())),
         );
         let (mut info_list, remaining_power) = init_voting_power_info(validators, threshold, stable_rate);
 
@@ -81,7 +79,7 @@ module sui_system::voting_power {
             let validator = &validators[i];
             let stake = validator::total_stake_with_all_stable(validator, stable_rate);
             let adjusted_stake = (stake as u128) * (TOTAL_VOTING_POWER as u128) / (total_stake as u128);
-            let voting_power = math::min((adjusted_stake as u64), threshold);
+            let voting_power = std::u64::min((adjusted_stake as u64), threshold);
             let info = VotingPowerInfoV2 {
                 validator_index: i,
                 voting_power,

@@ -3,9 +3,7 @@
 
 module sui_system::stake_subsidy {
     use sui::balance::Balance;
-    use sui::math;
     use sui::bfc::BFC;
-    use sui::sui::SUI;
     use sui::bag::Bag;
     use sui::bag;
 

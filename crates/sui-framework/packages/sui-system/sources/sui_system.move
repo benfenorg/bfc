@@ -56,7 +56,6 @@ module sui_system::sui_system {
     use sui::vec_map::VecMap;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
-    use sui::vec_map::VecMap;
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
