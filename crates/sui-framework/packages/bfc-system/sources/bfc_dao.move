@@ -1232,7 +1232,7 @@ module bfc_system::bfc_dao {
             version_id : proposalInfo.version_id,
             status: curProposalStatus,
         };
-        vec_map::insert(&mut (dao.current_proposal_status), proposalInfo.pid, proposal_status);
+        vec_map::insert(&mut dao.current_proposal_status, proposalInfo.pid, proposal_status);
     }
 
 
