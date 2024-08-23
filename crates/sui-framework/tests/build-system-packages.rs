@@ -186,7 +186,7 @@ fn build_packages_with_move_config(
             .unwrap();
 
     let bfc_system_members =
-        serialize_modules_to_file(bfc_system, &out_dir.join(bfc_system_dir)).unwrap();
+        serialize_modules_to_file(bfc_system, &compiled_packages_dir.join(bfc_system_dir)).unwrap();
 
     let bridge_members =
         serialize_modules_to_file(bridge, &compiled_packages_dir.join(bridge_dir)).unwrap();
