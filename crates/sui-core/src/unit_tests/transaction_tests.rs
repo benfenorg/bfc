@@ -272,6 +272,8 @@ async fn test_user_sends_change_epoch_transaction() {
         bfc_non_refundable_storage_fee: 0,
         epoch_start_timestamp_ms: 0,
         system_packages: vec![],
+        epoch_duration_ms: 60000,
+        stable_gas_summarys: vec![],
     }))
     .await;
 }

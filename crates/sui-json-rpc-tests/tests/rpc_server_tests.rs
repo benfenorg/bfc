@@ -996,7 +996,7 @@ async fn test_dao_publish() -> Result<(), anyhow::Error> {
 
 
     let compiled_package = BuildConfig::new_for_testing()
-        .build(Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
+        .build(&Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
     let compiled_modules_bytes =
         compiled_package.get_package_base64(/* with_unpublished_deps */ false);
     let dependencies = compiled_package.get_dependency_original_package_ids();
@@ -1127,7 +1127,7 @@ async fn test_get_proposal() -> Result<(), anyhow::Error> {
 
 
     let compiled_package = BuildConfig::new_for_testing()
-        .build(Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
+        .build(&Path::new("../../sui_programmability/examples/hello_world").to_path_buf())?;
     let compiled_modules_bytes =
         compiled_package.get_package_base64(/* with_unpublished_deps */ false);
     let dependencies = compiled_package.get_dependency_original_package_ids();
