@@ -125,8 +125,6 @@ impl BuiltInFramework {
                 SUI_SYSTEM_PACKAGE_ID,
                 "sui-system",
                 [MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,BFC_SYSTEM_PACKAGE_ID]
-                //[MOVE_STDLIB_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID]
-
             ),
 
             (
