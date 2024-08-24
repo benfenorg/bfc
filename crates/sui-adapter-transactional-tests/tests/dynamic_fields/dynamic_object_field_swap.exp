@@ -7,29 +7,29 @@ task 1, lines 6-59:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 8937600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 9256800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 61:
 //# run test::m::parent --sender A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2470000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2789200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 63:
 //# run test::m::child --sender A
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2287600,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2606800,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, line 65:
 //# run test::m::add_field --sender A --args object(2,0) object(3,0)
 created: object(4,0)
 mutated: object(0,0), object(2,0), object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 6224400,  storage_rebate: 3731904, non_refundable_storage_fee: 37696
+gas summary: computation_cost: 1000000, storage_cost: 6543600,  storage_rebate: 4047912, non_refundable_storage_fee: 40888
 
 task 5, line 67:
 //# view-object 3,0
-Owner: Object ID: ( fake(4,0) )
+Owner: Object ID: ( BFC7f817821eee8338a4ed1c763272345fde19f6e016320cf531959699e698c03d2df08 )
 Version: 4
 Contents: test::m::Child {
     id: sui::object::UID {
@@ -45,11 +45,11 @@ task 6, line 69:
 created: object(6,0)
 mutated: object(0,0), object(2,0), object(3,0)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 5251600,  storage_rebate: 6162156, non_refundable_storage_fee: 62244
+gas summary: computation_cost: 1000000, storage_cost: 5570800,  storage_rebate: 6478164, non_refundable_storage_fee: 65436
 
 task 7, line 71:
 //# view-object 3,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 5
 Contents: test::m::Child {
     id: sui::object::UID {

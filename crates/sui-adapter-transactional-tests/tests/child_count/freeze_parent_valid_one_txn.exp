@@ -7,23 +7,23 @@ task 1, lines 10-64:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 8610800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8930000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 66:
 //# run test::m::mint --sender A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 68:
 //# run test::m::add --sender A --args object(2,0) 0
 created: object(3,0), object(3,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 5859600,  storage_rebate: 2174436, non_refundable_storage_fee: 21964
+gas summary: computation_cost: 1000000, storage_cost: 6178800,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 4, line 70:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: test::m::S {
     id: sui::object::UID {
@@ -37,4 +37,4 @@ task 5, line 72:
 //# run test::m::remove_and_freeze --sender A --args object(2,0) 0
 mutated: object(0,0), object(2,0)
 deleted: object(3,0), object(3,1)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 5801004, non_refundable_storage_fee: 58596
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 6117012, non_refundable_storage_fee: 61788

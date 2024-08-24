@@ -7,23 +7,23 @@ task 1, lines 8-23:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 6148400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6467600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 25:
 //# run test::m::mint_s
 created: object(2,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 27:
 //# run test::m::mint_child --args object(2,0)
 created: object(3,0), object(3,1)
 mutated: object(0,2), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 5890000,  storage_rebate: 2174436, non_refundable_storage_fee: 21964
+gas summary: computation_cost: 1000000, storage_cost: 6209200,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 4, line 29:
 //# view-object 3,0
-Owner: Object ID: ( fake(2,0) )
+Owner: Object ID: ( BFC45d422e950764906cfcfb1bfb450ab45fc5b6fdc5facfdab44b5b2a86be520a0df1e )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {
@@ -45,7 +45,7 @@ Error: Error checking transaction input objects: InvalidChildObjectArgument { ch
 
 task 6, line 33:
 //# view-object 3,0
-Owner: Object ID: ( fake(2,0) )
+Owner: Object ID: ( BFC45d422e950764906cfcfb1bfb450ab45fc5b6fdc5facfdab44b5b2a86be520a0df1e )
 Version: 4
 Contents: sui::dynamic_field::Field<sui::dynamic_object_field::Wrapper<u64>, sui::object::ID> {
     id: sui::object::UID {

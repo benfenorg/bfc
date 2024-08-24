@@ -7,23 +7,23 @@ task 1, lines 6-36:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7007200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7326400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 38:
 //# run tto::M1::start
 created: object(2,0), object(2,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 40:
 //# run tto::M1::middle --sender A
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 4, line 42:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -35,7 +35,7 @@ Contents: tto::M1::A {
 
 task 5, lines 44-46:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC23298b6dae40eb633ac4583ea44dee4115a47c20a007683c0fec30de90b12b26ab32 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -48,11 +48,11 @@ Contents: tto::M1::B {
 task 6, line 47:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392
 
 task 7, line 49:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -64,7 +64,7 @@ Contents: tto::M1::A {
 
 task 8, lines 51-53:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC23298b6dae40eb633ac4583ea44dee4115a47c20a007683c0fec30de90b12b26ab32 )
 Version: 4
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -82,7 +82,7 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 10, lines 57-59:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)@4
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392
 
 task 11, lines 60-62:
 //# run tto::M1::send_back --summarize --args object(3,0) receiving(2,1)@6 --sender A
@@ -92,4 +92,4 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 12, line 63:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)@6
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392

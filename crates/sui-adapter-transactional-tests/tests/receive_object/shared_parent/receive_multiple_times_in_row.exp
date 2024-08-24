@@ -7,19 +7,19 @@ task 1, lines 6-37:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7182000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7501200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 39:
 //# run tto::M1::start
 created: object(2,0), object(2,1)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 41:
 //# run tto::M1::middle --sender A
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 4, line 43:
 //# view-object 2,0
@@ -35,7 +35,7 @@ Contents: tto::M1::A {
 
 task 5, lines 45-47:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC5bf60e6c5f60a86d2d990267900328168191666ce0bf0b0c0d7aa65b1ef2eb09c3f2 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -48,7 +48,7 @@ Contents: tto::M1::B {
 task 6, line 48:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392
 
 task 7, line 50:
 //# view-object 2,0
@@ -64,7 +64,7 @@ Contents: tto::M1::A {
 
 task 8, lines 52-54:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC5bf60e6c5f60a86d2d990267900328168191666ce0bf0b0c0d7aa65b1ef2eb09c3f2 )
 Version: 4
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -82,7 +82,7 @@ Debug of error: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: 
 task 10, lines 58-60:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)@4
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392
 
 task 11, lines 61-63:
 //# run tto::M1::send_back --summarize --args object(3,0) receiving(2,1)@6 --sender A
@@ -92,4 +92,4 @@ Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { k
 task 12, line 64:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)@6
 mutated: object(0,1), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392

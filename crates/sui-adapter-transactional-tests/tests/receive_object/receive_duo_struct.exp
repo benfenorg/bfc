@@ -4,17 +4,17 @@ task 1, lines 6-44:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 8071200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8390400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 46:
 //# run tto::M1::start
 created: object(2,0), object(2,1), object(2,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 4636000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 4955200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 48:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 
 task 4, line 50:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC7e97086439ef205701e1db770d82ee9f4ffdf410b1b6dd430afa80e270a89bb15ca9 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -38,7 +38,7 @@ Contents: tto::M1::B {
 
 task 5, lines 52-54:
 //# view-object 2,2
-Owner: Account Address ( fake(2,1) )
+Owner: Account Address ( BFC3cd7f1d0d39e95bef3aaaa61aec5cb5d563551f1877eedc9d81753b2e38d2c8704cc )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -53,7 +53,7 @@ task 6, lines 55-58:
 //> 0: tto::M1::make_duo(Input(1), Input(2))
 // receive the objects and return them. Error since we need to do something with the returned objects
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 7, lines 59-63:
 //# programmable --inputs object(2,0) receiving(2,2) receiving(2,2)
@@ -67,5 +67,5 @@ task 8, lines 64-67:
 //> 0: tto::M1::make_duo(Input(1), Input(2));
 //> 1: tto::M1::receive_duo(Input(0), Result(0));
 //> 2: TransferObjects([NestedResult(1, 0), NestedResult(1, 1)], Input(3));
-mutated: object(0,0), object(2,0), object(2,1), object(2,2)
-gas summary: computation_cost: 1000000, storage_cost: 4636000,  storage_rebate: 4589640, non_refundable_storage_fee: 46360
+Error: Transaction Effects Status: Move Runtime Abort. Location: sui::transfer::receive_impl (function index 12) at offset 0, Abort Code: 3
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: sui, name: Identifier("transfer") }, function: 12, instruction: 0, function_name: Some("receive_impl") }, 3), source: Some(VMError { major_status: ABORTED, sub_status: Some(3), message: None, exec_state: None, location: Module(ModuleId { address: sui, name: Identifier("transfer") }), indices: [], offsets: [(FunctionDefinitionIndex(12), 0)] }), command: Some(1) } }

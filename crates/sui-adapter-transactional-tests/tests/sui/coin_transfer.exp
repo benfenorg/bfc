@@ -9,74 +9,74 @@ task 1, lines 8-10:
 //> TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 12:
 //# view-object 1,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 2
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(1,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 10u64,
     },
 }
 
 task 3, line 14:
-//# run sui::pay::split_and_transfer --type-args sui::sui::SUI --args object(1,0) 10 @A --sender B
+//# run sui::pay::split_and_transfer --type-args sui::bfc::BFC --args object(1,0) 10 @A --sender B
 created: object(3,0)
 mutated: object(0,1), object(1,0)
-gas summary: computation_cost: 1000000, storage_cost: 2964000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 3921600,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 4, line 16:
 //# view-object 1,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(1,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
 
 task 5, line 18:
 //# view-object 3,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(3,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 10u64,
     },
 }
 
 task 6, line 20:
-//# run sui::pay::split_and_transfer --type-args sui::sui::SUI --args object(1,0) 0 @C --sender A
+//# run sui::pay::split_and_transfer --type-args sui::bfc::BFC --args object(1,0) 0 @C --sender A
 Error: Error checking transaction input objects: IncorrectUserSignature { error: "Object object(1,0) is owned by account address @B, but given owner/signer address is @A" }
 
 task 7, line 22:
 //# view-object 1,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(1,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }

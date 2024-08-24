@@ -7,46 +7,46 @@ task 1, lines 13-60:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 9264400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 9583600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 62:
 //# run t2::o2::mint_shared_coin
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 64:
 //# run t2::o2::mint_owned_coin
 created: object(3,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, line 66:
 //# view-object 2,0
 Owner: Shared( 3 )
 Version: 3
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(2,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
 
 task 5, lines 68-71:
 //# view-object 3,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(3,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
@@ -58,37 +58,37 @@ task 6, lines 72-76:
 // **Merge owned into shared**
 mutated: object(0,0), object(3,0)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 1956240, non_refundable_storage_fee: 19760
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 7, line 78:
 //# run t2::o2::mint_owned_coin
 created: object(7,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 8, line 80:
 //# run t2::o2::mint_shared_coin
 created: object(8,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 9, line 82:
 //# run t2::o2::mint_shared_obj
 created: object(9,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 10, line 84:
 //# view-object 7,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 5
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(7,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
@@ -97,13 +97,13 @@ task 11, line 86:
 //# view-object 8,0
 Owner: Shared( 6 )
 Version: 6
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(8,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
@@ -127,37 +127,37 @@ task 13, lines 91-95:
 // **Merge shared into shared**
 mutated: object(0,0), object(9,0)
 deleted: object(7,0), object(8,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 4160772, non_refundable_storage_fee: 42028
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 5108796, non_refundable_storage_fee: 51604
 
 task 14, line 97:
 //# run t2::o2::mint_shared_coin
 created: object(14,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 15, line 99:
 //# run t2::o2::mint_shared_coin
 created: object(15,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 16, line 101:
 //# run t2::o2::mint_shared_obj
 created: object(16,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 17, line 103:
 //# view-object 14,0
 Owner: Shared( 8 )
 Version: 8
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(14,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
@@ -166,13 +166,13 @@ task 18, line 105:
 //# view-object 15,0
 Owner: Shared( 9 )
 Version: 9
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(15,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
+    balance: sui::balance::Balance<sui::bfc::BFC> {
         value: 0u64,
     },
 }
@@ -195,4 +195,4 @@ task 20, lines 110-112:
 //> 1: t2::o2::deleter(Input(1));
 mutated: object(0,0), object(16,0)
 deleted: object(14,0), object(15,0)
-gas summary: computation_cost: 1000000, storage_cost: 2226800,  storage_rebate: 4160772, non_refundable_storage_fee: 42028
+gas summary: computation_cost: 1000000, storage_cost: 2546000,  storage_rebate: 5108796, non_refundable_storage_fee: 51604

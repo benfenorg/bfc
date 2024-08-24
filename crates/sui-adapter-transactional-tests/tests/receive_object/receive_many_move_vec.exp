@@ -4,17 +4,17 @@ task 1, lines 6-77:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 11286000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 11605200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 79:
 //# run tto::M1::start
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 81:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 
 task 4, line 83:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC32c926c7c6c237e6edbea4a2435318dfa8fb8cd54da8b49c72d1706cc6022da07d31 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -38,7 +38,7 @@ Contents: tto::M1::B {
 
 task 5, line 85:
 //# view-object 2,2
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC32c926c7c6c237e6edbea4a2435318dfa8fb8cd54da8b49c72d1706cc6022da07d31 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -50,7 +50,7 @@ Contents: tto::M1::B {
 
 task 6, line 87:
 //# view-object 2,3
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC32c926c7c6c237e6edbea4a2435318dfa8fb8cd54da8b49c72d1706cc6022da07d31 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -62,7 +62,7 @@ Contents: tto::M1::B {
 
 task 7, lines 89-91:
 //# view-object 2,4
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC32c926c7c6c237e6edbea4a2435318dfa8fb8cd54da8b49c72d1706cc6022da07d31 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -77,7 +77,7 @@ task 8, lines 92-95:
 //> 0: MakeMoveVec<sui::transfer::Receiving<tto::M1::B>>([Input(1), Input(2), Input(3), Input(4)]);
 // Make the Move vec and pass, but never receive
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 9, lines 96-100:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -85,7 +85,7 @@ task 9, lines 96-100:
 //> 1: tto::M1::receive_none(Input(0), Result(0));
 // Make the Move vec of receiving arguments and then receive all but the last. Only the ince we receive should be mutated
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 10, lines 101-105:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -93,7 +93,7 @@ task 10, lines 101-105:
 //> 1: tto::M1::receive_all_but_last(Input(0), Result(0));
 // Make the Move vec of receiving arguments, pass to a function by immref, then later use the vec to receive all of them
 mutated: object(0,0), object(2,0), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 5852000,  storage_rebate: 5793480, non_refundable_storage_fee: 58520
+gas summary: computation_cost: 1000000, storage_cost: 6171200,  storage_rebate: 6109488, non_refundable_storage_fee: 61712
 
 task 11, lines 106-111:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -102,7 +102,7 @@ task 11, lines 106-111:
 //> 2: tto::M1::receive_all_send_back(Input(0), Result(0));
 // Make the Move vec of receiving arguments, pass to a function by mutref, then later use the vec to receive all of them
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 12, lines 112-117:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -111,7 +111,7 @@ task 12, lines 112-117:
 //> 2: tto::M1::receive_all_send_back(Input(0), Result(0));
 // Make the Move vec of receiving arguments, pass to a function by mutref and receive some
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 13, lines 118-123:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -120,7 +120,7 @@ task 13, lines 118-123:
 //> 2: tto::M1::receive_all_by_mut_ref(Input(0), Result(0));
 // Make the Move vec of receiving arguments, pass to a function by mutref, receive some, then pass by mutref again to receive the rest
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 14, lines 124-129:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -129,7 +129,7 @@ task 14, lines 124-129:
 //> 2: tto::M1::receive_all_by_mut_ref(Input(0), Result(0));
 // Make the Move vec of receiving arguments, pass to a function by mutref, receive some, then pass by value to receive the rest
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 15, lines 130-135:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -138,18 +138,18 @@ task 15, lines 130-135:
 //> 2: tto::M1::receive_all_send_back(Input(0), Result(0));
 // Make the Move vec of receiving arguments and then receive all of them
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 16, lines 136-138:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
 //> 0: MakeMoveVec<sui::transfer::Receiving<tto::M1::B>>([Input(1), Input(2), Input(3), Input(4)]);
 //> 1: tto::M1::receive_all(Input(0), Result(0));
 mutated: object(0,0), object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 6997320, non_refundable_storage_fee: 70680
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 7313328, non_refundable_storage_fee: 73872
 
 task 17, line 140:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 12
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -161,7 +161,7 @@ Contents: tto::M1::A {
 
 task 18, line 142:
 //# view-object 2,1
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 12
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -173,7 +173,7 @@ Contents: tto::M1::B {
 
 task 19, line 144:
 //# view-object 2,2
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 12
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -185,7 +185,7 @@ Contents: tto::M1::B {
 
 task 20, line 146:
 //# view-object 2,3
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 12
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -197,7 +197,7 @@ Contents: tto::M1::B {
 
 task 21, line 148:
 //# view-object 2,4
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 12
 Contents: tto::M1::B {
     id: sui::object::UID {

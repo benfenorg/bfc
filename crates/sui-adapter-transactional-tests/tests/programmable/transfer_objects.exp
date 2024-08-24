@@ -7,7 +7,7 @@ task 1, lines 8-32:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 6004000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6323200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 33-35:
 //# programmable --sender A --inputs @A
@@ -15,20 +15,20 @@ task 2, lines 33-35:
 //> TransferObjects([Result(0)], Input(0));
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2280000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 37-39:
 //# view-object 0,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(0,0),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
-        value: 299999996720000u64,
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 299999996400800u64,
     },
 }
 
@@ -39,11 +39,11 @@ task 4, lines 40-43:
 //> TransferObjects([Result(1)], Result(0));
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2280000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 45-47:
 //# view-object 4,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFC000000000000000000000000000000000000000000000000000000000000000060e0 )
 Version: 3
 Contents: test::m1::Pub {
     id: sui::object::UID {
@@ -63,11 +63,11 @@ task 6, lines 48-53:
 //> TransferObjects([Result(2)], Result(3));
 created: object(6,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2280000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2599200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7, lines 55-57:
 //# view-object 6,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 4
 Contents: test::m1::Pub {
     id: sui::object::UID {
@@ -89,11 +89,11 @@ task 8, lines 58-65:
 //> TransferObjects([Result(4), Result(2), Result(5)], Result(3));
 created: object(8,0), object(8,1), object(8,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5388400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 5707600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 9, line 67:
 //# view-object 8,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 5
 Contents: test::m1::Cup<sui::object::ID> {
     id: sui::object::UID {
@@ -105,7 +105,7 @@ Contents: test::m1::Cup<sui::object::ID> {
 
 task 10, line 69:
 //# view-object 8,1
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 5
 Contents: test::m1::Cup<test::m1::Pub> {
     id: sui::object::UID {
@@ -117,7 +117,7 @@ Contents: test::m1::Cup<test::m1::Pub> {
 
 task 11, line 71:
 //# view-object 8,2
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 5
 Contents: test::m1::Pub {
     id: sui::object::UID {

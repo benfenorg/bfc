@@ -7,19 +7,19 @@ task 1, lines 8-18:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 4354800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 4674000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 20-23:
 //# publish --upgradeable --sender A
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5076800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5396000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 25-28:
 //# publish
 created: object(3,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 3442800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 3762000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 36-41:
 //# programmable --sender A --inputs 10 @A object(2,1) 0u8 digest(q_2)
@@ -28,9 +28,8 @@ task 5, lines 36-41:
 //> 2: Upgrade(q_2, [sui,std,r], q, Result(0));
 //> TransferObjects([Result(1)], Input(1));
 //> sui::package::commit_upgrade(Input(2), Result(2))
-created: object(5,0), object(5,1)
-mutated: object(0,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 7052800,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+Error: Transaction Effects Status: Invalid package upgrade. Digest in upgrade ticket and computed digest disagree
+Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: PackageUpgradeError { upgrade_error: DigestDoesNotMatch { digest: [234, 16, 118, 253, 44, 166, 172, 86, 25, 248, 165, 191, 62, 161, 76, 194, 243, 111, 197, 7, 199, 60, 110, 206, 224, 144, 74, 41, 3, 234, 82, 20] } }, source: None, command: Some(2) } }
 
 task 6, lines 43-45:
 //# programmable --sender A
@@ -39,20 +38,20 @@ task 6, lines 43-45:
 Error: Transaction Effects Status: Move Runtime Abort. Location: p::n::bar (function index 0) at offset 6, Abort Code: 0
 Execution Error: ExecutionError: ExecutionError { inner: ExecutionErrorInner { kind: MoveAbort(MoveLocation { module: ModuleId { address: p, name: Identifier("n") }, function: 0, instruction: 6, function_name: Some("bar") }, 0), source: Some(VMError { major_status: ABORTED, sub_status: Some(0), message: Some("p::n::bar at offset 6"), exec_state: None, location: Module(ModuleId { address: p, name: Identifier("n") }), indices: [], offsets: [(FunctionDefinitionIndex(0), 6)] }), command: Some(1) } }
 
+task 7, line 47:
+//# set-address q_2 object(5,0)
+Error: INVALID TEST. Unknown object, object(5,0)
+
 task 8, lines 49-51:
 //# programmable --sender A
 //> 0: q_2::m::x();
 //> p::m::foo(Result(0))
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 9, lines 53-58:
 //# publish --dependencies p q_2 r
-created: object(9,0)
-mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 5768400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }
 
 task 10, line 60:
 //# run s::all::foo_x
-mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+Error: Error checking transaction input objects: DependentPackageNotFound { package_id: 0x0000000000000000000000000000000000000000000000000000000000000000 }

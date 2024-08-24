@@ -8,7 +8,7 @@ task 1, lines 12-35:
 created: object(1,0), object(1,1), object(1,2), object(1,3), object(1,4), object(1,5)
 mutated: object(0,0)
 unchanged_shared: 0x0000000000000000000000000000000000000000000000000000000000000403
-gas summary: computation_cost: 1000000, storage_cost: 18316000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 18635200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 37:
 //# view-object 1,0
@@ -16,7 +16,7 @@ task 2, line 37:
 
 task 3, line 39:
 //# view-object 1,1
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: sui::coin::Coin<test::regulated_coin::REGULATED_COIN> {
     id: sui::object::UID {
@@ -95,7 +95,7 @@ Contents: sui::coin::CoinMetadata<test::regulated_coin::REGULATED_COIN> {
 
 task 5, line 43:
 //# view-object 1,3
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: sui::coin::DenyCap<test::regulated_coin::REGULATED_COIN> {
     id: sui::object::UID {
@@ -143,13 +143,13 @@ task 8, lines 50-52:
 created: object(8,0)
 mutated: object(0,0), object(1,1)
 unchanged_shared: 0x0000000000000000000000000000000000000000000000000000000000000403
-gas summary: computation_cost: 1000000, storage_cost: 3936800,  storage_rebate: 2437776, non_refundable_storage_fee: 24624
+gas summary: computation_cost: 1000000, storage_cost: 4256000,  storage_rebate: 2753784, non_refundable_storage_fee: 27816
 
 task 9, lines 53-55:
 //# run sui::coin::deny_list_add --args object(0x403) object(1,3) @B --type-args test::regulated_coin::REGULATED_COIN --sender A
 created: object(9,0), object(9,1)
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000403, object(0,0), object(1,3)
-gas summary: computation_cost: 1000000, storage_cost: 11415200,  storage_rebate: 2723688, non_refundable_storage_fee: 27512
+gas summary: computation_cost: 1000000, storage_cost: 11734400,  storage_rebate: 3039696, non_refundable_storage_fee: 30704
 
 task 10, lines 56-58:
 //# transfer-object 8,0 --sender B --recipient A
@@ -163,10 +163,10 @@ task 12, lines 62-64:
 //# run sui::coin::deny_list_remove --args object(0x403) object(1,3) @B --type-args test::regulated_coin::REGULATED_COIN --sender A
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000403, object(0,0), object(1,3), object(9,1)
 deleted: object(9,0)
-gas summary: computation_cost: 1000000, storage_cost: 9522800,  storage_rebate: 11301048, non_refundable_storage_fee: 114152
+gas summary: computation_cost: 1000000, storage_cost: 9842000,  storage_rebate: 11617056, non_refundable_storage_fee: 117344
 
 task 13, line 65:
 //# transfer-object 8,0 --sender B --recipient A
 mutated: object(0,1), object(8,0)
 unchanged_shared: 0x0000000000000000000000000000000000000000000000000000000000000403
-gas summary: computation_cost: 1000000, storage_cost: 2462400,  storage_rebate: 1459656, non_refundable_storage_fee: 14744
+gas summary: computation_cost: 1000000, storage_cost: 2781600,  storage_rebate: 1459656, non_refundable_storage_fee: 14744

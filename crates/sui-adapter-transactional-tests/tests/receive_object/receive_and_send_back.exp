@@ -4,17 +4,17 @@ task 1, lines 6-31:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6756400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7075600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 33:
 //# run tto::M1::start
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 35:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 
 task 4, lines 37-39:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC2bfc9a27717e745281ff5e59128d6a795cd39e3a8199cc9524fb761382c3d9490a0c )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -39,11 +39,11 @@ Contents: tto::M1::B {
 task 5, line 40:
 //# run tto::M1::send_back --args object(2,0) receiving(2,1)
 mutated: object(0,0), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 3385800, non_refundable_storage_fee: 34200
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 3701808, non_refundable_storage_fee: 37392
 
 task 6, line 42:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -55,7 +55,7 @@ Contents: tto::M1::A {
 
 task 7, lines 44-46:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC2bfc9a27717e745281ff5e59128d6a795cd39e3a8199cc9524fb761382c3d9490a0c )
 Version: 4
 Contents: tto::M1::B {
     id: sui::object::UID {

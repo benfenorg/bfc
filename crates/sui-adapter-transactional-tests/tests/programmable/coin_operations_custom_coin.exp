@@ -7,7 +7,7 @@ task 1, lines 8-20:
 //# publish --sender A
 created: object(1,0), object(1,1), object(1,2)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 10617200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 10936400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 22-24:
 //# programmable --sender A --inputs object(1,2) 100 @A
@@ -16,11 +16,11 @@ task 2, lines 22-24:
 created: object(2,0)
 mutated: object(0,0), object(1,2)
 unchanged_shared: 0x0000000000000000000000000000000000000000000000000000000000000403
-gas summary: computation_cost: 1000000, storage_cost: 4012800,  storage_rebate: 2663496, non_refundable_storage_fee: 26904
+gas summary: computation_cost: 1000000, storage_cost: 4332000,  storage_rebate: 2979504, non_refundable_storage_fee: 30096
 
 task 3, line 26:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: sui::coin::Coin<test::fake::FAKE> {
     id: sui::object::UID {
@@ -45,4 +45,4 @@ created: object(4,0)
 mutated: object(0,0), object(1,2)
 deleted: object(2,0)
 unchanged_shared: 0x0000000000000000000000000000000000000000000000000000000000000403
-gas summary: computation_cost: 1000000, storage_cost: 4012800,  storage_rebate: 3972672, non_refundable_storage_fee: 40128
+gas summary: computation_cost: 1000000, storage_cost: 4332000,  storage_rebate: 4288680, non_refundable_storage_fee: 43320

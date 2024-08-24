@@ -7,17 +7,17 @@ task 1, lines 8-36:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7440400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7759600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 38:
 //# run t::m::create --sender A
 created: object(2,0), object(2,1), object(2,2), object(2,3)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 7835600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8154800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 40:
 //# view-object 2,2
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: t::m::Obj {
     id: sui::object::UID {

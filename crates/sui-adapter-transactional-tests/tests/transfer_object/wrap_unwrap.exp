@@ -7,17 +7,17 @@ task 1, lines 8-39:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6224400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6543600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 41:
 //# run a::m::mint --sender A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 43:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: a::m::S {
     id: sui::object::UID {
@@ -32,11 +32,11 @@ task 4, line 45:
 created: object(4,0)
 mutated: object(0,0)
 wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2439600,  storage_rebate: 2174436, non_refundable_storage_fee: 21964
+gas summary: computation_cost: 1000000, storage_cost: 2758800,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 5, line 47:
 //# view-object 4,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: a::m::T {
     id: sui::object::UID {
@@ -58,11 +58,11 @@ task 6, line 49:
 mutated: object(0,0)
 unwrapped: object(2,0)
 deleted: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 2415204, non_refundable_storage_fee: 24396
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2731212, non_refundable_storage_fee: 27588
 
 task 7, line 51:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: a::m::S {
     id: sui::object::UID {

@@ -4,17 +4,17 @@ task 1, lines 6-28:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6437200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6756400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 30:
 //# run tto::M1::start
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 3420000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 3739200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 32:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 
 task 4, lines 34-36:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC09f645f8530ea1cb8d98c92ae66825612aab0b0068d8e517890b1fb90f1c78698810 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -39,9 +39,9 @@ Contents: tto::M1::B {
 task 5, lines 37-39:
 //# run tto::M1::flow --args object(2,0) receiving(2,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 6, line 40:
 //# run tto::M1::drop --args object(2,0) receiving(2,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232

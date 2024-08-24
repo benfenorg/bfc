@@ -7,17 +7,17 @@ task 1, lines 8-25:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 5905200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6224400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 27:
 //# run test::m::mint_s --sender A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 29:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: test::m::S {
     id: sui::object::UID {
@@ -30,11 +30,11 @@ Contents: test::m::S {
 task 4, line 31:
 //# transfer-object 2,0 --sender A --recipient B
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2196400,  storage_rebate: 2174436, non_refundable_storage_fee: 21964
+gas summary: computation_cost: 1000000, storage_cost: 2515600,  storage_rebate: 2490444, non_refundable_storage_fee: 25156
 
 task 5, lines 33-36:
 //# view-object 2,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
 Contents: test::m::S {
     id: sui::object::UID {
@@ -48,11 +48,11 @@ task 6, line 38:
 //# run test::m::mint_cup --type-args test::m::S --sender A
 created: object(6,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2500400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2819600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7, line 40:
 //# view-object 6,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: test::m::Cup<test::m::S> {
     id: sui::object::UID {
@@ -65,11 +65,11 @@ Contents: test::m::Cup<test::m::S> {
 task 8, line 42:
 //# transfer-object 6,0 --sender A --recipient B
 mutated: object(0,0), object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 2500400,  storage_rebate: 2475396, non_refundable_storage_fee: 25004
+gas summary: computation_cost: 1000000, storage_cost: 2819600,  storage_rebate: 2791404, non_refundable_storage_fee: 28196
 
 task 9, line 44:
 //# view-object 6,0
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 5
 Contents: test::m::Cup<test::m::S> {
     id: sui::object::UID {

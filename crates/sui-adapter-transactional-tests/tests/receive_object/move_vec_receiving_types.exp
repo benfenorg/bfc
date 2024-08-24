@@ -4,17 +4,17 @@ task 1, lines 6-63:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 10579200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 10898400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 65:
 //# run tto::M1::start
 created: object(2,0), object(2,1), object(2,2), object(2,3), object(2,4)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 7068000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 7387200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 67:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: tto::M1::A {
     id: sui::object::UID {
@@ -26,7 +26,7 @@ Contents: tto::M1::A {
 
 task 4, line 69:
 //# view-object 2,1
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC55fdf5b20c5424c6d0aa37e86313ae0bc5c7b09a0c16aa3b7be6ed3140d0215000f3 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -38,7 +38,7 @@ Contents: tto::M1::B {
 
 task 5, line 71:
 //# view-object 2,2
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC55fdf5b20c5424c6d0aa37e86313ae0bc5c7b09a0c16aa3b7be6ed3140d0215000f3 )
 Version: 3
 Contents: tto::M1::B {
     id: sui::object::UID {
@@ -50,7 +50,7 @@ Contents: tto::M1::B {
 
 task 6, line 73:
 //# view-object 2,3
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC55fdf5b20c5424c6d0aa37e86313ae0bc5c7b09a0c16aa3b7be6ed3140d0215000f3 )
 Version: 3
 Contents: tto::M1::C {
     id: sui::object::UID {
@@ -62,7 +62,7 @@ Contents: tto::M1::C {
 
 task 7, lines 75-77:
 //# view-object 2,4
-Owner: Account Address ( fake(2,0) )
+Owner: Account Address ( BFC55fdf5b20c5424c6d0aa37e86313ae0bc5c7b09a0c16aa3b7be6ed3140d0215000f3 )
 Version: 3
 Contents: tto::M1::C {
     id: sui::object::UID {
@@ -77,7 +77,7 @@ task 8, lines 78-81:
 //> 0: MakeMoveVec<sui::transfer::Receiving<tto::M1::B>>([Input(1), Input(2), Input(3), Input(4)]);
 // As long as you don't load the object the type will not be checked.
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 9, lines 82-86:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)
@@ -85,7 +85,7 @@ task 9, lines 82-86:
 //> 1: tto::M1::receive_none(Result(0));
 // Try to pass the wrong-type move vec to the function
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2204000,  storage_rebate: 2181960, non_refundable_storage_fee: 22040
+gas summary: computation_cost: 1000000, storage_cost: 2523200,  storage_rebate: 2497968, non_refundable_storage_fee: 25232
 
 task 10, lines 87-92:
 //# programmable --inputs object(2,0) receiving(2,1) receiving(2,2) receiving(2,3) receiving(2,4)

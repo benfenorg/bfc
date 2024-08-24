@@ -7,39 +7,39 @@ task 1, lines 8-9:
 //# programmable --sender C --inputs @A
 //> TransferObjects([Gas], Input(0))
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 11:
 //# view-object 0,2
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(0,2),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
-        value: 299999998012000u64,
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 299999997692800u64,
     },
 }
 
 task 3, line 13:
 //# transfer-object 0,2 --sender A --recipient B
 mutated: object(0,0), object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, line 15:
 //# view-object 0,2
-Owner: Account Address ( B )
+Owner: Account Address ( BFCd31b7b5068b139941cedc52b036f55c894fd394a170e2ba34245a324f1d16c8bc24c )
 Version: 3
-Contents: sui::coin::Coin<sui::sui::SUI> {
+Contents: sui::coin::Coin<sui::bfc::BFC> {
     id: sui::object::UID {
         id: sui::object::ID {
             bytes: fake(0,2),
         },
     },
-    balance: sui::balance::Balance<sui::sui::SUI> {
-        value: 299999998012000u64,
+    balance: sui::balance::Balance<sui::bfc::BFC> {
+        value: 299999997692800u64,
     },
 }
