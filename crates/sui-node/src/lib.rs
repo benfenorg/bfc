@@ -24,8 +24,6 @@ use futures::TryFutureExt;
 use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
-#[cfg(msim)]
-use std::sync::atomic::Ordering;
 use std::sync::{Weak};
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::authority::RandomnessRoundReceiver;

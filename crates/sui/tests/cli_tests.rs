@@ -392,7 +392,7 @@ async fn test_regression_6546() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_custom_genesis() -> Result<(), anyhow::Error> {
+async fn sim_test_custom_genesis() -> Result<(), anyhow::Error> {
     // Create and save genesis config file
     // Create 4 authorities, 1 account with 1 gas object with custom id
 
