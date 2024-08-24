@@ -14,12 +14,8 @@ use std::time::Duration;
 use sui_core::traffic_controller::{
     nodefw_test_server::NodeFwTestServer, TrafficController, TrafficSim,
 };
-use std::time::Duration;
 use sui_core::authority_client::make_network_authority_clients_with_network_config;
 use sui_core::authority_client::AuthorityAPI;
-use sui_core::traffic_controller::{
-    nodefw_test_server::NodeFwTestServer, TrafficController, TrafficSim,
-};
 use sui_json_rpc_types::{
     SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
 };
@@ -334,19 +330,13 @@ async fn test_validator_traffic_control_error_delegated() -> Result<(), anyhow::
         ..Default::default()
     };
     // enable remote firewall delegation
-    let drain_path = tempfile::tempdir().unwrap().into_path().join("drain1");
-    if drain_path.exists() {
-        std::fs::remove_file(&drain_path).unwrap();
-    }
-
     let firewall_config = RemoteFirewallConfig {
-        remote_fw_url: String::from("http://127.0.0.1:65002"),
         remote_fw_url: format!("http://127.0.0.1:{}", port),
         delegate_spam_blocking: true,
         delegate_error_blocking: false,
         destination_port: 8080,
-        drain_path,
-        drain_timeout_secs: 150,
+        drain_path: tempfile::tempdir().unwrap().into_path().join("drain"),
+        drain_timeout_secs: 10,
     };
     let network_config = ConfigBuilder::new_with_temp_dir()
         .with_policy_config(Some(policy_config))
@@ -357,7 +347,6 @@ async fn test_validator_traffic_control_error_delegated() -> Result<(), anyhow::
         .set_network_config(network_config)
         .build()
         .await;
-    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65002).await
     let local_clients = make_network_authority_clients_with_network_config(
         &committee,
         &default_mysten_network_config(),
@@ -410,7 +399,6 @@ async fn test_fullnode_traffic_control_spam_delegated() -> Result<(), anyhow::Er
     };
     // enable remote firewall delegation
     let firewall_config = RemoteFirewallConfig {
-        remote_fw_url: String::from("http://127.0.0.1:65001"),
         remote_fw_url: format!("http://127.0.0.1:{}", port),
         delegate_spam_blocking: true,
         delegate_error_blocking: false,
@@ -423,7 +411,6 @@ async fn test_fullnode_traffic_control_spam_delegated() -> Result<(), anyhow::Er
         .with_fullnode_fw_config(Some(firewall_config.clone()))
         .build()
         .await;
-    assert_traffic_control_spam_delegated(test_cluster, n as usize, 65001).await
 
     // start test firewall server
     let mut server = NodeFwTestServer::new();
@@ -547,7 +534,8 @@ async fn test_traffic_control_manual_set_dead_mans_switch() -> Result<(), anyhow
 #[sim_test]
 async fn sim_test_traffic_sketch_no_blocks() {
     let no_blocks_config = FreqThresholdConfig {
-        threshold: 10_100,
+        client_threshold: 10_100,
+        proxied_client_threshold: 10_100,
         window_size_secs: 4,
         update_interval_secs: 1,
         ..Default::default()
@@ -559,6 +547,8 @@ async fn sim_test_traffic_sketch_no_blocks() {
         error_policy_type: PolicyType::NoOp,
         channel_capacity: 100,
         dry_run: false,
+        ..Default::default()
+
     };
     let metrics = TrafficSim::run(
         policy,
@@ -584,7 +574,8 @@ async fn sim_test_traffic_sketch_no_blocks() {
 #[sim_test]
 async fn sim_test_traffic_sketch_with_slow_blocks() {
     let no_blocks_config = FreqThresholdConfig {
-        threshold: 9_900,
+        client_threshold: 9_900,
+        proxied_client_threshold: 9_900,
         window_size_secs: 4,
         update_interval_secs: 1,
         ..Default::default()
@@ -596,6 +587,8 @@ async fn sim_test_traffic_sketch_with_slow_blocks() {
         error_policy_type: PolicyType::NoOp,
         channel_capacity: 100,
         dry_run: false,
+        ..Default::default()
+
     };
     let metrics = TrafficSim::run(
         policy,
@@ -839,7 +832,9 @@ async fn assert_traffic_control_dry_run(
     Ok(())
 }
 
-async fn assert_traffic_control_spam_blocked(
+/// Test that in dry-run mode, actions that would otherwise
+/// lead to request blocking (in this case, a spammy client)
+/// are allowed to proceed.
 async fn assert_validator_traffic_control_dry_run(
     mut test_cluster: TestCluster,
     txn_count: usize,
@@ -863,54 +858,6 @@ async fn assert_validator_traffic_control_dry_run(
         ExecuteTransactionRequestType::WaitForLocalExecution
     ];
 
-    // it should take no more than 4 requests to be added to the blocklist
-    for _ in 0..txn_count {
-        let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("bfc_executeTransactionBlock", params.clone())
-            .await;
-        println!("traffic_control_spam_blocked response={:?}", &response);
-        if let Err(err) = response {
-            // TODO: fix validator blocking error handling such that the error message
-            // is not misleading. The full error message currently is the following:
-            //  Transaction execution failed due to issues with transaction inputs, please
-            //  review the errors and try again: Too many requests.
-            assert!(
-                err.to_string().contains("Too many requests"),
-                "Error not due to spam policy"
-            );
-            return Ok(());
-        }
-    }
-    panic!("Expected spam policy to trigger within {txn_count} requests");
-}
-
-async fn assert_traffic_control_spam_delegated(
-    mut test_cluster: TestCluster,
-    txn_count: usize,
-    listen_port: u16,
-) -> Result<(), anyhow::Error> {
-    // start test firewall server
-    let mut server = NodeFwTestServer::new();
-    server.start(listen_port).await;
-    // await for the server to start
-    tokio::time::sleep(tokio::time::Duration::from_secs(3)).await;
-    let context = &mut test_cluster.wallet;
-    let jsonrpc_client = &test_cluster.fullnode_handle.rpc_client;
-    let mut txns = batch_make_transfer_transactions(context, txn_count).await;
-    assert!(
-        txns.len() >= txn_count,
-        "Expect at least {} txns. Do we generate enough gas objects during genesis?",
-        txn_count,
-    );
-
-    let txn = txns.swap_remove(0);
-    let (tx_bytes, signatures) = txn.to_tx_bytes_and_signatures();
-    let params = rpc_params![
-        tx_bytes,
-        signatures,
-        SuiTransactionBlockResponseOptions::new(),
-        ExecuteTransactionRequestType::WaitForLocalExecution
-    ];
     let response: SuiTransactionBlockResponse = jsonrpc_client
         .request("sui_executeTransactionBlock", params.clone())
         .await
@@ -926,7 +873,6 @@ async fn assert_traffic_control_spam_delegated(
     // it should take no more than 4 requests to be added to the blocklist
     for _ in 0..txn_count {
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("bfc_executeTransactionBlock", params.clone())
             .request("sui_getTransactionBlock", rpc_params![*tx_digest])
             .await;
         assert!(
@@ -936,3 +882,4 @@ async fn assert_traffic_control_spam_delegated(
     }
     Ok(())
 }
+

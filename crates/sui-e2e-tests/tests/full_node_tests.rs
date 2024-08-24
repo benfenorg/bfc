@@ -628,49 +628,12 @@ async fn do_test_full_node_sync_flood() {
         .collect();
     fullnode
         .state()
-        .get_effects_notify_read()
-        .notify_read_executed_effects(digests)
-        .await
-        .unwrap();
-}
-
-#[sim_test]
-async fn sim_test_full_node_sub_and_query_move_event_ok() -> Result<(), anyhow::Error> {
-    let mut test_cluster = TestClusterBuilder::new()
-        .enable_fullnode_events()
-        .build()
-        .await;
-
-    // Start a new fullnode that is not on the write path
-    let fullnode = test_cluster.spawn_new_fullnode().await;
-
-    let ws_client = fullnode.ws_client().await;
-    let node = fullnode.sui_node;
-
-    let context = &mut test_cluster.wallet;
-    let package_id = publish_nfts_package(context).await.0;
-
-    let struct_tag_str = format!("{package_id}::devnet_nft::MintNFTEvent");
-    let struct_tag = parse_struct_tag(&struct_tag_str).unwrap();
-
-    let mut sub: Subscription<SuiEvent> = ws_client
-        .subscribe(
-            "bfcx_subscribeEvent",
-            rpc_params![EventFilter::MoveEventType(struct_tag.clone())],
-            "bfcx_unsubscribeEvent",
-        )
-        .await
-        .unwrap();
-
-    let (sender, object_id, digest) = create_devnet_nft(context, package_id).await;
-    node.state()
-        .get_effects_notify_read()
-        .notify_read_executed_effects(vec![digest])
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&digests)
         .await
         .unwrap();
 }
+
 
 // Test fullnode has event read jsonrpc endpoints working
 #[sim_test]

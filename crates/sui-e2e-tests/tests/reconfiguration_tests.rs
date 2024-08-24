@@ -17,8 +17,6 @@ use serde::{Deserialize, Serialize};
 use sui_core::consensus_adapter::position_submit_certificate;
 use sui_json_rpc_types::{CheckpointPage, ObjectChange, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
-use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
@@ -37,8 +35,9 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind};
-use sui_types::transaction::{TransactionDataAPI, TransactionExpiration, VerifiedTransaction};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall,
+                             ProgrammableTransaction, TransactionDataAPI,
+                             TransactionExpiration, TransactionKind};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -324,7 +323,7 @@ async fn sim_test_passive_reconfig() {
 async fn sim_test_change_bfc_round() {
     //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
+        config.set_commit_root_state_digest_supported_for_testing(true);
         config
     });
     ProtocolConfig::poison_get_for_min_version();
@@ -375,7 +374,7 @@ async fn sim_test_change_bfc_round() {
 #[sim_test]
 async fn sim_test_bfc_dao_update_system_package_blocked() {
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
+        config.set_commit_root_state_digest_supported_for_testing(true);
         config
     });
     ProtocolConfig::poison_get_for_min_version();
@@ -383,7 +382,6 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     let start_version = 44u64;
 
 
-async fn test_expired_locks() {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1500)
         .with_protocol_version(ProtocolVersion::new(start_version))
@@ -429,6 +427,58 @@ async fn test_expired_locks() {
     protocol_version = epoch_store.protocol_version();
 
     info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+    assert_eq!(protocol_version, ProtocolVersion::new(start_version));
+}
+async fn test_expired_locks() {
+    let start_version = 44u64;
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1500)
+        .with_protocol_version(ProtocolVersion::new(start_version))
+        .build()
+        .await;
+
+
+    let node = test_cluster
+        .swarm
+        .validator_nodes()
+        .next()
+        .unwrap()
+        .get_node_handle()
+        .unwrap();
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+
+    let mut epochid = node.state().current_epoch_for_testing();
+    let mut protocol_version = epoch_store.protocol_version();
+    info!("=============epochid: {}", epochid);
+    info!("=============protocol_version:{:?} ", protocol_version);
+
+
+    let target_epoch: u64 = std::env::var("RECONFIG_TARGET_EPOCH")
+        .ok()
+        .map(|v| v.parse().unwrap())
+        .unwrap_or(1);
+    info!("=============target_epoch: {}", target_epoch);
+
+    test_cluster.wait_for_epoch_all_nodes(target_epoch).await;
+
+
+    //waiting for....
+
+    //test_cluster.wait_for_all_nodes_upgrade_to(20u64).await;
+
+
+    sleep(Duration::from_secs(10)).await;
+
+    let epoch_store = node.state().load_epoch_store_one_call_per_task();
+
+    epochid = node.state().current_epoch_for_testing();
+    protocol_version = epoch_store.protocol_version();
+
+    info!("=============epochid: {}", epochid);
+
     info!("=============protocol_version:{:?} ", protocol_version);
 
     assert_eq!(protocol_version, ProtocolVersion::new(start_version));
@@ -1136,31 +1186,9 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
 
     let queue_proposal_action_function = "queue_proposal_action".to_string();
     let _ = sleep(Duration::from_secs(60)).await;
-    let t1 = transfer_sui(1);
-    // attempt to equivocate
-    let t2 = transfer_sui(2);
-
-    for (idx, validator) in test_cluster.all_validator_handles().into_iter().enumerate() {
-        let state = validator.state();
-        let epoch_store = state.epoch_store_for_testing();
-        let t = if idx % 2 == 0 { t1.clone() } else { t2.clone() };
-        validator
-            .state()
-            .handle_transaction(&epoch_store, VerifiedTransaction::new_unchecked(t))
-            .await
-            .unwrap();
-    }
-    test_cluster
-        .create_certificate(t1.clone(), None)
-        .await
-        .unwrap_err();
 
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas2 = bfc_objects.first().unwrap().object().unwrap();
-    test_cluster
-        .create_certificate(t2.clone(), None)
-        .await
-        .unwrap_err();
 
     do_move_call(http_client, gas2, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
     let _ = sleep(Duration::from_secs(60)).await;
@@ -1900,7 +1928,16 @@ async fn sim_test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
-async fn sim_test_reconfig_with_committee_change_stress() {
+async fn test_reconfig_with_committee_change_stress() {
+    do_test_reconfig_with_committee_change_stress().await;
+}
+
+#[sim_test(check_determinism)]
+async fn test_reconfig_with_committee_change_stress_determinism() {
+    do_test_reconfig_with_committee_change_stress().await;
+}
+
+async fn do_test_reconfig_with_committee_change_stress() {
     let mut candidates = (0..6)
         .map(|_| ValidatorGenesisConfigBuilder::new().build(&mut OsRng))
         .collect::<Vec<_>>();
@@ -1915,8 +1952,6 @@ async fn sim_test_reconfig_with_committee_change_stress() {
         .build()
         .await;
 
-    while !candidates.is_empty() {
-        let v1 = candidates.pop().unwrap();
     let mut cur_epoch = 0;
 
     while let Some(v1) = candidates.pop() {
@@ -2591,7 +2626,7 @@ async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address
 async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
-        config.set_commit_root_state_digest_supported(true);
+        config.set_commit_root_state_digest_supported_for_testing(true);
         config
     });
     ProtocolConfig::poison_get_for_min_version();
