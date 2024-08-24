@@ -11,8 +11,6 @@ use std::{fmt::Write, fs::read_dir, path::PathBuf, str, thread, time::Duration};
 use std::str::FromStr;
 
 use std::env;
-#[cfg(not(msim))]
-use std::str::FromStr;
 
 use expect_test::expect;
 use move_package::{lock_file::schema::ManagedPackage, BuildConfig as MoveBuildConfig};
@@ -33,11 +31,7 @@ use sui_types::{SUI_CLOCK_OBJECT_ID, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJ
 use tokio::time::sleep;
 
 use sui::{
-    client_commands::{
-        estimate_gas_budget, Opts, OptsWithGas, SuiClientCommandResult, SuiClientCommands,
-        SwitchResponse,
-    },
-    sui_commands::SuiCommand,
+
     client_commands::{
         estimate_gas_budget, Opts, OptsWithGas, SuiClientCommandResult, SuiClientCommands,
         SwitchResponse,
@@ -863,7 +857,7 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         .execute(context)
         .await?;
 
-    let package = if let SuiClientCommandResult::Publish(response) = resp {
+    let package = if let SuiClientCommandResult::TransactionBlock(response) = resp {
         assert!(
             response.status_ok().unwrap(),
             "Command failed: {:?}",
@@ -910,7 +904,7 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
     resp.print(true);
 
     // Get the created object
-    let created_obj: ObjectID = if let SuiClientCommandResult::Call(resp) = resp {
+    let created_obj: ObjectID = if let SuiClientCommandResult::TransactionBlock(resp) = resp {
         resp.effects
             .unwrap()
             .created()
@@ -3315,8 +3309,6 @@ async fn test_linter_suppression_stats() -> Result<(), anyhow::Error> {
     const LINTER_MSG: &str =
         "Total number of linter warnings suppressed: 5 (filtered categories: 3)";
     let mut cmd = assert_cmd::Command::cargo_bin("bfc").unwrap();
-    const LINTER_MSG: &str = "Total number of linter warnings suppressed: 5 (unique lints: 3)";
-    let mut cmd = assert_cmd::Command::cargo_bin("sui").unwrap();
     let args = vec!["move", "test", "--path", "tests/data/linter"];
     let output = cmd
         .args(&args)
@@ -3646,6 +3638,7 @@ async fn test_pay() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
+
 #[sim_test]
 async fn test_pay_sui() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
@@ -3661,15 +3654,14 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
         amounts: amounts.into(),
         opts: Opts::for_testing(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
     }
-    .execute(context)
-    .await?;
+        .execute(context)
+        .await?;
 
     // pay sui takes the input coins and transfers from each of them (in order) the amounts to the
     // respective receipients.
     // check if each recipient has one object, if the tx status is success,
     // and if the gas object used was the first object in the input coins
     // we also check if the balances of each recipient are right!
-    if let SuiClientCommandResult::PayBfc(response) = pay_sui {
     if let SuiClientCommandResult::TransactionBlock(response) = pay_sui {
         assert!(response.status_ok().unwrap());
         // check gas coin used
@@ -3721,11 +3713,10 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
             amounts[1] as u128
         );
     } else {
-        panic!("PayBfc test failed");
+        panic!("PaySui test failed");
     }
     Ok(())
 }
-
 #[sim_test]
 async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
@@ -3745,7 +3736,6 @@ async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
     // pay all sui will take the input coins and smash them into one coin and transfer that coin to
     // the recipient, so we check that the recipient has one object, if the tx status is success,
     // and if the gas object used was the first object in the input coins
-    if let SuiClientCommandResult::PayAllBfc(response) = pay_all_sui {
     if let SuiClientCommandResult::TransactionBlock(response) = pay_all_sui {
         let objs_refs = client
             .read_api()
@@ -3850,7 +3840,6 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     // transfer sui will transfer the amount from object_id1 to address2, and use the same object
     // as gas, and we check if the recipient address received the object, and the expected balance
     // is correct
-    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui {
     if let SuiClientCommandResult::TransactionBlock(response) = transfer_sui {
         assert!(response.status_ok().unwrap());
         assert_eq!(
@@ -3888,7 +3877,6 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
     }
     .execute(context)
     .await?;
-    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui {
     if let SuiClientCommandResult::TransactionBlock(response) = transfer_sui {
         assert!(response.status_ok().unwrap());
         assert_eq!(
@@ -3932,58 +3920,12 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
     let sender = context.active_address().unwrap();
     let tx_builder = client.transaction_builder();
     let tx_kind = tx_builder.transfer_sui_tx_kind(address2, Some(amount));
-    let gas_estimate = estimate_gas_budget(context, sender, tx_kind, rgp, None, None).await;
+    let gas_estimate = estimate_gas_budget(&client, sender, tx_kind, rgp, None, None).await;
     assert!(gas_estimate.is_ok());
 
     let transfer_sui_cmd = SuiClientCommands::TransferBfc {
         to: KeyIdentity::Address(address2),
         bfc_coin_object_id: object_id1,
-        amount: Some(amount),
-        opts: Opts {
-            gas_budget: None,
-            dry_run: false,
-            serialize_unsigned_transaction: false,
-            serialize_signed_transaction: false,
-        },
-    }
-    .execute(context)
-    .await
-    .unwrap();
-    if let SuiClientCommandResult::TransferBfc(response) = transfer_sui_cmd {
-        assert!(response.status_ok().unwrap());
-        let gas_used = response.effects.as_ref().unwrap().gas_object().object_id();
-        assert_eq!(gas_used, object_id1);
-        assert!(
-            response
-                .effects
-                .as_ref()
-                .unwrap()
-                .gas_cost_summary()
-                .gas_used()
-                <= gas_estimate.unwrap()
-        );
-    } else {
-        panic!("TransferBfc test failed");
-    }
-    Ok(())
-}
-
-#[sim_test]
-async fn test_gas_estimation() -> Result<(), anyhow::Error> {
-    let (mut test_cluster, client, rgp, objects, _, addresses) = test_cluster_helper().await;
-    let object_id1 = objects[0];
-    let address2 = addresses[0];
-    let context = &mut test_cluster.wallet;
-    let amount = 1000;
-    let sender = context.active_address().unwrap();
-    let tx_builder = client.transaction_builder();
-    let tx_kind = tx_builder.transfer_sui_tx_kind(address2, Some(amount));
-    let gas_estimate = estimate_gas_budget(&client, sender, tx_kind, rgp, None, None).await;
-    assert!(gas_estimate.is_ok());
-
-    let transfer_sui_cmd = SuiClientCommands::TransferSui {
-        to: KeyIdentity::Address(address2),
-        sui_coin_object_id: object_id1,
         amount: Some(amount),
         opts: Opts {
             gas_budget: None,
@@ -4009,10 +3951,11 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
                 <= gas_estimate.unwrap()
         );
     } else {
-        panic!("TransferSui test failed");
+        panic!("TransferBfc test failed");
     }
     Ok(())
 }
+
 
 #[sim_test]
 async fn test_clever_errors() -> Result<(), anyhow::Error> {
