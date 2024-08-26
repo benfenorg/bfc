@@ -64,7 +64,7 @@ use test_cluster::{TestCluster, TestClusterBuilder};
 const TEST_DATA_DIR: &str = "tests/data/";
 
 #[sim_test]
-async fn test_genesis() -> Result<(), anyhow::Error> {
+async fn sim_test_genesis() -> Result<(), anyhow::Error> {
     let temp_dir = tempfile::tempdir()?;
     let working_dir = temp_dir.path();
     let config = working_dir.join(SUI_NETWORK_CONFIG);
@@ -166,7 +166,7 @@ async fn test_addresses_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_objects_command() -> Result<(), anyhow::Error> {
+async fn sim_test_objects_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let address = test_cluster.get_address_0();
     let context = &mut test_cluster.wallet;
@@ -209,7 +209,7 @@ async fn test_objects_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_ptb_publish_and_complex_arg_resolution() -> Result<(), anyhow::Error> {
+async fn sim_test_ptb_publish_and_complex_arg_resolution() -> Result<(), anyhow::Error> {
     // Publish the package
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
@@ -330,7 +330,7 @@ async fn test_ptb_publish_and_complex_arg_resolution() -> Result<(), anyhow::Err
 }
 
 #[sim_test]
-async fn test_ptb_publish() -> Result<(), anyhow::Error> {
+async fn sim_test_ptb_publish() -> Result<(), anyhow::Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let context = &mut test_cluster.wallet;
@@ -423,7 +423,7 @@ async fn sim_test_custom_genesis() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_object_info_get_command() -> Result<(), anyhow::Error> {
+async fn sim_test_object_info_get_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
 
     let address = test_cluster.get_address_0();
@@ -466,7 +466,7 @@ async fn test_object_info_get_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_gas_command() -> Result<(), anyhow::Error> {
+async fn sim_test_gas_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -938,7 +938,7 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_publish_command() -> Result<(), anyhow::Error> {
+async fn sim_test_package_publish_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1007,7 +1007,7 @@ async fn test_package_publish_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_management_on_publish_command() -> Result<(), anyhow::Error> {
+async fn sim_test_package_management_on_publish_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1079,7 +1079,7 @@ async fn test_package_management_on_publish_command() -> Result<(), anyhow::Erro
 }
 
 #[sim_test]
-async fn test_delete_shared_object() -> Result<(), anyhow::Error> {
+async fn sim_test_delete_shared_object() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1183,7 +1183,7 @@ async fn test_delete_shared_object() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_receive_argument() -> Result<(), anyhow::Error> {
+async fn sim_test_receive_argument() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1307,7 +1307,7 @@ async fn test_receive_argument() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_receive_argument_by_immut_ref() -> Result<(), anyhow::Error> {
+async fn sim_test_receive_argument_by_immut_ref() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1431,7 +1431,7 @@ async fn test_receive_argument_by_immut_ref() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_receive_argument_by_mut_ref() -> Result<(), anyhow::Error> {
+async fn sim_test_receive_argument_by_mut_ref() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -1555,7 +1555,7 @@ async fn test_receive_argument_by_mut_ref() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_publish_command_with_unpublished_dependency_succeeds(
+async fn sim_test_package_publish_command_with_unpublished_dependency_succeeds(
 ) -> Result<(), anyhow::Error> {
     let with_unpublished_dependencies = true; // Value under test, results in successful response.
 
@@ -1625,7 +1625,7 @@ async fn test_package_publish_command_with_unpublished_dependency_succeeds(
 }
 
 #[sim_test]
-async fn test_package_publish_command_with_unpublished_dependency_fails(
+async fn sim_test_package_publish_command_with_unpublished_dependency_fails(
 ) -> Result<(), anyhow::Error> {
     let with_unpublished_dependencies = false; // Value under test, results in error response.
 
@@ -1677,7 +1677,7 @@ async fn test_package_publish_command_with_unpublished_dependency_fails(
 }
 
 #[sim_test]
-async fn test_package_publish_command_non_zero_unpublished_dep_fails() -> Result<(), anyhow::Error>
+async fn sim_test_package_publish_command_non_zero_unpublished_dep_fails() -> Result<(), anyhow::Error>
 {
     let with_unpublished_dependencies = true; // Value under test, incompatible with dependencies that specify non-zero address.
 
@@ -1720,7 +1720,7 @@ async fn test_package_publish_command_non_zero_unpublished_dep_fails() -> Result
 }
 
 #[sim_test]
-async fn test_package_publish_command_failure_invalid() -> Result<(), anyhow::Error> {
+async fn sim_test_package_publish_command_failure_invalid() -> Result<(), anyhow::Error> {
     let with_unpublished_dependencies = true; // Invalid packages should fail to publish, even if we allow unpublished dependencies.
 
     let mut test_cluster = TestClusterBuilder::new().build().await;
@@ -1851,7 +1851,7 @@ async fn sim_test_package_publish_test_flag() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_upgrade_command() -> Result<(), anyhow::Error> {
+async fn sim_test_package_upgrade_command() -> Result<(), anyhow::Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -1989,7 +1989,7 @@ async fn test_package_upgrade_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_package_management_on_upgrade_command() -> Result<(), anyhow::Error> {
+async fn sim_test_package_management_on_upgrade_command() -> Result<(), anyhow::Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -2123,7 +2123,7 @@ async fn test_package_management_on_upgrade_command() -> Result<(), anyhow::Erro
 }
 
 #[sim_test]
-async fn test_package_management_on_upgrade_command_conflict() -> Result<(), anyhow::Error> {
+async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(), anyhow::Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -2244,7 +2244,7 @@ async fn test_package_management_on_upgrade_command_conflict() -> Result<(), any
 }
 
 #[sim_test]
-async fn test_native_transfer() -> Result<(), anyhow::Error> {
+async fn sim_test_native_transfer() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -2432,7 +2432,7 @@ fn test_bug_1078() {
 }
 
 #[sim_test]
-async fn test_switch_command() -> Result<(), anyhow::Error> {
+async fn sim_test_switch_command() -> Result<(), anyhow::Error> {
     let mut cluster = TestClusterBuilder::new().build().await;
     let addr2 = cluster.get_address_1();
     let context = cluster.wallet_mut();
@@ -2531,7 +2531,7 @@ async fn test_switch_command() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_new_address_command_by_flag() -> Result<(), anyhow::Error> {
+async fn sim_test_new_address_command_by_flag() -> Result<(), anyhow::Error> {
     let mut cluster = TestClusterBuilder::new().build().await;
     let context = cluster.wallet_mut();
 
@@ -2572,7 +2572,7 @@ async fn test_new_address_command_by_flag() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_active_address_command() -> Result<(), anyhow::Error> {
+async fn sim_test_active_address_command() -> Result<(), anyhow::Error> {
     let mut cluster = TestClusterBuilder::new().build().await;
     let context = cluster.wallet_mut();
 
@@ -2657,7 +2657,7 @@ async fn get_parsed_object_assert_existence(
 }
 
 #[sim_test]
-async fn test_merge_coin() -> Result<(), anyhow::Error> {
+async fn sim_test_merge_coin() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -2776,7 +2776,7 @@ async fn test_merge_coin() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_split_coin() -> Result<(), anyhow::Error> {
+async fn sim_test_split_coin() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -2982,7 +2982,7 @@ async fn test_split_coin() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_signature_flag() -> Result<(), anyhow::Error> {
+async fn sim_test_signature_flag() -> Result<(), anyhow::Error> {
     let res = SignatureScheme::from_flag("0");
     assert!(res.is_ok());
     assert_eq!(res.unwrap().flag(), SignatureScheme::ED25519.flag());
@@ -3001,7 +3001,7 @@ async fn test_signature_flag() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_execute_signed_tx() -> Result<(), anyhow::Error> {
+async fn sim_test_execute_signed_tx() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let context = &mut test_cluster.wallet;
     let mut txns = batch_make_transfer_transactions(context, 1).await;
@@ -3018,7 +3018,7 @@ async fn test_execute_signed_tx() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_serialize_tx() -> Result<(), anyhow::Error> {
+async fn sim_test_serialize_tx() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -3231,7 +3231,7 @@ async fn test_with_sui_binary(args: &[&str]) -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_owned_objects_owned_by_address_and_check_pagination() -> Result<(), anyhow::Error>
+async fn sim_test_get_owned_objects_owned_by_address_and_check_pagination() -> Result<(), anyhow::Error>
 {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let address = test_cluster.get_address_0();
@@ -3382,7 +3382,7 @@ fn assert_dry_run(dry_run: SuiClientCommandResult, object_id: ObjectID, command:
 }
 
 #[sim_test]
-async fn test_dry_run() -> Result<(), anyhow::Error> {
+async fn sim_test_dry_run() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
@@ -3545,7 +3545,7 @@ async fn test_cluster_helper() -> (
 }
 
 #[sim_test]
-async fn test_pay() -> Result<(), anyhow::Error> {
+async fn sim_test_pay() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
         test_cluster_helper().await;
     let (object_id1, object_id2, object_id3) = (objects[0], objects[1], objects[2]);
@@ -3640,7 +3640,7 @@ async fn test_pay() -> Result<(), anyhow::Error> {
 
 
 #[sim_test]
-async fn test_pay_sui() -> Result<(), anyhow::Error> {
+async fn sim_test_pay_sui() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
         test_cluster_helper().await;
     let (object_id1, object_id2) = (objects[0], objects[1]);
@@ -3718,7 +3718,7 @@ async fn test_pay_sui() -> Result<(), anyhow::Error> {
     Ok(())
 }
 #[sim_test]
-async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
+async fn sim_test_pay_all_sui() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
         test_cluster_helper().await;
     let (object_id1, object_id2) = (objects[0], objects[1]);
@@ -3763,7 +3763,7 @@ async fn test_pay_all_sui() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_transfer() -> Result<(), anyhow::Error> {
+async fn sim_test_transfer() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
         test_cluster_helper().await;
     let (object_id1, object_id2) = (objects[0], objects[1]);
@@ -3820,7 +3820,7 @@ async fn test_transfer() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_transfer_sui() -> Result<(), anyhow::Error> {
+async fn sim_test_transfer_sui() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, recipients, addresses) =
         test_cluster_helper().await;
     let object_id1 = objects[0];
@@ -3911,7 +3911,7 @@ async fn test_transfer_sui() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_gas_estimation() -> Result<(), anyhow::Error> {
+async fn sim_test_gas_estimation() -> Result<(), anyhow::Error> {
     let (mut test_cluster, client, rgp, objects, _, addresses) = test_cluster_helper().await;
     let object_id1 = objects[0];
     let address2 = addresses[0];
@@ -3958,7 +3958,7 @@ async fn test_gas_estimation() -> Result<(), anyhow::Error> {
 
 
 #[sim_test]
-async fn test_clever_errors() -> Result<(), anyhow::Error> {
+async fn sim_test_clever_errors() -> Result<(), anyhow::Error> {
     // Publish the package
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new().build().await;
