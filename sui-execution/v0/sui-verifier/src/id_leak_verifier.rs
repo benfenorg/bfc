@@ -373,8 +373,7 @@ fn pack(
 
         //this is a place to skip some v0 engine dependencies
         if object_name.contains("02::deny_list") || object_name.contains("02::authenticator")
-            || object_name.contains("02::random") ||
-            object_name.contains("02::vdf")
+            || object_name.contains("02::random") || object_name.contains("02::vdf") || object_name.contains("0b::bridge")
             {
             verifier.stack_push(AbstractValue::Other)?;
             return Ok(());
