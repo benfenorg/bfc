@@ -257,7 +257,7 @@ async fn update_objects(
 //   1. Cancelled transaction should return correct error status.
 //   2. Executing cancelled transaction with effects should result in the same transaction cancellation.
 #[sim_test]
-async fn test_congestion_control_execution_cancellation() {
+async fn sim_test_congestion_control_execution_cancellation() {
     telemetry_subscribers::init_for_testing();
 
     // Creates a authority state with 2 shared object and 1 owned object. We use this setup

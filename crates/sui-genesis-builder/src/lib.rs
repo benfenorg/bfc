@@ -1125,8 +1125,8 @@ fn create_genesis_objects(
 
 
     for system_package in BuiltInFramework::iter_system_packages() {
-        info!("Processing system package: {:?}", system_package);
-        info!("Processing system package dependencies: {:?}", system_package.dependencies().to_vec());
+        //info!("Processing system package: {:?}", system_package);
+        //info!("Processing system package dependencies: {:?}", system_package.dependencies().to_vec());
         process_package(
             &mut store,
             executor.as_ref(),

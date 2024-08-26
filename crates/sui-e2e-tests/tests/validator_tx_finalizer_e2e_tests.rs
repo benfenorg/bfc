@@ -8,7 +8,7 @@ use sui_types::base_types::dbg_addr;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn test_validator_tx_finalizer_fastpath_tx() {
+async fn sim_test_validator_tx_finalizer_fastpath_tx() {
     let cluster = TestClusterBuilder::new()
         .with_num_validators(7)
         // Make epoch duration large enough so that reconfig is never triggered.
@@ -48,7 +48,7 @@ async fn test_validator_tx_finalizer_fastpath_tx() {
 }
 
 #[sim_test]
-async fn test_validator_tx_finalizer_consensus_tx() {
+async fn sim_test_validator_tx_finalizer_consensus_tx() {
     let cluster = TestClusterBuilder::new()
         .with_num_validators(7)
         // Make epoch duration large enough so that reconfig is never triggered.

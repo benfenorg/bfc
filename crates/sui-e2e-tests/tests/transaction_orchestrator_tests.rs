@@ -26,7 +26,7 @@ fn make_socket_addr() -> std::net::SocketAddr {
 }
 
 #[sim_test]
-async fn test_blocking_execution() -> Result<(), anyhow::Error> {
+async fn sim_test_blocking_execution() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let context = &mut test_cluster.wallet;
     let handle = &test_cluster.fullnode_handle.sui_node;
@@ -296,7 +296,7 @@ async fn execute_with_orchestrator(
 }
 
 #[sim_test]
-async fn execute_transaction_v3() -> Result<(), anyhow::Error> {
+async fn sim_execute_transaction_v3() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let context = &mut test_cluster.wallet;
     let handle = &test_cluster.fullnode_handle.sui_node;
@@ -354,7 +354,7 @@ async fn execute_transaction_v3() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn execute_transaction_v3_staking_transaction() -> Result<(), anyhow::Error> {
+async fn sim_execute_transaction_v3_staking_transaction() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let context = &mut test_cluster.wallet;
     let handle = &test_cluster.fullnode_handle.sui_node;

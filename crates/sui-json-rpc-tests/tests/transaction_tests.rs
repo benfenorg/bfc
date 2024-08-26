@@ -353,7 +353,7 @@ async fn sim_test_get_fullnode_transaction() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_transaction_block_with_stable_gascoin() -> Result<(), anyhow::Error> {
+async fn sim_test_get_transaction_block_with_stable_gascoin() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();

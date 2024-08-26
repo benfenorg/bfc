@@ -55,7 +55,7 @@ async fn shared_object_owner_doesnt_change_on_write() {
 }
 
 #[sim_test]
-async fn initial_shared_version_mismatch_start_version() {
+async fn sim_initial_shared_version_mismatch_start_version() {
     let env = TestEnvironment::new().await;
     let (counter, _) = env.create_counter().await;
 

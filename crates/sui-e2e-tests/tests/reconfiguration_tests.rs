@@ -583,7 +583,7 @@ async fn sim_test_bfc_dao_change_round() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_dao_create_action() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
@@ -802,7 +802,7 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
 }
 
 #[sim_test]
-async fn test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
@@ -1428,7 +1428,7 @@ async fn sim_test_bfc_dao_cast_voting() -> Result<(), anyhow::Error> {
 
 
 #[sim_test]
-async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error> {
     //log
     //telemetry_subscribers::init_for_testing();
 
@@ -1555,7 +1555,7 @@ async fn test_bfc_dao_withdraw_bfc() -> Result<(), anyhow::Error> {
 
 
 #[sim_test]
-async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
+async fn sim_test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
 
     //telemetry_subscribers::init_for_testing();
 
@@ -1775,7 +1775,7 @@ async fn sim_test_validator_resign_effects() {
 }
 
 #[sim_test]
-async fn test_validator_candidate_pool_read() {
+async fn sim_test_validator_candidate_pool_read() {
     let new_validator = ValidatorGenesisConfigBuilder::new().build(&mut OsRng);
     let address: SuiAddress = (&new_validator.account_key_pair.public()).into();
     let test_cluster = TestClusterBuilder::new()
@@ -1928,12 +1928,12 @@ async fn sim_test_reconfig_with_committee_change_basic() {
 }
 
 #[sim_test]
-async fn test_reconfig_with_committee_change_stress() {
+async fn sim_test_reconfig_with_committee_change_stress() {
     do_test_reconfig_with_committee_change_stress().await;
 }
 
 #[sim_test(check_determinism)]
-async fn test_reconfig_with_committee_change_stress_determinism() {
+async fn sim_test_reconfig_with_committee_change_stress_determinism() {
     do_test_reconfig_with_committee_change_stress().await;
 }
 

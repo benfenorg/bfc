@@ -287,7 +287,7 @@ async fn test_move_call() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_object_info() -> Result<(), anyhow::Error> {
+async fn sim_test_get_object_info() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -322,7 +322,7 @@ async fn test_get_object_info() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_object_data_with_content() -> Result<(), anyhow::Error> {
+async fn sim_test_get_object_data_with_content() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();
     let address = cluster.get_address_0();
@@ -515,7 +515,7 @@ async fn sim_test_get_metadata() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_get_total_supply() -> Result<(), anyhow::Error> {
+async fn sim_test_get_total_supply() -> Result<(), anyhow::Error> {
     let cluster = TestClusterBuilder::new().build().await;
 
     let http_client = cluster.rpc_client();

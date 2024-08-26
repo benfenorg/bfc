@@ -12,7 +12,7 @@ use sui_types::transaction::TransactionDataAPI;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn execute_transaction_transfer() {
+async fn sim_execute_transaction_transfer() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let rest_url = format!("{}/v2", test_cluster.rpc_url());
