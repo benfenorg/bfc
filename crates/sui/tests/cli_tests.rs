@@ -3307,13 +3307,13 @@ async fn sim_test_get_owned_objects_owned_by_address_and_check_pagination() -> R
 #[tokio::test]
 async fn test_linter_suppression_stats() -> Result<(), anyhow::Error> {
     const LINTER_MSG: &str =
-        "Total number of linter warnings suppressed: 5 (filtered categories: 3)";
+        "Total number of linter warnings suppressed: 5 (unique lints: 3)";
     let mut cmd = assert_cmd::Command::cargo_bin("bfc").unwrap();
     let args = vec!["move", "test", "--path", "tests/data/linter"];
     let output = cmd
         .args(&args)
         .output()
-        .expect("failed to run 'sui move test'");
+        .expect("failed to run 'bfc move test'");
     let out_str = str::from_utf8(&output.stderr).unwrap();
     assert!(
         out_str.contains(LINTER_MSG),
@@ -3324,7 +3324,7 @@ async fn test_linter_suppression_stats() -> Result<(), anyhow::Error> {
     let output = cmd
         .args(&args)
         .output()
-        .expect("failed to run 'sui move test'");
+        .expect("failed to run 'bfc move test'");
     let out_str = str::from_utf8(&output.stderr).unwrap();
     assert!(
         !out_str.contains(LINTER_MSG),

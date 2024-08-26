@@ -226,7 +226,7 @@ fn make_good_passkey_tx(response: PasskeyResponse<TransactionData>) -> Transacti
 }
 
 #[sim_test]
-async fn test_passkey_feature_deny() {
+async fn sim_test_passkey_feature_deny() {
     use sui_protocol_config::ProtocolConfig;
     let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
         config.set_passkey_auth_for_testing(false);

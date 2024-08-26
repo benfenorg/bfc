@@ -20,7 +20,7 @@ use test_cluster::{TestCluster, TestClusterBuilder};
 const DENY_ADDRESS: SuiAddress = SuiAddress::ZERO;
 
 #[sim_test]
-async fn per_epoch_config_stress_test() {
+async fn sim_per_epoch_config_stress_test() {
     let test_env = Arc::new(create_test_env().await);
     let target_epoch = 10;
     let mut gas_objects = test_env
