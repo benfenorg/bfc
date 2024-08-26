@@ -13,7 +13,7 @@ module sui_system::validator_tests {
     use std::ascii;
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use sui_system::staking_pool::{Self, StakedBfc};
+    use sui_system::staking_pool::{StakedBfc};
     use bfc_system::busd::BUSD;
     use sui::bag;
     use sui::test_utils::assert_eq;
@@ -111,7 +111,7 @@ module sui_system::validator_tests {
         // Check that after destroy, the original stake still exists.
          scenario.next_tx(sender);
          {
-             let stake = scenario.take_from_sender<StakedSui>();
+             let stake = scenario.take_from_sender<StakedBfc>();
              assert!(stake.amount() == 10_000_000_000);
              scenario.return_to_sender(stake);
          };
@@ -139,8 +139,8 @@ module sui_system::validator_tests {
 
         scenario.next_tx(sender);
         {
-            let coin_ids = scenario.ids_for_sender<StakedSui>();
-            let stake = scenario.take_from_sender_by_id<StakedSui>(coin_ids[0]);
+            let coin_ids = scenario.ids_for_sender<StakedBfc>();
+            let stake = scenario.take_from_sender_by_id<StakedBfc>(coin_ids[0]);
             let ctx = scenario.ctx();
             let withdrawn_balance = validator.request_withdraw_stake(stake, ctx);
             transfer::public_transfer(withdrawn_balance.into_coin(ctx), sender);
@@ -149,7 +149,7 @@ module sui_system::validator_tests {
             assert!(validator.pending_stake_amount() == 30_000_000_000);
             assert!(validator.pending_stake_withdraw_amount() == 10_000_000_000);
 
-            validator.deposit_stake_rewards(balance::zero());
+            validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
 
             // Calling `process_pending_stakes_and_withdraws` will withdraw the coin and transfer to sender.
             validator.process_pending_stakes_and_withdraws(ctx);
@@ -161,8 +161,8 @@ module sui_system::validator_tests {
 
         scenario.next_tx(sender);
         {
-            let coin_ids = scenario.ids_for_sender<Coin<SUI>>();
-            let withdraw = scenario.take_from_sender_by_id<Coin<SUI>>(coin_ids[0]);
+            let coin_ids = scenario.ids_for_sender<Coin<BFC>>();
+            let withdraw = scenario.take_from_sender_by_id<Coin<BFC>>(coin_ids[0]);
             assert!(withdraw.value() == 10_000_000_000);
             scenario.return_to_sender(withdraw);
         };

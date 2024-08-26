@@ -13,7 +13,7 @@ module raffles::example1 {
     use sui::clock::Clock;
     use sui::coin::{Self, Coin};
     use sui::random::{Random, new_generator};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     /// Error codes
     const EGameInProgress: u64 = 0;
@@ -30,7 +30,7 @@ module raffles::example1 {
         participants: u32,
         end_time: u64,
         winner: Option<u32>,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
     }
 
     /// Ticket represents a participant in a single game.
@@ -68,7 +68,7 @@ module raffles::example1 {
     }
 
     /// Anyone can play and receive a ticket.
-    public fun buy_ticket(game: &mut Game, coin: Coin<SUI>, clock: &Clock, ctx: &mut TxContext): Ticket {
+    public fun buy_ticket(game: &mut Game, coin: Coin<BFC>, clock: &Clock, ctx: &mut TxContext): Ticket {
         assert!(game.end_time > clock.timestamp_ms(), EGameAlreadyCompleted);
         assert!(coin.value() == game.cost_in_sui, EInvalidAmount);
 
@@ -83,7 +83,7 @@ module raffles::example1 {
     }
 
     /// The winner can take the prize.
-    public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<SUI> {
+    public fun redeem(ticket: Ticket, game: Game, ctx: &mut TxContext): Coin<BFC> {
         assert!(object::id(&game) == ticket.game_id, EGameMismatch);
         assert!(game.winner.contains(&ticket.participant_index), ENotWinner);
         destroy_ticket(ticket);

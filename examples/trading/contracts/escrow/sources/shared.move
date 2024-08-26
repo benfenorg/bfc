@@ -170,7 +170,7 @@ module escrow::shared {
 
     // === Tests ===
     #[test_only] use sui::coin::{Self, Coin};
-    #[test_only] use sui::sui::SUI;
+    #[test_only] use sui::bfc::BFC;
     #[test_only] use sui::test_scenario::{Self as ts, Scenario};
 
     #[test_only] use escrow::lock;

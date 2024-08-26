@@ -13,7 +13,7 @@ module raffles::example2 {
     use sui::clock::Clock;
     use sui::coin::{Self, Coin};
     use sui::random::{Random, new_generator};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::table_vec::{Self, TableVec};
     use sui::tx_context::sender;
 
@@ -31,7 +31,7 @@ module raffles::example2 {
         cost_in_sui: u64,
         participants: u32,
         end_time: u64,
-        balance: Balance<SUI>,
+        balance: Balance<BFC>,
         participants_table: TableVec<address>,
     }
 
@@ -71,7 +71,7 @@ module raffles::example2 {
     }
 
     /// Anyone can play.
-    public fun play(game: &mut Game, coin: Coin<SUI>, clock: &Clock, ctx: &mut TxContext) {
+    public fun play(game: &mut Game, coin: Coin<BFC>, clock: &Clock, ctx: &mut TxContext) {
         assert!(game.end_time > clock.timestamp_ms(), EGameAlreadyCompleted);
         assert!(coin.value() == game.cost_in_sui, EInvalidAmount);
         assert!(game.participants < MaxParticipants, EReachedMaxParticipants);

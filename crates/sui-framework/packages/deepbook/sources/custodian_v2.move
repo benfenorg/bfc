@@ -46,6 +46,7 @@ module deepbook::custodian_v2 {
 
     /// Create a "child account cap" such that id != owner
     /// that can access funds, but cannot create new `AccountCap`s.
+    #[allow(unused_function)]
     fun create_child_account_cap(admin_account_cap: &AccountCap, ctx: &mut TxContext): AccountCap {
         // Only the admin account cap can create new account caps
         assert!(object::uid_to_address(&admin_account_cap.id) == admin_account_cap.owner, EAdminAccountCapRequired);
@@ -57,10 +58,10 @@ module deepbook::custodian_v2 {
     }
 
     /// Destroy the given `account_cap` object
-    fun delete_account_cap(account_cap: AccountCap) {
-        let AccountCap { id, owner: _ } = account_cap;
-        object::delete(id)
-    }
+    // fun delete_account_cap(account_cap: AccountCap) {
+    //     let AccountCap { id, owner: _ } = account_cap;
+    //     object::delete(id)
+    // }
 
     /// Return the owner of an AccountCap
     public(package) fun account_owner(account_cap: &AccountCap): address {

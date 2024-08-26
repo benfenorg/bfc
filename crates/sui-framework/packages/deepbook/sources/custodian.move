@@ -26,6 +26,7 @@ module deepbook::custodian {
     }
 
     /// Create an `AccountCap` that can be used across all DeepBook pool
+    #[allow(unused_function)]
     fun mint_account_cap(ctx: &mut TxContext): AccountCap {
         AccountCap { id: object::new(ctx) }
     }

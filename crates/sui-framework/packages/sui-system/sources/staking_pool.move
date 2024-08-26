@@ -472,7 +472,7 @@ module sui_system::staking_pool {
         if (total_sui_withdraw_amount >= staked_amount)
         total_sui_withdraw_amount - staked_amount
         else 0;
-        reward_withdraw_amount = math::min(reward_withdraw_amount, pool.rewards_pool.value());
+        reward_withdraw_amount = std::u64::min(reward_withdraw_amount, pool.rewards_pool.value());
 
         staked_amount + reward_withdraw_amount
     }

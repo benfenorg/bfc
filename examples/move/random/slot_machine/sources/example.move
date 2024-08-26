@@ -11,11 +11,8 @@
 module slot_machine::example {
     use sui::balance::Balance;
     use sui::coin::{Self, Coin};
-    use sui::math;
-    use sui::random::{Self, Random, new_generator};
+    use sui::random::{ Random, new_generator};
     use sui::bfc::BFC;
-    use sui::random::{Random, new_generator};
-    use sui::sui::SUI;
 
     /// Error codes
     const EInvalidAmount: u64 = 0;
@@ -46,7 +43,7 @@ module slot_machine::example {
     }
 
     /// Creator can withdraw remaining balance if the game is over.
-    public fun close(game: Game, ctx: &mut TxContext): Coin<SUI> {
+    public fun close(game: Game, ctx: &mut TxContext): Coin<BFC> {
         assert!(ctx.epoch() > game.epoch, EInvalidEpoch);
         assert!(ctx.sender() == game.creator, EInvalidSender);
         let Game { id, creator: _, epoch: _, balance } = game;

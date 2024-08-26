@@ -3,7 +3,7 @@
 
 #[lint_allow(coin_field)]
 module common::identified_payment {
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::transfer::Receiving;
     use sui::event;

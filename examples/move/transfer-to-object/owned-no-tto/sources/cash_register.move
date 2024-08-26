@@ -17,7 +17,7 @@
 /// shared-object register for tracking authorization.
 module owned_no_tto::cash_register {
     use common::identified_payment::{Self, IdentifiedPayment};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::coin::{Self, Coin};
     use sui::event;
 
