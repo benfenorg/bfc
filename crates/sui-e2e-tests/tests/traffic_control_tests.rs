@@ -691,7 +691,7 @@ async fn test_traffic_sketch_with_slow_blocks() {
 }
 
 #[sim_test]
-async fn test_traffic_sketch_with_sampled_spam() {
+async fn sim_test_traffic_sketch_with_sampled_spam() {
     let sketch_config = FreqThresholdConfig {
         client_threshold: 4_500,
         proxied_client_threshold: 4_500,

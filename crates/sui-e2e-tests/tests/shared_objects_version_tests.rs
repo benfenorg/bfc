@@ -21,7 +21,7 @@ async fn fresh_shared_object_initial_version_matches_current() {
 }
 
 #[sim_test]
-async fn objects_transitioning_to_shared_remember_their_previous_version() {
+async fn sim_objects_transitioning_to_shared_remember_their_previous_version() {
     let env = TestEnvironment::new().await;
     let (counter, _) = env.create_counter().await;
 
@@ -39,7 +39,7 @@ async fn objects_transitioning_to_shared_remember_their_previous_version() {
 }
 
 #[sim_test]
-async fn shared_object_owner_doesnt_change_on_write() {
+async fn sim_shared_object_owner_doesnt_change_on_write() {
     let env = TestEnvironment::new().await;
     let (counter, _) = env.create_counter().await;
 
@@ -71,7 +71,7 @@ async fn sim_initial_shared_version_mismatch_start_version() {
 }
 
 #[sim_test]
-async fn initial_shared_version_mismatch_current_version() {
+async fn sim_initial_shared_version_mismatch_current_version() {
     let env = TestEnvironment::new().await;
     let (counter, _) = env.create_counter().await;
 
