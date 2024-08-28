@@ -12,7 +12,7 @@ use sui_types::SUI_BRIDGE_OBJECT_ID;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn test_create_bridge_state_object() {
+async fn sim_test_create_bridge_state_object() {
     let test_cluster = TestClusterBuilder::new()
         .with_protocol_version((BRIDGE_ENABLE_PROTOCOL_VERSION - 1).into())
         .with_epoch_duration_ms(20000)

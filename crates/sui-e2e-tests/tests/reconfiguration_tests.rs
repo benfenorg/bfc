@@ -379,7 +379,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     });
     ProtocolConfig::poison_get_for_min_version();
 
-    let start_version = 44u64;
+    let start_version = 54u64;
 
 
     let test_cluster = TestClusterBuilder::new()

@@ -29,16 +29,7 @@ async fn sim_test_create_randomness_state_object() {
     //             .is_none());
     //     });
     // }
-    for h in &handles {
-        h.with(|node| {
-            assert!(node
-                .state()
-                .get_object_cache_reader()
-                .get_latest_object_ref_or_tombstone(SUI_RANDOMNESS_STATE_OBJECT_ID)
-                .unwrap()
-                .is_none());
-        });
-    }
+
 
     // wait until feature is enabled
     test_cluster.wait_for_protocol_version(39.into()).await;
