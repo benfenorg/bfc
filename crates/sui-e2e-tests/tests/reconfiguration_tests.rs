@@ -2191,7 +2191,8 @@ async fn sim_safe_mode_reconfig_bfc_stable_gas_test() -> Result<(), anyhow::Erro
     }
     // ...
 
-    let system_state = test_cluster.wait_for_epoch(Some(1)).await;
+    let system_state = test_cluster.wait_for_epoch(Some(4)).await;
+    info!("system_state {:?}", system_state.epoch());
     assert!(!system_state.safe_mode());
     assert_eq!(system_state.epoch(), 4);
     assert_eq!(system_state.system_state_version(), 2);
