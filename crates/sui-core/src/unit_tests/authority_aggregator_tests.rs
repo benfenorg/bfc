@@ -410,7 +410,7 @@ async fn test_quorum_map_and_reduce_timeout() {
 }
 
 #[sim_test]
-async fn test_map_reducer() {
+async fn sim_test_map_reducer() {
     let (authorities, _, _, _) = init_local_authorities(4, vec![]).await;
 
     // Test: mapper errors do not get propagated up, reducer works
