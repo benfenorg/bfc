@@ -792,7 +792,7 @@ mod sim_only_tests {
     }
 
     #[sim_test]
-    async fn test_safe_mode_recovery() {
+    async fn sim_test_safe_mode_recovery() {
         let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
             config.set_disable_bridge_for_testing();
             config

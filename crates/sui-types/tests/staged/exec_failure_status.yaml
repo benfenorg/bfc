@@ -32,7 +32,8 @@
 30: SuiMoveVerificationTimedout
 31: SharedObjectOperationNotAllowed
 32: InputObjectDeleted
-33: ExecutionCancelledDueToSharedObjectCongestion
-34: AddressDeniedForCoin
-35: CoinTypeGlobalPause
-36: ExecutionCancelledDueToRandomnessUnavailable
+33: StableCoinRateErr
+34: ExecutionCancelledDueToSharedObjectCongestion
+35: AddressDeniedForCoin
+36: CoinTypeGlobalPause
+37: ExecutionCancelledDueToRandomnessUnavailable

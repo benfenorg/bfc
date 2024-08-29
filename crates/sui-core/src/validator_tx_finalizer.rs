@@ -409,7 +409,7 @@ mod tests {
     }
 
     #[sim_test]
-    async fn test_validator_tx_finalizer_basic_flow() {
+    async fn sim_test_validator_tx_finalizer_basic_flow() {
         telemetry_subscribers::init_for_testing();
         let (sender, keypair) = get_account_key_pair();
         let gas_object = Object::with_owner_for_testing(sender);
