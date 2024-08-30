@@ -523,6 +523,8 @@ export {
 	 * https://github.com/MystenLabs/sui/discussions/13150
 	 */
 	isTxContext,
+	GAS_SAFE_OVERHEAD,
+	DEFAULT_GAS_PRICE,
 } from './builder/index.js';
 
 export {

@@ -114,7 +114,7 @@ const LIMITS = {
 type Limits = Partial<Record<keyof typeof LIMITS, number>>;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-export const GAS_SAFE_OVERHEAD = 3000n;
+export const GAS_SAFE_OVERHEAD = 10000n;
 
 export const DEFAULT_GAS_PRICE = 100n;
 
