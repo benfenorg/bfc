@@ -114,7 +114,9 @@ const LIMITS = {
 type Limits = Partial<Record<keyof typeof LIMITS, number>>;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-const GAS_SAFE_OVERHEAD = 1000n;
+export const GAS_SAFE_OVERHEAD = 3000n;
+
+export const DEFAULT_GAS_PRICE = 100n;
 
 // The maximum objects that can be fetched at once using multiGetObjects.
 const MAX_OBJECTS_PER_FETCH = 50;
@@ -771,7 +773,7 @@ export class TransactionBlock {
 						{ cause: dryRunResult },
 					);
 				}
-				const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(this.blockData.gasConfig.price || 1n);
+				const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(this.blockData.gasConfig.price || 100n);
 
 				const baseComputationCostWithOverhead =
 					BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
@@ -781,21 +783,24 @@ export class TransactionBlock {
 					BigInt(dryRunResult.effects.gasUsed.storageCost) -
 					BigInt(dryRunResult.effects.gasUsed.storageRebate);
 
-				const gasObject = await client.getObject({ id: this.#blockData.gasConfig.payment![0].objectId, options: { showType: true }});
+				const gasObject = await client.getObject({
+					id: this.#blockData.gasConfig.payment![0].objectId,
+					options: { showType: true },
+				});
 				const coinType = normalizeStructTag(parseStructTag(gasObject.data!.type!).typeParams[0]);
 				if (coinType !== normalizeStructTag(SUI_TYPE_ARG)) {
 					const [rate, balance] = await Promise.all([
 						client.getStableRate(coinType),
 						client.getBalance({ owner: this.#blockData.sender!, coinType }),
 					]);
-					gasBudget = BigInt(gasBudget) * MIST_PER_SUI / BigInt(rate);
-					gasBudget = gasBudget > BigInt(balance.totalBalance) ? BigInt(balance.totalBalance) : gasBudget;
+					gasBudget = (BigInt(gasBudget) * MIST_PER_SUI) / BigInt(rate);
+					gasBudget =
+						gasBudget > BigInt(balance.totalBalance) ? BigInt(balance.totalBalance) : gasBudget;
 				}
-
 
 				// Set the budget to max(computation, computation + storage - rebate)
 				this.setGasBudget(
-					gasBudget > baseComputationCostWithOverhead ? gasBudget: baseComputationCostWithOverhead,
+					gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead,
 				);
 			}
 		}
