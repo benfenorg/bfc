@@ -11,7 +11,7 @@ use sui_macros::sim_test;
 async fn sim_test_create_randomness_state_object() {
 
     let test_cluster = TestClusterBuilder::new()
-        .with_protocol_version(38.into())
+        .with_protocol_version(44.into())
         .with_epoch_duration_ms(10000)
         .build()
         .await;
@@ -32,7 +32,7 @@ async fn sim_test_create_randomness_state_object() {
 
 
     // wait until feature is enabled
-    test_cluster.wait_for_protocol_version(39.into()).await;
+    test_cluster.wait_for_protocol_version(45.into()).await;
     // wait until next epoch - randomness state object is created at the end of the first epoch
     // in which it is supported.
     test_cluster.wait_for_epoch_all_nodes(2).await; // protocol upgrade completes in epoch 1
