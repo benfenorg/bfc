@@ -5429,7 +5429,7 @@ impl NodeStateDump {
 
 
 fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
-    if current_version == 24 {
+    if current_version == 25 {
         //bfc protocol version start at 23, 24, 44,
         return 44;
     }

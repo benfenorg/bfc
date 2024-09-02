@@ -502,6 +502,7 @@ Errors
     round: u64,
 ) {
     inner.round = round;
+    inner.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
 

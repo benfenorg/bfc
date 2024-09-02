@@ -23,6 +23,7 @@ pub mod checked {
     use sui_types::execution_status::ExecutionFailureStatus;
     use tracing::{trace};
     use crate::temporary_store::TemporaryStore;
+    use std::str::FromStr;
 
     /// Tracks all gas operations for a single transaction.
     /// This is the main entry point for gas accounting.
@@ -360,6 +361,23 @@ pub mod checked {
                         Ok((rate, base_point)) => {
                             cost_summary.rate = rate;
                             cost_summary.base_point = base_point;
+                            //The rates of these transactions are messed up due to rebalance and need to be manually specified.
+                            if self.tx_digest == TransactionDigest::from_str("A8vgez4cnLiroMChKTD2sboio2q4LGxg4Wt1cZKdh4SQ").unwrap() {
+                                cost_summary.rate = 10100510643;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("6CtGMuKeUBwN7rjwiSZ5yYLnGRttS9RnALgetytU7q55").unwrap() {
+                                cost_summary.rate = 10336208896;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("3fzrrb3FUq8qCFCjQz7pFhB4WFxyJUSzzuGYpahJmhX7").unwrap() {
+                                cost_summary.rate = 10354877594;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7D5ZLdrgkEyKXcm5cGsZinSEaLno27qsWsKKkLGHbtZw").unwrap() {
+                                cost_summary.rate = 10654869094;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7nr1kVaUqB8xyyU3P1uQgoKMPDV3K8x21GzuM998Yfzb").unwrap() {
+                                cost_summary.rate = 10655582452;
+                            }
+
                             let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
                             deduct_gas(&mut gas_object, stable_gas_used);
                         },
