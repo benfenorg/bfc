@@ -31,7 +31,6 @@ mysten-network.workspace = true
 move-core-types.workspace = true
 once_cell.workspace = true
 prometheus.workspace = true
-rand.workspace = true # todo: cleanup test only deps
 regex.workspace = true
 reqwest.workspace = true
 serial_test.workspace = true
@@ -47,6 +46,8 @@ tap.workspace = true
 telemetry-subscribers.workspace = true
 tempfile.workspace = true
 tracing.workspace = true
+tracing-subscriber.workspace = true
+tracing-appender.workspace = true
 tokio = { workspace = true, features = ["rt-multi-thread"] }
 tokio-util = { workspace = true, features = ["rt"] }
 toml.workspace = true
@@ -55,7 +56,6 @@ tower-http.workspace = true
 thiserror.workspace = true
 uuid.workspace = true
 im.workspace = true
-downcast = "0.11.0"
 
 # Used for dummy data
 bcs.workspace = true
