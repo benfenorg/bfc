@@ -1,1 +1,1 @@
-# Benfen SDK
+# Benfen TypeScript SDK

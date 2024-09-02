@@ -41,7 +41,16 @@ export interface Checkpoint {
 	 * The running total gas costs of all transactions included in the current epoch so far until this
 	 * checkpoint.
 	 */
-	epochRollingGasCostSummary: GasCostSummary;
+	epochRollingBfcGasCostSummary: GasCostSummary;
+	epochRollingStableGasCostSummaryMap: Array<
+		[
+			string,
+			{
+				gasByBfc: GasCostSummary;
+				gasByStable: GasCostSummary;
+			},
+		]
+	>;
 	/** Total number of transactions committed since genesis, including those in this checkpoint. */
 	networkTotalTransactions: string;
 	/** Digest of the previous checkpoint */
@@ -298,6 +307,8 @@ export interface GasCostSummary {
 	 * transaction.
 	 */
 	storageRebate: string;
+	basePoint: string;
+	rate: string;
 }
 export interface BenfenGasData {
 	budget: string;
