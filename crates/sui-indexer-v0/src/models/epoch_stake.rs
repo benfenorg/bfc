@@ -14,6 +14,8 @@ pub struct EpochStake {
     pub accumulated_reward: i64,
     pub avg_exchange_rate: i64,
     pub apy: i64,
+    pub last_epoch_reward: i64,
+    pub last_epoch_stake: i64,
 }
 
 #[derive(Queryable, Insertable, Debug, Clone, Default)]

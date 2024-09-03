@@ -21,7 +21,9 @@ CREATE TABLE epoch_stakes
   accumulated_reward        BIGINT          NOT NULL,
   -- The average exchange rate * 10_000.
   avg_exchange_rate         BIGINT          NOT NULL,
-  apy                       BIGINT          NOT NULL
+  apy                       BIGINT          NOT NULL,
+  last_epoch_reward         BIGINT          NOT NULL,
+  last_epoch_stake          BIGINT          NOT NULL
 );
 
 

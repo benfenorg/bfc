@@ -14,6 +14,7 @@ use clap::Parser;
 use diesel::pg::PgConnection;
 use diesel::r2d2::ConnectionManager;
 use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
+use moka::future::Cache;
 use metrics::IndexerMetrics;
 use prometheus::{Registry, TextEncoder};
 use regex::Regex;
@@ -30,12 +31,14 @@ use handlers::checkpoint_handler::CheckpointHandler;
 use mysten_metrics::{spawn_monitored_task, RegistryService};
 use processors::processor_orchestrator::ProcessorOrchestrator;
 use store::IndexerStore;
+use sui_config::node::ServerType;
 use sui_core::subscription_handler::SubscriptionHandler;
 use sui_json_rpc::{JsonRpcServerBuilder, ServerHandle};
 use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
 use sui_sdk::{SuiClient, SuiClientBuilder};
 
 use crate::apis::MoveUtilsApi;
+use crate::handlers::pending_reward_handler::{PendingReward};
 
 pub mod apis;
 pub(crate) mod benfen;
@@ -114,6 +117,12 @@ pub struct IndexerConfig {
 
     #[clap(long, num_args(1..))]
     pub mining_nft_liquidity_admins: Vec<String>,
+
+    #[clap(
+        long,
+        default_value = ""
+    )]
+    pub mining_contract_address: String,
 
     #[clap(
         long,
@@ -213,21 +222,22 @@ impl Default for IndexerConfig {
                     .to_string(),
             ],
             mining_nft_dex_contract:
-                "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226"
-                    .to_string(),
+            "BFCe7d93ab2b98057bcb73c4fd42dcfd91931baf73d55eb6e9ec9be1255be6edc6e3226"
+                .to_string(),
             mining_nft_contract:
-                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
-                    .to_string(),
+            "BFC702c0d96768cf59d25c9dbae218b0678fe1ee599af7a2437f7770ded752d9a1a3909"
+                .to_string(),
             mining_nft_global:
-                "BFC7bfaf4d8018565811b0e84f313baf3bead9bc753f4e9e775d2ad9c7df45145fb4845"
-                    .to_string(),
+            "BFCee78b977512978f83bc7e2e6ede1132197903820b9a8d47c8437efbd78abee288ad7"
+                .to_string(),
             mining_nft_event_package:
-                "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
-                    .to_string(),
+            "BFCe88253dcc3eaced8168f5a87f8d5cb78f2663655fce2246951c7df6ea1b8cca677d6"
+                .to_string(),
             mining_nft_pool_id:
-                "BFC8d7dd979d4860e8df8f519e9ccf124a1a76fef8cbba9378102f9361929218c7952d9"
-                    .to_string(),
+            "BFC8d7dd979d4860e8df8f519e9ccf124a1a76fef8cbba9378102f9361929218c7952d9"
+                .to_string(),
             migrate: false,
+            mining_contract_address: "".to_string(),
         }
     }
 }
@@ -250,6 +260,8 @@ impl Indexer {
 
         if config.rpc_server_worker && config.fullnode_sync_worker {
             info!("Starting indexer with both fullnode sync and RPC server");
+            let http_client = get_http_client(config.rpc_client_url.as_str())?;
+            let pending_reward_instance = PendingReward::build(100,http_client.clone(),Cache::new(100),config.mining_contract_address.clone()).await;
             // let JSON RPC server run forever.
             let handle = build_json_rpc_server(
                 registry,
@@ -257,9 +269,10 @@ impl Indexer {
                 subscription_handler.clone(),
                 config,
                 custom_runtime,
+                pending_reward_instance.clone()
             )
-            .await
-            .expect("Json rpc server should not run into errors upon start.");
+                .await
+                .expect("Json rpc server should not run into errors upon start.");
             spawn_monitored_task!(handle.stopped());
 
             // let async processor run forever.
@@ -270,54 +283,71 @@ impl Indexer {
                 let subscription_handler_clone = subscription_handler.clone();
                 let metrics_clone = metrics.clone();
                 let http_client = get_http_client(config.rpc_client_url.as_str())?;
+
+                // let pending_reward = PendingReward::build(100,http_client.clone(),Cache::new(100)).await;
+                // let minging_config = pending_reward.get_config_from_cache().await.unwrap().unwrap();
+                // let item = StakePendingItem{id: None, owner: "".to_string(), miner_id: "".to_string(), ticket_id: "".to_string(), debt: 6782495045900};
+                // // let pending_config=pending_reward
+                // let pending_reward_val = pending_reward.pending_reward(item,&minging_config).await.unwrap();
+                // info!("----------------------------");
+                // info!("mofei config: {:?} pending_reward: {:?}", &minging_config,pending_reward_val);
+                // info!("----------------------------");
+
                 let cp = CheckpointHandler::new(
                     store.clone(),
                     http_client,
                     subscription_handler_clone,
                     metrics_clone,
                     config,
+                    pending_reward_instance.clone()
                 );
                 cp.spawn()
                     .await
                     .expect("Indexer main should not run into errors.");
                 Ok(())
             })
-            .await
+                .await
         } else if config.rpc_server_worker {
             info!("Starting indexer with only RPC server");
+            let http_client = get_http_client(config.rpc_client_url.as_str())?;
+            let pending_reward_instance = PendingReward::build(100,http_client.clone(),Cache::new(100),config.mining_contract_address.clone()).await;
             let handle = build_json_rpc_server(
                 registry,
                 store.clone(),
                 subscription_handler.clone(),
                 config,
                 custom_runtime,
+                pending_reward_instance.clone()
             )
-            .await
-            .expect("Json rpc server should not run into errors upon start.");
+                .await
+                .expect("Json rpc server should not run into errors upon start.");
             handle.stopped().await;
             Ok(())
         } else if config.fullnode_sync_worker {
             info!("Starting indexer with only fullnode sync");
+            let http_client = get_http_client(config.rpc_client_url.as_str())?;
+            let pending_reward_instance = PendingReward::build(100,http_client.clone(),Cache::new(100),config.mining_contract_address.clone()).await;
             let mut processor_orchestrator = ProcessorOrchestrator::new(store.clone(), registry);
             spawn_monitored_task!(processor_orchestrator.run_forever());
-
             backoff::future::retry(ExponentialBackoff::default(), || async {
                 let subscription_handler_clone = subscription_handler.clone();
                 let metrics_clone = metrics.clone();
                 let http_client = get_http_client(config.rpc_client_url.as_str())?;
                 let cp = CheckpointHandler::new(
                     store.clone(),
-                    http_client,
+                    http_client.clone(),
                     subscription_handler_clone,
                     metrics_clone,
                     config,
+                    pending_reward_instance.clone()
                 );
                 cp.spawn()
                     .await
                     .expect("Indexer main should not run into errors.");
                 Ok(())
             })
-            .await
+                .await
+
         } else {
             Ok(())
         }
@@ -418,8 +448,8 @@ impl diesel::r2d2::CustomizeConnection<PgConnection, diesel::r2d2::Error> for Pg
             "SET statement_timeout = {}",
             self.statement_timeout.as_millis(),
         ))
-        .execute(conn)
-        .map_err(diesel::r2d2::Error::QueryError)?;
+            .execute(conn)
+            .map_err(diesel::r2d2::Error::QueryError)?;
 
         // if self.read_only {
         //     sql_query("SET default_transaction_read_only = 't'")
@@ -446,6 +476,7 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
     subscription_handler: Arc<SubscriptionHandler>,
     config: &IndexerConfig,
     custom_runtime: Option<Handle>,
+    pending_reward_instance: PendingReward
 ) -> Result<ServerHandle, IndexerError> {
     let mut builder = JsonRpcServerBuilder::new(env!("CARGO_PKG_VERSION"), prometheus_registry, None, None);
     let http_client = get_http_client(config.rpc_client_url.as_str())?;
@@ -469,6 +500,7 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         state.clone(),
         http_client.clone(),
         config.clone(),
+        pending_reward_instance,
     ))?;
     builder.register_module(MoveUtilsApi::new(http_client))?;
     let default_socket_addr = SocketAddr::new(
@@ -477,7 +509,7 @@ pub async fn build_json_rpc_server<S: IndexerStore + Sync + Send + 'static + Clo
         config.rpc_server_port,
     );
     Ok(builder
-        .start(default_socket_addr, custom_runtime, None, None)
+        .start(default_socket_addr, custom_runtime, ServerType::Both, None)
         .await?)
 }
 
@@ -512,10 +544,8 @@ pub fn start_prometheus_server(
         .layer(Extension(registry_service.clone()));
 
     tokio::spawn(async move {
-        axum::Server::bind(&addr)
-            .serve(app.into_make_service())
-            .await
-            .unwrap();
+        let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+        axum::serve(listener, app).await.unwrap();
     });
     Ok((registry_service, registry))
 }

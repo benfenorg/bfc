@@ -22,7 +22,6 @@ use sui_types::sui_serde::BigInt;
 use crate::errors::IndexerError;
 use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
-use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
 use sui_types::dao::DaoRPC;
 
 pub(crate) struct ReadApi<S> {
@@ -343,19 +342,6 @@ where
         events_guard.stop_and_record();
         events_resp
     }
-    async fn get_loaded_child_objects(
-        &self,
-        digest: TransactionDigest,
-    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
-        let dynamic_fields_load_obj_guard = self
-            .state
-            .indexer_metrics()
-            .get_loaded_child_objects_latency
-            .start_timer();
-        let dyn_fields_resp = self.fullnode.get_loaded_child_objects(digest).await;
-        dynamic_fields_load_obj_guard.stop_and_record();
-        dyn_fields_resp
-    }
 
     async fn get_protocol_config(
         &self,
@@ -386,6 +372,19 @@ where
 
     async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
         self.fullnode.get_bfc_zklogin_salt(seed, iss, sub).await
+    }
+
+    async fn try_get_object_before_version(&self, _object_id: ObjectID, _version: SequenceNumber) -> RpcResult<SuiPastObjectResponse> {
+        Err(jsonrpsee::types::error::CallError::Custom(
+            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
+        )
+            .into())
+    }
+
+    fn into_rpc(self) -> RpcModule<Self>
+    where
+    {
+        todo!()
     }
 }
 

@@ -60,7 +60,7 @@ impl Event {
 
         let type_ = parse_sui_struct_tag(&self.event_type)?;
 
-        let layout = MoveObject::get_layout_from_struct_tag(
+        let layout = MoveObject::get_struct_layout_from_struct_tag(
             type_.clone(),
             module_cache,
         )?;

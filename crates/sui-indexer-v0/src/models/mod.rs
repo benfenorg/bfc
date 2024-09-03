@@ -21,3 +21,5 @@ pub mod prices;
 pub mod system_state;
 pub mod transaction_index;
 pub mod transactions;
+pub mod stake_reward;
+pub mod pending_reward;

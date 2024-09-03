@@ -63,8 +63,11 @@ use crate::{
     utils::validator_stake::ValidatorSet,
 };
 use crate::{models::packages::Package, utils::validator_stake::extract_stable_stakes};
+use crate::handlers::pending_reward_handler::PendingReward;
+use crate::models::pending_reward::StakePendingItem;
+use crate::models::stake_reward::{StakeRewardDetail};
 
-const MAX_PARALLEL_DOWNLOADS: usize = 24;
+const MAX_PARALLEL_DOWNLOADS: usize = 12;
 const DOWNLOAD_RETRY_INTERVAL_IN_SECS: u64 = 10;
 const DB_COMMIT_RETRY_INTERVAL_IN_MILLIS: u64 = 100;
 const MULTI_GET_CHUNK_SIZE: usize = 50;
@@ -90,6 +93,7 @@ pub struct CheckpointHandler<S> {
 
     staking_sender: Arc<Mutex<Sender<(u64, Option<TemporaryEpochStore>)>>>,
     staking_receiver: Arc<Mutex<Receiver<(u64, Option<TemporaryEpochStore>)>>>,
+    pending_reward: PendingReward,
 }
 
 impl<S> CheckpointHandler<S>
@@ -102,6 +106,7 @@ where
         _subscription_handler: Arc<SubscriptionHandler>,
         metrics: IndexerMetrics,
         config: &IndexerConfig,
+        pending_reward: PendingReward
     ) -> Self {
         let (tx_checkpoint_sender, tx_checkpoint_receiver) = mpsc::channel(CHECKPOINT_QUEUE_LIMIT);
         let (object_checkpoint_sender, object_checkpoint_receiver) =
@@ -124,6 +129,7 @@ where
 
             staking_sender: Arc::new(Mutex::new(staking_sender)),
             staking_receiver: Arc::new(Mutex::new(staking_receiver)),
+            pending_reward: pending_reward,
         }
     }
 
@@ -140,8 +146,13 @@ where
                     "Indexer checkpoint download & index failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
-                checkpoint_download_index_res = tx_download_handler.start_download_and_index_tx_checkpoint().await;
+                tokio::time::sleep(std::time::Duration::from_secs(
+                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
+                ))
+                .await;
+                checkpoint_download_index_res = tx_download_handler
+                    .start_download_and_index_tx_checkpoint()
+                    .await;
             }
         });
 
@@ -155,8 +166,13 @@ where
                     "Indexer object download & index failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
-                object_download_index_res = object_download_handler.start_download_and_index_object_checkpoint().await;
+                tokio::time::sleep(std::time::Duration::from_secs(
+                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
+                ))
+                .await;
+                object_download_index_res = object_download_handler
+                    .start_download_and_index_object_checkpoint()
+                    .await;
             }
         });
 
@@ -170,8 +186,13 @@ where
                     "Indexer checkpoint commit failed with error: {:?}, retrying after {:?} secs...",
                     e, DOWNLOAD_RETRY_INTERVAL_IN_SECS
                 );
-                tokio::time::sleep(Duration::from_secs(DOWNLOAD_RETRY_INTERVAL_IN_SECS,)).await;
-                checkpoint_commit_res = tx_checkpoint_commit_handler.start_tx_checkpoint_commit().await;
+                tokio::time::sleep(std::time::Duration::from_secs(
+                    DOWNLOAD_RETRY_INTERVAL_IN_SECS,
+                ))
+                .await;
+                checkpoint_commit_res = tx_checkpoint_commit_handler
+                    .start_tx_checkpoint_commit()
+                    .await;
             }
         });
 
@@ -239,7 +260,8 @@ where
             info!("Resuming tx handler from checkpoint {last_seq_from_db}");
         }
         let mut next_cursor_sequence_number = last_seq_from_db + 1;
-        self.check_epoch_staking(next_cursor_sequence_number).await?;
+        self.check_epoch_staking(next_cursor_sequence_number)
+            .await?;
 
         // NOTE: we will download checkpoints in parallel, but we will commit them sequentially.
         // We will start with MAX_PARALLEL_DOWNLOADS, and adjust if no more checkpoints are available.
@@ -261,7 +283,10 @@ where
                     if let Err(IndexerError::UnexpectedFullnodeResponseError(fn_e)) =
                         download_result
                     {
-                        warn!("Unexpected response from fullnode for checkpoints: {}",fn_e);
+                        warn!(
+                            "Unexpected response from fullnode for checkpoints: {}",
+                            fn_e
+                        );
                     } else if let Err(IndexerError::FullNodeReadingError(fn_e)) = download_result {
                         warn!("Fullnode reading error for checkpoints {}: {}. It can be transient or due to rate limiting.", next_cursor_sequence_number, fn_e);
                     } else {
@@ -274,9 +299,13 @@ where
             // NOTE: with this line, we can make sure that:
             // - when indexer is way behind and catching up, we download MAX_PARALLEL_DOWNLOADS checkpoints in parallel;
             // - when indexer is up to date, we download at least one checkpoint at a time.
-            current_parallel_downloads = std::cmp::min(downloaded_checkpoints.len() + 1, MAX_PARALLEL_DOWNLOADS);
+            current_parallel_downloads =
+                std::cmp::min(downloaded_checkpoints.len() + 1, MAX_PARALLEL_DOWNLOADS);
             if downloaded_checkpoints.is_empty() {
-                warn!("No checkpoints were downloaded for sequence number {}, retrying...",next_cursor_sequence_number);
+                warn!(
+                    "No checkpoints were downloaded for sequence number {}, retrying...",
+                    next_cursor_sequence_number
+                );
                 continue;
             }
 
@@ -287,18 +316,18 @@ where
                     self.index_checkpoint_and_epoch(downloaded_checkpoint).await
                 },
             ))
-            .await
-            .into_iter()
-            .collect::<Result<Vec<_>, IndexerError>>()
-            .map_err(|e| {
-                error!(
+                .await
+                .into_iter()
+                .collect::<Result<Vec<_>, IndexerError>>()
+                .map_err(|e| {
+                    error!(
                     "Failed to index checkpoints {:?} with error: {}",
                     downloaded_checkpoints,
                     e.to_string()
                 );
-                e
-            })?;
-            let (indexed_checkpoints, indexed_epochs): (Vec<_>, Vec<_>) =
+                    e
+                })?;
+            let (mut indexed_checkpoints, indexed_epochs): (Vec<_>, Vec<_>) =
                 indexed_checkpoint_epoch_vec.into_iter().unzip();
             index_timer.stop_and_record();
 
@@ -306,14 +335,15 @@ where
             let tx_checkpoint_sender_guard = self.tx_checkpoint_sender.lock().await;
             // NOTE: when the channel is full, checkpoint_sender_guard will wait until the channel has space.
             // Checkpoints are sent sequentially to stick to the order of checkpoint sequence numbers.
+            indexed_checkpoints.sort_by_key(|item| item.checkpoint.sequence_number);
             for indexed_checkpoint in indexed_checkpoints {
                 tx_checkpoint_sender_guard
-                .send(indexed_checkpoint)
-                .await
-                .map_err(|e| {
-                    error!("Failed to send indexed checkpoint to checkpoint commit handler with error: {}", e.to_string());
-                    IndexerError::MpscChannelError(e.to_string())
-                })?;
+                    .send(indexed_checkpoint)
+                    .await
+                    .map_err(|e| {
+                        error!("Failed to send indexed checkpoint to checkpoint commit handler with error: {}", e.to_string());
+                        IndexerError::MpscChannelError(e.to_string())
+                    })?;
             }
             drop(tx_checkpoint_sender_guard);
 
@@ -335,7 +365,10 @@ where
                     let epoch_sender_guard = self.epoch_sender.lock().await;
                     // NOTE: when the channel is full, epoch_sender_guard will wait until the channel has space.
                     epoch_sender_guard.send(epoch.clone()).await.map_err(|e| {
-                        error!("Failed to send indexed epoch to epoch commit handler with error {}",e.to_string());
+                        error!(
+                            "Failed to send indexed epoch to epoch commit handler with error {}",
+                            e.to_string()
+                        );
                         IndexerError::MpscChannelError(e.to_string())
                     })?;
                     drop(epoch_sender_guard);
@@ -346,7 +379,10 @@ where
                     .send((epoch.new_epoch.epoch as u64, Some(epoch)))
                     .await
                     .map_err(|e| {
-                        error!("Failed to send indexed epoch to epoch staking handler with error {}",e.to_string());
+                        error!(
+                            "Failed to send indexed epoch to epoch staking handler with error {}",
+                            e.to_string()
+                        );
                         IndexerError::MpscChannelError(e.to_string())
                     })?;
                 drop(staking_sender_guard);
@@ -417,17 +453,17 @@ where
                     self.index_checkpoint_and_epoch(downloaded_checkpoint).await
                 },
             ))
-            .await
-            .into_iter()
-            .collect::<Result<Vec<_>, IndexerError>>()
-            .map_err(|e| {
-                error!(
+                .await
+                .into_iter()
+                .collect::<Result<Vec<_>, IndexerError>>()
+                .map_err(|e| {
+                    error!(
                     "Failed to index checkpoints {:?} with error: {}",
                     downloaded_checkpoints,
                     e.to_string()
                 );
-                e
-            })?;
+                    e
+                })?;
             let (indexed_checkpoints, _indexed_epochs): (Vec<_>, Vec<_>) =
                 indexed_checkpoint_epoch_vec.into_iter().unzip();
             index_timer.stop_and_record();
@@ -438,19 +474,63 @@ where
             // Checkpoints are sent sequentially to stick to the order of checkpoint sequence numbers.
             for indexed_checkpoint in indexed_checkpoints {
                 object_checkpoint_sender_guard
-                .send(indexed_checkpoint)
-                .await
-                .map_err(|e| {
-                    error!("Failed to send indexed checkpoint to checkpoint commit handler with error: {}", e.to_string());
-                    IndexerError::MpscChannelError(e.to_string())
-                })?;
+                    .send(indexed_checkpoint)
+                    .await
+                    .map_err(|e| {
+                        error!("Failed to send indexed checkpoint to checkpoint commit handler with error: {}", e.to_string());
+                        IndexerError::MpscChannelError(e.to_string())
+                    })?;
             }
             drop(object_checkpoint_sender_guard);
         }
     }
 
+    async fn init_stake_item(&self) -> Result<u64, IndexerError> {
+        let size = self.state.count_stake_pending_item().await?;
+        info!("init_nft size {:?}", size);
+        if size == 0 {
+            let nft_list = self.state.all_staking_nft().await?;
+            for nft in nft_list {
+                let p = if nft.mining_ticket_id.is_some() {
+                    match benfen::get_mining_nft_pending_reward(
+                        self.http_client.clone(),
+                        &self.config.mining_nft_contract,
+                        &self.config.mining_nft_global,
+                        vec![nft.mining_ticket_id.clone().unwrap_or_default()],
+                    ).await {
+                        Ok(n) => { n }
+                        Err(e) => {
+                            warn!("warn {:?}", e);
+                            continue;
+                        }
+                    }
+                } else {
+                    0
+                };
+                info!("init_nft {:?} {:?}", nft.mining_ticket_id.clone(), p);
+                let mining_config =self.pending_reward.fetch_config_from_full_node().await.unwrap();
+                let n_temp = mining_config.reward_per_power + self.pending_reward.get_reward(&mining_config).await/mining_config.total_power;
+                if n_temp * 100 > p {
+                    let item = StakePendingItem {
+                        id: None,
+                        owner: nft.owner,
+                        miner_id: nft.miner_id,
+                        ticket_id: nft.mining_ticket_id.unwrap().to_string(),
+                        debt: (n_temp * 100 - p) as i64,
+                    };
+                    self.state.save_stake_pending_item(item).await?;
+                } else {
+                    info!("debt is less than 0. {:?} {:?} {:?}", nft.mining_ticket_id.clone(), p, n_temp * 100);
+                }
+            }
+        }
+        Ok(0)
+    }
+
     async fn start_tx_checkpoint_commit(&self) -> Result<(), IndexerError> {
         info!("Indexer tx checkpoint commit task started...");
+        self.init_stake_item().await?;
+        info!("init pending stake item end.");
         loop {
             let mut tx_checkpoint_receiver_guard = self.tx_checkpoint_receiver.lock().await;
             let indexed_checkpoint = tx_checkpoint_receiver_guard.recv().await;
@@ -464,7 +544,7 @@ where
                     );
                     continue;
                 }
-                info!("download indexed_checkpoint {:?}", indexed_checkpoint);
+                // info!("download indexed_checkpoint {:?}", indexed_checkpoint);
                 let indexed_checkpoint_nft = indexed_checkpoint.clone();
                 // Write checkpoint to DB
                 let TemporaryCheckpointStore {
@@ -492,8 +572,12 @@ where
                             "Indexer event commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
-                        event_commit_res = events_handler.state.persist_events(&events_cloned).await;
+                        tokio::time::sleep(std::time::Duration::from_millis(
+                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                        ))
+                        .await;
+                        event_commit_res =
+                            events_handler.state.persist_events(&events_cloned).await;
                     }
                 });
 
@@ -506,8 +590,12 @@ where
                             "Indexer package commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
-                        package_commit_res = packages_handler.state.persist_packages(&packages).await;
+                        tokio::time::sleep(std::time::Duration::from_millis(
+                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                        ))
+                        .await;
+                        package_commit_res =
+                            packages_handler.state.persist_packages(&packages).await;
                     }
                 });
 
@@ -528,22 +616,15 @@ where
                         while let Err(e) = proposals_commit_res {
                             warn!("Indexer proposals commit failed with error: {:?}, retrying fater {:?} milli-secs",
                               e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
-                            tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
-                            proposals_commit_res = proposal_handler.state.persist_proposals(&proposals).await;
+                            tokio::time::sleep(std::time::Duration::from_millis(
+                                DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                            ))
+                            .await;
+                            proposals_commit_res =
+                                proposal_handler.state.persist_proposals(&proposals).await;
                         }
                     });
                 }
-
-                let mining_nft_handler = self.clone();
-                spawn_monitored_task!(async move {
-                    let mut mining_nft_commit_res = mining_nft_handler.index_mining_nfts(indexed_checkpoint_nft.clone()).await;
-                    while let Err(e) = mining_nft_commit_res {
-                        warn!("Indexer mining NFTs commit failed with error: {:?}, retrying fater {:?} milli-secs",
-                              e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
-                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
-                        mining_nft_commit_res = mining_nft_handler.index_mining_nfts(indexed_checkpoint_nft.clone()).await;
-                    }
-                });
 
                 let tx_index_table_handler = self.clone();
                 spawn_monitored_task!(async move {
@@ -561,7 +642,10 @@ where
                             "Indexer transaction index tables commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                        tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,)).await;
+                        tokio::time::sleep(std::time::Duration::from_millis(
+                            DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                        ))
+                        .await;
                         transaction_index_tables_commit_res = tx_index_table_handler
                             .state
                             .persist_transaction_index_tables(
@@ -589,7 +673,10 @@ where
                             "Indexer checkpoint & transaction commit failed with error: {:?}, retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                    tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS, )).await;
+                    tokio::time::sleep(std::time::Duration::from_millis(
+                        DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                    ))
+                        .await;
                     checkpoint_tx_commit_res = self
                         .state
                         .persist_checkpoint_transactions(
@@ -606,6 +693,17 @@ where
                         .await?;
                 }
 
+                let mining_nft_handler = self.clone();
+                let mining_nft_commit_res = mining_nft_handler
+                    .index_mining_nfts(indexed_checkpoint_nft.clone())
+                    .await;
+                match mining_nft_commit_res {
+                    Err(e) => {
+                        warn!("Indexer mining NFTs commit failed with error: {:?}, retrying fater {:?} milli-secs",
+                              e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS);
+                    }
+                    Ok(_) => {}
+                }
                 checkpoint_tx_db_guard.stop_and_record();
                 self.metrics
                     .latest_tx_checkpoint_sequence_number
@@ -623,7 +721,7 @@ where
                     .transaction_per_checkpoint
                     .observe(tx_count as f64);
             } else {
-                tokio::time::sleep(Duration::from_millis(100)).await;
+                tokio::time::sleep(std::time::Duration::from_millis(100)).await;
             }
         }
     }
@@ -642,8 +740,8 @@ where
                         .state
                         .get_epochs(
                             Some(epoch + 1), /* epoch less than this */
-                            1,               /* limit */
-                            Some(true),      /* descending_order */
+                            1, /* limit */
+                            Some(true), /* descending_order */
                         )
                         .await?;
                     if epochs.len() != 1 {
@@ -689,7 +787,10 @@ where
                     warn!("Indexer update stakes failed with error: {:?} retrying after {:?} milli-secs...",
                             e, DB_COMMIT_RETRY_INTERVAL_IN_MILLIS
                         );
-                    tokio::time::sleep(Duration::from_millis(DB_COMMIT_RETRY_INTERVAL_IN_MILLIS, )).await;
+                    tokio::time::sleep(std::time::Duration::from_millis(
+                        DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
+                    ))
+                        .await;
                     update_stakes_res = self.update_address_stakes(&indexed_epoch).await;
                 }
                 info!(
@@ -697,6 +798,7 @@ where
                     indexed_epoch.new_epoch.epoch
                 );
                 self.state.persist_epoch_stake(&indexed_epoch).await?;
+                self.state.deal_reward_summary((indexed_epoch.new_epoch.epoch - 1) as u64, None).await?;
             }
         }
     }
@@ -771,7 +873,7 @@ where
                     tokio::time::sleep(std::time::Duration::from_millis(
                         DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
                     ))
-                    .await;
+                        .await;
                     object_changes_commit_res = self
                         .state
                         .persist_object_changes(
@@ -822,7 +924,7 @@ where
                         tokio::time::sleep(std::time::Duration::from_millis(
                             DB_COMMIT_RETRY_INTERVAL_IN_MILLIS,
                         ))
-                        .await;
+                            .await;
                         epoch_commit_res = self.state.persist_epoch(&indexed_epoch).await;
                     }
                     epoch_db_guard.stop_and_record();
@@ -847,6 +949,7 @@ where
                 stake
             );
             let stake_coin = parse_type_tag(&stake.stake_coin)?;
+            let stable = stake_coin != address_stake::native_coin().into();
             let rate = indexed_epoch
                 .last_epoch_stable_rate
                 .get(&stake_coin)
@@ -856,10 +959,29 @@ where
                 .get_staking_estimated_reward(indexed_epoch, stake, stake_coin, rate)
                 .await?;
             let mut stake = stake.clone();
+            let reward_old = stake.estimated_reward;
+            let stake_bfc =  Self::stable_to_bfc(stake.principal_amount,rate,stable);
             stake.estimated_reward = estimated_reward as i64;
             stake.estimated_at_epoch = indexed_epoch.new_epoch.epoch;
+            let reward_last_epoch = stake.estimated_reward - reward_old;
             self.state.update_address_stake_reward(&stake).await?;
+            self.insert_stake_reward_detail(&StakeRewardDetail::build(stake, reward_last_epoch, stake_bfc)).await?;
         }
+        Ok(())
+    }
+
+    fn stable_to_bfc(amount: i64, rate: u64,stale:bool) -> i64 {
+        info!("stable_to_bfc amount: {}, rate: {}, stale: {}", amount, rate, stale);
+        if stale {
+            let bfc_amount = ((amount as u128) * (rate as u128) / (1000000000 as u128)) as u64;
+            bfc_amount as i64
+        }else{
+            amount
+        }
+    }
+
+    async fn insert_stake_reward_detail(&self, stake: &StakeRewardDetail) -> Result<(), IndexerError> {
+        self.state.insert_stake_reward_detail(&stake).await?;
         Ok(())
     }
 
@@ -940,7 +1062,7 @@ where
             exchange_rates_id,
             stake.stake_activation_epoch as u64,
         )
-        .await
+            .await
         {
             Err(err) => {
                 warn!(
@@ -995,8 +1117,8 @@ where
             .fullnode_checkpoint_wait_and_download_latency
             .start_timer();
         while checkpoint.is_err() {
-            // sleep for 0.1 second and retry if latest checkpoint is not available yet
-            tokio::time::sleep(std::time::Duration::from_millis(100)).await;
+            // sleep for 1 second and retry if latest checkpoint is not available yet
+            tokio::time::sleep(Duration::from_millis(1000)).await;
             // TODO(gegaowp): figure how to only measure successful checkpoint download time
             checkpoint = self
                 .http_client
@@ -1020,12 +1142,12 @@ where
         let transactions = join_all(checkpoint.transactions.chunks(MULTI_GET_CHUNK_SIZE).map(
             |digests| multi_get_full_transactions(self.http_client.clone(), digests.to_vec()),
         ))
-        .await
-        .into_iter()
-        .try_fold(vec![], |mut acc, chunk| {
-            acc.extend(chunk?);
-            Ok::<_, IndexerError>(acc)
-        })?;
+            .await
+            .into_iter()
+            .try_fold(vec![], |mut acc, chunk| {
+                acc.extend(chunk?);
+                Ok::<_, IndexerError>(acc)
+            })?;
         fn_transaction_guard.stop_and_record();
 
         let fn_object_guard = self.metrics.fullnode_object_download_latency.start_timer();
@@ -1356,7 +1478,7 @@ where
     }
 
     async fn start_settling_minging_nft_profits(&self) {
-        let mut interval = tokio::time::interval(Duration::from_secs(600));
+        let mut interval = tokio::time::interval(Duration::from_secs(900));
         loop {
             interval.tick().await;
             info!("Indexer starts to settle the historic profits of mining NFTs...");
@@ -1375,6 +1497,7 @@ where
         let mut results = vec![];
         let price = benfen::get_bfc_price_in_usd(self.http_client.clone()).await?;
         let mut total_pending_bfc = 0u64;
+        info!("settle_mining_nft_profits len {:?}", pendings.len());
         for nft in pendings.iter() {
             let current = self
                 .state
@@ -1385,13 +1508,18 @@ where
                 .get_mining_nft_profit(nft, dt_timestamp_ms - 86_400_000)
                 .await?;
             let pending_bfc = if nft.mining_ticket_id.is_some() {
-                benfen::get_mining_nft_pending_reward(
+                match benfen::get_mining_nft_pending_reward(
                     self.http_client.clone(),
                     &self.config.mining_nft_contract,
                     &self.config.mining_nft_global,
-                    &nft.mining_ticket_id.clone().unwrap_or_default(),
-                )
-                .await?
+                    vec![nft.mining_ticket_id.clone().unwrap_or_default()],
+                ).await {
+                    Ok(n) => { n }
+                    Err(e) => {
+                        warn!("warn {:?}", e);
+                        continue;
+                    }
+                }
             } else {
                 0
             };
@@ -1413,8 +1541,15 @@ where
                 cost_bfc: nft.cost_bfc,
             });
         }
+        info!("settle_mining_nft_profits result len {:?}", results.len());
         if results.len() > 0 {
-            self.state.persist_mining_nft_profits(results).await?;
+            let chunks: Vec<Vec<MiningNFTHistoryProfit>> = results
+                .chunks(1000)
+                .map(|c| c.to_vec())
+                .collect();
+            for temp in chunks {
+                self.state.persist_mining_nft_profits(temp).await?;
+            }
             self.state
                 .calculate_mining_nft_overall(dt_timestamp_ms, total_pending_bfc)
                 .await?;
@@ -1480,6 +1615,7 @@ where
         }
 
         let mut flag = false;
+        let mining_config = self.pending_reward.fetch_config_from_full_node().await?;
         for e in extracted_nfts.into_iter() {
             let mut mining_nft: MiningNFT = (checkpoint.clone(), e).into();
             let object_id = ObjectID::from_hex_literal(&mining_nft.miner_id)?;
@@ -1491,13 +1627,13 @@ where
                     .await? as i64;
             flag = true;
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft), checkpoint.sequence_number)
+                .persist_mining_nft(crate::store::MiningNFTOperation::Creation(mining_nft), checkpoint.sequence_number, mining_config.clone())
                 .await?;
         }
         for p in operations.into_iter() {
             flag = true;
             self.state
-                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p), checkpoint.sequence_number)
+                .persist_mining_nft(crate::store::MiningNFTOperation::Operation(p), checkpoint.sequence_number, mining_config.clone())
                 .await?;
         }
         if flag {
@@ -1529,13 +1665,13 @@ where
                     &self.config.mining_nft_dex_contract,
                     liq.1.tick_lower,
                 )
-                .await?;
+                    .await?;
                 let base_price_lte = benfen::get_price_at_tick(
                     self.http_client.clone(),
                     &self.config.mining_nft_dex_contract,
                     liq.1.tick_upper,
                 )
-                .await?;
+                    .await?;
 
                 let mut ml: mining_nft::MiningNFTLiquiditiy = (checkpoint.clone(), liq).into();
                 ml.base_price_gte = (base_price_gte * mining_nft::PRICE_TO_INT_SCALE) as i64;
@@ -1627,24 +1763,24 @@ pub async fn fetch_changed_objects(
             )
             .map(move |resp| (resp, wanted_past_object_statuses))
     }))
-    .await
-    .into_iter()
-    .try_fold(vec![], |mut acc, chunk| {
-        let object_data = chunk.0?.into_iter().try_fold(vec![], |mut acc, resp| {
-            let object_data = resp.into_object()?;
-            acc.push(object_data);
-            Ok::<Vec<SuiObjectData>, Error>(acc)
-        })?;
-        let mutated_object_chunk = chunk.1.into_iter().zip(object_data);
-        acc.extend(mutated_object_chunk);
-        Ok::<_, Error>(acc)
-    })
-    .map_err(|e| {
-        IndexerError::SerdeError(format!(
-            "Failed to generate changed objects of checkpoint with err {:?}",
-            e
-        ))
-    })
+        .await
+        .into_iter()
+        .try_fold(vec![], |mut acc, chunk| {
+            let object_data = chunk.0?.into_iter().try_fold(vec![], |mut acc, resp| {
+                let object_data = resp.into_object()?;
+                acc.push(object_data);
+                Ok::<Vec<SuiObjectData>, Error>(acc)
+            })?;
+            let mutated_object_chunk = chunk.1.into_iter().zip(object_data);
+            acc.extend(mutated_object_chunk);
+            Ok::<_, Error>(acc)
+        })
+        .map_err(|e| {
+            IndexerError::SerdeError(format!(
+                "Failed to generate changed objects of checkpoint with err {:?}",
+                e
+            ))
+        })
 }
 
 // TODO(gegaowp): temp. disable fast-path

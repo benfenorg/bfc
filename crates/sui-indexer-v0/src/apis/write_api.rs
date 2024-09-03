@@ -1,7 +1,6 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::net::SocketAddr;
 use async_trait::async_trait;
 use fastcrypto::encoding::Base64;
 use jsonrpsee::core::RpcResult;
@@ -89,20 +88,6 @@ where
             options: options.unwrap_or_default(),
         }
         .into())
-    }
-
-    async fn monitored_execute_transaction_block(
-        &self,
-        tx_bytes: Base64,
-        signatures: Vec<Base64>,
-        options: Option<SuiTransactionBlockResponseOptions>,
-        request_type: Option<ExecuteTransactionRequestType>,
-        _client_addr: Option<SocketAddr>,
-    ) -> RpcResult<SuiTransactionBlockResponse> {
-        // TODO(william) do we nee to do anything in terms of client IP tracking
-        // for indexer case?
-        self.execute_transaction_block(tx_bytes, signatures, options, request_type)
-            .await
     }
 
     async fn dev_inspect_transaction_block(

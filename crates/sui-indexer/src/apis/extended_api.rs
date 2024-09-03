@@ -6,7 +6,7 @@ use diesel::r2d2::R2D2Connection;
 use jsonrpsee::{core::RpcResult, RpcModule};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_api::{validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS};
-use sui_json_rpc_types::{CheckpointedObjectID, EpochInfo, EpochPage, NetworkMetrics, Page, QueryObjectsPage, SuiObjectResponseQuery};
+use sui_json_rpc_types::{CheckpointedObjectID, EpochInfo, EpochPage, NetworkMetrics, Page, QueryObjectsPage, StakeRewardHistory, SuiMiningNFTList, SuiObjectResponseQuery, SuiOwnedTicketList};
 use sui_json_rpc_types::{NetworkOverview, DaoProposalFilter, SuiDaoProposal, SuiOwnedMiningNFTFilter, ClassicPage, SuiOwnedMiningNFTOverview};
 use sui_json_rpc_types::{SuiMiningNFT, SuiOwnedMiningNFTProfit, StakeMetrics, IndexedStake, SuiMiningNFTLiquidity, MoveCallMetrics, AddressMetrics, NFTStakingOverview};
 use sui_open_rpc::Module;
@@ -157,6 +157,40 @@ impl<T: R2D2Connection + 'static> ExtendedApiServer for ExtendedApi<T> {
     }
 
     async fn get_nft_staking_overview(&self) -> RpcResult<NFTStakingOverview> {
+        todo!()
+    }
+
+    async fn get_stake_reward_history(&self, _address: SuiAddress, _page: Option<usize>, _limit: Option<usize>) -> RpcResult<ClassicPage<StakeRewardHistory>> {
+        todo!()
+    }
+
+    async fn get_owned_mining_nfts_idle(&self, _address: SuiAddress) -> RpcResult<SuiMiningNFTList> {
+        todo!()
+    }
+
+    async fn get_owned_mining_nft_overview2(&self, _address: SuiAddress) -> RpcResult<SuiOwnedMiningNFTOverview> {
+        todo!()
+    }
+
+    async fn get_owned_ticket_list(&self, _address: SuiAddress) -> RpcResult<SuiOwnedTicketList> {
+        todo!()
+    }
+
+    async fn get_owned_ticket_list2(&self, _address: SuiAddress) -> RpcResult<SuiOwnedTicketList> {
+        todo!()
+    }
+
+    async fn init_stake_reward(&self, _usd_rate: f64, _jpy_rate: f64, _epoch: u64, _first_epoch_end_ms: u64, _p: String) -> RpcResult<String> {
+        todo!()
+    }
+
+    async fn init_nft(&self, _reward_per_power: u64) -> RpcResult<String> {
+        todo!()
+    }
+
+    fn into_rpc(self) -> RpcModule<Self>
+    where
+    {
         todo!()
     }
 }

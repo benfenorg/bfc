@@ -25,12 +25,12 @@ use move_core_types::identifier::Identifier;
 use move_core_types::parser::parse_type_tag;
 use prometheus::{Histogram, IntCounter};
 use sui_json_rpc::{ObjectProvider, ObjectProviderCache};
-use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
+use sui_json_rpc_types::{StakeRewardHistory, SuiMiningNFTList, SuiTransactionBlockEffectsAPI};
 use sui_types::effects::ObjectRemoveKind;
 use sui_types::storage::DeleteKind;
 use sui_types::TypeTag;
 use tracing::info;
-
+use tracing::log::error;
 use sui_json_rpc_types::{
     CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo, EventFilter, EventPage, IndexedStake,
     MoveCallMetrics, MoveFunctionName, NetworkMetrics, NetworkOverview, StakeMetrics,
@@ -87,6 +87,7 @@ use crate::schema::{
     epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities,
     mining_nft_staking, mining_nfts, mining_nfts_view, move_calls, network_segment_metrics, objects, objects_history,
     packages, price_history, recipients, system_states, transactions, validators,
+    stake_reward_detail, stake_reward_summary, stake_pending_item
 };
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
@@ -96,6 +97,9 @@ use crate::store::{IndexerStore, TemporaryEpochStore};
 use crate::utils::validator_stake::get_avg_exchange_rate;
 use crate::utils::{get_balance_changes_from_effect, get_object_changes};
 use crate::{benfen, PgConnectionPool};
+use crate::handlers::pending_reward_handler::MiningConfig;
+use crate::models::pending_reward::StakePendingItem;
+use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
 
 const MAX_EVENT_PAGE_SIZE: usize = 1000;
 const PG_COMMIT_CHUNK_SIZE: usize = 1000;
@@ -1314,16 +1318,23 @@ impl PgIndexerStore {
         })
     }
 
-    fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
+    fn persist_mining_nft(
+        &self,
+        operation: MiningNFTOperation,
+        sequence_number: i64,
+        mining_config: MiningConfig,
+    ) -> Result<(), IndexerError> {
         match operation {
             MiningNFTOperation::Creation(mining_nft) => {
+                info!("minming Creation begin {:?} {:?}", mining_nft.owner, mining_nft.miner_id);
                 transactional_blocking!(&self.blocking_cp, |conn| {
                     // Update the Idle mining NFT to Sold as it may transfered to this wallet.
                     if mining_nft.power == 0 {
                         let before: Result<MiningNFT, Error> = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
                             .filter(mining_nfts::mining_started_at.eq(0))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn);
                         match before {
@@ -1344,18 +1355,20 @@ impl PgIndexerStore {
                     if mining_nft.power == 0 {
                         let prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         mining_nft.power = prev.power;
                         mining_nft.token_id = prev.token_id;
                     }
                     let before: Result<MiningNFT, Error> = mining_nfts::table
-                            .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
-                            .filter(mining_nfts::dsl::owner.eq(&mining_nft.owner))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
-                            .limit(1)
-                            .first(conn);
+                        .filter(mining_nfts::dsl::miner_id.eq(&mining_nft.miner_id))
+                        .filter(mining_nfts::dsl::owner.eq(&mining_nft.owner))
+                        .order_by(mining_nfts::sequence_number.desc())
+                        .order_by(mining_nfts::id.desc())
+                        .limit(1)
+                        .first(conn);
                     match before {
                         Ok(mut nft) => {
                             nft.id = None;
@@ -1366,22 +1379,23 @@ impl PgIndexerStore {
                                 .on_conflict_do_nothing()
                                 .execute(conn)
                         }
-                        Err(_) => {
-                            diesel::insert_into(mining_nfts::table)
-                                .values(vec![mining_nft.clone()])
-                                .execute(conn)
-                        }
+                        Err(_) => diesel::insert_into(mining_nfts::table)
+                            .values(vec![mining_nft.clone()])
+                            .execute(conn),
                     }
                 })
                 .context("Failed to write mining NFTs to PostgresDB")?;
+                info!("minming Creation end {:?} {:?}", mining_nft.owner, mining_nft.miner_id);
             }
             MiningNFTOperation::Operation(op) => match op {
                 crate::models::mining_nft::MiningNFTOperation::StakingStake(v) => {
+                    info!("minming StakingStake begin {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal());
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
@@ -1389,8 +1403,8 @@ impl PgIndexerStore {
                         prev.mining_ticket_id = Some(v.ticket_id.bytes.to_hex_literal());
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .execute(conn)?;
+                            .values(prev)
+                            .execute(conn)?;
                         diesel::insert_into(mining_nft_staking::table)
                             .values(vec![MiningNFTStaking {
                                 id: None,
@@ -1400,32 +1414,53 @@ impl PgIndexerStore {
                                 staked_at: v.timestamp as i64,
                                 unstaked_at: None,
                                 total_mint_bfc: 0,
-                                sequence_number: sequence_number,
+                                sequence_number,
                             }])
                             .execute(conn)
                     })
                     .context("Failed to handle staking event.")?;
+                    info!("minming StakingStake end {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal());
+                    transactional_blocking!(&self.blocking_cp, |conn| {
+                        diesel::insert_into(stake_pending_item::table)
+                            .values(vec![StakePendingItem {
+                                id: None,
+                                owner: v.recipient.to_hex_literal(),
+                                miner_id: v.nft.id.bytes.to_hex_literal(),
+                                ticket_id: v.ticket_id.bytes.to_hex_literal(),
+                                debt: (mining_config.reward_per_power * 100) as i64,
+                            }])
+                            .execute(conn)
+                    })
+                    .context("Failed to save stake pending item event.")?;
                 }
-                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v) | crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
+                crate::models::mining_nft::MiningNFTOperation::StakingUnstake(v)
+                | crate::models::mining_nft::MiningNFTOperation::StakingEmergencyUnstake(v) => {
+                    info!("minming StakingUnstake begin {:?} {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal(), v.ticket_id.bytes.to_hex_literal());
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
-                        prev.mint_duration = prev.mint_duration + v.timestamp as i64 - prev.mining_started_at;
+                        prev.mint_duration =
+                            prev.mint_duration + v.timestamp as i64 - prev.mining_started_at;
                         prev.mining_started_at = 0;
                         prev.mining_ticket_id = None;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)?;
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)?;
                         let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
-                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
-                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .filter(
+                                mining_nft_staking::dsl::ticket_id
+                                    .eq(v.ticket_id.bytes.to_hex_literal()),
+                            )
+                            .order_by(mining_nft_staking::sequence_number.desc())
+                            .order_by(mining_nft_staking::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev_staking.id = None;
@@ -1436,35 +1471,46 @@ impl PgIndexerStore {
                             .execute(conn)
                     })
                     .context("Failed to handle unstaking event.")?;
+                    info!("minming StakingUnstake end {:?} {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal(), v.ticket_id.bytes.to_hex_literal());
+                    transactional_blocking!(&self.blocking_cp, |conn| {
+                        diesel::delete(stake_pending_item::table.filter(stake_pending_item::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))).execute(conn)
+                    })
+                    .context("Failed to delete stake pending item event.")?;
                 }
                 crate::models::mining_nft::MiningNFTOperation::StakingTransferReward(v) => {
+                    info!("minming StakingTransferReward begin {:?} {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal(), v.ticket_id.bytes.to_hex_literal());
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::owner.eq(v.recipient.to_hex_literal()))
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
                         prev.total_mint_bfc = prev.total_mint_bfc + v.reward as i64;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)?;
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)?;
                         let mut prev_staking: MiningNFTStaking = mining_nft_staking::table
-                            .filter(mining_nft_staking::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
-                            .order_by(mining_nft_staking::sequence_number.desc()).order_by(mining_nft_staking::id.desc())
+                            .filter(
+                                mining_nft_staking::dsl::ticket_id
+                                    .eq(v.ticket_id.bytes.to_hex_literal()),
+                            )
+                            .order_by(mining_nft_staking::sequence_number.desc())
+                            .order_by(mining_nft_staking::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev_staking.id = None;
                         prev_staking.total_mint_bfc = prev_staking.total_mint_bfc + v.reward as i64;
                         prev_staking.sequence_number = sequence_number;
                         diesel::insert_into(mining_nft_staking::table)
-                            .values(prev_staking.clone())
+                            .values(prev_staking)
                             .execute(conn)?;
                         diesel::insert_into(mining_nft_history_profits::table)
-                            .values(vec![MiningNFTHistoryProfit {
+                            .values(MiningNFTHistoryProfit {
                                 owner: v.recipient.to_hex_literal(),
                                 miner_id: v.nft.id.bytes.to_hex_literal(),
                                 dt_timestamp_ms: benfen::timestamp_to_dt(
@@ -1475,7 +1521,7 @@ impl PgIndexerStore {
                                 mint_usd: 0,       // update daily
                                 pending_reward: 0, // update daily
                                 claimed_reward: v.reward as i64,
-                            }])
+                            })
                             .on_conflict((
                                 mining_nft_history_profits::dsl::owner,
                                 mining_nft_history_profits::dsl::dt_timestamp_ms,
@@ -1489,25 +1535,48 @@ impl PgIndexerStore {
                             )
                             .execute(conn)
                     })
-                    .context("Failed to handle StakingTransferReward event.")?;
+                    .context("Failed to handle staking transfer event.")?;
+                    info!("minming StakingTransferReward end {:?} {:?} {:?}", v.recipient.to_hex_literal(), v.nft.id.bytes.to_hex_literal(), v.ticket_id.bytes.to_hex_literal());
+                    transactional_blocking!(&self.blocking_cp, |conn| {
+                        let pending_item: Result<StakePendingItem, Error> = stake_pending_item::table
+                            .filter(
+                                stake_pending_item::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()),
+                            )
+                            .first(conn);
+                        match pending_item {
+                            Ok(val) => {
+                                diesel::update(stake_pending_item::table)
+                                .filter(stake_pending_item::dsl::ticket_id.eq(v.ticket_id.bytes.to_hex_literal()))
+                                .set((
+                                    stake_pending_item::dsl::debt.eq(val.debt + v.reward as i64),
+                                ))
+                                .execute(conn)
+                            }
+                            Err(e) => {Err(e)}
+                        }
+                    })
+                    .context("Failed to update stake pending item event.")?;
                 }
                 crate::models::mining_nft::MiningNFTOperation::BurnNFT(v) => {
+                    info!("minming BurnNFT begin {:?}", v.nft.id.bytes.to_hex_literal());
                     transactional_blocking!(&self.blocking_cp, |conn| {
                         let mut prev: MiningNFT = mining_nfts::table
                             .filter(mining_nfts::dsl::miner_id.eq(v.nft.id.bytes.to_hex_literal()))
                             .filter(mining_nfts::dsl::transfered_at.eq(0))
-                            .order_by(mining_nfts::sequence_number.desc()).order_by(mining_nfts::id.desc())
+                            .order_by(mining_nfts::sequence_number.desc())
+                            .order_by(mining_nfts::id.desc())
                             .limit(1)
                             .first(conn)?;
                         prev.id = None;
                         prev.miner_redeem = true;
                         prev.sequence_number = sequence_number;
                         diesel::insert_into(mining_nfts::table)
-                                    .values(prev)
-                                    .on_conflict_do_nothing()
-                                    .execute(conn)
+                            .values(prev)
+                            .on_conflict_do_nothing()
+                            .execute(conn)
                     })
                     .context("Failed to handle burn NFT event.")?;
+                    info!("minming BurnNFT end {:?}", v.nft.id.bytes.to_hex_literal());
                 }
             },
         };
@@ -1518,7 +1587,8 @@ impl PgIndexerStore {
         transactional_blocking!(&self.blocking_cp, |conn| {
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nfts_view;").execute(conn)?;
             diesel::sql_query("REFRESH MATERIALIZED VIEW mining_nft_staking_view;").execute(conn)
-        }).context("Failed to refresh_mining_nft.")?;
+        })
+        .context("Failed to refresh_mining_nft.")?;
         Ok(())
     }
 
@@ -1537,7 +1607,9 @@ impl PgIndexerStore {
             if page > 1 {
                 query = query.offset(((page - 1) * limit) as i64);
             }
-            query = query.order_by(mining_nfts_view::id.desc()).limit(limit as i64);
+            query = query
+                .order_by(mining_nfts_view::id.desc())
+                .limit(limit as i64);
             let records: Vec<MiningNFT> = query.load(conn)?;
             Ok::<(usize, Vec<MiningNFT>), IndexerError>((count, records))
         })
@@ -1571,6 +1643,63 @@ impl PgIndexerStore {
         })
     }
 
+    fn get_stake_reward_history(
+        &self,
+        address: SuiAddress,
+        page: usize,
+        limit: usize,
+    ) -> Result<ClassicPage<StakeRewardHistory>, IndexerError> {
+        let (count, records) = read_only_blocking!(&self.blocking_cp, |conn| {
+           let mut query = stake_reward_summary::dsl::stake_reward_summary.into_boxed();
+            query = query
+            .filter(stake_reward_summary::dsl::staker_address.eq(AccountAddress::new(address.to_inner()).to_hex_literal()));
+            let count: i64 = query.count().get_result(conn)?;
+            let count = count as usize;
+            let mut query2=stake_reward_summary::dsl::stake_reward_summary.into_boxed();
+            query2=query2.filter(stake_reward_summary::dsl::staker_address.eq(AccountAddress::new(address.to_inner()).to_hex_literal()));
+            if page > 1 {
+                query2 = query2.offset(((page - 1) * limit) as i64);
+            }
+            query2 = query2
+                .order_by(stake_reward_summary::estimated_at_epoch.desc())
+                .limit(limit as i64);
+            let records: Vec<StakeRewardSummary> = query2.load(conn)?;
+            Ok::<(usize, Vec<StakeRewardSummary>), IndexerError>((count, records))
+        })
+            .context("Failed to query stake reward history.")?;
+        let total_page = count / limit + if count % limit == 0 { 0 } else { 1 };
+        Ok(ClassicPage {
+            data: records.into_iter().map(|x| StakeRewardHistory{
+                generate_time:x.timestamp_ms as u64,
+                epoch: x.estimated_at_epoch as u64,
+                stake_amount:x.stake_amount as u64,
+                reward_amount:x.stake_reward as u64,
+            }).collect(),
+            next_page: if page < total_page {
+                Some(page + 1)
+            } else {
+                None
+            },
+            prev_page: if page > 1 { Some(page - 1) } else { None },
+            total: count,
+        })
+    }
+
+    fn get_mining_nfts_idle(
+        &self,
+        address: SuiAddress,
+    )-> Result<SuiMiningNFTList, IndexerError>{
+        let filter = Some(SuiOwnedMiningNFTFilter::Status(sui_json_rpc_types::SuiMiningNFTStatus::Idle));
+        let records = read_only_blocking!(&self.blocking_cp, |conn| {
+            let query = mining_nfts_query!(address, filter);
+            let records: Vec<MiningNFT> = query.load(conn)?;
+            info!("records size {:?}", records.len());
+            Ok::<Vec<MiningNFT>, IndexerError>(records)
+        })
+            .context("Failed to query mining NFTs.")?;
+        Ok(SuiMiningNFTList{minings: records.into_iter().map(|x| x.into()).collect()})
+    }
+
     fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
@@ -1594,6 +1723,16 @@ impl PgIndexerStore {
                 }
             })
             .collect();
+        let idles: Vec<&MiningNFT> = mining_nfts
+            .iter()
+            .filter_map(|x| {
+                if x.mining_started_at == 0 && x.miner_redeem == false && x.transfered_at == 0 {
+                    Some(x)
+                } else {
+                    None
+                }
+            })
+            .collect();
         let ticket_ids: Vec<String> = stakings
             .iter()
             .map(|x| x.mining_ticket_id.clone().unwrap_or_default())
@@ -1602,15 +1741,44 @@ impl PgIndexerStore {
             SuiOwnedMiningNFTOverview {
                 total_power: stakings.iter().map(|x| x.power as u64).sum(),
                 num_of_staking_nfts: stakings.len(),
+                num_of_idle_nfts: idles.len(),
                 total_nfts: mining_nfts.iter().filter(|x| !x.miner_redeem).count(),
                 total_reward: mining_nfts.iter().map(|x| x.total_mint_bfc as u64).sum(),
                 bfc_usd_price: 0f64,
                 profit_rate: 0f64,
                 yesterady_reward: stakings.iter().map(|x| x.yesterday_mint_bfc as u64).sum(),
+                pending_reward: 0,
             },
             ticket_ids,
             total_cost,
         ))
+    }
+
+    fn get_owned_ticket_list(
+        &self,
+        address: SuiAddress,
+    ) -> Result<Vec<String>, IndexerError> {
+        let mining_nfts: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
+            mining_nfts_view::dsl::mining_nfts_view
+                .filter(mining_nfts_view::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()),)
+                .order_by(mining_nfts_view::mining_started_at.asc())
+                .load(conn)
+        }).context("Failed to load mining ticket NFTs.")?;
+        let stakings: Vec<&MiningNFT> = mining_nfts
+            .iter()
+            .filter_map(|x| {
+                if x.mining_started_at > 0 {
+                    Some(x)
+                } else {
+                    None
+                }
+            })
+            .collect();
+        let ticket_ids: Vec<String> = stakings
+            .iter()
+            .map(|x| x.mining_ticket_id.clone().unwrap_or_default())
+            .collect();
+        Ok(ticket_ids)
     }
 
     fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError> {
@@ -1625,6 +1793,7 @@ impl PgIndexerStore {
         let pendings: Vec<MiningNFT> = read_only_blocking!(&self.blocking_cp, |conn| {
             mining_nfts_view::dsl::mining_nfts_view
                 .filter(mining_nfts_view::dsl::yesterday_dt_ms.ne(dt_timestamp_ms))
+                .filter(mining_nfts_view::dsl::mining_ticket_id.ne(Some("")))
                 .load(conn)
         })
         .context("Failed to load pending NFTs")?;
@@ -1685,7 +1854,7 @@ impl PgIndexerStore {
                 ))
                 .execute(conn)
         })
-        .context("Failed to handle persist_mining_nft_profits event.")
+        .context("Failed to handle staking profit event.")
     }
 
     fn calculate_mining_nft_overall(
@@ -1792,6 +1961,119 @@ impl PgIndexerStore {
                 .load::<MiningNFTLiquiditiy>(conn)
         })
         .context(&format!("Failed to loading liquidities from PostgresDB."))
+    }
+
+    fn init_stake_reward(&self, epoch: u64, first_epoch_end_ms: u64, usd_rate: f64, jpy_rate: f64) -> Result<(), IndexerError> {
+        let stake_count = read_only_blocking!(&self.blocking_cp, |conn| {
+            let count: i64 = stake_reward_detail::dsl::stake_reward_detail.into_boxed().count().get_result(conn)?;
+            Ok::<usize, IndexerError>(count as usize)
+        })?;
+        info!("stake_count count {:?}", stake_count);
+        if stake_count == 0 {
+            info!("begin to init_stake_reward {:?} {:?} {:?} {:?}", epoch, first_epoch_end_ms, usd_rate, jpy_rate);
+            let stake_list = read_only_blocking!(&self.blocking_cp, |conn| {
+                address_stakes::table.load::<AddressStake>(conn)
+            })?;
+            let mut init_list = vec![];
+            for s in stake_list {
+                let mut begin = s.stake_activation_epoch; // 2
+                let end = s.estimated_at_epoch; // 3
+                if end <= begin {
+                    continue;
+                }
+                let avg_reward = s.estimated_reward / (end - begin);
+                while begin < end {
+                    let mut bfc_amount = s.principal_amount as f64;
+                    match s.stake_coin.as_str() {
+                        "0xc8::busd::BUSD" => {bfc_amount = bfc_amount / usd_rate}, // 0.095
+                        "0xc8::bjpy::BJPY" => {bfc_amount = bfc_amount / jpy_rate}, // 0.095 * 150
+                        _ => {}
+                    }
+                    init_list.push(StakeRewardDetail {
+                        id: None,
+                        staked_object_id: s.staked_object_id.clone(),
+                        staker_address: s.staker_address.clone(),
+                        pool_id: s.pool_id.clone(),
+                        validator_address: s.validator_address.clone(),
+                        stake_coin: s.stake_coin.clone(),
+                        principal_epoch: s.principal_epoch,
+                        principal_amount: s.principal_amount,
+                        principal_amount_bfc: bfc_amount as i64,
+                        principal_timestamp_ms: s.principal_timestamp_ms,
+                        estimated_reward: avg_reward,
+                        estimated_at_epoch: begin,
+                        stake_activation_epoch: s.stake_activation_epoch,
+                        timestamp_ms: first_epoch_end_ms as i64 + begin * 86400,
+                    });
+                    begin = begin + 1;
+                }
+            }
+            transactional_blocking!(&self.blocking_cp, |conn| {
+                diesel::insert_into(stake_reward_detail::table)
+                    .values(init_list)
+                    .on_conflict_do_nothing()
+                    .execute(conn)
+                    .map_err(IndexerError::from)
+            })?;
+            for n in 0..epoch {
+                self.deal_reward_summary(n, Some(first_epoch_end_ms + n * 86400))?;
+            }
+        }
+        Ok(())
+    }
+
+    fn count_stake_pending_item(&self) -> Result<u64, IndexerError> {
+        let stake_count = read_only_blocking!(&self.blocking_cp, |conn| {
+            let count: i64 = stake_pending_item::dsl::stake_pending_item.into_boxed().count().get_result(conn)?;
+            Ok::<usize, IndexerError>(count as usize)
+        })?;
+        Ok(stake_count as u64)
+    }
+
+    fn save_stake_pending_item(&self, item: StakePendingItem) -> Result<u64, IndexerError> {
+        let count = transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(stake_pending_item::table)
+                .values(item)
+                .on_conflict_do_nothing()
+                .execute(conn)
+        })?;
+        Ok(count as u64)
+    }
+
+    fn query_stake_pending_item_by_owner(&self, address: SuiAddress) -> Result<Vec<StakePendingItem>, IndexerError> {
+        let records = read_only_blocking!(&self.blocking_cp, |conn| {
+            let query = stake_pending_item::dsl::stake_pending_item.into_boxed()
+            .filter(stake_pending_item::dsl::owner.eq(AccountAddress::new(address.to_inner()).to_hex_literal()));
+            let records:Vec<StakePendingItem> = query.load(conn)?;
+            Ok::<Vec<StakePendingItem>,IndexerError>(records)
+        })?;
+        Ok(records)
+    }
+
+    fn all_staking_nft(&self) -> Result<Vec<MiningNFT>, IndexerError> {
+        let records = read_only_blocking!(&self.blocking_cp, |conn| {
+            let query = mining_nfts_view::dsl::mining_nfts_view.into_boxed()
+            .filter(mining_nfts_view::mining_started_at.ne(0))
+            .filter(mining_nfts_view::transfered_at.eq(0));
+            let records: Vec<MiningNFT> = query.load(conn)?;
+            info!("records size {:?}", records.len());
+            Ok::<Vec<MiningNFT>, IndexerError>(records)
+        })?;
+        Ok(records)
+    }
+
+    pub fn deal_reward_summary(&self, epoch: u64, epoch_ms: Option<u64>) -> Result<(), IndexerError> {
+        info!("deal_reward_summary start for epoch {}",epoch);
+        let addresses = self.query_address_by_epoch(epoch)?;
+        for address in addresses.iter() {
+            let rewards = self.query_reward_detail_by_address_epoch(address, epoch)?;
+            let total_reward = rewards.iter().map(|x| x.estimated_reward).sum();
+            let total_stake = rewards.iter().map(|x| x.principal_amount_bfc).sum();
+            let reward_summary = StakeRewardSummary::build(address.clone(), total_stake, total_reward, epoch as i64, epoch_ms);
+            self.insert_stake_summary(&reward_summary)?;
+        }
+        info!("deal_reward_summary end for epoch {}",epoch);
+        Ok(())
     }
 
     fn persist_fast_path(
@@ -2191,6 +2473,7 @@ impl PgIndexerStore {
 
     fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError> {
         let epoch = &data.new_epoch;
+        //stable coin stake info
         let mut stake_coins: Vec<_> = data
             .stable_pools
             .iter()
@@ -2205,6 +2488,7 @@ impl PgIndexerStore {
                     .map(|x| x.to_owned() as i64),
             })
             .collect();
+        //bfc stake info
         stake_coins.push(epoch_stake::EpochStakeCoin {
             epoch: epoch.epoch,
             coin_type: native_coin().to_string(),
@@ -2212,6 +2496,7 @@ impl PgIndexerStore {
             bfc_value: data.system_state.total_stake,
             stable_rate: None,
         });
+
         let last_epoch_stake = self.get_last_epoch_stake()?.unwrap_or_default();
         let total_stake = stake_coins.iter().map(|x| x.bfc_value).sum();
         let total_reward = data.system_state.stake_subsidy_current_epoch_amount;
@@ -2219,6 +2504,14 @@ impl PgIndexerStore {
         let avg_exchange_rate =
             (get_avg_exchange_rate(&data.validator_stakes) * epoch_stake::RATE_MUL) as i64;
 
+        let last_r = if data.last_epoch.is_some() {
+            let temp = data.clone().last_epoch.unwrap();
+            temp.total_stake_rewards_distributed.unwrap_or(0)
+        } else {0};
+        let last_s = if data.last_epoch.is_some() {
+            data.clone().last_epoch.unwrap().total_stake.unwrap_or(0)
+        } else {0};
+        info!("persist_epoch_stake reward {:?} stake {:?}", last_r, last_s);
         let mut epoch_stake = epoch_stake::EpochStake {
             epoch: epoch.epoch,
             total_stake,
@@ -2226,8 +2519,10 @@ impl PgIndexerStore {
             accumulated_reward: last_epoch_stake.accumulated_reward + total_reward,
             avg_exchange_rate,
             apy: 0,
+            last_epoch_reward: last_r,
+            last_epoch_stake: last_s,
         };
-
+        //calc apy
         let mut recents = self.get_recent_epoch_stakes()?;
         recents.insert(0, epoch_stake.clone());
         epoch_stake.apy =
@@ -2297,8 +2592,11 @@ impl PgIndexerStore {
                 .filter(epoch_stake_coins::dsl::epoch.eq(stake.epoch))
                 .load::<epoch_stake::EpochStakeCoin>(conn)
         })?;
+        let last_epoch_stake = if stake.last_epoch_stake == 0 {1} else {stake.last_epoch_stake};
         Ok(StakeMetrics {
             apy: (stake.apy as f64) / epoch_stake::RATE_MUL,
+            stake_apy: stake.last_epoch_reward as f64 / last_epoch_stake as f64 * 365f64,
+            last_epoch_reward: stake.last_epoch_reward as u64,
             total_stake: stake.total_stake as u64,
             accumulated_reward: stake.accumulated_reward as u64,
             staking_coins: stake_coins.into_iter().map(|x| x.into()).collect(),
@@ -2435,6 +2733,49 @@ impl PgIndexerStore {
                 .execute(conn)?;
             Ok::<(), IndexerError>(())
         })
+    }
+
+    fn insert_stake_reward_detail(&self,detail:&StakeRewardDetail) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            let result = diesel::insert_into(stake_reward_detail::dsl::stake_reward_detail)
+                .values(detail)
+                .execute(conn)
+                .map_err(IndexerError::from)
+                .context("Failed writing stake_reward_detail to PostgresDB");
+            error!("insert_stake_reward_detail result:{:?}",result);
+            Ok::<(), IndexerError>(())
+        })
+    }
+
+    fn insert_stake_summary(&self, summary: &StakeRewardSummary) -> Result<(), IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            let result = diesel::insert_into(stake_reward_summary::dsl::stake_reward_summary)
+                .values(summary)
+                .execute(conn)
+                .map_err(IndexerError::from)
+                .context("Failed writing stake_reward_summary to PostgresDB");
+            error!("insert_stake_summary result:{:?}",result);
+            Ok::<(), IndexerError>(())
+        })
+    }
+
+    fn query_address_by_epoch(&self, epoch: u64) -> Result<Vec<String>, IndexerError> {
+        read_only_blocking!(&self.blocking_cp, |conn| {
+            diesel::QueryDsl::group_by(stake_reward_detail::dsl::stake_reward_detail.filter(stake_reward_detail::dsl::estimated_at_epoch.eq(epoch as i64)), stake_reward_detail::staker_address)
+            .select(stake_reward_detail::staker_address)
+            .load::<String>(conn)
+            // .expect("error loading query_address_by_epoch")
+        })
+    }
+
+    fn query_reward_detail_by_address_epoch(&self, address: &String, epoch: u64) -> Result<Vec<StakeRewardDetail>, IndexerError> {
+        let detail: Vec<StakeRewardDetail> = read_only_blocking!(&self.blocking_cp, |conn| {
+            stake_reward_detail::dsl::stake_reward_detail
+            .filter(stake_reward_detail::estimated_at_epoch.eq(epoch as i64))
+            .filter(stake_reward_detail::staker_address.eq(address))
+            .load::<StakeRewardDetail>(conn)
+        })?;
+        Ok(detail)
     }
 
     fn get_dao_proposals(
@@ -3279,8 +3620,13 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError> {
-        self.spawn_blocking(move |this| this.persist_mining_nft(operation, sequence_number))
+    async fn persist_mining_nft(
+        &self,
+        operation: MiningNFTOperation,
+        sequence_number: i64,
+        mining_config: MiningConfig,
+    ) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| this.persist_mining_nft(operation, sequence_number, mining_config))
             .await
     }
 
@@ -3300,11 +3646,37 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn get_stake_reward_history(
+        &self,
+        address: SuiAddress,
+        page: usize,
+        limit: usize,
+    ) -> Result<ClassicPage<StakeRewardHistory>, IndexerError>{
+        self.spawn_blocking(move |this| this.get_stake_reward_history(address, page, limit))
+            .await
+    }
+
+    async fn get_mining_nfts_idle(
+        &self,
+        address: SuiAddress,
+    ) -> Result<SuiMiningNFTList, IndexerError> {
+        self.spawn_blocking(move |this| this.get_mining_nfts_idle(address))
+            .await
+    }
+
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
     ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_overview(address))
+            .await
+    }
+
+    async fn get_owned_ticket_list(
+        &self,
+        address: SuiAddress,
+    ) -> Result<Vec<String>, IndexerError> {
+        self.spawn_blocking(move |this| this.get_owned_ticket_list(address))
             .await
     }
 
@@ -3394,6 +3766,29 @@ impl IndexerStore for PgIndexerStore {
     async fn update_address_stake_reward(&self, stake: &AddressStake) -> Result<(), IndexerError> {
         let stake = stake.clone();
         self.spawn_blocking(move |this| this.update_address_stake_reward(&stake))
+            .await
+    }
+
+    async fn insert_stake_reward_detail(&self,detail:&StakeRewardDetail) -> Result<(), IndexerError> {
+        let detail = detail.clone();
+        self.spawn_blocking(move |this| this.insert_stake_reward_detail(&detail))
+            .await
+    }
+
+    async fn insert_stake_summary(&self, summary: &StakeRewardSummary) -> Result<(), IndexerError> {
+        let summary = summary.clone();
+        self.spawn_blocking(move |this| this.insert_stake_summary(&summary))
+            .await
+    }
+
+    async fn query_reward_detail_by_address_epoch(&self, address: &String, epoch: u64) -> Result<Vec<StakeRewardDetail>, IndexerError>{
+        let add= address.clone();
+        self.spawn_blocking(move |this| this.query_reward_detail_by_address_epoch(&add, epoch))
+            .await
+    }
+
+    async fn query_address_by_epoch(&self, epoch: u64) -> Result<Vec<String>, IndexerError>{
+        self.spawn_blocking(move |this| this.query_address_by_epoch(epoch))
             .await
     }
 
@@ -3629,6 +4024,11 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn deal_reward_summary(&self, epoch: u64, epoch_ms: Option<u64>) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| this.deal_reward_summary(epoch, epoch_ms))
+            .await
+    }
+
     async fn get_last_epoch_stake_coin(
         &self,
         coin: TypeTag,
@@ -3652,6 +4052,26 @@ impl IndexerStore for PgIndexerStore {
     ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_liquidities(base_coin, limit))
             .await
+    }
+
+    async fn init_stake_reward(&self, epoch: u64, first_epoch_end_ms: u64, usd_rate: f64, jpy_rate: f64) -> Result<(), IndexerError> {
+        self.spawn_blocking(move |this| this.init_stake_reward(epoch, first_epoch_end_ms, usd_rate, jpy_rate)).await
+    }
+
+    async fn count_stake_pending_item(&self) -> Result<u64, IndexerError> {
+        self.spawn_blocking(move |this| this.count_stake_pending_item()).await
+    }
+
+    async fn save_stake_pending_item(&self, item: StakePendingItem) -> Result<u64, IndexerError> {
+        self.spawn_blocking(move |this| this.save_stake_pending_item(item)).await
+    }
+
+    async fn query_stake_pending_item_by_owner(&self, address: SuiAddress) -> Result<Vec<StakePendingItem>, IndexerError> {
+        self.spawn_blocking(move |this| this.query_stake_pending_item_by_owner(address)).await
+    }
+
+    async fn all_staking_nft(&self) -> Result<Vec<MiningNFT>, IndexerError> {
+        self.spawn_blocking(move |this| this.all_staking_nft()).await
     }
 
     async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError> {
