@@ -2881,7 +2881,7 @@ async fn test_execute_signed_tx() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn test_serialize_tx() -> Result<(), anyhow::Error> {
+async fn sim_test_serialize_tx() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
     let address = test_cluster.get_address_0();
