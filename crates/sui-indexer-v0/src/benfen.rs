@@ -612,8 +612,8 @@ pub async fn get_price_at_tick(
 #[cfg(test)]
 mod test_benfen {
     use std::str::FromStr;
-    use fastcrypto::encoding::{Base64, Encoding};
-    use jsonrpsee::core::RpcResult;
+    // use fastcrypto::encoding::{Base64, Encoding};
+    // use jsonrpsee::core::RpcResult;
     use crate::{
         benfen::{
             get_global_nft_config, get_global_nft_staking, get_nft_display,
@@ -627,13 +627,13 @@ mod test_benfen {
         timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
-    use sui_json_rpc::api::{IndexerApiClient, WriteApiClient};
-    use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
-    use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTransactionBlockResponseQuery};
+    use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
+    use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
+    // use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTransactionBlockResponseQuery};
     use sui_json_rpc_types::TransactionFilter::Checkpoint;
     use sui_types::base_types::{ObjectID, SuiAddress};
-    use sui_types::transaction::SenderSignedData;
-    use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
+    // use sui_types::transaction::SenderSignedData;
+    // use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
 
     fn create_http_client() -> HttpClient {
         let rpc_client_url = "https://rpc-mainnet.benfen.org/";
@@ -744,42 +744,42 @@ mod test_benfen {
         let mut from: u64 = 162;
         loop {
             let filter = Some(Checkpoint(from));
-            let options = Some(SuiTransactionBlockResponseOptions{
-                show_input: true,
-                show_raw_input: true,
-                show_effects: true,
-                show_events: false,
-                show_object_changes: false,
-                show_balance_changes: false,
-            });
-            let page = client.query_transaction_blocks(SuiTransactionBlockResponseQuery::new(filter, options), None, Some(20), Some(true)).await.unwrap();
-            for tx in page.data {
-                let tx_data = tx.transaction.unwrap();
-                match tx_data.data {
-                    V1(v) => {
-                        if v.gas_data.budget != 0 {
-                            let orig_tx: SenderSignedData = bcs::from_bytes(&tx.raw_transaction).unwrap();
-                            let data = &orig_tx.inner().intent_message.value;
-                            let data_bytes = &bcs::to_bytes(data).unwrap();
-                            let tx_byte = Base64::encode(bcs::to_bytes(data).unwrap());
-                            let s_json = serde_json::to_string(&orig_tx).unwrap();
-                            let from = s_json.find("tx_signatures").unwrap() + 17;
-                            let to = s_json.find("\"]}]").unwrap();
-                            let signatures = s_json[from..to].to_string();
-                            let r = client.execute_transaction_block(Base64::try_from(tx_byte).unwrap(),
-                                                                     vec![Base64::try_from(signatures).unwrap()]
-                                                                     , None, None).await;
-                            match r {
-                                Ok(rV) => {
-                                    let s = rV.digest.to_string();
-                                    println!("{}", s);
-                                }
-                                Err(_) => {}
-                            }
-                        }
-                    }
-                }
-            }
+            // let options = Some(SuiTransactionBlockResponseOptions{
+            //     show_input: true,
+            //     show_raw_input: true,
+            //     show_effects: true,
+            //     show_events: false,
+            //     show_object_changes: false,
+            //     show_balance_changes: false,
+            // });
+            // let page = client.query_transaction_blocks(SuiTransactionBlockResponseQuery::new(filter, options), None, Some(20), Some(true)).await.unwrap();
+            // for tx in page.data {
+            //     let tx_data = tx.transaction.unwrap();
+            //     match tx_data.data {
+            //         V1(v) => {
+            //             if v.gas_data.budget != 0 {
+            //                 let orig_tx: SenderSignedData = bcs::from_bytes(&tx.raw_transaction).unwrap();
+            //                 let data = &orig_tx.inner().intent_message.value;
+            //                 let data_bytes = &bcs::to_bytes(data).unwrap();
+            //                 let tx_byte = Base64::encode(bcs::to_bytes(data).unwrap());
+            //                 let s_json = serde_json::to_string(&orig_tx).unwrap();
+            //                 let from = s_json.find("tx_signatures").unwrap() + 17;
+            //                 let to = s_json.find("\"]}]").unwrap();
+            //                 let signatures = s_json[from..to].to_string();
+            //                 let r = client.execute_transaction_block(Base64::try_from(tx_byte).unwrap(),
+            //                                                          vec![Base64::try_from(signatures).unwrap()]
+            //                                                          , None, None).await;
+            //                 match r {
+            //                     Ok(rV) => {
+            //                         let s = rV.digest.to_string();
+            //                         println!("{}", s);
+            //                     }
+            //                     Err(_) => {}
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
             from = from + 1;
         }
     }
