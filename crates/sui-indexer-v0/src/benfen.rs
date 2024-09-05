@@ -627,10 +627,10 @@ mod test_benfen {
         timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
-    use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
+    // use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
     use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
     // use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTransactionBlockResponseQuery};
-    use sui_json_rpc_types::TransactionFilter::Checkpoint;
+    // use sui_json_rpc_types::TransactionFilter::Checkpoint;
     use sui_types::base_types::{ObjectID, SuiAddress};
     // use sui_types::transaction::SenderSignedData;
     // use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
@@ -740,10 +740,10 @@ mod test_benfen {
 
     #[tokio::test]
     async fn test_replay_transaction() {
-        let client = HttpClientBuilder::default().build("http://127.0.0.1:9000/").unwrap();
-        let mut from: u64 = 162;
-        loop {
-            let filter = Some(Checkpoint(from));
+        // let client = HttpClientBuilder::default().build("http://127.0.0.1:9000/").unwrap();
+        // let mut from: u64 = 162;
+        // loop {
+        //     let filter = Some(Checkpoint(from));
             // let options = Some(SuiTransactionBlockResponseOptions{
             //     show_input: true,
             //     show_raw_input: true,
@@ -780,8 +780,8 @@ mod test_benfen {
             //         }
             //     }
             // }
-            from = from + 1;
-        }
+            // from = from + 1;
+        // }
     }
 
     #[ignore]
