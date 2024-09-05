@@ -131,7 +131,7 @@ mod test_stable_pool {
     use crate::utils::stable_pool::{get_pool_exchange_rate, get_stable_pool_from_dynamic_fields};
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
     use move_core_types::account_address::AccountAddress;
-    use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
+    use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
     use sui_types::base_types::ObjectID;
 
     fn create_http_client() -> HttpClient {
