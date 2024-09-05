@@ -257,9 +257,6 @@ export function createWalletKitCore({
 			const currentWallet =
 				internalState.wallets.find((wallet) => wallet.name === walletName) ?? null;
 
-			// TODO: Should the current wallet actually be set before we successfully connect to it?
-			setState({ currentWallet });
-
 			if (currentWallet) {
 				if (walletEventUnsubscribe) {
 					walletEventUnsubscribe();
@@ -294,11 +291,13 @@ export function createWalletKitCore({
 					setState({
 						accounts: currentWallet.accounts,
 						currentAccount: currentWallet.accounts[0] ?? null,
+						currentWallet,
 					});
 				} catch (e) {
 					console.log('Wallet connection error', e);
 
 					setState({ status: WalletKitCoreConnectionStatus.ERROR });
+					throw e;
 				}
 			} else {
 				setState({ status: WalletKitCoreConnectionStatus.DISCONNECTED });

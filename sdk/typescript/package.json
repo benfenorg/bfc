@@ -2,7 +2,7 @@
 	"name": "@benfen/bfc.js",
 	"author": "OpenBlock<developers@benfen.org>",
 	"description": "BenFen TypeScript API(Work in Progress)",
-	"version": "0.1.16",
+	"version": "0.1.17",
 	"license": "Apache-2.0",
 	"files": [
 		"CHANGElOG.md",

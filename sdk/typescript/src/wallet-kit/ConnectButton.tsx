@@ -11,9 +11,10 @@ import { formatAddress } from '../utils/index.js';
 import { styled } from '@stitches/react';
 import { CheckIcon, ChevronIcon } from './utils/icons.js';
 
-interface ConnectButtonProps extends ComponentProps<typeof Button> {
+interface ConnectButtonProps extends Omit<ComponentProps<typeof Button>, 'onError'> {
 	connectText?: ReactNode;
 	connectedText?: ReactNode;
+	onError: (err: Error) => void;
 }
 
 const MenuItems = styled(Menu.Items, {
@@ -65,6 +66,7 @@ const Account = styled('button', {
 export function ConnectButton({
 	connectText = 'Connect Wallet',
 	connectedText,
+	onError,
 	...props
 }: ConnectButtonProps) {
 	const [connectModalOpen, setConnectModalOpen] = useState(false);
@@ -135,7 +137,7 @@ export function ConnectButton({
 			)}
 
 			{!currentAccount && (
-				<ConnectModal open={connectModalOpen} onClose={() => setConnectModalOpen(false)} />
+				<ConnectModal open={connectModalOpen} onClose={() => setConnectModalOpen(false)} onError={onError} />
 			)}
 		</>
 	);

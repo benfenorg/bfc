@@ -17,6 +17,7 @@ import { useWalletKit } from './WalletKitContext.js';
 export interface ConnectModalProps {
 	open: boolean;
 	onClose(): void;
+	onError(err: Error): void;
 	text?: {
 		opening: string;
 		connectionFailed: string;
@@ -140,7 +141,7 @@ const MobileInfoButton = styled('button', {
 
 const SELECTED_INFO = '@@internal/what-is-wallet';
 
-export function ConnectModal({ open, onClose, text }: ConnectModalProps) {
+export function ConnectModal({ open, onClose, onError, text }: ConnectModalProps) {
 	const { connect, currentWallet, isConnected, isError } = useWalletKit();
 	const [selected, setSelected] = useState<string | null>(null);
 
@@ -167,7 +168,8 @@ export function ConnectModal({ open, onClose, text }: ConnectModalProps) {
 							selected={selected}
 							onChange={(walletName) => {
 								setSelected(walletName);
-								connect(walletName);
+								connect(walletName)
+									.catch(onError);
 							}}
 							{...text?.walletList}
 						/>

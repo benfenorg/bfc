@@ -37,6 +37,7 @@ Move.lock
 node_modules
 .tsbuildinfo
 *.tsbuildinfo
+*.tgz
 .turbo
 
 # App build directories
