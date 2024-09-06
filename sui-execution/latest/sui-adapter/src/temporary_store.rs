@@ -926,10 +926,11 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
-    fn get_input_stable_with_rebate(
+    fn get_input_stable_with_bfc(
         &self,
         id: &ObjectID,
         expected_version: SequenceNumber,
+        layout_resolver: &mut impl LayoutResolver,
     ) -> Result<(u64,u64), ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
@@ -941,7 +942,7 @@ impl<'backing> TemporaryStore<'backing> {
                     obj.version(),
                 );
             }
-            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for input with \
                          type {:?}: {e:#?}",
@@ -955,7 +956,7 @@ impl<'backing> TemporaryStore<'backing> {
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
@@ -1038,49 +1039,21 @@ impl<'backing> TemporaryStore<'backing> {
         for (id, input, output) in self.get_modified_objects() {
             if let Some((version, storage_rebate)) = input {
                 total_input_rebate += storage_rebate;
-                if do_expensive_checks && pay_with_stable_gas{
-                    let obj = self.get_input_sui_obj(&id,version)?;
-                    if obj.is_stable_gas_coin() {
-                        let (stable_coin,rebate) = self.get_input_stable_with_rebate(&id, version)?;
-                        total_input_stable_gas += stable_coin;
-                        total_input_sui += rebate;
-                    } else {
-                        total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
-                    }
-                } else if do_expensive_checks && !pay_with_stable_gas {
-                    total_input_sui += self.get_input_sui(&id, version, layout_resolver)?;
-                }
+                let (stable_coin,rebate) = self.get_input_stable_with_bfc(&id, version,layout_resolver)?;
+                total_input_stable_gas += stable_coin;
+                total_input_sui += rebate;
             }
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;
-                if do_expensive_checks && pay_with_stable_gas {
-                    if object.is_stable_gas_coin() {
-                        total_output_stable_gas += object.get_total_stable_coin_with_rebate().map_err(|e| {
-                            make_invariant_violation!(
+                let (stable_coin,bfc) = object.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
+                    make_invariant_violation!(
                             "Failed looking up output Stable Coin in SUI conservation checking for \
                              mutated type {:?}: {e:#?}",
                             object.struct_tag(),
                         )
-                        })?.0;
-                        total_output_sui += object.storage_rebate;
-                    } else {
-                        total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
-                            make_invariant_violation!(
-                            "Failed looking up output SUI in SUI conservation checking for \
-                             mutated type {:?}: {e:#?}",
-                            object.struct_tag(),
-                        )
-                        })?;
-                    }
-                } else if do_expensive_checks && !pay_with_stable_gas {
-                    total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
-                        make_invariant_violation!(
-                            "Failed looking up output SUI in SUI conservation checking for \
-                             mutated type {:?}: {e:#?}",
-                            object.struct_tag(),
-                        )
-                    })?;
-                }
+                })?;
+                total_output_stable_gas += stable_coin;
+                total_output_sui += bfc;
             }
         }
         if do_expensive_checks {
@@ -1094,6 +1067,7 @@ impl<'backing> TemporaryStore<'backing> {
             }
 
             if pay_with_stable_gas {
+
                 total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
                 total_output_sui +=  gas_summary.non_refundable_storage_fee;
 
@@ -1109,21 +1083,21 @@ impl<'backing> TemporaryStore<'backing> {
                     total_output_sui-total_input_sui
                 };
 
-                // if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
-                //     return Err(ExecutionError::invariant_violation(
-                //         format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
-                //                 stable_amount,
-                //                 gas_summary.storage_gas_usage_abs_improved()))
-                //     );
-                // }
-                //
-                // if sui_amount != gas_summary.storage_gas_usage_abs() {
-                //     return Err(ExecutionError::invariant_violation(
-                //         format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
-                //                 sui_amount,
-                //                 gas_summary.storage_gas_usage_abs()))
-                //     );
-                // }
+                if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
+                                stable_amount,
+                                gas_summary.storage_gas_usage_abs_improved()))
+                    );
+                }
+
+                if sui_amount != gas_summary.storage_gas_usage_abs() {
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
+                                sui_amount,
+                                gas_summary.storage_gas_usage_abs()))
+                    );
+                }
             } else {
                 total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
                 if total_input_sui != total_output_sui {
