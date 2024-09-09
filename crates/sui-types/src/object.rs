@@ -928,7 +928,7 @@ impl Object {
 // Testing-related APIs.
 impl Object {
     /// Get the total amount of SUI embedded in `self`, including both Move objects and the storage rebate
-    pub fn get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
+    pub fn _get_total_sui(&self, layout_resolver: &mut dyn LayoutResolver) -> Result<u64, SuiError> {
         Ok(match &self.data {
                 Data::Move(m) => {
                     if m.type_.is_stable_gas_coin() {
