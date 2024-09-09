@@ -5017,6 +5017,9 @@ create_bfcdao_action
 judge_proposal_state
 	public entry fun
 	0xc8::bfc_system
+judge_proposal_state_with_clock
+	public entry fun
+	0xc8::bfc_system
 set_voting_period
 	public entry fun
 	0xc8::bfc_system

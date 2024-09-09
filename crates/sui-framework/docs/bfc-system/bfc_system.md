@@ -24,6 +24,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `propose`](#0xc8_bfc_system_propose)
 -  [Function `create_bfcdao_action`](#0xc8_bfc_system_create_bfcdao_action)
 -  [Function `judge_proposal_state`](#0xc8_bfc_system_judge_proposal_state)
+-  [Function `judge_proposal_state_with_clock`](#0xc8_bfc_system_judge_proposal_state_with_clock)
 -  [Function `set_voting_period`](#0xc8_bfc_system_set_voting_period)
 -  [Function `set_voting_quorum_rate`](#0xc8_bfc_system_set_voting_quorum_rate)
 -  [Function `set_min_action_delay`](#0xc8_bfc_system_set_min_action_delay)
@@ -663,7 +664,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, current_time: u64)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _current_time: u64)
 </code></pre>
 
 
@@ -672,8 +673,34 @@ title: Module `0xc8::bfc_system`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, current_time: u64) {
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state">judge_proposal_state</a>(_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, _current_time: u64) {
+    //<b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    //<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(system_state, current_time);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_judge_proposal_state_with_clock"></a>
+
+## Function `judge_proposal_state_with_clock`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state_with_clock">judge_proposal_state_with_clock</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_judge_proposal_state_with_clock">judge_proposal_state_with_clock</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
+    <b>let</b> current_time = <a href="../sui-framework/clock.md#0x2_clock_timestamp_ms">clock::timestamp_ms</a>(<a href="../sui-framework/clock.md#0x2_clock">clock</a>);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(system_state, current_time);
 }
 </code></pre>
