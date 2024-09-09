@@ -7,6 +7,7 @@ use anyhow::anyhow;
 use diesel::migration::MigrationSource;
 use diesel::{PgConnection, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
+use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use sui_types::digests::ObjectDigest;
 use sui_types::effects::ObjectRemoveKind;
@@ -14,7 +15,7 @@ use tracing::info;
 
 use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc::{get_balance_changes, ObjectProvider};
-use sui_json_rpc_types::{SuiGasCostSummary, SuiTransactionBlockResponseOptions};
+use sui_json_rpc_types::{DisplayFieldsResponse, ObjectsPage, SuiGasCostSummary, SuiObjectData, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockResponseOptions};
 use sui_json_rpc_types::{
     BalanceChange, SuiExecutionStatus, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI,
 };
@@ -30,6 +31,63 @@ use crate::types::CheckpointTransactionBlockResponse;
 use crate::PgPoolConnection;
 
 const MIGRATIONS: EmbeddedMigrations = embed_migrations!("migrations");
+
+pub fn object_deal_list(options: Option<SuiObjectResponseQuery>, r: RpcResult<ObjectsPage>) -> RpcResult<ObjectsPage> {
+    if r.is_ok() {
+        let o = if options.is_none() {None} else {options.unwrap().options};
+        let data = r.unwrap();
+        Ok(ObjectsPage {
+            data: data.data.iter().map(| x | object_deal(o.clone(), Ok(x.clone())).unwrap()).collect(),
+            next_cursor: data.next_cursor,
+            has_next_page: data.has_next_page,
+        })
+    } else {
+        r
+    }
+}
+
+pub fn object_deal(options: Option<SuiObjectDataOptions>, r: RpcResult<SuiObjectResponse>) -> RpcResult<SuiObjectResponse> {
+    if options.is_some() && options.unwrap().show_display {
+        if r.is_err() {
+            return r;
+        }
+        let data = r.unwrap();
+        if data.data.is_some() {
+            let object_data = data.clone().data.unwrap();
+            if object_data.type_.is_some() {
+                let s = object_data.type_.clone().unwrap().to_string();
+                let f0 = s.contains("0x3::stable_pool::StakedStable<") || s.contains("0x3::staking_pool::StakedBfc");
+                let f1 = object_data.display.is_some();
+                if f0 && f1 {
+                    let mut m = object_data.display.unwrap().data.unwrap_or_default();
+                    m.insert(String::from("name"), String::from("DPOS"));
+                    m.insert(String::from("image_url"), String::from("https://static.benfen.org/images/DPOS.png"));
+                    return Ok(SuiObjectResponse {
+                        data: Some(SuiObjectData {
+                            object_id: object_data.object_id,
+                            version: object_data.version,
+                            digest: object_data.digest,
+                            type_: object_data.type_,
+                            owner: object_data.owner,
+                            previous_transaction: object_data.previous_transaction,
+                            storage_rebate: object_data.storage_rebate,
+                            display: Some(DisplayFieldsResponse {
+                                data: Some(m),
+                                error: None,
+                            }),
+                            content: object_data.content,
+                            bcs: object_data.bcs,
+                        }),
+                        error: None,
+                    })
+                }
+            }
+        }
+        Ok(data)
+    } else {
+        r
+    }
+}
 
 /// Resets the database by reverting all migrations and reapplying them.
 ///
@@ -406,7 +464,6 @@ pub mod validator_stake {
 pub mod stable_pool {
     use std::collections::HashMap;
     use std::hash::Hash;
-
     use jsonrpsee::http_client::HttpClient;
     use move_core_types::parser::parse_type_tag;
     use sui_types::base_types::ObjectID;
@@ -414,7 +471,6 @@ pub mod stable_pool {
     use sui_types::sui_system_state::PoolTokenExchangeRate;
     use sui_types::{id::UID, sui_system_state::sui_system_state_inner_v1::StablePoolV1, TypeTag};
     use tracing::warn;
-
     use crate::benfen;
     use crate::errors::IndexerError;
 

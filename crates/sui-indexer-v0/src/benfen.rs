@@ -333,6 +333,7 @@ pub async fn get_nft_staking_overview(
             })
             .collect(),
         total_addresses: 0,
+        total_long: 0,
     })
 }
 
@@ -493,23 +494,27 @@ pub async fn get_mining_nft_pending_reward(
     http_client: HttpClient,
     contract: &str,
     global: &str,
-    ticket_id: &str,
+    ticket_ids: Vec<String>,
 ) -> Result<u64, IndexerError> {
     let contract = ObjectID::from_address(SuiAddress::from_str(contract)?.into());
     let global = ObjectID::from_address(SuiAddress::from_str(global)?.into());
-    let ticket_id =
-        ObjectID::from_address(AccountAddress::from_hex_literal(ticket_id).map_err(|err| {
-            anyhow!(
-                "Failed to parse ticket_id: {} with error: {:?}",
-                ticket_id,
-                err
-            )
-        })?);
-    let tx = build_nft_stake_pending_reward_tx(contract, global, ID::new(ticket_id.clone()))?;
+    let mut ids = vec![];
+    for ticket_id in ticket_ids.iter() {
+        let oid =
+            ObjectID::from_address(AccountAddress::from_hex_literal(ticket_id).map_err(|err| {
+                anyhow!(
+                    "Failed to parse ticket_id: {} with error: {:?}",
+                    ticket_id,
+                    err
+                )
+            })?);
+        ids.push(ID::new(oid));
+    }
+    let tx = build_nft_stake_pending_reward_tx(contract, global, ids)?;
     let val: u64 = dev_inspect_tx(http_client, &tx).await.map_err(|err| {
         IndexerError::FullNodeReadingError(format!(
             "Failed to get ticket pending reward {:?} with error {:?}",
-            ticket_id, err,
+            ticket_ids, err,
         ))
     })?;
     Ok(val)
@@ -518,7 +523,7 @@ pub async fn get_mining_nft_pending_reward(
 fn build_nft_stake_pending_reward_tx(
     contract: ObjectID,
     global: ObjectID,
-    ticket_id: ID,
+    ticket_ids: Vec<ID>,
 ) -> Result<TransactionKind, IndexerError> {
     let tx = ProgrammableTransaction {
         inputs: vec![
@@ -527,13 +532,13 @@ fn build_nft_stake_pending_reward_tx(
                 initial_shared_version: 1u64.into(),
                 mutable: false,
             }),
-            CallArg::Pure(bcs::to_bytes(&ticket_id)?),
+            CallArg::Pure(bcs::to_bytes(&ticket_ids)?),
             CallArg::CLOCK_IMM,
         ],
         commands: vec![Command::move_call(
             contract,
             Identifier::new("staking")?,
-            Identifier::new("pending")?,
+            Identifier::new("batch_pending")?,
             vec![],
             vec![Argument::Input(0), Argument::Input(1), Argument::Input(2)],
         )],
@@ -608,7 +613,8 @@ pub async fn get_price_at_tick(
 #[cfg(test)]
 mod test_benfen {
     use std::str::FromStr;
-
+    // use fastcrypto::encoding::{Base64, Encoding};
+    // use jsonrpsee::core::RpcResult;
     use crate::{
         benfen::{
             get_global_nft_config, get_global_nft_staking, get_nft_display,
@@ -622,11 +628,16 @@ mod test_benfen {
         timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};
-    use sui_json_rpc::CLIENT_SDK_TYPE_HEADER;
+    // use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
+    use sui_json_rpc_api::CLIENT_SDK_TYPE_HEADER;
+    // use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, SuiTransactionBlockResponseQuery};
+    // use sui_json_rpc_types::TransactionFilter::Checkpoint;
     use sui_types::base_types::{ObjectID, SuiAddress};
+    // use sui_types::transaction::SenderSignedData;
+    // use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
 
     fn create_http_client() -> HttpClient {
-        let rpc_client_url = "https://testrpc.benfen.org:443/";
+        let rpc_client_url = "https://rpc-mainnet.benfen.org/";
         let mut headers = HeaderMap::new();
         headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("indexer"));
         HttpClientBuilder::default()
@@ -708,7 +719,6 @@ mod test_benfen {
         println!("NFT Display: {:?}", overview);
     }
 
-    #[ignore]
     #[tokio::test]
     async fn test_mining_nft_pending_award() {
         let config = IndexerConfig::default();
@@ -716,13 +726,63 @@ mod test_benfen {
             create_http_client(),
             &config.mining_nft_contract,
             &config.mining_nft_global,
-            "0x79a2fa0d94dbd6de6b94255a5eba481f70bb3998cc8704500b70af7fe0654f4b",
+            vec![
+                "0x0003715fd1704173c050f4eb5c40c0b4cee3bd8a794a030e34c5380543f6c782".to_owned(),
+                "0x00296924cf934bc7a21fd5b710754fd81f4397a4901a13224c0bf32a0b0d8aba".to_owned(),
+                "0x00c56e7c903926ff20c01dbe428fac379e8098353c89ee1710f4587457232560".to_owned(),
+            ],
             // "0xd146427073345317d1f5e82aeff9fd8d18448e49dc9af9a04337f8b990ee41e",
             // "BFC7232d3d3973b9f27eae8edbc2d379abfae5098c4eb8ebe943b2dba5d0dd48c9c8a8e",
         )
         .await
         .unwrap();
         println!("{:?}", pending);
+    }
+
+    #[tokio::test]
+    async fn test_replay_transaction() {
+        // let client = HttpClientBuilder::default().build("http://127.0.0.1:9000/").unwrap();
+        // let mut from: u64 = 162;
+        // loop {
+        //     let filter = Some(Checkpoint(from));
+            // let options = Some(SuiTransactionBlockResponseOptions{
+            //     show_input: true,
+            //     show_raw_input: true,
+            //     show_effects: true,
+            //     show_events: false,
+            //     show_object_changes: false,
+            //     show_balance_changes: false,
+            // });
+            // let page = client.query_transaction_blocks(SuiTransactionBlockResponseQuery::new(filter, options), None, Some(20), Some(true)).await.unwrap();
+            // for tx in page.data {
+            //     let tx_data = tx.transaction.unwrap();
+            //     match tx_data.data {
+            //         V1(v) => {
+            //             if v.gas_data.budget != 0 {
+            //                 let orig_tx: SenderSignedData = bcs::from_bytes(&tx.raw_transaction).unwrap();
+            //                 let data = &orig_tx.inner().intent_message.value;
+            //                 let data_bytes = &bcs::to_bytes(data).unwrap();
+            //                 let tx_byte = Base64::encode(bcs::to_bytes(data).unwrap());
+            //                 let s_json = serde_json::to_string(&orig_tx).unwrap();
+            //                 let from = s_json.find("tx_signatures").unwrap() + 17;
+            //                 let to = s_json.find("\"]}]").unwrap();
+            //                 let signatures = s_json[from..to].to_string();
+            //                 let r = client.execute_transaction_block(Base64::try_from(tx_byte).unwrap(),
+            //                                                          vec![Base64::try_from(signatures).unwrap()]
+            //                                                          , None, None).await;
+            //                 match r {
+            //                     Ok(rV) => {
+            //                         let s = rV.digest.to_string();
+            //                         println!("{}", s);
+            //                     }
+            //                     Err(_) => {}
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
+            // from = from + 1;
+        // }
     }
 
     #[ignore]

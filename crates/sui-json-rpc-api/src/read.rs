@@ -155,12 +155,6 @@ pub trait ReadApi {
         &self,
     ) -> RpcResult<DaoRPC>;
 
-    #[method(name = "getBfcZkloginSalt")]
-    async fn get_bfc_zklogin_salt(
-        &self, seed: String, iss: String, sub: String
-    ) -> RpcResult<String>;
-
-
     /// Return the first four bytes of the chain's genesis checkpoint digest.
     #[method(name = "getChainIdentifier")]
     async fn get_chain_identifier(&self) -> RpcResult<String>;

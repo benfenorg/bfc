@@ -458,6 +458,8 @@ diesel::table! {
         accumulated_reward -> Int8,
         avg_exchange_rate -> Int8,
         apy -> Int8,
+        last_epoch_reward -> Int8,
+        last_epoch_stake -> Int8,
     }
 }
 
@@ -510,6 +512,50 @@ diesel::table! {
 
         unstaking_reward_amount -> Nullable<Int8>,
         timestamp_ms -> Int8,
+    }
+}
+
+diesel::table! {
+    stake_reward_detail(id) {
+        id -> Int8,
+        staked_object_id -> Varchar,
+        staker_address -> Text,
+        pool_id -> Text,
+        validator_address -> Text,
+        stake_coin -> Varchar,
+
+        principal_epoch -> Int8,
+        principal_amount -> Int8,
+        principal_amount_bfc -> Int8,
+        principal_timestamp_ms -> Int8,
+
+        estimated_reward -> Int8,
+        estimated_at_epoch -> Int8,
+
+        stake_activation_epoch -> Int8,
+        timestamp_ms -> Int8,
+    }
+}
+
+diesel::table! {
+    stake_reward_summary(id) {
+        id -> Int8,
+        staker_address -> Text,
+        stake_amount -> Int8,
+        stake_reward -> Int8,
+        estimated_at_epoch -> Int8,
+        principal_timestamp_ms -> Int8,
+        timestamp_ms -> Int8,
+    }
+}
+
+diesel::table! {
+    stake_pending_item(id) {
+        id -> Int8,
+        owner -> Varchar,
+        miner_id -> Varchar,
+        ticket_id -> Varchar,
+        debt -> Int8,
     }
 }
 

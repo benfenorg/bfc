@@ -29,6 +29,7 @@ use sui_types::event::EventID;
 
 use crate::errors::IndexerError;
 use crate::store::IndexerStore;
+use crate::utils::object_deal_list;
 
 pub(crate) struct IndexerApi<S> {
     state: S,
@@ -355,14 +356,14 @@ where
                 .start_timer();
             let owned_obj_resp = self
                 .fullnode
-                .get_owned_objects(address, query, cursor, limit)
+                .get_owned_objects(address, query.clone(), cursor, limit)
                 .await;
             owned_obj_guard.stop_and_record();
-            return owned_obj_resp;
+            return object_deal_list(query.clone(), owned_obj_resp);
         }
-        self.get_owned_objects_internal(address, query, cursor, limit)
-            .await
+        return object_deal_list(query.clone(), self.get_owned_objects_internal(address, query.clone(), cursor, limit).await);
     }
+
     async fn query_transaction_blocks(
         &self,
         query: SuiTransactionBlockResponseQuery,

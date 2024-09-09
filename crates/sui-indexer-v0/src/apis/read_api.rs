@@ -24,6 +24,7 @@ use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
 use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
 use sui_types::dao::DaoRPC;
+use crate::utils::object_deal;
 
 pub(crate) struct ReadApi<S> {
     fullnode: HttpClient,
@@ -139,12 +140,11 @@ where
                 .indexer_metrics()
                 .get_object_latency
                 .start_timer();
-            let obj_resp = self.fullnode.get_object(object_id, options).await;
+            let obj_resp = self.fullnode.get_object(object_id, options.clone()).await;
             obj_guard.stop_and_record();
-            return obj_resp;
+            return object_deal(options.clone(), obj_resp);
         }
-
-        Ok(self.get_object_internal(object_id, options).await?)
+        object_deal(options.clone(), Ok(self.get_object_internal(object_id, options.clone()).await?))
     }
 
     async fn multi_get_objects(
@@ -382,10 +382,6 @@ where
 
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         self.fullnode.get_inner_dao_info().await
-    }
-
-    async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String) -> RpcResult<String> {
-        self.fullnode.get_bfc_zklogin_salt(seed, iss, sub).await
     }
 }
 

@@ -6,8 +6,6 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fastcrypto::hmac::{hkdf_sha3_256, HkdfIkm};
-use fastcrypto::traits::ToFromBytes;
 use futures::future::join_all;
 use indexmap::map::IndexMap;
 use itertools::Itertools;
@@ -1057,38 +1055,6 @@ impl ReadApiServer for ReadApi {
             current_proposal_status,
         };
         Ok(result)
-    }
-
-    #[instrument(skip(self))]
-    async fn get_bfc_zklogin_salt(&self, seed: String, _iss: String, _sub: String) -> RpcResult<String> {
-        let new_seed = if seed.len() % 2 == 0 {
-            seed
-        } else {
-            format!("{}0", seed)
-        };
-        let seed = hex::decode(&new_seed).unwrap();
-        let iss = hex::decode(&new_seed).unwrap();
-        let sub = hex::decode(&new_seed).unwrap();
-        let okm = hkdf_sha3_256(
-            &HkdfIkm::from_bytes(seed.as_ref()).unwrap(),
-            iss.as_ref(),
-            sub.as_ref(),
-            42,
-        );
-        match okm {
-            Ok(r) => {
-                let temp = hex::encode(r);
-                let bytes = temp.as_bytes();
-                let mut result = [0u8; 16];
-                for i in 0..bytes.len() {
-                    if i < result.len() {
-                        result[i] = bytes[i];
-                    }
-                }
-                Ok(hex::encode(result))
-            },
-            Err(e) => Ok(e.to_string()),
-        }
     }
 
     #[instrument(skip(self))]

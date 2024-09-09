@@ -708,11 +708,6 @@ impl ReadApi {
     ) -> SuiRpcResult<ProtocolConfigResponse> {
         Ok(self.api.http.get_protocol_config(version).await?)
     }
-
-    pub async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String)
-                                      -> SuiRpcResult<String> {
-        Ok(self.api.http.get_bfc_zklogin_salt(seed, iss, sub).await?)
-    }
 }
 
 /// Coin Read API provides the functionality needed to get information from the Sui network regarding the coins owned by an address.

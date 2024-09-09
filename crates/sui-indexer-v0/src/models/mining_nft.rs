@@ -166,7 +166,7 @@ pub struct LiquidityEvent {
     after_pool_liquidity: u128,
     amount_a: u64,
     amount_b: u64,
-    action: String,
+    pub action: String,
 }
 
 pub fn extract_from_events(

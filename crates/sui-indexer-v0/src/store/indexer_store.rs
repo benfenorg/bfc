@@ -7,13 +7,7 @@ use async_trait::async_trait;
 use prometheus::{Histogram, IntCounter};
 
 use move_core_types::identifier::Identifier;
-use sui_json_rpc_types::{
-    Checkpoint as RpcCheckpoint, CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo,
-    EventFilter, EventPage, IndexedStake, MoveCallMetrics, NetworkMetrics, NetworkOverview,
-    StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiObjectData, SuiObjectDataFilter,
-    SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit,
-    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
-};
+use sui_json_rpc_types::{Checkpoint as RpcCheckpoint, CheckpointId, ClassicPage, DaoProposalFilter, EpochInfo, EventFilter, EventPage, IndexedStake, MoveCallMetrics, NetworkMetrics, NetworkOverview, StakeMetrics, StakeRewardHistory, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTList, SuiObjectData, SuiObjectDataFilter, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions};
 use sui_types::base_types::{EpochId, ObjectID, SequenceNumber, SuiAddress, VersionNumber};
 use sui_types::digests::CheckpointDigest;
 use sui_types::event::EventID;
@@ -24,6 +18,7 @@ use sui_types::storage::ObjectStore;
 use sui_types::TypeTag;
 
 use crate::errors::IndexerError;
+use crate::handlers::pending_reward_handler::MiningConfig;
 use crate::metrics::IndexerMetrics;
 use crate::models::address_stake::{AddressStake, ExtractedAddressStake};
 use crate::models::addresses::{ActiveAddress, Address, AddressStats};
@@ -36,7 +31,9 @@ use crate::models::events::Event;
 use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
+use crate::models::pending_reward::StakePendingItem;
 use crate::models::prices::PriceHistory;
+use crate::models::stake_reward::{StakeRewardDetail, StakeRewardSummary};
 use crate::models::system_state::{DBSystemStateSummary, DBValidatorSummary};
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
@@ -295,6 +292,11 @@ pub trait IndexerStore {
         owner: SuiAddress,
     ) -> Result<Vec<IndexedStake>, IndexerError>;
     async fn update_address_stake_reward(&self, stake: &AddressStake) -> Result<(), IndexerError>;
+
+    async fn insert_stake_reward_detail(&self,detail:&StakeRewardDetail) -> Result<(), IndexerError>;
+
+    async fn insert_stake_summary(&self,summary:&StakeRewardSummary) -> Result<(), IndexerError>;
+
     async fn get_network_total_transactions_previous_epoch(
         &self,
         epoch: i64,
@@ -347,7 +349,7 @@ pub trait IndexerStore {
         current_checkpoint: i64,
         current_timestamp_ms: i64,
     ) -> Result<f64, IndexerError>;
-    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64) -> Result<(), IndexerError>;
+    async fn persist_mining_nft(&self, operation: MiningNFTOperation, sequence_number: i64, mining_config: MiningConfig) -> Result<(), IndexerError>;
 
     async fn refresh_mining_nft(&self) -> Result<(), IndexerError>;
 
@@ -359,10 +361,22 @@ pub trait IndexerStore {
         filter: Option<SuiOwnedMiningNFTFilter>,
     ) -> Result<ClassicPage<SuiMiningNFT>, IndexerError>;
 
+    async fn get_stake_reward_history(
+        &self,
+        address: SuiAddress,
+        page: usize,
+        limit: usize,
+    ) -> Result<ClassicPage<StakeRewardHistory>, IndexerError>;
+
     async fn get_mining_nft_overview(
         &self,
         address: SuiAddress,
     ) -> Result<(SuiOwnedMiningNFTOverview, Vec<String>, f64), IndexerError>;
+
+    async fn get_owned_ticket_list(
+        &self,
+        address: SuiAddress,
+    ) -> Result<Vec<String>, IndexerError>;
 
     async fn get_unsettle_mining_nfts(
         &self,
@@ -394,6 +408,7 @@ pub trait IndexerStore {
 
     async fn get_last_epoch_stake(&self) -> Result<Option<epoch_stake::EpochStake>, IndexerError>;
     async fn persist_epoch_stake(&self, data: &TemporaryEpochStore) -> Result<(), IndexerError>;
+    async fn deal_reward_summary(&self, epoch: u64, epoch_ms: Option<u64>) -> Result<(), IndexerError>;
     async fn get_last_epoch_stake_coin(
         &self,
         coin: TypeTag,
@@ -409,7 +424,25 @@ pub trait IndexerStore {
         limit: usize,
     ) -> Result<Vec<MiningNFTLiquiditiy>, IndexerError>;
 
+    async fn init_stake_reward(
+        &self, epoch: u64, first_epoch_end_ms: u64, usd_rate: f64, jpy_rate: f64
+    ) -> Result<(), IndexerError>;
+
+    async fn count_stake_pending_item(&self) -> Result<u64, IndexerError>;
+
+    async fn save_stake_pending_item(&self, item: StakePendingItem) -> Result<u64, IndexerError>;
+
+    async fn query_stake_pending_item_by_owner(&self, address: SuiAddress) -> Result<Vec<StakePendingItem>, IndexerError>;
+
+    async fn all_staking_nft(&self) -> Result<Vec<MiningNFT>, IndexerError>;
+
     async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError>;
+    async fn get_mining_nfts_idle(
+        &self,
+        address: SuiAddress,
+    ) -> Result<SuiMiningNFTList, IndexerError>;
+    async fn query_reward_detail_by_address_epoch(&self, address: &String, epoch: u64) -> Result<Vec<StakeRewardDetail>, IndexerError>;
+    async fn query_address_by_epoch(&self, epoch: u64) -> Result<Vec<String>, IndexerError>;
 }
 
 #[derive(Clone, Debug)]

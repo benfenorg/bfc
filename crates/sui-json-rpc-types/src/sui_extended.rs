@@ -163,6 +163,12 @@ pub struct NetworkOverview {
 pub struct StakeMetrics {
     pub apy: f64,
 
+    pub stake_apy: f64,
+
+    #[schemars(with = "String")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub last_epoch_reward: u64,
+
     /// Total staked BFC in last epoch.
     #[schemars(with = "String")]
     #[serde_as(as = "BigInt<u64>")]
@@ -371,6 +377,10 @@ pub struct NFTStakingOverview {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub total_addresses: u64,
+
+    #[schemars(with = "BigInt<i64>")]
+    #[serde_as(as = "BigInt<i64>")]
+    pub total_long: i64,
 }
 
 #[serde_as]
@@ -455,6 +465,7 @@ pub struct SuiOwnedMiningNFTOverview {
     pub total_power: u64,
 
     pub num_of_staking_nfts: usize,
+    pub num_of_idle_nfts: usize,
     pub total_nfts: usize,
     pub bfc_usd_price: f64,
     pub profit_rate: f64,
@@ -466,6 +477,71 @@ pub struct SuiOwnedMiningNFTOverview {
     #[schemars(with = "BigInt<u64>")]
     #[serde_as(as = "BigInt<u64>")]
     pub yesterady_reward: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub pending_reward: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiOwnedTicketList {
+    pub ticket_list: Vec<SuiOwnedTicket>,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub pending_reward: u64,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiMiningNFTList {
+    pub minings: Vec<SuiMiningNFT>,
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct StakeRewardHistory {
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub generate_time: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub epoch: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub stake_amount: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub reward_amount: u64,
+}
+
+impl StakeRewardHistory{
+}
+
+#[serde_as]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct SuiOwnedTicket {
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub id: u64,
+
+    pub ticket_id_list: Vec<String>,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub num: u64,
+
+    #[schemars(with = "BigInt<u64>")]
+    #[serde_as(as = "BigInt<u64>")]
+    pub pending_reward: u64,
 }
 
 #[serde_as]
