@@ -66,9 +66,9 @@ export function genAddressSeed(
 	max_aud_length = MAX_AUD_VALUE_LENGTH,
 ): bigint {
 	return poseidonHash([
+		poseidonHash([BigInt(salt)]),
 		hashASCIIStrToField(name, max_name_length),
 		hashASCIIStrToField(value, max_value_length),
 		hashASCIIStrToField(aud, max_aud_length),
-		poseidonHash([BigInt(salt)]),
 	]);
 }
