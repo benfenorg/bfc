@@ -837,7 +837,7 @@ impl<'backing> TemporaryStore<'backing> {
 type ModifiedObjectInfo<'a> = (ObjectID, Option<(SequenceNumber, u64)>, Option<&'a Object>);
 
 impl<'backing> TemporaryStore<'backing> {
-
+    #[allow(dead_code)]
     fn get_input_sui(
         &self,
         id: &ObjectID,
