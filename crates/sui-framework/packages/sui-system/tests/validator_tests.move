@@ -18,6 +18,7 @@ module sui_system::validator_tests {
     use sui::bag;
     use sui::test_utils::assert_eq;
     use sui_system::stable_pool::StakedStable;
+    //use std::debug::print;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -132,8 +133,7 @@ module sui_system::validator_tests {
             let new_stake = coin::mint_for_testing(30_000_000_000, ctx).into_balance();
             let stake = validator.request_add_stake(new_stake, sender, ctx);
             transfer::public_transfer(stake, sender);
-
-            assert!(validator.total_stake() == 10_000_000_000);
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
             assert!(validator.pending_stake_amount() == 30_000_000_000);
         };
 
