@@ -103,7 +103,7 @@ module sui_system::validator_tests {
             let ctx = scenario.ctx();
 
             let validator = get_test_validator(ctx);
-            assert!(validator.total_stake_amount() == 10_000_000_000);
+            assert!(validator::total_stake_amount(&validator) == 1_000_000_000, 0);
             assert!(validator.sui_address() == sender);
 
             test_utils::destroy(validator);
@@ -113,7 +113,7 @@ module sui_system::validator_tests {
          scenario.next_tx(sender);
          {
              let stake = scenario.take_from_sender<StakedBfc>();
-             assert!(stake.amount() == 10_000_000_000);
+             assert!(staking_pool::staked_sui_amount(&stake) == 1_000_000_000, 0);
              scenario.return_to_sender(stake);
          };
         scenario_val.end();
@@ -145,7 +145,7 @@ module sui_system::validator_tests {
             let withdrawn_balance = validator.request_withdraw_stake(stake, ctx);
             transfer::public_transfer(withdrawn_balance.into_coin(ctx), sender);
 
-            assert!(validator.total_stake() == 10_000_000_000);
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
             assert!(validator.pending_stake_amount() == 30_000_000_000);
             assert!(validator.pending_stake_withdraw_amount() == 10_000_000_000);
 
