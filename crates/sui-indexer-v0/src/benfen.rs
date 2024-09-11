@@ -637,7 +637,7 @@ mod test_benfen {
     // use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
 
     fn create_http_client() -> HttpClient {
-        let rpc_client_url = "https://rpc-mainnet.benfen.org/";
+        let rpc_client_url = "https://rpc-mainnet.benfen.org:443/";
         let mut headers = HeaderMap::new();
         headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("indexer"));
         HttpClientBuilder::default()
