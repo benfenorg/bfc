@@ -111,23 +111,23 @@ impl<T: R2D2Connection + 'static> GovernanceReadApi<T> {
         owner: SuiAddress,
     ) -> Result<Vec<DelegatedStake>, IndexerError> {
         let mut stakes = vec![];
-        for stored_object in self
-            .inner
-            .get_owned_objects_in_blocking_task(
-                owner,
-                Some(SuiObjectDataFilter::StructType(
-                    MoveObjectType::staked_sui().into(),
-                )),
-                None,
-                // Allow querying for up to 1000 staked objects
-                1000,
-            )
-            .await?
-        {
-            let object = sui_types::object::Object::try_from(stored_object)?;
-            let stake_object = StakedSui::try_from(&object)?;
-            stakes.push(stake_object);
-        }
+        // for stored_object in self
+        //     .inner
+        //     .get_owned_objects_in_blocking_task(
+        //         owner,
+        //         Some(SuiObjectDataFilter::StructType(
+        //             MoveObjectType::staked_sui().into(),
+        //         )),
+        //         None,
+        //         // Allow querying for up to 1000 staked objects
+        //         1000,
+        //     )
+        //     .await?
+        // {
+        //     let object = sui_types::object::Object::try_from(stored_object)?;
+        //     let stake_object = StakedSui::try_from(&object)?;
+        //     stakes.push(stake_object);
+        // }
 
         self.get_delegated_stakes(stakes).await
     }
@@ -180,7 +180,7 @@ impl<T: R2D2Connection + 'static> GovernanceReadApi<T> {
                             .unwrap_or_default();
                         let estimated_reward = ((stake_rate.rate() / current_rate.rate()) - 1.0)
                             * stake.principal() as f64;
-                        std::cmp::max(0, estimated_reward.round() as u64)
+                        std::cmp::max(0, estimated_reward.trunc() as u64)
                     } else {
                         0
                     };
