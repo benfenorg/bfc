@@ -11,13 +11,14 @@ module sui_system::validator_tests {
     use std::string::{Self};
     use sui_system::validator::{Self, Validator, rate_vec_map};
     use std::ascii;
+    use sui_system::staking_pool::{Self, StakedBfc};
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use sui_system::staking_pool::{StakedBfc};
     use bfc_system::busd::BUSD;
     use sui::bag;
     use sui::test_utils::assert_eq;
     use sui_system::stable_pool::StakedStable;
+    //use std::debug::print;
 
     const VALID_NET_PUBKEY: vector<u8> = vector[171, 2, 39, 3, 139, 105, 166, 171, 153, 151, 102, 197, 151, 186, 140, 116, 114, 90, 213, 225, 20, 167, 60, 69, 203, 12, 180, 198, 9, 217, 117, 38];
 
@@ -102,7 +103,7 @@ module sui_system::validator_tests {
             let ctx = scenario.ctx();
 
             let validator = get_test_validator(ctx);
-            assert!(validator.total_stake_amount() == 10_000_000_000);
+            assert!(validator::total_stake_amount(&validator) == 1_000_000_000, 0);
             assert!(validator.sui_address() == sender);
 
             test_utils::destroy(validator);
@@ -112,7 +113,7 @@ module sui_system::validator_tests {
          scenario.next_tx(sender);
          {
              let stake = scenario.take_from_sender<StakedBfc>();
-             assert!(stake.amount() == 10_000_000_000);
+             assert!(staking_pool::staked_sui_amount(&stake) == 1_000_000_000, 0);
              scenario.return_to_sender(stake);
          };
         scenario_val.end();
@@ -132,8 +133,7 @@ module sui_system::validator_tests {
             let new_stake = coin::mint_for_testing(30_000_000_000, ctx).into_balance();
             let stake = validator.request_add_stake(new_stake, sender, ctx);
             transfer::public_transfer(stake, sender);
-
-            assert!(validator.total_stake() == 10_000_000_000);
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
             assert!(validator.pending_stake_amount() == 30_000_000_000);
         };
 
@@ -145,9 +145,9 @@ module sui_system::validator_tests {
             let withdrawn_balance = validator.request_withdraw_stake(stake, ctx);
             transfer::public_transfer(withdrawn_balance.into_coin(ctx), sender);
 
-            assert!(validator.total_stake() == 10_000_000_000);
+            assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
             assert!(validator.pending_stake_amount() == 30_000_000_000);
-            assert!(validator.pending_stake_withdraw_amount() == 10_000_000_000);
+            assert!(validator::pending_stake_withdraw_amount(&validator) == 1_000_000_000, 0);
 
             validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
 
@@ -163,7 +163,7 @@ module sui_system::validator_tests {
         {
             let coin_ids = scenario.ids_for_sender<Coin<BFC>>();
             let withdraw = scenario.take_from_sender_by_id<Coin<BFC>>(coin_ids[0]);
-            assert!(withdraw.value() == 10_000_000_000);
+            assert!(coin::value(&withdraw) == 1_000_000_000, 0);
             scenario.return_to_sender(withdraw);
         };
 
