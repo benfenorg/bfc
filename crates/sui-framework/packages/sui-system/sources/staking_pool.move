@@ -174,9 +174,9 @@ module sui_system::staking_pool {
         let exchange_rate_at_staking_epoch = pool_token_exchange_rate_at_epoch(pool, staked_sui.stake_activation_epoch);
         let principal_withdraw = unwrap_staked_sui(staked_sui);
         let pool_token_withdraw_amount = get_token_amount(
-		&exchange_rate_at_staking_epoch,
-		principal_withdraw.value()
-	);
+		    &exchange_rate_at_staking_epoch,
+		    principal_withdraw.value()
+	    );
 
         (
             pool_token_withdraw_amount,

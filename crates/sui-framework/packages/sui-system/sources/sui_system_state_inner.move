@@ -5,7 +5,7 @@ module sui_system::sui_system_state_inner {
     use std::ascii;
     use sui::balance::{Self, Balance};
     use sui::coin::{Self, Coin};
-    use sui_system::staking_pool::{stake_activation_epoch, StakedBfc};
+    use sui_system::staking_pool::StakedBfc;
     use sui::bfc::BFC;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
@@ -544,10 +544,6 @@ module sui_system::sui_system_state_inner {
              staked_sui: StakedBfc,
             ctx: &mut TxContext,
         ) : Balance<BFC> {
-            assert!(
-                stake_activation_epoch(&staked_sui) <= ctx.epoch(),
-                EStakeWithdrawBeforeActivation
-            );
             self.validators.request_withdraw_stake(staked_sui, ctx)
         }
 
