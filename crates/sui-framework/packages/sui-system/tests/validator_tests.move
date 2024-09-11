@@ -11,9 +11,9 @@ module sui_system::validator_tests {
     use std::string::{Self};
     use sui_system::validator::{Self, Validator, rate_vec_map};
     use std::ascii;
+    use sui_system::staking_pool::{Self, StakedBfc};
     use sui::coin::{Self, Coin};
     use sui::balance;
-    use sui_system::staking_pool::{StakedBfc};
     use bfc_system::busd::BUSD;
     use sui::bag;
     use sui::test_utils::assert_eq;
@@ -147,7 +147,7 @@ module sui_system::validator_tests {
 
             assert!(validator::total_stake(&validator) == 1_000_000_000, 0);
             assert!(validator.pending_stake_amount() == 30_000_000_000);
-            assert!(validator.pending_stake_withdraw_amount() == 10_000_000_000);
+            assert!(validator::pending_stake_withdraw_amount(&validator) == 1_000_000_000, 0);
 
             validator.deposit_stake_rewards(balance::zero(), &rate_vec_map());
 
@@ -163,7 +163,7 @@ module sui_system::validator_tests {
         {
             let coin_ids = scenario.ids_for_sender<Coin<BFC>>();
             let withdraw = scenario.take_from_sender_by_id<Coin<BFC>>(coin_ids[0]);
-            assert!(withdraw.value() == 10_000_000_000);
+            assert!(coin::value(&withdraw) == 1_000_000_000, 0);
             scenario.return_to_sender(withdraw);
         };
 

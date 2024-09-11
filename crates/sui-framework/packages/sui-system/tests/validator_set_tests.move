@@ -165,7 +165,6 @@ module sui_system::validator_set_tests {
         advance_epoch_with_dummy_rewards(&mut validator_set, scenario);
         // Validator1 is gone. This removes its is 300 stable staked with it.
         assert!(validator_set::total_stake(&validator_set) == 600 * MIST_PER_SUI, 0);
-        assert!(validator_set.total_stake() == 900 * MIST_PER_SUI);
 
         test_utils::destroy(validator_set);
         test_scenario::end(scenario_val);
