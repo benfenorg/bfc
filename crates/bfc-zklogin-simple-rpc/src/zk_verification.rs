@@ -22,6 +22,7 @@ use sui_types::zk_login_authenticator::ZkLoginAuthenticator;
 use im::hashmap::HashMap as ImHashMap;
 use serde_json::{json, Value};
 use tracing::info;
+use std::env;
 
 /// A response struct for the zk verification.
 #[derive(Deserialize, Serialize, Debug)]
@@ -64,8 +65,17 @@ pub async fn verify_zk_login_sig(
     let client = Client::new();
     let provider = OIDCProvider::from_iss(zk.get_iss())
         .map_err(|_| anyhow!("Invalid iss"))?;
-    let jwks = fetch_jwks(&provider, &client).await?;
-    let parsed: ImHashMap<JwkId, JWK> = jwks.clone().into_iter().collect();
+    // Set to true if you want to skip fetching JWKS for testing purposes
+    let query_non_jwks: bool = env::var("QUERY_NON_JWKS")
+        .unwrap_or_else(|_| "false".to_string())
+        .parse()
+        .unwrap_or(false);
+    let parsed: ImHashMap<JwkId, JWK> = if !query_non_jwks {
+        let jwks = fetch_jwks(&provider, &client).await?;
+        jwks.clone().into_iter().collect()
+    } else {
+        ImHashMap::new()
+    };
     let zklogin_env = match env.as_str() { "test" => ZkLoginEnv::Test, _ => ZkLoginEnv::Prod };
 
     let cur_epoch_id = match cur_rpc_url {

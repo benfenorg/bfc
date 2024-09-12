@@ -18,6 +18,7 @@ services:
       - PROVER_URI=http://backend:8080/input
       - NODE_ENV=production
       - REDIS_URI=redis://cache:6379
+      - SALT_URI=https://devsalt.openblock.vip/get_jwk
       - ENVIRONMENT=dev
       - DEBUG=zkLogin:info,jwks
   cache:
