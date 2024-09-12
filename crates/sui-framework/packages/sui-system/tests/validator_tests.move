@@ -67,6 +67,7 @@ module sui_system::validator_tests {
         );
 
         validator.activate(0);
+        validator::activate_stable(&mut validator, 0);
 
         validator
     }
