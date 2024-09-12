@@ -1354,10 +1354,6 @@ Withdraw some portion of a stake from a validator's staking pool.
      staked_sui: StakedBfc,
     ctx: &<b>mut</b> TxContext,
 ) : Balance&lt;BFC&gt; {
-    <b>assert</b>!(
-        stake_activation_epoch(&staked_sui) &lt;= ctx.<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_epoch">epoch</a>(),
-        <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_EStakeWithdrawBeforeActivation">EStakeWithdrawBeforeActivation</a>
-    );
     self.validators.<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_request_withdraw_stake">request_withdraw_stake</a>(staked_sui, ctx)
 }
 </code></pre>

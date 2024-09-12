@@ -579,9 +579,9 @@ Returns values are amount of pool tokens withdrawn and withdrawn principal porti
     <b>let</b> exchange_rate_at_staking_epoch = <a href="staking_pool.md#0x3_staking_pool_pool_token_exchange_rate_at_epoch">pool_token_exchange_rate_at_epoch</a>(pool, staked_sui.stake_activation_epoch);
     <b>let</b> principal_withdraw = <a href="staking_pool.md#0x3_staking_pool_unwrap_staked_sui">unwrap_staked_sui</a>(staked_sui);
     <b>let</b> pool_token_withdraw_amount = <a href="staking_pool.md#0x3_staking_pool_get_token_amount">get_token_amount</a>(
-		&exchange_rate_at_staking_epoch,
-		principal_withdraw.value()
-	);
+		    &exchange_rate_at_staking_epoch,
+		    principal_withdraw.value()
+	    );
 
     (
         pool_token_withdraw_amount,
