@@ -862,21 +862,16 @@ export class TransactionBlock {
 						{ cause: dryRunResult },
 					);
 				}
-				const safeOverhead =
-					GAS_SAFE_OVERHEAD * BigInt(this.blockData.gasConfig.price || DEFAULT_GAS_PRICE);
+				const safeOverhead = GAS_SAFE_OVERHEAD * BigInt(DEFAULT_GAS_PRICE);
 
 				const baseComputationCostWithOverhead =
 					BigInt(dryRunResult.effects.gasUsed.computationCost) + safeOverhead;
 
 				const gasBudget =
-					baseComputationCostWithOverhead +
-					BigInt(dryRunResult.effects.gasUsed.storageCost) -
-					BigInt(dryRunResult.effects.gasUsed.storageRebate);
+					baseComputationCostWithOverhead + BigInt(dryRunResult.effects.gasUsed.storageCost);
 
 				// Set the budget to max(computation, computation + storage - rebate)
-				this.setGasBudget(
-					gasBudget > baseComputationCostWithOverhead ? gasBudget : baseComputationCostWithOverhead,
-				);
+				this.setGasBudget(gasBudget);
 			}
 		}
 
