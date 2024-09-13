@@ -691,11 +691,12 @@ export class TransactionBlock {
 					// Entry functions can have a mutable reference to an instance of the TxContext
 					// struct defined in the TxContext module as the last parameter. The caller of
 					// the function does not need to pass it in as an argument.
+					const lastIndex = normalized.parameters.length - 1;
 					const hasTxContext =
-						normalized.parameters.length > 0 && isTxContext(normalized.parameters.at(-1)!);
+						normalized.parameters.length > 0 && isTxContext(normalized.parameters[lastIndex]!);
 
 					const params = hasTxContext
-						? normalized.parameters.slice(0, normalized.parameters.length - 1)
+						? normalized.parameters.slice(0, lastIndex)
 						: normalized.parameters;
 
 					if (params.length !== moveCall.arguments.length) {
