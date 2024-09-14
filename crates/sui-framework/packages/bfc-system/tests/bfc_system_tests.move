@@ -210,6 +210,7 @@ module bfc_system::bfc_system_tests {
             bzar::new_for_test(ctx),
             bmxn::new_for_test(ctx),
             mgg::new_for_test(ctx),
+            bfc_system_state_inner::bfc_test_config(1),
             bfc_system_state_inner::bfc_system_parameters(
                 3600 * 4,
                 2000,

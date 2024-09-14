@@ -20,7 +20,7 @@ module sui::balance {
 
     /// A Supply of T. Used for minting and burning.
     /// Wrapped into a `TreasuryCap` in the `Coin` module.
-    public struct Supply<phantom T> has store {
+    public struct Supply<phantom T> has store, drop {
         value: u64
     }
 

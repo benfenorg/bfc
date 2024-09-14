@@ -81,6 +81,7 @@ module bfc_system::bfc_system_state_inner {
         chain_start_timestamp_ms: u64,
         time_interval: u32,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
+        bfc_skip_init_vault: u32,
     }
 
     const BFC_SYSTEM_TREASURY_KEY: u64 = 1;
@@ -208,25 +209,25 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
         let mut t = treasury::create_treasury(parameters.time_interval, balance::value(&bfc_balance), ctx);
-
-        init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
-        init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
-        init_vault_with_positions<BKRW>(&mut t, ascii::string(b"BKRW"), krw_supply, parameters, ctx);
-        init_vault_with_positions<BAUD>(&mut t, ascii::string(b"BAUD"), aud_supply, parameters, ctx);
-        init_vault_with_positions<BARS>(&mut t, ascii::string(b"BARS"), ars_supply, parameters, ctx);
-        init_vault_with_positions<BBRL>(&mut t, ascii::string(b"BBRL"), brl_supply, parameters, ctx);
-        init_vault_with_positions<BCAD>(&mut t, ascii::string(b"BCAD"), cad_supply, parameters, ctx);
-        init_vault_with_positions<BEUR>(&mut t, ascii::string(b"BEUR"), eur_supply, parameters, ctx);
-        init_vault_with_positions<BGBP>(&mut t, ascii::string(b"BGBP"), gbp_supply, parameters, ctx);
-        init_vault_with_positions<BIDR>(&mut t, ascii::string(b"BIDR"), idr_supply, parameters, ctx);
-        init_vault_with_positions<BINR>(&mut t, ascii::string(b"BINR"), inr_supply, parameters, ctx);
-        init_vault_with_positions<BRUB>(&mut t, ascii::string(b"BRUB"), rub_supply, parameters, ctx);
-        init_vault_with_positions<BSAR>(&mut t, ascii::string(b"BSAR"), sar_supply, parameters, ctx);
-        init_vault_with_positions<BTRY>(&mut t, ascii::string(b"BTRY"), try_supply, parameters, ctx);
-        init_vault_with_positions<BZAR>(&mut t, ascii::string(b"BZAR"), zar_supply, parameters, ctx);
-        init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
-        init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
-
+        if (parameters.bfc_skip_init_vault == 0) {
+            init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
+            init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
+            init_vault_with_positions<BKRW>(&mut t, ascii::string(b"BKRW"), krw_supply, parameters, ctx);
+            init_vault_with_positions<BAUD>(&mut t, ascii::string(b"BAUD"), aud_supply, parameters, ctx);
+            init_vault_with_positions<BARS>(&mut t, ascii::string(b"BARS"), ars_supply, parameters, ctx);
+            init_vault_with_positions<BBRL>(&mut t, ascii::string(b"BBRL"), brl_supply, parameters, ctx);
+            init_vault_with_positions<BCAD>(&mut t, ascii::string(b"BCAD"), cad_supply, parameters, ctx);
+            init_vault_with_positions<BEUR>(&mut t, ascii::string(b"BEUR"), eur_supply, parameters, ctx);
+            init_vault_with_positions<BGBP>(&mut t, ascii::string(b"BGBP"), gbp_supply, parameters, ctx);
+            init_vault_with_positions<BIDR>(&mut t, ascii::string(b"BIDR"), idr_supply, parameters, ctx);
+            init_vault_with_positions<BINR>(&mut t, ascii::string(b"BINR"), inr_supply, parameters, ctx);
+            init_vault_with_positions<BRUB>(&mut t, ascii::string(b"BRUB"), rub_supply, parameters, ctx);
+            init_vault_with_positions<BSAR>(&mut t, ascii::string(b"BSAR"), sar_supply, parameters, ctx);
+            init_vault_with_positions<BTRY>(&mut t, ascii::string(b"BTRY"), try_supply, parameters, ctx);
+            init_vault_with_positions<BZAR>(&mut t, ascii::string(b"BZAR"), zar_supply, parameters, ctx);
+            init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
+            init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
+        };
         let mut rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {
             let deposit_balance = balance::split(&mut bfc_balance, treasury::bfc_required(&t));
@@ -431,11 +432,13 @@ module bfc_system::bfc_system_state_inner {
         time_interval: u32,
         chain_start_timestamp_ms: u64,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
+        bfc_skip_init_vault: u32,
     ): BfcSystemParameters {
         BfcSystemParameters {
             time_interval,
             chain_start_timestamp_ms,
             treasury_parameters,
+            bfc_skip_init_vault,
         }
     }
 

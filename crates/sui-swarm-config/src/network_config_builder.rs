@@ -397,6 +397,7 @@ impl<R: rand::RngCore + rand::CryptoRng> ConfigBuilder<R> {
         let genesis = {
             let mut builder = sui_genesis_builder::Builder::new()
                 .with_parameters(genesis_config.parameters)
+                .with_test_config(genesis_config.bfc_skip_init_vault)
                 .add_objects(self.additional_objects);
 
             for (i, validator) in validators.iter().enumerate() {
