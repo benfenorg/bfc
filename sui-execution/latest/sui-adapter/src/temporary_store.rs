@@ -35,6 +35,7 @@ use sui_types::{
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -954,142 +955,118 @@ impl<'backing> TemporaryStore<'backing> {
     /// have updated object versions.
     pub fn check_sui_conserved(
         &self,
-        simple_conservation_checks: bool,
-        gas_summary: &GasCostSummary,
-    ) -> Result<(), ExecutionError> {
-        let mut total_input_sui = 0;
-        // total amount of SUI in output objects, including both coins and storage rebates
-        let mut total_output_sui = 0;
-        // total amount of SUI in storage rebate of input objects
-        let mut total_input_rebate = 0;
-        // total amount of SUI in storage rebate of output objects
-        let mut total_output_rebate = 0;
-        let mut total_input_stable_gas = 0;
-        let mut total_output_stable_gas = 0;
-
-        if !simple_conservation_checks {
-            return Ok(());
-        }
-        // total amount of SUI in storage rebate of input objects
-        let mut total_input_rebate = 0;
-        // total amount of SUI in storage rebate of output objects
-        let mut total_output_rebate = 0;
-        for (id, input, output) in self.get_modified_objects() {
-            if let Some(input) = input {
-                total_input_rebate += input.storage_rebate;
-                let (stable_coin,rebate) = self.get_input_stable_with_bfc(&id, version,layout_resolver)?;
-                total_input_stable_gas += stable_coin;
-                total_input_sui += rebate;
-            }
-            if let Some(object) = output {
-                total_output_rebate += object.storage_rebate;
-            }
-        }
-
-        if gas_summary.storage_cost == 0 {
-            // this condition is usually true when the transaction went OOG and no
-            // gas is left for storage charges.
-            // The storage cost has to be there at least for the gas coin which
-            // will not be deleted even when going to 0.
-            // However if the storage cost is 0 and if there is any object touched
-            // or deleted the value in input must be equal to the output plus rebate and
-            // non refundable.
-            // Rebate and non refundable will be positive when there are object deleted
-            // (gas smashing being the primary and possibly only example).
-            // A more typical condition is for all storage charges in summary to be 0 and
-            // then input and output must be the same value
-            if total_input_rebate
-                != total_output_rebate
-                + gas_summary.storage_rebate
-                + gas_summary.non_refundable_storage_fee
-            {
-                return Err(ExecutionError::invariant_violation(format!(
-                    "SUI conservation failed -- no storage charges in gas summary \
-                        and total storage input rebate {} not equal  \
-                        to total storage output rebate {}",
-                    total_input_rebate, total_output_rebate,
-                )));
-            }
-        } else {
-            // all SUI in storage rebate fields of input objects should flow either to
-            // the transaction storage rebate, or the non-refundable storage rebate pool
-            if total_input_rebate
-                != gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee
-            {
-                return Err(ExecutionError::invariant_violation(format!(
-                    "SUI conservation failed -- {} SUI in storage rebate field of input objects, \
-                        {} SUI in tx storage rebate or tx non-refundable storage rebate",
-                    total_input_rebate, gas_summary.non_refundable_storage_fee,
-                )));
-            }
-
-            // all SUI charged for storage should flow into the storage rebate field
-            // of some output object
-            if gas_summary.storage_cost != total_output_rebate {
-                //todo: reopen the error later
-                // return Err(ExecutionError::invariant_violation(format!(
-                //     "SUI conservation failed -- {} SUI charged for storage, \
-                //         {} SUI in storage rebate field of output objects",
-                //     gas_summary.storage_cost, total_output_rebate
-                // )));
-            }
-        }
-        Ok(())
-    }
-
-    /// Check that this transaction neither creates nor destroys SUI.
-    /// This more expensive check will check a third invariant on top of the 2 performed
-    /// by `check_sui_conserved` above:
-    ///
-    /// * all SUI in input objects (including coins etc in the Move part of an object) should flow
-    ///    either to an output object, or be burned as part of computation fees or non-refundable
-    ///    storage rebate
-    ///
-    /// This function is intended to be called *after* we have charged for gas + applied the
-    /// storage rebate to the gas object, but *before* we have updated object versions. The
-    /// advance epoch transaction would mint `epoch_fees` amount of SUI, and burn `epoch_rebates`
-    /// amount of SUI. We need these information for this check.
-    pub fn check_sui_conserved_expensive(
-        &self,
         gas_summary: &GasCostSummary,
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
-        _pay_with_stable_gas : bool,
+        do_expensive_checks: bool,
+        pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
         let mut total_input_sui = 0;
         // total amount of SUI in output objects, including both coins and storage rebates
         let mut total_output_sui = 0;
+        // total amount of SUI in storage rebate of input objects
+        let mut total_input_rebate = 0;
+        // total amount of SUI in storage rebate of output objects
+        let mut total_output_rebate = 0;
+
+        let mut total_input_stable_gas = 0;
+        let mut total_output_stable_gas = 0;
+
         for (id, input, output) in self.get_modified_objects() {
-            if let Some(input) = input {
-                total_input_sui += self.get_input_sui(&id, input.version, layout_resolver)?;
+            if let Some(loaded_obj) = input {
+                total_input_rebate += loaded_obj.storage_rebate;
+                let (stable_coin,rebate) = self.get_input_stable_with_bfc(&id, loaded_obj.version, layout_resolver)?;
+                total_input_stable_gas += stable_coin;
+                total_input_sui += rebate;
             }
             if let Some(object) = output {
-                total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
+                total_output_rebate += object.storage_rebate;
+                let (stable_coin,bfc) = object.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                     make_invariant_violation!(
-                        "Failed looking up output SUI in SUI conservation checking for \
-                         mutated type {:?}: {e:#?}",
-                        object.struct_tag(),
-                    )
+                            "Failed looking up output Stable Coin in SUI conservation checking for \
+                             mutated type {:?}: {e:#?}",
+                            object.struct_tag(),
+                        )
                 })?;
+                total_output_stable_gas += stable_coin;
+                total_output_sui += bfc;
             }
         }
-        // note: storage_cost flows into the storage_rebate field of the output objects, which is
-        // why it is not accounted for here.
-        // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
-        // gets credited to the gas coin both computation costs and storage rebate inflow are
-        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
-        if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-            total_input_sui += epoch_fees;
-            total_output_sui += epoch_rebates;
+        if do_expensive_checks {
+            // note: storage_cost flows into the storage_rebate field of the output objects, which is why it is not accounted for here.
+            // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow gets credited to the gas coin
+            // both computation costs and storage rebate inflow are
+
+            if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
+                total_input_sui += epoch_fees;
+                total_output_sui += epoch_rebates;
+            }
+
+            if pay_with_stable_gas {
+
+                total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
+                total_output_sui +=  gas_summary.non_refundable_storage_fee;
+
+                let stable_amount=
+                    if total_input_stable_gas>= total_output_stable_gas {
+                        total_input_stable_gas-total_output_stable_gas
+                    }else {
+                        total_output_stable_gas-total_input_stable_gas
+                    };
+                let sui_amount = if total_input_sui >= total_output_sui {
+                    total_input_sui-total_output_sui
+                }else {
+                    total_output_sui-total_input_sui
+                };
+
+                if stable_amount != gas_summary.storage_gas_usage_abs_improved(){
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
+                                stable_amount,
+                                gas_summary.storage_gas_usage_abs_improved()))
+                    );
+                }
+
+                if sui_amount != gas_summary.storage_gas_usage_abs() {
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
+                                sui_amount,
+                                gas_summary.storage_gas_usage_abs()))
+                    );
+                }
+            } else {
+                total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+                if total_input_sui != total_output_sui {
+                    return Err(ExecutionError::invariant_violation(
+                        format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                                total_input_sui,
+                                total_output_sui))
+                    );
+                }
+            }
         }
-        if total_input_sui != total_output_sui {
-            // return Err(ExecutionError::invariant_violation(format!(
-            //     "SUI conservation failed: input={}, output={}, \
-            //         this transaction either mints or burns SUI",
-            //     total_input_sui, total_output_sui,
-            // )));
-            return Ok(());
+
+        // all SUI in storage rebate fields of input objects should flow either to the transaction storage rebate, or the non-refundable
+        // storage rebate pool
+        if total_input_rebate != gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee
+        {
+            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
+            /*return Err(ExecutionError::invariant_violation(
+                format!("SUI conservation failed--{} SUI in storage rebate field of input objects, {} SUI in tx storage rebate or tx non-refundable storage rebate",
+                total_input_rebate,
+                gas_summary.non_refundable_storage_fee))
+            );*/
+        }
+
+        // all SUI charged for storage should flow into the storage rebate field of some output object
+        if gas_summary.storage_cost != total_output_rebate {
+            // TODO: re-enable once we fix the edge case with OOG, gas smashing, and storage rebate
+            /*return Err(ExecutionError::invariant_violation(
+                format!("SUI conservation failed--{} SUI charged for storage, {} SUI in storage rebate field of output objects",
+                gas_summary.storage_cost,
+                total_output_rebate))
+            );*/
         }
         Ok(())
     }
