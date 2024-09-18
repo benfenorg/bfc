@@ -13,6 +13,7 @@ parameters:
   stake_subsidy_initial_distribution_amount: 27000000000000
   stake_subsidy_period_length: 10
   stake_subsidy_decrease_rate: 0
+bfc_skip_init_vault: 1
 accounts:
   - address: BFC73a6b3c33e2d63383de5c6786cbaca231ff789f4c853af6d54cb883d8780adc0a9d1
     gas_amounts:
