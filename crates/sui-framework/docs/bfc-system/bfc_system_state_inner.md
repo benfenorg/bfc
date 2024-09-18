@@ -614,6 +614,8 @@ X treasury  init treasury
         <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BZAR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BZAR"), zar_supply, parameters, ctx);
         <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BMXN&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BMXN"), mxn_supply, parameters, ctx);
         <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;MGG&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"MGG"), mgg_supply, parameters, ctx);
+    }<b>else</b>{
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BUSD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BUSD"), usd_supply, parameters, ctx);
     };
     <b>let</b> <b>mut</b> rate_map = <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>&gt;();
     <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&bfc_balance) &gt; 0) {

@@ -3100,7 +3100,7 @@ remove terminated proposal from proposer
         version_id : proposalInfo.version_id,
         status: curProposalStatus,
     };
-    <a href="../sui-framework/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> dao.current_proposal_status, proposalInfo.pid, proposal_status);
+    <a href="../sui-framework/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> (dao.current_proposal_status), proposalInfo.pid, proposal_status);
 }
 </code></pre>
 
