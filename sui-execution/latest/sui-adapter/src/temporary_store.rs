@@ -781,6 +781,7 @@ type ModifiedObjectInfo<'a> = (
 );
 
 impl<'backing> TemporaryStore<'backing> {
+    #[allow(dead_code)]
     fn get_input_sui(
         &self,
         id: &ObjectID,
@@ -849,10 +850,11 @@ impl<'backing> TemporaryStore<'backing> {
     }
 
     #[allow(unused)]
-    fn get_input_stable_with_rebate(
+    fn get_input_stable_with_bfc(
         &self,
         id: &ObjectID,
         expected_version: SequenceNumber,
+        layout_resolver: &mut impl LayoutResolver,
     ) -> Result<(u64,u64), ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
@@ -864,7 +866,7 @@ impl<'backing> TemporaryStore<'backing> {
                     obj.version(),
                 );
             }
-            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for input with \
                          type {:?}: {e:#?}",
@@ -878,7 +880,7 @@ impl<'backing> TemporaryStore<'backing> {
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            obj.get_total_stable_coin_with_rebate().map_err(|e| {
+            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                 make_invariant_violation!(
                     "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
@@ -955,6 +957,16 @@ impl<'backing> TemporaryStore<'backing> {
         simple_conservation_checks: bool,
         gas_summary: &GasCostSummary,
     ) -> Result<(), ExecutionError> {
+        let mut total_input_sui = 0;
+        // total amount of SUI in output objects, including both coins and storage rebates
+        let mut total_output_sui = 0;
+        // total amount of SUI in storage rebate of input objects
+        let mut total_input_rebate = 0;
+        // total amount of SUI in storage rebate of output objects
+        let mut total_output_rebate = 0;
+        let mut total_input_stable_gas = 0;
+        let mut total_output_stable_gas = 0;
+
         if !simple_conservation_checks {
             return Ok(());
         }
@@ -962,9 +974,12 @@ impl<'backing> TemporaryStore<'backing> {
         let mut total_input_rebate = 0;
         // total amount of SUI in storage rebate of output objects
         let mut total_output_rebate = 0;
-        for (_, input, output) in self.get_modified_objects() {
+        for (id, input, output) in self.get_modified_objects() {
             if let Some(input) = input {
                 total_input_rebate += input.storage_rebate;
+                let (stable_coin,rebate) = self.get_input_stable_with_bfc(&id, version,layout_resolver)?;
+                total_input_stable_gas += stable_coin;
+                total_input_sui += rebate;
             }
             if let Some(object) = output {
                 total_output_rebate += object.storage_rebate;

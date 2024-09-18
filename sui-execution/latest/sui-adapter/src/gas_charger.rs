@@ -119,7 +119,7 @@ pub mod checked {
 
         pub fn is_pay_with_stable_coin(&self,temporary_store: &TemporaryStore<'_>) -> bool {
             for (id,version,_) in self.gas_coins.iter()  {
-                let obj_result = temporary_store.get_input_sui_obj_nopanic(id,version.clone());
+                let obj_result = temporary_store.get_input_sui_obj_nopanic(id,*version);
                 if obj_result.is_err() {
                     continue;
                 }
