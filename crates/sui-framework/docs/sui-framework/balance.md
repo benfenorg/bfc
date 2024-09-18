@@ -38,7 +38,7 @@ A Supply of T. Used for minting and burning.
 Wrapped into a <code>TreasuryCap</code> in the <code>Coin</code> module.
 
 
-<pre><code><b>struct</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">Supply</a>&lt;T&gt; <b>has</b> store
+<pre><code><b>struct</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">Supply</a>&lt;T&gt; <b>has</b> drop, store
 </code></pre>
 
 

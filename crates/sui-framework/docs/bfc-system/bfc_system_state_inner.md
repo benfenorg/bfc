@@ -249,6 +249,12 @@ title: Module `0xc8::bfc_system_state_inner`
 <dd>
 
 </dd>
+<dt>
+<code>bfc_skip_init_vault: u32</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -590,25 +596,25 @@ X treasury  init treasury
     ctx: &<b>mut</b> TxContext
 ): (Treasury, Balance&lt;BFC&gt;, VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>&gt;) {
     <b>let</b> <b>mut</b> t = <a href="../bfc-system/treasury.md#0xc8_treasury_create_treasury">treasury::create_treasury</a>(parameters.time_interval, <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&bfc_balance), ctx);
-
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BUSD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BUSD"), usd_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BJPY&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BJPY"), jpy_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BKRW&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BKRW"), krw_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BAUD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BAUD"), aud_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BARS&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BARS"), ars_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BBRL&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BBRL"), brl_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BCAD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BCAD"), cad_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BEUR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BEUR"), eur_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BGBP&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BGBP"), gbp_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BIDR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BIDR"), idr_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BINR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BINR"), inr_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BRUB&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BRUB"), rub_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BSAR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BSAR"), sar_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BTRY&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BTRY"), try_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BZAR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BZAR"), zar_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BMXN&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BMXN"), mxn_supply, parameters, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;MGG&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"MGG"), mgg_supply, parameters, ctx);
-
+    <b>if</b> (parameters.bfc_skip_init_vault == 0) {
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BUSD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BUSD"), usd_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BJPY&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BJPY"), jpy_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BKRW&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BKRW"), krw_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BAUD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BAUD"), aud_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BARS&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BARS"), ars_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BBRL&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BBRL"), brl_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BCAD&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BCAD"), cad_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BEUR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BEUR"), eur_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BGBP&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BGBP"), gbp_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BIDR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BIDR"), idr_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BINR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BINR"), inr_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BRUB&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BRUB"), rub_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BSAR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BSAR"), sar_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BTRY&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BTRY"), try_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BZAR&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BZAR"), zar_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;BMXN&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"BMXN"), mxn_supply, parameters, ctx);
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_vault_with_positions">init_vault_with_positions</a>&lt;MGG&gt;(&<b>mut</b> t, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"MGG"), mgg_supply, parameters, ctx);
+    };
     <b>let</b> <b>mut</b> rate_map = <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../move-stdlib/u64.md#0x1_u64">u64</a>&gt;();
     <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>&lt;BFC&gt;(&bfc_balance) &gt; 0) {
         <b>let</b> deposit_balance = <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> bfc_balance, <a href="../bfc-system/treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&t));
@@ -1298,7 +1304,7 @@ X-vault
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_system_parameters">bfc_system_parameters</a>(time_interval: u32, chain_start_timestamp_ms: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, treasury_parameters: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_TreasuryParameters">bfc_system_state_inner::TreasuryParameters</a>&gt;): <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_bfc_system_parameters">bfc_system_parameters</a>(time_interval: u32, chain_start_timestamp_ms: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, treasury_parameters: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_TreasuryParameters">bfc_system_state_inner::TreasuryParameters</a>&gt;, bfc_skip_init_vault: u32): <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">bfc_system_state_inner::BfcSystemParameters</a>
 </code></pre>
 
 
@@ -1311,11 +1317,13 @@ X-vault
     time_interval: u32,
     chain_start_timestamp_ms: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     treasury_parameters: VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_TreasuryParameters">TreasuryParameters</a>&gt;,
+    bfc_skip_init_vault: u32,
 ): <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a> {
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a> {
         time_interval,
         chain_start_timestamp_ms,
         treasury_parameters,
+        bfc_skip_init_vault,
     }
 }
 </code></pre>

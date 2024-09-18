@@ -71,6 +71,7 @@ const GENESIS_BUILDER_UNSIGNED_GENESIS_FILE: &str = "unsigned-genesis";
 
 pub struct Builder {
     parameters: GenesisCeremonyParameters,
+    bfc_skip_init_vault: u32,
     token_distribution_schedule: Option<TokenDistributionSchedule>,
     objects: BTreeMap<ObjectID, Object>,
     validators: BTreeMap<AuthorityPublicKeyBytes, GenesisValidatorInfo>,
@@ -89,6 +90,7 @@ impl Builder {
     pub fn new() -> Self {
         Self {
             parameters: Default::default(),
+            bfc_skip_init_vault: 0,
             token_distribution_schedule: None,
             objects: Default::default(),
             validators: Default::default(),
@@ -99,6 +101,11 @@ impl Builder {
 
     pub fn with_parameters(mut self, parameters: GenesisCeremonyParameters) -> Self {
         self.parameters = parameters;
+        self
+    }
+
+    pub fn with_test_config(mut self, test_config: u32) -> Self {
+        self.bfc_skip_init_vault = test_config;
         self
     }
 
@@ -201,6 +208,7 @@ impl Builder {
             &token_distribution_schedule,
             &validators,
             &objects,
+            self.bfc_skip_init_vault,
         ));
 
         self.token_distribution_schedule = Some(token_distribution_schedule);
@@ -235,6 +243,7 @@ impl Builder {
             &token_distribution_schedule,
             &validators,
             &objects,
+            self.bfc_skip_init_vault,
         ));
         self.token_distribution_schedule = Some(token_distribution_schedule);
         self.built_genesis.clone().unwrap()
@@ -636,6 +645,7 @@ pub fn load_private_genesis<P: AsRef<Path>>(path: P, with_genesis: bool) -> anyh
 
     let mut builder = Self {
         parameters,
+        bfc_skip_init_vault: 0,
         token_distribution_schedule,
         objects: Default::default(),
         validators: committee,
@@ -729,6 +739,7 @@ pub fn load<P: AsRef<Path>>(path: P) -> anyhow::Result<Self, anyhow::Error> {
 
         let mut builder = Self {
             parameters,
+            bfc_skip_init_vault: 0,
             token_distribution_schedule,
             objects: Default::default(),
             validators: committee,
@@ -856,13 +867,16 @@ fn build_unsigned_genesis_data(
     token_distribution_schedule: &TokenDistributionSchedule,
     validators: &[GenesisValidatorInfo],
     objects: &[Object],
+    bfc_skip_init_vault: u32,
 ) -> UnsignedGenesis {
     if !parameters.allow_insertion_of_extra_objects && !objects.is_empty() {
         panic!("insertion of extra objects at genesis time is prohibited due to 'allow_insertion_of_extra_objects' parameter");
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
-    let bfc_system_parameters = parameters.to_bfc_system_parameters();
+    let mut bfc_system_parameters = parameters.to_bfc_system_parameters();
+    bfc_system_parameters.bfc_skip_init_vault = bfc_skip_init_vault;
+
     let genesis_validators = validators
         .iter()
         .cloned()

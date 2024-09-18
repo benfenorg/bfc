@@ -217,6 +217,7 @@ pub struct GenesisConfig {
     pub ssfn_config_info: Option<Vec<SsfnGenesisConfig>>,
     pub validator_config_info: Option<Vec<ValidatorGenesisConfig>>,
     pub parameters: GenesisCeremonyParameters,
+    pub bfc_skip_init_vault: u32,
     pub accounts: Vec<AccountConfig>,
 }
 
@@ -306,10 +307,12 @@ impl GenesisConfig {
     const BENCHMARK_EPOCH_DURATION_MS: u64 = 60 * 60 * 1000;
 
     pub fn for_local_testing() -> Self {
-        Self::custom_genesis(
+        let mut config = Self::custom_genesis(
             DEFAULT_NUMBER_OF_ACCOUNT,
             DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT,
-        )
+        );
+        config.bfc_skip_init_vault = 1;
+        config
     }
 
     pub fn for_local_testing_with_addresses(addresses: Vec<SuiAddress>) -> Self {
@@ -412,6 +415,7 @@ impl GenesisConfig {
             ssfn_config_info: None,
             validator_config_info: Some(validator_config_info),
             parameters,
+            bfc_skip_init_vault: 0,
             accounts: account_configs,
         }
     }
