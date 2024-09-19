@@ -698,11 +698,6 @@ impl ReadApi {
         Ok(self.api.http.get_protocol_config(version).await?)
     }
 
-    pub async fn get_bfc_zklogin_salt(&self, seed: String, iss: String, sub: String)
-                                      -> SuiRpcResult<String> {
-        Ok(self.api.http.get_bfc_zklogin_salt(seed, iss, sub).await?)
-    }
-
     pub async fn try_get_object_before_version(
         &self,
         object_id: ObjectID,
