@@ -1,7 +1,5 @@
 # @mysten/suins-toolkit
 
-<<<<<<< HEAD
-=======
 ## 0.4.7
 
 ### Patch Changes
@@ -58,30 +56,10 @@
 - Updated dependencies [9ac0a4ec01]
   - @mysten/sui.js@0.49.1
 
->>>>>>> mainnet-v1.24.1
 ## 0.4.0
 
 ### Minor Changes
 
-<<<<<<< HEAD
-- 1696f3e5f: Update to use modular imports from @mysten/sui.js
-
-  Some methods now accept a `SuiClient` imported from `@mysten/sui.js/client` rather than a `JsonRpcProvider`
-
-### Patch Changes
-
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-- Updated dependencies [1696f3e5f]
-  - @mysten/sui.js@0.42.0
-
-=======
 - e5f9e3ba21: Replace tsup based build to fix issues with esm/cjs dual publishing
 
 ### Patch Changes
@@ -199,7 +177,6 @@
 
 - @mysten/sui.js@0.41.2
 
->>>>>>> mainnet-v1.24.1
 ## 0.3.4
 
 ### Patch Changes
