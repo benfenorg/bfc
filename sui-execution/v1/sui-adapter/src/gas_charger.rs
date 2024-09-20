@@ -6,14 +6,15 @@ pub use checked::*;
 
 #[sui_macros::with_checked_arithmetic]
 pub mod checked {
-
+    use std::str::FromStr;
     use crate::sui_types::gas::SuiGasStatusAPI;
     use crate::temporary_store::TemporaryStore;
     use sui_protocol_config::ProtocolConfig;
-    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus};
+    use sui_types::gas::{deduct_gas, GasCostSummary, SuiGasStatus, calculate_stable_net_used_with_base_point};
     use sui_types::gas_model::gas_predicates::{
         charge_upgrades, dont_charge_budget_on_storage_oog,
     };
+    use sui_types::execution_status::ExecutionFailureStatus;
     use sui_types::{
         base_types::{ObjectID, ObjectRef},
         digests::TransactionDigest,
@@ -289,11 +290,6 @@ pub mod checked {
             temporary_store.ensure_active_inputs_mutated();
             temporary_store.collect_storage_and_rebate(self);
 
-            if self.smashed_gas_coin.is_some() {
-                #[skip_checked_arithmetic]
-                trace!(target: "replay_gas_info", "Gas smashing has occurred for this transaction");
-            }
-
             // system transactions (None smashed_gas_coin)  do not have gas and so do not charge
             // for storage, however they track storage values to check for conservation rules
             if let Some(gas_object_id) = self.smashed_gas_coin {
@@ -303,11 +299,53 @@ pub mod checked {
                     self.handle_storage_and_rebate_v1(temporary_store, execution_result)
                 }
 
-                let cost_summary = self.gas_status.summary();
+                let mut cost_summary = self.gas_status.summary();
                 let gas_used = cost_summary.net_gas_usage();
 
                 let mut gas_object = temporary_store.read_object(&gas_object_id).unwrap().clone();
-                deduct_gas(&mut gas_object, gas_used);
+                if !self.gas_status.has_adjust_is_computation_by_stable() && gas_object.is_stable_gas_coin() {
+                    let coin_name = gas_object.get_gas_coin_name();
+                    //read rate
+                    let result = temporary_store.get_stable_rate_with_base_point_by_name(coin_name.clone());
+
+                    match result {
+                        Ok((rate, base_point)) => {
+                            cost_summary.rate = rate;
+                            cost_summary.base_point = base_point;
+                            //The rates of these transactions are messed up due to rebalance and need to be manually specified.
+                            if self.tx_digest == TransactionDigest::from_str("A8vgez4cnLiroMChKTD2sboio2q4LGxg4Wt1cZKdh4SQ").unwrap() {
+                                cost_summary.rate = 10100510643;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("6CtGMuKeUBwN7rjwiSZ5yYLnGRttS9RnALgetytU7q55").unwrap() {
+                                cost_summary.rate = 10336208896;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("3fzrrb3FUq8qCFCjQz7pFhB4WFxyJUSzzuGYpahJmhX7").unwrap() {
+                                cost_summary.rate = 10354877594;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7D5ZLdrgkEyKXcm5cGsZinSEaLno27qsWsKKkLGHbtZw").unwrap() {
+                                cost_summary.rate = 10654869094;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7nr1kVaUqB8xyyU3P1uQgoKMPDV3K8x21GzuM998Yfzb").unwrap() {
+                                cost_summary.rate = 10655582452;
+                            }
+                            let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
+                            deduct_gas(&mut gas_object, stable_gas_used);
+                        },
+                        Err(_) => {
+                            *execution_result = Err(ExecutionError::from_kind(
+                                ExecutionFailureStatus::StableCoinRateErr(format!("Stable coin {} not found in rate map", coin_name)),
+                            ));
+                            self.reset(temporary_store);
+                            cost_summary = self.gas_status.summary();
+                            let gas_used = cost_summary.net_gas_usage();
+
+                            deduct_gas(&mut gas_object, gas_used);
+                        }
+                    }
+                }else {
+                    deduct_gas(&mut gas_object, gas_used);
+                }
+
                 #[skip_checked_arithmetic]
                 trace!(gas_used, gas_obj_id =? gas_object.id(), gas_obj_ver =? gas_object.version(), "Updated gas object");
 
