@@ -1,15 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SuiObjectResponse } from '@benfen/bfc.js/client';
-import { SuiClient } from '@benfen/bfc.js/client';
-=======
-import type { SuiClient, SuiObjectResponse } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
+import { BenfenClient, BenfenObjectResponse } from '@benfen/bfc.js/client';
 
 // get NFT's owner from RPC.
-export const getOwner = async (client: SuiClient, nftId: string): Promise<string | null> => {
+export const getOwner = async (client: BenfenClient, nftId: string): Promise<string | null> => {
 	const ownerResponse = await client.getObject({
 		id: nftId,
 		options: { showOwner: true },
@@ -23,7 +18,10 @@ export const getOwner = async (client: SuiClient, nftId: string): Promise<string
 };
 
 // get avatar NFT Object from RPC.
-export const getAvatar = async (client: SuiClient, avatar: string): Promise<SuiObjectResponse> => {
+export const getAvatar = async (
+	client: BenfenClient,
+	avatar: string,
+): Promise<BenfenObjectResponse> => {
 	return await client.getObject({
 		id: avatar,
 		options: {
