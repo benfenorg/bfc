@@ -4,20 +4,6 @@
 import { defineConfig } from 'vitest/config';
 
 export default defineConfig({
-<<<<<<< HEAD
-    test: {
-        minThreads: 1,
-        maxThreads: 8,
-        hookTimeout: 1000000,
-        testTimeout: 1000000,
-    },
-    resolve: {
-        alias: {
-            '@benfen/bcs': new URL('../bcs/src', import.meta.url).toString(),
-            '@benfen/bfc.js': new URL('../typescript/src', import.meta.url).toString(),
-        },
-    },
-=======
 	test: {
 		minThreads: 1,
 		maxThreads: 8,
@@ -30,5 +16,4 @@ export default defineConfig({
 			'@mysten/sui.js': new URL('../typescript/src', import.meta.url).toString(),
 		},
 	},
->>>>>>> mainnet-v1.24.1
 });

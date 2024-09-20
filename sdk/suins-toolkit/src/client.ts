@@ -1,11 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<< HEAD
-import { SuiClient } from '@benfen/bfc.js/client';
-=======
-import type { SuiClient } from '@mysten/sui.js/client';
->>>>>>> mainnet-v1.24.1
+import type { BenfenClient } from '@benfen/bfc.js/client';
 
 import type { DataFields, NameObject, NetworkType, SuiNSContract } from './types/objects.js';
 import { DEVNET_JSON_FILE, GCS_URL, TESTNET_JSON_FILE } from './utils/constants.js';
@@ -15,12 +11,12 @@ import { getAvatar, getOwner } from './utils/queries.js';
 export const AVATAR_NOT_OWNED = 'AVATAR_NOT_OWNED';
 
 class SuinsClient {
-	private suiClient: SuiClient;
+	private suiClient: BenfenClient;
 	contractObjects: SuiNSContract | undefined;
 	networkType: NetworkType | undefined;
 
 	constructor(
-		suiClient: SuiClient,
+		suiClient: BenfenClient,
 		options?: {
 			contractObjects?: SuiNSContract;
 			networkType?: NetworkType;
