@@ -34,9 +34,7 @@ use sui_types::{
     transaction::InputObjects,
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
-use sui_types::bfc_system_state::{
-                                  get_stable_rate_and_reward_rate,
-                                };
+use sui_types::bfc_system_state::{get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
 use sui_types::collection_types::VecMap;
 
 pub struct TemporaryStore<'backing> {
@@ -821,6 +819,18 @@ impl<'backing> TemporaryStore<'backing> {
     pub fn get_stable_rate_map_and_reward_rate(&self) -> Result<(VecMap<String, u64>, u64),SuiError> {
         get_stable_rate_and_reward_rate(self.store.as_object_store())
     }
+
+    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> Result<(u64, u64),SuiError> {
+        let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())?;
+        let rate = wrapper.contents.clone().into_iter()
+            .find(|e| e.key == name)
+            .map(|e| e.value);
+        match rate {
+            Some(rate) => Ok((rate, base_point)),
+            None => Err(SuiError::BfcSystemStateReadError(format!("Stable rate not found by name: {}",name))),
+        }
+    }
+
     pub fn is_safe_mode(& self) -> bool {
         let sui_system_state_result = get_sui_system_state(self.store.as_object_store());
         if let Ok(sui_system_state) = sui_system_state_result {
