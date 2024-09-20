@@ -14,7 +14,7 @@ proptest! {
     #![proptest_config(ProptestConfig::with_cases(20))]
     #[test]
     #[ignore]
-    #[cfg_attr(msim, ignore)]
+    #[cfg_attr(msim)]
     fn fuzz_low_rgp_low_gas_price(
         universe in AccountUniverseGen::strategy(3..default_num_accounts(), 1_000_000_000u64..10_000_000_000),
         transfers in vec(any_with::<P2PTransferGenGasPriceInRange>((0u64, 10_000)), 0..default_num_transactions()),
@@ -24,7 +24,7 @@ proptest! {
     }
 
     #[test]
-    #[cfg_attr(msim, ignore)]
+    #[cfg_attr(msim)]
     #[ignore]
     fn fuzz_high_rgp_high_gas_price(
         universe in AccountUniverseGen::strategy(3..default_num_accounts(), 1_000_000_000u64..10_000_000_000),

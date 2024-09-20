@@ -12,11 +12,11 @@ use diesel::r2d2::R2D2Connection;
 use sui_json_rpc::{governance_api::ValidatorExchangeRates, SuiRpcModule};
 use sui_json_rpc_api::GovernanceReadApiServer;
 use sui_json_rpc_types::{
-    DelegatedStake, EpochInfo, StakeStatus, SuiCommittee, SuiObjectDataFilter, ValidatorApys,
+    DelegatedStake, EpochInfo, StakeStatus, SuiCommittee, ValidatorApys,
 };
 use sui_open_rpc::Module;
 use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SuiAddress},
+    base_types::{ObjectID, SuiAddress},
     committee::EpochId,
     governance::StakedSui,
     sui_serde::BigInt,
@@ -108,9 +108,9 @@ impl<T: R2D2Connection + 'static> GovernanceReadApi<T> {
 
     async fn get_staked_by_owner(
         &self,
-        owner: SuiAddress,
+        _owner: SuiAddress,
     ) -> Result<Vec<DelegatedStake>, IndexerError> {
-        let mut stakes = vec![];
+        let  stakes = vec![];
         // for stored_object in self
         //     .inner
         //     .get_owned_objects_in_blocking_task(
