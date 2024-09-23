@@ -4548,7 +4548,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto"
 version = "0.1.8"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=330c8046cb142167a0e81e970f3a426addc9f4c2#330c8046cb142167a0e81e970f3a426addc9f4c2"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=362c674ccaadda374f11aff8c752ce8c52b2b223#362c674ccaadda374f11aff8c752ce8c52b2b223"
 dependencies = [
  "aes",
  "aes-gcm",
@@ -4603,7 +4603,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-derive"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=330c8046cb142167a0e81e970f3a426addc9f4c2#330c8046cb142167a0e81e970f3a426addc9f4c2"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=362c674ccaadda374f11aff8c752ce8c52b2b223#362c674ccaadda374f11aff8c752ce8c52b2b223"
 dependencies = [
  "quote 1.0.35",
  "syn 1.0.107",
@@ -4612,7 +4612,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-tbls"
 version = "0.1.0"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=330c8046cb142167a0e81e970f3a426addc9f4c2#330c8046cb142167a0e81e970f3a426addc9f4c2"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=362c674ccaadda374f11aff8c752ce8c52b2b223#362c674ccaadda374f11aff8c752ce8c52b2b223"
 dependencies = [
  "bcs",
  "digest 0.10.7",
@@ -4630,7 +4630,7 @@ dependencies = [
 [[package]]
 name = "fastcrypto-zkp"
 version = "0.1.3"
-source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=330c8046cb142167a0e81e970f3a426addc9f4c2#330c8046cb142167a0e81e970f3a426addc9f4c2"
+source = "git+https://github.com/hellokittyboy-code/fastcrypto?rev=362c674ccaadda374f11aff8c752ce8c52b2b223#362c674ccaadda374f11aff8c752ce8c52b2b223"
 dependencies = [
  "ark-bls12-381",
  "ark-bn254",
