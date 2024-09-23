@@ -21,7 +21,7 @@ mod sim_only_tests {
         let mut _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
             config.set_simplified_unwrap_then_delete(false);
             // sui-execution v1 assumes simplified_unwrap_then_delete is set.
-            config.set_execution_version_for_testing(0);
+            config.set_execution_version_for_testing(1);
             config
         });
 
