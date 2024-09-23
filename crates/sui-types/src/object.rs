@@ -16,7 +16,6 @@ use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use serde_with::Bytes;
-use tracing::log::info;
 
 use crate::balance::Balance;
 use crate::base_types::{MoveObjectType, ObjectIDParseError};
@@ -36,6 +35,7 @@ use crate::{
 };
 use sui_protocol_config::ProtocolConfig;
 use crate::base_types_bfc::bfc_address_util::sui_address_to_bfc_address;
+use crate::stable_coin::stable::checked::STABLE;
 use crate::stable_coin::StableCoin;
 
 pub const GAS_VALUE_FOR_TESTING: u64 = 300_000_000_000_000;
@@ -391,22 +391,12 @@ impl MoveObject {
         let balances = self.get_coin_balances(layout_resolver)?;
         Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
     }
-
-    pub fn get_total_stable_coin(&self,) -> Result<u64, SuiError> {
-        Ok(Coin::from_bcs_bytes(self.contents())
-            .expect("failed to deserialize coin")
-            .balance
-            .value())
-        // let balances = self.get_coin_balances(layout_resolver)?;
-        // tracing::error!("balances {:?}",balances);
-        // Ok(balances.get(&GAS::type_tag()).copied().unwrap_or(0))
-    }
 }
 
 // Helpers for extracting Coin<T> balances for all T
 impl MoveObject {
     fn is_balance(s: &StructTag) -> Option<&TypeTag> {
-        (Balance::is_balance(s) && s.type_params.len() == 1 && GAS::is_gas_type(&s.type_params[0])).then(|| &s.type_params[0])
+        (Balance::is_balance(s) && s.type_params.len() == 1 && (GAS::is_gas_type(&s.type_params[0])|| STABLE::is_gas_type(&s.type_params[0]))).then(|| &s.type_params[0])
     }
 
     /// Get the total balances for all `Coin<T>` embedded in `self`.
@@ -454,7 +444,6 @@ impl MoveObject {
                 *balances.entry(type_tag.clone()).or_insert(0) += balance;
             }
         } else {
-            info!("get value: {:?}", s);
             for field in fields {
                 Self::get_coin_balances_in_value(&field.1, balances, value_depth)?;
             }
@@ -952,16 +941,19 @@ impl Object {
             })
     }
 
-    pub fn get_total_stable_coin_with_rebate(&self,) -> Result<(u64,u64), SuiError> {
+    pub fn get_total_stable_coin_with_bfc(&self,layout_resolver: &mut dyn LayoutResolver) -> Result<(u64,u64), SuiError> {
         Ok(match &self.data {
             Data::Move(m) => {
-                if m.type_.is_stable_gas_coin() {
-                    (m.get_total_stable_coin()?,self.storage_rebate)
-                }else {
-                    Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?
-                }
+                let balances = m.get_coin_balances(layout_resolver)?;
+                let bfc= balances.get(&GAS::type_tag()).copied().unwrap_or(0)+self.storage_rebate;//get bfc
+                let stable_coins = STABLE::all_stable_coins_type();
+                let mut balance = 0;
+                for type_tag in stable_coins {
+                    balance+=balances.get(&type_tag).copied().unwrap_or(0);
+                }// sum for all stable coin
+                (balance,bfc)
             }
-            Data::Package(_) => Err(SuiError::ExecutionError("should be Stable Coin".to_string().into()))?,
+            Data::Package(_) => (0,self.storage_rebate),
         })
     }
 

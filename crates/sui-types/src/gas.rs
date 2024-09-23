@@ -383,13 +383,14 @@ pub fn calculate_add(base: u64, add: u64) -> u64 {
 
 
 const BFC_STABLE_BASIS_POINTS_U64: u64 = 100;
+const BFC_STABLE_BASIS_POINTS_U128: u128 = 100;
 const BFC_PRECISION: u128 = 1000000000;
 pub fn calculate_bfc_to_stable_cost_with_base_point(cost: u64, rate: u64, base_point: u64) -> u64 {
     if rate == 0 || rate == 1 {
         return cost;
     }
     //参考合约中的处理：将bfc换成stable采用舍去小数：checked_div_round
-    ((cost as u128 * BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) / (rate * BFC_STABLE_BASIS_POINTS_U64) as u128) as u64
+    ((cost as u128 * BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) / (rate as u128 * BFC_STABLE_BASIS_POINTS_U128)) as u64
 }
 
 pub fn calculate_bfc_to_stable_cost(cost: u64, rate: u64) -> u64 {
@@ -408,7 +409,7 @@ pub fn calculate_stable_net_used_with_base_point(summary :&GasCostSummary) -> i6
 }
 
 pub fn calculate_stable_to_bfc_cost_with_base_point(stable_cost: u64, rate: u64, base_point: u64) -> u64 {
-    stable_cost * (rate * BFC_STABLE_BASIS_POINTS_U64) / (BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U64 + base_point) as u128) as u64
+    ((stable_cost as u128) * (rate as u128 * BFC_STABLE_BASIS_POINTS_U128) / (BFC_PRECISION * (BFC_STABLE_BASIS_POINTS_U128 + base_point as u128))) as u64
 }
 
 pub fn calculate_stable_to_bfc_cost(cost: u64, rate: u64) -> u64 {
@@ -458,6 +459,10 @@ mod test{
         let cost = -87119i64;
         let rate = 999999999u64;
         let result = calculate_bfc_to_stable_cost_with_base_point(cost.abs() as u64, rate, 10);
+        println!("result: {}", result);
+        let rate = u64::MAX - 1;
+        let cost = 132240;
+        let result = calculate_bfc_to_stable_cost_with_base_point(cost, rate, 10);
         println!("result: {}", result);
     }
 
