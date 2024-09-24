@@ -850,7 +850,6 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
-    #[allow(unused)]
     fn get_input_stable_with_bfc(
         &self,
         id: &ObjectID,
