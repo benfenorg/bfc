@@ -247,7 +247,7 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
             / 10_000f64;
         staking.bfc_24h_rate = (bfc_now_price - bfc_past_price) / bfc_past_price;
         staking.total_addresses = self.state.get_mining_nft_total_addressess().await?;
-        staking.total_long = (timestamp - 1722563100) / 86400 * 1000 + 1000;
+        staking.total_long = self.state.sum_mint_long_coin().await? / 1000000000;
         Ok(staking)
     }
 

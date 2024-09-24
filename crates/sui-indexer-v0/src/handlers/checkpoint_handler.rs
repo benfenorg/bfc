@@ -1683,6 +1683,14 @@ where
             if mls.len() > 0 {
                 self.state.persist_mining_nft_liquidities(mls).await?;
             }
+            let mint_events = mining_nft::extract_mint_long_event(&liq_events)?;
+            let mut event_list = vec![];
+            for event in mint_events {
+                event_list.push((checkpoint.clone(), event).into());
+            }
+            if event_list.len() > 0 {
+                self.state.persist_mint_long_coin(event_list).await?;
+            }
         }
         Ok(())
     }

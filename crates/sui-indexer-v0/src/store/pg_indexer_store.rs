@@ -68,7 +68,7 @@ use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
 use crate::models::mining_nft::{
-    MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MiningNFTStaking, MiningNFTSummary,
+    MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MiningNFTStaking, MiningNFTSummary, MintLongCoin
 };
 use crate::models::network_metrics::{DBMoveCallMetrics, DBNetworkMetrics};
 use crate::models::network_overview::DBNetworkOverview;
@@ -81,7 +81,7 @@ use crate::models::prices::{self, PriceHistory};
 use crate::models::system_state::DBValidatorSummary;
 use crate::models::transaction_index::{ChangedObject, InputObject, MoveCall, Recipient};
 use crate::models::transactions::Transaction;
-use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators};
+use crate::schema::{active_addresses, address_stakes, address_stats, addresses, changed_objects, checkpoint_metrics, checkpoints, dao_proposals, dao_votes, epoch_stake_coins, epoch_stakes, epochs, events, input_objects, mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts, mining_nfts_view, mint_long_coin, move_calls, network_segment_metrics, objects, objects_history, packages, price_history, recipients, stake_pending_item, stake_reward_detail, stake_reward_summary, system_states, transactions, validators};
 use crate::store::diesel_marco::{read_only_blocking, transactional_blocking};
 use crate::store::module_resolver::IndexerModuleResolver;
 use crate::store::query::DBFilter;
@@ -1779,6 +1779,11 @@ impl PgIndexerStore {
         Ok(summary.total_addresses as u64)
     }
 
+    fn sum_mint_long_coin(&self) -> Result<i64, IndexerError> {
+        let long_coin = get_mint_long_coin_cached(&self.blocking_cp)?;
+        Ok(long_coin.total_addresses)
+    }
+
     fn get_unsettle_mining_nfts(
         &self,
         dt_timestamp_ms: i64,
@@ -1932,6 +1937,19 @@ impl PgIndexerStore {
                 .execute(conn)
         })
         .context("Failed to persist mining nft liquidities.")
+    }
+
+    fn persist_mint_long_coin(
+        &self,
+        mls: Vec<MintLongCoin>,
+    ) -> Result<usize, IndexerError> {
+        transactional_blocking!(&self.blocking_cp, |conn| {
+            diesel::insert_into(mint_long_coin::table)
+                .values(mls)
+                .on_conflict_do_nothing()
+                .execute(conn)
+        })
+            .context("Failed to persist mint long coin.")
     }
 
     fn get_mining_nft_liquidities(
@@ -4038,6 +4056,14 @@ impl IndexerStore for PgIndexerStore {
             .await
     }
 
+    async fn persist_mint_long_coin(
+        &self,
+        mls: Vec<MintLongCoin>,
+    ) -> Result<usize, IndexerError> {
+        self.spawn_blocking(move |this| this.persist_mint_long_coin(mls))
+            .await
+    }
+
     async fn get_mining_nft_liquidities(
         &self,
         base_coin: String,
@@ -4069,6 +4095,11 @@ impl IndexerStore for PgIndexerStore {
 
     async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError> {
         self.spawn_blocking(move |this| this.get_mining_nft_total_addressess())
+            .await
+    }
+
+    async fn sum_mint_long_coin(&self) -> Result<i64, IndexerError> {
+        self.spawn_blocking(move |this| this.sum_mint_long_coin())
             .await
     }
 }
@@ -4327,6 +4358,17 @@ fn get_mining_summary_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, 
     )
     .get_result::<MiningNFTSummary>(conn))?;
     Ok(summary)
+}
+
+#[once(name = "SFT_MINT_LONG_COIN", time = 60, result = true)]
+fn get_mint_long_coin_cached(cp: &PgConnectionPool) -> Result<MiningNFTSummary, IndexerError> {
+    let long_coin = read_only_blocking!(cp, |conn| diesel::sql_query(
+        "SELECT
+           SUM(amount)::BIGINT AS total_addresses
+        FROM mint_long_coin;"
+    )
+    .get_result::<MiningNFTSummary>(conn))?;
+    Ok(long_coin)
 }
 
 // Run this function only once every `time` seconds

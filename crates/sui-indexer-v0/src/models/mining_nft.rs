@@ -1,6 +1,6 @@
 use crate::{
     benfen,
-    schema::{mining_nft_history_profits, mining_nft_liquidities, mining_nft_staking, mining_nfts},
+    schema::{mining_nft_history_profits, mining_nft_liquidities, mint_long_coin, mining_nft_staking, mining_nfts},
 };
 use chrono::Utc;
 use diesel::prelude::*;
@@ -80,6 +80,16 @@ pub struct MiningNFTLiquiditiy {
     pub base_price_lte: i64,
     pub base_amount: i64,
     pub quote_amount: i64,
+    pub timestamp_ms: i64,
+}
+
+#[derive(Queryable, Insertable, Clone, Debug, Default)]
+#[diesel(table_name = mint_long_coin)]
+pub struct MintLongCoin {
+    #[diesel(deserialize_as = i64)]
+    pub id: Option<i64>,
+    pub transaction_digest: String,
+    pub amount: i64,
     pub timestamp_ms: i64,
 }
 
@@ -167,6 +177,12 @@ pub struct LiquidityEvent {
     amount_a: u64,
     amount_b: u64,
     pub action: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct MintCoinEvent {
+    recipient: AccountAddress,
+    amount: u64,
 }
 
 pub fn extract_from_events(
@@ -278,6 +294,29 @@ pub fn extract_liquidities_from_event(
     Ok(results)
 }
 
+pub fn extract_mint_long_event(
+    events: &[Event],
+) -> Result<Vec<(String, MintCoinEvent)>, bcs::Error> {
+    let mut results = vec![];
+    for x in events.iter() {
+        if let Ok(type_) = parse_struct_tag(&x.event_type) {
+            if type_.module != ident_str!("event").into() {
+                continue;
+            }
+            if x.module != "long" {
+                continue;
+            }
+            if type_.name == ident_str!("MintCoinEvent").into() {
+                results.push((
+                    x.transaction_digest.clone(),
+                    bcs::from_bytes::<MintCoinEvent>(&x.event_bcs)?,
+                ));
+            }
+        }
+    }
+    Ok(results)
+}
+
 impl From<(Checkpoint, ExtractedMiningNFT)> for MiningNFT {
     fn from(values: (Checkpoint, ExtractedMiningNFT)) -> Self {
         let (cp, value) = values;
@@ -375,6 +414,18 @@ impl From<(Checkpoint, (String, LiquidityEvent))> for MiningNFTLiquiditiy {
             base_price_lte: 0, // Later
             base_amount: event.amount_a as i64,
             quote_amount: event.amount_b as i64,
+            timestamp_ms: cp.timestamp_ms,
+        }
+    }
+}
+
+impl From<(Checkpoint, (String, MintCoinEvent))> for MintLongCoin {
+    fn from(value: (Checkpoint, (String, MintCoinEvent))) -> Self {
+        let (cp, (transaction_digest, event)) = value;
+        Self {
+            id: None,
+            transaction_digest,
+            amount: event.amount as i64,
             timestamp_ms: cp.timestamp_ms,
         }
     }

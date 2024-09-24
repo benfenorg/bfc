@@ -28,7 +28,7 @@ use crate::models::dao_proposals::Proposal;
 use crate::models::epoch::DBEpochInfo;
 use crate::models::epoch_stake;
 use crate::models::events::Event;
-use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy};
+use crate::models::mining_nft::{MiningNFT, MiningNFTHistoryProfit, MiningNFTLiquiditiy, MintLongCoin};
 use crate::models::objects::{DeletedObject, Object, ObjectStatus};
 use crate::models::packages::Package;
 use crate::models::pending_reward::StakePendingItem;
@@ -418,6 +418,11 @@ pub trait IndexerStore {
         mls: Vec<MiningNFTLiquiditiy>,
     ) -> Result<usize, IndexerError>;
 
+    async fn persist_mint_long_coin(
+        &self,
+        mls: Vec<MintLongCoin>,
+    ) -> Result<usize, IndexerError>;
+
     async fn get_mining_nft_liquidities(
         &self,
         base_coin: String,
@@ -437,6 +442,9 @@ pub trait IndexerStore {
     async fn all_staking_nft(&self) -> Result<Vec<MiningNFT>, IndexerError>;
 
     async fn get_mining_nft_total_addressess(&self) -> Result<u64, IndexerError>;
+
+    async fn sum_mint_long_coin(&self) -> Result<i64, IndexerError>;
+
     async fn get_mining_nfts_idle(
         &self,
         address: SuiAddress,
