@@ -155,6 +155,7 @@ pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyh
     let response = client.post(url)
         .headers(headers).body(body_data)
         .send().await?;
+    info!("post response={:?}", &response);
     let body: Value = response.json::<Value>().await?;
     // println!("response body={:?}", &body);
 
