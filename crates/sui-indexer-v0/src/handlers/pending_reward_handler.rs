@@ -89,7 +89,9 @@ impl PendingReward {
             .max_capacity(3)
             .time_to_live(Duration::from_secs(2*60))
             .build();
-
+         if mining_contract_address.is_empty(){
+             panic!("--mining-contract-address is empty");
+         }
         let instance = Self{
             power,
             fullnode,
