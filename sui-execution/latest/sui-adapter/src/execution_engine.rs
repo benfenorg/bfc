@@ -268,7 +268,6 @@ mod checked {
         input_objects: CheckedInputObjects,
         pt: ProgrammableTransaction,
     ) -> Result<InnerTemporaryStore, ExecutionError> {
-        info!("Executing genesis state update in latest version...");
         let input_objects = input_objects.into_inner();
         let mut temporary_store = TemporaryStore::new(
             store,
