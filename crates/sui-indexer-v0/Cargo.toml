@@ -65,7 +65,7 @@ cached.workspace = true
 rust_decimal = { version = "1", features = [ "maths" ] }
 secrecy = "0.8.0"
 downcast = "0.11.0"
-moka = { version = "0.12.8", features = ["future"] }
+moka = { workspace = true, features = ["future"] }
 
 [features]
 pg_integration = []
