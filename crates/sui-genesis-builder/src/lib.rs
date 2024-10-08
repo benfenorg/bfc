@@ -55,7 +55,7 @@ use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorIn
 
 pub mod validator_info;
 
-use tracing::info;
+//use tracing::info;
 extern crate csv;
 
 const GENESIS_BUILDER_COMMITTEE_DIR: &str = "committee";
