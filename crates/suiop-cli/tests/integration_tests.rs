@@ -11,6 +11,7 @@ use tracing::debug;
 fn test_initialize_service_ext() -> Result<()> {
     // create a temp dir to work in
 
+    println!("=====================================");
     let temp_dir = tempfile::tempdir().expect("creating temp dir");
     let svc_dir = temp_dir.path().join("svc");
     std::fs::create_dir(&svc_dir)?;
