@@ -583,7 +583,7 @@ async fn test_zklogin_transfer_with_large_address_seed() {
 }
 
 #[sim_test]
-async fn zklogin_test_caching_scenarios() {
+async fn sim_zklogin_test_caching_scenarios() {
     telemetry_subscribers::init_for_testing();
     let (
         object_ids,
