@@ -715,7 +715,7 @@ async fn zklogin_test_caching_scenarios() {
         |_| {},
         ephemeral_key,
         zklogin,
-        2,
+        10,
         multisig_pk.clone(),
     )
     .await;
@@ -830,7 +830,7 @@ async fn zklogin_test_caching_scenarios() {
         |_| {},
         ephemeral_key,
         zklogin,
-        3, // modified from 2 to 3
+        3, // modified from 10 to 3
         multisig_pk.clone(),
     )
     .await;
