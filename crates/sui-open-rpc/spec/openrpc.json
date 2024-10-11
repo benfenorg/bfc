@@ -12,7 +12,7 @@
       "name": "Apache-2.0",
       "url": "https://www.benfen.org/"
     },
-    "version": "1.24.1"
+    "version": "1.20.1"
   },
   "methods": [
     {
@@ -506,44 +506,6 @@
           }
         }
       ]
-    },
-    {
-      "name": "bfc_getBfcZkloginSalt",
-      "tags": [
-        {
-          "name": "Read API"
-        }
-      ],
-      "params": [
-        {
-          "name": "seed",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "iss",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "sub",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ],
-      "result": {
-        "name": "String",
-        "required": true,
-        "schema": {
-          "type": "string"
-        }
-      }
     },
     {
       "name": "bfc_getChainIdentifier",
