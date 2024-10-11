@@ -59,7 +59,7 @@ type WalletEventsMap = {
 };
 
 // NOTE: Because this runs in a content script, we can't fetch the manifest.
-const name = process.env.APP_NAME || 'Benfen Wallet';
+const name = 'OpenBlock Wallet';
 
 export type QredoConnectInput = {
 	service: string;
