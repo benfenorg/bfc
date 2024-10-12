@@ -157,8 +157,9 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun update_round(
         inner: &mut BfcSystemStateInner,
-        _round: u64,
+        round: u64,
     ) {
+        _ = round;
         inner.stable_rate = treasury::get_exchange_rates(&inner.treasury);
     }
 
