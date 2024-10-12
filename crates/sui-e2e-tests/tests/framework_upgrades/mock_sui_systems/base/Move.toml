@@ -6,6 +6,7 @@ edition = "2024.beta"
 [dependencies]
 Sui = { local = "../../../../../sui-framework/packages/sui-framework" }
 MoveStdlib = { local = "../../../../../sui-framework/packages/move-stdlib" }
+BfcSystem = { local = "../../../../../sui-framework/packages/bfc-system" }
 
 [addresses]
 sui_system = "0x3"
