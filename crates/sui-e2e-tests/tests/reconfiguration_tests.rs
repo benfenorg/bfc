@@ -326,6 +326,7 @@ async fn sim_test_passive_reconfig() {
 
 //ignore this test case, update change round don't change inner state round value any more
 #[sim_test]
+#[ignore]
 async fn sim_test_change_bfc_round() {
     //telemetry_subscribers::init_for_testing();
     let _commit_root_state_digest = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
