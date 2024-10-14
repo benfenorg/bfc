@@ -324,6 +324,7 @@ async fn sim_test_passive_reconfig() {
         });
 }
 
+//ignore this test case, update change round don't change inner state round value any more
 #[sim_test]
 async fn sim_test_change_bfc_round() {
     //telemetry_subscribers::init_for_testing();
