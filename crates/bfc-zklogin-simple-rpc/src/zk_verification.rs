@@ -1,4 +1,3 @@
-//use std::env;
 use std::str::FromStr;
 use std::sync::Arc;
 use sui_types::signature_verification::VerifiedDigestCache;
@@ -140,6 +139,7 @@ pub async fn get_current_epoch(rpc_url: String) -> Result<u64, anyhow::Error>  {
     let json = json!({"jsonrpc":"2.0", "id":"0", "method":"bfcx_getLatestSuiSystemState", "params":[]});
 
     let response = post_with_body(rpc_url.as_str(), json.to_string()).await?;
+    info!("get current epoch response={}", serde_json::to_string(&response)?);
 
     let response_obj = response.as_object().ok_or_else(|| anyhow!("response format is not json"))?;
     let result_obj = response_obj.get("result").ok_or_else(|| anyhow!("result is not present"))?;
@@ -159,6 +159,7 @@ pub async fn post_with_body(url: &str, body_data: String) ->  Result<Value, anyh
     let response = client.post(url)
         .headers(headers).body(body_data)
         .send().await?;
+    info!("post response={:?}", &response);
     let body: Value = response.json::<Value>().await?;
     // println!("response body={:?}", &body);
 

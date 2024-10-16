@@ -12,11 +12,11 @@ use diesel::r2d2::R2D2Connection;
 use sui_json_rpc::{governance_api::ValidatorExchangeRates, SuiRpcModule};
 use sui_json_rpc_api::GovernanceReadApiServer;
 use sui_json_rpc_types::{
-    DelegatedStake, EpochInfo, StakeStatus, SuiCommittee, SuiObjectDataFilter, ValidatorApys,
+    DelegatedStake, EpochInfo, StakeStatus, SuiCommittee, ValidatorApys,
 };
 use sui_open_rpc::Module;
 use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SuiAddress},
+    base_types::{ObjectID, SuiAddress},
     committee::EpochId,
     governance::StakedSui,
     sui_serde::BigInt,
@@ -68,26 +68,26 @@ impl<T: R2D2Connection + 'static> GovernanceReadApi<T> {
 
     async fn get_staked_by_owner(
         &self,
-        owner: SuiAddress,
+        _owner: SuiAddress,
     ) -> Result<Vec<DelegatedStake>, IndexerError> {
-        let mut stakes = vec![];
-        for stored_object in self
-            .inner
-            .get_owned_objects_in_blocking_task(
-                owner,
-                Some(SuiObjectDataFilter::StructType(
-                    MoveObjectType::staked_sui().into(),
-                )),
-                None,
-                // Allow querying for up to 1000 staked objects
-                1000,
-            )
-            .await?
-        {
-            let object = sui_types::object::Object::try_from(stored_object)?;
-            let stake_object = StakedSui::try_from(&object)?;
-            stakes.push(stake_object);
-        }
+        let  stakes = vec![];
+        // for stored_object in self
+        //     .inner
+        //     .get_owned_objects_in_blocking_task(
+        //         owner,
+        //         Some(SuiObjectDataFilter::StructType(
+        //             MoveObjectType::staked_sui().into(),
+        //         )),
+        //         None,
+        //         // Allow querying for up to 1000 staked objects
+        //         1000,
+        //     )
+        //     .await?
+        // {
+        //     let object = sui_types::object::Object::try_from(stored_object)?;
+        //     let stake_object = StakedSui::try_from(&object)?;
+        //     stakes.push(stake_object);
+        // }
 
         self.get_delegated_stakes(stakes).await
     }
@@ -139,7 +139,7 @@ impl<T: R2D2Connection + 'static> GovernanceReadApi<T> {
                             .unwrap_or_default();
                         let estimated_reward = ((stake_rate.rate() / current_rate.rate()) - 1.0)
                             * stake.principal() as f64;
-                        std::cmp::max(0, estimated_reward.round() as u64)
+                        std::cmp::max(0, estimated_reward.trunc() as u64)
                     } else {
                         0
                     };

@@ -62,10 +62,10 @@ move-binary-format.workspace = true
 
 diesel_migrations.workspace = true
 cached.workspace = true
-rust_decimal = { version = "1", features = [ "maths" ] }
+rust_decimal.workspace = true
 secrecy = "0.8.0"
 downcast = "0.11.0"
-moka = { workspace = true, features = ["future"] }
+moka = { version = "0.12.8", features = ["future"] }
 
 [features]
 pg_integration = []

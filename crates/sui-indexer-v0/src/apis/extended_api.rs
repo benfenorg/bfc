@@ -5,17 +5,23 @@ use async_trait::async_trait;
 use chrono::Utc;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
+
 use jsonrpsee::http_client::HttpClient;
-use tracing::info;
 use sui_json_rpc_api::{
     validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS,
 };
 use sui_json_rpc::error::SuiRpcInputError;
 use sui_json_rpc::SuiRpcModule;
-use sui_json_rpc_types::{AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage, IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page, QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity, SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter, SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiOwnedTicket, SuiMiningNFTList, StakeRewardHistory};
+use sui_json_rpc_types::{
+    AddressMetrics, CheckpointedObjectID, ClassicPage, DaoProposalFilter, EpochInfo, EpochPage,
+    IndexedStake, MoveCallMetrics, NFTStakingOverview, NetworkMetrics, NetworkOverview, Page,
+    QueryObjectsPage, StakeMetrics, SuiDaoProposal, SuiMiningNFT, SuiMiningNFTLiquidity,
+    SuiObjectDataFilter, SuiObjectResponse, SuiObjectResponseQuery, SuiOwnedMiningNFTFilter,
+    SuiOwnedMiningNFTOverview, SuiOwnedMiningNFTProfit, SuiOwnedTicketList, SuiOwnedTicket, SuiMiningNFTList, StakeRewardHistory
+};
 use sui_open_rpc::Module;
 use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
-use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, objects_id_to_bfc_address};
+use sui_types::base_types_bfc::bfc_address_util::{objects_id_to_bfc_address};
 use sui_types::parse_sui_struct_tag;
 use sui_types::sui_serde::BigInt;
 
@@ -241,7 +247,7 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
             / 10_000f64;
         staking.bfc_24h_rate = (bfc_now_price - bfc_past_price) / bfc_past_price;
         staking.total_addresses = self.state.get_mining_nft_total_addressess().await?;
-        staking.total_long = (timestamp - 1722563100) / 86400 * 1000 + 1000;
+        staking.total_long = self.state.sum_mint_long_coin().await? / 1000000000;
         Ok(staking)
     }
 
@@ -267,10 +273,6 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         page: Option<usize>,
         limit: Option<usize>
     ) -> RpcResult<ClassicPage<StakeRewardHistory>> {
-       let test = convert_to_bfc_address("0xef50fde989338672335d81e27608228b2c32bd7049448e7380e26eb61df903c0");
-        info!("----------------------------------");
-        info!(test);
-        info!("----------------------------------");
         let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
         let page = page.map(|x| if x <= 0 { 1 } else { x }).unwrap_or(1);
         let r = self
@@ -328,7 +330,7 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedMiningNFTOverview> {
         let (mut r, _ticket_ids, total_cost) = self.state.get_mining_nft_overview(address).await?;
-        let bfc_now_price = benfen::get_bfc_price_in_usd(self.fullnode.clone()).await?;
+        let bfc_now_price = self.pending_reward.get_bfc_price().await;
         r.bfc_usd_price = bfc_now_price;
         let pending_items = self.state.query_stake_pending_item_by_owner(address).await?;
         let pending_config = self.pending_reward.get_config_from_cache().await?.unwrap();

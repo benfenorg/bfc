@@ -507,7 +507,8 @@ Errors
     inner: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
     round: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ) {
-    inner.round = round;
+    _ = round;
+    inner.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
 

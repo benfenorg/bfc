@@ -572,6 +572,15 @@ diesel::table! {
     }
 }
 
+diesel::table! {
+    mint_long_coin(id) {
+        id -> Int8,
+        transaction_digest -> Varchar,
+        amount -> Int8,
+        timestamp_ms -> Int8,
+    }
+}
+
 diesel::allow_tables_to_appear_in_same_query!(
     active_addresses,
     address_stats,

@@ -24,6 +24,8 @@ pub mod checked {
     };
     use sui_types::execution_status::ExecutionFailureStatus;
     use tracing::{trace};
+    use crate::temporary_store::TemporaryStore;
+    use std::str::FromStr;
 
     /// Tracks all gas operations for a single transaction.
     /// This is the main entry point for gas accounting.
@@ -119,7 +121,7 @@ pub mod checked {
 
         pub fn is_pay_with_stable_coin(&self,temporary_store: &TemporaryStore<'_>) -> bool {
             for (id,version,_) in self.gas_coins.iter()  {
-                let obj_result = temporary_store.get_input_sui_obj_nopanic(id,version.clone());
+                let obj_result = temporary_store.get_input_sui_obj_nopanic(id,*version);
                 if obj_result.is_err() {
                     continue;
                 }
@@ -164,9 +166,8 @@ pub mod checked {
                     )
                 })
                 .clone();
-            let gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
+            let primary_gas_coin_type = primary_gas_object.coin_type_maybe().unwrap();
 
-            let mut first_coin_type = None;
             // sum the value of all gas coins
             let new_balance = self
                 .gas_coins
@@ -174,10 +175,18 @@ pub mod checked {
                 .map(|obj_ref| {
                     let obj = temporary_store.objects().get(&obj_ref.0).unwrap();
 
-                    if obj.coin_type_maybe().unwrap() != gas_coin_type {
-                        return Err(ExecutionError::invariant_violation(
-                            "Invariant violation: gas coins with different types!"
-                        ));
+                    let gas_coin_type = obj.coin_type_maybe();
+                    match gas_coin_type {
+                        Some(coin_type) => {
+                            if primary_gas_coin_type != coin_type {
+                                return Err(ExecutionError::invariant_violation(
+                                    "Provided non-gas coin object as input first for gas!",
+                                ));
+                            }
+                        }
+                        None => return Err(ExecutionError::invariant_violation(
+                            "Provided non-gas coin object as input for gas!",
+                        )),
                     }
                     let Data::Move(move_obj) = &obj.data else {
                         return Err(ExecutionError::invariant_violation(
@@ -188,28 +197,6 @@ pub mod checked {
                         return Err(ExecutionError::invariant_violation(
                             "Provided non-gas coin object as input for gas!",
                         ));
-                    }
-                    if first_coin_type.is_none(){
-                        first_coin_type = obj.coin_type_maybe();
-                    } else {
-                        let gas_coin_type = obj.coin_type_maybe();
-                        match gas_coin_type {
-                            Some(coin_type) => {
-                                if let None = obj.coin_type_maybe() {
-                                    return Err(ExecutionError::invariant_violation(
-                                        "Provided non-gas coin object as input for gas!",
-                                    ));
-                                }
-                                if obj.coin_type_maybe().unwrap() != coin_type {
-                                    return Err(ExecutionError::invariant_violation(
-                                        "Provided non-gas coin object as input for gas!",
-                                    ));
-                                }
-                            }
-                            None => return Err(ExecutionError::invariant_violation(
-                                "Provided non-gas coin object as input for gas!",
-                            )),
-                        }
                     }
                     Ok(move_obj.get_coin_value_unsafe())
                 })
@@ -379,6 +366,23 @@ pub mod checked {
                         Ok((rate, base_point)) => {
                             cost_summary.rate = rate;
                             cost_summary.base_point = base_point;
+                            //The rates of these transactions are messed up due to rebalance and need to be manually specified.
+                            if self.tx_digest == TransactionDigest::from_str("A8vgez4cnLiroMChKTD2sboio2q4LGxg4Wt1cZKdh4SQ").unwrap() {
+                                cost_summary.rate = 10100510643;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("6CtGMuKeUBwN7rjwiSZ5yYLnGRttS9RnALgetytU7q55").unwrap() {
+                                cost_summary.rate = 10336208896;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("3fzrrb3FUq8qCFCjQz7pFhB4WFxyJUSzzuGYpahJmhX7").unwrap() {
+                                cost_summary.rate = 10354877594;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7D5ZLdrgkEyKXcm5cGsZinSEaLno27qsWsKKkLGHbtZw").unwrap() {
+                                cost_summary.rate = 10654869094;
+                            }
+                            if self.tx_digest == TransactionDigest::from_str("7nr1kVaUqB8xyyU3P1uQgoKMPDV3K8x21GzuM998Yfzb").unwrap() {
+                                cost_summary.rate = 10655582452;
+                            }
+
                             let stable_gas_used= calculate_stable_net_used_with_base_point(&cost_summary);
                             deduct_gas(&mut gas_object, stable_gas_used);
                         },

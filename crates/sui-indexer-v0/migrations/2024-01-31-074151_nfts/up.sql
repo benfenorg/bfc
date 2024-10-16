@@ -85,3 +85,11 @@ CREATE TABLE mining_nft_liquidities
 CREATE INDEX mining_nft_liquidities_base_coin_index ON mining_nft_liquidities(base_coin);
 CREATE INDEX mining_nft_liquidities_quote_coin_index ON mining_nft_liquidities(quote_coin);
 CREATE INDEX mining_nft_liquidities_timestamp_ms_index ON mining_nft_liquidities(timestamp_ms);
+CREATE TABLE mint_long_coin
+ (
+   id                          BIGSERIAL     PRIMARY KEY,
+   transaction_digest          base58digest  NOT NULL,
+   amount                      BIGINT        NOT NULL,
+   timestamp_ms                BIGINT        NOT NULL,
+   UNIQUE (transaction_digest)
+  );

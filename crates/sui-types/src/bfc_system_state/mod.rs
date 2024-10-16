@@ -124,7 +124,7 @@ pub trait BfcSystemStateTrait {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct BfcSystemStateInnerV1 {
-    pub round: u64,
+    pub round: u64, //abandon value, stop change the round value from bfc_v1.20
     pub stable_base_points: u64,
     pub reward_rate: u64,
     pub dao: Dao,

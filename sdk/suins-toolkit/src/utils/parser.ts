@@ -1,15 +1,22 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiMoveObject, SuiObjectData, SuiObjectResponse } from '@mysten/sui/client';
-import { normalizeSuiAddress } from '@mysten/sui/utils';
+import type {
+	BenfenMoveObject,
+	BenfenObjectData,
+	BenfenObjectResponse,
+} from '@benfen/bfc.js/client';
+import { normalizeHexAddress } from '@benfen/bfc.js/utils';
 
 export const camelCase = (string: string) => string.replace(/(_\w)/g, (g) => g[1].toUpperCase());
 
-export const parseObjectDataResponse = (response: SuiObjectResponse | undefined) =>
-	((response?.data as SuiObjectData)?.content as SuiMoveObject)?.fields as Record<string, any>;
+export const parseObjectDataResponse = (response: BenfenObjectResponse | undefined) =>
+	((response?.data as BenfenObjectData)?.content as BenfenMoveObject)?.fields as Record<
+		string,
+		any
+	>;
 
-export const parseRegistryResponse = (response: SuiObjectResponse | undefined): any => {
+export const parseRegistryResponse = (response: BenfenObjectResponse | undefined): any => {
 	const fields = parseObjectDataResponse(response)?.value?.fields || {};
 
 	const object = Object.fromEntries(
@@ -30,7 +37,7 @@ export const parseRegistryResponse = (response: SuiObjectResponse | undefined): 
 			return {
 				...acc,
 				[camelCase(key)]:
-					c.type.includes('Address') || key === 'addr' ? normalizeSuiAddress(value) : value,
+					c.type.includes('Address') || key === 'addr' ? normalizeHexAddress(value) : value,
 			};
 		},
 		{},

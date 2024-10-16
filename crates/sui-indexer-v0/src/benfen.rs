@@ -1,6 +1,7 @@
 use anyhow::anyhow;
 use chrono::DateTime;
 use chrono::NaiveDate;
+use chrono::NaiveDateTime;
 use chrono::NaiveTime;
 use chrono::Utc;
 use fastcrypto::encoding::Base64;
@@ -231,11 +232,11 @@ pub async fn get_mining_nft_cost_in_bfc(
 pub fn timestamp_to_dt(timestamp_ms: i64) -> i64 {
     let date = timestamp_to_dt_string(timestamp_ms);
     let naive = NaiveDate::parse_from_str(&date, "%Y-%m-%d").unwrap();
-    naive.and_time(NaiveTime::MIN).and_utc().timestamp_millis()
+    naive.and_time(NaiveTime::MIN).timestamp_millis()
 }
 
 fn timestamp_to_dt_string(timestamp_ms: i64) -> String {
-    let naive = DateTime::from_timestamp_millis(timestamp_ms).unwrap_or_default().naive_utc();
+    let naive = NaiveDateTime::from_timestamp_millis(timestamp_ms).unwrap_or_default();
     let datetime: DateTime<Utc> = DateTime::from_naive_utc_and_offset(naive, Utc);
     datetime.format("%Y-%m-%d").to_string()
 }
@@ -636,7 +637,7 @@ mod test_benfen {
     // use sui_json_rpc_types::sui_transaction::SuiTransactionBlockData::V1;
 
     fn create_http_client() -> HttpClient {
-        let rpc_client_url = "https://rpc-mainnet.benfen.org/";
+        let rpc_client_url = "https://rpc-mainnet.benfen.org:443/";
         let mut headers = HeaderMap::new();
         headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("indexer"));
         HttpClientBuilder::default()

@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::time::Duration;
 use jsonrpsee::core::Serialize;
 use jsonrpsee::http_client::HttpClient;
 use serde::Deserialize;
@@ -11,6 +12,7 @@ use crate::errors::IndexerError;
 use thiserror::Error;
 use chrono::Utc;
 use moka::future::Cache;
+use crate::benfen;
 use crate::models::pending_reward::StakePendingItem;
 
 #[derive(Error, Debug)]
@@ -39,6 +41,7 @@ pub struct PendingReward {
     pub fullnode: HttpClient,
     pub config_cache: Cache<String, MiningConfig>,
     pub mining_contract_address: String,
+    pub price_cache:Cache<String, f64>,
 }
 
 #[derive(Debug, Serialize, Deserialize,Clone)]
@@ -82,11 +85,19 @@ fn read_from_response(name: &str, sui_parsed_data: &SuiParsedMoveObject) -> Resu
 impl PendingReward {
 
     pub async fn build(power: u64, fullnode: HttpClient, config_cache: Cache<String, MiningConfig>,mining_contract_address:String)->Self {
+        let price_cache=Cache::builder()
+            .max_capacity(3)
+            .time_to_live(Duration::from_secs(2*60))
+            .build();
+         if mining_contract_address.is_empty(){
+             panic!("--mining-contract-address is empty");
+         }
         let instance = Self{
             power,
             fullnode,
             config_cache,
-            mining_contract_address
+            mining_contract_address,
+            price_cache
         };
         instance.fetch_config_from_full_node().await.expect("TODO: panic message");
         instance
@@ -95,6 +106,13 @@ impl PendingReward {
         let clone= self.config_cache.clone();
         clone.insert("mining_config".to_string(), self.get_config().await?).await;
         Ok(self.config_cache.get("mining_config").await.unwrap())
+    }
+
+    pub async fn get_bfc_price(&self) -> f64 {
+        let r = self.price_cache.get_with("bfc_price".to_string(), async move {
+            benfen::get_bfc_price_in_usd(self.fullnode.clone()).await.unwrap_or(0.08)
+        });
+        r.await
     }
 
     pub async fn get_config_from_cache(&self) ->Result<Option<MiningConfig>, anyhow::Error>{

@@ -1660,6 +1660,9 @@ where
             let liquidities = mining_nft::extract_liquidities_from_event(&liq_events)?;
             let mut mls = vec![];
             for liq in liquidities.into_iter() {
+                if liq.1.action != "add" {
+                    continue;
+                }
                 let base_price_gte = benfen::get_price_at_tick(
                     self.http_client.clone(),
                     &self.config.mining_nft_dex_contract,
@@ -1672,7 +1675,6 @@ where
                     liq.1.tick_upper,
                 )
                     .await?;
-
                 let mut ml: mining_nft::MiningNFTLiquiditiy = (checkpoint.clone(), liq).into();
                 ml.base_price_gte = (base_price_gte * mining_nft::PRICE_TO_INT_SCALE) as i64;
                 ml.base_price_lte = (base_price_lte * mining_nft::PRICE_TO_INT_SCALE) as i64;
@@ -1680,6 +1682,14 @@ where
             }
             if mls.len() > 0 {
                 self.state.persist_mining_nft_liquidities(mls).await?;
+            }
+            let mint_events = mining_nft::extract_mint_long_event(&liq_events)?;
+            let mut event_list = vec![];
+            for event in mint_events {
+                event_list.push((checkpoint.clone(), event).into());
+            }
+            if event_list.len() > 0 {
+                self.state.persist_mint_long_coin(event_list).await?;
             }
         }
         Ok(())

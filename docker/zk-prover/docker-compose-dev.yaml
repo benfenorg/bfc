@@ -2,18 +2,19 @@ version: "3.9"
 
 services:
   backend:
-    image: mysten/zklogin:prover-stable
+    image: harbor.openblock.vip/zklogin/obc-zklogin:prover-stable
     volumes:
-      - /opt/software/zklogin-ceremony-contributions/zkLogin-test.zkey:/app/binaries/zkLogin.zkey
+      - /opt/software/zklogin-ceremony-test/circuit_test.zkey:/app/binaries/zkLogin.zkey
     environment:
       - ZKEY=/app/binaries/zkLogin.zkey
       - WITNESS_BINARIES=/app/binaries
 
   frontend:
-    image: mysten/zklogin:prover-fe-stable
+    image: harbor.openblock.vip/zklogin/obc-zklogin:prover-fe-stable
     command: '8080'
     ports:
       - '8090:8080'
+      - '8184:9184'
     environment:
       - PROVER_URI=http://backend:8080/input
       - NODE_ENV=production

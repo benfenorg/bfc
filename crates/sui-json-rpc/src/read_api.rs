@@ -6,8 +6,6 @@ use std::sync::Arc;
 
 use anyhow::anyhow;
 use async_trait::async_trait;
-use fastcrypto::hmac::{hkdf_sha3_256, HkdfIkm};
-use fastcrypto::traits::ToFromBytes;
 use futures::future::join_all;
 use indexmap::map::IndexMap;
 use itertools::Itertools;

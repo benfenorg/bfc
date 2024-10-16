@@ -11,6 +11,7 @@ module bfc_system::bfc_system {
     use sui::dynamic_field;
 
     use sui::bfc::BFC;
+    use sui::clock;
     use sui::vec_map::VecMap;
 
     use bfc_system::busd::{BUSD};
@@ -239,10 +240,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
-    public entry fun judge_proposal_state(wrapper: &mut BfcSystemState, current_time: u64) {
+    public entry fun judge_proposal_state(_wrapper: &mut BfcSystemState, _current_time: u64) {
+        //let system_state = load_system_state_mut(wrapper);
+        //bfc_system_state_inner::judge_proposal_state(system_state, current_time);
+    }
+    public entry fun judge_proposal_state_with_clock(wrapper: &mut BfcSystemState, clock: &Clock) {
         let system_state = load_system_state_mut(wrapper);
+        let current_time = clock::timestamp_ms(clock);
         bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }
+
 
     public entry fun set_voting_period(
         wrapper: &mut BfcSystemState,

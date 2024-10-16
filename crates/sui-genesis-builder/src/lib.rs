@@ -60,7 +60,7 @@ use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
 pub mod validator_info;
 
-use tracing::info;
+//use tracing::info;
 extern crate csv;
 
 const GENESIS_BUILDER_COMMITTEE_DIR: &str = "committee";
@@ -890,10 +890,6 @@ fn build_unsigned_genesis_data(
 
     let epoch_data = EpochData::new_genesis(genesis_chain_parameters.chain_start_timestamp_ms);
 
-
-    let pversion = parameters.protocol_version.as_u64();
-    info!("Building genesis for protocol version: {}", pversion);
-
     // Get the correct system packages for our protocol version. If we cannot find the snapshot
     // that means that we must be at the latest version and we should use the latest version of the
     // framework.
@@ -1139,8 +1135,6 @@ fn create_genesis_objects(
 
 
     for system_package in BuiltInFramework::iter_system_packages() {
-        //info!("Processing system package: {:?}", system_package);
-        //info!("Processing system package dependencies: {:?}", system_package.dependencies().to_vec());
         process_package(
             &mut store,
             executor.as_ref(),
@@ -1182,8 +1176,6 @@ fn process_package(
     protocol_config: &ProtocolConfig,
     metrics: Arc<LimitsMetrics>,
 ) -> anyhow::Result<()> {
-    //info!("Processing package with {} modules", modules.len());
-
     let dependency_objects = store.get_objects(&dependencies);
     // When publishing genesis packages, since the std framework packages all have
     // non-zero addresses, [`Transaction::input_objects_in_compiled_modules`] will consider
@@ -1680,7 +1672,6 @@ pub fn generate_genesis_system_object(
     };
 
 
-    info!("Genesis system object created===before InnerTemporaryStore");
     let InnerTemporaryStore {
         mut written, ..
     } = executor.update_genesis_state(

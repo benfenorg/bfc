@@ -160,7 +160,8 @@ module bfc_system::bfc_system_state_inner {
         inner: &mut BfcSystemStateInner,
         round: u64,
     ) {
-        inner.round = round;
+        _ = round;
+        inner.stable_rate = treasury::get_exchange_rates(&inner.treasury);
     }
 
     fun init_vault_with_positions<StableCoinType>(

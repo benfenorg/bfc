@@ -15,9 +15,12 @@ pub async fn hello() -> &'static str {
 
 pub async fn verify_zk_signature(env: String, Json(req): Json<ZkVerifyRequest>) -> impl IntoResponse {
     info!("verify_zk_signature req={:?}", &req);
+    let author_out = req.author.clone();
     let ZkVerifyRequest { signature: sig, bytes, intent_scope, cur_epoch, cur_rpc_url, author } = req;
 
     let result = verify_zk_login_sig(sig, bytes, intent_scope, cur_epoch, cur_rpc_url, author, env).await;
+    info!("verify_zk_signature response. author={}, result={:?}", author_out, &result);
+
 
     match result {
         Ok(sui_result) => {

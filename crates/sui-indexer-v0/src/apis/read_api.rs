@@ -22,7 +22,9 @@ use sui_types::sui_serde::BigInt;
 use crate::errors::IndexerError;
 use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
+use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
 use sui_types::dao::DaoRPC;
+use crate::utils::object_deal;
 
 pub(crate) struct ReadApi<S> {
     fullnode: HttpClient,
@@ -138,12 +140,11 @@ where
                 .indexer_metrics()
                 .get_object_latency
                 .start_timer();
-            let obj_resp = self.fullnode.get_object(object_id, options).await;
+            let obj_resp = self.fullnode.get_object(object_id, options.clone()).await;
             obj_guard.stop_and_record();
-            return obj_resp;
+            return object_deal(options.clone(), obj_resp);
         }
-
-        Ok(self.get_object_internal(object_id, options).await?)
+        object_deal(options.clone(), Ok(self.get_object_internal(object_id, options.clone()).await?))
     }
 
     async fn multi_get_objects(
@@ -342,6 +343,19 @@ where
         events_guard.stop_and_record();
         events_resp
     }
+    async fn get_loaded_child_objects(
+        &self,
+        digest: TransactionDigest,
+    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
+        let dynamic_fields_load_obj_guard = self
+            .state
+            .indexer_metrics()
+            .get_loaded_child_objects_latency
+            .start_timer();
+        let dyn_fields_resp = self.fullnode.get_loaded_child_objects(digest).await;
+        dynamic_fields_load_obj_guard.stop_and_record();
+        dyn_fields_resp
+    }
 
     async fn get_protocol_config(
         &self,
@@ -368,19 +382,6 @@ where
 
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         self.fullnode.get_inner_dao_info().await
-    }
-
-    async fn try_get_object_before_version(&self, _object_id: ObjectID, _version: SequenceNumber) -> RpcResult<SuiPastObjectResponse> {
-        Err(jsonrpsee::types::error::CallError::Custom(
-            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
-        )
-            .into())
-    }
-
-    fn into_rpc(self) -> RpcModule<Self>
-    where
-    {
-        todo!()
     }
 }
 
