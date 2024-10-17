@@ -125,24 +125,6 @@ pub trait ExtendedApi {
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedMiningNFTOverview>;
 
-    #[method(name = "getOwnedMiningNFTOverview2")]
-    async fn get_owned_mining_nft_overview2(
-        &self,
-        address: SuiAddress,
-    ) -> RpcResult<SuiOwnedMiningNFTOverview>;
-
-    #[method(name = "getOwnedTicketList")]
-    async fn get_owned_ticket_list(
-        &self,
-        address: SuiAddress,
-    ) -> RpcResult<SuiOwnedTicketList>;
-
-    #[method(name = "getOwnedTicketList2")]
-    async fn get_owned_ticket_list2(
-        &self,
-        address: SuiAddress,
-    ) -> RpcResult<SuiOwnedTicketList>;
-
     #[method(name = "getOwnedMiningNFTProfits")]
     async fn get_owned_mining_nft_profits(
         &self,
@@ -156,21 +138,6 @@ pub trait ExtendedApi {
         base_coin: String,
     ) -> RpcResult<Vec<SuiMiningNFTLiquidity>>;
 
-    #[method(name = "getStakeRewardHistory")]
-    async fn get_stake_reward_history(
-        &self,
-        address: SuiAddress,
-        /// optional current page
-        page: Option<usize>,
-        /// maximum number of items per page
-        limit: Option<usize>
-    ) -> RpcResult<ClassicPage<StakeRewardHistory>>;
-
-    #[method(name = "getOwnedMiningNFTsIdel")]
-    async fn get_owned_mining_nfts_idle(
-        &self,
-        address: SuiAddress,
-    ) -> RpcResult<SuiMiningNFTList>;
 
     #[method(name = "getOwnedMiningNFTOverview2")]
     async fn get_owned_mining_nft_overview2(
@@ -189,12 +156,6 @@ pub trait ExtendedApi {
         &self,
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedTicketList>;
-
-    #[method(name = "initStakeReward")]
-    async fn init_stake_reward(&self, usd_rate: f64, jpy_rate: f64, epoch: u64, first_epoch_end_ms: u64, p: String) -> RpcResult<String>;
-
-    #[method(name = "initNft")]
-    async fn init_nft(&self, reward_per_power: u64) -> RpcResult<String>;
 
     #[method(name = "initStakeReward")]
     async fn init_stake_reward(&self, usd_rate: f64, jpy_rate: f64, epoch: u64, first_epoch_end_ms: u64, p: String) -> RpcResult<String>;

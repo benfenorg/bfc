@@ -140,7 +140,6 @@ mod checked {
         let receiving_objects = transaction_kind.receiving_objects();
         let mut transaction_dependencies = input_objects.transaction_dependencies();
         let contains_deleted_input = input_objects.contains_deleted_objects();
-        let cancelled_objects = input_objects.get_cancelled_objects();
 
         let mut temporary_store = TemporaryStore::new(
             store,
@@ -174,7 +173,6 @@ mod checked {
             enable_expensive_checks,
             deny_cert,
             contains_deleted_input,
-            cancelled_objects,
         );
 
         let status = if let Err(error) = &execution_result {
@@ -184,31 +182,31 @@ mod checked {
                 K::InvariantViolation | K::VMInvariantViolation => {
                     #[skip_checked_arithmetic]
                     tracing::error!(
-                        kind = ?error.kind(),
-                        tx_digest = ?transaction_digest,
-                        "INVARIANT VIOLATION! Source: {:?}",
-                        error.source(),
-                    );
+        kind = ?error.kind(),
+        tx_digest = ?transaction_digest,
+        "INVARIANT VIOLATION! Source: {:?}",
+        error.source(),
+        );
                 }
 
                 K::SuiMoveVerificationError | K::VMVerificationOrDeserializationError => {
                     #[skip_checked_arithmetic]
                     tracing::debug!(
-                        kind = ?error.kind(),
-                        tx_digest = ?transaction_digest,
-                        "Verification Error. Source: {:?}",
-                        error.source(),
-                    );
+        kind = ?error.kind(),
+        tx_digest = ?transaction_digest,
+        "V1 Verification Error. Source: {:?}",
+        error.source(),
+        );
                 }
 
                 K::PublishUpgradeMissingDependency | K::PublishUpgradeDependencyDowngrade => {
                     #[skip_checked_arithmetic]
                     tracing::debug!(
-                        kind = ?error.kind(),
-                        tx_digest = ?transaction_digest,
-                        "Publish/Upgrade Error. Source: {:?}",
-                        error.source(),
-                    )
+        kind = ?error.kind(),
+        tx_digest = ?transaction_digest,
+        "Publish/Upgrade Error. Source: {:?}",
+        error.source(),
+        )
                 }
 
                 _ => (),
@@ -222,12 +220,12 @@ mod checked {
 
         #[skip_checked_arithmetic]
         trace!(
-            tx_digest = ?transaction_digest,
-            computation_gas_cost = gas_cost_summary.computation_cost,
-            storage_gas_cost = gas_cost_summary.storage_cost,
-            storage_gas_rebate = gas_cost_summary.storage_rebate,
-            "Finished execution of transaction with status {:?}",
-            status
+        tx_digest = ?transaction_digest,
+        computation_gas_cost = gas_cost_summary.computation_cost,
+        storage_gas_cost = gas_cost_summary.storage_cost,
+        storage_gas_rebate = gas_cost_summary.storage_rebate,
+        "Finished execution of transaction with status {:?}",
+        status
         );
 
         // Remove from dependencies the generic hash
@@ -255,6 +253,7 @@ mod checked {
             execution_result,
         )
     }
+
 
     pub fn execute_genesis_state_update(
                     store: &dyn BackingStore,
@@ -305,24 +304,6 @@ mod checked {
         Result<Mode::ExecutionResults, ExecutionError>,
     ) {
         gas_charger.smash_gas(temporary_store);
-    #[instrument(name = "tx_execute", level = "debug", skip_all)]
-    fn execute_transaction<Mode: ExecutionMode>(
-        temporary_store: &mut TemporaryStore<'_>,
-        transaction_kind: TransactionKind,
-        gas_charger: &mut GasCharger,
-        tx_ctx: &mut TxContext,
-        move_vm: &Arc<MoveVM>,
-        protocol_config: &ProtocolConfig,
-        metrics: Arc<LimitsMetrics>,
-        enable_expensive_checks: bool,
-        deny_cert: bool,
-        contains_deleted_input: bool,
-        cancelled_objects: Option<(Vec<ObjectID>, SequenceNumber)>,
-    ) -> (
-        GasCostSummary,
-        Result<Mode::ExecutionResults, ExecutionError>,
-    ) {
-        gas_charger.smash_gas(temporary_store);
 
         // At this point no charges have been applied yet
         debug_assert!(
@@ -347,23 +328,6 @@ mod checked {
                     ExecutionErrorKind::InputObjectDeleted,
                     None,
                 ))
-            } else {
-                execution_loop::<Mode>(
-                ))
-            } else if let Some((cancelled_objects, reason)) = cancelled_objects {
-                match reason {
-                    SequenceNumber::CONGESTED => Err(ExecutionError::new(
-                        ExecutionErrorKind::ExecutionCancelledDueToSharedObjectCongestion {
-                            congested_objects: CongestedObjects(cancelled_objects),
-                        },
-                        None,
-                    )),
-                    SequenceNumber::RANDOMNESS_UNAVAILABLE => Err(ExecutionError::new(
-                        ExecutionErrorKind::ExecutionCancelledDueToRandomnessUnavailable,
-                        None,
-                    )),
-                    _ => panic!("invalid cancellation reason SequenceNumber: {reason}"),
-                }
             } else {
                 execution_loop::<Mode>(
                     temporary_store,
@@ -395,21 +359,21 @@ mod checked {
                 );
                 if let Err(e) = gas_check {
                     execution_result = Err(e);
-                    }
-                    }
+                }
+            }
 
-                    execution_result
-                    });
+            execution_result
+        });
 
-                    let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
-                    // For advance epoch transaction, we need to provide epoch rewards and rebates as extra
-                    // information provided to check_sui_conserved, because we mint rewards, and burn
-                    // the rebates. We also need to pass in the unmetered_storage_rebate because storage
-                    // rebate is not reflected in the storage_rebate of gas summary. This is a bit confusing.
-                    // We could probably clean up the code a bit.
-                    // Put all the storage rebate accumulated in the system transaction
-                    // to the 0x5 object so that it's not lost.
-                    temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
+        let cost_summary = gas_charger.charge_gas(temporary_store, &mut result);
+        // For advance epoch transaction, we need to provide epoch rewards and rebates as extra
+        // information provided to check_sui_conserved, because we mint rewards, and burn
+        // the rebates. We also need to pass in the unmetered_storage_rebate because storage
+        // rebate is not reflected in the storage_rebate of gas summary. This is a bit confusing.
+        // We could probably clean up the code a bit.
+        // Put all the storage rebate accumulated in the system transaction
+        // to the 0x5 object so that it's not lost.
+        temporary_store.conserve_unmetered_storage_rebate(gas_charger.unmetered_storage_rebate());
 
         if let Err(e) = run_conservation_checks::<Mode>(
             temporary_store,
@@ -420,18 +384,7 @@ mod checked {
             &cost_summary,
             is_genesis_tx,
             advance_epoch_gas_summary,
-            temporary_store,
-            gas_charger,
-            tx_ctx,
-            move_vm,
-            protocol_config.simple_conservation_checks(),
-            enable_expensive_checks,
-            &cost_summary,
-            is_genesis_tx,
-            advance_epoch_gas_summary,
         ) {
-            result = Err(e);
-            // FIXME: we cannot fail the transaction if this is an epoch change transaction.
             result = Err(e);
         }
 
@@ -444,16 +397,6 @@ mod checked {
         gas_charger: &mut GasCharger,
         tx_ctx: &mut TxContext,
         move_vm: &Arc<MoveVM>,
-        enable_expensive_checks: bool,
-        cost_summary: &GasCostSummary,
-        is_genesis_tx: bool,
-        advance_epoch_gas_summary: Option<(u64, u64)>,
-    ) -> Result<(), ExecutionError> {
-        temporary_store: &mut TemporaryStore<'_>,
-        gas_charger: &mut GasCharger,
-        tx_ctx: &mut TxContext,
-        move_vm: &Arc<MoveVM>,
-        simple_conservation_checks: bool,
         enable_expensive_checks: bool,
         cost_summary: &GasCostSummary,
         is_genesis_tx: bool,
@@ -472,24 +415,6 @@ mod checked {
                     enable_expensive_checks,
                     gas_charger.is_pay_with_stable_coin(temporary_store),
                 )
-            // ensure that this transaction did not create or destroy SUI, try to recover if the check fails
-            let conservation_result = {
-                temporary_store
-                    .check_sui_conserved(simple_conservation_checks, cost_summary)
-                    .and_then(|()| {
-                        if enable_expensive_checks {
-                            // ensure that this transaction did not create or destroy SUI, try to recover if the check fails
-                            let mut layout_resolver =
-                                TypeLayoutResolver::new(move_vm, Box::new(&*temporary_store));
-                            temporary_store.check_sui_conserved_expensive(
-                                cost_summary,
-                                advance_epoch_gas_summary,
-                                &mut layout_resolver,
-                            )
-                        } else {
-                            Ok(())
-                        }
-                    })
             };
             if let Err(conservation_err) = conservation_result {
                 // conservation violated. try to avoid panic by dumping all writes, charging for gas, re-checking
@@ -507,40 +432,6 @@ mod checked {
                     enable_expensive_checks,
                     gas_charger.is_pay_with_stable_coin(temporary_store)
                 ) {
-                    // if we still fail, it's a problem with gas
-                    // charging that happens even in the "aborted" case--no other option but panic.
-                    // we will create or destroy SUI otherwise
-                    panic!(
-                        "SUI conservation fail in tx block {}: {}\nGas status is {}\nTx was ",
-                        tx_ctx.digest(),
-                        recovery_err,
-                        gas_charger.summary()
-                    )
-                }
-                // conservation violated. try to avoid panic by dumping all writes, charging for gas, re-checking
-                // conservation, and surfacing an aborted transaction with an invariant violation if all of that works
-                result = Err(conservation_err);
-                gas_charger.reset(temporary_store);
-                gas_charger.charge_gas(temporary_store, &mut result);
-                // check conservation once more more
-                if let Err(recovery_err) = {
-                    temporary_store
-                        .check_sui_conserved(simple_conservation_checks, cost_summary)
-                        .and_then(|()| {
-                            if enable_expensive_checks {
-                                // ensure that this transaction did not create or destroy SUI, try to recover if the check fails
-                                let mut layout_resolver =
-                                    TypeLayoutResolver::new(move_vm, Box::new(&*temporary_store));
-                                temporary_store.check_sui_conserved_expensive(
-                                    cost_summary,
-                                    advance_epoch_gas_summary,
-                                    &mut layout_resolver,
-                                )
-                            } else {
-                                Ok(())
-                            }
-                        })
-                } {
                     // if we still fail, it's a problem with gas
                     // charging that happens even in the "aborted" case--no other option but panic.
                     // we will create or destroy SUI otherwise
