@@ -22,7 +22,6 @@ use sui_types::sui_serde::BigInt;
 use crate::errors::IndexerError;
 use crate::store::IndexerStore;
 use crate::types::SuiTransactionBlockResponseWithOptions;
-use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
 use sui_types::dao::DaoRPC;
 use crate::utils::object_deal;
 
@@ -129,6 +128,17 @@ impl<S> ReadApiServer for ReadApi<S>
 where
     S: IndexerStore + Sync + Send + 'static,
 {
+    async fn try_get_object_before_version(
+        &self,
+        _: ObjectID,
+        _: SequenceNumber,
+    ) -> RpcResult<SuiPastObjectResponse> {
+        Err(jsonrpsee::types::error::CallError::Custom(
+            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
+        )
+            .into())
+    }
+
     async fn get_object(
         &self,
         object_id: ObjectID,
@@ -342,19 +352,6 @@ where
         let events_resp = self.fullnode.get_events(transaction_digest).await;
         events_guard.stop_and_record();
         events_resp
-    }
-    async fn get_loaded_child_objects(
-        &self,
-        digest: TransactionDigest,
-    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
-        let dynamic_fields_load_obj_guard = self
-            .state
-            .indexer_metrics()
-            .get_loaded_child_objects_latency
-            .start_timer();
-        let dyn_fields_resp = self.fullnode.get_loaded_child_objects(digest).await;
-        dynamic_fields_load_obj_guard.stop_and_record();
-        dyn_fields_resp
     }
 
     async fn get_protocol_config(
