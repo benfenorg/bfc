@@ -25,7 +25,6 @@ use sui_types::base_types::{ObjectID, SequenceNumber};
 use sui_types::digests::{ChainIdentifier, TransactionDigest};
 use sui_types::sui_serde::BigInt;
 
-use sui_json_rpc_types::SuiLoadedChildObjectsResponse;
 use sui_types::dao::DaoRPC;
 #[derive(Clone)]
 pub(crate) struct ReadApi<T: R2D2Connection + 'static> {
@@ -198,6 +197,17 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
         self.fullnode.get_inner_dao_info().await
     }
 
+    async fn try_get_object_before_version(
+        &self,
+        _: ObjectID,
+        _: SequenceNumber,
+    ) -> RpcResult<SuiPastObjectResponse> {
+        Err(jsonrpsee::types::error::CallError::Custom(
+            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
+        )
+            .into())
+    }
+
     async fn try_multi_get_past_objects(
         &self,
         _past_objects: Vec<SuiGetPastObjectRequest>,
@@ -267,16 +277,6 @@ impl<T: R2D2Connection + 'static> ReadApiServer for ReadApi<T> {
             .get_transaction_events_in_blocking_task(transaction_digest)
             .await
             .map_err(Into::into)
-    }
-
-    async fn get_loaded_child_objects(
-        &self,
-        _digest: TransactionDigest,
-    ) -> RpcResult<SuiLoadedChildObjectsResponse> {
-        Err(jsonrpsee::types::error::CallError::Custom(
-            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
-        )
-        .into())
     }
 
     async fn get_protocol_config(

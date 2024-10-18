@@ -4890,17 +4890,6 @@ impl AuthorityState {
         let buffer_stake_bps = epoch_store.get_effective_buffer_stake_bps();
 
         let (mut next_epoch_protocol_version, mut next_epoch_system_packages) =
-            Self::choose_protocol_version_and_system_packages(
-                epoch_store.protocol_version(),
-                epoch_store.protocol_config(),
-                epoch_store.committee(),
-                epoch_store
-                    .get_capabilities()
-                    .expect("read capabilities from db cannot fail"),
-                buffer_stake_bps,
-            );
-
-        let (next_epoch_protocol_version, next_epoch_system_packages) =
             if epoch_store.protocol_config().authority_capabilities_v2() {
                 Self::choose_protocol_version_and_system_packages_v2(
                     epoch_store.protocol_version(),
@@ -4928,10 +4917,8 @@ impl AuthorityState {
         // next_epoch_protocol_version
 
         let version = epoch_store.protocol_version().as_u64();
-        let next_bfc_p_version = bfc_get_next_avail_protocol_version(version);
-        let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
         let next_bfc_p_version = self.bfc_get_next_avail_protocol_version(version);
-        let _proposal_result = self.get_proposal_state(next_bfc_p_version).await;
+        let proposal_result = self.get_proposal_state(next_bfc_p_version).await;
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
@@ -5728,14 +5715,11 @@ impl NodeStateDump {
         serde_json::from_reader(file).map_err(|e| anyhow::anyhow!(e))
     }
 
-
-
-fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
-    if current_version == 25 {
-        //bfc protocol version start at 23, 24, 44,
-        return 44;
+    fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
+        if current_version == 25 {
+            //bfc protocol version start at 23, 24, 44,
+            return 44;
+        }
+        return current_version + 1;
     }
-    return current_version + 1;
-
-
 }
