@@ -508,7 +508,7 @@ Errors
     round: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ) {
     _ = round;
-    inner.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
+    inner.stable_rate = <a href="../bfc-system/treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
 }
 </code></pre>
 
