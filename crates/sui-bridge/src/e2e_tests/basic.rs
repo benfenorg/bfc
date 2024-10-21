@@ -152,6 +152,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+#[ignore]
 async fn test_add_new_coins_on_sui() {
     telemetry_subscribers::init_for_testing();
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()

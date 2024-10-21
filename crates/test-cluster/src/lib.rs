@@ -984,6 +984,11 @@ impl TestClusterBuilder {
         self
     }
 
+    pub fn with_all_vault_init(mut self) -> Self {
+        self.get_or_init_genesis_config().bfc_skip_init_vault = 0;
+        self
+    }
+
     pub fn with_num_validators(mut self, num: usize) -> Self {
         self.num_validators = Some(num);
         self

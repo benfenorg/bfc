@@ -3175,6 +3175,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(4000)
         .with_num_validators(5)
+        .with_all_vault_init()
         .build()
         .await;
     let http_client = test_cluster.rpc_client();
@@ -3554,6 +3555,7 @@ async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(5000)
         .with_num_validators(5)
+        .with_all_vault_init()
         .build()
         .await;
 

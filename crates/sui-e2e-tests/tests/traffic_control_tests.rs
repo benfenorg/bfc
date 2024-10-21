@@ -571,44 +571,7 @@ async fn sim_test_traffic_sketch_no_blocks() {
     assert!(metrics.total_time_blocked < Duration::from_secs(10));
 }
 
-#[sim_test]
-async fn test_traffic_sketch_no_blocks() {
-    let sketch_config = FreqThresholdConfig {
-        client_threshold: 10_100,
-        proxied_client_threshold: 10_100,
-        window_size_secs: 4,
-        update_interval_secs: 1,
-        ..Default::default()
-    };
-    let policy = PolicyConfig {
-        connection_blocklist_ttl_sec: 1,
-        proxy_blocklist_ttl_sec: 1,
-        spam_policy_type: PolicyType::NoOp,
-        error_policy_type: PolicyType::FreqThreshold(sketch_config),
-        channel_capacity: 100,
-        dry_run: false,
-        ..Default::default()
-    };
-    let metrics = TrafficSim::run(
-        policy,
-        10,     // num_clients
-        10_000, // per_client_tps
-        Duration::from_secs(20),
-        true, // report
-    )
-    .await;
 
-    let expected_requests = 10_000 * 10 * 20;
-    assert!(metrics.num_blocked < 10_010);
-    assert!(metrics.num_requests > expected_requests - 1_000);
-    assert!(metrics.num_requests < expected_requests + 200);
-    assert!(metrics.num_blocklist_adds <= 1);
-    if let Some(first_block) = metrics.abs_time_to_first_block {
-        assert!(first_block > Duration::from_secs(2));
-    }
-    assert!(metrics.num_blocklist_adds < 10);
-    assert!(metrics.total_time_blocked < Duration::from_secs(10));
-}
 
 #[ignore]
 #[sim_test]
