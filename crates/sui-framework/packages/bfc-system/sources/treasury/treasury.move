@@ -33,6 +33,8 @@ module bfc_system::treasury {
     use bfc_system::vault::{Self, Vault, VaultInfo};
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
+    use bfc_system::usdc::USDC;
+    use bfc_system::usdt::USDT;
 
     // friend bfc_system::bfc_system_state_inner;
     // #[test_only]
@@ -69,6 +71,18 @@ module bfc_system::treasury {
         updated_at: u64,
         init: bool,
         total_bfc_supply: u64,
+    }
+
+    public struct TreasuryStable has key, store {
+        id: UID,
+        usdc_balance: Balance<USDC>,
+        usdt_balance: Balance<USDT>,
+        busd_balance: Balance<BUSD>,
+        usdc_supplies: Bag,
+        usdt_supplies: Bag,
+        busd_supplies: Bag,
+        updated_at: u64,
+        init: bool,
     }
 
     //spec module { pragma verify = false; }
