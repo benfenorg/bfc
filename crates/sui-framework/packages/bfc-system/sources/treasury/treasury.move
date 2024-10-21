@@ -120,6 +120,26 @@ module bfc_system::treasury {
         treasury_stable
     }
 
+    public fun mint_stable<StableCoinType>(_amount: u64, _ctx: &mut TxContext) {
+        // 权限判断 根据调用方地址判断
+        // 根据StableCoinType mint usdc 或者 usdt
+        // 转账usdc 或者 usdt给调用合约
+    }
+
+    public fun borrow_busd<StableCoinType>(_supply: Supply<StableCoinType>) {
+        // 判断是否是usdc usdt
+        // 修改TreasuryStable中usdc_balance usdt_balance busd_balance
+        // mint busd
+        // 转账给调用合约
+    }
+
+    public fun return_busd<StableCoinType>(_supply: Supply<BUSD>) {
+        // 判断是否是usdc usdt
+        // 修改TreasuryStable中usdc_balance usdt_balance busd_balance
+        // mint busd
+        // 转账给调用合约
+    }
+
     // call in bfc_system
     public(package) fun create_treasury_pause_cap(admin: address, ctx: &mut TxContext) {
         transfer::transfer(TreasuryPauseCap { id: object::new(ctx) }, admin);
