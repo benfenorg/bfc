@@ -29,7 +29,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap};
+    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap, TreasuryStable};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -238,6 +238,12 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
+    public(package) fun create_treasury_stable(
+        ctx: &mut TxContext
+    ): TreasuryStable {
+        treasury::create_treasury_stable(ctx)
+    }
+
     public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
         self.stable_rate
     }
@@ -394,7 +400,6 @@ module bfc_system::bfc_system_state_inner {
         treasury::rebalance_with_one_stablecoin<StableCoinType>(&mut self.treasury, pool_balance, true, clock, ctx);
     }
 
-
     public(package) fun request_gas_balance(
         self: &mut BfcSystemStateInner,
         amount: u64,
@@ -402,6 +407,22 @@ module bfc_system::bfc_system_state_inner {
     ): Balance<BFC> {
         treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx)
     }
+
+    /*public(package) fun swap_stable_to_busd<StableCoinType>(
+        treasury_stable: &mut TreasuryStable,
+        balance: Balance<StableCoinType>,
+        ctx: &mut TxContext,
+    ) {
+        treasury::swap_stable_to_busd<StableCoinType>(treasury_stable, balance, ctx);
+    }
+
+    public(package) fun swap_busd_to_stable<StableCoinType>(
+        treasury_stable: &mut TreasuryStable,
+        balance: Balance<BUSD>,
+        ctx: &mut TxContext,
+    ) {
+        treasury::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
+    }*/
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
         self.stable_rate

@@ -78,9 +78,7 @@ module bfc_system::treasury {
         usdc_balance: Balance<USDC>,
         usdt_balance: Balance<USDT>,
         busd_balance: Balance<BUSD>,
-        usdc_supplies: Bag,
-        usdt_supplies: Bag,
-        busd_supplies: Bag,
+        supplies: Bag,
         updated_at: u64,
         init: bool,
     }
@@ -111,33 +109,11 @@ module bfc_system::treasury {
             usdc_balance: balance::zero<USDC>(),
             usdt_balance: balance::zero<USDT>(),
             busd_balance: balance::zero<BUSD>(),
-            usdc_supplies: bag::new(ctx),
-            usdt_supplies: bag::new(ctx),
-            busd_supplies: bag::new(ctx),
+            supplies: bag::new(ctx),
             updated_at: 0,
             init: false,
         };
         treasury_stable
-    }
-
-    public fun mint_stable<StableCoinType>(_amount: u64, _ctx: &mut TxContext) {
-        // 权限判断 根据调用方地址判断
-        // 根据StableCoinType mint usdc 或者 usdt
-        // 转账usdc 或者 usdt给调用合约
-    }
-
-    public fun borrow_busd<StableCoinType>(_supply: Supply<StableCoinType>) {
-        // 判断是否是usdc usdt
-        // 修改TreasuryStable中usdc_balance usdt_balance busd_balance
-        // mint busd
-        // 转账给调用合约
-    }
-
-    public fun return_busd<StableCoinType>(_supply: Supply<BUSD>) {
-        // 判断是否是usdc usdt
-        // 修改TreasuryStable中usdc_balance usdt_balance busd_balance
-        // mint busd
-        // 转账给调用合约
     }
 
     // call in bfc_system
@@ -188,6 +164,26 @@ module bfc_system::treasury {
             borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
         )
     }
+
+    /*public fun swap_stable_to_busd<StableCoinType>(_treasury_stable: &mut TreasuryStable,
+                                                   _balance: Balance<StableCoinType>,
+                                                   _ctx: &mut TxContext,) {
+        /// let _key = get_vault_key<StableCoinType>(); // TODO 如何判断只有usdc usdt可用
+        // 国库增加usdt
+        // 国库减少busd
+        // 用户减少usdt
+        // 用户增加busd，转给用户
+    }
+
+    public fun swap_busd_to_stable<StableCoinType>(_treasury_stable: &mut TreasuryStable,
+                                 _balance: Balance<BUSD>,
+                                 _ctx: &mut TxContext,) {
+        let _key = get_vault_key<StableCoinType>(); // TODO 如何判断只有usdc usdt可用
+        // 国库增加busd
+        // 国库减少usdt
+        // 用户减少busd
+        // 用户增加usdt，转给用户
+    }*/
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
         vault::set_pause(

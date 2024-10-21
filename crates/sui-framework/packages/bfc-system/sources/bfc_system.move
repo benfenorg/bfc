@@ -38,7 +38,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
-    use bfc_system::treasury::TreasuryPauseCap;
+    use bfc_system::treasury::{TreasuryPauseCap};
 
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
@@ -119,6 +119,20 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
+/*    public(package) fun create_stable(
+        id: UID,
+        ctx: &mut TxContext
+    ) {
+        let inner_state = bfc_system_state_inner::create_treasury_stable(ctx);
+        let mut self = BfcSystemState {
+            id,
+            version: BFC_SYSTEM_STATE_VERSION_V1
+        };
+
+        dynamic_field::add(&mut self.id, BFC_SYSTEM_STATE_VERSION_V1, inner_state);
+
+        transfer::share_object(self);
+    }*/
 
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut(wrapper);
@@ -190,6 +204,12 @@ module bfc_system::bfc_system {
     ): &mut BfcSystemStateInner {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
+
+/*    fun load_treasury_stable_mut(
+        self: &mut BfcSystemState
+    ): &mut TreasuryStable {
+        dynamic_field::borrow_mut(&mut self.id, self.version)
+    }*/
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
@@ -313,6 +333,24 @@ module bfc_system::bfc_system {
         let inner_state = load_system_state_mut(wrapper);
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
+
+    /*public fun swap_stable_to_busd<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        balance: Balance<StableCoinType>,
+        ctx: &mut TxContext,
+    ) {
+        let treasury_stable = load_treasury_stable_mut(wrapper);
+        bfc_system_state_inner::swap_stable_to_busd<StableCoinType>(treasury_stable, balance, ctx);
+    }
+
+    public fun swap_busd_to_stable<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        balance: Balance<BUSD>,
+        ctx: &mut TxContext,
+    ) {
+        let treasury_stable = load_treasury_stable_mut(wrapper);
+        bfc_system_state_inner::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
+    }*/
 
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(
