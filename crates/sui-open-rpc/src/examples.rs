@@ -66,11 +66,6 @@ struct Examples {
     examples: Vec<ExamplePairing>,
 }
 
-#[derive(serde::Serialize)]
-struct Value {
-    value: String,
-}
-
 impl Examples {
     fn new(name: &str, examples: Vec<ExamplePairing>) -> Self {
         Self {
@@ -1212,7 +1207,7 @@ impl RpcExampleProvider {
                     },
                     MoveStructLayout {
                         type_: struct_tag,
-                        fields: Vec::new(),
+                        fields: Box::new(Vec::new()),
                     },
                 )
                 .unwrap(),

@@ -617,6 +617,7 @@ pub fn build_committee_update_url_transaction(
 #[cfg(test)]
 mod tests {
     use crate::crypto::BridgeAuthorityKeyPair;
+    use crate::metrics::BridgeMetrics;
     use crate::sui_client::SuiClient;
     use crate::types::BridgeAction;
     use crate::types::EmergencyAction;
@@ -632,6 +633,7 @@ mod tests {
     };
     use ethers::types::Address as EthAddress;
     use std::collections::HashMap;
+    use std::sync::Arc;
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::crypto::get_key_pair;
     use sui_types::crypto::ToFromBytes;
@@ -650,7 +652,8 @@ mod tests {
             .build_with_bridge(bridge_keys, true)
             .await;
 
-        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url)
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url, metrics)
             .await
             .unwrap();
         let bridge_authority_keys = test_cluster.bridge_authority_keys.take().unwrap();
@@ -716,16 +719,19 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
     async fn test_build_sui_transaction_for_emergency_op() {
         telemetry_subscribers::init_for_testing();
+        let num_valdiator = 2;
         let mut bridge_keys = vec![];
-        for _ in 0..=3 {
+        for _ in 0..num_valdiator {
             let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
             bridge_keys.push(kp);
         }
         let mut test_cluster: test_cluster::TestCluster = TestClusterBuilder::new()
             .with_protocol_version((BRIDGE_ENABLE_PROTOCOL_VERSION).into())
+            .with_num_validators(num_valdiator)
             .build_with_bridge(bridge_keys, true)
             .await;
-        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url)
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url, metrics)
             .await
             .unwrap();
         let bridge_authority_keys = test_cluster.bridge_authority_keys.take().unwrap();
@@ -794,7 +800,8 @@ mod tests {
             .with_protocol_version((BRIDGE_ENABLE_PROTOCOL_VERSION).into())
             .build_with_bridge(bridge_keys, true)
             .await;
-        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url)
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url, metrics)
             .await
             .unwrap();
         let bridge_authority_keys = test_cluster.bridge_authority_keys.take().unwrap();
@@ -882,7 +889,8 @@ mod tests {
             .with_protocol_version((BRIDGE_ENABLE_PROTOCOL_VERSION).into())
             .build_with_bridge(bridge_keys, true)
             .await;
-        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url)
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url, metrics)
             .await
             .unwrap();
         let bridge_authority_keys = test_cluster.bridge_authority_keys.take().unwrap();
@@ -951,7 +959,8 @@ mod tests {
             .with_protocol_version((BRIDGE_ENABLE_PROTOCOL_VERSION).into())
             .build_with_bridge(bridge_keys, true)
             .await;
-        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url)
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.fullnode_handle.rpc_url, metrics)
             .await
             .unwrap();
         let bridge_authority_keys = test_cluster.bridge_authority_keys.take().unwrap();

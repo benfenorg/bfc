@@ -46,6 +46,7 @@ impl ApiEndpoint<RestService> for GetCheckpointFull {
                     .build(),
             )
             .response(404, ResponseBuilder::new().build())
+            .response(410, ResponseBuilder::new().build())
             .build()
     }
 
@@ -58,9 +59,21 @@ async fn get_checkpoint_full(
     Path(checkpoint_id): Path<CheckpointId>,
     accept: AcceptFormat,
     State(state): State<StateReader>,
-) -> Result<ResponseContent<CheckpointData>> {
+) -> Result<ResponseContent<sui_types::full_checkpoint_content::CheckpointData>> {
     let verified_summary = match checkpoint_id {
-        CheckpointId::SequenceNumber(s) => state.inner().get_checkpoint_by_sequence_number(s),
+        CheckpointId::SequenceNumber(s) => {
+            // Since we need object contents we need to check for the lowest available checkpoint
+            // with objects that hasn't been pruned
+            let oldest_checkpoint = state.inner().get_lowest_available_checkpoint_objects()?;
+            if s < oldest_checkpoint {
+                return Err(crate::RestError::new(
+                    axum::http::StatusCode::GONE,
+                    "Old checkpoints have been pruned",
+                ));
+            }
+
+            state.inner().get_checkpoint_by_sequence_number(s)
+        }
         CheckpointId::Digest(d) => state.inner().get_checkpoint_by_digest(&d.into()),
     }?
     .ok_or(CheckpointNotFoundError(checkpoint_id))?;
@@ -72,8 +85,7 @@ async fn get_checkpoint_full(
 
     let checkpoint_data = state
         .inner()
-        .get_checkpoint_data(verified_summary, checkpoint_contents)?
-        .into();
+        .get_checkpoint_data(verified_summary, checkpoint_contents)?;
 
     match accept {
         AcceptFormat::Json => ResponseContent::Json(checkpoint_data),
@@ -109,6 +121,7 @@ impl ApiEndpoint<RestService> for GetCheckpoint {
                     .build(),
             )
             .response(404, ResponseBuilder::new().build())
+            .response(410, ResponseBuilder::new().build())
             .build()
     }
 
@@ -123,12 +136,22 @@ async fn get_checkpoint(
     State(state): State<StateReader>,
 ) -> Result<ResponseContent<SignedCheckpointSummary>> {
     let summary = match checkpoint_id {
-        CheckpointId::SequenceNumber(s) => state.inner().get_checkpoint_by_sequence_number(s),
+        CheckpointId::SequenceNumber(s) => {
+            let oldest_checkpoint = state.inner().get_lowest_available_checkpoint()?;
+            if s < oldest_checkpoint {
+                return Err(crate::RestError::new(
+                    axum::http::StatusCode::GONE,
+                    "Old checkpoints have been pruned",
+                ));
+            }
+
+            state.inner().get_checkpoint_by_sequence_number(s)
+        }
         CheckpointId::Digest(d) => state.inner().get_checkpoint_by_digest(&d.into()),
     }?
     .ok_or(CheckpointNotFoundError(checkpoint_id))?
     .into_inner()
-    .into();
+    .try_into()?;
 
     match accept {
         AcceptFormat::Json => ResponseContent::Json(summary),
@@ -254,11 +277,15 @@ async fn list_checkpoints(
 
     let checkpoints = state
         .checkpoint_iter(direction, start)
-        .map(|result| {
-            result.map(|(checkpoint, _contents)| SignedCheckpointSummary::from(checkpoint))
-        })
         .take(limit)
-        .collect::<Result<Vec<_>, _>>()?;
+        .map(|result| {
+            result
+                .map_err(Into::into)
+                .and_then(|(checkpoint, _contents)| {
+                    SignedCheckpointSummary::try_from(checkpoint).map_err(Into::into)
+                })
+        })
+        .collect::<Result<Vec<_>>>()?;
 
     let cursor = checkpoints.last().and_then(|checkpoint| match direction {
         Direction::Ascending => checkpoint.checkpoint.sequence_number.checked_add(1),

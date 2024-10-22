@@ -1,6 +1,7 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { fromBase64 } from '@mysten/bcs';
 import { secp256r1 } from '@noble/curves/p256';
 import { sha256 } from '@noble/hashes/sha256';
 
@@ -8,7 +9,6 @@ import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
 import { parseSerializedSignature } from '../../cryptography/signature.js';
-import { fromB64 } from '../../utils/index.js';
 
 const SECP256R1_PUBLIC_KEY_SIZE = 33;
 
@@ -27,7 +27,7 @@ export class Secp256r1PublicKey extends PublicKey {
 		super();
 
 		if (typeof value === 'string') {
-			this.data = fromB64(value);
+			this.data = fromBase64(value);
 		} else if (value instanceof Uint8Array) {
 			this.data = value;
 		} else {
@@ -56,7 +56,7 @@ export class Secp256r1PublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the Benfen address associated with this Secp256r1 public key
+	 * Return the Sui address associated with this Secp256r1 public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['Secp256r1'];

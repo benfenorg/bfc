@@ -24,7 +24,10 @@ use std::{
     time::Duration,
 };
 use sui_types::{
-    bridge::{BRIDGE_COMMITTEE_MODULE_NAME, BRIDGE_MODULE_NAME},
+    bridge::{
+        BRIDGE_COMMITTEE_MODULE_NAME, BRIDGE_LIMITER_MODULE_NAME, BRIDGE_MODULE_NAME,
+        BRIDGE_TREASURY_MODULE_NAME,
+    },
     event::EventID,
     Identifier,
 };
@@ -39,6 +42,25 @@ pub async fn run_bridge_node(
     init_all_struct_tags();
     let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
     let (server_config, client_config) = config.validate(metrics.clone()).await?;
+    let sui_chain_identifier = server_config
+        .sui_client
+        .get_chain_identifier()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to get sui chain identifier: {:?}", e))?;
+    let eth_chain_identifier = server_config
+        .eth_client
+        .get_chain_id()
+        .await
+        .map_err(|e| anyhow::anyhow!("Failed to get eth chain identifier: {:?}", e))?;
+    prometheus_registry
+        .register(mysten_metrics::bridge_uptime_metric(
+            "bridge",
+            metadata.version,
+            &sui_chain_identifier,
+            &eth_chain_identifier.to_string(),
+            client_config.is_some(),
+        ))
+        .unwrap();
 
     // Start Client
     let _handles = if let Some(client_config) = client_config {
@@ -94,11 +116,14 @@ async fn start_client_components(
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
 
-    let (task_handles, sui_events_rx) =
-        SuiSyncer::new(client_config.sui_client, sui_modules_to_watch)
-            .run(Duration::from_secs(2))
-            .await
-            .expect("Failed to start sui syncer");
+    let (task_handles, sui_events_rx) = SuiSyncer::new(
+        client_config.sui_client,
+        sui_modules_to_watch,
+        metrics.clone(),
+    )
+    .run(Duration::from_secs(2))
+    .await
+    .expect("Failed to start sui syncer");
     all_handles.extend(task_handles);
 
     let committee = Arc::new(
@@ -116,13 +141,21 @@ async fn start_client_components(
 
     let (bridge_pause_tx, bridge_pause_rx) = tokio::sync::watch::channel(is_bridge_paused);
 
-    let (monitor_tx, monitor_rx) = mysten_metrics::metered_channel::channel(
+    let (sui_monitor_tx, sui_monitor_rx) = mysten_metrics::metered_channel::channel(
         10000,
         &mysten_metrics::get_metrics()
             .unwrap()
             .channel_inflight
-            .with_label_values(&["monitor_queue"]),
+            .with_label_values(&["sui_monitor_queue"]),
     );
+    let (eth_monitor_tx, eth_monitor_rx) = mysten_metrics::metered_channel::channel(
+        10000,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["eth_monitor_queue"]),
+    );
+
     let sui_token_type_tags = Arc::new(ArcSwap::from(Arc::new(sui_token_type_tags)));
     let bridge_action_executor = BridgeActionExecutor::new(
         sui_client.clone(),
@@ -139,10 +172,12 @@ async fn start_client_components(
 
     let monitor = BridgeMonitor::new(
         sui_client.clone(),
-        monitor_rx,
+        sui_monitor_rx,
+        eth_monitor_rx,
         bridge_auth_agg.clone(),
         bridge_pause_tx,
         sui_token_type_tags,
+        metrics.clone(),
     );
     all_handles.push(spawn_logged_monitored_task!(monitor.run()));
 
@@ -151,7 +186,8 @@ async fn start_client_components(
         sui_events_rx,
         eth_events_rx,
         store.clone(),
-        monitor_tx,
+        sui_monitor_tx,
+        eth_monitor_tx,
         metrics,
     );
 
@@ -166,6 +202,8 @@ fn get_sui_modules_to_watch(
     let sui_bridge_modules = vec![
         BRIDGE_MODULE_NAME.to_owned(),
         BRIDGE_COMMITTEE_MODULE_NAME.to_owned(),
+        BRIDGE_TREASURY_MODULE_NAME.to_owned(),
+        BRIDGE_LIMITER_MODULE_NAME.to_owned(),
     ];
     if let Some(cursor) = sui_bridge_module_last_processed_event_id_override {
         info!("Overriding cursor for sui bridge modules to {:?}", cursor);
@@ -235,6 +273,7 @@ mod tests {
     use prometheus::Registry;
 
     use super::*;
+    use crate::config::default_ed25519_key_pair;
     use crate::config::BridgeNodeConfig;
     use crate::config::EthConfig;
     use crate::config::SuiConfig;
@@ -315,13 +354,17 @@ mod tests {
         let store = BridgeOrchestratorTables::new(temp_dir.path());
         let bridge_module = BRIDGE_MODULE_NAME.to_owned();
         let committee_module = BRIDGE_COMMITTEE_MODULE_NAME.to_owned();
+        let treasury_module = BRIDGE_TREASURY_MODULE_NAME.to_owned();
+        let limiter_module = BRIDGE_LIMITER_MODULE_NAME.to_owned();
         // No override, no stored watermark, use None
         let sui_modules_to_watch = get_sui_modules_to_watch(&store, None);
         assert_eq!(
             sui_modules_to_watch,
             vec![
                 (bridge_module.clone(), None),
-                (committee_module.clone(), None)
+                (committee_module.clone(), None),
+                (treasury_module.clone(), None),
+                (limiter_module.clone(), None)
             ]
             .into_iter()
             .collect::<HashMap<_, _>>()
@@ -337,7 +380,9 @@ mod tests {
             sui_modules_to_watch,
             vec![
                 (bridge_module.clone(), Some(override_cursor)),
-                (committee_module.clone(), Some(override_cursor))
+                (committee_module.clone(), Some(override_cursor)),
+                (treasury_module.clone(), Some(override_cursor)),
+                (limiter_module.clone(), Some(override_cursor))
             ]
             .into_iter()
             .collect::<HashMap<_, _>>()
@@ -357,7 +402,9 @@ mod tests {
             sui_modules_to_watch,
             vec![
                 (bridge_module.clone(), Some(stored_cursor)),
-                (committee_module.clone(), None)
+                (committee_module.clone(), None),
+                (treasury_module.clone(), None),
+                (limiter_module.clone(), None)
             ]
             .into_iter()
             .collect::<HashMap<_, _>>()
@@ -376,7 +423,9 @@ mod tests {
             sui_modules_to_watch,
             vec![
                 (bridge_module.clone(), Some(override_cursor)),
-                (committee_module.clone(), Some(override_cursor))
+                (committee_module.clone(), Some(override_cursor)),
+                (treasury_module.clone(), Some(override_cursor)),
+                (limiter_module.clone(), Some(override_cursor))
             ]
             .into_iter()
             .collect::<HashMap<_, _>>()
@@ -417,6 +466,8 @@ mod tests {
             approved_governance_actions: vec![],
             run_client: false,
             db_path: None,
+            metrics_key_pair: default_ed25519_key_pair(),
+            metrics: None,
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -480,6 +531,8 @@ mod tests {
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),
+            metrics_key_pair: default_ed25519_key_pair(),
+            metrics: None,
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -554,6 +607,8 @@ mod tests {
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),
+            metrics_key_pair: default_ed25519_key_pair(),
+            metrics: None,
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(

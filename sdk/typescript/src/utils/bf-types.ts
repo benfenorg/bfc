@@ -1,35 +1,33 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { bytesToHex, hexToBytes } from '@noble/hashes/utils';
-import BigNumber from 'bignumber.js';
-
-import { fromB58, splitGenericParameters } from '../bcs/src/index.js';
-import { bfc2HexAddress } from './format.js';
+import { fromBase58, splitGenericParameters } from '@mysten/bcs';
 
 const TX_DIGEST_LENGTH = 32;
 
 /** Returns whether the tx digest is valid based on the serialization format */
 export function isValidTransactionDigest(value: string): value is string {
 	try {
-		const buffer = fromB58(value);
+		const buffer = fromBase58(value);
 		return buffer.length === TX_DIGEST_LENGTH;
 	} catch (e) {
 		return false;
 	}
 }
 
-export const BENFEN_ADDRESS_LENGTH = 32;
-export function isValidBenfenAddress(value: string): value is string {
-	let address = value;
-	if (/^bfc/i.test(value)) {
-		address = value.slice(3, -4);
-	}
-	return isHex(address) && getHexByteLength(address) === BENFEN_ADDRESS_LENGTH;
+// TODO - can we automatically sync this with rust length definition?
+// Source of truth is
+// https://github.com/MystenLabs/sui/blob/acb2b97ae21f47600e05b0d28127d88d0725561d/crates/sui-types/src/base_types.rs#L67
+// which uses the Move account address length
+// https://github.com/move-language/move/blob/67ec40dc50c66c34fd73512fcc412f3b68d67235/language/move-core/types/src/account_address.rs#L23 .
+
+export const SUI_ADDRESS_LENGTH = 32;
+export function isValidSuiAddress(value: string): value is string {
+	return isHex(value) && getHexByteLength(value) === SUI_ADDRESS_LENGTH;
 }
 
-export function isValidBenfenObjectId(value: string): boolean {
-	return isValidBenfenAddress(value);
+export function isValidSuiObjectId(value: string): boolean {
+	return isValidSuiAddress(value);
 }
 
 type StructTag = {
@@ -57,7 +55,7 @@ export function parseStructTag(type: string): StructTag {
 		: [];
 
 	return {
-		address: normalizeHexAddress(address),
+		address: normalizeSuiAddress(address),
 		module,
 		name,
 		typeParams,
@@ -84,26 +82,23 @@ export function normalizeStructTag(type: string | StructTag): string {
  * Perform the following operations:
  * 1. Make the address lower case
  * 2. Prepend `0x` if the string does not start with `0x`.
- * 3. Add more zeros if the length of the address(excluding `0x`) is less than `BENFEN_ADDRESS_LENGTH`
+ * 3. Add more zeros if the length of the address(excluding `0x`) is less than `SUI_ADDRESS_LENGTH`
  *
  * WARNING: if the address value itself starts with `0x`, e.g., `0x0x`, the default behavior
  * is to treat the first `0x` not as part of the address. The default behavior can be overridden by
  * setting `forceAdd0x` to true
  *
  */
-export function normalizeHexAddress(value: string, forceAdd0x: boolean = false): string {
+export function normalizeSuiAddress(value: string, forceAdd0x: boolean = false): string {
 	let address = value.toLowerCase();
-	if (/^bfc/i.test(value)) {
-		address = bfc2HexAddress(value);
-	}
 	if (!forceAdd0x && address.startsWith('0x')) {
 		address = address.slice(2);
 	}
-	return `0x${address.padStart(BENFEN_ADDRESS_LENGTH * 2, '0')}`;
+	return `0x${address.padStart(SUI_ADDRESS_LENGTH * 2, '0')}`;
 }
 
-export function normalizeBenfenObjectId(value: string, forceAdd0x: boolean = false): string {
-	return normalizeHexAddress(value, forceAdd0x);
+export function normalizeSuiObjectId(value: string, forceAdd0x: boolean = false): string {
+	return normalizeSuiAddress(value, forceAdd0x);
 }
 
 function isHex(value: string): boolean {
@@ -112,20 +107,4 @@ function isHex(value: string): boolean {
 
 function getHexByteLength(value: string): number {
 	return /^(0x|0X)/.test(value) ? (value.length - 2) / 2 : value.length / 2;
-}
-
-export function humanReadableToBfcDigits(amount: number | string) {
-	return BigInt(new BigNumber(amount).shiftedBy(9).integerValue().toString(10));
-}
-
-export function bfcDigitsToHumanReadable(amount: string | number) {
-	return new BigNumber(amount).shiftedBy(-9).toString(10);
-}
-
-export function hexToString(hex: string) {
-	return new TextDecoder().decode(hexToBytes((hex || '').replace(/^0x/, '')));
-}
-
-export function strToHex(str: string) {
-	return `0x${bytesToHex(new TextEncoder().encode(str || ''))}`;
 }

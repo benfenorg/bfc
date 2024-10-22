@@ -12,7 +12,7 @@ use crate::{
     editions::FeatureGate,
     expansion::{
         ast::{self as E, AbilitySet, Ellipsis, ModuleIdent, Mutability, Visibility},
-        translate::is_valid_datatype_or_constant_name as is_constant_name,
+        name_validation::is_valid_datatype_or_constant_name as is_constant_name,
     },
     ice,
     naming::{
@@ -51,6 +51,7 @@ pub struct ResolvedModuleFunction {
     pub mident: ModuleIdent,
     pub name: FunctionName,
     pub tyarg_arity: usize,
+    #[allow(unused)]
     pub arity: usize,
 }
 
@@ -93,6 +94,7 @@ pub enum FieldInfo {
 pub struct ResolvedConstant {
     pub mident: ModuleIdent,
     pub name: ConstantName,
+    #[allow(unused)]
     pub decl_loc: Loc,
 }
 
@@ -138,6 +140,7 @@ pub(super) enum ResolvedConstructor {
 #[derive(Debug, Clone)]
 pub(super) enum ResolvedCallSubject {
     Builtin(Box<ResolvedBuiltinFunction>),
+    #[allow(unused)]
     Constructor(Box<ResolvedConstructor>),
     Function(Box<ResolvedModuleFunction>),
     Var(Box<N::Var>),
@@ -146,6 +149,7 @@ pub(super) enum ResolvedCallSubject {
 
 #[derive(Debug, Clone)]
 pub(super) enum ResolvedUseFunFunction {
+    #[allow(unused)]
     Builtin(Box<ResolvedBuiltinFunction>),
     Module(Box<ResolvedModuleFunction>),
     Unbound,
@@ -1981,7 +1985,7 @@ fn function(
         warning_filter,
         index,
         attributes,
-        loc: _,
+        loc,
         visibility,
         macro_,
         entry,
@@ -2022,6 +2026,7 @@ fn function(
         warning_filter,
         index,
         attributes,
+        loc,
         visibility,
         macro_,
         entry,
@@ -3193,7 +3198,7 @@ fn unique_pattern_binders(
 ) -> Vec<(Mutability, P::Var)> {
     use E::MatchPattern_ as EP;
 
-    fn report_duplicate(context: &mut Context, var: P::Var, locs: &Vec<(Mutability, Loc)>) {
+    fn report_duplicate(context: &mut Context, var: P::Var, locs: &[(Mutability, Loc)]) {
         assert!(locs.len() > 1, "ICE pattern duplicate detection error");
         let (_, first_loc) = locs.first().unwrap();
         let mut diag = diag!(

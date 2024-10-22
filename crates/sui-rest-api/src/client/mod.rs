@@ -2,9 +2,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod sdk;
+use sdk::Result;
+
+pub use reqwest;
 
 use crate::transactions::ExecuteTransactionQueryParameters;
-use anyhow::Result;
 use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
 use sui_types::crypto::AuthorityStrongQuorumSignInfo;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -33,7 +35,7 @@ impl Client {
             .get_latest_checkpoint()
             .await
             .map(Response::into_inner)
-            .map(Into::into)
+            .and_then(|checkpoint| checkpoint.try_into().map_err(Into::into))
     }
 
     pub async fn get_full_checkpoint(
@@ -64,7 +66,7 @@ impl Client {
             .get_checkpoint(checkpoint_sequence_number)
             .await
             .map(Response::into_inner)
-            .map(Into::into)
+            .and_then(|checkpoint| checkpoint.try_into().map_err(Into::into))
     }
 
     pub async fn get_object(&self, object_id: ObjectID) -> Result<Object> {
@@ -72,7 +74,7 @@ impl Client {
             .get_object(object_id.into())
             .await
             .map(Response::into_inner)
-            .map(Into::into)
+            .and_then(|object| object.try_into().map_err(Into::into))
     }
 
     pub async fn get_object_with_version(
@@ -84,7 +86,7 @@ impl Client {
             .get_object_with_version(object_id.into(), version.into())
             .await
             .map(Response::into_inner)
-            .map(Into::into)
+            .and_then(|object| object.try_into().map_err(Into::into))
     }
 
     pub async fn execute_transaction(

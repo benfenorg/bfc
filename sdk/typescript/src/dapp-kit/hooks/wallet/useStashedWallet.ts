@@ -15,6 +15,7 @@ import { useConnectWallet } from './useConnectWallet.js';
 
 export interface StashedWalletConfig {
 	name: string;
+	network?: 'mainnet' | 'testnet';
 	origin?: string;
 }
 
@@ -42,6 +43,7 @@ export function useStashedWallet(config?: StashedWalletConfig) {
 
 		const { wallet, unregister, addressFromRedirect } = registerStashedWallet(config.name, {
 			origin: config.origin,
+			network: config.network,
 		});
 
 		if (addressFromRedirect) {
@@ -50,5 +52,5 @@ export function useStashedWallet(config?: StashedWalletConfig) {
 		}
 
 		return unregister;
-	}, [config?.name, config?.origin]);
+	}, [config?.name, config?.origin, config?.network]);
 }

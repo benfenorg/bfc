@@ -1,22 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-import type { Emitter } from 'mitt';
-import mitt from 'mitt';
-
-import { bcs } from '../bcs/index.js';
-import { toB64 } from '../utils/index.js';
-import { BFC_MAINNET_CHAIN, getWallets, ReadonlyWalletAccount } from '../wallet-standard/index.js';
-========
 import { Transaction } from '@mysten/sui/transactions';
-import { toB64 } from '@mysten/sui/utils';
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
+import { toBase64 } from '@mysten/sui/utils';
 import type {
-	BenfenSignPersonalMessageFeature,
-	BenfenSignPersonalMessageMethod,
-	BenfenSignTransactionBlockFeature,
-	BenfenSignTransactionBlockMethod,
 	StandardConnectFeature,
 	StandardConnectMethod,
 	StandardDisconnectFeature,
@@ -24,11 +11,6 @@ import type {
 	StandardEventsFeature,
 	StandardEventsListeners,
 	StandardEventsOnMethod,
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-	Wallet,
-} from '../wallet-standard/index.js';
-import { DEFAULT_ZKSEND_ORIGIN, ZkSendPopup } from './channel/index.js';
-========
 	SuiSignPersonalMessageFeature,
 	SuiSignPersonalMessageMethod,
 	SuiSignTransactionBlockFeature,
@@ -42,7 +24,7 @@ import type { Emitter } from 'mitt';
 import mitt from 'mitt';
 
 import { DEFAULT_STASHED_ORIGIN, StashedPopup } from './channel/index.js';
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
+import type { StashedSupportedNetwork } from './types.js';
 
 type WalletEventsMap = {
 	[E in keyof StandardEventsListeners]: Parameters<StandardEventsListeners[E]>[0];
@@ -57,6 +39,7 @@ export class StashedWallet implements Wallet {
 	#accounts: ReadonlyWalletAccount[];
 	#origin: string;
 	#name: string;
+	#network: StashedSupportedNetwork;
 
 	get name() {
 		return STASHED_WALLET_NAME;
@@ -71,7 +54,7 @@ export class StashedWallet implements Wallet {
 	}
 
 	get chains() {
-		return [BFC_MAINNET_CHAIN] as const;
+		return [SUI_MAINNET_CHAIN] as const;
 	}
 
 	get accounts() {
@@ -81,14 +64,9 @@ export class StashedWallet implements Wallet {
 	get features(): StandardConnectFeature &
 		StandardDisconnectFeature &
 		StandardEventsFeature &
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-		BenfenSignTransactionBlockFeature &
-		BenfenSignPersonalMessageFeature {
-========
 		SuiSignTransactionBlockFeature &
 		SuiSignTransactionFeature &
 		SuiSignPersonalMessageFeature {
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
 		return {
 			'standard:connect': {
 				version: '1.0.0',
@@ -102,19 +80,15 @@ export class StashedWallet implements Wallet {
 				version: '1.0.0',
 				on: this.#on,
 			},
-			'bfc:signTransactionBlock': {
+			'sui:signTransactionBlock': {
 				version: '1.0.0',
 				signTransactionBlock: this.#signTransactionBlock,
 			},
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-			'bfc:signPersonalMessage': {
-========
 			'sui:signTransaction': {
 				version: '2.0.0',
 				signTransaction: this.#signTransaction,
 			},
 			'sui:signPersonalMessage': {
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
 				version: '1.0.0',
 				signPersonalMessage: this.#signPersonalMessage,
 			},
@@ -123,27 +97,27 @@ export class StashedWallet implements Wallet {
 
 	constructor({
 		name,
+		network,
 		address,
 		origin = DEFAULT_STASHED_ORIGIN,
 	}: {
+		name: string;
+		network: StashedSupportedNetwork;
 		origin?: string;
 		address?: string | null;
-		name: string;
 	}) {
 		this.#accounts = [];
 		this.#events = mitt();
 		this.#origin = origin;
 		this.#name = name;
+		this.#network = network;
 
 		if (address) {
 			this.#setAccount(address);
 		}
 	}
 
-	#signTransactionBlock: BenfenSignTransactionBlockMethod = async ({
-		transactionBlock,
-		account,
-	}) => {
+	#signTransactionBlock: SuiSignTransactionBlockMethod = async ({ transactionBlock, account }) => {
 		transactionBlock.setSenderIfNotSet(account.address);
 
 		const data = transactionBlock.serialize();
@@ -151,6 +125,7 @@ export class StashedWallet implements Wallet {
 		const popup = new StashedPopup({
 			name: this.#name,
 			origin: this.#origin,
+			network: this.#network,
 		});
 
 		const response = await popup.send({
@@ -165,16 +140,11 @@ export class StashedWallet implements Wallet {
 		};
 	};
 
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-	#signPersonalMessage: BenfenSignPersonalMessageMethod = async ({ message, account }) => {
-		const bytes = toB64(bcs.vector(bcs.u8()).serialize(message).toBytes());
-		const popup = new ZkSendPopup({ name: this.#name, origin: this.#origin });
-		const response = await popup.createRequest({
-========
 	#signTransaction: SuiSignTransactionMethod = async ({ transaction, account }) => {
 		const popup = new StashedPopup({
 			name: this.#name,
 			origin: this.#origin,
+			network: this.#network,
 		});
 
 		const tx = Transaction.from(await transaction.toJSON());
@@ -198,11 +168,11 @@ export class StashedWallet implements Wallet {
 		const popup = new StashedPopup({
 			name: this.#name,
 			origin: this.#origin,
+			network: this.#network,
 		});
-		const bytes = toB64(message);
+		const bytes = toBase64(message);
 
 		const response = await popup.send({
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
 			type: 'sign-personal-message',
 			bytes,
 			address: account.address,
@@ -224,15 +194,9 @@ export class StashedWallet implements Wallet {
 			this.#accounts = [
 				new ReadonlyWalletAccount({
 					address,
-<<<<<<<< HEAD:sdk/typescript/src/zksend/wallet.ts
-					chains: [BFC_MAINNET_CHAIN],
-					features: ['bfc:signTransactionBlock', 'bfc:signPersonalMessage'],
-					// NOTE: zkSend doesn't support getting public keys, and zkLogin accounts don't have meaningful public keys anyway
-========
 					chains: [SUI_MAINNET_CHAIN],
 					features: ['sui:signTransactionBlock', 'sui:signPersonalMessage'],
 					// NOTE: Stashed doesn't support getting public keys, and zkLogin accounts don't have meaningful public keys anyway
->>>>>>>> releases/sui-v1.31.0-release:sdk/zksend/src/wallet/index.ts
 					publicKey: new Uint8Array(),
 				}),
 			];
@@ -256,7 +220,11 @@ export class StashedWallet implements Wallet {
 			return { accounts: this.accounts };
 		}
 
-		const popup = new StashedPopup({ name: this.#name, origin: this.#origin });
+		const popup = new StashedPopup({
+			name: this.#name,
+			origin: this.#origin,
+			network: this.#network,
+		});
 
 		const response = await popup.send({
 			type: 'connect',
@@ -281,9 +249,11 @@ export function registerStashedWallet(
 	name: string,
 	{
 		origin,
+		network = 'mainnet',
 	}: {
 		origin?: string;
-	},
+		network?: StashedSupportedNetwork;
+	} = {},
 ) {
 	const wallets = getWallets();
 
@@ -297,6 +267,7 @@ export function registerStashedWallet(
 
 	const wallet = new StashedWallet({
 		name,
+		network,
 		origin,
 		address: addressFromRedirect,
 	});

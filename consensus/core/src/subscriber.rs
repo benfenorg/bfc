@@ -93,7 +93,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
         self.context
             .metrics
             .node_metrics
-            .subscriber_connections
+            .subscribed_to
             .with_label_values(&[peer_hostname])
             .set(0);
     }
@@ -117,7 +117,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
             context
                 .metrics
                 .node_metrics
-                .subscriber_connections
+                .subscribed_to
                 .with_label_values(&[peer_hostname])
                 .set(0);
 
@@ -152,7 +152,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
                         .metrics
                         .node_metrics
                         .subscriber_connection_attempts
-                        .with_label_values(&[&peer_hostname, "success"])
+                        .with_label_values(&[peer_hostname, "success"])
                         .inc();
                     blocks
                 }
@@ -162,7 +162,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
                         .metrics
                         .node_metrics
                         .subscriber_connection_attempts
-                        .with_label_values(&[&peer_hostname, "failure"])
+                        .with_label_values(&[peer_hostname, "failure"])
                         .inc();
                     continue 'subscription;
                 }
@@ -173,7 +173,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
             context
                 .metrics
                 .node_metrics
-                .subscriber_connections
+                .subscribed_to
                 .with_label_values(&[peer_hostname])
                 .set(1);
 
@@ -184,7 +184,7 @@ impl<C: NetworkClient, S: NetworkService> Subscriber<C, S> {
                             .metrics
                             .node_metrics
                             .subscribed_blocks
-                            .with_label_values(&[&peer_hostname])
+                            .with_label_values(&[peer_hostname])
                             .inc();
                         let result = authority_service
                             .handle_send_block(peer, block.clone())
@@ -291,6 +291,14 @@ mod test {
             _authorities: Vec<AuthorityIndex>,
             _timeout: Duration,
         ) -> ConsensusResult<Vec<Bytes>> {
+            unimplemented!("Unimplemented")
+        }
+
+        async fn get_latest_rounds(
+            &self,
+            _peer: AuthorityIndex,
+            _timeout: Duration,
+        ) -> ConsensusResult<Vec<Round>> {
             unimplemented!("Unimplemented")
         }
     }

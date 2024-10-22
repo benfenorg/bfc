@@ -11,7 +11,6 @@ use rand::{
     Rng,
 };
 use std::collections::{HashMap, HashSet};
-use sui_protocol_config::ProtocolConfig;
 use sui_test_transaction_builder::make_transfer_sui_transaction;
 use tokio::time::{sleep, Duration, Instant};
 use tracing::{debug, trace};
@@ -135,6 +134,7 @@ async fn sim_test_net_determinism() {
         config
     });
 
+async fn test_net_determinism() {
     let mut test_cluster = TestClusterBuilder::new().build().await;
 
     let txn = make_transfer_sui_transaction(&test_cluster.wallet, None, None).await;

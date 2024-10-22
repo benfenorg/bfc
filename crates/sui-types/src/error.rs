@@ -104,6 +104,10 @@ pub enum UserInputError {
     provided_obj_ref.1,
     provided_obj_ref.2
     )]
+    #[error(
+        "Object ID {} Version {} Digest {} is not available for consumption, current version: {current_version}",
+        .provided_obj_ref.0, .provided_obj_ref.1, .provided_obj_ref.2
+    )]
     ObjectVersionUnavailableForConsumption {
         provided_obj_ref: ObjectRef,
         current_version: SequenceNumber,
@@ -112,6 +116,8 @@ pub enum UserInputError {
     PackageVerificationTimedout { err: String },
 
     #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(*package_id))]
+    PackageVerificationTimeout { err: String },
+    #[error("Dependent package not found on-chain: {package_id:?}")]
     DependentPackageNotFound { package_id: ObjectID },
 
     #[error("Mutable parameter provided, immutable parameter expected.")]
@@ -308,7 +314,7 @@ pub enum UserInputError {
     #[error("Transaction {:?} in Soft Bundle has already been executed", digest)]
     AlreadyExecutedError { digest: TransactionDigest },
     #[error("At least one certificate in Soft Bundle has already been processed")]
-    CeritificateAlreadyProcessed,
+    CertificateAlreadyProcessed,
     #[error(
         "Gas price for transaction {:?} in Soft Bundle mismatch: want {:?}, have {:?}",
         digest,
@@ -323,6 +329,9 @@ pub enum UserInputError {
 
     #[error("Coin type is globally paused for use: {coin_type}")]
     CoinTypeGlobalPause { coin_type: String },
+
+    #[error("Invalid identifier found in the transaction: {error}")]
+    InvalidIdentifier { error: String },
 }
 
 #[derive(

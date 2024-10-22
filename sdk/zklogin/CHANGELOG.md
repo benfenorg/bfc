@@ -1,5 +1,60 @@
 # @mysten/zklogin
 
+## 0.7.21
+
+### Patch Changes
+
+- Updated dependencies [489f421]
+- Updated dependencies [489f421]
+  - @mysten/sui@1.11.0
+  - @mysten/bcs@1.1.0
+
+## 0.7.20
+
+### Patch Changes
+
+- Updated dependencies [830b8d8]
+  - @mysten/sui@1.10.0
+
+## 0.7.19
+
+### Patch Changes
+
+- Updated dependencies [2c96b06]
+- Updated dependencies [1fd22cc]
+  - @mysten/sui@1.9.0
+
+## 0.7.18
+
+### Patch Changes
+
+- Updated dependencies [569511a]
+  - @mysten/sui@1.8.0
+
+## 0.7.17
+
+### Patch Changes
+
+- Updated dependencies [143cd9d]
+- Updated dependencies [4357ac6]
+- Updated dependencies [4019dd7]
+- Updated dependencies [4019dd7]
+- Updated dependencies [00a974d]
+  - @mysten/sui@1.7.0
+
+## 0.7.16
+
+### Patch Changes
+
+- Updated dependencies [a3e32fe]
+  - @mysten/sui@1.6.0
+
+## 0.7.15
+
+### Patch Changes
+
+- 6f79ed9: Additional check for bigints
+
 ## 0.7.14
 
 ### Patch Changes

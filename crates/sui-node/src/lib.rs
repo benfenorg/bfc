@@ -25,6 +25,13 @@ use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
 use std::sync::{Weak};
+use std::path::PathBuf;
+use std::str::FromStr;
+#[cfg(msim)]
+use std::sync::atomic::Ordering;
+use std::sync::{Arc, Weak};
+use std::time::Duration;
+use sui_core::authority::authority_store_tables::AuthorityPerpetualTablesOptions;
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::authority::RandomnessRoundReceiver;
 use sui_core::authority::CHAIN_IDENTIFIER;
@@ -58,6 +65,7 @@ use fastcrypto_zkp::bn254::zk_login::JWK;
 pub use handle::SuiNodeHandle;
 use mysten_metrics::{spawn_monitored_task, RegistryService};
 use mysten_network::server::ServerBuilder;
+use mysten_service::server_timing::server_timing_middleware;
 use narwhal_network::metrics::MetricsMakeCallbackHandler;
 use narwhal_network::metrics::{NetworkConnectionMetrics, NetworkMetrics};
 use sui_archival::reader::ArchiveReaderBalancer;
@@ -458,10 +466,12 @@ impl SuiNode {
             None,
         ));
 
-        let perpetual_options = default_db_options().optimize_db_for_write_throughput(4);
+        // By default, only enable write stall on validators for perpetual db.
+        let enable_write_stall = config.enable_db_write_stall.unwrap_or(is_validator);
+        let perpetual_tables_options = AuthorityPerpetualTablesOptions { enable_write_stall };
         let perpetual_tables = Arc::new(AuthorityPerpetualTables::open(
             &config.db_path().join("store"),
-            Some(perpetual_options.options),
+            Some(perpetual_tables_options),
         ));
         let is_genesis = perpetual_tables
             .database_is_empty()
@@ -1159,7 +1169,8 @@ impl SuiNode {
             network
         };
 
-        let discovery_handle = discovery.start(p2p_network.clone());
+        let discovery_handle =
+            discovery.start(p2p_network.clone(), config.network_key_pair().copy());
         let state_sync_handle = state_sync.start(p2p_network.clone());
         let randomness_handle = randomness.start(p2p_network.clone());
 
@@ -1953,15 +1964,18 @@ fn build_kv_store(
 
     let network_str = match state.get_chain_identifier().map(|c| c.chain()) {
         Some(Chain::Mainnet) => "/mainnet",
-        Some(Chain::Testnet) => "/testnet",
         _ => {
-            info!("using local db only for kv store for unknown chain");
+            info!("using local db only for kv store");
             return Ok(Arc::new(db_store));
         }
     };
 
     let base_url = base_url.join(network_str)?.to_string();
-    let http_store = HttpKVStore::new_kv(&base_url, metrics.clone())?;
+    let http_store = HttpKVStore::new_kv(
+        &base_url,
+        config.transaction_kv_store_read_config.cache_size,
+        metrics.clone(),
+    )?;
     info!("using local key-value store with fallback to http key-value store");
     Ok(Arc::new(FallbackTransactionKVStore::new_kv(
         db_store,
@@ -2059,7 +2073,7 @@ pub async fn build_http_server(
 
     if config.enable_experimental_rest_api {
         let mut rest_service = sui_rest_api::RestService::new(
-            Arc::new(RestReadStore::new(state, store)),
+            Arc::new(RestReadStore::new(state.clone(), store)),
             software_version,
         );
 
@@ -2069,16 +2083,20 @@ pub async fn build_http_server(
             rest_service.with_executor(transaction_orchestrator.clone())
         }
 
-        let rest_router = rest_service.into_router();
-        router = router
-            .nest("/rest", rest_router.clone())
-            .nest("/v2", rest_router);
+        router = router.merge(rest_service.into_router());
     }
+    // TODO: Remove this health check when experimental REST API becomes default
+    // This is a copy of the health check in crates/sui-rest-api/src/health.rs
+    router = router
+        .route("/health", axum::routing::get(health_check_handler))
+        .route_layer(axum::Extension(state));
 
     let listener = tokio::net::TcpListener::bind(&config.json_rpc_address)
         .await
         .unwrap();
     let addr = listener.local_addr().unwrap();
+
+    router = router.layer(axum::middleware::from_fn(server_timing_middleware));
 
     let handle = tokio::spawn(async move {
         axum::serve(
@@ -2092,6 +2110,51 @@ pub async fn build_http_server(
     info!(local_addr =? addr, "Sui JSON-RPC server listening on {addr}");
 
     Ok(Some(handle))
+}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct Threshold {
+    pub threshold_seconds: Option<u32>,
+}
+
+async fn health_check_handler(
+    axum::extract::Query(Threshold { threshold_seconds }): axum::extract::Query<Threshold>,
+    axum::Extension(state): axum::Extension<Arc<AuthorityState>>,
+) -> impl axum::response::IntoResponse {
+    if let Some(threshold_seconds) = threshold_seconds {
+        // Attempt to get the latest checkpoint
+        let summary = match state
+            .get_checkpoint_store()
+            .get_highest_executed_checkpoint()
+        {
+            Ok(Some(summary)) => summary,
+            Ok(None) => {
+                warn!("Highest executed checkpoint not found");
+                return (axum::http::StatusCode::SERVICE_UNAVAILABLE, "down");
+            }
+            Err(err) => {
+                warn!("Failed to retrieve highest executed checkpoint: {:?}", err);
+                return (axum::http::StatusCode::SERVICE_UNAVAILABLE, "down");
+            }
+        };
+
+        // Calculate the threshold time based on the provided threshold_seconds
+        let latest_chain_time = summary.timestamp();
+        let threshold =
+            std::time::SystemTime::now() - Duration::from_secs(threshold_seconds as u64);
+
+        // Check if the latest checkpoint is within the threshold
+        if latest_chain_time < threshold {
+            warn!(
+                ?latest_chain_time,
+                ?threshold,
+                "failing healthcheck due to checkpoint lag"
+            );
+            return (axum::http::StatusCode::SERVICE_UNAVAILABLE, "down");
+        }
+    }
+    // if health endpoint is responding and no threshold is given, respond success
+    (axum::http::StatusCode::OK, "up")
 }
 
 #[cfg(not(test))]

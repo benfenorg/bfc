@@ -1,4 +1,4 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { secp256k1 } from '@noble/curves/secp256k1';
@@ -7,7 +7,7 @@ import { sha256 } from '@noble/hashes/sha256';
 import { bytesToHex } from '@noble/hashes/utils';
 import { HDKey } from '@scure/bip32';
 
-import { encodeBenfenPrivateKey, Keypair } from '../../cryptography/keypair.js';
+import { decodeSuiPrivateKey, encodeSuiPrivateKey, Keypair } from '../../cryptography/keypair.js';
 import { isValidBIP32Path, mnemonicToSeed } from '../../cryptography/mnemonics.js';
 import type { PublicKey } from '../../cryptography/publickey.js';
 import type { SignatureScheme } from '../../cryptography/signature-scheme.js';
@@ -70,18 +70,28 @@ export class Secp256k1Keypair extends Keypair {
 	 *
 	 * @throws error if the provided secret key is invalid and validation is not skipped.
 	 *
-	 * @param secretKey secret key byte array
+	 * @param secretKey secret key byte array  or Bech32 secret key string
 	 * @param options: skip secret key validation
 	 */
 
 	static fromSecretKey(
-		secretKey: Uint8Array,
+		secretKey: Uint8Array | string,
 		options?: { skipValidation?: boolean },
 	): Secp256k1Keypair {
+		if (typeof secretKey === 'string') {
+			const decoded = decodeSuiPrivateKey(secretKey);
+
+			if (decoded.schema !== 'Secp256k1') {
+				throw new Error(`Expected a Secp256k1 keypair, got ${decoded.schema}`);
+			}
+
+			return this.fromSecretKey(decoded.secretKey, options);
+		}
+
 		const publicKey: Uint8Array = secp256k1.getPublicKey(secretKey, true);
 		if (!options || !options.skipValidation) {
 			const encoder = new TextEncoder();
-			const signData = encoder.encode('benfen validation');
+			const signData = encoder.encode('sui validation');
 			const msgHash = bytesToHex(blake2b(signData, { dkLen: 32 }));
 			const signature = secp256k1.sign(msgHash, secretKey);
 			if (!secp256k1.verify(signature, msgHash, publicKey, { lowS: true })) {
@@ -111,7 +121,7 @@ export class Secp256k1Keypair extends Keypair {
 	 * The Bech32 secret key string for this Secp256k1 keypair
 	 */
 	getSecretKey(): string {
-		return encodeBenfenPrivateKey(this.keypair.secretKey, this.getKeyScheme());
+		return encodeSuiPrivateKey(this.keypair.secretKey, this.getKeyScheme());
 	}
 
 	/**

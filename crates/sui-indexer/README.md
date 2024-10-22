@@ -1,5 +1,7 @@
 Sui indexer is an off-fullnode service to serve data from Sui protocol, including both data directly generated from chain and derivative data.
 
+&#9888; **Warning:** Sui indexer is still experimental and we expect occasional breaking changes that require backfills.
+
 ## Architecture
 ![enhanced_FN](https://user-images.githubusercontent.com/106119108/221022505-a1d873c6-60e2-45f1-b2aa-e50192c4dfbb.png)
 
@@ -35,7 +37,7 @@ cargo run --bin sui -- start --with-faucet --force-regenesis
 
 If you want to run a local network with the indexer enabled (note that `libpq` is required), you can run the following command after following the steps in the next section to set up an indexer DB:
 ```sh
-cargo run --bin sui --features indexer -- start --with-faucet --force-regenesis --with-indexer --pg-port 5432 --pg-db-name sui_indexer_v2
+cargo run --bin sui -- start --with-faucet --force-regenesis --with-indexer --pg-port 5432 --pg-db-name sui_indexer_v2
 ```
 
 ### Running standalone indexer

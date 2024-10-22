@@ -267,6 +267,7 @@ impl StateSyncConfig {
 /// * If the node marks itself as Private, only nodes that have it in
 ///     their `allowlisted_peers` or `seed_peers` will try to connect to it.
 /// * If not set, defaults to Public.
+///
 /// AccessType is useful when a network of nodes want to stay private. To achieve this,
 /// mark every node in this network as `Private` and allowlist/seed them to each other.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -318,6 +319,12 @@ pub struct DiscoveryConfig {
     /// to this peer, nor advertise this peer's info to other peers in the network.
     #[serde(skip_serializing_if = "Vec::is_empty", default)]
     pub allowlisted_peers: Vec<AllowlistedPeer>,
+
+    /// If true, Discovery will require all provided peer information to be signed
+    /// by the originating peer.
+    ///
+    /// If unspecified, this will default to false.
+    pub enable_node_info_signatures: Option<bool>,
 }
 
 impl DiscoveryConfig {
@@ -343,6 +350,10 @@ impl DiscoveryConfig {
     pub fn access_type(&self) -> AccessType {
         // defaults None to Public
         self.access_type.unwrap_or(AccessType::Public)
+    }
+
+    pub fn enable_node_info_signatures(&self) -> bool {
+        self.enable_node_info_signatures.unwrap_or(false)
     }
 }
 

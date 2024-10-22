@@ -1,9 +1,9 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+import { fromBase64 } from '@mysten/bcs';
 import nacl from 'tweetnacl';
 
-import { fromB64 } from '../../bcs/src/index.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
@@ -26,7 +26,7 @@ export class Ed25519PublicKey extends PublicKey {
 		super();
 
 		if (typeof value === 'string') {
-			this.data = fromB64(value);
+			this.data = fromBase64(value);
 		} else if (value instanceof Uint8Array) {
 			this.data = value;
 		} else {
@@ -55,7 +55,7 @@ export class Ed25519PublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the benfen address associated with this Ed25519 public key
+	 * Return the Sui address associated with this Ed25519 public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['ED25519'];

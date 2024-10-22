@@ -33,9 +33,10 @@ use move_package::BuildConfig as MoveBuildConfig;
 use prometheus::Registry;
 use serde::Serialize;
 use serde_json::{json, Value};
+use sui_config::verifier_signing_config::VerifierSigningConfig;
 use sui_move::manage_package::resolve_lock_file_path;
 use sui_protocol_config::{Chain, ProtocolConfig, ProtocolVersion};
-use sui_source_validation::{BytecodeSourceVerifier, SourceMode};
+use sui_source_validation::{BytecodeSourceVerifier, ValidationMode};
 
 use shared_crypto::intent::Intent;
 use sui_json::SuiJsonValue;
@@ -94,6 +95,7 @@ use tabled::{
 use tracing::info;
 use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 
+use tracing::{debug, info};
 
 #[path = "unit_tests/profiler_tests.rs"]
 #[cfg(test)]
@@ -1092,10 +1094,10 @@ impl SuiClientCommands {
                     }
                 };
 
-                let for_signing = true;
+                let signing_limits = Some(VerifierSigningConfig::default().limits_for_signing());
                 let mut verifier = sui_execution::verifier(
                     &protocol_config,
-                    for_signing,
+                    signing_limits,
                     &bytecode_verifier_metrics,
                 );
 
@@ -1111,7 +1113,7 @@ impl SuiClientCommands {
                 let mut used_ticks = meter.accumulator(Scope::Package).clone();
                 used_ticks.name = pkg_name;
 
-                let meter_config = protocol_config.meter_config();
+                let meter_config = VerifierSigningConfig::default().meter_config_for_signing();
 
                 let exceeded = matches!(
                     meter_config.max_per_pkg_meter_units,
@@ -1611,11 +1613,17 @@ impl SuiClientCommands {
                 skip_source,
                 address_override,
             } => {
-                if skip_source && !verify_deps {
-                    return Err(anyhow!(
-                        "Source skipped and not verifying deps: Nothing to verify."
-                    ));
-                }
+                let mode = match (!skip_source, verify_deps, address_override) {
+                    (false, false, _) => {
+                        bail!("Source skipped and not verifying deps: Nothing to verify.")
+                    }
+
+                    (false, true, _) => ValidationMode::deps(),
+                    (true, false, None) => ValidationMode::root(),
+                    (true, true, None) => ValidationMode::root_and_deps(),
+                    (true, false, Some(at)) => ValidationMode::root_at(*at),
+                    (true, true, Some(at)) => ValidationMode::root_and_deps_at(*at),
+                };
 
                 let build_config = resolve_lock_file_path(build_config, Some(&package_path))?;
                 let chain_id = context
@@ -1633,17 +1641,8 @@ impl SuiClientCommands {
                 .build(&package_path)?;
 
                 let client = context.get_client().await?;
-
                 BytecodeSourceVerifier::new(client.read_api())
-                    .verify_package(
-                        &compiled_package,
-                        verify_deps,
-                        match (skip_source, address_override) {
-                            (true, _) => SourceMode::Skip,
-                            (false, None) => SourceMode::Verify,
-                            (false, Some(addr)) => SourceMode::VerifyAt(addr.into()),
-                        },
-                    )
+                    .verify(&compiled_package, mode)
                     .await?;
 
                 SuiClientCommandResult::VerifySource
@@ -1653,8 +1652,7 @@ impl SuiClientCommands {
                 SuiClientCommandResult::NoOutput
             }
         };
-        let client = context.get_client().await?;
-        Ok(ret.prerender_clever_errors(client.read_api()).await)
+        Ok(ret.prerender_clever_errors(context).await)
     }
 
     pub fn switch_env(config: &mut SuiClientConfig, env: &str) -> Result<(), anyhow::Error> {
@@ -1866,7 +1864,10 @@ pub(crate) async fn compile_package(
     let compiled_modules = compiled_package.get_package_bytes(with_unpublished_dependencies);
     if !skip_dependency_verification {
         let verifier = BytecodeSourceVerifier::new(read_api);
-        if let Err(e) = verifier.verify_package_deps(&compiled_package).await {
+        if let Err(e) = verifier
+            .verify(&compiled_package, ValidationMode::deps())
+            .await
+        {
             return Err(SuiError::ModulePublishFailure {
                 error: format!(
                     "[warning] {e}\n\
@@ -2310,13 +2311,19 @@ impl SuiClientCommandResult {
         }
     }
 
-    pub async fn prerender_clever_errors(mut self, read_api: &ReadApi) -> Self {
+    pub async fn prerender_clever_errors(mut self, context: &mut WalletContext) -> Self {
         match &mut self {
             SuiClientCommandResult::DryRun(DryRunTransactionBlockResponse { effects, .. })
             | SuiClientCommandResult::TransactionBlock(SuiTransactionBlockResponse {
                                                            effects: Some(effects),
                                                            ..
                                                        }) => prerender_clever_errors(effects, read_api).await,
+                effects: Some(effects),
+                ..
+            }) => {
+                let client = context.get_client().await.expect("Cannot connect to RPC");
+                prerender_clever_errors(effects, client.read_api()).await
+            }
 
             SuiClientCommandResult::TransactionBlock(SuiTransactionBlockResponse {
                                                          effects: None,
@@ -2700,7 +2707,7 @@ fn format_balance(
 
 /// Helper function to reduce code duplication for executing dry run
 pub async fn execute_dry_run(
-    client: &SuiClient,
+    context: &mut WalletContext,
     signer: SuiAddress,
     kind: TransactionKind,
     gas_budget: Option<u64>,
@@ -2708,21 +2715,24 @@ pub async fn execute_dry_run(
     gas_payment: Option<Vec<ObjectID>>,
     sponsor: Option<SuiAddress>,
 ) -> Result<SuiClientCommandResult, anyhow::Error> {
+    let client = context.get_client().await?;
     let gas_budget = match gas_budget {
         Some(gas_budget) => gas_budget,
-        None => max_gas_budget(client).await?,
+        None => max_gas_budget(&client).await?,
     };
     let dry_run_tx_data = client
         .transaction_builder()
         .tx_data_for_dry_run(signer, kind, gas_budget, gas_price, gas_payment, sponsor)
         .await;
+    debug!("Executing dry run");
     let response = client
         .read_api()
         .dry_run_transaction_block(dry_run_tx_data)
         .await
         .map_err(|e| anyhow!("Dry run failed: {e}"))?;
+    debug!("Finished executing dry run");
     let resp = SuiClientCommandResult::DryRun(response)
-        .prerender_clever_errors(client.read_api())
+        .prerender_clever_errors(context)
         .await;
     Ok(resp)
 }
@@ -2730,6 +2740,7 @@ pub async fn execute_dry_run(
 /// Call a dry run with the transaction data to estimate the gas budget.
 /// The estimated gas budget is computed as following:
 /// * the maximum between A and B, where:
+///
 /// A = computation cost + GAS_SAFE_OVERHEAD * reference gas price
 /// B = computation cost + storage cost - storage rebate + GAS_SAFE_OVERHEAD * reference gas price
 /// overhead
@@ -2737,18 +2748,23 @@ pub async fn execute_dry_run(
 /// This gas estimate is computed exactly as in the TypeScript SDK
 /// <https://github.com/MystenLabs/sui/blob/3c4369270605f78a243842098b7029daf8d883d9/sdk/typescript/src/transactions/TransactionBlock.ts#L845-L858>
 pub async fn estimate_gas_budget(
-    client: &SuiClient,
+    context: &mut WalletContext,
     signer: SuiAddress,
     kind: TransactionKind,
     gas_price: u64,
     gas_payment: Option<Vec<ObjectID>>,
     sponsor: Option<SuiAddress>,
 ) -> Result<u64, anyhow::Error> {
+    let client = context.get_client().await?;
     let Ok(SuiClientCommandResult::DryRun(dry_run)) =
         execute_dry_run(client, signer, kind, None, gas_price, gas_payment, sponsor).await
         else {
             bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
         };
+        execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await
+    else {
+        bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
+    };
 
     let rgp = client.read_api().get_reference_gas_price().await?;
 
@@ -2807,7 +2823,7 @@ pub(crate) async fn dry_run_or_execute_or_serialize(
     let client = context.get_client().await?;
     if dry_run {
         return execute_dry_run(
-            &client,
+            context,
             signer,
             tx_kind,
             gas_budget,
@@ -2821,18 +2837,22 @@ pub(crate) async fn dry_run_or_execute_or_serialize(
     let gas_budget = match gas_budget {
         Some(gas_budget) => gas_budget,
         None => {
-            estimate_gas_budget(
-                &client,
+            debug!("Estimating gas budget");
+            let budget = estimate_gas_budget(
+                context,
                 signer,
                 tx_kind.clone(),
                 gas_price,
                 gas.clone(),
                 None,
             )
-            .await?
+            .await?;
+            debug!("Finished estimating gas budget");
+            budget
         }
     };
 
+    debug!("Preparing transaction data");
     let tx_data = client
         .transaction_builder()
         .tx_data(
@@ -2844,6 +2864,7 @@ pub(crate) async fn dry_run_or_execute_or_serialize(
             None,
         )
         .await?;
+    debug!("Finished preparing transaction data");
 
     if serialize_unsigned_transaction {
         Ok(SuiClientCommandResult::SerializedUnsignedTransaction(
@@ -2862,7 +2883,11 @@ pub(crate) async fn dry_run_or_execute_or_serialize(
             ))
         } else {
             let transaction = Transaction::new(sender_signed_data);
-            let mut response = context.execute_transaction_may_fail(transaction).await?;
+            debug!("Executing transaction: {:?}", transaction);
+            let mut response = context
+                .execute_transaction_may_fail(transaction.clone())
+                .await?;
+            debug!("Transaction executed: {:?}", transaction);
             if let Some(effects) = response.effects.as_mut() {
                 prerender_clever_errors(effects, client.read_api()).await;
             }

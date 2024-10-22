@@ -410,7 +410,7 @@ pub async fn enqueue_all_and_execute_all(
     );
     let mut output = Vec::new();
     for cert in certificates {
-        let effects = authority.notify_read_effects(&cert).await?;
+        let effects = authority.notify_read_effects(*cert.digest()).await?;
         output.push(effects);
     }
     Ok(output)
@@ -552,7 +552,7 @@ pub async fn publish_package_on_single_authority(
     dep_original_addresses: impl IntoIterator<Item = (&'static str, ObjectID)>,
     dep_ids: Vec<ObjectID>,
     state: &Arc<AuthorityState>,
-) -> SuiResult<(ObjectID, ObjectRef)> {
+) -> SuiResult<(TransactionDigest, (ObjectID, ObjectRef))> {
     let mut build_config = BuildConfig::new_for_testing();
     for (addr_name, obj_id) in dep_original_addresses {
         build_config
@@ -594,7 +594,7 @@ pub async fn publish_package_on_single_authority(
         .find(|c| matches!(c.1, Owner::AddressOwner(..)))
         .unwrap()
         .0;
-    Ok((package_id, cap_object))
+    Ok((*effects.transaction_digest(), (package_id, cap_object)))
 }
 
 pub async fn init_state_with_stable_ids_and_expensive_checks<
@@ -638,7 +638,7 @@ pub async fn upgrade_package_on_single_authority(
     dep_original_addresses: impl IntoIterator<Item = (&'static str, ObjectID)>,
     dep_id_mapping: impl IntoIterator<Item = (&'static str, ObjectID)>,
     state: &Arc<AuthorityState>,
-) -> SuiResult<ObjectID> {
+) -> SuiResult<(TransactionDigest, ObjectID)> {
     let package = build_test_modules_with_dep_addr(path, dep_original_addresses, dep_id_mapping);
 
     let with_unpublished_deps = false;
@@ -670,5 +670,5 @@ pub async fn upgrade_package_on_single_authority(
         .unwrap()
         .0
          .0;
-    Ok(package_id)
+    Ok((*effects.transaction_digest(), package_id))
 }

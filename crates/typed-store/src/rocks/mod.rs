@@ -21,6 +21,7 @@ use bincode::Options;
 use collectable::TryExtend;
 use itertools::Itertools;
 use prometheus::{Histogram, HistogramTimer};
+use rocksdb::properties::num_files_at_level;
 use rocksdb::{
     checkpoint::Checkpoint, BlockBasedOptions, BottommostLevelCompaction, Cache, CompactOptions,
     DBPinnableSlice, LiveFile, OptimisticTransactionDB, SnapshotWithThreadMode,
@@ -88,9 +89,8 @@ mod tests;
 /// # Arguments
 ///
 /// * `db` - a reference to a rocks DB object
-/// * `cf;<ty,ty>` - a comma separated list of column families to open. For each
-/// column family a concatenation of column family name (cf) and Key-Value <ty, ty>
-/// should be provided.
+/// * `cf;<ty,ty>` - a comma separated list of column families to open. For each column family a
+///     concatenation of column family name (cf) and Key-Value <ty, ty> should be provided.
 ///
 /// # Examples
 ///
@@ -336,6 +336,15 @@ impl RocksDB {
 
     pub fn drop_cf(&self, name: &str) -> Result<(), rocksdb::Error> {
         delegate_call!(self.drop_cf(name))
+    }
+
+    pub fn delete_file_in_range<K: AsRef<[u8]>>(
+        &self,
+        cf: &impl AsColumnFamilyRef,
+        from: K,
+        to: K,
+    ) -> Result<(), rocksdb::Error> {
+        delegate_call!(self.delete_file_in_range_cf(cf, from, to))
     }
 
     pub fn delete_cf<K: AsRef<[u8]>>(
@@ -705,7 +714,7 @@ impl MetricConf {
         }
     }
 }
-const CF_METRICS_REPORT_PERIOD_MILLIS: u64 = 1000;
+const CF_METRICS_REPORT_PERIOD_SECS: u64 = 30;
 const METRICS_ERROR: i64 = -1;
 
 /// An interface to a rocksDB database, keyed by a columnfamily
@@ -741,7 +750,7 @@ impl<K, V> DBMap<K, V> {
         if !is_deprecated {
             tokio::task::spawn(async move {
                 let mut interval =
-                    tokio::time::interval(Duration::from_millis(CF_METRICS_REPORT_PERIOD_MILLIS));
+                    tokio::time::interval(Duration::from_secs(CF_METRICS_REPORT_PERIOD_SECS));
                 loop {
                     tokio::select! {
                         _ = interval.tick() => {
@@ -903,7 +912,7 @@ impl<K, V> DBMap<K, V> {
     fn get_int_property(
         rocksdb: &RocksDB,
         cf: &impl AsColumnFamilyRef,
-        property_name: &'static std::ffi::CStr,
+        property_name: &std::ffi::CStr,
     ) -> Result<i64, TypedStoreError> {
         match rocksdb.property_int_value_cf(cf, property_name) {
             Ok(Some(value)) => Ok(value.try_into().unwrap()),
@@ -984,6 +993,35 @@ impl<K, V> DBMap<K, V> {
                 Self::get_int_property(rocksdb, &cf, ROCKSDB_PROPERTY_TOTAL_BLOB_FILES_SIZE)
                     .unwrap_or(METRICS_ERROR),
             );
+        // 7 is the default number of levels in RocksDB. If we ever change the number of levels using `set_num_levels`,
+        // we need to update here as well. Note that there isn't an API to query the DB to get the number of levels (yet).
+        let total_num_files: i64 = (0..=6)
+            .map(|level| {
+                Self::get_int_property(rocksdb, &cf, &num_files_at_level(level))
+                    .unwrap_or(METRICS_ERROR)
+            })
+            .sum();
+        db_metrics
+            .cf_metrics
+            .rocksdb_total_num_files
+            .with_label_values(&[cf_name])
+            .set(total_num_files);
+        db_metrics
+            .cf_metrics
+            .rocksdb_num_level0_files
+            .with_label_values(&[cf_name])
+            .set(
+                Self::get_int_property(rocksdb, &cf, &num_files_at_level(0))
+                    .unwrap_or(METRICS_ERROR),
+            );
+        db_metrics
+            .cf_metrics
+            .rocksdb_current_size_active_mem_tables
+            .with_label_values(&[cf_name])
+            .set(
+                Self::get_int_property(rocksdb, &cf, properties::CUR_SIZE_ACTIVE_MEM_TABLE)
+                    .unwrap_or(METRICS_ERROR),
+            );
         db_metrics
             .cf_metrics
             .rocksdb_size_all_mem_tables
@@ -1050,7 +1088,7 @@ impl<K, V> DBMap<K, V> {
             );
         db_metrics
             .cf_metrics
-            .rocskdb_estimate_table_readers_mem
+            .rocksdb_estimate_table_readers_mem
             .with_label_values(&[cf_name])
             .set(
                 Self::get_int_property(rocksdb, &cf, properties::ESTIMATE_TABLE_READERS_MEM)
@@ -1066,6 +1104,14 @@ impl<K, V> DBMap<K, V> {
             );
         db_metrics
             .cf_metrics
+            .rocksdb_num_immutable_mem_tables
+            .with_label_values(&[cf_name])
+            .set(
+                Self::get_int_property(rocksdb, &cf, properties::NUM_IMMUTABLE_MEM_TABLE)
+                    .unwrap_or(METRICS_ERROR),
+            );
+        db_metrics
+            .cf_metrics
             .rocksdb_mem_table_flush_pending
             .with_label_values(&[cf_name])
             .set(
@@ -1074,7 +1120,7 @@ impl<K, V> DBMap<K, V> {
             );
         db_metrics
             .cf_metrics
-            .rocskdb_compaction_pending
+            .rocksdb_compaction_pending
             .with_label_values(&[cf_name])
             .set(
                 Self::get_int_property(rocksdb, &cf, properties::COMPACTION_PENDING)
@@ -1082,7 +1128,15 @@ impl<K, V> DBMap<K, V> {
             );
         db_metrics
             .cf_metrics
-            .rocskdb_num_running_compactions
+            .rocksdb_estimate_pending_compaction_bytes
+            .with_label_values(&[cf_name])
+            .set(
+                Self::get_int_property(rocksdb, &cf, properties::ESTIMATE_PENDING_COMPACTION_BYTES)
+                    .unwrap_or(METRICS_ERROR),
+            );
+        db_metrics
+            .cf_metrics
+            .rocksdb_num_running_compactions
             .with_label_values(&[cf_name])
             .set(
                 Self::get_int_property(rocksdb, &cf, properties::NUM_RUNNING_COMPACTIONS)
@@ -1106,10 +1160,18 @@ impl<K, V> DBMap<K, V> {
             );
         db_metrics
             .cf_metrics
-            .rocskdb_background_errors
+            .rocksdb_background_errors
             .with_label_values(&[cf_name])
             .set(
                 Self::get_int_property(rocksdb, &cf, properties::BACKGROUND_ERRORS)
+                    .unwrap_or(METRICS_ERROR),
+            );
+        db_metrics
+            .cf_metrics
+            .rocksdb_base_level
+            .with_label_values(&[cf_name])
+            .set(
+                Self::get_int_property(rocksdb, &cf, properties::BASE_LEVEL)
                     .unwrap_or(METRICS_ERROR),
             );
     }
@@ -1451,15 +1513,21 @@ impl DBBatch {
         if !Arc::ptr_eq(&db.rocksdb, &self.rocksdb) {
             return Err(TypedStoreError::CrossDBBatch);
         }
-
+        let mut total = 0usize;
         new_vals
             .into_iter()
             .try_for_each::<_, Result<_, TypedStoreError>>(|(k, v)| {
                 let k_buf = be_fix_int_ser(k.borrow())?;
                 let v_buf = bcs::to_bytes(v.borrow()).map_err(typed_store_err_from_bcs_err)?;
+                total += k_buf.len() + v_buf.len();
                 self.batch.put_cf(&db.cf(), k_buf, v_buf);
                 Ok(())
             })?;
+        self.db_metrics
+            .op_metrics
+            .rocksdb_batch_put_bytes
+            .with_label_values(&[&db.cf])
+            .observe(total as f64);
         Ok(self)
     }
 
@@ -1949,6 +2017,23 @@ impl<'a, K, V> Map<'a, K, V> for DBMap<K, V>
                 .write_perf_ctx_metrics
                 .report_metrics(&self.cf);
         }
+        Ok(())
+    }
+
+    /// Deletes a range of keys between `from` (inclusive) and `to` (non-inclusive)
+    /// by immediately deleting any sst files whose key range overlaps with the range.
+    /// Files whose range only partially overlaps with the range are not deleted.
+    /// This can be useful for quickly removing a large amount of data without having
+    /// to delete individual keys. Only files at level 1 or higher are considered (
+    /// Level 0 files are skipped). It doesn't guarantee that all keys in the range are
+    /// deleted, as there might be keys in files that weren't entirely within the range.
+    #[instrument(level = "trace", skip_all, err)]
+    fn delete_file_in_range(&self, from: &K, to: &K) -> Result<(), TypedStoreError> {
+        let from_buf = be_fix_int_ser(from.borrow())?;
+        let to_buf = be_fix_int_ser(to.borrow())?;
+        self.rocksdb
+            .delete_file_in_range(&self.cf(), from_buf, to_buf)
+            .map_err(typed_store_err_from_rocks_err)?;
         Ok(())
     }
 
@@ -2794,7 +2879,7 @@ fn populate_missing_cfs(
 /// Given a vec<u8>, find the value which is one more than the vector
 /// if the vector was a big endian number.
 /// If the vector is already minimum, don't change it.
-fn big_endian_saturating_add_one(v: &mut Vec<u8>) {
+fn big_endian_saturating_add_one(v: &mut [u8]) {
     if is_max(v) {
         return;
     }
@@ -2828,7 +2913,6 @@ fn test_helpers() {
 
     uint::construct_uint! {
         // 32 byte number
-        #[cfg_attr(feature = "scale-info", derive(TypeInfo))]
         struct Num32(4);
     }
 

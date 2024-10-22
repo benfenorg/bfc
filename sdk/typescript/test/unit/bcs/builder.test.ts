@@ -1,9 +1,11 @@
-// Copyright (c) Benfen
+// Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, test } from 'vitest';
 
-import { bcs, BcsReader, BcsType, BcsWriter, toB58, toB64, toHEX } from '../../../src/bcs/index.js';
+import { BcsReader, BcsWriter, toBase58, toBase64, toHex } from '../src';
+import { BcsType } from '../src/bcs-type.js';
+import { bcs } from '../src/bcs.js';
 
 describe('bcs', () => {
 	describe('base types', () => {
@@ -259,17 +261,17 @@ function testType<T, Input>(
 	test(name, () => {
 		const serialized = schema.serialize(value);
 		const bytes = serialized.toBytes();
-		expect(toHEX(bytes)).toBe(hex);
+		expect(toHex(bytes)).toBe(hex);
 		expect(serialized.toHex()).toBe(hex);
-		expect(serialized.toBase64()).toBe(toB64(bytes));
-		expect(serialized.toBase58()).toBe(toB58(bytes));
+		expect(serialized.toBase64()).toBe(toBase64(bytes));
+		expect(serialized.toBase58()).toBe(toBase58(bytes));
 
 		const deserialized = schema.parse(bytes);
 		expect(deserialized).toEqual(expected);
 
 		const writer = new BcsWriter({ initialSize: bytes.length });
 		schema.write(value, writer);
-		expect(toHEX(writer.toBytes())).toBe(hex);
+		expect(toHex(writer.toBytes())).toBe(hex);
 
 		const reader = new BcsReader(bytes);
 

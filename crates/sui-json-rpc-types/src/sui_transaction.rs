@@ -18,7 +18,7 @@ use fastcrypto::encoding::Base64;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::annotated_value::MoveTypeLayout;
-use move_core_types::identifier::IdentStr;
+use move_core_types::identifier::{IdentStr, Identifier};
 use move_core_types::language_storage::{ModuleId, StructTag, TypeTag};
 use mysten_metrics::monitored_scope;
 //use serde::{Deserialize, Serialize};
@@ -185,6 +185,10 @@ impl SuiTransactionBlockResponseOptions {
         }
     }
 
+    #[deprecated(
+        since = "1.33.0",
+        note = "Balance and object changes no longer require local execution"
+    )]
     pub fn require_local_execution(&self) -> bool {
         self.show_balance_changes || self.show_object_changes
     }
@@ -1977,7 +1981,7 @@ impl SuiProgrammableTransactionBlock {
     }
 
     fn resolve_input_type(
-        inputs: &Vec<CallArg>,
+        inputs: &[CallArg],
         commands: &[Command],
         module_cache: &impl GetModule,
     ) -> Vec<Option<MoveTypeLayout>> {
@@ -1985,12 +1989,24 @@ impl SuiProgrammableTransactionBlock {
         for command in commands.iter() {
             match command {
                 Command::MoveCall(c) => {
-                    let id = ModuleId::new(c.package.into(), c.module.clone());
+                    let Ok(module) = Identifier::new(c.module.clone()) else {
+                        return result_types;
+                    };
+
+                    let Ok(function) = Identifier::new(c.function.clone()) else {
+                        return result_types;
+                    };
+
+                    let id = ModuleId::new(c.package.into(), module);
                     let Some(types) =
                         get_signature_types(id, c.function.as_ident_str(), module_cache)
                         else {
                             return result_types;
                         };
+                        get_signature_types(id, function.as_ident_str(), module_cache)
+                    else {
+                        return result_types;
+                    };
                     for (arg, type_) in c.arguments.iter().zip(types) {
                         if let (&Argument::Input(i), Some(type_)) = (arg, type_) {
                             if let Some(x) = result_types.get_mut(i as usize) {
@@ -2549,6 +2565,8 @@ pub enum TransactionFilter {
     InputObject(ObjectID),
     /// Query by changed object, including created, mutated and unwrapped objects.
     ChangedObject(ObjectID),
+    /// Query for transactions that touch this object.
+    AffectedObject(ObjectID),
     /// Query by sender address.
     FromAddress(SuiAddress),
     /// Query by recipient address.
@@ -2578,6 +2596,18 @@ impl Filter<EffectsWithInput> for TransactionFilter {
                 .mutated()
                 .iter()
                 .any(|oref: &OwnedObjectRef| &oref.reference.object_id == o),
+            TransactionFilter::AffectedObject(o) => item
+                .effects
+                .created()
+                .iter()
+                .chain(item.effects.mutated().iter())
+                .chain(item.effects.unwrapped().iter())
+                .map(|oref: &OwnedObjectRef| &oref.reference)
+                .chain(item.effects.shared_objects().iter())
+                .chain(item.effects.deleted().iter())
+                .chain(item.effects.unwrapped_then_deleted().iter())
+                .chain(item.effects.wrapped().iter())
+                .any(|oref| &oref.object_id == o),
             TransactionFilter::FromAddress(a) => &item.input.sender() == a,
             TransactionFilter::ToAddress(a) => {
                 let mutated: &[OwnedObjectRef] = item.effects.mutated();

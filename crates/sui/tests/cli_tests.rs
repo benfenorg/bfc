@@ -17,8 +17,7 @@ use move_package::{lock_file::schema::ManagedPackage, BuildConfig as MoveBuildCo
 use serde_json::json;
 use sui::client_ptb::ptb::PTB;
 use sui::key_identity::{get_identity_address, KeyIdentity};
-#[cfg(feature = "indexer")]
-use sui::sui_commands::IndexerFeatureArgs;
+use sui::sui_commands::IndexerArgs;
 use sui_sdk::SuiClient;
 use sui_test_transaction_builder::batch_make_transfer_transactions;
 use sui_types::object::{Object, Owner};
@@ -77,8 +76,7 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
         fullnode_rpc_port: 9000,
         epoch_duration_ms: None,
         no_full_node: false,
-        #[cfg(feature = "indexer")]
-        indexer_feature_args: IndexerFeatureArgs::for_testing(),
+        indexer_feature_args: IndexerArgs::for_testing(),
     }
     .execute()
     .await;
@@ -692,7 +690,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 
     // Try a transfer
     // This should fail due to mismatch of object being sent
-    let args = vec![
+    let args = [
         SuiJsonValue::new(json!(obj))?,
         SuiJsonValue::new(json!(address2))?,
     ];
@@ -713,7 +711,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
 
     // Try a transfer with explicitly set gas price.
     // It should fail due to that gas price is below RGP.
-    let args = vec![
+    let args = [
         SuiJsonValue::new(json!(created_obj))?,
         SuiJsonValue::new(json!(address2))?,
     ];
@@ -742,7 +740,7 @@ async fn sim_test_move_call_args_linter_command() -> Result<(), anyhow::Error> {
     // assert!(err_string.contains(&format!("Expected argument of type {package_addr}::object_basics::Object, but found type {framework_addr}::coin::Coin<{framework_addr}::sui::SUI>")));
 
     // Try a proper transfer
-    let args = vec![
+    let args = [
         SuiJsonValue::new(json!(created_obj))?,
         SuiJsonValue::new(json!(address2))?,
     ];
@@ -2233,7 +2231,7 @@ async fn sim_test_package_management_on_upgrade_command_conflict() -> Result<(),
     let err_string = err_string.replace(&package.object_id().to_string(), "<elided-for-test>");
 
     let expect = expect![[r#"
-        Conflicting published package address: `Move.toml` contains published-at address 0xbad but `Move.lock` file contains published-at address <elided-for-test>. You may want to:
+        Conflicting published package address: `Move.toml` contains published-at address 0x0000000000000000000000000000000000000000000000000000000000000bad but `Move.lock` file contains published-at address <elided-for-test>. You may want to:
 
                          - delete the published-at address in the `Move.toml` if the `Move.lock` address is correct; OR
                          - update the `Move.lock` address using the `sui manage-package` command to be the same as the `Move.toml`; OR
@@ -3920,7 +3918,7 @@ async fn sim_test_gas_estimation() -> Result<(), anyhow::Error> {
     let sender = context.active_address().unwrap();
     let tx_builder = client.transaction_builder();
     let tx_kind = tx_builder.transfer_sui_tx_kind(address2, Some(amount));
-    let gas_estimate = estimate_gas_budget(&client, sender, tx_kind, rgp, None, None).await;
+    let gas_estimate = estimate_gas_budget(context, sender, tx_kind, rgp, None, None).await;
     assert!(gas_estimate.is_ok());
 
     let transfer_sui_cmd = SuiClientCommands::TransferBfc {

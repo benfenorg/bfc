@@ -1,5 +1,74 @@
 # @mysten/sui.js
 
+## 1.11.0
+
+### Minor Changes
+
+- 489f421: Updated hex, base64, and base58 utility names for better consistency
+
+  All existing methods will continue to work, but the following methods have been deprecated and
+  replaced with methods with improved names:
+
+  - `toHEX` -> `toHEX`
+  - `fromHEX` -> `fromHex`
+  - `toB64` -> `toBase64`
+  - `fromB64` -> `fromBase64`
+  - `toB58` -> `toBase58`
+  - `fromB58` -> `fromBase58`
+
+- 489f421: support Bech32 secrets in the Keypair.fromSecretKey methods
+
+### Patch Changes
+
+- Updated dependencies [489f421]
+  - @mysten/bcs@1.1.0
+
+## 1.10.0
+
+### Minor Changes
+
+- 830b8d8: Introduce new naming scheme for named packages plugin
+
+## 1.9.0
+
+### Minor Changes
+
+- 2c96b06: Adds experimental named packages plugin
+- 1fd22cc: Require name to register global transaction plugins
+
+## 1.8.0
+
+### Minor Changes
+
+- 569511a: Add data to result of executeTransaction methods on Transaction executor classes
+
+## 1.7.0
+
+### Minor Changes
+
+- 143cd9d: Add new tx.object methods for defining inputs for well known object ids:
+
+  - `tx.object.system()`: `0x5`
+  - `tx.object.clock()`: `0x6`
+  - `tx.object.random()`: `0x8`
+  - `tx.object.denyList()`: `0x403`
+
+- 4019dd7: Add default budget to transactions executed through the SerialTransactionExecutor class
+- 4019dd7: Add options argument to executeTransaction methods on transaction executor classes
+- 00a974d: Add global registry for transaction plugins
+
+### Patch Changes
+
+- 4357ac6: Add options argument to verifyTransactionSignature
+
+## 1.6.0
+
+### Minor Changes
+
+- a3e32fe: `WaitForLocalExecution` now waits using client.waitForTransaction rather than sending
+  requestType to the RPC node. This change will preserve readAfterWrite consistency when local
+  execution is removed from fullnodes, at the cost of more network requests and higher latency.
+
 ## 1.5.0
 
 ### Minor Changes
