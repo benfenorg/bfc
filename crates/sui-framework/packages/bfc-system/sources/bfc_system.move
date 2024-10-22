@@ -1,5 +1,7 @@
 module bfc_system::bfc_system {
     use std::ascii;
+    use bfc_system::usdt::USDT;
+    use bfc_system::usdc::USDC;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -348,13 +350,30 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(treasury_stable, amount, ctx);
     }
 
-    public fun swap_stable_to_busd<StableCoinType>(
+    public fun swap_usdc_to_busd(
+        old_wrapper: &mut BfcSystemState,
         wrapper: &mut BfcSystemStableState,
-        balance: Balance<StableCoinType>,
+        receiver_address: address,
+        stable_coin: Coin<USDC>,
         ctx: &mut TxContext,
     ) {
         let treasury_stable = load_treasury_stable_mut(wrapper);
-        bfc_system_state_inner::swap_stable_to_busd<StableCoinType>(treasury_stable, balance, ctx);
+        let old_inner_state = load_system_state_mut(old_wrapper);
+
+        bfc_system_state_inner::swap_usdc_to_busd(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
+    }
+
+    public fun swap_usdt_to_busd(
+        old_wrapper: &mut BfcSystemState,
+        wrapper: &mut BfcSystemStableState,
+        receiver_address: address,
+        stable_coin: Coin<USDT>,
+        ctx: &mut TxContext,
+    ) {
+        let treasury_stable = load_treasury_stable_mut(wrapper);
+        let old_inner_state = load_system_state_mut(old_wrapper);
+
+        bfc_system_state_inner::swap_usdt_to_busd(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
     }
 
     public fun swap_busd_to_stable<StableCoinType>(

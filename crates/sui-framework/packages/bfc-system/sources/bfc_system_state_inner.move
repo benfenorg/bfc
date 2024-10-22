@@ -2,6 +2,8 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use bfc_system::usdt::USDT;
+    use bfc_system::usdc::USDC;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::bfc::BFC;
@@ -416,12 +418,24 @@ module bfc_system::bfc_system_state_inner {
         treasury::mint_stable<StableCoinType>(treasury_stable, amount, ctx);
     }
 
-    public(package) fun swap_stable_to_busd<StableCoinType>(
+    public(package) fun swap_usdc_to_busd(
         treasury_stable: &mut TreasuryStable,
-        balance: Balance<StableCoinType>,
+        old_inner_state: &mut BfcSystemStateInner,
+        balance: Coin<USDC>,
+        receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::swap_stable_to_busd<StableCoinType>(treasury_stable, balance, ctx);
+        treasury::swap_usdc_to_busd(treasury_stable, &mut old_inner_state.treasury, balance, receiver_address, ctx);
+    }
+
+    public(package) fun swap_usdt_to_busd(
+        treasury_stable: &mut TreasuryStable,
+        old_inner_state: &mut BfcSystemStateInner,
+        balance: Coin<USDT>,
+        receiver_address: address,
+        ctx: &mut TxContext,
+    ) {
+        treasury::swap_usdt_to_busd(treasury_stable,&mut old_inner_state.treasury, balance, receiver_address, ctx);
     }
 
     public(package) fun swap_busd_to_stable<StableCoinType>(

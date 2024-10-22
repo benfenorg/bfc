@@ -79,7 +79,6 @@ module bfc_system::treasury {
         usdc_coin: Coin<USDC>,
         usdt_coin: Coin<USDT>,
         busd_coin: Coin<BUSD>,
-        supplies: Bag,
         updated_at: u64,
         init: bool,
     }
@@ -110,7 +109,6 @@ module bfc_system::treasury {
             usdc_coin: coin::zero<USDC>(ctx),
             usdt_coin: coin::zero<USDT>(ctx),
             busd_coin: coin::zero<BUSD>(ctx),
-            supplies: bag::new(ctx),
             updated_at: 0,
             init: false,
         };
@@ -175,15 +173,38 @@ module bfc_system::treasury {
         get_vault_key<StableCoinType>()
     }
 
-    /// let _key = get_vault_key<StableCoinType>();
-    /// 国库增加usdt
-    /// 国库减少busd
-    /// 用户减少usdt
-    /// 用户增加busd，转给用户
-    public fun swap_stable_to_busd<StableCoinType>(_treasury_stable: &mut TreasuryStable,
-                                                   _balance: Balance<StableCoinType>,
-                                                   _ctx: &mut TxContext,) {
-        transfer_or_delete(_balance, _ctx);
+    public fun swap_usdc_to_busd(treasury_stable: &mut TreasuryStable,
+                                                 treasury: &mut Treasury,
+                                                 stable_coin: Coin<USDC>,
+                                                 receiver_address: address,
+                                                 ctx: &mut TxContext) {
+        let amount: u64 = stable_coin.value();
+        // treasury increase usdc, and delete stable_coin
+        coin::join(&mut treasury_stable.usdc_coin, stable_coin);
+        // mint busd
+        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
+        let busd_balance = balance::increase_supply(supply, amount);
+        let busd = sui::coin::from_balance(busd_balance, ctx);
+
+        // transfer busd to receiver
+        transfer::public_transfer(busd, receiver_address);
+    }
+
+    public fun swap_usdt_to_busd(treasury_stable: &mut TreasuryStable,
+                                 treasury: &mut Treasury,
+                                 stable_coin: Coin<USDT>,
+                                 receiver_address: address,
+                                 ctx: &mut TxContext) {
+        let amount: u64 = stable_coin.value();
+        // treasury increase usdc, and delete stable_coin
+        coin::join(&mut treasury_stable.usdt_coin, stable_coin);
+        // mint busd
+        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
+        let busd_balance = balance::increase_supply(supply, amount);
+        let busd = sui::coin::from_balance(busd_balance, ctx);
+
+        // transfer busd to receiver
+        transfer::public_transfer(busd, receiver_address);
     }
 
     public fun swap_busd_to_stable<StableCoinType>(treasury_stable: &mut TreasuryStable,
