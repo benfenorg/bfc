@@ -55,6 +55,7 @@ module bfc_system::treasury {
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
+    const ERR_SWAP_STABLE_EXCEED: u64 = 106;
 
     public struct TreasuryPauseCap has key, store {
         id: UID
@@ -75,9 +76,9 @@ module bfc_system::treasury {
 
     public struct TreasuryStable has key, store {
         id: UID,
-        usdc_balance: Balance<USDC>,
-        usdt_balance: Balance<USDT>,
-        busd_balance: Balance<BUSD>,
+        usdc_coin: Coin<USDC>,
+        usdt_coin: Coin<USDT>,
+        busd_coin: Coin<BUSD>,
         supplies: Bag,
         updated_at: u64,
         init: bool,
@@ -106,9 +107,9 @@ module bfc_system::treasury {
     public(package) fun create_treasury_stable(ctx: &mut TxContext): TreasuryStable {
         let treasury_stable = TreasuryStable {
             id: object::new(ctx),
-            usdc_balance: balance::zero<USDC>(),
-            usdt_balance: balance::zero<USDT>(),
-            busd_balance: balance::zero<BUSD>(),
+            usdc_coin: coin::zero<USDC>(ctx),
+            usdt_coin: coin::zero<USDT>(ctx),
+            busd_coin: coin::zero<BUSD>(ctx),
             supplies: bag::new(ctx),
             updated_at: 0,
             init: false,
@@ -185,16 +186,18 @@ module bfc_system::treasury {
         transfer_or_delete(_balance, _ctx);
     }
 
-    /// let _key = get_vault_key<StableCoinType>();
-    /// 国库增加busd
-    /// 国库减少usdt
-    /// 用户减少busd
-    /// 用户增加usdt，转给用户
-    public fun swap_busd_to_stable<StableCoinType>(_treasury_stable: &mut TreasuryStable,
-                                 _balance: Balance<BUSD>,
-                                 _ctx: &mut TxContext,): String {
-        transfer_or_delete(_balance, _ctx);
-        get_vault_key<StableCoinType>()
+    public fun swap_busd_to_stable<StableCoinType>(treasury_stable: &mut TreasuryStable,
+                                 balance: Coin<BUSD>,
+                                 receiver_address: address,
+                                 ctx: &mut TxContext,) {
+        let _key = get_vault_key<StableCoinType>();
+        let usdc_num= balance::value(coin::balance<USDC>(&treasury_stable.usdc_coin));
+        let busd_num= balance::value(coin::balance<BUSD>(&balance));
+        assert!(usdc_num < busd_num, ERR_SWAP_STABLE_EXCEED);
+
+        coin::join(&mut treasury_stable.busd_coin, balance);
+        let usdc_new = coin::split(&mut treasury_stable.usdc_coin, busd_num, ctx);
+        transfer::public_transfer(usdc_new, receiver_address);
     }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {

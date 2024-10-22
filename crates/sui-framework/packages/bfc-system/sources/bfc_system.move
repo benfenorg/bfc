@@ -359,11 +359,12 @@ module bfc_system::bfc_system {
 
     public fun swap_busd_to_stable<StableCoinType>(
         wrapper: &mut BfcSystemStableState,
-        balance: Balance<BUSD>,
+        balance: Coin<BUSD>,
+        receiver_address: address,
         ctx: &mut TxContext,
     ) {
         let treasury_stable = load_treasury_stable_mut(wrapper);
-        bfc_system_state_inner::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
+        bfc_system_state_inner::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, receiver_address, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin

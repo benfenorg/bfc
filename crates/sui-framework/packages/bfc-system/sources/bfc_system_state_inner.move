@@ -426,10 +426,11 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun swap_busd_to_stable<StableCoinType>(
         treasury_stable: &mut TreasuryStable,
-        balance: Balance<BUSD>,
+        balance: Coin<BUSD>,
+        receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
+        treasury::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, receiver_address, ctx);
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
