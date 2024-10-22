@@ -38,12 +38,17 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
-    use bfc_system::treasury::{TreasuryPauseCap};
+    use bfc_system::treasury::{TreasuryPauseCap, TreasuryStable};
 
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
 
     public struct BfcSystemState has key {
+        id: UID,
+        version: u64
+    }
+
+    public struct BfcSystemStableState has key {
         id: UID,
         version: u64
     }
@@ -61,6 +66,7 @@ module bfc_system::bfc_system {
 
 
     const BFC_SYSTEM_STATE_VERSION_V1: u64 = 1;
+    const BFC_SYSTEM_STABLE_STATE_VERSION_V1: u64 = 1;
 
     //spec module { pragma verify = false; }
 
@@ -119,20 +125,19 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
-/*    public(package) fun create_stable(
-        id: UID,
+    public(package) fun create_stable(
         ctx: &mut TxContext
     ) {
         let inner_state = bfc_system_state_inner::create_treasury_stable(ctx);
-        let mut self = BfcSystemState {
-            id,
-            version: BFC_SYSTEM_STATE_VERSION_V1
+        let mut self = BfcSystemStableState {
+            id: object::new(ctx),
+            version: BFC_SYSTEM_STABLE_STATE_VERSION_V1
         };
 
-        dynamic_field::add(&mut self.id, BFC_SYSTEM_STATE_VERSION_V1, inner_state);
+        dynamic_field::add(&mut self.id, BFC_SYSTEM_STABLE_STATE_VERSION_V1, inner_state);
 
         transfer::share_object(self);
-    }*/
+    }
 
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut(wrapper);
@@ -205,11 +210,11 @@ module bfc_system::bfc_system {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
-/*    fun load_treasury_stable_mut(
-        self: &mut BfcSystemState
+    fun load_treasury_stable_mut(
+        self: &mut BfcSystemStableState
     ): &mut TreasuryStable {
         dynamic_field::borrow_mut(&mut self.id, self.version)
-    }*/
+    }
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
@@ -334,8 +339,17 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
 
-    /*public fun swap_stable_to_busd<StableCoinType>(
-        wrapper: &mut BfcSystemState,
+    public fun mint_stable<StableCoinType>(
+        wrapper: &mut BfcSystemStableState,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        let treasury_stable = load_treasury_stable_mut(wrapper);
+        bfc_system_state_inner::mint_stable<StableCoinType>(treasury_stable, amount, ctx);
+    }
+
+    public fun swap_stable_to_busd<StableCoinType>(
+        wrapper: &mut BfcSystemStableState,
         balance: Balance<StableCoinType>,
         ctx: &mut TxContext,
     ) {
@@ -344,13 +358,13 @@ module bfc_system::bfc_system {
     }
 
     public fun swap_busd_to_stable<StableCoinType>(
-        wrapper: &mut BfcSystemState,
+        wrapper: &mut BfcSystemStableState,
         balance: Balance<BUSD>,
         ctx: &mut TxContext,
     ) {
         let treasury_stable = load_treasury_stable_mut(wrapper);
         bfc_system_state_inner::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
-    }*/
+    }
 
     /// X treasury  swap bfc to stablecoin
     public entry fun swap_bfc_to_stablecoin<StableCoinType>(

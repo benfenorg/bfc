@@ -165,25 +165,37 @@ module bfc_system::treasury {
         )
     }
 
-    /*public fun swap_stable_to_busd<StableCoinType>(_treasury_stable: &mut TreasuryStable,
-                                                   _balance: Balance<StableCoinType>,
-                                                   _ctx: &mut TxContext,) {
-        /// let _key = get_vault_key<StableCoinType>(); // TODO 如何判断只有usdc usdt可用
-        // 国库增加usdt
-        // 国库减少busd
-        // 用户减少usdt
-        // 用户增加busd，转给用户
+    /// let _key = get_vault_key<StableCoinType>();
+    /// 权限检查
+    /// 用户增加usdc/usdt，转给用户
+    public fun mint_stable<StableCoinType>(_treasury_stable: &mut TreasuryStable,
+                                           _amount: u64,
+                                           _ctx: &mut TxContext,): String {
+        get_vault_key<StableCoinType>()
     }
 
+    /// let _key = get_vault_key<StableCoinType>();
+    /// 国库增加usdt
+    /// 国库减少busd
+    /// 用户减少usdt
+    /// 用户增加busd，转给用户
+    public fun swap_stable_to_busd<StableCoinType>(_treasury_stable: &mut TreasuryStable,
+                                                   _balance: Balance<StableCoinType>,
+                                                   _ctx: &mut TxContext,) {
+        transfer_or_delete(_balance, _ctx);
+    }
+
+    /// let _key = get_vault_key<StableCoinType>();
+    /// 国库增加busd
+    /// 国库减少usdt
+    /// 用户减少busd
+    /// 用户增加usdt，转给用户
     public fun swap_busd_to_stable<StableCoinType>(_treasury_stable: &mut TreasuryStable,
                                  _balance: Balance<BUSD>,
-                                 _ctx: &mut TxContext,) {
-        let _key = get_vault_key<StableCoinType>(); // TODO 如何判断只有usdc usdt可用
-        // 国库增加busd
-        // 国库减少usdt
-        // 用户减少busd
-        // 用户增加usdt，转给用户
-    }*/
+                                 _ctx: &mut TxContext,): String {
+        transfer_or_delete(_balance, _ctx);
+        get_vault_key<StableCoinType>()
+    }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
         vault::set_pause(

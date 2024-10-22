@@ -408,7 +408,15 @@ module bfc_system::bfc_system_state_inner {
         treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx)
     }
 
-    /*public(package) fun swap_stable_to_busd<StableCoinType>(
+    public(package) fun mint_stable<StableCoinType>(
+        treasury_stable: &mut TreasuryStable,
+        amount: u64,
+        ctx: &mut TxContext,
+    ) {
+        treasury::mint_stable<StableCoinType>(treasury_stable, amount, ctx);
+    }
+
+    public(package) fun swap_stable_to_busd<StableCoinType>(
         treasury_stable: &mut TreasuryStable,
         balance: Balance<StableCoinType>,
         ctx: &mut TxContext,
@@ -422,7 +430,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ) {
         treasury::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, ctx);
-    }*/
+    }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
         self.stable_rate
