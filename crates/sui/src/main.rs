@@ -92,8 +92,15 @@ async fn main() {
                 .init()
         }
 
+        SuiCommand::Start { .. } => {
+            telemetry_subscribers::TelemetryConfig::new()
+                .with_log_level("info")
+                .with_env()
+                .init()
+        }
+
         _ => telemetry_subscribers::TelemetryConfig::new()
-            .with_log_level("info")
+            .with_log_level("error")
             .with_env()
             .init(),
     };
