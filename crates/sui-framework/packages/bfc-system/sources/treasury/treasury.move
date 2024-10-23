@@ -111,19 +111,6 @@ module bfc_system::treasury {
     }
 
     // call in bfc_system
-    public(package) fun create_treasury_stable(ctx: &mut TxContext): TreasuryStable {
-        let treasury_stable = TreasuryStable {
-            id: object::new(ctx),
-            usdc_coin: coin::zero<USDC>(ctx),
-            usdt_coin: coin::zero<USDT>(ctx),
-            busd_coin: coin::zero<BUSD>(ctx),
-            updated_at: 0,
-            init: false,
-        };
-        treasury_stable
-    }
-
-    // call in bfc_system
     public(package) fun create_treasury_pause_cap(admin: address, ctx: &mut TxContext) {
         transfer::transfer(TreasuryPauseCap { id: object::new(ctx) }, admin);
     }

@@ -254,12 +254,6 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
-    public(package) fun create_treasury_stable(
-        ctx: &mut TxContext
-    ): TreasuryStable {
-        treasury::create_treasury_stable(ctx)
-    }
-
     public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
         self.stable_rate
     }
