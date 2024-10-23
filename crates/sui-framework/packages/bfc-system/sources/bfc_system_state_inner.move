@@ -2,6 +2,7 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use sui::bag::Bag;
     use bfc_system::usdt::USDT;
     use bfc_system::usdc::USDC;
     use sui::balance;
@@ -31,7 +32,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap, TreasuryStable};
+    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap, TreasuryStable, TreasuryV2};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -68,6 +69,19 @@ module bfc_system::bfc_system_state_inner {
         treasury: Treasury,
         treasury_pool: TreasuryPool,
         stable_rate: VecMap<ascii::String, u64>,
+    }
+
+    public struct BfcSystemStateInnerV2 has store {
+        round: u64,
+        stable_base_points: u64,
+        reward_rate: u64,
+        dao: Dao,
+        treasury: TreasuryV2,
+        treasury_pool: TreasuryPool,
+        stable_rate: VecMap<ascii::String, u64>,
+
+        /// Any extra fields that's not defined statically.
+        extra_fields: Bag,
     }
 
     public struct TreasuryParameters has drop, copy {
