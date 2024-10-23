@@ -164,9 +164,6 @@ module bfc_system::treasury {
         )
     }
 
-    /// let _key = get_vault_key<StableCoinType>();
-    /// 权限检查
-    /// 用户增加usdc/usdt，转给用户
     public fun mint_stable<StableCoinType>(_treasury_stable: &mut TreasuryStable,
                                            _amount: u64,
                                            _ctx: &mut TxContext,): String {

@@ -5,10 +5,12 @@ title: Module `0xc8::bfc_system`
 
 
 -  [Resource `BfcSystemState`](#0xc8_bfc_system_BfcSystemState)
+-  [Resource `BfcSystemStableState`](#0xc8_bfc_system_BfcSystemStableState)
 -  [Constants](#@Constants_0)
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_unstake_manager_key)
 -  [Function `create`](#0xc8_bfc_system_create)
+-  [Function `create_stable`](#0xc8_bfc_system_create_stable)
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
@@ -17,6 +19,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `load_bfc_system_state`](#0xc8_bfc_system_load_bfc_system_state)
 -  [Function `load_bfc_system_state_mut`](#0xc8_bfc_system_load_bfc_system_state_mut)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
+-  [Function `load_treasury_stable_mut`](#0xc8_bfc_system_load_treasury_stable_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
 -  [Function `remove_action`](#0xc8_bfc_system_remove_action)
@@ -32,6 +35,10 @@ title: Module `0xc8::bfc_system`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
+-  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
+-  [Function `swap_usdc_to_busd`](#0xc8_bfc_system_swap_usdc_to_busd)
+-  [Function `swap_usdt_to_busd`](#0xc8_bfc_system_swap_usdt_to_busd)
+-  [Function `swap_busd_to_stable`](#0xc8_bfc_system_swap_busd_to_stable)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
 -  [Function `swap_stablecoin_to_bfc`](#0xc8_bfc_system_swap_stablecoin_to_bfc)
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
@@ -94,6 +101,8 @@ title: Module `0xc8::bfc_system`
 <b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
 <b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
+<b>use</b> <a href="usdc.md#0xc8_usdc">0xc8::usdc</a>;
+<b>use</b> <a href="usdt.md#0xc8_usdt">0xc8::usdt</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -133,9 +142,51 @@ title: Module `0xc8::bfc_system`
 
 </details>
 
+<a name="0xc8_bfc_system_BfcSystemStableState"></a>
+
+## Resource `BfcSystemStableState`
+
+
+
+<pre><code><b>struct</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a> <b>has</b> key
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>version: u64</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0xc8_bfc_system_BFC_SYSTEM_STABLE_STATE_VERSION_V1"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STABLE_STATE_VERSION_V1">BFC_SYSTEM_STABLE_STATE_VERSION_V1</a>: u64 = 1;
+</code></pre>
+
 
 
 <a name="0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1"></a>
@@ -264,6 +315,40 @@ title: Module `0xc8::bfc_system`
     };
 
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>, inner_state);
+
+    <a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_create_stable"></a>
+
+## Function `create_stable`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_stable">create_stable</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_create_stable">create_stable</a>(
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> inner_state = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury_stable">bfc_system_state_inner::create_treasury_stable</a>(ctx);
+    <b>let</b> <b>mut</b> self = <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a> {
+        id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+        version: <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STABLE_STATE_VERSION_V1">BFC_SYSTEM_STABLE_STATE_VERSION_V1</a>
+    };
+
+    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_add">dynamic_field::add</a>(&<b>mut</b> self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STABLE_STATE_VERSION_V1">BFC_SYSTEM_STABLE_STATE_VERSION_V1</a>, inner_state);
 
     <a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(self);
 }
@@ -481,6 +566,32 @@ title: Module `0xc8::bfc_system`
 <pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(
     self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>
 ): &<b>mut</b> BfcSystemStateInner {
+    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, self.version)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_load_treasury_stable_mut"></a>
+
+## Function `load_treasury_stable_mut`
+
+
+
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">bfc_system::BfcSystemStableState</a>): &<b>mut</b> <a href="treasury.md#0xc8_treasury_TreasuryStable">treasury::TreasuryStable</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(
+    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a>
+): &<b>mut</b> TreasuryStable {
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, self.version)
 }
 </code></pre>
@@ -900,6 +1011,131 @@ X treasury rebalance
 ) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin">bfc_system_state_inner::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_mint_stable"></a>
+
+## Function `mint_stable`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">bfc_system::BfcSystemStableState</a>, amount: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a>,
+    amount: u64,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> treasury_stable = <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(treasury_stable, amount, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_swap_usdc_to_busd"></a>
+
+## Function `swap_usdc_to_busd`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_usdc_to_busd">swap_usdc_to_busd</a>(old_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">bfc_system::BfcSystemStableState</a>, receiver_address: <b>address</b>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdc.md#0xc8_usdc_USDC">usdc::USDC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_usdc_to_busd">swap_usdc_to_busd</a>(
+    old_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a>,
+    receiver_address: <b>address</b>,
+    stable_coin: Coin&lt;USDC&gt;,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> treasury_stable = <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(wrapper);
+    <b>let</b> old_inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(old_wrapper);
+
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_usdc_to_busd">bfc_system_state_inner::swap_usdc_to_busd</a>(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_swap_usdt_to_busd"></a>
+
+## Function `swap_usdt_to_busd`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_usdt_to_busd">swap_usdt_to_busd</a>(old_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">bfc_system::BfcSystemStableState</a>, receiver_address: <b>address</b>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdt.md#0xc8_usdt_USDT">usdt::USDT</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_usdt_to_busd">swap_usdt_to_busd</a>(
+    old_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a>,
+    receiver_address: <b>address</b>,
+    stable_coin: Coin&lt;USDT&gt;,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> treasury_stable = <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(wrapper);
+    <b>let</b> old_inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(old_wrapper);
+
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_usdt_to_busd">bfc_system_state_inner::swap_usdt_to_busd</a>(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_swap_busd_to_stable"></a>
+
+## Function `swap_busd_to_stable`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_busd_to_stable">swap_busd_to_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">bfc_system::BfcSystemStableState</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, receiver_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_swap_busd_to_stable">swap_busd_to_stable</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemStableState">BfcSystemStableState</a>,
+    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Coin&lt;BUSD&gt;,
+    receiver_address: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> treasury_stable = <a href="bfc_system.md#0xc8_bfc_system_load_treasury_stable_mut">load_treasury_stable_mut</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_busd_to_stable">bfc_system_state_inner::swap_busd_to_stable</a>&lt;StableCoinType&gt;(treasury_stable, <a href="../sui-framework/balance.md#0x2_balance">balance</a>, receiver_address, ctx);
 }
 </code></pre>
 

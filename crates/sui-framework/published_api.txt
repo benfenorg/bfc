@@ -4567,6 +4567,24 @@ rebalance_internal
 rebalance
 	public(package) fun
 	0xc8::vault
+USDT
+	public struct
+	0xc8::usdt
+new
+	public fun
+	0xc8::usdt
+transfer
+	public entry fun
+	0xc8::usdt
+USDC
+	public struct
+	0xc8::usdc
+new
+	public fun
+	0xc8::usdc
+transfer
+	public entry fun
+	0xc8::usdc
 MGG
 	public struct
 	0xc8::mgg
@@ -4681,7 +4699,13 @@ TreasuryPauseCap
 Treasury
 	public struct
 	0xc8::treasury
+TreasuryStable
+	public struct
+	0xc8::treasury
 create_treasury
+	public(package) fun
+	0xc8::treasury
+create_treasury_stable
 	public(package) fun
 	0xc8::treasury
 create_treasury_pause_cap
@@ -4706,6 +4730,18 @@ borrow_mut_vault
 	public(package) fun
 	0xc8::treasury
 vault_info
+	public fun
+	0xc8::treasury
+mint_stable
+	public fun
+	0xc8::treasury
+swap_usdc_to_busd
+	public fun
+	0xc8::treasury
+swap_usdt_to_busd
+	public fun
+	0xc8::treasury
+swap_busd_to_stable
 	public fun
 	0xc8::treasury
 vault_set_pause
@@ -4831,6 +4867,9 @@ init_vault_with_positions
 create_treasury
 	public(package) fun
 	0xc8::bfc_system_state_inner
+create_treasury_stable
+	public(package) fun
+	0xc8::bfc_system_state_inner
 get_rate_map
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -4883,6 +4922,18 @@ rebalance_with_one_stablecoin
 	public(package) fun
 	0xc8::bfc_system_state_inner
 request_gas_balance
+	public(package) fun
+	0xc8::bfc_system_state_inner
+mint_stable
+	public(package) fun
+	0xc8::bfc_system_state_inner
+swap_usdc_to_busd
+	public(package) fun
+	0xc8::bfc_system_state_inner
+swap_usdt_to_busd
+	public(package) fun
+	0xc8::bfc_system_state_inner
+swap_busd_to_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
 get_all_stable_rate
@@ -4963,6 +5014,9 @@ create_voting_bfc
 BfcSystemState
 	public struct
 	0xc8::bfc_system
+BfcSystemStableState
+	public struct
+	0xc8::bfc_system
 create_stake_manager_key
 	public entry fun
 	0xc8::bfc_system
@@ -4970,6 +5024,9 @@ unstake_manager_key
 	public entry fun
 	0xc8::bfc_system
 create
+	public(package) fun
+	0xc8::bfc_system
+create_stable
 	public(package) fun
 	0xc8::bfc_system
 change_round
@@ -4994,6 +5051,9 @@ load_bfc_system_state_mut
 	public fun
 	0xc8::bfc_system
 load_system_state_mut
+	fun
+	0xc8::bfc_system
+load_treasury_stable_mut
 	fun
 	0xc8::bfc_system
 get_exchange_rate
@@ -5039,6 +5099,18 @@ rebalance
 	public fun
 	0xc8::bfc_system
 rebalance_with_one_stablecoin
+	public fun
+	0xc8::bfc_system
+mint_stable
+	public fun
+	0xc8::bfc_system
+swap_usdc_to_busd
+	public fun
+	0xc8::bfc_system
+swap_usdt_to_busd
+	public fun
+	0xc8::bfc_system
+swap_busd_to_stable
 	public fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin
