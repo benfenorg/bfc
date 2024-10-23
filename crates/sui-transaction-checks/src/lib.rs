@@ -78,9 +78,9 @@ mod checked {
         input_objects: InputObjects,
         receiving_objects: &ReceivingObjects,
         metrics: &Arc<BytecodeVerifierMetrics>,
-        stable_rate: Option<u64>,
-        base_point: Option<u64>
         verifier_signing_config: &VerifierSigningConfig,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>,
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let gas_status = check_transaction_input_inner(
             protocol_config,
@@ -111,9 +111,9 @@ mod checked {
         receiving_objects: ReceivingObjects,
         gas_object: Object,
         metrics: &Arc<BytecodeVerifierMetrics>,
-        stable_rate: Option<u64>,
-        base_point: Option<u64>
         verifier_signing_config: &VerifierSigningConfig,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>,
     ) -> SuiResult<(SuiGasStatus, CheckedInputObjects)> {
         let gas_object_ref = gas_object.compute_object_reference();
         input_objects.push(ObjectReadResult::new_from_gas_object(&gas_object));

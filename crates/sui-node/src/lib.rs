@@ -3,11 +3,9 @@
 
 use std::collections::HashMap;
 use std::fmt;
-use std::path::PathBuf;
 use std::str::FromStr;
 #[cfg(msim)]
 use std::sync::atomic::{Ordering};
-use std::sync::Arc;
 use std::time::Duration;
 
 use anemo::Network;
@@ -24,13 +22,10 @@ use futures::TryFutureExt;
 use prometheus::Registry;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
-use std::sync::{Weak};
 use std::path::PathBuf;
-use std::str::FromStr;
 #[cfg(msim)]
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Weak};
-use std::time::Duration;
 use sui_core::authority::authority_store_tables::AuthorityPerpetualTablesOptions;
 use sui_core::authority::epoch_start_configuration::EpochFlag;
 use sui_core::authority::RandomnessRoundReceiver;

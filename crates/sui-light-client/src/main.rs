@@ -27,7 +27,7 @@ use sui_sdk::SuiClientBuilder;
 use clap::{Parser, Subcommand};
 use std::{collections::HashMap, fs, io::Write, path::PathBuf, str::FromStr, sync::Mutex};
 use std::{io::Read, sync::Arc};
-use std::path::Path;
+use std::path;
 
 use log::info;
 use object_store::parse_url;
@@ -538,7 +538,7 @@ async fn get_verified_object(config: &Config, id: ObjectID) -> anyhow::Result<Ob
 }
 
 async fn write_full_checkpoint(
-    checkpoint_path: &Path,
+    checkpoint_path: &path::Path,
     checkpoint: &CheckpointData,
 ) -> anyhow::Result<()> {
     let mut writer = fs::File::create(checkpoint_path)?;

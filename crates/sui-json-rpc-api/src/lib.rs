@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::anyhow;
-use mysten_metrics::histogram::Histogram;
 
 pub use benfen::BenfenApiClient;
 pub use benfen::BenfenApiOpenRpc;

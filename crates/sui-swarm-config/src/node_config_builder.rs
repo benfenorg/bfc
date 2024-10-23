@@ -495,6 +495,8 @@ impl FullnodeConfigBuilder {
             jsonrpc_server_type: None,
             remove_deprecated_tables: false,
             state_accumulator_v2: true, //TODO check this field
+            enable_db_write_stall: None,
+            verifier_signing_config: VerifierSigningConfig::default(),
         }
     }
 

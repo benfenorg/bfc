@@ -25,7 +25,6 @@ mod checked {
 
     //use sui_types::execution_mode::{self, ExecutionMode};
 
-    use sui_types::base_types::SequenceNumber;
     use sui_types::gas_coin::GAS;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
@@ -47,7 +46,7 @@ mod checked {
     use sui_types::error::{ExecutionError, ExecutionErrorKind};
     use sui_types::execution::is_certificate_denied;
     use sui_types::execution_config_utils::to_binary_config;
-    use sui_types::execution_status::{CongestedObjects, ExecutionStatus};
+    use sui_types::execution_status::ExecutionStatus;
     use sui_types::gas::GasCostSummary;
     use sui_types::gas::SuiGasStatus;
     use sui_types::storage::BackingStore;
@@ -73,7 +72,6 @@ mod checked {
         bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME,
                            DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME},
         SUI_FRAMEWORK_ADDRESS,
-        base_types::{ObjectID},
     };
     use sui_types::deny_list_v1::DENY_LIST_MODULE;
     use sui_types::deny_list_v1::DENY_LIST_CREATE_FUNC;

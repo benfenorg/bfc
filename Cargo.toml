@@ -453,6 +453,7 @@ derive-syn-parse = "0.1.5"
 derive_builder = "0.12.0"
 derive_more = "0.99.17"
 diesel = "2.2"
+diesel-derive-enum = { version = "2.0.1" }
 diesel_migrations = "2.2"
 diesel-async = "0.5"
 dirs = "4.0.0"
@@ -507,6 +508,8 @@ jsonrpsee = { git = "https://github.com/wlmyng/jsonrpsee.git", rev = "b1b3007847
 json_to_table = { git = "https://github.com/zhiburt/tabled/", rev = "e449317a1c02eb6b29e409ad6617e5d9eb7b3bd4" }
 leb128 = "0.2.5"
 lru = "0.10"
+serial_test = "2.0.0"
+markdown-gen = "1.2.1"
 match_opt = "0.1.2"
 miette = { version = "7", features = ["fancy"] }
 mime = "0.3"
@@ -706,12 +709,7 @@ fastcrypto = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "
 fastcrypto-tbls = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "0f226edde74b9dac920f5b59b5644fab3c2fbe5f" }
 fastcrypto-zkp = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "0f226edde74b9dac920f5b59b5644fab3c2fbe5f", package = "fastcrypto-zkp" }
 fastcrypto-vdf = { git = "https://github.com/hellokittyboy-code/fastcrypto", rev = "0f226edde74b9dac920f5b59b5644fab3c2fbe5f", features = ["experimental"] }
-fastcrypto = { git = "https://github.com/MystenLabs/fastcrypto", rev = "c050ffc78b93739328af5d59b05f90e0e26b1b7e" }
-fastcrypto-tbls = { git = "https://github.com/MystenLabs/fastcrypto", rev = "c050ffc78b93739328af5d59b05f90e0e26b1b7e" }
-fastcrypto-zkp = { git = "https://github.com/MystenLabs/fastcrypto", rev = "c050ffc78b93739328af5d59b05f90e0e26b1b7e", package = "fastcrypto-zkp" }
-fastcrypto-vdf = { git = "https://github.com/MystenLabs/fastcrypto", rev = "c050ffc78b93739328af5d59b05f90e0e26b1b7e", features = [
-    "experimental",
-] }
+
 passkey-types = { version = "0.2.0" }
 passkey-client = { version = "0.2.0" }
 passkey-authenticator = { version = "0.2.0" }
@@ -725,7 +723,6 @@ anemo-cli = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697e
 anemo-tower = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697ed6169bf0760882a0b6c032a57e4f3b" }
 
 # core-types with json format for REST api
-sui-sdk2 = { package = "sui-sdk", git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "a6f01a6484c2032269de7278f95df512fca40fc3", features = ["hash", "serde", "schemars"] }
 sui-sdk2 = { package = "sui-sdk", git = "https://github.com/mystenlabs/sui-rust-sdk.git", rev = "bd233b6879b917fb95e17f21927c198e7a60c924", features = [
     "hash",
     "serde",

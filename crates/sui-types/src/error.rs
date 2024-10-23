@@ -104,10 +104,6 @@ pub enum UserInputError {
     provided_obj_ref.1,
     provided_obj_ref.2
     )]
-    #[error(
-        "Object ID {} Version {} Digest {} is not available for consumption, current version: {current_version}",
-        .provided_obj_ref.0, .provided_obj_ref.1, .provided_obj_ref.2
-    )]
     ObjectVersionUnavailableForConsumption {
         provided_obj_ref: ObjectRef,
         current_version: SequenceNumber,
@@ -115,9 +111,10 @@ pub enum UserInputError {
     #[error("Package verification failed: {err:?}")]
     PackageVerificationTimedout { err: String },
 
-    #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(*package_id))]
+    #[error("Package verification failed: {err:?}")]
     PackageVerificationTimeout { err: String },
-    #[error("Dependent package not found on-chain: {package_id:?}")]
+
+    #[error("Dependent package not found on-chain: {:?}", objects_id_to_bfc_address(*package_id))]
     DependentPackageNotFound { package_id: ObjectID },
 
     #[error("Mutable parameter provided, immutable parameter expected.")]

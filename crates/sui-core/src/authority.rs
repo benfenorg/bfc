@@ -898,12 +898,6 @@ impl AuthorityState {
             epoch_store.epoch(),
         )?;
 
-        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
-            self.get_stable_rate_and_base_points(transaction.gas()).await?
-        }else {
-            (None, None)
-        };
-
         let (_gas_status, checked_input_objects) = sui_transaction_checks::check_transaction_input(
             epoch_store.protocol_config(),
             epoch_store.reference_gas_price(),
@@ -911,9 +905,9 @@ impl AuthorityState {
             input_objects,
             &receiving_objects,
             &self.metrics.bytecode_verifier_metrics,
-            stable_rate,
-            base_point,
             &self.config.verifier_signing_config,
+            None,
+            None, //todo
         )?;
 
         if epoch_store.coin_deny_list_v1_enabled() {
@@ -1898,9 +1892,9 @@ impl AuthorityState {
                     receiving_objects,
                     gas_object,
                     &self.metrics.bytecode_verifier_metrics,
-                    None,
-                    None,
                     &self.config.verifier_signing_config,
+                    None,
+                    None,
                 )?,
                 Some(gas_object_id),
             )
@@ -1918,9 +1912,9 @@ impl AuthorityState {
                     input_objects,
                     &receiving_objects,
                     &self.metrics.bytecode_verifier_metrics,
+                    &self.config.verifier_signing_config,
                     stable_rate,
                     base_point,
-                    &self.config.verifier_signing_config,
                 )?,
                 None,
             )
@@ -2149,9 +2143,9 @@ impl AuthorityState {
                     receiving_objects,
                     dummy_gas_object,
                     &self.metrics.bytecode_verifier_metrics,
-                    None,
-                    None,
                     &self.config.verifier_signing_config,
+                    None,
+                    None,
                 )?
             } else {
                 let (stable_rate, base_point) = if !transaction.is_system_txn() {
@@ -2166,9 +2160,9 @@ impl AuthorityState {
                     input_objects,
                     &receiving_objects,
                     &self.metrics.bytecode_verifier_metrics,
+                    &self.config.verifier_signing_config,
                     stable_rate,
                     base_point,
-                    &self.config.verifier_signing_config,
                 )?
             }
         };
@@ -4132,18 +4126,6 @@ impl AuthorityState {
                     limit,
                     descending,
                 )?,
-            // not using "_ =>" because we want to make sure we remember to add new variants here
-            EventFilter::Package(_)
-            | EventFilter::MoveEventField { .. }
-            | EventFilter::Any(_)
-            | EventFilter::And(_, _)
-            | EventFilter::Or(_, _) => {
-                return Err(SuiError::UserInputError {
-                    error: UserInputError::Unsupported(
-                        "This query type is not supported by the full node.".to_string(),
-                    ),
-                });
-            }
         };
 
         // skip one event if exclusive cursor is provided,
@@ -5150,9 +5132,6 @@ impl AuthorityState {
             .await?;
 
 
-        let input_objects = self
-            .read_objects_for_execution(&executable_tx, epoch_store)
-            .await?;
         let input_objects = self.read_objects_for_execution(&executable_tx, epoch_store)?;
 
         let (temporary_store, proposal_map, effects, _) = self

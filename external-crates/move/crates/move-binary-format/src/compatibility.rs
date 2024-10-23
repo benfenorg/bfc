@@ -263,24 +263,10 @@ impl Compatibility {
             if old_func.parameters != new_func.parameters
                 || old_func.return_ != new_func.return_
                 || !fun_type_parameters_compatible(
-                    &old_func.type_parameters,
-                    &new_func.type_parameters,
-                )
+                &old_func.type_parameters,
+                &new_func.type_parameters,
+            )
             {
-
-                println!("====struct Check signature compatibility");
-                //println!("checking {:?}========== struct Check signature compatibility {:?} {:?}",name, old_func.parameters,  old_module);
-
-
-                match old_func.visibility {
-                    Visibility::Friend => friend_linking = false,
-                    Visibility::Public => datatype_and_function_linking = false,
-                    Visibility::Private => (),
-                }
-
-                if old_func.is_entry {
-                    entry_linking = false;
-                }
                 context.function_signature_mismatch(name, old_func, new_func);
             }
         }
@@ -296,32 +282,6 @@ impl Compatibility {
             context.friend_module_missing(old_friend_module_ids, new_friend_module_ids);
         }
 
-        if self.check_datatype_and_pub_function_linking && !datatype_and_function_linking {
-            return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r1,
-            ));
-        }
-        if self.check_datatype_layout && !datatype_layout {
-            return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r2,
-            ));
-        }
-        if self.check_friend_linking && !friend_linking {
-            return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r3,
-            ));
-        }
-        if self.check_private_entry_linking && !entry_linking {
-            return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE_r4,
-            ));
-        }
-        if self.disallow_new_variants && !no_new_variants {
-            return Err(PartialVMError::new(
-                StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE,
-            ));
-        }
-        Ok(())
         context.finish(self)
     }
 }

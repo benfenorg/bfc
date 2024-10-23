@@ -15,6 +15,7 @@ tokio-util.workspace = true
 jsonrpsee.workspace = true
 tracing.workspace = true
 clap.workspace = true
+diesel.workspace = true
 reqwest.workspace = true
 async-trait.workspace = true
 anyhow = { workspace = true, features = ["backtrace"] }

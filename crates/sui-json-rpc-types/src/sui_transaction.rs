@@ -1999,14 +1999,10 @@ impl SuiProgrammableTransactionBlock {
 
                     let id = ModuleId::new(c.package.into(), module);
                     let Some(types) =
-                        get_signature_types(id, c.function.as_ident_str(), module_cache)
+                        get_signature_types(id, function.as_ident_str(), module_cache)
                         else {
                             return result_types;
                         };
-                        get_signature_types(id, function.as_ident_str(), module_cache)
-                    else {
-                        return result_types;
-                    };
                     for (arg, type_) in c.arguments.iter().zip(types) {
                         if let (&Argument::Input(i), Some(type_)) = (arg, type_) {
                             if let Some(x) = result_types.get_mut(i as usize) {

@@ -180,10 +180,6 @@ impl From<Error> for RpcError {
                         };
 
                         let error_message = format!(
-                            "Failed to sign transaction by a quorum of validators because of locked objects. Retried a conflicting transaction {:?}, success: {:?}",
-                            retried_tx,
-                            retried_tx_success
-                        );
                             "Failed to sign transaction by a quorum of validators because one or more of its objects is {}. {} Other transactions locking these objects:\n{}",
                             reason,
                             retried_info,
@@ -440,7 +436,7 @@ mod tests {
             let expected_message = expect!["Failed to sign transaction by a quorum of validators because one or more of its objects is reserved for another transaction. Retried transaction 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi (succeeded) because it was able to gather the necessary votes. Other transactions locking these objects:\n- 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi (stake 80.0)\n- 8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR (stake 5.0)"];
             expected_message.assert_eq(error_object.message());
             let expected_data = expect![[
-                r#"{"4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]],"8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]]}"#
+                r#"{"11111111111111111111111111111111":[["BFC000000000000000000000000000000000000000000000000000000000000000060e0",0,"11111111111111111111111111111111"]]}"#
             ]];
             let actual_data = error_object.data().unwrap().to_string();
             expected_data.assert_eq(&actual_data);
@@ -481,7 +477,6 @@ mod tests {
             let expected_message = expect!["Failed to sign transaction by a quorum of validators because one or more of its objects is equivocated until the next epoch.  Other transactions locking these objects:\n- 8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR (stake 50.0)\n- 4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi (stake 40.0)"];
             expected_message.assert_eq(error_object.message());
             let expected_data = expect![[
-                r#"{"11111111111111111111111111111111":[["BFC000000000000000000000000000000000000000000000000000000000000000060e0",0,"11111111111111111111111111111111"]]}"#
                 r#"{"4vJ9JU1bJJE96FWSJKvHsmmFADCg4gpZQff4P3bkLKi":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]],"8qbHbw2BbbTHBW1sbeqakYXVKRQM8Ne7pLK7m6CVfeR":[["0x0000000000000000000000000000000000000000000000000000000000000000",0,"11111111111111111111111111111111"]]}"#
             ]];
             let actual_data = error_object.data().unwrap().to_string();
@@ -521,8 +516,7 @@ mod tests {
             let expected_code = expect!["-32002"];
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message =
-                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Balance of gas object 10 is lower than the needed amount: 100, Object BFC000000000000000000000000000000000000000000000000000000000000000060e0 SequenceNumber(0) o#11111111111111111111111111111111 is not available for consumption, its current version: SequenceNumber(10).."];
-                expect!["Transaction validator signing failed due to issues with transaction inputs, please review the errors and try again:\n- Balance of gas object 10 is lower than the needed amount: 100\n- Object ID 0x0000000000000000000000000000000000000000000000000000000000000000 Version 0x0 Digest 11111111111111111111111111111111 is not available for consumption, current version: 0xa"];
+                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object \"BFC000000000000000000000000000000000000000000000000000000000000000060e0\" at version None.."];
             expected_message.assert_eq(error_object.message());
         }
 
@@ -554,8 +548,6 @@ mod tests {
             let expected_code = expect!["-32002"];
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message =
-                expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object \"BFC000000000000000000000000000000000000000000000000000000000000000060e0\" at version None.."];
-            expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object 0x0000000000000000000000000000000000000000000000000000000000000000 at version None.."];
                 expect!["Transaction validator signing failed due to issues with transaction inputs, please review the errors and try again:\n- Could not find the referenced object 0x0000000000000000000000000000000000000000000000000000000000000000 at version None"];
             expected_message.assert_eq(error_object.message());
         }

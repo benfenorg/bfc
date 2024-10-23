@@ -212,10 +212,6 @@ impl TrafficController {
             }
         }
     }
-
-
-
-    pub async fn check_impl(
     /// Returns true if the connection is in blocklist, false otherwise
     async fn check_blocklists(
         &self,

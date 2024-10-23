@@ -19,9 +19,7 @@ use tracing::{info, warn};
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
 //const MAX_PROTOCOL_VERSION: u64 = 23;
-const MAX_PROTOCOL_VERSION: u64 = 54;
 const MAX_PROTOCOL_VERSION: u64 = 62;
-
 // Record history of protocol version allocations here:
 //
 // Version 1: Original version.
@@ -2906,20 +2904,6 @@ impl ProtocolConfig {
             max_variants_in_enum: self.max_move_enum_variants_as_option(),
         }
     }
-
-    pub fn meter_config(&self) -> MeterConfig {
-        MeterConfig {
-            max_per_fun_meter_units: Some(self.max_verifier_meter_ticks_per_function() as u128),
-            max_per_mod_meter_units: Some(self.max_meter_ticks_per_module() as u128),
-            max_per_pkg_meter_units: Some(
-                // Until the per-package limit was introduced, the per-module limit played double
-                // duty.
-                self.max_meter_ticks_per_package_as_option()
-                    .unwrap_or_else(|| self.max_meter_ticks_per_module()) as u128,
-            ),
-        }
-    }
-
 
     /// Override one or more settings in the config, for testing.
     /// This must be called at the beginning of the test, before get_for_(min|max)_version is
