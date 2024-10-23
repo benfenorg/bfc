@@ -39,18 +39,13 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
-    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters};
+    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2};
     use bfc_system::treasury::{TreasuryPauseCap, TreasuryStable};
 
     // #[test_only]
     // friend bfc_system::bfc_system_tests;
 
     public struct BfcSystemState has key {
-        id: UID,
-        version: u64
-    }
-
-    public struct BfcSystemStableState has key {
         id: UID,
         version: u64
     }
@@ -197,9 +192,9 @@ module bfc_system::bfc_system {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
-    fun load_treasury_stable_mut(
-        self: &mut BfcSystemStableState
-    ): &mut TreasuryStable {
+    fun load_system_state_mut_v2(
+        self: &mut BfcSystemState
+    ): &mut BfcSystemStateInnerV2 {
         dynamic_field::borrow_mut(&mut self.id, self.version)
     }
 
@@ -361,28 +356,14 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::swap_usdt_to_busd(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
     }
 
-    public fun swap_busd_to_usdc(
+    public fun exchange_busd_to_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
-        wrapper_stable: &mut BfcSystemStableState,
         balance: Coin<BUSD>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        let system_state = load_system_state_mut(wrapper);
-        let treasury_stable = load_treasury_stable_mut(wrapper_stable);
-        bfc_system_state_inner::swap_busd_to_usdc(system_state, treasury_stable, balance, receiver_address, ctx);
-    }
-
-    public fun swap_busd_to_usdt(
-        wrapper: &mut BfcSystemState,
-        wrapper_stable: &mut BfcSystemStableState,
-        balance: Coin<BUSD>,
-        receiver_address: address,
-        ctx: &mut TxContext,
-    ) {
-        let system_state = load_system_state_mut(wrapper);
-        let treasury_stable = load_treasury_stable_mut(wrapper_stable);
-        bfc_system_state_inner::swap_busd_to_usdt(system_state, treasury_stable, balance, receiver_address, ctx);
+        let system_state = load_system_state_mut_v2(wrapper);
+        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(system_state, balance, receiver_address, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
