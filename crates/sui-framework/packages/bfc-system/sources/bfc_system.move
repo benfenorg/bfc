@@ -68,7 +68,6 @@ module bfc_system::bfc_system {
 
 
     const BFC_SYSTEM_STATE_VERSION_V1: u64 = 1;
-    const BFC_SYSTEM_STABLE_STATE_VERSION_V1: u64 = 1;
 
     //spec module { pragma verify = false; }
 
@@ -123,20 +122,6 @@ module bfc_system::bfc_system {
         };
 
         dynamic_field::add(&mut self.id, BFC_SYSTEM_STATE_VERSION_V1, inner_state);
-
-        transfer::share_object(self);
-    }
-
-    public(package) fun create_stable(
-        ctx: &mut TxContext
-    ) {
-        let inner_state = bfc_system_state_inner::create_treasury_stable(ctx);
-        let mut self = BfcSystemStableState {
-            id: object::new(ctx),
-            version: BFC_SYSTEM_STABLE_STATE_VERSION_V1
-        };
-
-        dynamic_field::add(&mut self.id, BFC_SYSTEM_STABLE_STATE_VERSION_V1, inner_state);
 
         transfer::share_object(self);
     }
@@ -376,14 +361,28 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::swap_usdt_to_busd(treasury_stable, old_inner_state, stable_coin, receiver_address, ctx);
     }
 
-    public fun swap_busd_to_stable<StableCoinType>(
-        wrapper: &mut BfcSystemStableState,
+    public fun swap_busd_to_usdc(
+        wrapper: &mut BfcSystemState,
+        wrapper_stable: &mut BfcSystemStableState,
         balance: Coin<BUSD>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        let treasury_stable = load_treasury_stable_mut(wrapper);
-        bfc_system_state_inner::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, receiver_address, ctx);
+        let system_state = load_system_state_mut(wrapper);
+        let treasury_stable = load_treasury_stable_mut(wrapper_stable);
+        bfc_system_state_inner::swap_busd_to_usdc(system_state, treasury_stable, balance, receiver_address, ctx);
+    }
+
+    public fun swap_busd_to_usdt(
+        wrapper: &mut BfcSystemState,
+        wrapper_stable: &mut BfcSystemStableState,
+        balance: Coin<BUSD>,
+        receiver_address: address,
+        ctx: &mut TxContext,
+    ) {
+        let system_state = load_system_state_mut(wrapper);
+        let treasury_stable = load_treasury_stable_mut(wrapper_stable);
+        bfc_system_state_inner::swap_busd_to_usdt(system_state, treasury_stable, balance, receiver_address, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin

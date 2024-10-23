@@ -438,13 +438,24 @@ module bfc_system::bfc_system_state_inner {
         treasury::swap_usdt_to_busd(treasury_stable,&mut old_inner_state.treasury, balance, receiver_address, ctx);
     }
 
-    public(package) fun swap_busd_to_stable<StableCoinType>(
+    public(package) fun swap_busd_to_usdc(
+        system_state: &mut BfcSystemStateInner,
         treasury_stable: &mut TreasuryStable,
         balance: Coin<BUSD>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::swap_busd_to_stable<StableCoinType>(treasury_stable, balance, receiver_address, ctx);
+        treasury::swap_busd_to_usdc(&mut system_state.treasury, treasury_stable, balance, receiver_address, ctx);
+    }
+
+    public(package) fun swap_busd_to_usdt(
+        system_state: &mut BfcSystemStateInner,
+        treasury_stable: &mut TreasuryStable,
+        balance: Coin<BUSD>,
+        receiver_address: address,
+        ctx: &mut TxContext,
+    ) {
+        treasury::swap_busd_to_usdt(&mut system_state.treasury, treasury_stable, balance, receiver_address, ctx);
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
