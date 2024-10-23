@@ -91,15 +91,6 @@ module bfc_system::treasury {
         extra_fields: Bag,
     }
 
-    public struct TreasuryStable has key, store {
-        id: UID,
-        usdc_coin: Coin<USDC>,
-        usdt_coin: Coin<USDT>,
-        busd_coin: Coin<BUSD>,
-        updated_at: u64,
-        init: bool,
-    }
-
     //spec module { pragma verify = false; }
 
     // call in bfc_system
