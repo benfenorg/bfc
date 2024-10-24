@@ -32,7 +32,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::busd::BUSD;
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
-    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap, TreasuryStable, TreasuryV2};
+    use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap, TreasuryV2};
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -419,31 +419,29 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun mint_stable<StableCoinType>(
-        treasury_stable: &mut TreasuryStable,
+        inner_state: &mut BfcSystemStateInner,
         amount: u64,
         ctx: &mut TxContext,
     ) {
-        treasury::mint_stable<StableCoinType>(treasury_stable, amount, ctx);
+        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx);
     }
 
-    public(package) fun swap_usdc_to_busd(
-        treasury_stable: &mut TreasuryStable,
-        old_inner_state: &mut BfcSystemStateInner,
+    public(package) fun exchange_usdc_to_busd(
+        inner_state: &mut BfcSystemStateInner,
         balance: Coin<USDC>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::swap_usdc_to_busd(treasury_stable, &mut old_inner_state.treasury, balance, receiver_address, ctx);
+        treasury::exchange_usdc_to_busd( &mut inner_state.treasury, balance, receiver_address, ctx);
     }
 
-    public(package) fun swap_usdt_to_busd(
-        treasury_stable: &mut TreasuryStable,
-        old_inner_state: &mut BfcSystemStateInner,
+    public(package) fun exchange_usdt_to_busd(
+        inner_state: &mut BfcSystemStateInner,
         balance: Coin<USDT>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::swap_usdt_to_busd(treasury_stable,&mut old_inner_state.treasury, balance, receiver_address, ctx);
+        treasury::exchange_usdt_to_busd(&mut inner_state.treasury, balance, receiver_address, ctx);
     }
 
     public(package) fun exchange_busd_to_stable<StableCoinType>(
