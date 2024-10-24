@@ -247,6 +247,7 @@ impl<S: IndexerStore> IndexerApi<S> {
                     )
                     .await
             }
+            _ => panic!(),
         }?;
 
         let has_next_page = tx_vec_from_db.len() > limit;
