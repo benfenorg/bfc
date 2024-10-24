@@ -92,7 +92,6 @@ use tabled::{
     },
 };
 
-use tracing::info;
 use sui_types::base_types_bfc::bfc_address_util::objects_id_to_bfc_address;
 
 use tracing::{debug, info};
@@ -2317,10 +2316,7 @@ impl SuiClientCommandResult {
             | SuiClientCommandResult::TransactionBlock(SuiTransactionBlockResponse {
                                                            effects: Some(effects),
                                                            ..
-                                                       }) => prerender_clever_errors(effects, read_api).await,
-                effects: Some(effects),
-                ..
-            }) => {
+                                                       }) => {
                 let client = context.get_client().await.expect("Cannot connect to RPC");
                 prerender_clever_errors(effects, client.read_api()).await
             }
@@ -2757,14 +2753,10 @@ pub async fn estimate_gas_budget(
 ) -> Result<u64, anyhow::Error> {
     let client = context.get_client().await?;
     let Ok(SuiClientCommandResult::DryRun(dry_run)) =
-        execute_dry_run(client, signer, kind, None, gas_price, gas_payment, sponsor).await
+        execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await
         else {
             bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
         };
-        execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await
-    else {
-        bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
-    };
 
     let rgp = client.read_api().get_reference_gas_price().await?;
 
