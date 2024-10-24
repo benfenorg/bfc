@@ -63,6 +63,7 @@ module bfc_system::bfc_system {
 
 
     const BFC_SYSTEM_STATE_VERSION_V1: u64 = 1;
+    const BFC_SYSTEM_STATE_VERSION_V2: u64 = 2;
 
     //spec module { pragma verify = false; }
 
@@ -176,27 +177,38 @@ module bfc_system::bfc_system {
 
     fun load_system_state(
         self: &BfcSystemState,
-    ): &BfcSystemStateInner {
-        dynamic_field::borrow(&self.id, self.version)
+    ): &BfcSystemStateInnerV2 {
+        load_bfc_system_state(&self.id)
     }
-    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInner {
-        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V1)
+    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInnerV2 {
+        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V2)
     }
-    public fun load_bfc_system_state_mut(id: &mut UID): &mut BfcSystemStateInner {
-        dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V1)
+    public fun load_bfc_system_state_mut(id: &mut UID): &mut BfcSystemStateInnerV2 {
+        dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V2)
     }
 
     fun load_system_state_mut(
         self: &mut BfcSystemState
-    ): &mut BfcSystemStateInner {
-        dynamic_field::borrow_mut(&mut self.id, self.version)
+    ): &mut BfcSystemStateInnerV2 {
+        load_inner_maybe_upgrade(self)
     }
 
-    fun load_system_state_mut_v2(
-        self: &mut BfcSystemState
-    ): &mut BfcSystemStateInnerV2 {
-        dynamic_field::borrow_mut(&mut self.id, self.version)
+    fun load_inner_maybe_upgrade(self: &mut BfcSystemState): &mut BfcSystemStateInnerV2 {
+        if (self.version == 1) {
+            let v1: BfcSystemStateInner = dynamic_field::remove(&mut self.id, self.version);
+            let v2 = v1.v1_to_v2();
+            self.version = 2;
+            dynamic_field::add(&mut self.id, self.version, v2);
+        };
+
+        let inner: &mut BfcSystemStateInnerV2 = dynamic_field::borrow_mut(
+            &mut self.id,
+            self.version
+        );
+        // assert!(inner.system_state_version() == self.version, EWrongInnerVersion);
+        inner
     }
+
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
@@ -357,8 +369,8 @@ module bfc_system::bfc_system {
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        let system_state = load_system_state_mut_v2(wrapper);
-        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(system_state, balance, receiver_address, ctx);
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, balance, receiver_address, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
