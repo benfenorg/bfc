@@ -76,10 +76,13 @@ module bfc_system::bfc_system_state_inner {
         stable_base_points: u64,
         reward_rate: u64,
         dao: Dao,
-        treasury: TreasuryV2,
+        treasury: Treasury,
         treasury_pool: TreasuryPool,
         stable_rate: VecMap<ascii::String, u64>,
 
+        stake_coins: Bag,
+        daily_out_limit: u64,
+        daily_use_out_limit: u64,
         /// Any extra fields that's not defined statically.
         extra_fields: Bag,
     }

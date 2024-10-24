@@ -74,23 +74,6 @@ module bfc_system::treasury {
         total_bfc_supply: u64,
     }
 
-    public struct TreasuryV2 has key, store {
-        id: UID,
-        bfc_balance: Balance<BFC>,
-        /// stable coin supplies
-        supplies: Bag,
-        /// Vault index
-        index: u64,
-        time_interval: u32,
-        updated_at: u64,
-        init: bool,
-        total_bfc_supply: u64,
-        /// stable coins
-        stable_coins: Bag,
-        /// Any extra fields that's not defined statically.
-        extra_fields: Bag,
-    }
-
     //spec module { pragma verify = false; }
 
     // call in bfc_system
