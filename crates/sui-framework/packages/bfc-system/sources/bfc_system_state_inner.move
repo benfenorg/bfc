@@ -57,6 +57,7 @@ module bfc_system::bfc_system_state_inner {
     /// Errors
     const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
+    const ERR_DAILY_LIMIT: u64 = 1002;
 
     //spec module { pragma verify = false; }
 
@@ -448,11 +449,14 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
-        balance: Coin<BUSD>,
+        busd_coin: Coin<BUSD>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
-        treasury::exchange_busd_to_stable<StableCoinType>(&mut system_state.treasury, balance, receiver_address, ctx);
+        let amount: u64 = busd_coin.value();
+        assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
+        treasury::exchange_busd_to_stable<StableCoinType>(&mut system_state.treasury, busd_coin, receiver_address, ctx);
+        system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {

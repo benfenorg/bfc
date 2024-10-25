@@ -55,7 +55,7 @@ module bfc_system::treasury {
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
-    const ERR_SWAP_STABLE_EXCEED: u64 = 106;
+    const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 106;
 
     public struct TreasuryPauseCap has key, store {
         id: UID
@@ -186,14 +186,16 @@ module bfc_system::treasury {
                                  busd_coin: Coin<BUSD>,
                                  receiver_address: address,
                                  ctx: &mut TxContext, ) {
-        // check num
         let amount: u64 = busd_coin.value();
         let key = get_vault_key<StableCoinType>();
+        let stable_sum = bag::borrow_mut<String, Coin<StableCoinType>>(&mut treasury.supplies, key);
+        let stable_back = coin::split(stable_sum, amount, ctx);
+        let stable_amount: u64 = stable_sum.value();
+        assert!(stable_amount >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
+
         let busd_sum = bag::borrow_mut<String, Coin<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
         coin::join(busd_sum, busd_coin);
-        let stable_sum = bag::borrow_mut<String, Coin<BUSD>>(&mut treasury.supplies, key);
-        let stable_back = coin::split(stable_sum, amount, ctx);
-        transfer::public_transfer(stable_back, receiver_address)
+        transfer::public_transfer(stable_back, receiver_address);
     }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
