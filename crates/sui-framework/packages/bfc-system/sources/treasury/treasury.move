@@ -182,20 +182,18 @@ module bfc_system::treasury {
         transfer::public_transfer(busd, receiver_address);
     }
 
-    public fun exchange_busd_to_stable<StableCoinType>(treasury: &mut TreasuryV2,
-                                 balance: Coin<BUSD>,
+    public fun exchange_busd_to_stable<StableCoinType>(treasury: &mut Treasury,
+                                 busd_coin: Coin<BUSD>,
                                  receiver_address: address,
                                  ctx: &mut TxContext, ) {
+        // check num
+        let amount: u64 = busd_coin.value();
         let key = get_vault_key<StableCoinType>();
-        let stable_coin = bag::borrow_mut<String, Coin<StableCoinType>>(&mut treasury.stable_coins, key);
-        let stable_num = balance::value(coin::balance<StableCoinType>(stable_coin));
-        let busd_num = balance::value(coin::balance<BUSD>(&balance));
-        assert!(stable_num < busd_num, ERR_SWAP_STABLE_EXCEED);
-
-        let busd_supply = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
-        balance::increase_supply(busd_supply, busd_num);
-        let usdc_new = coin::split(stable_coin, busd_num, ctx);
-        transfer::public_transfer(usdc_new, receiver_address)
+        let busd_sum = bag::borrow_mut<String, Coin<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
+        coin::join(busd_sum, busd_coin);
+        let stable_sum = bag::borrow_mut<String, Coin<BUSD>>(&mut treasury.supplies, key);
+        let stable_back = coin::split(stable_sum, amount, ctx);
+        transfer::public_transfer(stable_back, receiver_address)
     }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
