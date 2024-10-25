@@ -9,9 +9,8 @@ module sui_system::validator_set {
     use std::ascii;
     use sui_system::validator_cap::{Self, UnverifiedValidatorOperationCap, ValidatorOperationCap};
     use sui_system::stable_pool::{ PoolStableTokenExchangeRate, pool_id as stable_pool_id};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc, pool_id};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakingPool, StakedBfc, pool_id, FungibleStakedSui, fungible_staked_sui_pool_id};
     use sui_system::validator::rate_vec_map;
-    use sui_system::staking_pool::{PoolTokenExchangeRate, StakedSui, pool_id, FungibleStakedSui, fungible_staked_sui_pool_id};
     use sui::priority_queue as pq;
     use sui::vec_map::{Self, VecMap};
     use sui::vec_set::VecSet;
@@ -450,7 +449,7 @@ module sui_system::validator_set {
 
     public(package) fun convert_to_fungible_staked_sui(
         self: &mut ValidatorSet,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ) : FungibleStakedSui {
         let staking_pool_id = pool_id(&staked_sui);
@@ -471,7 +470,7 @@ module sui_system::validator_set {
         self: &mut ValidatorSet,
         fungible_staked_sui: FungibleStakedSui,
         ctx: &TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let staking_pool_id = fungible_staked_sui_pool_id(&fungible_staked_sui);
 
         let validator =

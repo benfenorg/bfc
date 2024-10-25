@@ -20,14 +20,10 @@ const ENotSystemAddress: u64 = 3;
 /// System operation performed for a coin other than SUI
 const ENotSUI: u64 = 4;
 
-    /// A Supply of T. Used for minting and burning.
-    /// Wrapped into a `TreasuryCap` in the `Coin` module.
-    public struct Supply<phantom T> has store, drop {
-        value: u64
-    }
+
 /// A Supply of T. Used for minting and burning.
 /// Wrapped into a `TreasuryCap` in the `Coin` module.
-public struct Supply<phantom T> has store {
+public struct Supply<phantom T> has store, drop {
     value: u64,
 }
 
@@ -144,35 +140,4 @@ public fun destroy_for_testing<T>(self: Balance<T>): u64 {
 /// Create a `Supply` of any coin for testing purposes.
 public fun create_supply_for_testing<T>(): Supply<T> {
     Supply { value: 0 }
-}
-
-#[test_only]
-module sui::balance_tests {
-    use sui::balance;
-    use sui::bfc::BFC;
-    use sui::test_utils;
-
-    #[test]
-    fun test_balance() {
-        let mut balance = balance::zero<BFC>();
-        let another = balance::create_for_testing(1000);
-
-        balance.join(another);
-
-        assert!(balance.value() == 1000);
-
-        let balance1 = balance.split(333);
-        let balance2 = balance.split(333);
-        let balance3 = balance.split(334);
-
-        balance.destroy_zero();
-
-        assert!(balance1.value() == 333);
-        assert!(balance2.value() == 333);
-        assert!(balance3.value() == 334);
-
-        test_utils::destroy(balance1);
-        test_utils::destroy(balance2);
-        test_utils::destroy(balance3);
-    }
 }

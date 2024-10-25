@@ -7,7 +7,7 @@ module sui::coin_balance_tests {
     use sui::pay;
     use sui::coin;
     use sui::balance;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui::test_utils;
 
     use sui::bfc::BFC;

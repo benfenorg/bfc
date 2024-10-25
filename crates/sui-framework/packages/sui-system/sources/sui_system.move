@@ -42,11 +42,8 @@ module sui_system::sui_system {
     use std::ascii;
     use sui::balance::Balance;
 
-    use sui::coin::Coin;
-    use sui_system::staking_pool::{StakedSui, FungibleStakedSui};
-    use sui::sui::SUI;
+    use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
     use sui::coin::{Self, Coin};
-    use sui_system::staking_pool::StakedBfc;
     use sui::bfc::BFC;
     use sui::table::Table;
     use sui_system::validator::Validator;
@@ -311,7 +308,7 @@ module sui_system::sui_system {
     /// Convert StakedSui into a FungibleStakedSui object.
     public fun convert_to_fungible_staked_sui(
         wrapper: &mut SuiSystemState,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ): FungibleStakedSui {
         let self = load_system_state_mut(wrapper);
@@ -323,7 +320,7 @@ module sui_system::sui_system {
         wrapper: &mut SuiSystemState,
         fungible_staked_sui: FungibleStakedSui,
         ctx: &TxContext,
-    ): Balance<SUI> {
+    ): Balance<BFC> {
         let self = load_system_state_mut(wrapper);
         self.redeem_fungible_staked_sui(fungible_staked_sui, ctx)
     }

@@ -3,10 +3,7 @@
 
 /// Coin<BFC> is the token used to pay for gas in Sui.
 /// It has 9 decimals, and the smallest unit (10^-9) is called "mist".
-module sui::bfc {
-    use sui::balance::{Self, Balance};
-    use sui::coin;
-module sui::sui;
+module sui::bfc;
 
 use sui::balance::Balance;
 use sui::coin;
@@ -29,15 +26,12 @@ const MIST_PER_SUI: u64 = 1_000_000_000;
 /// The total supply of Sui denominated in whole Sui tokens (10 Billion)
 const TOTAL_SUPPLY_SUI: u64 = 10_000_000_000;
 
-    /// The total supply of Sui denominated in Mist (10 Billion * 10^9)
-    const TOTAL_SUPPLY_MIST: u64 = 1_000_000_000_000_000_000;
 /// The total supply of Sui denominated in Mist (10 Billion * 10^9)
 const TOTAL_SUPPLY_MIST: u64 = 10_000_000_000_000_000_000;
 
     /// Name of the coin
     public struct BFC has drop {}
-/// Name of the coin
-public struct SUI has drop {}
+
 
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
@@ -45,12 +39,6 @@ public struct SUI has drop {}
     fun new(ctx: &mut TxContext): Balance<BFC> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
-#[allow(unused_function)]
-/// Register the `SUI` Coin to acquire its `Supply`.
-/// This should be called only once during genesis creation.
-fun new(ctx: &mut TxContext): Balance<SUI> {
-    assert!(ctx.sender() == @0x0, ENotSystemAddress);
-    assert!(ctx.epoch() == 0, EAlreadyMinted);
 
         let (treasury, metadata) = coin::create_currency(
             BFC{},
@@ -63,31 +51,13 @@ fun new(ctx: &mut TxContext): Balance<SUI> {
             ctx
         );
         transfer::public_freeze_object(metadata);
-        let mut supply = coin::treasury_into_supply(treasury);
-        let total_sui = balance::increase_supply(&mut supply, TOTAL_SUPPLY_MIST);
-        balance::destroy_supply(supply);
+        let mut supply = treasury.treasury_into_supply();
+        let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST);
+        supply.destroy_supply();
         total_sui
     }
-    let (treasury, metadata) = coin::create_currency(
-        SUI {},
-        9,
-        b"SUI",
-        b"Sui",
-        // TODO: add appropriate description and logo url
-        b"",
-        option::none(),
-        ctx,
-    );
-    transfer::public_freeze_object(metadata);
-    let mut supply = treasury.treasury_into_supply();
-    let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST);
-    supply.destroy_supply();
-    total_sui
-}
 
     public entry fun transfer(c: coin::Coin<BFC>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
-public entry fun transfer(c: coin::Coin<SUI>, recipient: address) {
-    transfer::public_transfer(c, recipient)
 }

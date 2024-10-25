@@ -5,18 +5,12 @@
 module sui_system::validator {
     use std::bcs;
 
-    use sui::balance::Balance;
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
     use sui_system::validator_cap::{Self, ValidatorOperationCap};
-    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, StakedSui, StakingPool, FungibleStakedSui};
+    use sui_system::staking_pool::{Self, PoolTokenExchangeRate, FungibleStakedSui,  StakingPool, StakedBfc};
     use std::string::String;
     use std::ascii;
-    use sui::bfc::BFC;
     use sui::balance::{Self, Balance};
-    use sui_system::validator_cap::{Self, ValidatorOperationCap};
-    use sui_system::staking_pool::{Self, StakingPool, StakedBfc};
-    use sui_system::staking_pool::PoolTokenExchangeRate;
-
     use std::type_name;
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -441,7 +435,7 @@ module sui_system::validator {
 
     public(package) fun convert_to_fungible_staked_sui(
         self: &mut Validator,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ) : FungibleStakedSui {
         let stake_activation_epoch = staked_sui.stake_activation_epoch();
@@ -465,7 +459,7 @@ module sui_system::validator {
         self: &mut Validator,
         fungible_staked_sui: FungibleStakedSui,
         ctx: &TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let fungible_staked_sui_amount = fungible_staked_sui.value();
 
         let sui = self.staking_pool.redeem_fungible_staked_sui(fungible_staked_sui, ctx);

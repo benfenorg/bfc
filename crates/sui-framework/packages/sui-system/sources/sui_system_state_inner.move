@@ -4,11 +4,9 @@
 module sui_system::sui_system_state_inner {
     use std::ascii;
     use sui::balance::{Self, Balance};
-    use sui::coin::Coin;
-    use sui_system::staking_pool::{StakedSui, FungibleStakedSui};
-    use sui::sui::SUI;
-    use sui::coin::{Self, Coin};
-    use sui_system::staking_pool::StakedBfc;
+    use sui::coin::{Self,Coin};
+
+    use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
     use sui::bfc::BFC;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self, ValidatorSet};
@@ -216,6 +214,7 @@ module sui_system::sui_system_state_inner {
     }
 
     // Errors
+    #[allow(unused_const)]
     const ENotValidator: u64 = 0;
     const ELimitExceeded: u64 = 1;
     #[allow(unused_const)]
@@ -552,7 +551,7 @@ module sui_system::sui_system_state_inner {
 
     public(package) fun convert_to_fungible_staked_sui(
         self: &mut SuiSystemStateInnerV2,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext,
     ) : FungibleStakedSui {
         self.validators.convert_to_fungible_staked_sui(staked_sui, ctx)
@@ -562,18 +561,9 @@ module sui_system::sui_system_state_inner {
         self: &mut SuiSystemStateInnerV2,
         fungible_staked_sui: FungibleStakedSui,
         ctx: &TxContext,
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         self.validators.redeem_fungible_staked_sui(fungible_staked_sui, ctx)
     }
-
-    /// Report a validator as a bad or non-performant actor in the system.
-    /// Succeeds if all the following are satisfied:
-    /// 1. both the reporter in `cap` and the input `reportee_addr` are active validators.
-    /// 2. reporter and reportee not the same address.
-    /// 3. the cap object is still valid.
-    /// This function is idempotent.
-    public(package) fun report_validator(
-        self: &mut SuiSystemStateInnerV2,
 
         public(package) fun request_withdraw_stable_stake<STABLE>(
             self: &mut SuiSystemStateInnerV2, staked_sui: StakedStable<STABLE>, ctx: &mut TxContext,

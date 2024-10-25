@@ -26,11 +26,9 @@ public use fun uid_to_address as UID.to_address;
 public use fun uid_to_bytes as UID.to_bytes;
 
     /// The hardcoded ID for the singleton Sui System State Object.
-    const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
-
-    const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
-/// The hardcoded ID for the singleton Sui System State Object.
 const SUI_SYSTEM_STATE_OBJECT_ID: address = @0x5;
+
+const BFC_SYSTEM_STATE_OBJECT_ID: address = @0xC9;
 
 /// The hardcoded ID for the singleton Clock Object.
 const SUI_CLOCK_OBJECT_ID: address = @0x6;
@@ -103,11 +101,6 @@ public fun id_to_address(id: &ID): address {
         }
     }
 
-
-    /// Make an `ID` from raw bytes.
-    public fun id_from_bytes(bytes: vector<u8>): ID {
-        address::from_bytes(bytes).to_id()
-    }
 /// Make an `ID` from raw bytes.
 public fun id_from_bytes(bytes: vector<u8>): ID {
     address::from_bytes(bytes).to_id()

@@ -100,7 +100,7 @@ module sui_system::staking_pool {
         /// fungible_staked_sui supply
         total_supply: u64,
         /// principal balance. Rewards are withdrawn from the reward pool
-        principal: Balance<SUI>,
+        principal: Balance<BFC>,
     }
 
     // === dynamic field keys ===
@@ -189,7 +189,7 @@ module sui_system::staking_pool {
         pool: &mut StakingPool,
         fungible_staked_sui: FungibleStakedSui,
         ctx: &TxContext
-    ) : Balance<SUI> {
+    ) : Balance<BFC> {
         let FungibleStakedSui { id, pool_id, value } = fungible_staked_sui;
         assert!(pool_id == object::id(pool), EWrongPool);
 
@@ -261,10 +261,10 @@ module sui_system::staking_pool {
     /// Convert the given staked SUI to an FungibleStakedSui object
     public(package) fun convert_to_fungible_staked_sui(
         pool: &mut StakingPool,
-        staked_sui: StakedSui,
+        staked_sui: StakedBfc,
         ctx: &mut TxContext
     ) : FungibleStakedSui {
-        let StakedSui { id, pool_id, stake_activation_epoch, principal } = staked_sui;
+        let StakedBfc { id, pool_id, stake_activation_epoch, principal } = staked_sui;
 
         assert!(pool_id == object::id(pool), EWrongPool);
         assert!(
@@ -453,7 +453,6 @@ module sui_system::staking_pool {
     public use fun fungible_staked_sui_pool_id as FungibleStakedSui.pool_id;
     public fun fungible_staked_sui_pool_id(fungible_staked_sui: &FungibleStakedSui): ID { fungible_staked_sui.pool_id }
 
-    public fun staked_sui_amount(staked_sui: &StakedSui): u64 { staked_sui.principal.value() }
     public fun staked_sui_amount(staked_sui: &StakedBfc): u64 {  staked_sui.principal.value() }
 
     /// Allows calling `.amount()` on `StakedSui` to invoke `staked_sui_amount`

@@ -74,15 +74,36 @@ Sender is not @0x0 the system address.
 
 
 
-<a name="0x2_bfc_TOTAL_SUPPLY_MIST"></a>
+<a name="0x2_bfc_MIST_PER_SUI"></a>
 
 The amount of Mist per Sui token based on the the fact that mist is
 10^-9 of a Sui token
-The total supply of Sui denominated in whole Sui tokens (10 Billion)
+The amount of Mist per Sui token based on the fact that mist is
+10^-9 of a Sui token
+
+
+<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_MIST_PER_SUI">MIST_PER_SUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1000000000;
+</code></pre>
+
+
+
+<a name="0x2_bfc_TOTAL_SUPPLY_MIST"></a>
+
 The total supply of Sui denominated in Mist (10 Billion * 10^9)
 
 
-<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1000000000000000000;
+<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 10000000000000000000;
+</code></pre>
+
+
+
+<a name="0x2_bfc_TOTAL_SUPPLY_SUI"></a>
+
+The total supply of Sui denominated in whole Sui tokens (10 Billion)
+The total supply of Sui denominated in whole Sui tokens (10 Billion)
+
+
+<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_SUI">TOTAL_SUPPLY_SUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 10000000000;
 </code></pre>
 
 
@@ -116,12 +137,12 @@ This should be called only once during genesis creation.
         // TODO: add appropriate description and logo <a href="../sui-framework/url.md#0x2_url">url</a>
         b"",
         <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
-        ctx,
+        ctx
     );
     <a href="../sui-framework/transfer.md#0x2_transfer_public_freeze_object">transfer::public_freeze_object</a>(metadata);
-    <b>let</b> <b>mut</b> supply = <a href="../sui-framework/coin.md#0x2_coin_treasury_into_supply">coin::treasury_into_supply</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
-    <b>let</b> total_sui = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(&<b>mut</b> supply, <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>);
-    <a href="../sui-framework/balance.md#0x2_balance_destroy_supply">balance::destroy_supply</a>(supply);
+    <b>let</b> <b>mut</b> supply = <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.treasury_into_supply();
+    <b>let</b> total_sui = supply.increase_supply(<a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>);
+    supply.destroy_supply();
     total_sui
 }
 </code></pre>

@@ -304,7 +304,7 @@ module sui_system::staking_pool_tests {
     ): u64 {
         use sui::tx_context::{epoch};
         use sui::coin::{Self};
-        use sui::sui::SUI;
+        use sui::bfc::BFC;
 
         let rewards = coin::mint_for_testing<SUI>(reward_amount, scenario.ctx());
         staking_pool.deposit_rewards(coin::into_balance(rewards));

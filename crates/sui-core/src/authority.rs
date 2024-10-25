@@ -4790,7 +4790,7 @@ impl AuthorityState {
     }
 
     fn bfc_get_next_avail_protocol_version(&self, current_version: u64) -> u64 {
-        if current_version == 24 {
+        if current_version == 25 {
             return 44;
         }
         return current_version + 1;
@@ -5795,13 +5795,5 @@ impl NodeStateDump {
     pub fn read_from_file(path: &PathBuf) -> Result<Self, anyhow::Error> {
         let file = File::open(path)?;
         serde_json::from_reader(file).map_err(|e| anyhow::anyhow!(e))
-    }
-
-    fn bfc_get_next_avail_protocol_version(current_version: u64) -> u64 {
-        if current_version == 25 {
-            //bfc protocol version start at 23, 24, 44,
-            return 44;
-        }
-        return current_version + 1;
     }
 }

@@ -70,7 +70,7 @@
 /// object so they don't have to pay anything
 /// - I create and wrap a `TransferPolicy` so that players of my game can
 /// transfer items between `Kiosk`s in game without any charge (and maybe not
-/// even paying the price with a 0 SUI PurchaseCap)
+/// even paying the price with a 0 BFC PurchaseCap)
 ///
 /// ```
 /// Kiosk -> (Item, TransferRequest)
@@ -80,109 +80,106 @@
 /// ```
 ///
 /// See `transfer_policy` module for more details on how they function.
-module sui::kiosk {
-    use sui::dynamic_object_field as dof;
-    use sui::dynamic_field as df;
-    use sui::transfer_policy::{
-        Self,
-        TransferPolicy,
-        TransferRequest
-    };
-    use sui::balance::{Self, Balance};
-    use sui::coin::{Self, Coin};
-    use sui::bfc::BFC;
-    use sui::event;
+module sui::kiosk;
 
-    /// Allows calling `cap.kiosk()` to retrieve `for` field from `KioskOwnerCap`.
-    public use fun kiosk_owner_cap_for as KioskOwnerCap.kiosk;
+use sui::balance::{Self, Balance};
+use sui::coin::{Self, Coin};
+use sui::dynamic_field as df;
+use sui::dynamic_object_field as dof;
+use sui::event;
+use sui::bfc::BFC;
+use sui::transfer_policy::{Self, TransferPolicy, TransferRequest};
 
-    // Gets access to:
-    // - `place_internal`
-    // - `lock_internal`
-    // - `uid_mut_internal`
+/// Allows calling `cap.kiosk()` to retrieve `for` field from `KioskOwnerCap`.
+public use fun kiosk_owner_cap_for as KioskOwnerCap.kiosk;
 
-    /// Trying to withdraw profits and sender is not owner.
-    const ENotOwner: u64 = 0;
-    /// Coin paid does not match the offer price.
-    const EIncorrectAmount: u64 = 1;
-    /// Trying to withdraw higher amount than stored.
-    const ENotEnough: u64 = 2;
-    /// Trying to close a Kiosk and it has items in it.
-    const ENotEmpty: u64 = 3;
-    /// Attempt to take an item that has a `PurchaseCap` issued.
-    const EListedExclusively: u64 = 4;
-    /// `PurchaseCap` does not match the `Kiosk`.
-    const EWrongKiosk: u64 = 5;
-    /// Trying to exclusively list an already listed item.
-    const EAlreadyListed: u64 = 6;
-    /// Trying to call `uid_mut` when `allow_extensions` set to false.
-    const EUidAccessNotAllowed: u64 = 7;
-    /// Attempt to `take` an item that is locked.
-    const EItemLocked: u64 = 8;
-    /// Taking or mutably borrowing an item that is listed.
-    const EItemIsListed: u64 = 9;
-    /// Item does not match `Borrow` in `return_val`.
-    const EItemMismatch: u64 = 10;
-    /// An is not found while trying to borrow.
-    const EItemNotFound: u64 = 11;
-    /// Delisting an item that is not listed.
-    const ENotListed: u64 = 12;
+// Gets access to:
+// - `place_internal`
+// - `lock_internal`
+// - `uid_mut_internal`
 
-    /// An object which allows selling collectibles within "kiosk" ecosystem.
-    /// By default gives the functionality to list an item openly - for anyone
-    /// to purchase providing the guarantees for creators that every transfer
-    /// needs to be approved via the `TransferPolicy`.
-    public struct Kiosk has key, store {
-        id: UID,
-        /// Balance of the Kiosk - all profits from sales go here.
-        profits: Balance<BFC>,
-        /// Always point to `sender` of the transaction.
-        /// Can be changed by calling `set_owner` with Cap.
-        owner: address,
-        /// Number of items stored in a Kiosk. Used to allow unpacking
-        /// an empty Kiosk if it was wrapped or has a single owner.
-        item_count: u32,
-        /// [DEPRECATED] Please, don't use the `allow_extensions` and the matching
-        /// `set_allow_extensions` function - it is a legacy feature that is being
-        /// replaced by the `kiosk_extension` module and its Extensions API.
-        ///
-        /// Exposes `uid_mut` publicly when set to `true`, set to `false` by default.
-        allow_extensions: bool
-    }
+/// Trying to withdraw profits and sender is not owner.
+const ENotOwner: u64 = 0;
+/// Coin paid does not match the offer price.
+const EIncorrectAmount: u64 = 1;
+/// Trying to withdraw higher amount than stored.
+const ENotEnough: u64 = 2;
+/// Trying to close a Kiosk and it has items in it.
+const ENotEmpty: u64 = 3;
+/// Attempt to take an item that has a `PurchaseCap` issued.
+const EListedExclusively: u64 = 4;
+/// `PurchaseCap` does not match the `Kiosk`.
+const EWrongKiosk: u64 = 5;
+/// Trying to exclusively list an already listed item.
+const EAlreadyListed: u64 = 6;
+/// Trying to call `uid_mut` when `allow_extensions` set to false.
+const EUidAccessNotAllowed: u64 = 7;
+/// Attempt to `take` an item that is locked.
+const EItemLocked: u64 = 8;
+/// Taking or mutably borrowing an item that is listed.
+const EItemIsListed: u64 = 9;
+/// Item does not match `Borrow` in `return_val`.
+const EItemMismatch: u64 = 10;
+/// An is not found while trying to borrow.
+const EItemNotFound: u64 = 11;
+/// Delisting an item that is not listed.
+const ENotListed: u64 = 12;
 
-    /// A Capability granting the bearer a right to `place` and `take` items
-    /// from the `Kiosk` as well as to `list` them and `list_with_purchase_cap`.
-    public struct KioskOwnerCap has key, store {
-        id: UID,
-        `for`: ID
-    }
-
-    /// A capability which locks an item and gives a permission to
-    /// purchase it from a `Kiosk` for any price no less than `min_price`.
+/// An object which allows selling collectibles within "kiosk" ecosystem.
+/// By default gives the functionality to list an item openly - for anyone
+/// to purchase providing the guarantees for creators that every transfer
+/// needs to be approved via the `TransferPolicy`.
+public struct Kiosk has key, store {
+    id: UID,
+    /// Balance of the Kiosk - all profits from sales go here.
+    profits: Balance<BFC>,
+    /// Always point to `sender` of the transaction.
+    /// Can be changed by calling `set_owner` with Cap.
+    owner: address,
+    /// Number of items stored in a Kiosk. Used to allow unpacking
+    /// an empty Kiosk if it was wrapped or has a single owner.
+    item_count: u32,
+    /// [DEPRECATED] Please, don't use the `allow_extensions` and the matching
+    /// `set_allow_extensions` function - it is a legacy feature that is being
+    /// replaced by the `kiosk_extension` module and its Extensions API.
     ///
-    /// Allows exclusive listing: only bearer of the `PurchaseCap` can
-    /// purchase the asset. However, the capability should be used
-    /// carefully as losing it would lock the asset in the `Kiosk`.
-    ///
-    /// The main application for the `PurchaseCap` is building extensions
-    /// on top of the `Kiosk`.
-    public struct PurchaseCap<phantom T: key + store> has key, store {
-        id: UID,
-        /// ID of the `Kiosk` the cap belongs to.
-        kiosk_id: ID,
-        /// ID of the listed item.
-        item_id: ID,
-        /// Minimum price for which the item can be purchased.
-        min_price: u64
-    }
+    /// Exposes `uid_mut` publicly when set to `true`, set to `false` by default.
+    allow_extensions: bool,
+}
 
-    // === Utilities ===
+/// A Capability granting the bearer a right to `place` and `take` items
+/// from the `Kiosk` as well as to `list` them and `list_with_purchase_cap`.
+public struct KioskOwnerCap has key, store {
+    id: UID,
+    `for`: ID,
+}
 
-    /// Hot potato to ensure an item was returned after being taken using
-    /// the `borrow_val` call.
-    public struct Borrow { kiosk_id: ID, item_id: ID }
+/// A capability which locks an item and gives a permission to
+/// purchase it from a `Kiosk` for any price no less than `min_price`.
+///
+/// Allows exclusive listing: only bearer of the `PurchaseCap` can
+/// purchase the asset. However, the capability should be used
+/// carefully as losing it would lock the asset in the `Kiosk`.
+///
+/// The main application for the `PurchaseCap` is building extensions
+/// on top of the `Kiosk`.
+public struct PurchaseCap<phantom T: key + store> has key, store {
+    id: UID,
+    /// ID of the `Kiosk` the cap belongs to.
+    kiosk_id: ID,
+    /// ID of the listed item.
+    item_id: ID,
+    /// Minimum price for which the item can be purchased.
+    min_price: u64,
+}
 
-    // === Dynamic Field keys ===
+// === Utilities ===
+
+/// Hot potato to ensure an item was returned after being taken using
+/// the `borrow_val` call.
+public struct Borrow { kiosk_id: ID, item_id: ID }
+
+// === Dynamic Field keys ===
 
 /// Dynamic field key for an item placed into the kiosk.
 public struct Item has store, copy, drop { id: ID }
@@ -258,18 +255,10 @@ public fun new(ctx: &mut TxContext): (Kiosk, KioskOwnerCap) {
     (kiosk, cap)
 }
 
-    /// Unpacks and destroys a Kiosk returning the profits (even if "0").
-    /// Can only be performed by the bearer of the `KioskOwnerCap` in the
-    /// case where there's no items inside and a `Kiosk` is not shared.
-    public fun close_and_withdraw(
-        self: Kiosk, cap: KioskOwnerCap, ctx: &mut TxContext
-    ): Coin<BFC> {
-        let Kiosk { id, profits, owner: _, item_count, allow_extensions: _ } = self;
-        let KioskOwnerCap { id: cap_id, `for` } = cap;
 /// Unpacks and destroys a Kiosk returning the profits (even if "0").
 /// Can only be performed by the bearer of the `KioskOwnerCap` in the
 /// case where there's no items inside and a `Kiosk` is not shared.
-public fun close_and_withdraw(self: Kiosk, cap: KioskOwnerCap, ctx: &mut TxContext): Coin<SUI> {
+public fun close_and_withdraw(self: Kiosk, cap: KioskOwnerCap, ctx: &mut TxContext): Coin<BFC> {
     let Kiosk { id, profits, owner: _, item_count, allow_extensions: _ } = self;
     let KioskOwnerCap { id: cap_id, `for` } = cap;
 
@@ -373,18 +362,6 @@ public fun delist<T: key + store>(self: &mut Kiosk, cap: &KioskOwnerCap, id: ID)
     event::emit(ItemDelisted<T> { kiosk: object::id(self), id })
 }
 
-    /// Make a trade: pay the owner of the item and request a Transfer to the `target`
-    /// kiosk (to prevent item being taken by the approving party).
-    ///
-    /// Received `TransferRequest` needs to be handled by the publisher of the T,
-    /// if they have a method implemented that allows a trade, it is possible to
-    /// request their approval (by calling some function) so that the trade can be
-    /// finalized.
-    public fun purchase<T: key + store>(
-        self: &mut Kiosk, id: ID, payment: Coin<BFC>
-    ): (T, TransferRequest<T>) {
-        let price = df::remove<Listing, u64>(&mut self.id, Listing { id, is_exclusive: false });
-        let inner = dof::remove<Item, T>(&mut self.id, Item { id });
 /// Make a trade: pay the owner of the item and request a Transfer to the `target`
 /// kiosk (to prevent item being taken by the approving party).
 ///
@@ -395,7 +372,7 @@ public fun delist<T: key + store>(self: &mut Kiosk, cap: &KioskOwnerCap, id: ID)
 public fun purchase<T: key + store>(
     self: &mut Kiosk,
     id: ID,
-    payment: Coin<SUI>,
+    payment: Coin<BFC>,
 ): (T, TransferRequest<T>) {
     let price = df::remove<Listing, u64>(&mut self.id, Listing { id, is_exclusive: false });
     let inner = dof::remove<Item, T>(&mut self.id, Item { id });
@@ -435,19 +412,12 @@ public fun list_with_purchase_cap<T: key + store>(
     }
 }
 
-    /// Unpack the `PurchaseCap` and call `purchase`. Sets the payment amount
-    /// as the price for the listing making sure it's no less than `min_amount`.
-    public fun purchase_with_cap<T: key + store>(
-        self: &mut Kiosk, purchase_cap: PurchaseCap<T>, payment: Coin<BFC>
-    ): (T, TransferRequest<T>) {
-        let PurchaseCap { id, item_id, kiosk_id, min_price } = purchase_cap;
-        id.delete();
 /// Unpack the `PurchaseCap` and call `purchase`. Sets the payment amount
 /// as the price for the listing making sure it's no less than `min_amount`.
 public fun purchase_with_cap<T: key + store>(
     self: &mut Kiosk,
     purchase_cap: PurchaseCap<T>,
-    payment: Coin<SUI>,
+    payment: Coin<BFC>,
 ): (T, TransferRequest<T>) {
     let PurchaseCap { id, item_id, kiosk_id, min_price } = purchase_cap;
     id.delete();
@@ -477,18 +447,13 @@ public fun return_purchase_cap<T: key + store>(self: &mut Kiosk, purchase_cap: P
     id.delete()
 }
 
-    /// Withdraw profits from the Kiosk.
-    public fun withdraw(
-        self: &mut Kiosk, cap: &KioskOwnerCap, amount: Option<u64>, ctx: &mut TxContext
-    ): Coin<BFC> {
-        assert!(self.has_access(cap), ENotOwner);
 /// Withdraw profits from the Kiosk.
 public fun withdraw(
     self: &mut Kiosk,
     cap: &KioskOwnerCap,
     amount: Option<u64>,
     ctx: &mut TxContext,
-): Coin<SUI> {
+): Coin<BFC> {
     assert!(self.has_access(cap), ENotOwner);
 
     let amount = if (amount.is_some()) {
@@ -562,129 +527,115 @@ public fun uid_mut_as_owner(self: &mut Kiosk, cap: &KioskOwnerCap): &mut UID {
     &mut self.id
 }
 
-    /// [DEPRECATED]
-    /// Allow or disallow `uid` and `uid_mut` access via the `allow_extensions`
-    /// setting.
-    public fun set_allow_extensions(
-        self: &mut Kiosk, cap: &KioskOwnerCap, allow_extensions: bool
-    ) {
-        assert!(self.has_access(cap), ENotOwner);
-        self.allow_extensions = allow_extensions;
-    }
+/// [DEPRECATED]
+/// Allow or disallow `uid` and `uid_mut` access via the `allow_extensions`
+/// setting.
+public fun set_allow_extensions(self: &mut Kiosk, cap: &KioskOwnerCap, allow_extensions: bool) {
+    assert!(self.has_access(cap), ENotOwner);
+    self.allow_extensions = allow_extensions;
+}
 
-    /// Get the immutable `UID` for dynamic field access.
-    /// Always enabled.
-    ///
-    /// Given the &UID can be used for reading keys and authorization,
-    /// its access
-    public fun uid(self: &Kiosk): &UID {
-        &self.id
-    }
+/// Get the immutable `UID` for dynamic field access.
+/// Always enabled.
+///
+/// Given the &UID can be used for reading keys and authorization,
+/// its access
+public fun uid(self: &Kiosk): &UID {
+    &self.id
+}
 
-    /// Get the mutable `UID` for dynamic field access and extensions.
-    /// Aborts if `allow_extensions` set to `false`.
-    public fun uid_mut(self: &mut Kiosk): &mut UID {
-        assert!(self.allow_extensions, EUidAccessNotAllowed);
-        &mut self.id
-    }
+/// Get the mutable `UID` for dynamic field access and extensions.
+/// Aborts if `allow_extensions` set to `false`.
+public fun uid_mut(self: &mut Kiosk): &mut UID {
+    assert!(self.allow_extensions, EUidAccessNotAllowed);
+    &mut self.id
+}
 
-    /// Get the owner of the Kiosk.
-    public fun owner(self: &Kiosk): address {
-        self.owner
-    }
+/// Get the owner of the Kiosk.
+public fun owner(self: &Kiosk): address {
+    self.owner
+}
 
-    /// Get the number of items stored in a Kiosk.
-    public fun item_count(self: &Kiosk): u32 {
-        self.item_count
-    }
+/// Get the number of items stored in a Kiosk.
+public fun item_count(self: &Kiosk): u32 {
+    self.item_count
+}
 
-    /// Get the amount of profits collected by selling items.
-    public fun profits_amount(self: &Kiosk): u64 {
-        self.profits.value()
-    }
+/// Get the amount of profits collected by selling items.
+public fun profits_amount(self: &Kiosk): u64 {
+    self.profits.value()
+}
 
-    /// Get mutable access to `profits` - owner only action.
-    public fun profits_mut(self: &mut Kiosk, cap: &KioskOwnerCap): &mut Balance<BFC> {
-        assert!(self.has_access(cap), ENotOwner);
-        &mut self.profits
-    }
+/// Get mutable access to `profits` - owner only action.
+public fun profits_mut(self: &mut Kiosk, cap: &KioskOwnerCap): &mut Balance<BFC> {
+    assert!(self.has_access(cap), ENotOwner);
+    &mut self.profits
+}
 
-    // === Item borrowing ===
+// === Item borrowing ===
 
-    #[syntax(index)]
-    /// Immutably borrow an item from the `Kiosk`. Any item can be `borrow`ed
-    /// at any time.
-    public fun borrow<T: key + store>(
-        self: &Kiosk, cap: &KioskOwnerCap, id: ID
-    ): &T {
-        assert!(object::id(self) == cap.`for`, ENotOwner);
-        assert!(self.has_item(id), EItemNotFound);
+#[syntax(index)]
+/// Immutably borrow an item from the `Kiosk`. Any item can be `borrow`ed
+/// at any time.
+public fun borrow<T: key + store>(self: &Kiosk, cap: &KioskOwnerCap, id: ID): &T {
+    assert!(object::id(self) == cap.`for`, ENotOwner);
+    assert!(self.has_item(id), EItemNotFound);
 
-        dof::borrow(&self.id, Item { id })
-    }
+    dof::borrow(&self.id, Item { id })
+}
 
-    #[syntax(index)]
-    /// Mutably borrow an item from the `Kiosk`.
-    /// Item can be `borrow_mut`ed only if it's not `is_listed`.
-    public fun borrow_mut<T: key + store>(
-        self: &mut Kiosk, cap: &KioskOwnerCap, id: ID
-    ): &mut T {
-        assert!(self.has_access(cap), ENotOwner);
-        assert!(self.has_item(id), EItemNotFound);
-        assert!(!self.is_listed(id), EItemIsListed);
+#[syntax(index)]
+/// Mutably borrow an item from the `Kiosk`.
+/// Item can be `borrow_mut`ed only if it's not `is_listed`.
+public fun borrow_mut<T: key + store>(self: &mut Kiosk, cap: &KioskOwnerCap, id: ID): &mut T {
+    assert!(self.has_access(cap), ENotOwner);
+    assert!(self.has_item(id), EItemNotFound);
+    assert!(!self.is_listed(id), EItemIsListed);
 
-        dof::borrow_mut(&mut self.id, Item { id })
-    }
+    dof::borrow_mut(&mut self.id, Item { id })
+}
 
-    /// Take the item from the `Kiosk` with a guarantee that it will be returned.
-    /// Item can be `borrow_val`-ed only if it's not `is_listed`.
-    public fun borrow_val<T: key + store>(
-        self: &mut Kiosk, cap: &KioskOwnerCap, id: ID
-    ): (T, Borrow) {
-        assert!(self.has_access(cap), ENotOwner);
-        assert!(self.has_item(id), EItemNotFound);
-        assert!(!self.is_listed(id), EItemIsListed);
+/// Take the item from the `Kiosk` with a guarantee that it will be returned.
+/// Item can be `borrow_val`-ed only if it's not `is_listed`.
+public fun borrow_val<T: key + store>(self: &mut Kiosk, cap: &KioskOwnerCap, id: ID): (T, Borrow) {
+    assert!(self.has_access(cap), ENotOwner);
+    assert!(self.has_item(id), EItemNotFound);
+    assert!(!self.is_listed(id), EItemIsListed);
 
-        (
-            dof::remove(&mut self.id, Item { id }),
-            Borrow { kiosk_id: object::id(self), item_id: id }
-        )
-    }
+    (dof::remove(&mut self.id, Item { id }), Borrow { kiosk_id: object::id(self), item_id: id })
+}
 
-    /// Return the borrowed item to the `Kiosk`. This method cannot be avoided
-    /// if `borrow_val` is used.
-    public fun return_val<T: key + store>(
-        self: &mut Kiosk, item: T, borrow: Borrow
-    ) {
-        let Borrow { kiosk_id, item_id } = borrow;
+/// Return the borrowed item to the `Kiosk`. This method cannot be avoided
+/// if `borrow_val` is used.
+public fun return_val<T: key + store>(self: &mut Kiosk, item: T, borrow: Borrow) {
+    let Borrow { kiosk_id, item_id } = borrow;
 
-        assert!(object::id(self) == kiosk_id, EWrongKiosk);
-        assert!(object::id(&item) == item_id, EItemMismatch);
+    assert!(object::id(self) == kiosk_id, EWrongKiosk);
+    assert!(object::id(&item) == item_id, EItemMismatch);
 
-        dof::add(&mut self.id, Item { id: item_id }, item);
-    }
+    dof::add(&mut self.id, Item { id: item_id }, item);
+}
 
-    // === KioskOwnerCap fields access ===
+// === KioskOwnerCap fields access ===
 
-    /// Get the `for` field of the `KioskOwnerCap`.
-    public fun kiosk_owner_cap_for(cap: &KioskOwnerCap): ID {
-        cap.`for`
-    }
+/// Get the `for` field of the `KioskOwnerCap`.
+public fun kiosk_owner_cap_for(cap: &KioskOwnerCap): ID {
+    cap.`for`
+}
 
-    // === PurchaseCap fields access ===
+// === PurchaseCap fields access ===
 
-    /// Get the `kiosk_id` from the `PurchaseCap`.
-    public fun purchase_cap_kiosk<T: key + store>(self: &PurchaseCap<T>): ID {
-        self.kiosk_id
-    }
+/// Get the `kiosk_id` from the `PurchaseCap`.
+public fun purchase_cap_kiosk<T: key + store>(self: &PurchaseCap<T>): ID {
+    self.kiosk_id
+}
 
-    /// Get the `Item_id` from the `PurchaseCap`.
-    public fun purchase_cap_item<T: key + store>(self: &PurchaseCap<T>): ID {
-        self.item_id
-    }
+/// Get the `Item_id` from the `PurchaseCap`.
+public fun purchase_cap_item<T: key + store>(self: &PurchaseCap<T>): ID {
+    self.item_id
+}
 
-    /// Get the `min_price` from the `PurchaseCap`.
-    public fun purchase_cap_min_price<T: key + store>(self: &PurchaseCap<T>): u64 {
-        self.min_price
-    }
+/// Get the `min_price` from the `PurchaseCap`.
+public fun purchase_cap_min_price<T: key + store>(self: &PurchaseCap<T>): u64 {
+    self.min_price
 }
