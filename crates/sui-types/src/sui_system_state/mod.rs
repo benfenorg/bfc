@@ -8,7 +8,7 @@ use crate::dynamic_field::{
 };
 use crate::collection_types::VecMap;
 use crate::proposal::ProposalStatus;
-use crate::bfc_system_state::{BfcSystemStateInnerV1,get_bfc_system_state_wrapper};
+use crate::bfc_system_state::{BfcSystemStateInnerV1, get_bfc_system_state_wrapper, BfcSystemStateInnerV2};
 use crate::error::SuiError;
 use crate::object::{MoveObject, Object};
 use crate::storage::ObjectStore;
@@ -85,6 +85,19 @@ impl SuiSystemStateWrapper {
         match wrapper.version {
             1 => {
                 let result: BfcSystemStateInnerV1 =
+                    get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                        |err| {
+                            SuiError::DynamicFieldReadError(format!(
+                                "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                                id, wrapper.version, err
+                            ))
+                        },
+                    )?;
+
+                Ok(result.dao.current_proposal_status)
+            }
+            2 => {
+                let result: BfcSystemStateInnerV2 =
                     get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                         |err| {
                             SuiError::DynamicFieldReadError(format!(
@@ -257,6 +270,19 @@ pub fn get_bfc_system_proposal_map(object_store: &dyn ObjectStore) -> Result<Vec
     match wrapper.version {
         1 => {
             let result: BfcSystemStateInnerV1 =
+                get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                    |err| {
+                        SuiError::DynamicFieldReadError(format!(
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                            id, wrapper.version, err
+                        ))
+                    },
+                )?;
+
+            Ok(result.dao.current_proposal_status)
+        }
+        2 => {
+            let result: BfcSystemStateInnerV2 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(

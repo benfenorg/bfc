@@ -277,7 +277,7 @@ impl GovernanceReadApiServer for GovernanceReadApi {
         with_tracing!(async move {
             let bfc_state = self.state.get_bfc_system_state()?;
             let mut temp_map = HashMap::<String, u64>::new();
-            for entity in &bfc_state.inner_state().rate_map.contents {
+            for entity in &bfc_state.get_rate_map().contents {
                 temp_map.insert((*entity.key).to_string(), entity.value);
             };
            // Correctly handle the case where the tag is not found in temp_map

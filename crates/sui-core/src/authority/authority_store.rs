@@ -1704,13 +1704,12 @@ impl AuthorityStore {
         }
 
         let bfc_system_state = self.get_bfc_system_state_object()?;
-        let inner_state =bfc_system_state.inner_state();
-        let rate_map: HashMap<String, u64> = inner_state.rate_map.contents
+        let rate_map: HashMap<String, u64> = bfc_system_state.get_rate_map().contents
             .iter()
             .map(|entity| ((*entity.key).to_string(), entity.value))
             .collect();
 
-        let base_points = inner_state.clone().stable_base_points;
+        let base_points = bfc_system_state.get_base_points();
 
 
         //info!("rate_map size:{:?}",rate_map.len());

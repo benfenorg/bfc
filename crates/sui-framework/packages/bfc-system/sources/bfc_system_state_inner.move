@@ -2,6 +2,7 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use sui::bag;
     use sui::bag::Bag;
     use bfc_system::usdt::USDT;
     use bfc_system::usdc::USDC;
@@ -655,4 +656,37 @@ module bfc_system::bfc_system_state_inner {
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
+
+    public(package) fun v1_to_v2(self: BfcSystemStateInner): BfcSystemStateInnerV2 {
+        let BfcSystemStateInner {
+            round,
+            stable_base_points,
+            reward_rate,
+            dao,
+            treasury,
+            treasury_pool,
+            stable_rate,
+        } = self;
+        BfcSystemStateInnerV2 {
+            round,
+            stable_base_points,
+            reward_rate,
+            dao,
+            treasury,
+            treasury_pool,
+            stable_rate,
+
+            daily_out_limit : 40000_000_000_000u64,
+
+        }
+    }
+
+    public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
+        self.daily_out_limit
+    }
+
+    public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
+        self.daily_out_limit = new_limit;
+    }
+
 }

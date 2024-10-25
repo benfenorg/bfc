@@ -14,7 +14,7 @@ use tracing::{info, warn};
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
 //const MAX_PROTOCOL_VERSION: u64 = 23;
-const MAX_PROTOCOL_VERSION: u64 = 44;
+const MAX_PROTOCOL_VERSION: u64 = 45;
 
 // Record history of protocol version allocations here:
 //
@@ -2145,6 +2145,9 @@ impl ProtocolConfig {
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.consensus_choice = ConsensusChoice::SwapEachEpoch;
                     }
+                },
+                45 => {
+
                 }
                 // Use this template when making changes:
                 //

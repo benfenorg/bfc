@@ -134,19 +134,75 @@ pub struct BfcSystemStateInnerV1 {
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct BfcSystemStateInnerV2 {
+    pub round: u64, //abandon value, stop change the round value from bfc_v1.20
+    pub stable_base_points: u64,
+    pub reward_rate: u64,
+    pub dao: Dao,
+    pub treasury: Treasury,
+    pub treasury_pool: TreasuryPool,
+    pub rate_map: VecMap<String, u64>,
+    pub daily_out_limit: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 #[enum_dispatch(BfcSystemStateTrait)]
 pub enum BFCSystemState {
     V1(BfcSystemStateInnerV1),
+    V2(BfcSystemStateInnerV2),
 }
 
 impl BFCSystemState {
-    pub fn inner_state(self) -> BfcSystemStateInnerV1 {
+    // pub fn inner_state(self) -> BfcSystemStateInnerV1 {
+    //     match self {
+    //         BFCSystemState::V1(inner) => inner,
+    //         BFCSystemState::V2(inner) => inner,
+    //     }
+    // }
+
+    pub fn get_rate_map(&self) -> &VecMap<String, u64> {
         match self {
-            BFCSystemState::V1(inner) => inner,
+            BFCSystemState::V1(inner) => &inner.rate_map,
+            BFCSystemState::V2(inner) => &inner.rate_map,
+        }
+    }
+    pub fn get_base_points(&self) -> u64 {
+        match self {
+            BFCSystemState::V1(inner) => inner.stable_base_points,
+            BFCSystemState::V2(inner) => inner.stable_base_points,
+        }
+    }
+    pub fn get_dao(&self) -> &Dao {
+        match self {
+            BFCSystemState::V1(inner) => &inner.dao,
+            BFCSystemState::V2(inner) => &inner.dao,
+        }
+    }
+
+    pub fn get_round(&self) -> u64 {
+        match self {
+            BFCSystemState::V1(inner) => inner.round,
+            BFCSystemState::V2(inner) => inner.round,
+        }
+    }
+
+    pub fn get_treasury(&self) -> &Treasury {
+        match self {
+            BFCSystemState::V1(inner) => &inner.treasury,
+            BFCSystemState::V2(inner) => &inner.treasury,
         }
     }
 }
 impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
+    fn round(&self) -> u64{
+        0
+    }
+
+    fn bfc_round_safe_mode(&mut self){}
+
+}
+
+impl BfcSystemStateTrait for BfcSystemStateInnerV2 {
     fn round(&self) -> u64{
         0
     }
@@ -160,6 +216,9 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
         Ok(BFCSystemState::V1(bfc_system_state)) => {
             Ok(bfc_system_state.rate_map)
         }
+        Ok(BFCSystemState::V2(bfc_system_state)) => {
+            Ok(bfc_system_state.rate_map)
+        }
         Err(e) => Err(e),
     }
 }
@@ -167,6 +226,9 @@ pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<Stri
 pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
     let result = match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
+            Ok((bfc_system_state.rate_map, bfc_system_state.stable_base_points))
+        }
+        Ok(BFCSystemState::V2(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.stable_base_points))
         }
         Err(e) => Err(e),
@@ -181,6 +243,9 @@ pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result
 pub fn get_stable_rate_and_reward_rate(object_store: &dyn ObjectStore) -> Result<(VecMap<String, u64>, u64), SuiError> {
     match get_bfc_system_state(object_store) {
         Ok(BFCSystemState::V1(bfc_system_state)) => {
+            Ok((bfc_system_state.rate_map, bfc_system_state.reward_rate))
+        }
+        Ok(BFCSystemState::V2(bfc_system_state)) => {
             Ok((bfc_system_state.rate_map, bfc_system_state.reward_rate))
         }
         Err(e) => Err(e),
@@ -223,6 +288,18 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemS
                 )?;
             Ok(BFCSystemState::V1(result))
         }
+        2 => {
+            let result: BfcSystemStateInnerV2 =
+                get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                    |err| {
+                        SuiError::DynamicFieldReadError(format!(
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                            id, wrapper.version, err
+                        ))
+                    },
+                )?;
+            Ok(BFCSystemState::V2(result))
+        }
         _ => Err(SuiError::BfcSystemStateReadError(format!(
             "Unsupported BfcSystemState version: {}",
             wrapper.version
@@ -241,6 +318,19 @@ pub fn get_bfc_system_proposal_state_map(object_store: &dyn ObjectStore) -> Resu
     match wrapper.version {
         1 => {
             let result: BfcSystemStateInnerV1 =
+                get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
+                    |err| {
+                        SuiError::DynamicFieldReadError(format!(
+                            "Failed to load bfc system state inner object with ID {:?} and version {:?}: {:?}",
+                            id, wrapper.version, err
+                        ))
+                    },
+                )?;
+
+            Ok(result.dao.current_proposal_status)
+        }
+        2 => {
+            let result: BfcSystemStateInnerV2 =
                 get_dynamic_field_from_store(object_store, id, &wrapper.version).map_err(
                     |err| {
                         SuiError::DynamicFieldReadError(format!(
