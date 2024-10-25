@@ -5,8 +5,6 @@ use std::collections::HashMap;
 use std::time::Duration;
 use std::fmt;
 use std::str::FromStr;
-#[cfg(msim)]
-use std::time::Duration;
 
 use anemo::Network;
 use anemo_tower::callback::CallbackLayer;
