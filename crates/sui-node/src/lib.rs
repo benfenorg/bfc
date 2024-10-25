@@ -2,10 +2,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::HashMap;
+use std::time::Duration;
 use std::fmt;
 use std::str::FromStr;
 #[cfg(msim)]
-use std::sync::atomic::{Ordering};
 use std::time::Duration;
 
 use anemo::Network;

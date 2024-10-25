@@ -237,30 +237,22 @@ fn test_meter_system_packages() {
     let verifier_config =
         protocol_config.verifier_config(Some(signing_config.limits_for_signing()));
     let meter_config = signing_config.meter_config_for_signing();
-    //println!("=======getting version {:?}", protocol_config);
-    let verifier_config = protocol_config.verifier_config(/* for_signing */ true);
-    let meter_config = protocol_config.meter_config();
-    //println!("=======getting meter config {:?}", meter_config);
     let registry = &Registry::new();
     let bytecode_verifier_metrics = Arc::new(BytecodeVerifierMetrics::new(registry));
     let mut meter = SuiVerifierMeter::new(meter_config);
     for system_package in BuiltInFramework::iter_system_packages() {
-        //println!("=======getting system package {:?}", system_package.id());
-        // if system_package.id.to_string()== String::from("0x000000000000000000000000000000000000000000000000000000000000dee9")  {
-        //     continue;
-        // }
         run_metered_move_bytecode_verifier(
             &system_package.modules(),
             &verifier_config,
             &mut meter,
             &bytecode_verifier_metrics,
         )
-        .unwrap_or_else(|_| {
-            panic!(
-                "Verification of all system packages should succeed, but failed on {}",
-                system_package.id(),
-            )
-        });
+            .unwrap_or_else(|_| {
+                panic!(
+                    "Verification of all system packages should succeed, but failed on {}",
+                    system_package.id(),
+                )
+            });
     }
 
     // Ensure metrics worked as expected

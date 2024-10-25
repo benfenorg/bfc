@@ -3467,9 +3467,9 @@ async fn sim_test_bfc_treasury_get_stablecoin_by_bfc() -> Result<(), anyhow::Err
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("get_stablecoin_by_bfc").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("get_stablecoin_by_bfc").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
     };
@@ -3667,9 +3667,9 @@ async fn sim_test_bfc_treasury_get_bfc_by_stablecoin() -> Result<(), anyhow::Err
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("get_bfc_by_stablecoin").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("get_bfc_by_stablecoin").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
     };
@@ -3740,9 +3740,9 @@ async fn sim_test_bfc_treasury_get_bfc_exchange_rate() -> Result<(), anyhow::Err
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("get_bfc_exchange_rate").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("get_bfc_exchange_rate").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0)],
         }))],
     };
@@ -3768,9 +3768,9 @@ async fn sim_test_bfc_treasury_get_stablecoin_exchange_rate() -> Result<(), anyh
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("get_stablecoin_exchange_rate").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("get_stablecoin_exchange_rate").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0)],
         }))],
     };
@@ -3796,9 +3796,9 @@ async fn sim_test_bfc_treasury_get_total_supply() -> Result<(), anyhow::Error> {
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("total_supply").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("total_supply").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0)],
         }))],
     };
@@ -3865,9 +3865,9 @@ async fn get_vault_info(test_cluster: &TestCluster) -> Result<VaultInfo, Error> 
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: BFC_SYSTEM_PACKAGE_ID,
-            module: Identifier::new("bfc_system").unwrap(),
-            function: Identifier::new("vault_info").unwrap(),
-            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?],
+            module: Identifier::new("bfc_system").unwrap().to_string(),
+            function: Identifier::new("vault_info").unwrap().to_string(),
+            type_arguments: vec![TypeTag::from_str("0xc8::busd::BUSD")?.into()],
             arguments: vec![Argument::Input(0)],
         }))],
     };

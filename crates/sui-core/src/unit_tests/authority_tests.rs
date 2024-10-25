@@ -1181,8 +1181,8 @@ async fn test_dry_run_with_two_gas_coin() {
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: object_basics.0,
-            module: Identifier::new("object_basics").unwrap(),
-            function: Identifier::new("create").unwrap(),
+            module: Identifier::new("object_basics").unwrap().to_string(),
+            function: Identifier::new("create").unwrap().to_string(),
             type_arguments: vec![],
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
@@ -3446,8 +3446,6 @@ async fn test_store_revert_wrap_move_call() {
     )
         .await
         .unwrap();
-    .await
-    .unwrap();
 
     authority_state
         .get_cache_commit()
@@ -3508,8 +3506,6 @@ async fn test_store_revert_wrap_move_call() {
     assert!(cache.get_object(&wrapper_v0.0).unwrap().is_none());
 
     // The gas is uncharged
-    let gas = db.get_object(&gas_object_id).unwrap().unwrap();
-    assert_eq!(gas.version(), create_effects.gas_object().0.1);
     let gas = cache.get_object(&gas_object_id).unwrap().unwrap();
     assert_eq!(gas.version(), create_effects.gas_object().0 .1);
 }
@@ -3547,8 +3543,6 @@ async fn test_store_revert_unwrap_move_call() {
     )
         .await
         .unwrap();
-    .await
-    .unwrap();
 
     authority_state
         .get_cache_commit()
@@ -3614,8 +3608,6 @@ async fn test_store_revert_unwrap_move_call() {
     assert_eq!(wrapper.version(), wrapper_v0.1);
 
     // The gas is uncharged
-    let gas = db.get_object(&gas_object_id).unwrap().unwrap();
-    assert_eq!(gas.version(), wrap_effects.gas_object().0.1);
     let gas = cache.get_object(&gas_object_id).unwrap().unwrap();
     assert_eq!(gas.version(), wrap_effects.gas_object().0 .1);
 }
@@ -6024,8 +6016,8 @@ async fn test_stable_dry_run_dev_inspect_max_gas_version() {
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: object_basics.0,
-            module: Identifier::new("object_basics").unwrap(),
-            function: Identifier::new("create").unwrap(),
+            module: Identifier::new("object_basics").unwrap().to_string(),
+            function: Identifier::new("create").unwrap().to_string(),
             type_arguments: vec![],
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
@@ -6362,8 +6354,8 @@ async fn test_stable_dev_inspect_dynamic_field() {
         ],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: object_basics.0,
-            module: Identifier::new("object_basics").unwrap(),
-            function: Identifier::new("add_ofield").unwrap(),
+            module: Identifier::new("object_basics").unwrap().to_string(),
+            function: Identifier::new("add_ofield").unwrap().to_string(),
             type_arguments: vec![],
             arguments: vec![Argument::Input(0), Argument::Input(1)],
         }))],
@@ -7037,8 +7029,8 @@ async fn test_stable_dry_run_dev_inspect_dynamic_field_too_new() {
         inputs: vec![CallArg::Object(ObjectArg::ImmOrOwnedObject(parent))],
         commands: vec![Command::MoveCall(Box::new(ProgrammableMoveCall {
             package: object_basics.0,
-            module: Identifier::new("object_basics").unwrap(),
-            function: Identifier::new("remove_field").unwrap(),
+            module: Identifier::new("object_basics").unwrap().to_string(),
+            function: Identifier::new("remove_field").unwrap().to_string(),
             type_arguments: vec![],
             arguments: vec![Argument::Input(0)],
         }))],
@@ -9717,7 +9709,10 @@ async fn test_stable_shared_object_transaction_ok() {
     authority.try_execute_for_test(&certificate).await.unwrap();
 
     // Ensure transaction effects are available.
-    authority.notify_read_effects(&certificate).await.unwrap();
+    authority
+        .notify_read_effects(*certificate.digest())
+        .await
+        .unwrap();
 
     // Ensure shared object sequence number increased.
     let shared_object_version = authority

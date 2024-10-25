@@ -408,13 +408,11 @@ async fn test_pay_sui() {
             "type":"PaySui",
             "account": { "address" : recipient.to_string() },
             "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
-            "amount" : { "value": "1000000000" }
         },{
             "operation_identifier":{"index":1},
             "type":"PaySui",
             "account": { "address" : sender.to_string() },
             "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
-            "amount" : { "value": "-1000000000" }
         }]
     ))
     .unwrap();
@@ -474,13 +472,11 @@ async fn test_pay_sui_multiple_times() {
                 "type":"PaySui",
                 "account": { "address" : recipient.to_string() },
                 "amount" : { "value": "1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
-                "amount" : { "value": "1000000000" }
             },{
                 "operation_identifier":{"index":1},
                 "type":"PaySui",
                 "account": { "address" : sender.to_string() },
                 "amount" : { "value": "-1000000000" , "currency": { "symbol": "BFC", "decimals": 9}}
-                "amount" : { "value": "-1000000000" }
             }]
         ))
         .unwrap();

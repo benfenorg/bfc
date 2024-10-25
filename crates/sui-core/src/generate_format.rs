@@ -15,8 +15,6 @@ use serde_reflection::{Registry, Result, Samples, Tracer, TracerConfig};
 use shared_crypto::intent::{Intent, IntentMessage, PersonalMessage};
 use std::str::FromStr;
 use std::{fs::File, io::Write};
-use move_core_types::account_address::AccountAddress;
-use move_core_types::identifier::Identifier;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::{
     AggregateAuthoritySignature, AuthorityQuorumSignInfo, AuthorityStrongQuorumSignInfo,
