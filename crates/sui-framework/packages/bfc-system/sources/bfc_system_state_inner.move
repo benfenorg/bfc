@@ -11,6 +11,8 @@ module bfc_system::bfc_system_state_inner {
     use sui::coin;
     use sui::coin::Coin;
     use sui::vec_map::{Self, VecMap};
+    use sui::vec_set;
+    use sui::vec_set::VecSet;
 
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -39,10 +41,6 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::voting_pool::VotingBfc;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
-    //
-    // friend bfc_system::bfc_system;
-    // #[test_only]
-    // friend bfc_system::bfc_system_tests;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
@@ -83,8 +81,8 @@ module bfc_system::bfc_system_state_inner {
         // stake_coins: Bag,
         daily_out_limit: u64,
         daily_use_out_limit: u64,
-        // Any extra fields that's not defined statically.
-        // extra_fields: Bag,
+        // other dapps can use this cap to mint stable coin
+        operation_capability: VecMap<String, VecSet<address>>,
     }
 
     public struct TreasuryParameters has drop, copy {
@@ -681,7 +679,7 @@ module bfc_system::bfc_system_state_inner {
             // stake_coins: bag::new(ctx),
             daily_out_limit : 40000_000_000_000u64,
             daily_use_out_limit: 0u64,
-            // extra_fields: bag::new(ctx),
+            operation_capability: vec_map::empty(),
         }
     }
 
@@ -691,6 +689,55 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
         self.daily_out_limit = new_limit;
+    }
+
+    public(package)  fun get_operation_capability(self: &BfcSystemStateInnerV2): VecMap<String, VecSet<address>> {
+        self.operation_capability
+    }
+
+    public(package) fun get_operation_capability_by_key(self: &BfcSystemStateInnerV2, key: &String): VecSet<address> {
+        let result: Option<VecSet<address>> = vec_map::try_get(&self.operation_capability, key);
+
+        if (option::is_some(&result)) {
+            *option::borrow(&result)
+        } else {
+            vec_set::empty()
+        }
+    }
+
+    public(package) fun set_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: VecSet<address>) {
+        if (vec_map::contains(&self.operation_capability, &key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
+            let source_contents = vec_set::keys(&value);
+            let mut i = 0;
+            while (i < vec_set::size(&value)) {
+                let addr = &source_contents[i];
+                if (!vec_set::contains(new_capability, addr)) {
+                    vec_set::insert(new_capability, *addr);
+                };
+                i = i + 1;
+            };
+        } else {
+            vec_map::insert(&mut self.operation_capability, key, value);
+        }
+    }
+
+    public(package) fun add_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: address) {
+        if (vec_map::contains(&self.operation_capability, &key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
+            vec_set::insert(new_capability, value);
+        } else {
+            let mut new_set = vec_set::empty();
+            vec_set::insert(&mut new_set, value);
+            vec_map::insert(&mut self.operation_capability, key, new_set);
+        }
+    }
+
+    public(package) fun remove_operation_capability(self: &mut BfcSystemStateInnerV2, key: &String, value: address) {
+        if (vec_map::contains(&self.operation_capability, key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
+            vec_set::remove(new_capability, &value);
+        }
     }
 
 }

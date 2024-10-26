@@ -15,6 +15,7 @@ module bfc_system::bfc_system {
     use sui::bfc::BFC;
     use sui::clock;
     use sui::vec_map::VecMap;
+    use sui::vec_set::VecSet;
 
     use bfc_system::busd::{BUSD};
     use bfc_system::bjpy::{BJPY};
@@ -41,9 +42,6 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2};
     use bfc_system::treasury::{TreasuryPauseCap};
-
-    // #[test_only]
-    // friend bfc_system::bfc_system_tests;
 
     public struct BfcSystemState has key {
         id: UID,
@@ -213,6 +211,28 @@ module bfc_system::bfc_system {
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_bfc_system_state(id);
         bfc_system_state_inner::get_rate_map(inner)
+    }
+
+    // operation for capability
+    public fun get_operation_capability(id: &UID): VecMap<ascii::String, VecSet<address>> {
+        let inner = load_bfc_system_state(id);
+        bfc_system_state_inner::get_operation_capability(inner)
+    }
+    public fun get_operation_capability_by_key(id: &UID, key: &ascii::String): VecSet<address> {
+        let inner = load_bfc_system_state(id);
+        bfc_system_state_inner::get_operation_capability_by_key(inner, key)
+    }
+    public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
+        let inner = load_bfc_system_state_mut(id);
+        bfc_system_state_inner::add_operation_capability(inner, key, address)
+    }
+    public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
+        let inner = load_bfc_system_state_mut(id);
+        bfc_system_state_inner::remove_operation_capability(inner, key, address)
+    }
+    public fun set_operation_capability(id: &mut UID, key: ascii::String, addresses: VecSet<address>) {
+        let inner = load_bfc_system_state_mut(id);
+        bfc_system_state_inner::set_operation_capability(inner, key, addresses)
     }
 
     public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
