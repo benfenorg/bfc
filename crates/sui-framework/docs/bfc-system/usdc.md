@@ -5,7 +5,6 @@ title: Module `0xc8::usdc`
 
 
 -  [Struct `USDC`](#0xc8_usdc_USDC)
--  [Constants](#@Constants_0)
 -  [Function `new`](#0xc8_usdc_new)
 -  [Function `transfer`](#0xc8_usdc_transfer)
 
@@ -47,30 +46,6 @@ title: Module `0xc8::usdc`
 
 </details>
 
-<a name="@Constants_0"></a>
-
-## Constants
-
-
-<a name="0xc8_usdc_ENotSystemAddress"></a>
-
-Sender is not @0x0 the system address.
-
-
-<pre><code><b>const</b> <a href="usdc.md#0xc8_usdc_ENotSystemAddress">ENotSystemAddress</a>: u64 = 1;
-</code></pre>
-
-
-
-<a name="0xc8_usdc_EAlreadyMinted"></a>
-
-
-
-<pre><code><b>const</b> <a href="usdc.md#0xc8_usdc_EAlreadyMinted">EAlreadyMinted</a>: u64 = 0;
-</code></pre>
-
-
-
 <a name="0xc8_usdc_new"></a>
 
 ## Function `new`
@@ -87,8 +62,8 @@ Sender is not @0x0 the system address.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="usdc.md#0xc8_usdc_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="usdc.md#0xc8_usdc_USDC">USDC</a>&gt; {
-    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="usdc.md#0xc8_usdc_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="usdc.md#0xc8_usdc_EAlreadyMinted">EAlreadyMinted</a>);
+    // <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, ENotSystemAddress);
+    // <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, EAlreadyMinted);
     <b>let</b> (cap, metadata) = <a href="../sui-framework/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
         <a href="usdc.md#0xc8_usdc_USDC">USDC</a> {},
         9,

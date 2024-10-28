@@ -2,6 +2,10 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use bfc_system::usdt;
+    use bfc_system::usdc;
+    use sui::bag;
+    use sui::bag::Bag;
     use bfc_system::usdt::USDT;
     use bfc_system::usdc::USDC;
     use sui::balance;
@@ -78,7 +82,7 @@ module bfc_system::bfc_system_state_inner {
         treasury_pool: TreasuryPool,
         stable_rate: VecMap<ascii::String, u64>,
 
-        // stake_coins: Bag,
+        stake_coins: Bag,
         daily_out_limit: u64,
         daily_use_out_limit: u64,
         // other dapps can use this cap to mint stable coin
@@ -669,7 +673,7 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
 
-    public(package) fun v1_to_v2(self: BfcSystemStateInner): BfcSystemStateInnerV2 {
+    public(package) fun v1_to_v2(self: BfcSystemStateInner, _ctx: &mut TxContext): (BfcSystemStateInnerV2, &mut TxContext) {
         let BfcSystemStateInner {
             round,
             stable_base_points,
@@ -679,7 +683,8 @@ module bfc_system::bfc_system_state_inner {
             treasury_pool,
             stable_rate,
         } = self;
-        BfcSystemStateInnerV2 {
+        let coin_bag = bag::new(_ctx);
+        (BfcSystemStateInnerV2 {
             round,
             stable_base_points,
             reward_rate,
@@ -687,12 +692,11 @@ module bfc_system::bfc_system_state_inner {
             treasury,
             treasury_pool,
             stable_rate,
-
-            // stake_coins: bag::new(ctx),
+            stake_coins: coin_bag,
             daily_out_limit : 40000_000_000_000u64,
             daily_use_out_limit: 0u64,
             operation_capability: vec_map::empty(),
-        }
+        }, _ctx)
     }
 
     public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
@@ -701,6 +705,21 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
         self.daily_out_limit = new_limit;
+    }
+
+    public(package) fun init_bfc_system_state_v2(self: &mut BfcSystemStateInnerV2, _ctx: &mut TxContext) {
+        let treasury = &mut self.treasury;
+        let usdc_supply = usdc::new(_ctx);
+        let usdt_supply = usdt::new(_ctx);
+
+        treasury::add_supply<USDC>(treasury, usdc_supply);
+        treasury::add_supply<USDT>(treasury, usdt_supply);
+
+        let coin_bag = &mut self.stake_coins;
+        let usdc_coin = coin::zero<USDC>(_ctx);
+        let usdt_coin = coin::zero<USDT>(_ctx);
+        bag::add(coin_bag, ascii::string(b"exchange-USDC"), usdc_coin);
+        bag::add(coin_bag, ascii::string(b"exchange-USDT"), usdt_coin);
     }
 
     public(package)  fun get_operation_capability(self: &BfcSystemStateInnerV2): VecMap<String, VecSet<address>> {

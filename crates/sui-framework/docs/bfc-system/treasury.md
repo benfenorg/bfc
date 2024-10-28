@@ -21,6 +21,7 @@ title: Module `0xc8::treasury`
 -  [Function `exchange_usdt_to_busd`](#0xc8_treasury_exchange_usdt_to_busd)
 -  [Function `exchange_busd_to_usdc`](#0xc8_treasury_exchange_busd_to_usdc)
 -  [Function `exchange_busd_to_usdt`](#0xc8_treasury_exchange_busd_to_usdt)
+-  [Function `add_supply`](#0xc8_treasury_add_supply)
 -  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
 -  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
@@ -656,6 +657,31 @@ title: Module `0xc8::treasury`
     <b>let</b> busd_sum = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, std::ascii::string(b"BUSD"));
     <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(busd_sum, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(busd_coin));
     <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(stable_back, receiver_address);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_add_supply"></a>
+
+## Function `add_supply`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, supply: Supply&lt;StableCoinType&gt;) {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(&<b>mut</b> _treasury.supplies, key, supply);
 }
 </code></pre>
 

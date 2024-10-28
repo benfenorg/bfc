@@ -208,6 +208,11 @@ module bfc_system::treasury {
         transfer::public_transfer(stable_back, receiver_address);
     }
 
+    public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {
+        let key = get_vault_key<StableCoinType>();
+        bag::add(&mut _treasury.supplies, key, supply);
+    }
+
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
         vault::set_pause(
             borrow_mut_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>()),
