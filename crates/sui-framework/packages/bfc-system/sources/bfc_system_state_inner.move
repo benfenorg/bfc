@@ -431,22 +431,29 @@ module bfc_system::bfc_system_state_inner {
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx);
     }
 
-    public(package) fun exchange_usdc_to_busd(
+    public(package) fun exchange_stable_to_busd<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
-        balance: Coin<USDC>,
-        receiver_address: address,
+        stable_coin: Coin<StableCoinType>,
+        recipient: address,
         ctx: &mut TxContext,
     ) {
-        treasury::exchange_usdc_to_busd( &mut inner_state.treasury, balance, receiver_address, ctx);
-    }
+        let amount: u64 = stable_coin.value();
 
-    public(package) fun exchange_usdt_to_busd(
-        inner_state: &mut BfcSystemStateInnerV2,
-        balance: Coin<USDT>,
-        receiver_address: address,
-        ctx: &mut TxContext,
-    ) {
-        treasury::exchange_usdt_to_busd(&mut inner_state.treasury, balance, receiver_address, ctx);
+        // stake coin into stable_coins
+        let key = treasury::get_vault_key<StableCoinType>();
+        let mut exchange_key_bytes = b"exchange-";
+        exchange_key_bytes.append(std::ascii::into_bytes(key));
+        let exchange_key = std::ascii::string(exchange_key_bytes);
+        let coin = bag::borrow_mut<String, Coin<StableCoinType>>(&mut inner_state.stake_coins, exchange_key);
+        coin::join(coin, stable_coin);
+
+        // increase busd
+        let supply = treasury::get_busd_supply_mut(&mut inner_state.treasury);
+        let busd_balance = balance::increase_supply(supply, amount);
+        let busd = sui::coin::from_balance(busd_balance, ctx);
+
+        // transfer busd to receiver
+        transfer::public_transfer(busd, recipient);
     }
 
     public(package) fun exchange_busd_to_usdc(

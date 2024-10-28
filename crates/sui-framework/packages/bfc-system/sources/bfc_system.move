@@ -1,12 +1,5 @@
 module bfc_system::bfc_system {
     use std::ascii;
-    // use bfc_system::usdt;
-    // use bfc_system::usdc;
-    // use bfc_system::treasury;
-    // use bfc_system::usdt;
-    // use bfc_system::usdc;
-    use bfc_system::usdt::USDT;
-    use bfc_system::usdc::USDC;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -368,25 +361,15 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, _ctx);
     }
 
-    public fun exchange_usdc_to_busd(
+    public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
-        receiver_address: address,
-        stable_coin: Coin<USDC>,
+        recipient: address,
+        stable_coin: Coin<StableCoinType>,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
 
-        bfc_system_state_inner::exchange_usdc_to_busd(inner_state, stable_coin, receiver_address, _ctx);
-    }
-
-    public fun exchange_usdt_to_busd(
-        wrapper: &mut BfcSystemState,
-        receiver_address: address,
-        stable_coin: Coin<USDT>,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::exchange_usdt_to_busd(inner_state, stable_coin, receiver_address, _ctx);
+        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, stable_coin, recipient, _ctx);
     }
 
     public fun exchange_busd_to_usdc(

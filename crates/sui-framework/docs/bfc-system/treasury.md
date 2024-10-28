@@ -17,8 +17,6 @@ title: Module `0xc8::treasury`
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
 -  [Function `mint_stable`](#0xc8_treasury_mint_stable)
--  [Function `exchange_usdc_to_busd`](#0xc8_treasury_exchange_usdc_to_busd)
--  [Function `exchange_usdt_to_busd`](#0xc8_treasury_exchange_usdt_to_busd)
 -  [Function `exchange_busd_to_usdc`](#0xc8_treasury_exchange_busd_to_usdc)
 -  [Function `exchange_busd_to_usdt`](#0xc8_treasury_exchange_busd_to_usdt)
 -  [Function `add_supply`](#0xc8_treasury_add_supply)
@@ -44,6 +42,7 @@ title: Module `0xc8::treasury`
 -  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
 -  [Function `get_total_supply`](#0xc8_treasury_get_total_supply)
+-  [Function `get_busd_supply_mut`](#0xc8_treasury_get_busd_supply_mut)
 -  [Function `one_coin_rebalance_internal`](#0xc8_treasury_one_coin_rebalance_internal)
 -  [Function `one_coin_bfc_required`](#0xc8_treasury_one_coin_bfc_required)
 -  [Function `one_coin_exchange_rate`](#0xc8_treasury_one_coin_exchange_rate)
@@ -84,7 +83,6 @@ title: Module `0xc8::treasury`
 <b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="tick_math.md#0xc8_tick_math">0xc8::tick_math</a>;
 <b>use</b> <a href="usdc.md#0xc8_usdc">0xc8::usdc</a>;
-<b>use</b> <a href="usdt.md#0xc8_usdt">0xc8::usdt</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 </code></pre>
 
@@ -517,80 +515,6 @@ title: Module `0xc8::treasury`
                                         _amount: u64,
                                         _ctx: &<b>mut</b> TxContext,): String {
     <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;()
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_treasury_exchange_usdc_to_busd"></a>
-
-## Function `exchange_usdc_to_busd`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdc.md#0xc8_usdc_USDC">usdc::USDC</a>&gt;, receiver_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-                                             stable_coin: Coin&lt;USDC&gt;,
-                                             receiver_address: <b>address</b>,
-                                             ctx: &<b>mut</b> TxContext) {
-    <b>let</b> amount: u64 = stable_coin.value();
-    // <a href="treasury.md#0xc8_treasury">treasury</a> increase <a href="usdc.md#0xc8_usdc">usdc</a>, and delete stable_coin
-    <b>let</b> usdc_coin = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;USDC&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, std::ascii::string(b"USDC"));
-    <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(usdc_coin, stable_coin);
-    // mint <a href="busd.md#0xc8_busd">busd</a>
-    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, std::ascii::string(b"BUSD"));
-    <b>let</b> busd_balance = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
-    <b>let</b> <a href="busd.md#0xc8_busd">busd</a> = sui::coin::from_balance(busd_balance, ctx);
-
-    // <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="busd.md#0xc8_busd">busd</a> <b>to</b> receiver
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="busd.md#0xc8_busd">busd</a>, receiver_address);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_treasury_exchange_usdt_to_busd"></a>
-
-## Function `exchange_usdt_to_busd`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdt.md#0xc8_usdt_USDT">usdt::USDT</a>&gt;, receiver_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-                             stable_coin: Coin&lt;USDT&gt;,
-                             receiver_address: <b>address</b>,
-                             ctx: &<b>mut</b> TxContext) {
-    <b>let</b> amount: u64 = stable_coin.value();
-    // <a href="treasury.md#0xc8_treasury">treasury</a> increase <a href="usdc.md#0xc8_usdc">usdc</a>, and delete stable_coin
-    <b>let</b> usdt_coin = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;USDT&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, std::ascii::string(b"USDT"));
-    <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(usdt_coin, stable_coin);
-    // mint <a href="busd.md#0xc8_busd">busd</a>
-    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, std::ascii::string(b"BUSD"));
-    <b>let</b> busd_balance = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
-    <b>let</b> <a href="busd.md#0xc8_busd">busd</a> = sui::coin::from_balance(busd_balance, ctx);
-
-    // <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="busd.md#0xc8_busd">busd</a> <b>to</b> receiver
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="busd.md#0xc8_busd">busd</a>, receiver_address);
 }
 </code></pre>
 
@@ -1566,6 +1490,33 @@ Rebalance
     };
     <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&_self.supplies, key);
     <a href="../sui-framework/balance.md#0x2_balance_supply_value">balance::supply_value</a>(supply)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_get_busd_supply_mut"></a>
+
+## Function `get_busd_supply_mut`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(_self: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(
+    _self: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>
+): &<b>mut</b> Supply&lt;BUSD&gt; {
+    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(&<b>mut</b> _self.supplies, std::ascii::string(b"BUSD"));
+    supply
 }
 </code></pre>
 

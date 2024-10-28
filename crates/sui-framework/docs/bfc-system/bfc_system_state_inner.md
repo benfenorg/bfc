@@ -34,8 +34,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
--  [Function `exchange_usdc_to_busd`](#0xc8_bfc_system_state_inner_exchange_usdc_to_busd)
--  [Function `exchange_usdt_to_busd`](#0xc8_bfc_system_state_inner_exchange_usdt_to_busd)
+-  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_state_inner_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_usdc`](#0xc8_bfc_system_state_inner_exchange_busd_to_usdc)
 -  [Function `exchange_busd_to_usdt`](#0xc8_bfc_system_state_inner_exchange_busd_to_usdt)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
@@ -77,11 +76,13 @@ title: Module `0xc8::bfc_system_state_inner`
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
+<b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
 <b>use</b> <a href="../sui-framework/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
+<b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="../sui-framework/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
@@ -1293,13 +1294,13 @@ swap stablecoin to bfc
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_exchange_usdc_to_busd"></a>
+<a name="0xc8_bfc_system_state_inner_exchange_stable_to_busd"></a>
 
-## Function `exchange_usdc_to_busd`
+## Function `exchange_stable_to_busd`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdc.md#0xc8_usdc_USDC">usdc::USDC</a>&gt;, receiver_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1308,42 +1309,29 @@ swap stablecoin to bfc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(
     inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Coin&lt;USDC&gt;,
-    receiver_address: <b>address</b>,
+    stable_coin: Coin&lt;StableCoinType&gt;,
+    recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <a href="treasury.md#0xc8_treasury_exchange_usdc_to_busd">treasury::exchange_usdc_to_busd</a>( &<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>, receiver_address, ctx);
-}
-</code></pre>
+    <b>let</b> amount: u64 = stable_coin.value();
 
+    // stake <a href="../sui-framework/coin.md#0x2_coin">coin</a> into stable_coins
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> <b>mut</b> exchange_key_bytes = b"exchange-";
+    exchange_key_bytes.append(std::ascii::into_bytes(key));
+    <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&<b>mut</b> inner_state.stake_coins, exchange_key);
+    <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, stable_coin);
 
+    // increase <a href="busd.md#0xc8_busd">busd</a>
+    <b>let</b> supply = <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">treasury::get_busd_supply_mut</a>(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> busd_balance = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
+    <b>let</b> <a href="busd.md#0xc8_busd">busd</a> = sui::coin::from_balance(busd_balance, ctx);
 
-</details>
-
-<a name="0xc8_bfc_system_state_inner_exchange_usdt_to_busd"></a>
-
-## Function `exchange_usdt_to_busd`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdt.md#0xc8_usdt_USDT">usdt::USDT</a>&gt;, receiver_address: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(
-    inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Coin&lt;USDT&gt;,
-    receiver_address: <b>address</b>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <a href="treasury.md#0xc8_treasury_exchange_usdt_to_busd">treasury::exchange_usdt_to_busd</a>(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>, receiver_address, ctx);
+    // <a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="busd.md#0xc8_busd">busd</a> <b>to</b> receiver
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="busd.md#0xc8_busd">busd</a>, recipient);
 }
 </code></pre>
 

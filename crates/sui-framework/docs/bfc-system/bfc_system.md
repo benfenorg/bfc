@@ -38,8 +38,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
--  [Function `exchange_usdc_to_busd`](#0xc8_bfc_system_exchange_usdc_to_busd)
--  [Function `exchange_usdt_to_busd`](#0xc8_bfc_system_exchange_usdt_to_busd)
+-  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_usdc`](#0xc8_bfc_system_exchange_busd_to_usdc)
 -  [Function `exchange_busd_to_usdt`](#0xc8_bfc_system_exchange_busd_to_usdt)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
@@ -105,8 +104,6 @@ title: Module `0xc8::bfc_system`
 <b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
 <b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
 <b>use</b> <a href="treasury.md#0xc8_treasury">0xc8::treasury</a>;
-<b>use</b> <a href="usdc.md#0xc8_usdc">0xc8::usdc</a>;
-<b>use</b> <a href="usdt.md#0xc8_usdt">0xc8::usdt</a>;
 <b>use</b> <a href="vault.md#0xc8_vault">0xc8::vault</a>;
 <b>use</b> <a href="bfc_dao_voting_pool.md#0xc8_voting_pool">0xc8::voting_pool</a>;
 </code></pre>
@@ -1101,13 +1098,13 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_exchange_usdc_to_busd"></a>
+<a name="0xc8_bfc_system_exchange_stable_to_busd"></a>
 
-## Function `exchange_usdc_to_busd`
+## Function `exchange_stable_to_busd`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, receiver_address: <b>address</b>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdc.md#0xc8_usdc_USDC">usdc::USDC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, recipient: <b>address</b>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1116,45 +1113,15 @@ X treasury rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_usdc_to_busd">exchange_usdc_to_busd</a>(
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    receiver_address: <b>address</b>,
-    stable_coin: Coin&lt;USDC&gt;,
+    recipient: <b>address</b>,
+    stable_coin: Coin&lt;StableCoinType&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
 
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdc_to_busd">bfc_system_state_inner::exchange_usdc_to_busd</a>(inner_state, stable_coin, receiver_address, _ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_exchange_usdt_to_busd"></a>
-
-## Function `exchange_usdt_to_busd`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, receiver_address: <b>address</b>, stable_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="usdt.md#0xc8_usdt_USDT">usdt::USDT</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_usdt_to_busd">exchange_usdt_to_busd</a>(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    receiver_address: <b>address</b>,
-    stable_coin: Coin&lt;USDT&gt;,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_usdt_to_busd">bfc_system_state_inner::exchange_usdt_to_busd</a>(inner_state, stable_coin, receiver_address, _ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">bfc_system_state_inner::exchange_stable_to_busd</a>&lt;StableCoinType&gt;(inner_state, stable_coin, recipient, _ctx);
 }
 </code></pre>
 

@@ -4567,15 +4567,6 @@ rebalance_internal
 rebalance
 	public(package) fun
 	0xc8::vault
-USDT
-	public struct
-	0xc8::usdt
-new
-	public fun
-	0xc8::usdt
-transfer
-	public entry fun
-	0xc8::usdt
 USDC
 	public struct
 	0xc8::usdc
@@ -4729,12 +4720,6 @@ vault_info
 mint_stable
 	public fun
 	0xc8::treasury
-exchange_usdc_to_busd
-	public fun
-	0xc8::treasury
-exchange_usdt_to_busd
-	public fun
-	0xc8::treasury
 exchange_busd_to_usdc
 	public fun
 	0xc8::treasury
@@ -4810,6 +4795,9 @@ get_exchange_rates
 get_total_supply
 	public(package) fun
 	0xc8::treasury
+get_busd_supply_mut
+	public(package) fun
+	0xc8::treasury
 one_coin_rebalance_internal
 	fun
 	0xc8::treasury
@@ -4819,6 +4807,15 @@ one_coin_bfc_required
 one_coin_exchange_rate
 	public(package) fun
 	0xc8::treasury
+USDT
+	public struct
+	0xc8::usdt
+new
+	public fun
+	0xc8::usdt
+transfer
+	public entry fun
+	0xc8::usdt
 TreasuryPool
 	public struct
 	0xc8::treasury_pool
@@ -4927,10 +4924,7 @@ request_gas_balance
 mint_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
-exchange_usdc_to_busd
-	public(package) fun
-	0xc8::bfc_system_state_inner
-exchange_usdt_to_busd
+exchange_stable_to_busd
 	public(package) fun
 	0xc8::bfc_system_state_inner
 exchange_busd_to_usdc
@@ -5143,10 +5137,7 @@ rebalance_with_one_stablecoin
 mint_stable
 	public fun
 	0xc8::bfc_system
-exchange_usdc_to_busd
-	public fun
-	0xc8::bfc_system
-exchange_usdt_to_busd
+exchange_stable_to_busd
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_usdc
