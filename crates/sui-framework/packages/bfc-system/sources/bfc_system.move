@@ -383,14 +383,24 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::exchange_usdt_to_busd(inner_state, stable_coin, receiver_address, ctx);
     }
 
-    public fun exchange_busd_to_stable<StableCoinType>(
+    public fun exchange_busd_to_usdc(
         wrapper: &mut BfcSystemState,
         busd_coin: Coin<BUSD>,
         receiver_address: address,
         ctx: &mut TxContext,
     ) {
         let inner_state = load_system_state_mut(wrapper);
-        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, receiver_address, ctx);
+        bfc_system_state_inner::exchange_busd_to_usdc(inner_state, busd_coin, receiver_address, ctx);
+    }
+
+    public fun exchange_busd_to_usdt(
+        wrapper: &mut BfcSystemState,
+        busd_coin: Coin<BUSD>,
+        receiver_address: address,
+        ctx: &mut TxContext,
+    ) {
+        let inner_state = load_system_state_mut(wrapper);
+        bfc_system_state_inner::exchange_busd_to_usdt(inner_state, busd_coin, receiver_address, ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
