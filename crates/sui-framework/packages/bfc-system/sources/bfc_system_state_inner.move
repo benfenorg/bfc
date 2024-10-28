@@ -740,4 +740,13 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
+    public(package) fun verify_operation_capability(self: &BfcSystemStateInnerV2, key: &String, value: address): bool {
+        if (vec_map::contains(&self.operation_capability, key)) {
+            let new_capability = vec_map::get(&self.operation_capability, key);
+            vec_set::contains(new_capability, &value)
+        } else {
+            false
+        }
+    }
+
 }
