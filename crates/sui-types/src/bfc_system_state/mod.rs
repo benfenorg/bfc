@@ -12,10 +12,11 @@ use sui_protocol_config::ProtocolConfig;
 use crate::{id::UID, BFC_SYSTEM_ADDRESS, BFC_SYSTEM_STATE_OBJECT_ID};
 use enum_dispatch::enum_dispatch;
 use move_core_types::{ident_str, identifier::IdentStr, language_storage::StructTag};
+use move_core_types::account_address::AccountAddress;
 use serde::de::DeserializeOwned;
 use serde::{Deserialize, Serialize};
 use crate::balance::Balance;
-use crate::collection_types::{VecMap, Bag};
+use crate::collection_types::{VecMap, Bag, VecSet};
 use crate::dao::Dao;
 use crate::proposal::ProposalStatus;
 
@@ -142,7 +143,10 @@ pub struct BfcSystemStateInnerV2 {
     pub treasury: Treasury,
     pub treasury_pool: TreasuryPool,
     pub rate_map: VecMap<String, u64>,
+    pub stake_coins: Bag,
     pub daily_out_limit: u64,
+    pub daily_use_out_limit: u64,
+    pub operation_capability: VecMap<String, VecSet<AccountAddress>>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

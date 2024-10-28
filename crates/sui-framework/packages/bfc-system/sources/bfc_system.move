@@ -119,7 +119,7 @@ module bfc_system::bfc_system {
     }
 
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
-        let inner_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let inner_state = load_system_state_mut_no_ctx(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
     }
 
@@ -129,7 +129,7 @@ module bfc_system::bfc_system {
         round: u64,
         epoch_start_time: u64,
     ) {
-        let inner_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let inner_state = load_system_state_mut_no_ctx(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
@@ -172,16 +172,39 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::request_gas_balance(inner_state, amount, _ctx)
     }
 
+    fun load_system_state_by_uid(
+        id: &UID,
+    ): &BfcSystemStateInnerV2 {
+        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V2)
+    }
+
+    fun load_system_state_mut_by_uid(
+        id: &mut UID,
+    ): &mut BfcSystemStateInnerV2 {
+        dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V2)
+    }
+
     fun load_system_state(
         self: &BfcSystemState,
     ): &BfcSystemStateInnerV2 {
-        load_bfc_system_state(&self.id)
+        dynamic_field::borrow(&self.id, BFC_SYSTEM_STATE_VERSION_V2)
     }
-    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInnerV2 {
-        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V2)
+
+    /// deprecated
+    public fun load_bfc_system_state(id: &UID): &BfcSystemStateInner {
+        // todo always have error when upgraded. need deprecated.
+        dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V1)
     }
-    public fun load_bfc_system_state_mut(id: &mut UID): &mut BfcSystemStateInnerV2 {
-        dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V2)
+    /// deprecated
+    public fun load_bfc_system_state_mut(id: &mut UID): &mut BfcSystemStateInner {
+        // todo always have error when upgraded. need deprecated.
+        dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V1)
+    }
+
+    fun load_system_state_mut_no_ctx(
+        _self: &mut BfcSystemState,
+    ): (&mut BfcSystemStateInnerV2) {
+        dynamic_field::borrow_mut(&mut _self.id, BFC_SYSTEM_STATE_VERSION_V2)
     }
 
     fun load_system_state_mut(
@@ -213,33 +236,33 @@ module bfc_system::bfc_system {
 
     // operation for capability
     public fun get_operation_capability(id: &UID): VecMap<ascii::String, VecSet<address>> {
-        let inner = load_bfc_system_state(id);
+        let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_operation_capability(inner)
     }
     public fun get_operation_capability_by_key(id: &UID, key: &ascii::String): VecSet<address> {
-        let inner = load_bfc_system_state(id);
+        let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_operation_capability_by_key(inner, key)
     }
     public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
-        let inner = load_bfc_system_state_mut(id);
+        let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::add_operation_capability(inner, key, address)
     }
     public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
-        let inner = load_bfc_system_state_mut(id);
+        let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::remove_operation_capability(inner, key, address)
     }
     public fun set_operation_capability(id: &mut UID, key: ascii::String, addresses: VecSet<address>) {
-        let inner = load_bfc_system_state_mut(id);
+        let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::set_operation_capability(inner, key, addresses)
     }
 
     public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
     }
 
     public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::remove_action(system_state,key,action_id);
     }
 
@@ -249,8 +272,7 @@ module bfc_system::bfc_system {
         proposal: &mut Proposal,
         clock: & Clock,
     ) {
-        //todo no TxContent
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::destroy_terminated_proposal(system_state, manager_key, proposal, clock);
     }
 
@@ -283,7 +305,7 @@ module bfc_system::bfc_system {
         //bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }
     public entry fun judge_proposal_state_with_clock(wrapper: &mut BfcSystemState, clock: &Clock) {
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         let current_time = clock::timestamp_ms(clock);
         bfc_system_state_inner::judge_proposal_state(system_state, current_time);
     }
@@ -294,7 +316,7 @@ module bfc_system::bfc_system {
         manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::set_voting_period(system_state, manager_key, value);
     }
 
@@ -304,7 +326,7 @@ module bfc_system::bfc_system {
     // }
 
     public entry fun set_voting_quorum_rate(wrapper: &mut BfcSystemState, manager_key: &BFCDaoManageKey, value: u8,){
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::set_voting_quorum_rate(system_state, manager_key, value);
     }
 
@@ -313,7 +335,7 @@ module bfc_system::bfc_system {
         manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
-        let system_state = load_bfc_system_state_mut(&mut wrapper.id);
+        let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::set_min_action_delay(system_state, manager_key, value);
     }
 
@@ -440,22 +462,22 @@ module bfc_system::bfc_system {
 
     public fun vault_info<StableCoinType>(wrapper: &BfcSystemState): VaultInfo {
         let inner_state = load_system_state(wrapper);
-        bfc_system_state_inner::vault_info<StableCoinType>(inner_state)
+        bfc_system_state_inner::vault_info_v2<StableCoinType>(inner_state)
     }
 
     public fun vault_ticks<StableCoinType>(wrapper: &BfcSystemState): vector<Tick> {
         let inner_state = load_system_state(wrapper);
-        bfc_system_state_inner::vault_ticks<StableCoinType>(inner_state)
+        bfc_system_state_inner::vault_ticks_v2<StableCoinType>(inner_state)
     }
 
     public fun vault_positions<StableCoinType>(wrapper: &BfcSystemState): vector<Position> {
         let inner_state = load_system_state(wrapper);
-        bfc_system_state_inner::vault_positions<StableCoinType>(inner_state)
+        bfc_system_state_inner::vault_positions_v2<StableCoinType>(inner_state)
     }
 
     public fun total_supply<StableCoinType>(wrapper: &BfcSystemState): u64 {
         let inner_state = load_system_state(wrapper);
-        bfc_system_state_inner::get_total_supply<StableCoinType>(inner_state)
+        bfc_system_state_inner::get_total_supply_v2<StableCoinType>(inner_state)
     }
 
     public fun get_bfc_exchange_rate<StableCoinType>(wrapper: &BfcSystemState): u64
@@ -477,7 +499,7 @@ module bfc_system::bfc_system {
 
     public fun next_epoch_bfc_required(wrapper: &BfcSystemState): u64 {
         let system_state = load_system_state(wrapper);
-        bfc_system_state_inner::next_epoch_bfc_required(system_state)
+        bfc_system_state_inner::next_epoch_bfc_required_v2(system_state)
     }
 
     public fun bfc_required_with_one_stablecoin<StableCoinType>(wrapper: &BfcSystemState): u64 {
@@ -487,11 +509,11 @@ module bfc_system::bfc_system {
 
     public fun treasury_balance(wrapper: &BfcSystemState): u64 {
         let system_state = load_system_state(wrapper);
-        bfc_system_state_inner::treasury_balance(system_state)
+        bfc_system_state_inner::treasury_balance_v2(system_state)
     }
 
     public entry fun deposit_to_treasury(self: &mut BfcSystemState, bfc: Coin<BFC>) {
-        let inner_state = load_bfc_system_state_mut(&mut self.id);
+        let inner_state = load_system_state_mut_by_uid(&mut self.id);
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
 
@@ -503,7 +525,7 @@ module bfc_system::bfc_system {
     }
 
     public entry fun deposit_to_treasury_pool(self: &mut BfcSystemState, bfc: Coin<BFC>) {
-        let inner_state = load_bfc_system_state_mut(&mut self.id);
+        let inner_state = load_system_state_mut_by_uid(&mut self.id);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
@@ -518,8 +540,8 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         pause: bool
     ) {
-        let inner_state = load_bfc_system_state_mut(&mut wrapper.id);
-        bfc_system_state_inner::vault_set_pause<StableCoinType>(cap, inner_state, pause)
+        let inner_state = load_system_state_mut_no_ctx(wrapper);
+        bfc_system_state_inner::vault_set_pause_v2<StableCoinType>(cap, inner_state, pause)
     }
 
     public entry fun set_voting_delay(
@@ -527,7 +549,7 @@ module bfc_system::bfc_system {
         manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
-        let inner_state = load_bfc_system_state_mut(&mut self.id);
+        let inner_state = load_system_state_mut_by_uid(&mut self.id);
         bfc_system_state_inner::set_voting_delay(inner_state, manager_key, value);
     }
 
@@ -561,7 +583,7 @@ module bfc_system::bfc_system {
         proposal: &mut Proposal,
         clock: & Clock,
     ) {
-        let inner_state = load_bfc_system_state_mut(&mut self.id);
+        let inner_state = load_system_state_mut_by_uid(&mut self.id);
         bfc_system_state_inner::queue_proposal_action(inner_state, manager_key, proposal, clock);
     }
 

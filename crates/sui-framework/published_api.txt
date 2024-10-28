@@ -4897,6 +4897,9 @@ get_stablecoin_exchange_rate
 next_epoch_bfc_required
 	public fun
 	0xc8::bfc_system_state_inner
+next_epoch_bfc_required_v2
+	public(package) fun
+	0xc8::bfc_system_state_inner
 bfc_required
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -4905,6 +4908,9 @@ bfc_required_with_one_stablecoin
 	0xc8::bfc_system_state_inner
 treasury_balance
 	public fun
+	0xc8::bfc_system_state_inner
+treasury_balance_v2
+	public(package) fun
 	0xc8::bfc_system_state_inner
 deposit_to_treasury
 	public(package) fun
@@ -4950,6 +4956,21 @@ get_total_supply
 	0xc8::bfc_system_state_inner
 vault_set_pause
 	public fun
+	0xc8::bfc_system_state_inner
+vault_info_v2
+	public(package) fun
+	0xc8::bfc_system_state_inner
+vault_ticks_v2
+	public(package) fun
+	0xc8::bfc_system_state_inner
+vault_positions_v2
+	public(package) fun
+	0xc8::bfc_system_state_inner
+get_total_supply_v2
+	public(package) fun
+	0xc8::bfc_system_state_inner
+vault_set_pause_v2
+	public(package) fun
 	0xc8::bfc_system_state_inner
 bfc_system_parameters
 	public(package) fun
@@ -5062,6 +5083,12 @@ inner_stablecoin_to_bfc
 request_gas_balance
 	public fun
 	0xc8::bfc_system
+load_system_state_by_uid
+	fun
+	0xc8::bfc_system
+load_system_state_mut_by_uid
+	fun
+	0xc8::bfc_system
 load_system_state
 	fun
 	0xc8::bfc_system
@@ -5070,6 +5097,9 @@ load_bfc_system_state
 	0xc8::bfc_system
 load_bfc_system_state_mut
 	public fun
+	0xc8::bfc_system
+load_system_state_mut_no_ctx
+	fun
 	0xc8::bfc_system
 load_system_state_mut
 	fun

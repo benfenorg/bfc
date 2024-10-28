@@ -259,7 +259,7 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
-    public(package) fun get_rate_map(self: &BfcSystemStateInnerV2): VecMap<ascii::String, u64> {
+    public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
         self.stable_rate
     }
 
@@ -353,7 +353,12 @@ module bfc_system::bfc_system_state_inner {
         ))
     }
 
-    public fun next_epoch_bfc_required(self: &BfcSystemStateInnerV2): u64 {
+    /// deprecated
+    public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
+        treasury::bfc_required(&self.treasury)
+    }
+
+    public(package) fun next_epoch_bfc_required_v2(self: &BfcSystemStateInnerV2): u64 {
         treasury::bfc_required(&self.treasury)
     }
 
@@ -367,7 +372,12 @@ module bfc_system::bfc_system_state_inner {
         treasury::bfc_required_with_one_stablecoin<StableCoinType>(&self.treasury)
     }
 
-    public fun treasury_balance(self: &BfcSystemStateInnerV2): u64 {
+    /// deprecated
+    public fun treasury_balance(self: &BfcSystemStateInner): u64 {
+        treasury::get_balance(&self.treasury)
+    }
+
+    public(package) fun treasury_balance_v2(self: &BfcSystemStateInnerV2): u64 {
         treasury::get_balance(&self.treasury)
     }
 
@@ -485,23 +495,48 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// X-vault
-    public fun vault_info<StableCoinType>(self: &BfcSystemStateInnerV2): VaultInfo {
+    /// deprecated
+    public fun vault_info<StableCoinType>(self: &BfcSystemStateInner): VaultInfo {
         treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
-    public fun vault_ticks<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Tick> {
+    /// deprecated
+    public fun vault_ticks<StableCoinType>(self: &BfcSystemStateInner): vector<Tick> {
         treasury::fetch_ticks<StableCoinType>(&self.treasury)
     }
 
-    public fun vault_positions<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Position> {
+    /// deprecated
+    public fun vault_positions<StableCoinType>(self: &BfcSystemStateInner): vector<Position> {
         treasury::fetch_positions<StableCoinType>(&self.treasury)
     }
 
-    public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInnerV2): u64 {
+    /// deprecated
+    public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
         treasury::get_total_supply<StableCoinType>(&self.treasury)
     }
 
-    public fun vault_set_pause<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInnerV2, pause: bool) {
+    /// deprecated
+    public fun vault_set_pause<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInner, pause: bool) {
+        treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
+    }
+
+    public(package) fun vault_info_v2<StableCoinType>(self: &BfcSystemStateInnerV2): VaultInfo {
+        treasury::vault_info<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_ticks_v2<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Tick> {
+        treasury::fetch_ticks<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_positions_v2<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Position> {
+        treasury::fetch_positions<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun get_total_supply_v2<StableCoinType>(self: &BfcSystemStateInnerV2): u64 {
+        treasury::get_total_supply<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_set_pause_v2<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInnerV2, pause: bool) {
         treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
     }
 
@@ -705,6 +740,19 @@ module bfc_system::bfc_system_state_inner {
             operation_capability: vec_map::empty(),
         }, _ctx)
     }
+
+    // public(package) fun v2_to_v1(self: &BfcSystemStateInnerV2): &mut BfcSystemStateInner {
+    //     let state = BfcSystemStateInner {
+    //         round: self.round ,
+    //         stable_base_points: self.stable_base_points,
+    //         reward_rate: self.reward_rate,
+    //         dao: self.dao,
+    //         treasury: self.treasury,
+    //         treasury_pool: self.treasury_pool,
+    //         stable_rate: self.stable_rate,
+    //     };
+    //     &mut state
+    // }
 
     public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
         self.daily_out_limit
