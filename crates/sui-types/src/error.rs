@@ -645,6 +645,9 @@ pub enum SuiError {
     #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
     SuiSystemStateReadError(String),
 
+    #[error("Failed to read or deserialize oracle price related data structures on-chain: {0}")]
+    OraclePriceReadError(String),
+
     #[error("Failed to read or deserialize system state related data structures on-chain: {0}")]
     BfcSystemStateReadError(String),
 
