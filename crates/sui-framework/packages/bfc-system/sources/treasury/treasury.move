@@ -154,7 +154,7 @@ module bfc_system::treasury {
                                                  ctx: &mut TxContext) {
         let amount: u64 = stable_coin.value();
         // treasury increase usdc, and delete stable_coin
-        let usdc_coin = bag::borrow_mut<String, Coin<USDC>>(&mut treasury.supplies, std::ascii::string(b"USDC"));
+        let usdc_coin = bag::borrow_mut<String, Coin<USDC>>(&mut treasury.supplies, std::ascii::string(b"exchange-USDC"));
         coin::join(usdc_coin, stable_coin);
         // mint busd
         let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
@@ -171,7 +171,7 @@ module bfc_system::treasury {
                                  ctx: &mut TxContext) {
         let amount: u64 = stable_coin.value();
         // treasury increase usdc, and delete stable_coin
-        let usdt_coin = bag::borrow_mut<String, Coin<USDT>>(&mut treasury.supplies, std::ascii::string(b"USDT"));
+        let usdt_coin = bag::borrow_mut<String, Coin<USDT>>(&mut treasury.supplies, std::ascii::string(b"exchange-USDT"));
         coin::join(usdt_coin, stable_coin);
         // mint busd
         let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
