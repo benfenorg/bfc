@@ -604,7 +604,7 @@ module bfc_system::treasury {
     public(package) fun get_busd_supply_mut(
         _self: &mut Treasury
     ): &mut Supply<BUSD> {
-        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut _self.supplies, std::ascii::string(b"BUSD"));
+        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut _self.supplies, std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
         supply
     }
 

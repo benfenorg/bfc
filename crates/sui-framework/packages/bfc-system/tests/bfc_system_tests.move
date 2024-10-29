@@ -463,7 +463,7 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = ERR_SWAP_STABLE_NOT_ENOUGH)]
+    // #[expected_failure(abort_code = ERR_SWAP_STABLE_NOT_ENOUGH)]
     fun test_exchange_busd_to_usdt_success() {
         let mut scenario_val = setup(BFC_AMOUNT);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
