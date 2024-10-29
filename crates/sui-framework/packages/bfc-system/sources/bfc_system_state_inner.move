@@ -437,10 +437,9 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun mint_stable<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
         amount: u64,
-        recipient: address,
         ctx: &mut TxContext,
-    ) {
-        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, recipient, ctx);
+    ): Coin<StableCoinType> {
+        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
     }
 
     public(package) fun exchange_stable_to_busd<StableCoinType>(
@@ -453,8 +452,8 @@ module bfc_system::bfc_system_state_inner {
 
         // stake coin into stable_coins
         let key = treasury::get_vault_key<StableCoinType>();
-        let mut exchange_key_bytes = b"exchange-";
-        exchange_key_bytes.append(std::ascii::into_bytes(key));
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
         let exchange_key = std::ascii::string(exchange_key_bytes);
         let coin = bag::borrow_mut<String, Coin<StableCoinType>>(&mut inner_state.stake_coins, exchange_key);
         coin::join(coin, stable_coin);
@@ -774,8 +773,17 @@ module bfc_system::bfc_system_state_inner {
         let coin_bag = &mut self.stake_coins;
         let usdc_coin = coin::zero<USDC>(_ctx);
         let usdt_coin = coin::zero<USDT>(_ctx);
-        bag::add(coin_bag, ascii::string(b"exchange-USDC"), usdc_coin);
-        bag::add(coin_bag, ascii::string(b"exchange-USDT"), usdt_coin);
+        add_coin_2_stake_pool<USDC>(coin_bag, usdc_coin);
+        add_coin_2_stake_pool<USDT>(coin_bag, usdt_coin);
+    }
+
+    fun add_coin_2_stake_pool<StableCoinType>(bag: &mut Bag, coin: Coin<StableCoinType>) {
+        let key = treasury::get_vault_key<StableCoinType>();
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
+        let exchange_key = std::ascii::string(exchange_key_bytes);
+
+        bag::add(bag, exchange_key, coin);
     }
 
     public(package)  fun get_operation_capability(self: &BfcSystemStateInnerV2): VecMap<String, VecSet<address>> {

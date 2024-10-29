@@ -141,15 +141,13 @@ module bfc_system::treasury {
 
     public fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
                                             _amount: u64,
-                                           recipient: address,
-                                           _ctx: &mut TxContext) {
+                                           _ctx: &mut TxContext) : Coin<StableCoinType> {
         let key = get_vault_key<StableCoinType>();
         let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
         let balance = balance::increase_supply(supply, _amount);
         let coin = sui::coin::from_balance(balance, _ctx);
 
-        // transfer to sender
-        transfer::public_transfer(coin, recipient);
+        coin
     }
 
     public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {

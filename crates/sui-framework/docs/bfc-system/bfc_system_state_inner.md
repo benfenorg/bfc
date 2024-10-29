@@ -73,6 +73,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `get_daily_out_limit`](#0xc8_bfc_system_state_inner_get_daily_out_limit)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
+-  [Function `add_coin_2_stake_pool`](#0xc8_bfc_system_state_inner_add_coin_2_stake_pool)
 -  [Function `get_operation_capability`](#0xc8_bfc_system_state_inner_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_state_inner_get_operation_capability_by_key)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_state_inner_set_operation_capability)
@@ -1329,7 +1330,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, amount: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, amount: u64, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1341,9 +1342,10 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(
     inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
     amount: u64,
+    recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx);
+    <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, recipient, ctx);
 }
 </code></pre>
 
@@ -1376,8 +1378,8 @@ deprecated
 
     // stake <a href="../sui-framework/coin.md#0x2_coin">coin</a> into stable_coins
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
-    <b>let</b> <b>mut</b> exchange_key_bytes = b"exchange-";
-    exchange_key_bytes.append(std::ascii::into_bytes(key));
+    <b>let</b> <b>mut</b> exchange_key_bytes = std::ascii::into_bytes(key);
+    exchange_key_bytes.append( b"-exchange");
     <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&<b>mut</b> inner_state.stake_coins, exchange_key);
     <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, stable_coin);
@@ -2404,8 +2406,37 @@ deprecated
     <b>let</b> coin_bag = &<b>mut</b> self.stake_coins;
     <b>let</b> usdc_coin = <a href="../sui-framework/coin.md#0x2_coin_zero">coin::zero</a>&lt;USDC&gt;(_ctx);
     <b>let</b> usdt_coin = <a href="../sui-framework/coin.md#0x2_coin_zero">coin::zero</a>&lt;USDT&gt;(_ctx);
-    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(coin_bag, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"exchange-USDC"), usdc_coin);
-    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(coin_bag, <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"exchange-USDT"), usdt_coin);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDC&gt;(coin_bag, usdc_coin);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDT&gt;(coin_bag, usdt_coin);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_add_coin_2_stake_pool"></a>
+
+## Function `add_coin_2_stake_pool`
+
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;StableCoinType&gt;(<a href="../sui-framework/bag.md#0x2_bag">bag</a>: &<b>mut</b> <a href="../sui-framework/bag.md#0x2_bag_Bag">bag::Bag</a>, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;StableCoinType&gt;(<a href="../sui-framework/bag.md#0x2_bag">bag</a>: &<b>mut</b> Bag, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;StableCoinType&gt;) {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> <b>mut</b> exchange_key_bytes = std::ascii::into_bytes(key);
+    exchange_key_bytes.append( b"-exchange");
+    <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
+
+    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(<a href="../sui-framework/bag.md#0x2_bag">bag</a>, exchange_key, <a href="../sui-framework/coin.md#0x2_coin">coin</a>);
 }
 </code></pre>
 
