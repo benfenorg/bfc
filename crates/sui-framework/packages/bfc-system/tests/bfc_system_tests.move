@@ -350,7 +350,10 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::mint_stable<USDC>(&mut system_state, 1000u64, sui::tx_context::sender(ctx), ctx);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, ctx);
+        assert!(coin.value() == 100, 1);
+
+        coin::burn_for_testing(coin);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
