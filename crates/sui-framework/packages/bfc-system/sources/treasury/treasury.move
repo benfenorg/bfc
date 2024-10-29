@@ -1,6 +1,7 @@
 #[allow(unused_const)]
 module bfc_system::treasury {
     use std::ascii::{String};
+    use std::debug;
     use std::type_name;
 
     use sui::bag::{Self, Bag};
@@ -10,6 +11,7 @@ module bfc_system::treasury {
     use sui::coin::{Self, Coin};
     use sui::dynamic_field;
     use sui::vec_map::{Self, VecMap};
+    use bfc_system::usdt::USDT;
 
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -155,11 +157,12 @@ module bfc_system::treasury {
     }
 
     public fun exchange_busd_to_usdc(treasury: &mut Treasury,
+                                     stake_coins: &mut Bag,
                                         busd_coin: Coin<BUSD>,
                                         receiver_address: address,
                                         ctx: &mut TxContext, ) {
         let amount: u64 = busd_coin.value();
-        let stable_sum = bag::borrow_mut<String, Coin<USDC>>(&mut treasury.supplies, std::ascii::string(b"exchange-USDC"));
+        let stable_sum = bag::borrow_mut<String, Coin<USDC>>(stake_coins, std::ascii::string(b"exchange-USDC"));
         assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
         let stable_back = coin::split(stable_sum, amount, ctx);
         let busd_sum = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
@@ -168,14 +171,16 @@ module bfc_system::treasury {
     }
 
     public fun exchange_busd_to_usdt(treasury: &mut Treasury,
+                                     stake_coins: &mut Bag,
                                      busd_coin: Coin<BUSD>,
                                      receiver_address: address,
                                      ctx: &mut TxContext, ) {
         let amount: u64 = busd_coin.value();
-        let stable_sum = bag::borrow_mut<String, Coin<USDC>>(&mut treasury.supplies, std::ascii::string(b"exchange-USDT"));
+        let stable_sum = bag::borrow_mut<String, Coin<USDT>>(stake_coins, std::ascii::string(b"exchange-USDT"));
+        debug::print(&stable_sum.value());
         assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
         let stable_back = coin::split(stable_sum, amount, ctx);
-        let busd_sum = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"BUSD"));
+        let busd_sum = bag::borrow_mut<String, Supply<BUSD>>(&mut treasury.supplies, std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
         balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
         transfer::public_transfer(stable_back, receiver_address);
     }

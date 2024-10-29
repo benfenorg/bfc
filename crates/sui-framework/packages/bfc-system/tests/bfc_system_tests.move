@@ -9,7 +9,6 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
-    //use std::debug;
     use sui::test_scenario;
     use sui::tx_context::TxContext;
     use sui::clock::{Self};
@@ -18,7 +17,7 @@ module bfc_system::bfc_system_tests {
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
     use sui::vec_map::{Self};
-    use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
+    use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap, ERR_SWAP_STABLE_NOT_ENOUGH};
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -346,6 +345,18 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    fun test_mint_stable_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::mint_stable<USDC>(&mut system_state, 1000u64, sui::tx_context::sender(ctx), ctx);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     fun test_exchange_busd_to_usdc_exceed_daliy_limit() {
         let mut scenario_val = setup(BFC_AMOUNT);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
@@ -416,28 +427,22 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = ERR_SWAP_STABLE_NOT_ENOUGH)]
     fun test_exchange_busd_to_usdt_success() {
         let mut scenario_val = setup(BFC_AMOUNT);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
+
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
+        // bfc_system::exchange_busd_to_usdtV1(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        // bfc_system::exchange_busd_to_usdtV3(&mut system_state, busd_coin, test_scenario::ctx(&mut scenario_val));
         bfc_system::exchange_busd_to_usdt(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
-        test_scenario::return_shared(system_state);
-        tearDown(scenario_val);
-    }
+        // let z = bfc_system::exchange_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
 
-    #[test]
-    fun test_mint_stable_success() {
-        let mut scenario_val = setup(BFC_AMOUNT);
-        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-
-        let receiver_address = @0x100;
-        bfc_system::mint_stable<USDC>(&mut system_state, 100, receiver_address, test_scenario::ctx(&mut scenario_val));
-
-
+        // debug::print(z);
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }

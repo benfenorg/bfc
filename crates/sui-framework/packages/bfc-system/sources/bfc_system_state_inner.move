@@ -475,7 +475,7 @@ module bfc_system::bfc_system_state_inner {
     ) {
         let amount: u64 = busd_coin.value();
         assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
-        treasury::exchange_busd_to_usdc(&mut system_state.treasury, busd_coin, receiver_address, ctx);
+        treasury::exchange_busd_to_usdc(&mut system_state.treasury, &mut system_state.stake_coins, busd_coin, receiver_address, ctx);
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
@@ -487,7 +487,7 @@ module bfc_system::bfc_system_state_inner {
     ) {
         let amount: u64 = busd_coin.value();
         assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
-        treasury::exchange_busd_to_usdt(&mut system_state.treasury, busd_coin, receiver_address, ctx);
+        treasury::exchange_busd_to_usdt(&mut system_state.treasury, &mut system_state.stake_coins, busd_coin, receiver_address, ctx);
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
