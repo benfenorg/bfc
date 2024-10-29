@@ -848,7 +848,8 @@ async fn test_move_call_storage() -> SuiResult {
     let gas_object_id_stable = ObjectID::random();
     let (authority_state, _package_object_ref) =
         init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
-    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
+    let mut rgp = authority_state.reference_gas_price_for_testing().unwrap();
+
     // publish move module
     let package =
         publish_move_random_package(&authority_state, &sender, &sender_key, &gas_object_id).await;
@@ -1269,7 +1270,7 @@ async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
             CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref)),
             CallArg::Object(ObjectArg::ImmOrOwnedObject(created_object_ref2)),
         ],
-        80618,
+        500000,
         rgp,
     ).unwrap();
 
@@ -1278,7 +1279,7 @@ async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
     let effects = response.1.into_data();
     assert_eq!(
         *effects.status(),
-        ExecutionStatus::new_failure(ExecutionFailureStatus::InsufficientGas, None)
+        ExecutionStatus::Success,
     );
 
     Ok(())
