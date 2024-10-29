@@ -60,6 +60,7 @@ module bfc_system::bfc_system_state_inner {
     const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
     const ERR_DAILY_LIMIT: u64 = 1002;
+    const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
 
     //spec module { pragma verify = false; }
 
@@ -467,7 +468,7 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
-    public(package) fun exchange_busd_to_usdc(
+    public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
         receiver_address: address,
@@ -475,19 +476,18 @@ module bfc_system::bfc_system_state_inner {
     ) {
         let amount: u64 = busd_coin.value();
         assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
-        treasury::exchange_busd_to_usdc(&mut system_state.treasury, &mut system_state.stake_coins, busd_coin, receiver_address, ctx);
-        system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
-    }
-
-    public(package) fun exchange_busd_to_usdt(
-        system_state: &mut BfcSystemStateInnerV2,
-        busd_coin: Coin<BUSD>,
-        receiver_address: address,
-        ctx: &mut TxContext,
-    ) {
+        let key = treasury::get_vault_key<StableCoinType>();
+        let b0 = b"-exchange";
+        let mut b1 = std::ascii::into_bytes(key);
+        vector::append(&mut b1, b0);
+        let exchange_key = std::ascii::string(b1);
         let amount: u64 = busd_coin.value();
-        assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
-        treasury::exchange_busd_to_usdt(&mut system_state.treasury, &mut system_state.stake_coins, busd_coin, receiver_address, ctx);
+        let stable_sum = bag::borrow_mut<String, Coin<StableCoinType>>(&mut system_state.stake_coins, exchange_key);
+        assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
+        let stable_back = coin::split(stable_sum, amount, ctx);
+        let busd_sum = treasury::get_busd_supply_mut(&mut system_state.treasury);
+        balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
+        transfer::public_transfer(stable_back, receiver_address);
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 

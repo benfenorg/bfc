@@ -17,7 +17,8 @@ module bfc_system::bfc_system_tests {
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
     use sui::vec_map::{Self};
-    use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap, ERR_SWAP_STABLE_NOT_ENOUGH};
+    use bfc_system::usdt::USDT;
+    use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -364,7 +365,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        bfc_system::exchange_busd_to_usdc(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -378,7 +379,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        bfc_system::exchange_busd_to_usdt(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDT>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -392,7 +393,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        bfc_system::exchange_busd_to_usdc(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -406,7 +407,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        bfc_system::exchange_busd_to_usdt(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDT>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -420,7 +421,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        bfc_system::exchange_busd_to_usdc(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -436,11 +437,7 @@ module bfc_system::bfc_system_tests {
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
-        // bfc_system::exchange_busd_to_usdtV1(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
-        // bfc_system::exchange_busd_to_usdtV3(&mut system_state, busd_coin, test_scenario::ctx(&mut scenario_val));
-        bfc_system::exchange_busd_to_usdt(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
-
-        // let z = bfc_system::exchange_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
+        bfc_system::exchange_busd_to_stable<USDT>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         // debug::print(z);
         test_scenario::return_shared(system_state);
