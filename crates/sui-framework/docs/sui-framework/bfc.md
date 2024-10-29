@@ -89,21 +89,11 @@ The amount of Mist per Sui token based on the fact that mist is
 
 <a name="0x2_bfc_TOTAL_SUPPLY_MIST"></a>
 
+The total supply of Sui denominated in whole Sui tokens (10 Billion)
 The total supply of Sui denominated in Mist (10 Billion * 10^9)
 
 
-<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 10000000000000000000;
-</code></pre>
-
-
-
-<a name="0x2_bfc_TOTAL_SUPPLY_SUI"></a>
-
-The total supply of Sui denominated in whole Sui tokens (10 Billion)
-The total supply of Sui denominated in whole Sui tokens (10 Billion)
-
-
-<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_SUI">TOTAL_SUPPLY_SUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 10000000000;
+<pre><code><b>const</b> <a href="../sui-framework/bfc.md#0x2_bfc_TOTAL_SUPPLY_MIST">TOTAL_SUPPLY_MIST</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1000000000000000000;
 </code></pre>
 
 
