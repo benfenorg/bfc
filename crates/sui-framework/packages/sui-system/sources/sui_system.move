@@ -54,6 +54,7 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use sui::dynamic_field;
     use sui::vec_map::VecMap;
+    use sui::vec_set::VecSet;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
 
@@ -682,6 +683,41 @@ module sui_system::sui_system {
     #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
         bfc_system::get_exchange_rate(id)
+    }
+
+    #[allow(unused_function)]
+    public fun request_add_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr: address,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 99);
+        bfc_system::add_operation_capability(&mut self.bfc_system_id, key, addr)
+    }
+
+    #[allow(unused_function)]
+    public fun request_remove_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr: address,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 97);
+        bfc_system::remove_operation_capability(&mut self.bfc_system_id, &key, addr)
+    }
+    #[allow(unused_function)]
+    public fun request_set_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr_set: VecSet<address>,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 96);
+        bfc_system::set_operation_capability(&mut self.bfc_system_id, key, addr_set)
     }
 
     public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {
