@@ -19,6 +19,7 @@ module bfc_system::bfc_system_tests {
     use sui::tx_context;
     use sui::vec_map::{Self};
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
+    use bfc_system::bfc_system_state_inner::{ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH};
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -391,6 +392,44 @@ module bfc_system::bfc_system_tests {
         assert!(c.value() == 100, 1);
 
         coin::burn_for_testing(c);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_DAILY_LIMIT)]
+    fun test_exchange_busd_to_stable_exceed_daily_limit() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, ctx);
+        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+
+        let busd = balance::create_for_testing<BUSD>(50000_000_000_000u64);
+        let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
+        let receiver_address = @0x100;
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_SWAP_STABLE_NOT_ENOUGH)]
+    fun test_exchange_busd_to_stable_swap_stable_not_enough() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, ctx);
+        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+
+        let busd = balance::create_for_testing<BUSD>(20000_000_000_000u64);
+        let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
+        let receiver_address = @0x100;
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
