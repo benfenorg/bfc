@@ -1,5 +1,6 @@
 module bfc_system::bfc_system {
     use std::ascii;
+    use std::ascii::String;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -377,10 +378,11 @@ module bfc_system::bfc_system {
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
+        key: &String,
         ctx: &mut TxContext,
     ): Coin<StableCoinType> {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, _ctx)
+        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx)
     }
 
     public fun exchange_stable_to_busd<StableCoinType>(

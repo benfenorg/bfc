@@ -61,6 +61,8 @@ module bfc_system::bfc_system_state_inner {
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
     const ERR_DAILY_LIMIT: u64 = 1002;
     const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
+    const ERR_MINT_UNAUTHORIZED: u64 = 1004;
+
 
     //spec module { pragma verify = false; }
 
@@ -437,8 +439,10 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun mint_stable<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
         amount: u64,
+        key: &String,
         ctx: &mut TxContext,
     ): Coin<StableCoinType> {
+        assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
     }
 
