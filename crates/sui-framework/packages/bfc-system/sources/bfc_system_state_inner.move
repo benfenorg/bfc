@@ -476,10 +476,9 @@ module bfc_system::bfc_system_state_inner {
         let amount: u64 = busd_coin.value();
         assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
         let key = treasury::get_vault_key<StableCoinType>();
-        let b0 = b"-exchange";
-        let mut b1 = std::ascii::into_bytes(key);
-        vector::append(&mut b1, b0);
-        let exchange_key = std::ascii::string(b1);
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
+        let exchange_key = std::ascii::string(exchange_key_bytes);
         let amount: u64 = busd_coin.value();
         let stable_sum = bag::borrow_mut<String, Coin<StableCoinType>>(&mut system_state.stake_coins, exchange_key);
         assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);

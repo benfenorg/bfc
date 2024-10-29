@@ -16,6 +16,7 @@ module bfc_system::bfc_system_tests {
     use sui::coin::{Self};
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
+    use sui::tx_context;
     use sui::vec_map::{Self};
     use bfc_system::usdt::USDT;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
@@ -355,6 +356,37 @@ module bfc_system::bfc_system_tests {
         assert!(coin.value() == 100, 1);
 
         coin::burn_for_testing(coin);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_exchange_stable_to_busd_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, ctx);
+        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_exchange_busd_to_stable_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, ctx);
+        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+
+        let busd = balance::create_for_testing<BUSD>(100);
+        let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
+        let receiver_address = @0x100;
+        bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
