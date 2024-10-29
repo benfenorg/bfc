@@ -4,6 +4,7 @@ module bfc_system::bfc_system_tests {
 
     use std::ascii;
     use std::vector;
+    use bfc_system::usdc::USDC;
     use bfc_system::busd::BUSD;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
@@ -423,6 +424,19 @@ module bfc_system::bfc_system_tests {
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
         let receiver_address = @0x100;
         bfc_system::exchange_busd_to_usdt(&mut system_state, busd_coin, receiver_address, test_scenario::ctx(&mut scenario_val));
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_mint_stable_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let receiver_address = @0x100;
+        bfc_system::mint_stable<USDC>(&mut system_state, 100, receiver_address, test_scenario::ctx(&mut scenario_val));
+
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);

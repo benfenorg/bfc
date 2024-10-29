@@ -436,9 +436,10 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun mint_stable<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
         amount: u64,
+        recipient: address,
         ctx: &mut TxContext,
     ) {
-        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx);
+        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, recipient, ctx);
     }
 
     public(package) fun exchange_stable_to_busd<StableCoinType>(

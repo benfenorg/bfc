@@ -143,14 +143,15 @@ module bfc_system::treasury {
 
     public fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
                                             _amount: u64,
-                                            _ctx: &mut TxContext) {
+                                           recipient: address,
+                                           _ctx: &mut TxContext) {
         let key = get_vault_key<StableCoinType>();
         let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
         let balance = balance::increase_supply(supply, _amount);
         let coin = sui::coin::from_balance(balance, _ctx);
 
         // transfer to sender
-        transfer::public_transfer(coin, _ctx.sender());
+        transfer::public_transfer(coin, recipient);
     }
 
     public fun exchange_busd_to_usdc(treasury: &mut Treasury,

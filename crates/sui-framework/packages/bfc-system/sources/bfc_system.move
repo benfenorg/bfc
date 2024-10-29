@@ -377,10 +377,11 @@ module bfc_system::bfc_system {
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
+        recipient: address,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, _ctx);
+        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, recipient, _ctx);
     }
 
     public fun exchange_stable_to_busd<StableCoinType>(
