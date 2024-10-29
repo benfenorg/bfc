@@ -244,6 +244,11 @@ module bfc_system::bfc_system {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_operation_capability_by_key(inner, key)
     }
+    #[test_only]
+    public fun add_operation_capability_test(wrapper: &mut BfcSystemState, key: ascii::String, address: address, ctx: &mut TxContext,) {
+        let (inner, _) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_operation_capability(inner, key, address)
+    }
     public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::add_operation_capability(inner, key, address)

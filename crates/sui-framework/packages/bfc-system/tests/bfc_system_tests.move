@@ -384,7 +384,8 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"wrong_key");
+        let test_key = std::ascii::string(b"right_key");
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
         bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
 
@@ -398,7 +399,8 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"wrong_key");
+        let test_key = std::ascii::string(b"right_key");
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
         bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
 
@@ -422,7 +424,8 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"wrong_key");
+        let test_key = std::ascii::string(b"right_key");
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, &test_key, ctx);
         bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
 
@@ -442,7 +445,8 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"wrong_key");
+        let test_key = std::ascii::string(b"right_key");
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
         bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
 
