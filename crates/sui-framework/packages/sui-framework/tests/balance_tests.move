@@ -7,7 +7,6 @@ module sui::coin_balance_tests {
     use sui::pay;
     use sui::coin;
     use sui::balance;
-    use sui::bfc::BFC;
     use sui::test_utils;
 
     use sui::bfc::BFC;
@@ -41,7 +40,7 @@ module sui::coin_balance_tests {
 
     #[test]
     fun test_balance() {
-        let mut balance = balance::zero<SUI>();
+        let mut balance = balance::zero<BFC>();
         let another = balance::create_for_testing(1000);
 
         balance.join(another);

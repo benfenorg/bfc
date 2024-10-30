@@ -7841,7 +7841,7 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
             assert_eq!(e,SuiError::UserInputError{error:UserInputError::InvalidGasObject {object_id:created_object_id}});
         }
     }
-    
+
 
 }
 

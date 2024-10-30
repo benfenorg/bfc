@@ -27,7 +27,7 @@ use crate::rosetta_client::{start_rosetta_test_server, RosettaEndpoint};
 #[tokio::test]
 async fn test_custom_coin_balance() {
     // mint coins to `test_culset.get_address_1()` and `test_culset.get_address_2()`
-    const SUI_BALANCE: u64 = 150_000_000_000_000_000;
+    const SUI_BALANCE: u64 = 1500_0000_0_0000_0000;
     const COIN1_BALANCE: u64 = 100_000_000;
     const COIN2_BALANCE: u64 = 200_000_000;
     let test_cluster = TestClusterBuilder::new().build().await;
@@ -101,7 +101,7 @@ async fn test_custom_coin_balance() {
 #[tokio::test]
 async fn test_default_balance() {
     // mint coins to `test_culset.get_address_1()` and `test_culset.get_address_2()`
-    const SUI_BALANCE: u64 = 150_000_000_000_000_000;
+    const SUI_BALANCE: u64 = 1500_0000_0_0000_0000;
     let test_cluster = TestClusterBuilder::new().build().await;
     let client = test_cluster.wallet.get_client().await.unwrap();
 

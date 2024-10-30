@@ -6,16 +6,16 @@ use serde_json::json;
 #[tokio::test]
 async fn test_currency_defaults() {
     let expected = Currency {
-        symbol: "SUI".to_string(),
+        symbol: "BFC".to_string(),
         decimals: 9,
         metadata: CurrencyMetadata {
-            coin_type: "0x2::sui::SUI".to_string(),
+            coin_type: "0x2::bfc::BFC".to_string(),
         },
     };
 
     let currency: Currency = serde_json::from_value(json!(
         {
-            "symbol": "SUI",
+            "symbol": "BFC",
             "decimals": 9,
         }
     ))
