@@ -857,4 +857,12 @@ module bfc_system::bfc_system_state_inner {
         treasury::withdraw_balance(&mut self.treasury, amount)
     }
 
+    public(package) fun add_balance_to_vault<StableCoinType>(
+        self: &mut BfcSystemStateInnerV2,
+        balance: Balance<StableCoinType>,
+        _ctx: &mut TxContext
+    ) {
+        treasury::increase_other_stablecoin_balance<StableCoinType>(&mut self.treasury, balance);
+    }
+
 }
