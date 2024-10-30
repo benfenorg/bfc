@@ -41,6 +41,7 @@ use tap::TapFallible;
 use tracing::instrument;
 use typed_store::Map;
 use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::oracle_price::{get_oracle_price, get_oracle_price_by_id, OraclePrice};
 use sui_types::proposal::ProposalStatus;
 
 use super::{
@@ -96,7 +97,7 @@ impl PassthroughCache {
             usize::MAX,
             EPOCH_DURATION_MS_FOR_TESTING,
         )
-        .await;
+            .await;
         let _ = AuthorityStorePruner::compact(&self.store.perpetual_tables);
     }
 
@@ -238,7 +239,7 @@ impl ExecutionCacheRead for PassthroughCache {
 
             Ok(join_all(results).await)
         }
-        .boxed()
+            .boxed()
     }
 
     fn multi_get_events(
@@ -252,9 +253,15 @@ impl ExecutionCacheRead for PassthroughCache {
         get_sui_system_state(self)
     }
 
+    fn get_oracle_price(&self) -> SuiResult<OraclePrice> {
+        get_oracle_price(self)
+    }
 
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
+        get_oracle_price_by_id(self, id)
+    }
 
-    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
+    fn get_bfc_system_state_object(&self) -> SuiResult<BFCSystemState> {
         get_bfc_system_state(self)
     }
 
@@ -316,7 +323,7 @@ impl ExecutionCacheWrite for PassthroughCache {
 
             Ok(())
         }
-        .boxed()
+            .boxed()
     }
 
     fn acquire_transaction_locks<'a>(
@@ -367,7 +374,7 @@ impl AccumulatorStore for PassthroughCache {
     fn iter_live_object_set(
         &self,
         include_wrapped_tombstone: bool,
-    ) -> Box<dyn Iterator<Item = crate::authority::authority_store_tables::LiveObject> + '_> {
+    ) -> Box<dyn Iterator<Item=crate::authority::authority_store_tables::LiveObject> + '_> {
         self.store.iter_live_object_set(include_wrapped_tombstone)
     }
 }

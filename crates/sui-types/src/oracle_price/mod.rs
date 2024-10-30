@@ -7,7 +7,7 @@ use crate::error::SuiError;
 use crate::id::UID;
 use crate::storage::ObjectStore;
 
-const ORACLE_PRICE_OBJECT_ADDRESS: &str = "BFCa364350796396174d26f7c085dab053996412cd9ee998604ecee3ba33a6a8b78d40a";
+pub const ORACLE_PRICE_OBJECT_ADDRESS: &str = "0xd0b371bdb5656c488c7a30e431759bb42b70fbad84dfef504a47644a0da7a224";
 
 #[derive(Debug, Hash, Eq, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PriceIdentifier {
@@ -49,6 +49,13 @@ pub fn get_oracle_price(
     object_store: &dyn ObjectStore,
 ) -> anyhow::Result<OraclePrice, SuiError> {
     let id = ObjectID::from_hex_literal(ORACLE_PRICE_OBJECT_ADDRESS).unwrap();
+    get_oracle_price_by_id(object_store, id)
+}
+
+pub fn get_oracle_price_by_id(
+    object_store: &dyn ObjectStore,
+    id : ObjectID
+) -> anyhow::Result<OraclePrice, SuiError> {
     let wrapper = object_store
         .get_object(&id)?
         .ok_or_else(|| {

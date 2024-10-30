@@ -489,6 +489,10 @@ pub trait ExecutionCacheRead: Send + Sync {
             _ => Ok(false),
         }
     }
+
+    fn get_oracle_price(&self) -> SuiResult<OraclePrice>;
+
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
 }
 
 pub trait ExecutionCacheWrite: Send + Sync {
@@ -827,6 +831,7 @@ macro_rules! implement_passthrough_traits {
 }
 
 use implement_passthrough_traits;
+use sui_types::oracle_price::{get_oracle_price_by_id, OraclePrice};
 
 implement_storage_traits!(PassthroughCache);
 implement_storage_traits!(WritebackCache);
