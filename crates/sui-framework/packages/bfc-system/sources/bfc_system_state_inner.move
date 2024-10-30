@@ -847,4 +847,11 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
+    public(package) fun withdraw_balance(
+        self: &mut BfcSystemStateInnerV2,
+        amount: u64
+    ): Balance<BFC> {
+        treasury::withdraw_balance(&mut self.treasury, amount)
+    }
+
 }

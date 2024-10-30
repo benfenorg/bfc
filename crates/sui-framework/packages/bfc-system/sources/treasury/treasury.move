@@ -675,4 +675,12 @@ module bfc_system::treasury {
             vault::calculated_swap_result_amount_out(&calculate_swap_result<StableCoinType>(_treasury, true, _amount)),
         );
     }
+
+    public(package) fun withdraw_balance(
+        _treasury: &mut Treasury,
+        amount: u64,
+    ): Balance<BFC> {
+        assert!(balance::value(&_treasury.bfc_balance) >= amount, ERR_INSUFFICIENT);
+        balance::split(&mut _treasury.bfc_balance, amount)
+    }
 }
