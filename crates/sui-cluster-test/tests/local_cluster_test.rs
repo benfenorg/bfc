@@ -5,8 +5,7 @@ use sui_cluster_test::{config::ClusterTestOpt, ClusterTest};
 
 #[tokio::test]
 async fn cluster_test() {
-    telemetry_subscribers::init_for_testing();
-
+    //telemetry_subscribers::init_for_testing();
     ClusterTest::run(ClusterTestOpt::new_local()).await;
 }
 
@@ -18,7 +17,7 @@ async fn test_sui_cluster() {
     use sui_graphql_rpc::client::simple_client::SimpleClient;
     use tokio::time::sleep;
 
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
 
     let opts = ClusterTestOpt {
         with_indexer_and_graphql: true,
