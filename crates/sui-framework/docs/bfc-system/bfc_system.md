@@ -21,6 +21,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `load_system_state_mut_no_ctx`](#0xc8_bfc_system_load_system_state_mut_no_ctx)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
+-  [Function `get_daily_out_limit`](#0xc8_bfc_system_get_daily_out_limit)
+-  [Function `set_daily_out_limit`](#0xc8_bfc_system_set_daily_out_limit)
 -  [Function `get_operation_capability`](#0xc8_bfc_system_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_get_operation_capability_by_key)
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
@@ -627,6 +629,56 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">bfc_system_state_inner::get_rate_map</a>(inner)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_get_daily_out_limit"></a>
+
+## Function `get_daily_out_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_limit">get_daily_out_limit</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_limit">get_daily_out_limit</a>(id: &UID): u64 {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">bfc_system_state_inner::get_daily_out_limit</a>(inner)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_set_daily_out_limit"></a>
+
+## Function `set_daily_out_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, daily_out_limit: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(id: &<b>mut</b> UID, daily_out_limit: u64) {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_daily_out_limit">bfc_system_state_inner::set_daily_out_limit</a>(inner, daily_out_limit);
 }
 </code></pre>
 

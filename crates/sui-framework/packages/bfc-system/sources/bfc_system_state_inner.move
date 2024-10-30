@@ -1,6 +1,7 @@
 #[allow(unused_const,unused_mut_parameter)]
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
+    use std::option;
     use std::ascii::String;
     use bfc_system::usdt;
     use bfc_system::usdc;
@@ -90,6 +91,7 @@ module bfc_system::bfc_system_state_inner {
         daily_use_out_limit: u64,
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
+        oracle_address: Option<address>,
     }
 
     public struct TreasuryParameters has drop, copy {
@@ -741,6 +743,7 @@ module bfc_system::bfc_system_state_inner {
             daily_out_limit : 40000_000_000_000u64,
             daily_use_out_limit: 0u64,
             operation_capability: vec_map::empty(),
+            oracle_address: option::none(),
         }, _ctx)
     }
 

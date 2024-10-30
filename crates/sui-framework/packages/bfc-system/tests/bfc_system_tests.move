@@ -346,20 +346,23 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
-    // #[test]
-    // fun test_mint_stable_success() {
-    //     let mut scenario_val = setup(BFC_AMOUNT);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-    //
-    //     let ctx = test_scenario::ctx(&mut scenario_val);
-    //     let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, ctx);
-    //     assert!(coin.value() == 100, 1);
-    //
-    //     coin::burn_for_testing(coin);
-    //
-    //     test_scenario::return_shared(system_state);
-    //     tearDown(scenario_val);
-    // }
+    #[test]
+    fun test_mint_stable_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let test_key = std::ascii::string(b"right_key");
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
+
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
+        assert!(coin.value() == 100, 1);
+
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
 
     #[test]
     #[expected_failure(abort_code = ERR_MINT_UNAUTHORIZED)]
@@ -370,7 +373,6 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = std::ascii::string(b"wrong_key");
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
-        assert!(coin.value() == 100, 1);
 
         coin::burn_for_testing(coin);
 
