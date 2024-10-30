@@ -139,7 +139,7 @@ module bfc_system::treasury {
         )
     }
 
-    public fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
+    public(package) fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
                                             _amount: u64,
                                            _ctx: &mut TxContext) : Coin<StableCoinType> {
         let key = get_vault_key<StableCoinType>();
