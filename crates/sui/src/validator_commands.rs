@@ -111,6 +111,17 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
+    /// set daily out limit
+    #[clap(name = "set-daily-out-limit")]
+    SetDailyOutLimit {
+        #[clap(name = "operation-cap-id", long)]
+        operation_cap_id: Option<ObjectID>,
+        #[clap(name = "daily-out-limit")]
+        daily_out_limit: u64,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
     /// Report or un-report a validator.
     #[clap(name = "report-validator")]
     ReportValidator {
@@ -167,6 +178,7 @@ pub enum SuiValidatorCommandResponse {
     LeaveCommittee(SuiTransactionBlockResponse),
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
+    SetDailyOutLimit(SuiTransactionBlockResponse),
     ReportValidator(SuiTransactionBlockResponse),
     SerializedPayload(String),
     DisplayGasPriceUpdateRawTxn {
@@ -386,6 +398,17 @@ impl SuiValidatorCommand {
                 SuiValidatorCommandResponse::UpdateGasPrice(resp)
             }
 
+            SuiValidatorCommand::SetDailyOutLimit {
+                operation_cap_id,
+                daily_out_limit,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    set_daily_out_limit(context, operation_cap_id, daily_out_limit, gas_budget).await?;
+                SuiValidatorCommandResponse::SetDailyOutLimit(resp)
+            }
+
             SuiValidatorCommand::ReportValidator {
                 operation_cap_id,
                 reportee_address,
@@ -522,6 +545,21 @@ async fn update_gas_price(
         CallArg::Pure(bcs::to_bytes(&gas_price).unwrap()),
     ];
     call_0x5(context, "request_set_gas_price", args, gas_budget).await
+}
+
+async fn set_daily_out_limit(
+    context: &mut WalletContext,
+    operation_cap_id: Option<ObjectID>,
+    daily_out_limit: u64,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, operation_cap_id).await?;
+
+    let args = vec![
+        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
+        CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
+    ];
+    call_0x5(context, "set_daily_out_limit", args, gas_budget).await
 }
 
 async fn report_validator(
@@ -666,6 +704,9 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::UpdateGasPrice(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::SetDailyOutLimit(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::ReportValidator(response) => {
