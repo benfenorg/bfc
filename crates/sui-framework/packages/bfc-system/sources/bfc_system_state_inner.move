@@ -63,7 +63,6 @@ module bfc_system::bfc_system_state_inner {
     const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
 
-
     //spec module { pragma verify = false; }
 
     public struct BfcSystemStateInner has store {
@@ -263,7 +262,7 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
-    public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
+    public(package) fun get_rate_map(self: &BfcSystemStateInnerV2): VecMap<ascii::String, u64> {
         self.stable_rate
     }
 

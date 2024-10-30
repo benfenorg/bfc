@@ -269,6 +269,12 @@ title: Module `0xc8::bfc_system_state_inner`
 <dd>
 
 </dd>
+<dt>
+<code>oracle_address: <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -774,7 +780,7 @@ X treasury  init treasury
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
 </code></pre>
 
 
@@ -783,7 +789,7 @@ X treasury  init treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     self.stable_rate
 }
 </code></pre>
@@ -2320,6 +2326,7 @@ deprecated
         daily_out_limit : 40000_000_000_000u64,
         daily_use_out_limit: 0u64,
         operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        oracle_address: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
     }, _ctx)
 }
 </code></pre>

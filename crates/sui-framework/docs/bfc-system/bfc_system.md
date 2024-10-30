@@ -627,7 +627,7 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id);
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">bfc_system_state_inner::get_rate_map</a>(inner)
 }
 </code></pre>

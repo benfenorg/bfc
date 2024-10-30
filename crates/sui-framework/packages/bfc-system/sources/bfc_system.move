@@ -231,7 +231,7 @@ module bfc_system::bfc_system {
     }
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
-        let inner = load_bfc_system_state(id);
+        let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_rate_map(inner)
     }
 

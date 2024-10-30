@@ -490,7 +490,7 @@ title: Module `0xc8::treasury`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _amount: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _amount: u64, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -499,7 +499,7 @@ title: Module `0xc8::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
                                         _amount: u64,
                                        _ctx: &<b>mut</b> TxContext) : Coin&lt;StableCoinType&gt; {
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
