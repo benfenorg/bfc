@@ -685,6 +685,17 @@ module sui_system::sui_system {
     }
 
     #[allow(unused_function)]
+    public fun request_set_daily_out_limit(
+        self: &mut SuiSystemState,
+        daily_out_limit: u64,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 100);
+        bfc_system::set_daily_out_limit(&mut self.bfc_system_id, daily_out_limit)
+    }
+
+    #[allow(unused_function)]
     public fun request_add_operation_capability(
         self: &mut SuiSystemState,
         key: ascii::String,

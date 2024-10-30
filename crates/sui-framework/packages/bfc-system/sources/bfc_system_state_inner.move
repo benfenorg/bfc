@@ -1,7 +1,6 @@
 #[allow(unused_const,unused_mut_parameter)]
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
-    use std::option;
     use std::ascii::String;
     use bfc_system::usdt;
     use bfc_system::usdc;

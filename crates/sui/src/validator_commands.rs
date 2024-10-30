@@ -559,7 +559,7 @@ async fn set_daily_out_limit(
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
         CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
     ];
-    call_0x5(context, "set_daily_out_limit", args, gas_budget).await
+    call_0x5(context, "request_set_daily_out_limit", args, gas_budget).await
 }
 
 async fn report_validator(
