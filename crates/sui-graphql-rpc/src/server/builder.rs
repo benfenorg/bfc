@@ -1140,6 +1140,9 @@ pub mod tests {
 
     #[tokio::test]
     pub async fn test_health_check() {
+
+        telemetry_subscribers::init_for_testing();
+
         let cluster = prep_executor_cluster().await;
 
         let url = format!(

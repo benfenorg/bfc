@@ -715,7 +715,7 @@ async fn sim_test_traffic_sketch_with_sampled_spam() {
 }
 
 #[sim_test]
-async fn test_traffic_sketch_allowlist_mode() {
+async fn sim_test_traffic_sketch_allowlist_mode() {
     let policy_config = PolicyConfig {
         connection_blocklist_ttl_sec: 1,
         proxy_blocklist_ttl_sec: 1,

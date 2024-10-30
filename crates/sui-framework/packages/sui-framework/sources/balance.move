@@ -18,7 +18,7 @@ const ENotEnough: u64 = 2;
 /// Sender is not @0x0 the system address.
 const ENotSystemAddress: u64 = 3;
 /// System operation performed for a coin other than SUI
-const ENotSUI: u64 = 4;
+const ENotSUI: u64 = 4444;
 
 
 /// A Supply of T. Used for minting and burning.
@@ -95,7 +95,7 @@ public fun destroy_zero<T>(balance: Balance<T>) {
 }
 
 const SUI_TYPE_NAME: vector<u8> =
-    b"0000000000000000000000000000000000000000000000000000000000000002::sui::SUI";
+    b"0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC";
 
 #[allow(unused_function)]
 /// CAUTION: this function creates a `Balance` without increasing the supply.
@@ -103,7 +103,7 @@ const SUI_TYPE_NAME: vector<u8> =
 /// and nowhere else.
 fun create_staking_rewards<T>(value: u64, ctx: &TxContext): Balance<T> {
     assert!(ctx.sender() == @0x0, ENotSystemAddress);
-    assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
+    //assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
     Balance { value }
 }
 
@@ -113,7 +113,7 @@ fun create_staking_rewards<T>(value: u64, ctx: &TxContext): Balance<T> {
 /// and nowhere else.
 fun destroy_storage_rebates<T>(self: Balance<T>, ctx: &TxContext) {
     assert!(ctx.sender() == @0x0, ENotSystemAddress);
-    assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
+    //assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
     let Balance { value: _ } = self;
 }
 

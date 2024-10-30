@@ -13,4 +13,4 @@
 
 
  //修改系统合约之后需要run 下面的测试更新
- UPDATE=1 cargo test -p sui-framework --test build-system-package
+ UPDATE=1 cargo test -p sui-framework --test build-system-packages

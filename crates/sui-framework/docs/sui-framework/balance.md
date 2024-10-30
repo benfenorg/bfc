@@ -130,7 +130,7 @@ For when trying to withdraw more than there is.
 System operation performed for a coin other than SUI
 
 
-<pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4;
+<pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4444;
 </code></pre>
 
 
@@ -149,7 +149,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; = [48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 50, 58, 58, 115, 117, 105, 58, 58, 83, 85, 73];
+<pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; = [48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 50, 58, 58, 98, 102, 99, 58, 58, 66, 70, 67];
 </code></pre>
 
 
@@ -435,7 +435,7 @@ and nowhere else.
 
 <pre><code><b>fun</b> <a href="../sui-framework/balance.md#0x2_balance_create_staking_rewards">create_staking_rewards</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &TxContext): <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a>&lt;T&gt; {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui-framework/balance.md#0x2_balance_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>);
+    //<b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>);
     <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a> { value }
 }
 </code></pre>

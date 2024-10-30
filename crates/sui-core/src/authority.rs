@@ -4053,7 +4053,6 @@ impl AuthorityState {
         }
     }
 
-    #[warn(unreachable_patterns)]
     #[instrument(level = "trace", skip_all)]
     pub async fn query_events(
         &self,
