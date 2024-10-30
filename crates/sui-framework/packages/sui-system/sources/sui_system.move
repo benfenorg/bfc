@@ -60,7 +60,6 @@ module sui_system::sui_system {
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
-    #[test_only] use sui::vec_set::VecSet;
 
     public struct SuiSystemState has key {
         id: UID,

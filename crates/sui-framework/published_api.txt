@@ -910,6 +910,9 @@ request_withdraw_stable_stake
 report_validator
 	public(package) fun
 	0x3::sui_system_state_inner
+is_active_validator_by_sui_address
+	public(package) fun
+	0x3::sui_system_state_inner
 undo_report_validator
 	public(package) fun
 	0x3::sui_system_state_inner
@@ -1167,6 +1170,15 @@ advance_epoch
 	0x3::sui_system
 get_stable_rate_from_bfc
 	fun
+	0x3::sui_system
+request_add_operation_capability
+	public fun
+	0x3::sui_system
+request_remove_operation_capability
+	public fun
+	0x3::sui_system
+request_set_operation_capability
+	public fun
 	0x3::sui_system
 get_stable_rate
 	public fun
