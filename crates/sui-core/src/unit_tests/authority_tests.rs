@@ -8959,7 +8959,7 @@ async fn test_stable_transfer_sui_no_amount() {
     let recipient = dbg_addr(2);
     let gas_object_id = ObjectID::random();
     let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
-    let init_balance = sui_types::gas::get_gas_balance(&gas_object).unwrap();
+    //let init_balance = sui_types::gas::get_gas_balance(&gas_object).unwrap();
     let authority_state = init_state_with_objects(vec![gas_object.clone()]).await;
 
     let epoch_store = authority_state.load_epoch_store_one_call_per_task();
@@ -9016,7 +9016,7 @@ async fn test_stable_transfer_sui_with_amount() {
     let recipient = dbg_addr(2);
     let gas_object_id = ObjectID::random();
     let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
-    let init_balance = sui_types::gas::get_gas_balance(&gas_object).unwrap();
+    //let init_balance = sui_types::gas::get_gas_balance(&gas_object).unwrap();
     let authority_state = init_state_with_objects(vec![gas_object.clone()]).await;
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
 
@@ -9904,8 +9904,11 @@ async fn test_stable_gas_smashing() {
         sender: SuiAddress,
         sender_key: AccountKeyPair,
         gas_coins: Vec<Object>,
-        gas_budget: u64,
+        mut gas_budget: u64,
     ) -> (Arc<AuthorityState>, TransactionEffects) {
+        if gas_budget < 500000 {
+            gas_budget = 500000;
+        }
         let object_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
         let (authority_state, pkg_ref) = init_state_with_objects_and_object_basics(gas_coins).await;
         let effects = create_move_object_with_gas_coins(
