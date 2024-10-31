@@ -28,6 +28,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_remove_operation_capability)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_set_operation_capability)
+-  [Function `set_oracle_address`](#0xc8_bfc_system_set_oracle_address)
+-  [Function `get_oracle_address`](#0xc8_bfc_system_get_oracle_address)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
 -  [Function `remove_action`](#0xc8_bfc_system_remove_action)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
@@ -75,6 +77,7 @@ title: Module `0xc8::bfc_system`
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
+<b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
@@ -804,6 +807,56 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addresses: VecSet&lt;<b>address</b>&gt;) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, key, addresses)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_set_oracle_address"></a>
+
+## Function `set_oracle_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, <b>address</b>: <b>address</b>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(id: &<b>mut</b> UID, <b>address</b>: <b>address</b>) {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
+    inner.<a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(<b>address</b>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_get_oracle_address"></a>
+
+## Function `get_oracle_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(id: &UID): Option&lt;<b>address</b>&gt; {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
+    inner.<a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>()
 }
 </code></pre>
 

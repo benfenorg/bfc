@@ -272,6 +272,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_operation_capability(inner, key, addresses)
     }
 
+    public fun set_oracle_address(id: &mut UID, address: address) {
+        let inner = load_system_state_mut_by_uid(id);
+        inner.set_oracle_address(address)
+    }
+
+    public fun get_oracle_address(id: &UID): Option<address> {
+        let inner = load_system_state_by_uid(id);
+        inner.get_oracle_address()
+    }
+
     public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
         let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);

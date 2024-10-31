@@ -7,8 +7,6 @@ use crate::error::SuiError;
 use crate::id::UID;
 use crate::storage::ObjectStore;
 
-pub const ORACLE_PRICE_OBJECT_ADDRESS: &str = "0xd0b371bdb5656c488c7a30e431759bb42b70fbad84dfef504a47644a0da7a224";
-
 #[derive(Debug, Hash, Eq, Serialize, Deserialize, Clone, PartialEq)]
 pub struct PriceIdentifier {
     pub coin_type_a: Vec<u8>,
@@ -45,27 +43,20 @@ impl OraclePrice {
     }
 }
 
-pub fn get_oracle_price(
-    object_store: &dyn ObjectStore,
-) -> anyhow::Result<OraclePrice, SuiError> {
-    let id = ObjectID::from_hex_literal(ORACLE_PRICE_OBJECT_ADDRESS).unwrap();
-    get_oracle_price_by_id(object_store, id)
-}
-
 pub fn get_oracle_price_by_id(
     object_store: &dyn ObjectStore,
-    id : ObjectID
+    id: ObjectID,
 ) -> anyhow::Result<OraclePrice, SuiError> {
     let wrapper = object_store
         .get_object(&id)?
         .ok_or_else(|| {
             SuiError::OraclePriceReadError(format!("OraclePrice object({}) not found",
-                                                   ORACLE_PRICE_OBJECT_ADDRESS).to_owned())
+                                                   &id.to_string()).to_owned())
         })?;
     let move_object = wrapper.data.try_as_move().ok_or_else(|| {
         SuiError::OraclePriceReadError(
             format!("OraclePrice object({}) must be a Move object",
-                    ORACLE_PRICE_OBJECT_ADDRESS).to_owned(),
+                    &id.to_string()).to_owned(),
         )
     })?;
     let result = bcs::from_bytes::<OraclePrice>(move_object.contents())

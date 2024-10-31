@@ -41,7 +41,7 @@ use tap::TapFallible;
 use tracing::instrument;
 use typed_store::Map;
 use sui_types::bfc_system_state::get_bfc_system_state;
-use sui_types::oracle_price::{get_oracle_price, get_oracle_price_by_id, OraclePrice};
+use sui_types::oracle_price::{get_oracle_price_by_id, OraclePrice};
 use sui_types::proposal::ProposalStatus;
 
 use super::{
@@ -253,16 +253,12 @@ impl ExecutionCacheRead for PassthroughCache {
         get_sui_system_state(self)
     }
 
-    fn get_oracle_price(&self) -> SuiResult<OraclePrice> {
-        get_oracle_price(self)
+    fn get_bfc_system_state_object(&self) -> SuiResult<BFCSystemState> {
+        get_bfc_system_state(self)
     }
 
     fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
         get_oracle_price_by_id(self, id)
-    }
-
-    fn get_bfc_system_state_object(&self) -> SuiResult<BFCSystemState> {
-        get_bfc_system_state(self)
     }
 
     fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {

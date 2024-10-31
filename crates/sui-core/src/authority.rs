@@ -3227,8 +3227,7 @@ impl AuthorityState {
         }
 
         let bfc_system_state = self.get_bfc_system_state()?;
-        let inner_state = bfc_system_state.inner_state();
-        let rate_map: HashMap<String, u64> = inner_state.rate_map.contents
+        let rate_map: HashMap<String, u64> = bfc_system_state.get_rate_map().contents
             .iter()
             .map(|entity| ((*entity.key).to_string(), entity.value))
             .collect();
@@ -3258,10 +3257,6 @@ impl AuthorityState {
 
     pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
         self.execution_cache.get_bfc_system_state_object()
-    }
-
-    pub fn get_oracle_price(&self) -> SuiResult<OraclePrice> {
-        self.execution_cache.get_oracle_price()
     }
 
     pub fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {

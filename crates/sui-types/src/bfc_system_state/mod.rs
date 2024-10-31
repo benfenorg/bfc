@@ -18,6 +18,7 @@ use serde::{Deserialize, Serialize};
 use crate::balance::Balance;
 use crate::collection_types::{VecMap, Bag, VecSet};
 use crate::dao::Dao;
+use crate::oracle_price::{get_oracle_price_by_id, OraclePrice};
 use crate::proposal::ProposalStatus;
 
 const BFC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("BfcSystemState");
@@ -254,6 +255,24 @@ pub fn get_stable_rate_and_reward_rate(object_store: &dyn ObjectStore) -> Result
             Ok((bfc_system_state.rate_map, bfc_system_state.reward_rate))
         }
         Err(e) => Err(e),
+    }
+}
+
+pub fn get_oracle_address(object_store: &dyn ObjectStore) -> Result<Option<AccountAddress>, SuiError> {
+    match get_bfc_system_state(object_store) {
+        Ok(BFCSystemState::V1(_)) => Ok(None),
+        Ok(BFCSystemState::V2(bfc_system_state)) => Ok(bfc_system_state.oracle_address),
+        Err(e) => Err(e),
+    }
+}
+
+pub fn get_oracle_price(object_store: &dyn ObjectStore) -> Result<OraclePrice, SuiError> {
+    let address = get_oracle_address(object_store)?;
+    if let Some(address) = address {
+        let id = address.into();
+        get_oracle_price_by_id(object_store, id)
+    } else {
+        Err(SuiError::SuiSystemStateReadError("Oracle address not found".to_owned()))
     }
 }
 

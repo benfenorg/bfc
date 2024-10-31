@@ -848,4 +848,13 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
+    // set oracle address
+    public(package) fun set_oracle_address(self: &mut BfcSystemStateInnerV2, address: address) {
+        self.oracle_address = option::some(address);
+    }
+
+    // get oracle address
+    public(package) fun get_oracle_address(self: &BfcSystemStateInnerV2): Option<address> {
+        self.oracle_address
+    }
 }
