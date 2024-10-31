@@ -388,8 +388,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = std::ascii::string(b"right_key");
         bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
-        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, &test_key, tx_context::sender(ctx), ctx);
 
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
@@ -403,8 +402,8 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = std::ascii::string(b"right_key");
         bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
-        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+        // let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state,10000_000_000_000u64, &test_key, tx_context::sender(ctx), ctx);
 
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
@@ -428,8 +427,8 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = std::ascii::string(b"right_key");
         bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, &test_key, ctx);
-        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+        // let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, &test_key, ctx);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 50000_000_000_000u64, &test_key, tx_context::sender(ctx), ctx);
 
         let busd = balance::create_for_testing<BUSD>(50000_000_000_000u64);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
@@ -449,8 +448,8 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = std::ascii::string(b"right_key");
         bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
-        bfc_system::exchange_stable_to_busd(&mut system_state, tx_context::sender(ctx), coin, ctx);
+        // let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, tx_context::sender(ctx), ctx);
 
         let busd = balance::create_for_testing<BUSD>(20000_000_000_000u64);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));

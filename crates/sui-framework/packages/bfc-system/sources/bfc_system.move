@@ -402,13 +402,14 @@ module bfc_system::bfc_system {
 
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
+        amount: u64,
+        key: &String,
         recipient: address,
-        stable_coin: Coin<StableCoinType>,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-
-        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, stable_coin, recipient, _ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx);
+        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 
     public fun exchange_busd_to_stable<StableCoinType>(
