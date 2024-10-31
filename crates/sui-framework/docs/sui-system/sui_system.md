@@ -181,6 +181,16 @@ the SuiSystemStateInner version, or vice versa.
 
 
 
+<a name="0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT"></a>
+
+Errors
+
+
+<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT">ERR_REQUEST_SET_DAILY_OUT_LIMIT</a>: u64 = 100;
+</code></pre>
+
+
+
 <a name="0x3_sui_system_create"></a>
 
 ## Function `create`
@@ -1630,7 +1640,7 @@ gas coins.
     ctx: &TxContext,
 ) {
     <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
-    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), 100);
+    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT">ERR_REQUEST_SET_DAILY_OUT_LIMIT</a>);
     <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_set_daily_out_limit">bfc_system::set_daily_out_limit</a>(&<b>mut</b> self.bfc_system_id, daily_out_limit)
 }
 </code></pre>

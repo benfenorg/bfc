@@ -474,7 +474,6 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
-        recipient: address,
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
@@ -489,7 +488,7 @@ module bfc_system::bfc_system_state_inner {
         let stable_back = coin::split(stable_sum, amount, ctx);
         let busd_sum = treasury::get_busd_supply_mut(&mut system_state.treasury);
         balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
-        transfer::public_transfer(stable_back, recipient);
+        transfer::public_transfer(stable_back, tx_context::sender(ctx));
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
