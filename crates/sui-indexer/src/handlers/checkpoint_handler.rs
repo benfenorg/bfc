@@ -107,17 +107,15 @@ impl Worker for CheckpointHandler {
             time_now_ms,
             checkpoint.checkpoint_summary.timestamp_ms
         );
-        let flag = true;
-        if flag == false {
-            let checkpoint_data = Self::index_checkpoint(
-                &self.state,
-                checkpoint,
-                Arc::new(self.metrics.clone()),
-                Self::index_packages(std::slice::from_ref(checkpoint), &self.metrics),
-            )
-                .await?;
-            self.indexed_checkpoint_sender.send(checkpoint_data).await?;
-        }
+        let checkpoint_data = Self::index_checkpoint(
+            &self.state,
+            checkpoint,
+            Arc::new(self.metrics.clone()),
+            Self::index_packages(std::slice::from_ref(checkpoint), &self.metrics),
+        )
+            .await?;
+        self.indexed_checkpoint_sender.send(checkpoint_data).await?;
+
         Ok(())
     }
 }

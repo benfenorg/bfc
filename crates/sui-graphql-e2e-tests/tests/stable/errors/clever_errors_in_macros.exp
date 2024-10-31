@@ -7,7 +7,7 @@ task 1, lines 6-34:
 //# publish --sender A
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 4187600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 4506800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 36:
 //# run P0::m::t_a
@@ -37,19 +37,19 @@ Response: {
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x6846951eaea99f8742b4ad253534ef8b44459248f322f3cd404050aa1b9a3cbb::m::t_a' (line 20)"
+            "errors": "Error in 1st command, from '0xba4a971d5848948cf33621ef5831040a5e848b6e5dd57c895104d96e30a4f078::m::t_a' (line 20)"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x6846951eaea99f8742b4ad253534ef8b44459248f322f3cd404050aa1b9a3cbb::m::t_calls_a' (line 23)"
+            "errors": "Error in 1st command, from '0xba4a971d5848948cf33621ef5831040a5e848b6e5dd57c895104d96e30a4f078::m::t_calls_a' (line 23)"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x6846951eaea99f8742b4ad253534ef8b44459248f322f3cd404050aa1b9a3cbb::m::t_const_assert' (line 9), abort 'EMsg': This is a string"
+            "errors": "Error in 1st command, from '0xba4a971d5848948cf33621ef5831040a5e848b6e5dd57c895104d96e30a4f078::m::t_const_assert' (line 9), abort 'EMsg': This is a string"
           }
         }
       ]

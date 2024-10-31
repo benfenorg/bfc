@@ -7,7 +7,7 @@ task 1, lines 6-9:
 //# publish --upgradeable --sender A
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5076800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5396000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 11:
 //# create-checkpoint
@@ -31,14 +31,14 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           }
         ]
       }
     },
     "firstPackage": {
-      "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+      "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
       "version": 1,
       "module": {
         "functions": {
@@ -52,7 +52,7 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           }
         ]
@@ -77,11 +77,11 @@ Response: {
           "version": 1
         },
         {
-          "address": "0x000000000000000000000000000000000000000000000000000000000000dee9",
+          "address": "0x00000000000000000000000000000000000000000000000000000000000000c8",
           "version": 1
         },
         {
-          "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+          "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
           "version": 1
         }
       ]
@@ -93,7 +93,7 @@ task 4, lines 52-56:
 //# upgrade --package P0 --upgrade-capability 1,1 --sender A
 created: object(4,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 5251600,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 6118000,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 5, line 58:
 //# create-checkpoint
@@ -120,18 +120,18 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           },
           {
-            "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+            "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
             "version": 2
           }
         ]
       }
     },
     "firstPackage": {
-      "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+      "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
       "version": 1,
       "module": {
         "functions": {
@@ -145,11 +145,11 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           },
           {
-            "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+            "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
             "version": 2
           }
         ]
@@ -174,15 +174,15 @@ Response: {
           "version": 1
         },
         {
-          "address": "0x000000000000000000000000000000000000000000000000000000000000dee9",
+          "address": "0x00000000000000000000000000000000000000000000000000000000000000c8",
           "version": 1
         },
         {
-          "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+          "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
           "version": 1
         },
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         }
       ]
@@ -194,7 +194,7 @@ task 7, lines 99-104:
 //# upgrade --package P1 --upgrade-capability 1,1 --sender A
 created: object(7,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 5426400,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 6292800,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 8, line 106:
 //# create-checkpoint
@@ -224,22 +224,22 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           },
           {
-            "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+            "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
             "version": 2
           },
           {
-            "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+            "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
             "version": 3
           }
         ]
       }
     },
     "firstPackage": {
-      "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+      "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
       "version": 1,
       "module": {
         "functions": {
@@ -253,15 +253,15 @@ Response: {
       "packageVersions": {
         "nodes": [
           {
-            "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+            "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
             "version": 1
           },
           {
-            "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+            "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
             "version": 2
           },
           {
-            "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+            "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
             "version": 3
           }
         ]
@@ -286,19 +286,19 @@ Response: {
           "version": 1
         },
         {
-          "address": "0x000000000000000000000000000000000000000000000000000000000000dee9",
+          "address": "0x00000000000000000000000000000000000000000000000000000000000000c8",
           "version": 1
         },
         {
-          "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+          "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
           "version": 1
         },
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         },
         {
-          "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+          "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
           "version": 3
         }
       ]
@@ -700,7 +700,7 @@ Response: {
           }
         },
         {
-          "address": "0x000000000000000000000000000000000000000000000000000000000000dee9",
+          "address": "0x00000000000000000000000000000000000000000000000000000000000000c8",
           "version": 1,
           "previousTransactionBlock": {
             "effects": {
@@ -715,7 +715,7 @@ Response: {
     "after": {
       "nodes": [
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2,
           "previousTransactionBlock": {
             "effects": {
@@ -726,7 +726,7 @@ Response: {
           }
         },
         {
-          "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+          "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
           "version": 3,
           "previousTransactionBlock": {
             "effects": {
@@ -741,7 +741,7 @@ Response: {
     "between": {
       "nodes": [
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2,
           "previousTransactionBlock": {
             "effects": {
@@ -763,15 +763,15 @@ Response: {
     "packageVersions": {
       "nodes": [
         {
-          "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+          "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
           "version": 1
         },
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         },
         {
-          "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+          "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
           "version": 3
         }
       ]
@@ -779,11 +779,11 @@ Response: {
     "after": {
       "nodes": [
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         },
         {
-          "address": "0xb276a6430b37c21393e4bd594b1c6f080485243b7437141b8c54b3c46e0209d6",
+          "address": "0xe3f48005fc40a4b2561c964fa237d7647c94e5dbc8d4361c28aa2ab7d1130ea0",
           "version": 3
         }
       ]
@@ -791,11 +791,11 @@ Response: {
     "before": {
       "nodes": [
         {
-          "address": "0xfdcf4af87c644ea38970e8655a82cc59bd0d17f6970593f2e6cd82c85358abb9",
+          "address": "0xf7bf468c505d4bd23f88e5448af07995f4473d7e84150673065bb1c1bfdaa3ad",
           "version": 1
         },
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         }
       ]
@@ -803,7 +803,7 @@ Response: {
     "between": {
       "nodes": [
         {
-          "address": "0xa1b89a2baa194e91b44a51975b44ef547fd543595047057faa17e3f8c8c29553",
+          "address": "0x37ef09b7624f7b0ffdf35b7645b22d53fb5375f6487d71a0e266406d506782eb",
           "version": 2
         }
       ]

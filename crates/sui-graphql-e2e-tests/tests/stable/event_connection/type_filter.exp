@@ -7,13 +7,13 @@ task 1, lines 6-34:
 //# publish
 created: object(1,0)
 mutated: object(0,2)
-gas summary: computation_cost: 1000000, storage_cost: 6604400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6923600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 36:
 //# run Test::M2::emit_emit_a --sender A --args 20
 events: Event { package_id: Test, transaction_module: Identifier("M2"), sender: A, type_: StructTag { address: Test, module: Identifier("M1"), name: Identifier("EventA"), type_params: [] }, contents: [20, 0, 0, 0, 0, 0, 0, 0] }
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 38:
 //# create-checkpoint
@@ -30,7 +30,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M1::EventA"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M1::EventA"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -49,13 +49,13 @@ task 5, line 59:
 //# run Test::M2::emit_b --sender A --args 42
 events: Event { package_id: Test, transaction_module: Identifier("M2"), sender: A, type_: StructTag { address: Test, module: Identifier("M2"), name: Identifier("EventB"), type_params: [] }, contents: [42, 0, 0, 0, 0, 0, 0, 0] }
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, line 61:
 //# run Test::M2::emit_b --sender B --args 43
 events: Event { package_id: Test, transaction_module: Identifier("M2"), sender: B, type_: StructTag { address: Test, module: Identifier("M2"), name: Identifier("EventB"), type_params: [] }, contents: [43, 0, 0, 0, 0, 0, 0, 0] }
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 7, line 63:
 //# create-checkpoint
@@ -72,7 +72,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M1::EventA"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M1::EventA"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -98,7 +98,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M2::EventB"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M2::EventB"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -124,7 +124,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M1::EventA"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M1::EventA"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -139,7 +139,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M2::EventB"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M2::EventB"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -165,7 +165,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M1::EventA"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M1::EventA"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -180,7 +180,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M2::EventB"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M2::EventB"
           },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
@@ -195,7 +195,7 @@ Response: {
             "name": "M2"
           },
           "type": {
-            "repr": "0x6edb181eb03cea19a3c4b09d2d6b5de8d0a741df186d072d18b2030eb36faee1::M2::EventB"
+            "repr": "0xfe2fcbb3ad987ecd840825b43da3ea8f4a1d1f34edd2ce6a76c36b45f8e848b2::M2::EventB"
           },
           "sender": {
             "address": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a"

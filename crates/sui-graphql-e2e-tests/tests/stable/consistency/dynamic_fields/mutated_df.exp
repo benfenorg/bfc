@@ -7,17 +7,17 @@ task 1, lines 14-45:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7828000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8147200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 47:
 //# run Test::M1::parent --sender A --args @A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 49:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 2
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -32,11 +32,11 @@ task 4, line 51:
 //# run Test::M1::add_df --sender A --args object(2,0)
 created: object(4,0), object(4,1), object(4,2)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 8664000,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 8983200,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 5, line 53:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 3
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -50,11 +50,11 @@ Contents: Test::M1::Parent {
 task 6, line 55:
 //# run Test::M1::mutate_parent --sender A --args object(2,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 7, line 57:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -78,18 +78,18 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IC2fT4MkuNdi3Nvnb8m8dqkwj9EcXifzn/uWeklDnbOTAQAAAAAAAAA=",
+            "cursor": "IBFNCaAr+tvIjoEpuq+pzmQ3PerTr3NzumkUtc8mHMwpAQAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMQ=="
+                "bcs": "A2RmMg=="
               },
               "value": {
-                "json": "df1"
+                "json": "df2"
               }
             }
           },
           {
-            "cursor": "IHHoOU78QBVu3gJtqZMHtZhLsebo3AyFYSgZ+Mfmh2fPAQAAAAAAAAA=",
+            "cursor": "IMWQl1jqbTa/c2ZGB7UAqiKcj4DACykqN5bL7TYo3E+RAQAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMw=="
@@ -100,13 +100,13 @@ Response: {
             }
           },
           {
-            "cursor": "IOgTnWXmEwqr+XesX5bghNK0s1TBQJ0/GNLACjJ9LOytAQAAAAAAAAA=",
+            "cursor": "IM/Z4iy8r9Xxhoqd92NEBUMohhKw9hcYWRVouL286FaCAQAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMg=="
+                "bcs": "A2RmMQ=="
               },
               "value": {
-                "json": "df2"
+                "json": "df1"
               }
             }
           }
@@ -141,7 +141,7 @@ Response: {
 
 task 10, line 111:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 4
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -154,12 +154,12 @@ Contents: Test::M1::Parent {
 
 task 11, line 113:
 //# run Test::M1::mutate_df1 --sender A --args object(2,0)
-mutated: object(0,0), object(2,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 4484000,  storage_rebate: 4378968, non_refundable_storage_fee: 44232
+mutated: object(0,0), object(2,0), object(4,2)
+gas summary: computation_cost: 1000000, storage_cost: 4803200,  storage_rebate: 4694976, non_refundable_storage_fee: 47424
 
 task 12, line 115:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 5
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -173,11 +173,11 @@ Contents: Test::M1::Parent {
 task 13, line 117:
 //# run Test::M1::mutate_parent --sender A --args object(2,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 14, line 119:
 //# view-object 2,0
-Owner: Account Address ( A )
+Owner: Account Address ( BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7 )
 Version: 6
 Contents: Test::M1::Parent {
     id: sui::object::UID {
@@ -201,18 +201,18 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IC2fT4MkuNdi3Nvnb8m8dqkwj9EcXifzn/uWeklDnbOTAgAAAAAAAAA=",
+            "cursor": "IBFNCaAr+tvIjoEpuq+pzmQ3PerTr3NzumkUtc8mHMwpAgAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMQ=="
+                "bcs": "A2RmMg=="
               },
               "value": {
-                "json": "df1_mutated"
+                "json": "df2"
               }
             }
           },
           {
-            "cursor": "IHHoOU78QBVu3gJtqZMHtZhLsebo3AyFYSgZ+Mfmh2fPAgAAAAAAAAA=",
+            "cursor": "IMWQl1jqbTa/c2ZGB7UAqiKcj4DACykqN5bL7TYo3E+RAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMw=="
@@ -223,13 +223,13 @@ Response: {
             }
           },
           {
-            "cursor": "IOgTnWXmEwqr+XesX5bghNK0s1TBQJ0/GNLACjJ9LOytAgAAAAAAAAA=",
+            "cursor": "IM/Z4iy8r9Xxhoqd92NEBUMohhKw9hcYWRVouL286FaCAgAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMg=="
+                "bcs": "A2RmMQ=="
               },
               "value": {
-                "json": "df2"
+                "json": "df1_mutated"
               }
             }
           }

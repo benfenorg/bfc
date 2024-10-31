@@ -7,7 +7,7 @@ task 1, lines 6-81:
 //# publish --upgradeable --sender A
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 9743200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 10062400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 83:
 //# run P0::m::callU8
@@ -77,67 +77,67 @@ Response: {
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU8' (line 29), abort 'ImAU8': 0"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU8' (line 29), abort 'ImAU8': 0"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU16' (line 32), abort 'ImAU16': 1"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU16' (line 32), abort 'ImAU16': 1"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU32' (line 35), abort 'ImAU32': 2"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU32' (line 35), abort 'ImAU32': 2"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU64' (line 38), abort 'ImAU64': 3"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU64' (line 38), abort 'ImAU64': 3"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU128' (line 41), abort 'ImAU128': 4"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU128' (line 41), abort 'ImAU128': 4"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU256' (line 44), abort 'ImAU256': 5"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU256' (line 44), abort 'ImAU256': 5"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callAddress' (line 47), abort 'ImAnAddress': 0x0000000000000000000000000000000000000000000000000000000000000006"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callAddress' (line 47), abort 'ImAnAddress': 0x0000000000000000000000000000000000000000000000000000000000000006"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callString' (line 50), abort 'ImAString': This is a string"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callString' (line 50), abort 'ImAString': This is a string"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::callU64vec' (line 53), abort 'ImNotAString': BQEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAA="
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::callU64vec' (line 53), abort 'ImNotAString': BQEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAA="
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::normalAbort' (instruction 1), abort code: 0"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::normalAbort' (instruction 1), abort code: 0"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0xc4823e6a5f0f064ab9004946eed4875893f664cb0fe611c106ea85f34c52a7cd::m::assertLineNo' (line 59)"
+            "errors": "Error in 1st command, from '0x7338f759dd02f137420562dbb87f9e6001313a1a98c1c9a9413b2124f783ff5f::m::assertLineNo' (line 59)"
           }
         }
       ]
@@ -149,7 +149,7 @@ task 15, lines 119-197:
 //# upgrade --package P0 --upgrade-capability 1,1 --sender A
 created: object(15,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 9849600,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 10716000,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 16, line 199:
 //# run P0::m::callU8
@@ -248,7 +248,7 @@ Response: {
   },
   "errors": [
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -264,7 +264,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -280,7 +280,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -296,7 +296,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -312,7 +312,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -328,7 +328,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -344,7 +344,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -360,7 +360,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,
@@ -376,7 +376,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: d1bd7272f34936db7dc7600632e33be690fc45912db6f309a390f143be72ea20",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 67e3ce3a801c9e45ea8e3bbb5c735eaec09268a671105100153939de42fd3f5c",
       "locations": [
         {
           "line": 6,

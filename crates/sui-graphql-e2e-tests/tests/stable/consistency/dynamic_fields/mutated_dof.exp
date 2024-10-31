@@ -7,7 +7,7 @@ task 1, lines 15-62:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 8390400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8709600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 64-66:
 //# programmable --sender A --inputs @A
@@ -15,18 +15,18 @@ task 2, lines 64-66:
 //> 1: Test::M1::parent(Input(0));
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 3610000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 3929200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 68:
 //# run Test::M1::add_child --sender A --args object(2,1) object(2,0) 42
 created: object(3,0)
 mutated: object(0,0), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 6064800,  storage_rebate: 3573900, non_refundable_storage_fee: 36100
+gas summary: computation_cost: 1000000, storage_cost: 6384000,  storage_rebate: 3889908, non_refundable_storage_fee: 39292
 
 task 4, line 70:
 //# run Test::M1::mutate_parent --sender A --args object(2,1)
 mutated: object(0,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 5, line 72:
 //# create-checkpoint
@@ -41,7 +41,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "ICTT97Z4RvHmIwcxdPAmcPJw7gHLD+b58TJGeBgWQ4JtAQAAAAAAAAA=",
+            "cursor": "IKog+qG2avWJROc7nOf11Bf4jivGlTFf97up7pFPjFCsAQAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "KgAAAAAAAAA="
@@ -49,7 +49,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+                    "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
                     "count": "0"
                   }
                 }
@@ -65,7 +65,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "0"
             }
           }
@@ -77,7 +77,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "ICTT97Z4RvHmIwcxdPAmcPJw7gHLD+b58TJGeBgWQ4JtAQAAAAAAAAA=",
+            "cursor": "IKog+qG2avWJROc7nOf11Bf4jivGlTFf97up7pFPjFCsAQAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "KgAAAAAAAAA="
@@ -85,7 +85,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+                    "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
                     "count": "0"
                   }
                 }
@@ -101,7 +101,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "0"
             }
           }
@@ -117,7 +117,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "0"
             }
           }
@@ -135,7 +135,7 @@ task 7, line 133:
 //# run Test::M1::reclaim_and_transfer_child --sender A --args object(2,1) 42 @A
 mutated: object(0,0), object(2,0), object(2,1)
 deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 3610000,  storage_rebate: 6004152, non_refundable_storage_fee: 60648
+gas summary: computation_cost: 1000000, storage_cost: 3929200,  storage_rebate: 6320160, non_refundable_storage_fee: 63840
 
 task 8, line 135:
 //# create-checkpoint
@@ -168,7 +168,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "0"
             }
           }
@@ -181,13 +181,13 @@ Response: {
 task 10, line 190:
 //# run Test::M1::mutate_child --sender A --args object(2,0)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2295200,  storage_rebate: 2272248, non_refundable_storage_fee: 22952
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 11, line 192:
 //# run Test::M1::add_child --sender A --args object(2,1) object(2,0) 42
 created: object(3,0)
 mutated: object(0,0), object(2,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 6064800,  storage_rebate: 3573900, non_refundable_storage_fee: 36100
+gas summary: computation_cost: 1000000, storage_cost: 6384000,  storage_rebate: 3889908, non_refundable_storage_fee: 39292
 
 task 12, line 194:
 //# create-checkpoint
@@ -202,7 +202,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "ICTT97Z4RvHmIwcxdPAmcPJw7gHLD+b58TJGeBgWQ4JtAwAAAAAAAAA=",
+            "cursor": "IKog+qG2avWJROc7nOf11Bf4jivGlTFf97up7pFPjFCsAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "KgAAAAAAAAA="
@@ -210,7 +210,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+                    "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
                     "count": "1"
                   }
                 }
@@ -226,7 +226,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "1"
             }
           }
@@ -238,7 +238,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "ICTT97Z4RvHmIwcxdPAmcPJw7gHLD+b58TJGeBgWQ4JtAwAAAAAAAAA=",
+            "cursor": "IKog+qG2avWJROc7nOf11Bf4jivGlTFf97up7pFPjFCsAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "KgAAAAAAAAA="
@@ -246,7 +246,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+                    "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
                     "count": "1"
                   }
                 }
@@ -262,7 +262,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "1"
             }
           }
@@ -283,7 +283,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0x36c21ebf0f400be2910c524ee30635e60c220a4b493ce49536b10ec85519e065",
+              "id": "0x4f484d74efde116bb26778b75cf4f54d347ff80dd68e3dccdf40ab6238660059",
               "count": "0"
             }
           }

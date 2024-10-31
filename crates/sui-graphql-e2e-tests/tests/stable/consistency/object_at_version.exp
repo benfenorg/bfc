@@ -7,13 +7,13 @@ task 1, lines 17-54:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 7014800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7334000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 56:
 //# run Test::M1::create --args 0 @A
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 58:
 //# create-checkpoint
@@ -29,7 +29,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "0"
           }
         }
@@ -41,7 +41,7 @@ Response: {
 task 5, line 75:
 //# run Test::M1::update --sender A --args object(2,0) 1
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 1301652, non_refundable_storage_fee: 13148
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1301652, non_refundable_storage_fee: 13148
 
 task 6, line 77:
 //# create-checkpoint
@@ -57,7 +57,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "1"
           }
         }
@@ -69,7 +69,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "0"
           }
         }
@@ -83,7 +83,7 @@ task 8, line 107:
 created: object(8,0)
 mutated: object(0,0)
 wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 2872800,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 9, line 109:
 //# create-checkpoint
@@ -104,7 +104,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "1"
           }
         }
@@ -118,7 +118,7 @@ task 11, line 139:
 mutated: object(0,0)
 unwrapped: object(2,0)
 deleted: object(8,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 2844072, non_refundable_storage_fee: 28728
 
 task 12, line 141:
 //# create-checkpoint
@@ -134,7 +134,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "1"
           }
         }
@@ -151,7 +151,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "0"
           }
         }
@@ -164,7 +164,7 @@ task 14, line 183:
 //# run Test::M1::delete --sender A --args object(2,0)
 mutated: object(0,0)
 deleted: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 15, line 185:
 //# create-checkpoint
@@ -191,7 +191,7 @@ task 17, line 215:
 //# run Test::M1::create --args 0 @A
 created: object(17,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 18, line 217:
 //# create-checkpoint
@@ -201,7 +201,7 @@ task 19, line 219:
 //# run Test::M1::create --args 0 @A
 created: object(19,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 20, line 221:
 //# create-checkpoint
@@ -211,7 +211,7 @@ task 21, line 223:
 //# run Test::M1::create --args 0 @A
 created: object(21,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 22, line 225:
 //# create-checkpoint
@@ -221,7 +221,7 @@ task 23, line 227:
 //# run Test::M1::create --args 0 @A
 created: object(23,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 24, line 229:
 //# create-checkpoint
@@ -231,7 +231,7 @@ task 25, line 231:
 //# run Test::M1::create --args 0 @A
 created: object(25,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 26, line 233:
 //# create-checkpoint
@@ -241,7 +241,7 @@ task 27, line 235:
 //# run Test::M1::create --args 0 @A
 created: object(27,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 28, line 237:
 //# create-checkpoint
@@ -269,7 +269,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "1"
           }
         }
@@ -286,7 +286,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x08db6cef6b0f6a69902b4476a5e9b3db98789497a664bbfe054c4754625d86d7",
+            "id": "0x4b6b627e59443211d3bf809351a7ad745b663854425c0447480f5d8b4a4182bd",
             "value": "0"
           }
         }
