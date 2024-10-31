@@ -70,6 +70,9 @@ module sui_system::sui_system {
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
 
+    /// Errors
+    const ERR_REQUEST_SET_DAILY_OUT_LIMIT: u64 = 100;
+
     // ==== functions that can only be called by genesis ====
 
     /// Create a new SuiSystemState object and make it shared.
@@ -691,7 +694,7 @@ module sui_system::sui_system {
         ctx: &TxContext,
     ) {
         let inner = load_system_state(self);
-        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 100);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_SET_DAILY_OUT_LIMIT);
         bfc_system::set_daily_out_limit(&mut self.bfc_system_id, daily_out_limit)
     }
 
