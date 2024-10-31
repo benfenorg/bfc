@@ -2463,9 +2463,9 @@ deprecated
     <b>while</b> (i &lt; length) {
         <b>let</b> (key, _value) = stable_rate.get_entry_by_idx(i);
         <b>if</b> (*key == <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;()) {
+            i = i + 1;
             <b>continue</b>
         };
-
         i = i + 1;
     }
 }

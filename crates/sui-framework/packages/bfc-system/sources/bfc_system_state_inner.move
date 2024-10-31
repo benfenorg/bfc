@@ -483,6 +483,7 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
+    #[allow(lint(self_transfer))]
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
@@ -789,9 +790,9 @@ module bfc_system::bfc_system_state_inner {
         while (i < length) {
             let (key, _value) = stable_rate.get_entry_by_idx(i);
             if (*key == treasury::get_vault_key<BUSD>()) {
+                i = i + 1;
                 continue
             };
-
             i = i + 1;
         }
     }
