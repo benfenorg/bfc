@@ -272,14 +272,25 @@ fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
 ///
 /// See <https://www.postgresql.org/docs/16/app-initdb.html> for more info
 fn initdb(dir: &Path) -> Result<()> {
-    let output = Command::new("sudo -u postgres initdb")
-        //Command::new("initdb")
+    // let output = Command::new("sudo -u postgres initdb")
+    //     //Command::new("initdb")
+    //     .arg("-D")
+    //     .arg(dir)
+    //     .arg("--no-instructions")
+    //     .arg("--username=postgres")
+    //     .output()
+    //     .context("command not found: initdb")?;
+
+    let output = Command::new("sudo")
+        .arg("-u")
+        .arg("postgres")
+        .arg("initdb")
         .arg("-D")
         .arg(dir)
         .arg("--no-instructions")
         .arg("--username=postgres")
         .output()
-        .context("command not found: initdb")?;
+        .context("Failed to execute initdb command")?;
 
     if output.status.success() {
         Ok(())
