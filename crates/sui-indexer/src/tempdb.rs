@@ -249,7 +249,7 @@ enum HealthCheckError {
 ///
 /// See <https://www.postgresql.org/docs/16/app-pg-isready.html> for more info
 fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
-    let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/pg_isready")
+    let output = Command::new("sudo -u postgres pg_isready")
         //Command::new("pg_isready")
         .arg("--host=localhost")
         .arg("-p")
@@ -272,7 +272,7 @@ fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
 ///
 /// See <https://www.postgresql.org/docs/16/app-initdb.html> for more info
 fn initdb(dir: &Path) -> Result<()> {
-    let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/initdb")
+    let output = Command::new("sudo -u postgres initdb")
         //Command::new("initdb")
         .arg("-D")
         .arg(dir)
