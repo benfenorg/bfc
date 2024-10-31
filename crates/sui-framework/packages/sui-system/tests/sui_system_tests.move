@@ -15,6 +15,9 @@ module sui_system::sui_system_tests {
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self,EInvalidCap};
     use sui_system::sui_system::ERR_REQUEST_SET_DAILY_OUT_LIMIT;
+    use sui_system::sui_system::ERR_REQUEST_ADD_OPERATION_CAPABILITY;
+    use sui_system::sui_system::ERR_REQUEST_REMOVE_OPERATION_CAPABILITY;
+    use sui_system::sui_system::ERR_REQUEST_SET_OPERATION_CAPABILITY;
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui::vec_set;
     use sui::table;
@@ -1094,6 +1097,52 @@ module sui_system::sui_system_tests {
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let ctx = test_scenario::ctx(&mut scenario_val);
         sui_system::request_set_daily_out_limit(&mut system_state, 1000u64, ctx);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_REQUEST_ADD_OPERATION_CAPABILITY)]
+    fun test_request_add_operation_capability_no_permition() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &scenario_val;
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        sui_system::request_add_operation_capability(&mut system_state, ascii::string(b"key"), @0x0, ctx);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_REQUEST_REMOVE_OPERATION_CAPABILITY)]
+    fun test_request_remove_operation_capability_no_permition() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &scenario_val;
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        sui_system::request_remove_operation_capability(&mut system_state, ascii::string(b"key"), @0x0, ctx);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_REQUEST_SET_OPERATION_CAPABILITY)]
+    fun test_request_set_operation_capability_no_permition() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &scenario_val;
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let v = vec_set::singleton(@0x0);
+        sui_system::request_set_operation_capability(&mut system_state, ascii::string(b"key"), v, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
