@@ -1,7 +1,6 @@
 #[allow(unused_const,unused_mut_parameter)]
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
-    use std::option;
     use std::ascii::String;
     use bfc_system::usdt;
     use bfc_system::usdc;
@@ -65,7 +64,6 @@ module bfc_system::bfc_system_state_inner {
     const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
     const ERR_MINT_BUSD: u64 = 1005;
-
 
     //spec module { pragma verify = false; }
 
@@ -266,7 +264,7 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
-    public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
+    public(package) fun get_rate_map(self: &BfcSystemStateInnerV2): VecMap<ascii::String, u64> {
         self.stable_rate
     }
 
@@ -488,7 +486,6 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
-        recipient: address,
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
@@ -503,7 +500,7 @@ module bfc_system::bfc_system_state_inner {
         let stable_back = coin::split(stable_sum, amount, ctx);
         let busd_sum = treasury::get_busd_supply_mut(&mut system_state.treasury);
         balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
-        transfer::public_transfer(stable_back, recipient);
+        transfer::public_transfer(stable_back, tx_context::sender(ctx));
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 

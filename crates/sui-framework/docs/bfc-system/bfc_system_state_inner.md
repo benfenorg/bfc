@@ -269,6 +269,12 @@ title: Module `0xc8::bfc_system_state_inner`
 <dd>
 
 </dd>
+<dt>
+<code>oracle_address: <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;</code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -774,7 +780,7 @@ X treasury  init treasury
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
 </code></pre>
 
 
@@ -783,7 +789,7 @@ X treasury  init treasury
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     self.stable_rate
 }
 </code></pre>
@@ -1422,7 +1428,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, busd_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, busd_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1434,7 +1440,6 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(
     system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
     busd_coin: Coin&lt;BUSD&gt;,
-    recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> amount: u64 = busd_coin.value();
@@ -1449,7 +1454,7 @@ deprecated
     <b>let</b> stable_back = <a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(stable_sum, amount, ctx);
     <b>let</b> busd_sum = <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">treasury::get_busd_supply_mut</a>(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(busd_sum, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(busd_coin));
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(stable_back, recipient);
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(stable_back, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
     system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
 }
 </code></pre>
@@ -2320,6 +2325,7 @@ deprecated
         daily_out_limit : 40000_000_000_000u64,
         daily_use_out_limit: 0u64,
         operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        oracle_address: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
     }, _ctx)
 }
 </code></pre>

@@ -14,6 +14,7 @@ module sui_system::sui_system_tests {
     use sui_system::sui_system_state_inner;
     use sui_system::validator::{Self, Validator};
     use sui_system::validator_set::{Self,EInvalidCap};
+    use sui_system::sui_system::ERR_REQUEST_SET_DAILY_OUT_LIMIT;
     use sui_system::validator_cap::UnverifiedValidatorOperationCap;
     use sui::vec_set;
     use sui::table;
@@ -1081,5 +1082,20 @@ module sui_system::sui_system_tests {
         assert_eq(sui_system::get_stake_subsidy_distribution_counter(&mut system_state), prev_counter + (if (should_increment_counter) 1 else 0));
         test_scenario::return_shared(system_state);
         test_scenario::next_epoch(scenario, @0x0);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_REQUEST_SET_DAILY_OUT_LIMIT)]
+    fun test_request_set_daily_out_limit_no_permition() {
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &scenario_val;
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+        let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        sui_system::request_set_daily_out_limit(&mut system_state, 1000u64, ctx);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
     }
 }

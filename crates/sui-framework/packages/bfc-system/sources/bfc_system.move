@@ -136,6 +136,14 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
+    public fun load_system_state_mut_test(
+        _self: &mut BfcSystemState,
+        _ctx: &mut TxContext
+    ): (&mut BfcSystemStateInnerV2, &mut TxContext) {
+        load_system_state_mut(_self, _ctx)
+    }
+
+    #[test_only]
     public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
@@ -231,7 +239,7 @@ module bfc_system::bfc_system {
     }
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
-        let inner = load_bfc_system_state(id);
+        let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_rate_map(inner)
     }
 
@@ -402,23 +410,23 @@ module bfc_system::bfc_system {
 
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
+        amount: u64,
+        key: &String,
         recipient: address,
-        stable_coin: Coin<StableCoinType>,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-
-        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, stable_coin, recipient, _ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx);
+        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 
     public fun exchange_busd_to_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         busd_coin: Coin<BUSD>,
-        recipient: address,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, recipient, _ctx);
+        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
     }
 
     /// X treasury  swap bfc to stablecoin
