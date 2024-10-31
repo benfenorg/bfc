@@ -61,7 +61,8 @@ struct PostgresProcess {
 
 impl PostgresProcess {
     fn start(dir: PathBuf, port: u16) -> Result<Self> {
-        let child = Command::new("postgres")
+        let child = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/postgres")
+            //Command::new("postgres")
             // Set the data directory to use
             .arg("-D")
             .arg(&dir)
@@ -90,7 +91,8 @@ impl PostgresProcess {
 
     // https://www.postgresql.org/docs/16/app-pg-ctl.html
     fn pg_ctl_stop(&mut self) -> Result<()> {
-        let output = Command::new("pg_ctl")
+        let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/pg_ctl")
+            //Command::new("pg_ctl")
             .arg("stop")
             .arg("-D")
             .arg(&self.dir)
@@ -247,7 +249,8 @@ enum HealthCheckError {
 ///
 /// See <https://www.postgresql.org/docs/16/app-pg-isready.html> for more info
 fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
-    let output = Command::new("pg_isready")
+    let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/pg_isready")
+        //Command::new("pg_isready")
         .arg("--host=localhost")
         .arg("-p")
         .arg(port.to_string())
@@ -269,7 +272,8 @@ fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
 ///
 /// See <https://www.postgresql.org/docs/16/app-initdb.html> for more info
 fn initdb(dir: &Path) -> Result<()> {
-    let output = Command::new("initdb")
+    let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/initdb")
+        //Command::new("initdb")
         .arg("-D")
         .arg(dir)
         .arg("--no-instructions")
