@@ -1166,4 +1166,9 @@ module bfc_system::vault {
     public(package) fun increase_coin_a<StableCoinType>(_vault: &mut Vault<StableCoinType>, balance: Balance<StableCoinType>) : u64 {
         balance::join(&mut _vault.coin_a, balance)
     }
+
+    public(package) fun decrease_coin_a<StableCoinType>(_vault: &mut Vault<StableCoinType>, amount: u64, ctx: &mut TxContext) :Coin<StableCoinType> {
+        let coin = coin::take(&mut _vault.coin_a, amount, ctx);
+        coin
+    }
 }
