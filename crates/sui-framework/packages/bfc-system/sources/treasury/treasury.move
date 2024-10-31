@@ -1,6 +1,6 @@
 #[allow(unused_const)]
 module bfc_system::treasury {
-    use std::ascii::String;
+    use std::ascii::{String};
     use std::type_name;
 
     use sui::bag::{Self, Bag};
@@ -137,6 +137,22 @@ module bfc_system::treasury {
         vault::vault_info(
             borrow_vault<StableCoinType>(_treasury, get_vault_key<StableCoinType>())
         )
+    }
+
+    public(package) fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
+                                            _amount: u64,
+                                           _ctx: &mut TxContext) : Coin<StableCoinType> {
+        let key = get_vault_key<StableCoinType>();
+        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
+        let balance = balance::increase_supply(supply, _amount);
+        let coin = sui::coin::from_balance(balance, _ctx);
+
+        coin
+    }
+
+    public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {
+        let key = get_vault_key<StableCoinType>();
+        bag::add(&mut _treasury.supplies, key, supply);
     }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
@@ -583,6 +599,13 @@ module bfc_system::treasury {
         };
         let supply = bag::borrow<String, Supply<StableCoinType>>(&_self.supplies, key);
         balance::supply_value(supply)
+    }
+
+    public(package) fun get_busd_supply_mut(
+        _self: &mut Treasury
+    ): &mut Supply<BUSD> {
+        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut _self.supplies, std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+        supply
     }
 
     #[allow(unused_trailing_semi)]

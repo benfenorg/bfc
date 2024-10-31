@@ -58,6 +58,7 @@ title: Module `0xc8::vault`
 -  [Function `positions_liquidity_size_balance`](#0xc8_vault_positions_liquidity_size_balance)
 -  [Function `rebalance_internal`](#0xc8_vault_rebalance_internal)
 -  [Function `rebalance`](#0xc8_vault_rebalance)
+-  [Function `increase_coin_a`](#0xc8_vault_increase_coin_a)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -2637,6 +2638,30 @@ State checker
     _vault.last_rebalance_state = _vault.state;
     _vault.last_bfc_rebalance_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_vault.coin_b);
     _vault.last_bfc_rebalance_amount
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_increase_coin_a"></a>
+
+## Function `increase_coin_a`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;StableCoinType&gt;) : u64 {
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> _vault.coin_a, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>
 

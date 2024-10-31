@@ -481,7 +481,7 @@ async fn sim_test_change_bfc_round() {
             let state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert_eq!(state.inner_state().round, 0);
+            assert_eq!(state.get_round(), 0);
         });
 
     test_cluster.wait_for_epoch(Some(target_epoch)).await;
@@ -497,7 +497,7 @@ async fn sim_test_change_bfc_round() {
             let _state = node
                 .state()
                 .get_bfc_system_state_object_for_testing().unwrap();
-            assert!(_state.inner_state().round >= 1);
+            assert!(_state.get_round() >= 1);
         });
 }
 
@@ -2641,7 +2641,7 @@ async fn sim_test_bfc_treasury_basic_creation() -> Result<(), anyhow::Error> {
         .state()
         .get_bfc_system_state_object_for_testing().unwrap();
 
-    let treasury = bfc_system_state.clone().inner_state().treasury.clone();
+    let treasury = bfc_system_state.clone().get_treasury().clone();
     assert_ne!(treasury.bfc_balance, Balance::new(0));
     Ok(())
 }

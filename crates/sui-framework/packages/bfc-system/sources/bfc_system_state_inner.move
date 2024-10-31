@@ -2,6 +2,12 @@
 module bfc_system::bfc_system_state_inner {
     use std::ascii;
     use std::ascii::String;
+    use bfc_system::usdt;
+    use bfc_system::usdc;
+    use sui::bag;
+    use sui::bag::Bag;
+    use bfc_system::usdt::USDT;
+    use bfc_system::usdc::USDC;
     use sui::balance;
     use sui::balance::{Balance, Supply};
     use sui::bfc::BFC;
@@ -9,6 +15,8 @@ module bfc_system::bfc_system_state_inner {
     use sui::coin;
     use sui::coin::Coin;
     use sui::vec_map::{Self, VecMap};
+    use sui::vec_set;
+    use sui::vec_set::VecSet;
 
     use bfc_system::bars::BARS;
     use bfc_system::baud::BAUD;
@@ -37,10 +45,6 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::voting_pool::VotingBfc;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
-    //
-    // friend bfc_system::bfc_system;
-    // #[test_only]
-    // friend bfc_system::bfc_system_tests;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
@@ -55,6 +59,9 @@ module bfc_system::bfc_system_state_inner {
     /// Errors
     const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
+    const ERR_DAILY_LIMIT: u64 = 1002;
+    const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
+    const ERR_MINT_UNAUTHORIZED: u64 = 1004;
 
     //spec module { pragma verify = false; }
 
@@ -66,6 +73,23 @@ module bfc_system::bfc_system_state_inner {
         treasury: Treasury,
         treasury_pool: TreasuryPool,
         stable_rate: VecMap<ascii::String, u64>,
+    }
+
+    public struct BfcSystemStateInnerV2 has store {
+        round: u64,
+        stable_base_points: u64,
+        reward_rate: u64,
+        dao: Dao,
+        treasury: Treasury,
+        treasury_pool: TreasuryPool,
+        stable_rate: VecMap<ascii::String, u64>,
+
+        stake_coins: Bag,
+        daily_out_limit: u64,
+        daily_use_out_limit: u64,
+        // other dapps can use this cap to mint stable coin
+        operation_capability: VecMap<String, VecSet<address>>,
+        oracle_address: Option<address>,
     }
 
     public struct TreasuryParameters has drop, copy {
@@ -156,7 +180,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun update_round(
-        inner: &mut BfcSystemStateInner,
+        inner: &mut BfcSystemStateInnerV2,
         round: u64,
     ) {
         _ = round;
@@ -238,13 +262,13 @@ module bfc_system::bfc_system_state_inner {
         (t, bfc_balance, rate_map)
     }
 
-    public(package) fun get_rate_map(self: &BfcSystemStateInner): VecMap<ascii::String, u64> {
+    public(package) fun get_rate_map(self: &BfcSystemStateInnerV2): VecMap<ascii::String, u64> {
         self.stable_rate
     }
 
     /// swap bfc to stablecoin
     public(package) fun swap_bfc_to_stablecoin<StableCoinType>(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         coin_bfc: Coin<BFC>,
         clock: &Clock,
         amount: u64,
@@ -266,7 +290,7 @@ module bfc_system::bfc_system_state_inner {
 
     /// swap stablecoin to bfc
     public(package) fun swap_stablecoin_to_bfc<StableCoinType>(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         coin_sc: Coin<StableCoinType>,
         clock: &Clock,
         amount: u64,
@@ -278,7 +302,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun swap_stablecoin_to_bfc_balance<StableCoinType>(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         coin_sc: Coin<StableCoinType>,
         expected_amount: u64,
         ctx: &mut TxContext,
@@ -303,7 +327,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun get_stablecoin_by_bfc<StableCoinType>(
-        self: &BfcSystemStateInner,
+        self: &BfcSystemStateInnerV2,
         amount: u64
     ): vault::CalculatedSwapResult
     {
@@ -311,55 +335,65 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun get_bfc_by_stablecoin<StableCoinType>(
-        self: &BfcSystemStateInner,
+        self: &BfcSystemStateInnerV2,
         amount: u64
     ): vault::CalculatedSwapResult
     {
         treasury::calculate_swap_result<StableCoinType>(&self.treasury, true, amount)
     }
 
-    public(package) fun get_bfc_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
+    public(package) fun get_bfc_exchange_rate<CoinType>(self: &BfcSystemStateInnerV2): u64 {
         vault::calculated_swap_result_amount_out(&get_stablecoin_by_bfc<CoinType>(
             self,
             DEFAULT_STABLE_RATE,
         ))
     }
 
-    public(package) fun get_stablecoin_exchange_rate<CoinType>(self: &BfcSystemStateInner): u64 {
+    public(package) fun get_stablecoin_exchange_rate<CoinType>(self: &BfcSystemStateInnerV2): u64 {
         vault::calculated_swap_result_amount_out(&get_bfc_by_stablecoin<CoinType>(
             self,
             DEFAULT_STABLE_RATE,
         ))
     }
 
+    /// deprecated
     public fun next_epoch_bfc_required(self: &BfcSystemStateInner): u64 {
         treasury::bfc_required(&self.treasury)
     }
 
+    public(package) fun next_epoch_bfc_required_v2(self: &BfcSystemStateInnerV2): u64 {
+        treasury::bfc_required(&self.treasury)
+    }
+
     #[allow(unused_variable)]
-    public(package) fun bfc_required(self: &BfcSystemStateInner): u64 {
+    public(package) fun bfc_required(self: &BfcSystemStateInnerV2): u64 {
         1
         //todo:treasury::bfc_required(&self.treasury)
     }
 
-    public(package) fun bfc_required_with_one_stablecoin<StableCoinType>(self: &BfcSystemStateInner): u64 {
+    public(package) fun bfc_required_with_one_stablecoin<StableCoinType>(self: &BfcSystemStateInnerV2): u64 {
         treasury::bfc_required_with_one_stablecoin<StableCoinType>(&self.treasury)
     }
 
+    /// deprecated
     public fun treasury_balance(self: &BfcSystemStateInner): u64 {
         treasury::get_balance(&self.treasury)
     }
 
-    public(package) fun deposit_to_treasury(self: &mut BfcSystemStateInner, coin_bfc: Coin<BFC>) {
+    public(package) fun treasury_balance_v2(self: &BfcSystemStateInnerV2): u64 {
+        treasury::get_balance(&self.treasury)
+    }
+
+    public(package) fun deposit_to_treasury(self: &mut BfcSystemStateInnerV2, coin_bfc: Coin<BFC>) {
         treasury::deposit(&mut self.treasury, coin_bfc);
     }
 
-    public(package) fun deposit_to_treasury_pool(self: &mut BfcSystemStateInner, coin_bfc: Coin<BFC>) {
+    public(package) fun deposit_to_treasury_pool(self: &mut BfcSystemStateInnerV2, coin_bfc: Coin<BFC>) {
         treasury_pool::deposit_to_treasury_pool(&mut self.treasury_pool, coin_bfc);
     }
 
     public(package) fun rebalance(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -377,7 +411,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun rebalance_with_one_stablecoin<StableCoinType>(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
@@ -394,13 +428,69 @@ module bfc_system::bfc_system_state_inner {
         treasury::rebalance_with_one_stablecoin<StableCoinType>(&mut self.treasury, pool_balance, true, clock, ctx);
     }
 
-
     public(package) fun request_gas_balance(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         amount: u64,
         ctx: &mut TxContext,
     ): Balance<BFC> {
         treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx)
+    }
+
+    public(package) fun mint_stable<StableCoinType>(
+        inner_state: &mut BfcSystemStateInnerV2,
+        amount: u64,
+        key: &String,
+        ctx: &mut TxContext,
+    ): Coin<StableCoinType> {
+        assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
+        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+    }
+
+    public(package) fun exchange_stable_to_busd<StableCoinType>(
+        inner_state: &mut BfcSystemStateInnerV2,
+        stable_coin: Coin<StableCoinType>,
+        recipient: address,
+        ctx: &mut TxContext,
+    ) {
+        let amount: u64 = stable_coin.value();
+
+        // stake coin into stable_coins
+        let key = treasury::get_vault_key<StableCoinType>();
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
+        let exchange_key = std::ascii::string(exchange_key_bytes);
+        let coin = bag::borrow_mut<String, Coin<StableCoinType>>(&mut inner_state.stake_coins, exchange_key);
+        coin::join(coin, stable_coin);
+
+        // increase busd
+        let supply = treasury::get_busd_supply_mut(&mut inner_state.treasury);
+        let busd_balance = balance::increase_supply(supply, amount);
+        let busd = sui::coin::from_balance(busd_balance, ctx);
+
+        // transfer busd to receiver
+        transfer::public_transfer(busd, recipient);
+    }
+
+    public(package) fun exchange_busd_to_stable<StableCoinType>(
+        system_state: &mut BfcSystemStateInnerV2,
+        busd_coin: Coin<BUSD>,
+        recipient: address,
+        ctx: &mut TxContext,
+    ) {
+        let amount: u64 = busd_coin.value();
+        assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
+        let key = treasury::get_vault_key<StableCoinType>();
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
+        let exchange_key = std::ascii::string(exchange_key_bytes);
+        let amount: u64 = busd_coin.value();
+        let stable_sum = bag::borrow_mut<String, Coin<StableCoinType>>(&mut system_state.stake_coins, exchange_key);
+        assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
+        let stable_back = coin::split(stable_sum, amount, ctx);
+        let busd_sum = treasury::get_busd_supply_mut(&mut system_state.treasury);
+        balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
+        transfer::public_transfer(stable_back, recipient);
+        system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
@@ -408,23 +498,48 @@ module bfc_system::bfc_system_state_inner {
     }
 
     /// X-vault
+    /// deprecated
     public fun vault_info<StableCoinType>(self: &BfcSystemStateInner): VaultInfo {
         treasury::vault_info<StableCoinType>(&self.treasury)
     }
 
+    /// deprecated
     public fun vault_ticks<StableCoinType>(self: &BfcSystemStateInner): vector<Tick> {
         treasury::fetch_ticks<StableCoinType>(&self.treasury)
     }
 
+    /// deprecated
     public fun vault_positions<StableCoinType>(self: &BfcSystemStateInner): vector<Position> {
         treasury::fetch_positions<StableCoinType>(&self.treasury)
     }
 
+    /// deprecated
     public fun get_total_supply<StableCoinType>(self: &BfcSystemStateInner): u64 {
         treasury::get_total_supply<StableCoinType>(&self.treasury)
     }
 
+    /// deprecated
     public fun vault_set_pause<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInner, pause: bool) {
+        treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
+    }
+
+    public(package) fun vault_info_v2<StableCoinType>(self: &BfcSystemStateInnerV2): VaultInfo {
+        treasury::vault_info<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_ticks_v2<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Tick> {
+        treasury::fetch_ticks<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_positions_v2<StableCoinType>(self: &BfcSystemStateInnerV2): vector<Position> {
+        treasury::fetch_positions<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun get_total_supply_v2<StableCoinType>(self: &BfcSystemStateInnerV2): u64 {
+        treasury::get_total_supply<StableCoinType>(&self.treasury)
+    }
+
+    public(package) fun vault_set_pause_v2<StableCoinType>(cap: &TreasuryPauseCap, self: &mut BfcSystemStateInnerV2, pause: bool) {
         treasury::vault_set_pause<StableCoinType>(cap, &mut self.treasury, pause)
     }
 
@@ -459,7 +574,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun create_bfcdao_action(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         payment: &mut Coin<BFC>,
         actionName: vector<u8>,
         clock: &Clock,
@@ -468,7 +583,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun propose(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         version_id: u64,
         payment: &mut Coin<BFC>,
         action_id: u64,
@@ -480,20 +595,20 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::propose(&mut self.dao, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
-    public(package) fun remove_proposal(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,proposal_id: u64){
+    public(package) fun remove_proposal(self: &mut BfcSystemStateInnerV2,key: &BFCDaoManageKey,proposal_id: u64){
         bfc_dao::remove_proposal(&mut self.dao,key,proposal_id);
     }
 
-    public(package) fun remove_action(self: &mut BfcSystemStateInner,key: &BFCDaoManageKey,action_id: u64){
+    public(package) fun remove_action(self: &mut BfcSystemStateInnerV2,key: &BFCDaoManageKey,action_id: u64){
         bfc_dao::remove_action(&mut self.dao,key,action_id);
     }
 
-    public(package) fun set_voting_delay(self: &mut BfcSystemStateInner, manager_key: &BFCDaoManageKey, value: u64) {
+    public(package) fun set_voting_delay(self: &mut BfcSystemStateInnerV2, manager_key: &BFCDaoManageKey, value: u64) {
         bfc_dao::set_voting_delay(&mut self.dao, manager_key, value);
     }
 
     public(package) fun set_voting_period(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
@@ -501,7 +616,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun set_voting_quorum_rate(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         manager_key: &BFCDaoManageKey,
         value: u8,
     ) {
@@ -509,7 +624,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun set_min_action_delay(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         manager_key: &BFCDaoManageKey,
         value: u64,
     ) {
@@ -518,7 +633,7 @@ module bfc_system::bfc_system_state_inner {
 
 
     public(package) fun destroy_terminated_proposal(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         manager_key: &BFCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock
@@ -526,7 +641,7 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::destroy_terminated_proposal(&mut self.dao, manager_key, proposal, clock);
     }
 
-    public(package) fun judge_proposal_state(wrapper: &mut BfcSystemStateInner, current_time: u64) {
+    public(package) fun judge_proposal_state(wrapper: &mut BfcSystemStateInnerV2, current_time: u64) {
         let proposal_record = bfc_dao::getProposalRecord(&mut wrapper.dao);
         let size: u64 = vec_map::size(&proposal_record);
         let mut i = 0;
@@ -548,7 +663,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun cast_vote(
-        system_state: &mut BfcSystemStateInner,
+        system_state: &mut BfcSystemStateInnerV2,
         proposal: &mut Proposal,
         coin: VotingBfc,
         agreeInt: u8,
@@ -559,7 +674,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun change_vote(
-        system_state: &mut BfcSystemStateInner,
+        system_state: &mut BfcSystemStateInnerV2,
         my_vote: &mut Vote,
         proposal: &mut Proposal,
         agree: bool,
@@ -570,7 +685,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun queue_proposal_action(
-        system_state: &mut BfcSystemStateInner,
+        system_state: &mut BfcSystemStateInnerV2,
         manager_key: &BFCDaoManageKey,
         proposal: &mut Proposal,
         clock: & Clock,
@@ -579,7 +694,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun revoke_vote(
-        system_state: &mut BfcSystemStateInner,
+        system_state: &mut BfcSystemStateInnerV2,
         proposal: &mut Proposal,
         my_vote: Vote,
         voting_power: u64,
@@ -589,17 +704,148 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::revoke_vote(&mut system_state.dao, proposal, my_vote, voting_power, clock, ctx);
     }
 
-    public(package) fun withdraw_voting(system_state: &mut BfcSystemStateInner,
+    public(package) fun withdraw_voting(system_state: &mut BfcSystemStateInnerV2,
                                voting_bfc: VotingBfc,
                                clock: & Clock,
                                ctx: &mut TxContext) {
         bfc_dao::withdraw_voting(&mut system_state.dao, voting_bfc, clock, ctx);
     }
 
-    public(package) fun create_voting_bfc(system_state: &mut BfcSystemStateInner,
+    public(package) fun create_voting_bfc(system_state: &mut BfcSystemStateInnerV2,
                                          coin: Coin<BFC>,
                                          clock: & Clock,
                                          ctx: &mut TxContext) {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
+
+    public(package) fun v1_to_v2(self: BfcSystemStateInner, _ctx: &mut TxContext): (BfcSystemStateInnerV2, &mut TxContext) {
+        let BfcSystemStateInner {
+            round,
+            stable_base_points,
+            reward_rate,
+            dao,
+            treasury,
+            treasury_pool,
+            stable_rate,
+        } = self;
+        let coin_bag = bag::new(_ctx);
+        (BfcSystemStateInnerV2 {
+            round,
+            stable_base_points,
+            reward_rate,
+            dao,
+            treasury,
+            treasury_pool,
+            stable_rate,
+            stake_coins: coin_bag,
+            daily_out_limit : 40000_000_000_000u64,
+            daily_use_out_limit: 0u64,
+            operation_capability: vec_map::empty(),
+            oracle_address: option::none(),
+        }, _ctx)
+    }
+
+    // public(package) fun v2_to_v1(self: &BfcSystemStateInnerV2): &mut BfcSystemStateInner {
+    //     let state = BfcSystemStateInner {
+    //         round: self.round ,
+    //         stable_base_points: self.stable_base_points,
+    //         reward_rate: self.reward_rate,
+    //         dao: self.dao,
+    //         treasury: self.treasury,
+    //         treasury_pool: self.treasury_pool,
+    //         stable_rate: self.stable_rate,
+    //     };
+    //     &mut state
+    // }
+
+    public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
+        self.daily_out_limit
+    }
+
+    public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
+        self.daily_out_limit = new_limit;
+    }
+
+    public(package) fun init_bfc_system_state_v2(self: &mut BfcSystemStateInnerV2, _ctx: &mut TxContext) {
+        let treasury = &mut self.treasury;
+        let usdc_supply = usdc::new(_ctx);
+        let usdt_supply = usdt::new(_ctx);
+
+        treasury::add_supply<USDC>(treasury, usdc_supply);
+        treasury::add_supply<USDT>(treasury, usdt_supply);
+
+        let coin_bag = &mut self.stake_coins;
+        let usdc_coin = coin::zero<USDC>(_ctx);
+        let usdt_coin = coin::zero<USDT>(_ctx);
+        add_coin_2_stake_pool<USDC>(coin_bag, usdc_coin);
+        add_coin_2_stake_pool<USDT>(coin_bag, usdt_coin);
+    }
+
+    fun add_coin_2_stake_pool<StableCoinType>(bag: &mut Bag, coin: Coin<StableCoinType>) {
+        let key = treasury::get_vault_key<StableCoinType>();
+        let mut exchange_key_bytes = std::ascii::into_bytes(key);
+        exchange_key_bytes.append( b"-exchange");
+        let exchange_key = std::ascii::string(exchange_key_bytes);
+
+        bag::add(bag, exchange_key, coin);
+    }
+
+    public(package)  fun get_operation_capability(self: &BfcSystemStateInnerV2): VecMap<String, VecSet<address>> {
+        self.operation_capability
+    }
+
+    public(package) fun get_operation_capability_by_key(self: &BfcSystemStateInnerV2, key: &String): VecSet<address> {
+        let result: Option<VecSet<address>> = vec_map::try_get(&self.operation_capability, key);
+
+        if (option::is_some(&result)) {
+            *option::borrow(&result)
+        } else {
+            vec_set::empty()
+        }
+    }
+
+    public(package) fun set_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: VecSet<address>) {
+        if (vec_map::contains(&self.operation_capability, &key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
+            let source_contents = vec_set::keys(&value);
+            let mut i = 0;
+            while (i < vec_set::size(&value)) {
+                let addr = &source_contents[i];
+                if (!vec_set::contains(new_capability, addr)) {
+                    vec_set::insert(new_capability, *addr);
+                };
+                i = i + 1;
+            };
+        } else {
+            vec_map::insert(&mut self.operation_capability, key, value);
+        }
+    }
+
+    public(package) fun add_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: address) {
+        if (vec_map::contains(&self.operation_capability, &key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
+            vec_set::insert(new_capability, value);
+        } else {
+            let mut new_set = vec_set::empty();
+            vec_set::insert(&mut new_set, value);
+            vec_map::insert(&mut self.operation_capability, key, new_set);
+        }
+    }
+
+    public(package) fun remove_operation_capability(self: &mut BfcSystemStateInnerV2, key: &String, value: address) {
+        if (vec_map::contains(&self.operation_capability, key)) {
+            let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
+            vec_set::remove(new_capability, &value);
+        }
+    }
+
+    public(package) fun verify_operation_capability(self: &BfcSystemStateInnerV2, key: &String, value: address): bool {
+        if (vec_map::contains(&self.operation_capability, key)) {
+            let new_capability = vec_map::get(&self.operation_capability, key);
+            vec_set::contains(new_capability, &value)
+        } else {
+            false
+        }
+    }
+
 }

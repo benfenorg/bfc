@@ -54,12 +54,12 @@ module sui_system::sui_system {
     use bfc_system::bfc_system;
     use sui::dynamic_field;
     use sui::vec_map::VecMap;
+    use sui::vec_set::VecSet;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
 
     #[test_only] use sui::balance;
     #[test_only] use sui_system::validator_set::ValidatorSet;
-    #[test_only] use sui::vec_set::VecSet;
 
     public struct SuiSystemState has key {
         id: UID,
@@ -69,6 +69,9 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
+
+    /// Errors
+    const ERR_REQUEST_SET_DAILY_OUT_LIMIT: u64 = 100;
 
     // ==== functions that can only be called by genesis ====
 
@@ -682,6 +685,52 @@ module sui_system::sui_system {
     #[allow(unused_function)]
     fun get_stable_rate_from_bfc(id: &UID) : VecMap<ascii::String, u64> {
         bfc_system::get_exchange_rate(id)
+    }
+
+    #[allow(unused_function)]
+    public fun request_set_daily_out_limit(
+        self: &mut SuiSystemState,
+        daily_out_limit: u64,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_SET_DAILY_OUT_LIMIT);
+        bfc_system::set_daily_out_limit(&mut self.bfc_system_id, daily_out_limit)
+    }
+
+    #[allow(unused_function)]
+    public fun request_add_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr: address,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 99);
+        bfc_system::add_operation_capability(&mut self.bfc_system_id, key, addr)
+    }
+
+    #[allow(unused_function)]
+    public fun request_remove_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr: address,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 97);
+        bfc_system::remove_operation_capability(&mut self.bfc_system_id, &key, addr)
+    }
+    #[allow(unused_function)]
+    public fun request_set_operation_capability(
+        self: &mut SuiSystemState,
+        key: ascii::String,
+        addr_set: VecSet<address>,
+        ctx: &TxContext,
+    ) {
+        let inner = load_system_state(self);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 96);
+        bfc_system::set_operation_capability(&mut self.bfc_system_id, key, addr_set)
     }
 
     public fun get_stable_rate(self: &SuiSystemState) : VecMap<ascii::String, u64> {

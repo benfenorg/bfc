@@ -581,6 +581,9 @@ module sui_system::sui_system_state_inner {
         report_validator_impl(verified_cap, reportee_addr, &mut self.validator_report_records);
         }
 
+        public(package) fun is_active_validator_by_sui_address(self: &SuiSystemStateInnerV2 , address: address): bool {
+            self.validators.is_active_validator_by_sui_address(address)
+        }
 
         /// Undo a `report_validator` action. Aborts if
         /// 1. the reportee is not a currently active validator or

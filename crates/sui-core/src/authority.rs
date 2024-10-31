@@ -3233,7 +3233,7 @@ impl AuthorityState {
             .map(|entity| ((*entity.key).to_string(), entity.value))
             .collect();
 
-        let base_points = inner_state.clone().stable_base_points;
+        let base_points = bfc_system_state.get_base_points();
         let rate_option = rate_map.get(&tag.to_canonical_string(false)).or_else(|| rate_map.get(&tag.to_string())).copied();
         if let Some(rate) = rate_option {
             Ok((Some(rate), Some(base_points)))

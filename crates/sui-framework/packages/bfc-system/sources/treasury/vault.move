@@ -1162,4 +1162,8 @@ module bfc_system::vault {
         _vault.last_bfc_rebalance_amount = balance::value(&_vault.coin_b);
         _vault.last_bfc_rebalance_amount
     }
+
+    public(package) fun increase_coin_a<StableCoinType>(_vault: &mut Vault<StableCoinType>, balance: Balance<StableCoinType>) : u64 {
+        balance::join(&mut _vault.coin_a, balance)
+    }
 }

@@ -111,6 +111,56 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
+    /// set daily out limit
+    #[clap(name = "set-daily-out-limit")]
+    SetDailyOutLimit {
+        #[clap(name = "operation-cap-id", long)]
+        operation_cap_id: Option<ObjectID>,
+        #[clap(name = "daily-out-limit")]
+        daily_out_limit: u64,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    /// add operation capability
+    #[clap(name = "add-operation-capability")]
+    AddOperationCapability {
+        #[clap(name = "operation-cap-id", long)]
+        operation_cap_id: Option<ObjectID>,
+        #[clap(name = "key")]
+        key: String,
+        #[clap(name = "address")]
+        address: SuiAddress,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    /// remove operation capability
+    #[clap(name = "remove-operation-capability")]
+    RemoveOperationCapability {
+        #[clap(name = "operation-cap-id", long)]
+        operation_cap_id: Option<ObjectID>,
+        #[clap(name = "key")]
+        key: String,
+        #[clap(name = "address")]
+        address: SuiAddress,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    /// set operation capability
+    #[clap(name = "set-operation-capability")]
+    SetOperationCapability {
+        #[clap(name = "operation-cap-id", long)]
+        operation_cap_id: Option<ObjectID>,
+        #[clap(name = "key")]
+        key: String,
+        #[clap(name = "address")]
+        address: SuiAddress,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
     /// Report or un-report a validator.
     #[clap(name = "report-validator")]
     ReportValidator {
@@ -167,6 +217,10 @@ pub enum SuiValidatorCommandResponse {
     LeaveCommittee(SuiTransactionBlockResponse),
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
+    SetDailyOutLimit(SuiTransactionBlockResponse),
+    AddOperationCapability(SuiTransactionBlockResponse),
+    RemoveOperationCapability(SuiTransactionBlockResponse),
+    SetOperationCapability(SuiTransactionBlockResponse),
     ReportValidator(SuiTransactionBlockResponse),
     SerializedPayload(String),
     DisplayGasPriceUpdateRawTxn {
@@ -386,6 +440,49 @@ impl SuiValidatorCommand {
                 SuiValidatorCommandResponse::UpdateGasPrice(resp)
             }
 
+            SuiValidatorCommand::SetDailyOutLimit {
+                operation_cap_id,
+                daily_out_limit,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    set_daily_out_limit(context, operation_cap_id, daily_out_limit, gas_budget).await?;
+                SuiValidatorCommandResponse::SetDailyOutLimit(resp)
+            }
+            SuiValidatorCommand::AddOperationCapability {
+                operation_cap_id,
+                key,
+                address,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_add_operation_capability").await?;
+                SuiValidatorCommandResponse::AddOperationCapability(resp)
+            }
+            SuiValidatorCommand::RemoveOperationCapability {
+                operation_cap_id,
+                key,
+                address,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_remove_operation_capability").await?;
+                SuiValidatorCommandResponse::RemoveOperationCapability(resp)
+            }
+            SuiValidatorCommand::SetOperationCapability {
+                operation_cap_id,
+                key,
+                address,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_set_operation_capability").await?;
+                SuiValidatorCommandResponse::SetOperationCapability(resp)
+            }
             SuiValidatorCommand::ReportValidator {
                 operation_cap_id,
                 reportee_address,
@@ -522,6 +619,39 @@ async fn update_gas_price(
         CallArg::Pure(bcs::to_bytes(&gas_price).unwrap()),
     ];
     call_0x5(context, "request_set_gas_price", args, gas_budget).await
+}
+
+async fn set_daily_out_limit(
+    context: &mut WalletContext,
+    operation_cap_id: Option<ObjectID>,
+    daily_out_limit: u64,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, operation_cap_id).await?;
+
+    let args = vec![
+        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
+        CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
+    ];
+    call_0x5(context, "request_set_daily_out_limit", args, gas_budget).await
+}
+
+async fn operation_capability(
+    context: &mut WalletContext,
+    operation_cap_id: Option<ObjectID>,
+    key: String,
+    address: SuiAddress,
+    gas_budget: u64,
+    function: &'static str,
+) -> Result<SuiTransactionBlockResponse> {
+    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, operation_cap_id).await?;
+
+    let args = vec![
+        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
+        CallArg::Pure(bcs::to_bytes(&key).unwrap()),
+        CallArg::Pure(bcs::to_bytes(&address).unwrap()),
+    ];
+    call_0x5(context, function, args, gas_budget).await
 }
 
 async fn report_validator(
@@ -666,6 +796,18 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::UpdateGasPrice(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::SetDailyOutLimit(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::AddOperationCapability(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::RemoveOperationCapability(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::SetOperationCapability(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::ReportValidator(response) => {
