@@ -136,6 +136,14 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
+    public fun load_system_state_mut_test(
+        _self: &mut BfcSystemState,
+        _ctx: &mut TxContext
+    ): (&mut BfcSystemStateInnerV2, &mut TxContext) {
+        load_system_state_mut(_self, _ctx)
+    }
+
+    #[test_only]
     public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,

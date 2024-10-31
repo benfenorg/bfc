@@ -1098,21 +1098,4 @@ module sui_system::sui_system_tests {
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
     }
-
-    // #[test]
-    // fun test_request_set_daily_out_limit_success() {
-    //     // set_up_sui_system_state(vector[@0x0, @0x1, @0x2]);
-    //
-    //     let mut scenario_val = test_scenario::begin(@0x0);
-    //     let scenario = &mut scenario_val;
-    //
-    //     let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
-    //     let mut system_state_bfc = test_scenario::take_shared<BfcSystemState>(scenario);
-    //     let ctx = test_scenario::ctx(scenario);
-    //     sui_system::request_set_daily_out_limit(&mut system_state, &mut system_state_bfc, 1000u64, ctx);
-    //
-    //     test_scenario::return_shared(system_state);
-    //     test_scenario::return_shared(system_state_bfc);
-    //     test_scenario::end(scenario_val);
-    // }
 }
