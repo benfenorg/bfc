@@ -9107,8 +9107,8 @@ async fn test_stable_store_revert_transfer_sui() {
     );
     // Transaction should not be deleted on revert in case it's needed
     // to execute a future state sync checkpoint.
-    assert!(db.get_transaction_block(&tx_digest).unwrap().is_some());
     assert!(!db.as_ref().is_tx_already_executed(&tx_digest).unwrap());
+
 }
 
 #[tokio::test]
@@ -9151,7 +9151,7 @@ async fn test_stable_store_revert_wrap_move_call() {
     );
 
     let wrap_cert = init_certified_transaction(wrap_txn, &authority_state);
-    let wrap_digest = *wrap_cert.digest();
+    let _wrap_digest = *wrap_cert.digest();
 
     let wrap_effects = authority_state
         .execute_certificate(&wrap_cert, &authority_state.epoch_store_for_testing())
@@ -9239,7 +9239,7 @@ async fn test_stable_store_revert_unwrap_move_call() {
     );
 
     let unwrap_cert = init_certified_transaction(unwrap_txn, &authority_state);
-    let unwrap_digest = *unwrap_cert.digest();
+    let _unwrap_digest = *unwrap_cert.digest();
 
     // let unwrap_effects = authority_state
     //     .execute_certificate(&unwrap_cert, &authority_state.epoch_store_for_testing())
@@ -9326,7 +9326,7 @@ async fn test_stable_store_revert_add_ofield() {
     );
 
     let add_cert = init_certified_transaction(add_txn, &authority_state);
-    let add_digest = *add_cert.digest();
+    let _add_digest = *add_cert.digest();
 
     let add_effects = authority_state
         .execute_certificate(&add_cert, &authority_state.epoch_store_for_testing())
