@@ -25,9 +25,7 @@ custom coins with <code><a href="../sui-framework/balance.md#0x2_balance_Supply"
 -  [Function `destroy_supply`](#0x2_balance_destroy_supply)
 
 
-<pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
-<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
-<b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<pre><code><b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 </code></pre>
 
 
@@ -36,6 +34,7 @@ custom coins with <code><a href="../sui-framework/balance.md#0x2_balance_Supply"
 
 ## Struct `Supply`
 
+System operation performed for a coin other than SUI
 A Supply of T. Used for minting and burning.
 Wrapped into a <code>TreasuryCap</code> in the <code>Coin</code> module.
 
@@ -121,16 +120,6 @@ For when trying to withdraw more than there is.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_ENotEnough">ENotEnough</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 2;
-</code></pre>
-
-
-
-<a name="0x2_balance_ENotSUI"></a>
-
-System operation performed for a coin other than SUI
-
-
-<pre><code><b>const</b> <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4444;
 </code></pre>
 
 
@@ -435,7 +424,7 @@ and nowhere else.
 
 <pre><code><b>fun</b> <a href="../sui-framework/balance.md#0x2_balance_create_staking_rewards">create_staking_rewards</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &TxContext): <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a>&lt;T&gt; {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui-framework/balance.md#0x2_balance_ENotSystemAddress">ENotSystemAddress</a>);
-    //<b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>);
+    //<b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, ENotSUI);
     <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a> { value }
 }
 </code></pre>
@@ -464,7 +453,7 @@ and nowhere else.
 
 <pre><code><b>fun</b> <a href="../sui-framework/balance.md#0x2_balance_destroy_storage_rebates">destroy_storage_rebates</a>&lt;T&gt;(self: <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a>&lt;T&gt;, ctx: &TxContext) {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui-framework/balance.md#0x2_balance_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui-framework/balance.md#0x2_balance_ENotSUI">ENotSUI</a>);
+    //<b>assert</b>!(std::type_name::get&lt;T&gt;().into_string().into_bytes() == <a href="../sui-framework/balance.md#0x2_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, ENotSUI);
     <b>let</b> <a href="../sui-framework/balance.md#0x2_balance_Balance">Balance</a> { value: _ } = self;
 }
 </code></pre>
