@@ -10,6 +10,7 @@ use std::{
     process::{Child, Command},
     time::{Duration, Instant},
 };
+use clap::arg;
 use tracing::trace;
 use url::Url;
 
@@ -61,44 +62,86 @@ struct PostgresProcess {
 
 impl PostgresProcess {
     fn start(dir: PathBuf, port: u16) -> Result<Self> {
-        let child = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/postgres")
-            //Command::new("postgres")
-            // Set the data directory to use
-            .arg("-D")
-            .arg(&dir)
-            // Set the port to listen for incoming connections
-            .args(["-p", &port.to_string()])
-            // Disable creating and listening on a UDS
-            .args(["-c", "unix_socket_directories="])
-            // pipe stdout and stderr to files located in the data directory
-            .stdout(
-                OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(dir.join("stdout"))?,
-            )
-            .stderr(
-                OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(dir.join("stderr"))?,
-            )
-            .spawn()
-            .context("command not found: postgres")?;
 
-        Ok(Self { dir, inner: child })
+        if cfg!(target_os = "linux") {
+             let child = Command::new("sudo").arg("-u").arg("postgres").arg("postgres")
+                // Set the data directory to use
+                .arg("-D")
+                .arg(&dir)
+                // Set the port to listen for incoming connections
+                .args(["-p", &port.to_string()])
+                // Disable creating and listening on a UDS
+                .args(["-c", "unix_socket_directories="])
+                // pipe stdout and stderr to files located in the data directory
+                .stdout(
+                    OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(dir.join("stdout"))?,
+                )
+                .stderr(
+                    OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(dir.join("stderr"))?,
+                )
+                .spawn()
+                .context("command not found: postgres")?;
+            Ok(Self { dir, inner: child })
+
+        } else if cfg!(target_os = "macos") {
+             let child = Command::new("postgres")
+                .arg("-D")
+                .arg(&dir)
+                // Set the port to listen for incoming connections
+                .args(["-p", &port.to_string()])
+                // Disable creating and listening on a UDS
+                .args(["-c", "unix_socket_directories="])
+                // pipe stdout and stderr to files located in the data directory
+                .stdout(
+                    OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(dir.join("stdout"))?,
+                )
+                .stderr(
+                    OpenOptions::new()
+                        .create(true)
+                        .append(true)
+                        .open(dir.join("stderr"))?,
+                )
+                .spawn()
+                .context("command not found: postgres")?;
+                Ok(Self { dir, inner: child })
+        } else {
+            return Err(anyhow!("unsupported OS"));
+        }
+
+
     }
 
     // https://www.postgresql.org/docs/16/app-pg-ctl.html
     fn pg_ctl_stop(&mut self) -> Result<()> {
-        let output = Command::new("sudo -u postgres /usr/lib/postgresql/14/bin/pg_ctl")
-            //Command::new("pg_ctl")
-            .arg("stop")
-            .arg("-D")
-            .arg(&self.dir)
-            .arg("-mfast")
-            .output()
-            .context("command not found: pg_ctl")?;
+        let output;
+        if cfg!(target_os = "linux") {
+            output = Command::new("sudo").arg("-u").arg("postgres").arg("pg_ctl")
+                .arg("stop")
+                .arg("-D")
+                .arg(&self.dir)
+                .arg("-mfast")
+                .output()
+                .context("command not found: pg_ctl")?;
+        }  else if cfg!(target_os = "macos") {
+            output = Command::new("pg_ctl")
+                .arg("stop")
+                .arg("-D")
+                .arg(&self.dir)
+                .arg("-mfast")
+                .output()
+                .context("command not found: pg_ctl")?;
+        } else {
+            return Err(anyhow!("unsupported OS"));
+        }
 
         if output.status.success() {
             Ok(())
@@ -249,14 +292,29 @@ enum HealthCheckError {
 ///
 /// See <https://www.postgresql.org/docs/16/app-pg-isready.html> for more info
 fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
-    let output = Command::new("sudo -u postgres pg_isready")
-        //Command::new("pg_isready")
-        .arg("--host=localhost")
-        .arg("-p")
-        .arg(port.to_string())
-        .arg("--username=postgres")
-        .output()
-        .map_err(|e| HealthCheckError::Unknown(format!("command not found: pg_ctl: {e}")))?;
+    let output;
+    if cfg!(target_os = "linux") {
+            output = Command::new("sudo").arg("-u").arg("postgres").arg("pg_isready")
+            .arg("--host=localhost")
+            .arg("-p")
+            .arg(port.to_string())
+            .arg("--username=postgres")
+            .output()
+            .map_err(|e| HealthCheckError::Unknown(format!("command not found: pg_ctl: {e}")))?;
+
+    } else if cfg!(target_os = "macos") {
+             output = Command::new("pg_isready")
+            .arg("--host=localhost")
+            .arg("-p")
+            .arg(port.to_string())
+            .arg("--username=postgres")
+            .output()
+            .map_err(|e| HealthCheckError::Unknown(format!("command not found: pg_ctl: {e}")))?;
+
+    } else {
+        return Err(HealthCheckError::Unknown("unsupported OS".to_owned()));
+    }
+
 
     trace!("pg_isready code: {:?}", output.status.code());
     trace!("pg_isready output: {}", output.stderr.escape_ascii());
@@ -272,25 +330,32 @@ fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
 ///
 /// See <https://www.postgresql.org/docs/16/app-initdb.html> for more info
 fn initdb(dir: &Path) -> Result<()> {
-    // let output = Command::new("sudo -u postgres initdb")
-    //     //Command::new("initdb")
-    //     .arg("-D")
-    //     .arg(dir)
-    //     .arg("--no-instructions")
-    //     .arg("--username=postgres")
-    //     .output()
-    //     .context("command not found: initdb")?;
+    let output;
+    if cfg!(target_os = "linux") {
+         output = Command::new("sudo")
+            .arg("-u")
+            .arg("postgres")
+            .arg("initdb")
+            .arg("-D")
+            .arg(dir)
+            .arg("--no-instructions")
+            .arg("--username=postgres")
+            .output()
+            .context("Failed to execute initdb command")?;
+    }else if cfg!(target_os = "macos") {
+         output = Command::new("initdb")
+            .arg("-D")
+            .arg(dir)
+            .arg("--no-instructions")
+            .arg("--username=postgres")
+            .output()
+            .context("command not found: initdb")?;
 
-    let output = Command::new("sudo")
-        .arg("-u")
-        .arg("postgres")
-        .arg("initdb")
-        .arg("-D")
-        .arg(dir)
-        .arg("--no-instructions")
-        .arg("--username=postgres")
-        .output()
-        .context("Failed to execute initdb command")?;
+    }else {
+        return Err(anyhow!("unsupported OS"));
+    }
+
+
 
     if output.status.success() {
         Ok(())
