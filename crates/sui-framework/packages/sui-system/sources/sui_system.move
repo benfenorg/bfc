@@ -631,6 +631,8 @@ module sui_system::sui_system {
             ctx,
         );
 
+        bfc_system::advance_epoch(&mut wrapper.bfc_system_id);
+
         storage_rebate
     }
 

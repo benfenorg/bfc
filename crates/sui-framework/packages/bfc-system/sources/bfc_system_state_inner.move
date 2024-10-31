@@ -760,6 +760,10 @@ module bfc_system::bfc_system_state_inner {
         self.daily_out_limit
     }
 
+    public(package) fun reset_daily_use_out_limit(self: &mut BfcSystemStateInnerV2) {
+        self.daily_use_out_limit = 0u64;
+    }
+
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
         self.daily_out_limit = new_limit;
     }

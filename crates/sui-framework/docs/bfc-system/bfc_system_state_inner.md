@@ -70,6 +70,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_state_inner_create_voting_bfc)
 -  [Function `v1_to_v2`](#0xc8_bfc_system_state_inner_v1_to_v2)
 -  [Function `get_daily_out_limit`](#0xc8_bfc_system_state_inner_get_daily_out_limit)
+-  [Function `reset_daily_use_out_limit`](#0xc8_bfc_system_state_inner_reset_daily_use_out_limit)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
 -  [Function `add_coin_2_stake_pool`](#0xc8_bfc_system_state_inner_add_coin_2_stake_pool)
@@ -2371,6 +2372,30 @@ deprecated
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">get_daily_out_limit</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
     self.daily_out_limit
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_reset_daily_use_out_limit"></a>
+
+## Function `reset_daily_use_out_limit`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_use_out_limit">reset_daily_use_out_limit</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_use_out_limit">reset_daily_use_out_limit</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+    self.daily_use_out_limit = 0u64;
 }
 </code></pre>
 

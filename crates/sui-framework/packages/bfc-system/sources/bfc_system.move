@@ -405,6 +405,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, _ctx);
     }
 
+    public fun advance_epoch(bfc_system_id: &mut UID) {
+        let inner = load_system_state_mut_by_uid(bfc_system_id);
+        bfc_system_state_inner::reset_daily_use_out_limit(inner);
+    }
+
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
