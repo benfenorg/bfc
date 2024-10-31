@@ -3,6 +3,7 @@
 module bfc_system::bfc_system_tests {
 
     use std::ascii;
+    use std::debug;
     use std::vector;
     use bfc_system::usdc::USDC;
     use bfc_system::busd::BUSD;
@@ -46,6 +47,29 @@ module bfc_system::bfc_system_tests {
     use bfc_system::bfc_system_state_inner;
 
     const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
+
+    #[test]
+    fun print_stable_rate() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        let length = stable_rate.size();
+
+        let mut i = 0;
+        while (i < length) {
+            let (key, _value) = stable_rate.get_entry_by_idx(i);
+            debug::print(key);
+            i = i + 1;
+        };
+
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
 
     #[test]
     fun test_round() {

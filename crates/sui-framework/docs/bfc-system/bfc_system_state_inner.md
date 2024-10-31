@@ -83,6 +83,7 @@ title: Module `0xc8::bfc_system_state_inner`
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
+<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
 <b>use</b> <a href="../sui-framework/bag.md#0x2_bag">0x2::bag</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
@@ -461,6 +462,15 @@ Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_MINT_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>: u64 = 1005;
 </code></pre>
 
 
@@ -1369,6 +1379,16 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ): Coin&lt;StableCoinType&gt; {
     <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
+    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
+    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;() || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
+    <b>if</b> (usdc_usdt_coint) {
+        <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
+    };
+    <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;());
+    <b>let</b> (balance_stable,_balance_bfc) = <a href="vault.md#0xc8_vault_balances">vault::balances</a>&lt;StableCoinType&gt;(vault_mut);
+    <b>if</b>(balance_stable&gt;=amount){
+        <b>return</b> <a href="vault.md#0xc8_vault_decrease_coin_a">vault::decrease_coin_a</a>(vault_mut, amount, ctx)
+    };
     <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
 }
 </code></pre>
@@ -1469,7 +1489,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">bfc_system_state_inner::BfcSystemStateInner</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt;
 </code></pre>
 
 
@@ -1478,7 +1498,7 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: & <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>): VecMap&lt;String, u64&gt; {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_all_stable_rate">get_all_stable_rate</a>(self: & <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): VecMap&lt;String, u64&gt; {
     self.stable_rate
 }
 </code></pre>
@@ -2410,6 +2430,19 @@ deprecated
     <b>let</b> usdt_coin = <a href="../sui-framework/coin.md#0x2_coin_zero">coin::zero</a>&lt;USDT&gt;(_ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDC&gt;(coin_bag, usdc_coin);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDT&gt;(coin_bag, usdt_coin);
+
+    <b>let</b> stable_rate = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self);
+    <b>let</b> length = stable_rate.size();
+
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; length) {
+        <b>let</b> (key, _value) = stable_rate.get_entry_by_idx(i);
+        <b>if</b> (*key == <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;()) {
+            <b>continue</b>
+        };
+
+        i = i + 1;
+    }
 }
 </code></pre>
 

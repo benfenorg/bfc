@@ -238,6 +238,13 @@ module bfc_system::bfc_system {
         (inner, _ctx)
     }
 
+    #[test_only]
+    public fun load_system_state_mut_for_test(self: &mut BfcSystemState,
+            _ctx: &mut TxContext
+    ): (&mut BfcSystemStateInnerV2, &mut TxContext) {
+        return load_system_state_mut(self, _ctx)
+    }
+
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_rate_map(inner)

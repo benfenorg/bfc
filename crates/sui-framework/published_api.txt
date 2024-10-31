@@ -4585,6 +4585,9 @@ rebalance
 increase_coin_a
 	public(package) fun
 	0xc8::vault
+decrease_coin_a
+	public(package) fun
+	0xc8::vault
 MGG
 	public struct
 	0xc8::mgg

@@ -14,7 +14,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
-    use sui::vec_map::{Self, VecMap};
+    use sui::vec_map::{Self, VecMap, size};
     use sui::vec_set;
     use sui::vec_set::VecSet;
 
@@ -504,7 +504,7 @@ module bfc_system::bfc_system_state_inner {
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
 
-    public(package) fun get_all_stable_rate(self: & BfcSystemStateInner): VecMap<String, u64> {
+    public(package) fun get_all_stable_rate(self: & BfcSystemStateInnerV2): VecMap<String, u64> {
         self.stable_rate
     }
 
@@ -756,19 +756,6 @@ module bfc_system::bfc_system_state_inner {
         }, _ctx)
     }
 
-    // public(package) fun v2_to_v1(self: &BfcSystemStateInnerV2): &mut BfcSystemStateInner {
-    //     let state = BfcSystemStateInner {
-    //         round: self.round ,
-    //         stable_base_points: self.stable_base_points,
-    //         reward_rate: self.reward_rate,
-    //         dao: self.dao,
-    //         treasury: self.treasury,
-    //         treasury_pool: self.treasury_pool,
-    //         stable_rate: self.stable_rate,
-    //     };
-    //     &mut state
-    // }
-
     public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
         self.daily_out_limit
     }
@@ -790,6 +777,19 @@ module bfc_system::bfc_system_state_inner {
         let usdt_coin = coin::zero<USDT>(_ctx);
         add_coin_2_stake_pool<USDC>(coin_bag, usdc_coin);
         add_coin_2_stake_pool<USDT>(coin_bag, usdt_coin);
+
+        let stable_rate = get_rate_map(self);
+        let length = stable_rate.size();
+
+        let mut i = 0;
+        while (i < length) {
+            let (key, _value) = stable_rate.get_entry_by_idx(i);
+            if (*key == treasury::get_vault_key<BUSD>()) {
+                continue
+            };
+
+            i = i + 1;
+        }
     }
 
     fun add_coin_2_stake_pool<StableCoinType>(bag: &mut Bag, coin: Coin<StableCoinType>) {
