@@ -18,6 +18,7 @@ module bfc_system::bfc_system_tests {
     use sui::test_scenario::Scenario;
     use sui::tx_context;
     use sui::vec_map::{Self};
+    use sui::vec_set;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH};
 
@@ -473,6 +474,69 @@ module bfc_system::bfc_system_tests {
         bfc_system::set_daily_out_limit(&mut id, limit);
         let after = bfc_system::get_daily_out_limit(&mut id);
         assert!(after == limit, 1);
+
+        test_scenario::return_shared(system_state);
+        object::delete(id);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_add_operation_capability_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let mut id = object::bfc_system_state_for_test();
+        let key = ascii::string(b"key");
+        let before = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        assert!(before.size() == 0, 1);
+        bfc_system::add_operation_capability(&mut id, key, @0x0);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        assert!(after.size() == 1, 1);
+
+        test_scenario::return_shared(system_state);
+        object::delete(id);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_remove_operation_capability_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let mut id = object::bfc_system_state_for_test();
+        let key = ascii::string(b"key");
+        bfc_system::add_operation_capability(&mut id, key, @0x0);
+        bfc_system::remove_operation_capability(&mut id, &key, @0x0);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        assert!(after.size() == 0, 1);
+
+        test_scenario::return_shared(system_state);
+        object::delete(id);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_set_operation_capability_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let mut id = object::bfc_system_state_for_test();
+        let key = ascii::string(b"key");
+        let before = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        assert!(before.size() == 0, 1);
+        let v = vec_set::singleton(@0x0);
+        bfc_system::set_operation_capability(&mut id, key, v);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        assert!(after.size() == 1, 1);
 
         test_scenario::return_shared(system_state);
         object::delete(id);
