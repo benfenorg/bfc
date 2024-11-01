@@ -335,6 +335,12 @@ fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
 fn initdb(dir: &Path) -> Result<()> {
     let output;
     if cfg!(target_os = "linux") {
+
+         let changeDir = Command::new("sudo")
+             .arg("chown")
+                .arg("postgres.postgres")
+                .arg(dir).output();
+
          output = Command::new("initdb")
              //Command::new("sudo").arg("-u").arg("postgres").arg("initdb")
             .arg("-D")
