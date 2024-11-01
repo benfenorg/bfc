@@ -1467,17 +1467,20 @@ deprecated
 ) {
     <b>let</b> amount: u64 = busd_coin.value();
     <b>assert</b>!(amount + system_state.daily_use_out_limit &lt;= system_state.daily_out_limit, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT">ERR_DAILY_LIMIT</a>);
+
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> <b>mut</b> exchange_key_bytes = std::ascii::into_bytes(key);
     exchange_key_bytes.append( b"-exchange");
     <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
+
     <b>let</b> amount: u64 = busd_coin.value();
     <b>let</b> stable_sum = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&<b>mut</b> system_state.stake_coins, exchange_key);
     <b>assert</b>!(stable_sum.value() &gt;= amount, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SWAP_STABLE_NOT_ENOUGH">ERR_SWAP_STABLE_NOT_ENOUGH</a>);
     <b>let</b> stable_back = <a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(stable_sum, amount, ctx);
     <b>let</b> busd_sum = <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">treasury::get_busd_supply_mut</a>(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(busd_sum, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(busd_coin));
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(stable_back, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+    <a href="treasury.md#0xc8_treasury_exchange_busd_to_stable">treasury::exchange_busd_to_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_back, ctx);
+
     system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
 }
 </code></pre>

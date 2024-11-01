@@ -4732,6 +4732,9 @@ vault_info
 mint_stable
 	public(package) fun
 	0xc8::treasury
+exchange_busd_to_stable
+	public(package) fun
+	0xc8::treasury
 add_supply
 	public(package) fun
 	0xc8::treasury

@@ -151,6 +151,14 @@ module bfc_system::treasury {
         coin
     }
 
+    public(package) fun exchange_busd_to_stable<StableCoinType>(_treasury: &mut Treasury,
+                                                    coin: Coin<StableCoinType>,
+                                                    _ctx: &mut TxContext) {
+        let key = get_vault_key<StableCoinType>();
+        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
+        balance::decrease_supply(supply, coin::into_balance(coin));
+    }
+
     public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {
         let key = get_vault_key<StableCoinType>();
         bag::add(&mut _treasury.supplies, key, supply);
