@@ -1026,6 +1026,14 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
+        // query oracle rate
+        let rate_result = temporary_store.get_oracle_price();
+        if rate_result.is_err() {
+            // TOOD do some error handling
+        }
+
+
+
         let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,

@@ -34,8 +34,9 @@ use sui_types::{
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
+use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point};
 use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
+use sui_types::oracle_price::OraclePrice;
 use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
@@ -731,6 +732,10 @@ impl<'backing> TemporaryStore<'backing> {
 
     pub fn get_stable_rate_map_and_reward_rate(&self) -> Result<(VecMap<String, u64>, u64),SuiError> {
         get_stable_rate_and_reward_rate(self.store.as_object_store())
+    }
+
+    pub fn get_oracle_price(&self) -> Result<OraclePrice, SuiError> {
+        get_oracle_price(self.store.as_object_store())
     }
 
     pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> Result<(u64, u64),SuiError> {
