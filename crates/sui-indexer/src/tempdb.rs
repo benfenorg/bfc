@@ -64,8 +64,8 @@ impl PostgresProcess {
     fn start(dir: PathBuf, port: u16) -> Result<Self> {
 
         if cfg!(target_os = "linux") {
-             let child = Command::new("postgres")
-                 //Command::new("sudo").arg("-u").arg("postgres").arg("postgres")
+             let child = //Command::new("postgres")
+                 Command::new("sudo").arg("-u").arg("postgres").arg("postgres")
                 // Set the data directory to use
                 .arg("-D")
                 .arg(&dir)
@@ -125,8 +125,8 @@ impl PostgresProcess {
     fn pg_ctl_stop(&mut self) -> Result<()> {
         let output;
         if cfg!(target_os = "linux") {
-            output = Command::new("pg_ctl")
-                //Command::new("sudo").arg("-u").arg("postgres").arg("pg_ctl")
+            output = //Command::new("pg_ctl")
+                Command::new("sudo").arg("-u").arg("postgres").arg("pg_ctl")
                 .arg("stop")
                 .arg("-D")
                 .arg(&self.dir)
@@ -296,8 +296,8 @@ enum HealthCheckError {
 fn pg_isready(port: u16) -> Result<(), HealthCheckError> {
     let output;
     if cfg!(target_os = "linux") {
-            output = Command::new("pg_isready")
-                //Command::new("sudo").arg("-u").arg("postgres").arg("pg_isready")
+            output = //Command::new("pg_isready")
+                Command::new("sudo").arg("-u").arg("postgres").arg("pg_isready")
             .arg("--host=localhost")
             .arg("-p")
             .arg(port.to_string())
@@ -341,8 +341,8 @@ fn initdb(dir: &Path) -> Result<()> {
                 .arg("postgres.postgres")
                 .arg(dir).output();
 
-         output = Command::new("initdb")
-             //Command::new("sudo").arg("-u").arg("postgres").arg("initdb")
+         output = //Command::new("initdb")
+             Command::new("sudo").arg("-u").arg("postgres").arg("initdb")
             .arg("-D")
             .arg(dir)
             .arg("--no-instructions")
