@@ -445,7 +445,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ): Coin<StableCoinType> {
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(type_name::get<StableCoinType>() == type_name::get<BUSD>(), ERR_MINT_BUSD);
+        assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
         let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>() || type_name::get<StableCoinType>() == type_name::get<USDC>();
         if (usdc_usdt_coint) {
             return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
