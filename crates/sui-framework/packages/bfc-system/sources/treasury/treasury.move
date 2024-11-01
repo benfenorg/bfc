@@ -53,6 +53,7 @@ module bfc_system::treasury {
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
+    const ERR_UNSUPPORTED_BUSD: u64 = 106;
 
     public struct TreasuryPauseCap has key, store {
         id: UID
@@ -688,9 +689,7 @@ module bfc_system::treasury {
         _treasury: &mut Treasury,
         balance: Balance<StableCoinType>,
     ): u64 {
-        if (std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>()) {
-            return 0;
-        };
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(),ERR_UNSUPPORTED_BUSD);
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
         vault::increase_coin_a(mut_vault, balance)
