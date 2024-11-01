@@ -820,7 +820,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, <b>address</b>: <b>address</b>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <b>address</b>: <b>address</b>)
 </code></pre>
 
 
@@ -829,8 +829,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(id: &<b>mut</b> UID, <b>address</b>: <b>address</b>) {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <b>address</b>: <b>address</b>) {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
     inner.<a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(<b>address</b>)
 }
 </code></pre>
@@ -845,7 +845,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;
 </code></pre>
 
 
@@ -854,8 +854,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(id: &UID): Option&lt;<b>address</b>&gt; {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>): Option&lt;<b>address</b>&gt; {
+    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
     inner.<a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>()
 }
 </code></pre>

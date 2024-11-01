@@ -272,13 +272,13 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_operation_capability(inner, key, addresses)
     }
 
-    public fun set_oracle_address(id: &mut UID, address: address) {
-        let inner = load_system_state_mut_by_uid(id);
+    public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address) {
+        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
         inner.set_oracle_address(address)
     }
 
-    public fun get_oracle_address(id: &UID): Option<address> {
-        let inner = load_system_state_by_uid(id);
+    public fun get_oracle_address(wrapper: &mut BfcSystemState): Option<address> {
+        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
         inner.get_oracle_address()
     }
 

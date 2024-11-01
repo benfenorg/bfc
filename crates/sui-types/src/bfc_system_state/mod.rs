@@ -198,6 +198,13 @@ impl BFCSystemState {
             BFCSystemState::V2(inner) => &inner.treasury,
         }
     }
+
+    pub fn get_oracle_address(&self) -> Option<AccountAddress> {
+        match self {
+            BFCSystemState::V1(_inner) => None,
+            BFCSystemState::V2(inner) => inner.oracle_address,
+        }
+    }
 }
 impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
     fn round(&self) -> u64{

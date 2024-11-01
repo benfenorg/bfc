@@ -57,16 +57,18 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_types::storage::ObjectStore;
 use sui_types::vault::VaultInfo;
 
+// #[cfg(msim)]
 #[sim_test]
 async fn test_get_oracle_price() -> Result<(), Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(10000)
+        .with_epoch_duration_ms(1000)
         .with_num_validators(5)
         .build()
         .await;
-    let (cap, package) = do_publish(&mut test_cluster).await?;
-    println!("package:{:?}", package);
+    test_cluster.set_safe_mode_expected(true);
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let (_, package) = do_publish(&mut test_cluster).await?;
 
     check_oracle_price(&mut test_cluster, package).await;
     Ok(())
@@ -103,10 +105,58 @@ async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
             }
             _ => false,
         }).unwrap().object_id();
+
+    set_oracle_address(test_cluster, oracle_id.clone().to_bfc_address()).await.unwrap();
+
     let state = test_cluster.fullnode_handle.sui_node.state().clone();
-    let price = state.get_oracle_price_by_id(oracle_id).unwrap();
+    let bfc_sys_state = state.get_bfc_system_state_object_for_testing().unwrap();
+
+    println!("bfc_sys_state.get_oracle_address(): {:#?}", &bfc_sys_state.get_oracle_address().unwrap());
+    let price = state.get_oracle_price_by_id(ObjectID::from(bfc_sys_state.get_oracle_address().unwrap())).unwrap();
     println!("price: {:?}", price);
     assert!(price.value.len() > 0);
+}
+
+async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: String) -> Result<(), Error> {
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    let context = &test_cluster.wallet;
+
+    let http_client = test_cluster.rpc_client();
+    let address = test_cluster.get_address_0();
+    println!("address: {:?}", address);
+
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
+
+    let tx = context.sign_transaction(
+        &http_client.move_call(
+            address,
+            package_id,
+            module,
+            "set_oracle_address".to_string(),
+            type_args![]?,
+            vec![
+                SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+                SuiJsonValue::from_str(&oracle_address)?,
+            ],
+            Some(gas.object_id),
+            10_000_00000.into(),
+            None,
+        ).await?.to_data()?,
+    );
+    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
+    let tx_response = http_client
+        .execute_transaction_block(
+            tx_bytes,
+            signatures,
+            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
+            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await?;
+
+    Ok(())
 }
 
 async fn do_publish(test_cluster: &mut TestCluster) -> Result<(ObjectRef, ObjectID), Error> {
