@@ -80,6 +80,8 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `add_operation_capability`](#0xc8_bfc_system_state_inner_add_operation_capability)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_state_inner_remove_operation_capability)
 -  [Function `verify_operation_capability`](#0xc8_bfc_system_state_inner_verify_operation_capability)
+-  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
+-  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -2675,6 +2677,61 @@ deprecated
     } <b>else</b> {
         <b>false</b>
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_withdraw_balance"></a>
+
+## Function `withdraw_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_balance">withdraw_balance</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, amount: u64): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_balance">withdraw_balance</a>(
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    amount: u64
+): Balance&lt;BFC&gt; {
+    <a href="treasury.md#0xc8_treasury_withdraw_balance">treasury::withdraw_balance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, amount)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_add_balance_to_vault"></a>
+
+## Function `add_balance_to_vault`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_balance_to_vault">add_balance_to_vault</a>&lt;StableCoinType&gt;(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_balance_to_vault">add_balance_to_vault</a>&lt;StableCoinType&gt;(
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;StableCoinType&gt;,
+    _ctx: &<b>mut</b> TxContext
+) {
+    <a href="treasury.md#0xc8_treasury_increase_other_stablecoin_balance">treasury::increase_other_stablecoin_balance</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>);
 }
 </code></pre>
 

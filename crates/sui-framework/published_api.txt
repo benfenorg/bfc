@@ -4813,6 +4813,12 @@ one_coin_bfc_required
 one_coin_exchange_rate
 	public(package) fun
 	0xc8::treasury
+withdraw_balance
+	public(package) fun
+	0xc8::treasury
+increase_other_stablecoin_balance
+	public(package) fun
+	0xc8::treasury
 USDT
 	public struct
 	0xc8::usdt
@@ -5075,6 +5081,12 @@ remove_operation_capability
 	public(package) fun
 	0xc8::bfc_system_state_inner
 verify_operation_capability
+	public(package) fun
+	0xc8::bfc_system_state_inner
+withdraw_balance
+	public(package) fun
+	0xc8::bfc_system_state_inner
+add_balance_to_vault
 	public(package) fun
 	0xc8::bfc_system_state_inner
 BfcSystemState

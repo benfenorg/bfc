@@ -76,6 +76,7 @@ title: Module `0xc8::bfc_system`
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
+<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
@@ -368,16 +369,18 @@ title: Module `0xc8::bfc_system`
 
 
 <pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_inner_stablecoin_to_bfc">inner_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(
-    _self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    _balance: Balance&lt;StableCoinType&gt;,
-    expect: u64,
-    _ctx: &<b>mut</b> TxContext,
-): Balance&lt;BFC&gt;
-{
-    // wouldn't <b>return</b> remain <a href="../sui-framework/balance.md#0x2_balance">balance</a>&lt;StableCoinType&gt; <b>to</b> system
+_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+_balance: Balance&lt;StableCoinType&gt;,
+expect: u64,
+_ctx: &<b>mut</b> TxContext,
+): Balance&lt;BFC&gt; {
     <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self, _ctx);
-    <b>let</b> bfc_balance = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, ctx), expect, ctx);
-    bfc_balance
+    <b>if</b> (std::type_name::get&lt;StableCoinType&gt;() == std::type_name::get&lt;BUSD&gt;()) {
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc_balance">bfc_system_state_inner::swap_stablecoin_to_bfc_balance</a>(inner_state, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(_balance, ctx), expect, ctx)
+    } <b>else</b> {
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_balance_to_vault">bfc_system_state_inner::add_balance_to_vault</a>(inner_state, _balance, ctx);
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_balance">bfc_system_state_inner::withdraw_balance</a>(inner_state, expect)
+    }
 }
 </code></pre>
 
