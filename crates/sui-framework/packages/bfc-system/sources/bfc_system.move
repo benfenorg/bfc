@@ -160,16 +160,18 @@ module bfc_system::bfc_system {
 
     #[allow(unused_function)]
     fun inner_stablecoin_to_bfc<StableCoinType>(
-        _self: &mut BfcSystemState,
-        _balance: Balance<StableCoinType>,
-        expect: u64,
-        _ctx: &mut TxContext,
-    ): Balance<BFC>
-    {
-        // wouldn't return remain balance<StableCoinType> to system
+    _self: &mut BfcSystemState,
+    _balance: Balance<StableCoinType>,
+    expect: u64,
+    _ctx: &mut TxContext,
+    ): Balance<BFC> {
         let (inner_state, ctx) = load_system_state_mut(_self, _ctx);
-        let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, ctx), expect, ctx);
-        bfc_balance
+        if (std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>()) {
+            bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, ctx), expect, ctx)
+        } else {
+            bfc_system_state_inner::add_balance_to_vault(inner_state, _balance, ctx);
+            bfc_system_state_inner::withdraw_balance(inner_state, expect)
+        }
     }
 
     public fun request_gas_balance(

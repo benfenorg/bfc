@@ -675,4 +675,24 @@ module bfc_system::treasury {
             vault::calculated_swap_result_amount_out(&calculate_swap_result<StableCoinType>(_treasury, true, _amount)),
         );
     }
+
+    public(package) fun withdraw_balance(
+        _treasury: &mut Treasury,
+        amount: u64,
+    ): Balance<BFC> {
+        assert!(balance::value(&_treasury.bfc_balance) >= amount, ERR_INSUFFICIENT);
+        balance::split(&mut _treasury.bfc_balance, amount)
+    }
+
+    public(package) fun increase_other_stablecoin_balance<StableCoinType>(
+        _treasury: &mut Treasury,
+        balance: Balance<StableCoinType>,
+    ): u64 {
+        if (std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>()) {
+            return 0;
+        };
+        let vault_key = get_vault_key<StableCoinType>();
+        let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
+        vault::increase_coin_a(mut_vault, balance)
+    }
 }
