@@ -1382,7 +1382,7 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ): Coin&lt;StableCoinType&gt; {
     <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
-    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
+    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() != <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
     <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;() || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
     <b>if</b> (usdc_usdt_coint) {
         <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)

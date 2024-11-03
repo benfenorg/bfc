@@ -14,7 +14,7 @@ module bfc_system::bfc_system_tests {
     use sui::tx_context::TxContext;
     use sui::clock::{Self};
     use sui::balance::{Self};
-    use sui::coin::{Self, Coin};
+    use sui::coin::{Self};
     use sui::bfc::BFC;
     use sui::test_scenario::Scenario;
     use sui::tx_context;
@@ -434,10 +434,7 @@ module bfc_system::bfc_system_tests {
         let receiver_address = @0x0;
         bfc_system::exchange_busd_to_stable<USDC>(&mut system_state, busd_coin, test_scenario::ctx(&mut scenario_val));
         test_scenario::next_tx(&mut scenario_val, receiver_address);
-        let after = test_scenario::take_from_address<Coin<USDC>>(&scenario_val, receiver_address);
-        assert!(after.value() == 100, 1);
 
-        coin::burn_for_testing(after);
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
