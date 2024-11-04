@@ -5095,6 +5095,12 @@ remove_operation_capability
 verify_operation_capability
 	public(package) fun
 	0xc8::bfc_system_state_inner
+set_oracle_address
+	public(package) fun
+	0xc8::bfc_system_state_inner
+get_oracle_address
+	public(package) fun
+	0xc8::bfc_system_state_inner
 withdraw_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5168,6 +5174,12 @@ remove_operation_capability
 	public fun
 	0xc8::bfc_system
 set_operation_capability
+	public fun
+	0xc8::bfc_system
+set_oracle_address
+	public fun
+	0xc8::bfc_system
+get_oracle_address
 	public fun
 	0xc8::bfc_system
 remove_propose
