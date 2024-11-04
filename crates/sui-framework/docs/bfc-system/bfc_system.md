@@ -44,6 +44,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `advance_epoch`](#0xc8_bfc_system_advance_epoch)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
+-  [Function `mint_stable_v1`](#0xc8_bfc_system_mint_stable_v1)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_exchange_busd_to_stable)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
@@ -1256,6 +1257,36 @@ X treasury rebalance
 ): Coin&lt;StableCoinType&gt; {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, key, _ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_mint_stable_v1"></a>
+
+## Function `mint_stable_v1`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_v1">mint_stable_v1</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_v1">mint_stable_v1</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    amount: u64,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext,
+): Coin&lt;StableCoinType&gt; {
+    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &std::ascii::string(key), _ctx)
 }
 </code></pre>
 

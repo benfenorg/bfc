@@ -5209,6 +5209,9 @@ advance_epoch
 mint_stable
 	public fun
 	0xc8::bfc_system
+mint_stable_v1
+	public fun
+	0xc8::bfc_system
 exchange_stable_to_busd
 	public fun
 	0xc8::bfc_system

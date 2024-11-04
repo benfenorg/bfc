@@ -422,6 +422,16 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx)
     }
 
+    public fun mint_stable_v1<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        amount: u64,
+        key: vector<u8>,
+        ctx: &mut TxContext,
+    ): Coin<StableCoinType> {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx)
+    }
+
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
