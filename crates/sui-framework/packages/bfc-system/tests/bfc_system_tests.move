@@ -5,6 +5,7 @@ module bfc_system::bfc_system_tests {
     use std::ascii;
     use std::debug;
     use std::vector;
+    use bfc_system::treasury_pool;
     use bfc_system::usdc::USDC;
     use bfc_system::busd::BUSD;
     use bfc_system::treasury;
@@ -66,6 +67,11 @@ module bfc_system::bfc_system_tests {
             debug::print(key);
             i = i + 1;
         };
+
+        let (_treasury, treasury_pool) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+
+        debug::print(&std::ascii::string(b"system_state_v2, treasury_pool.balance"));
+        debug::print(&treasury_pool::get_balance(treasury_pool));
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
