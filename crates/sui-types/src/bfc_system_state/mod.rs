@@ -24,6 +24,7 @@ use crate::proposal::ProposalStatus;
 const BFC_SYSTEM_STATE_WRAPPER_STRUCT_NAME: &IdentStr = ident_str!("BfcSystemState");
 
 pub const BFC_ROUND_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round");
+pub const BFC_ROUND_V2_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round_v2");
 pub const BFC_ROUND_SAFE_MODE_FUNCTION_NAME: &IdentStr = ident_str!("bfc_round_safe_mode");
 pub const BFC_SYSTEM_MODULE_NAME: &IdentStr = ident_str!("bfc_system");
 
@@ -73,7 +74,7 @@ impl BfcSystemStateWrapper {
         protocol_config: &ProtocolConfig,
     ) -> (Object, Object) {
         let id = self.id.id.bytes;
-        let  old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
+        let old_field_object = get_dynamic_field_object_from_store(object_store, id, &self.version)
             .expect("Dynamic field object of wrapper should always be present in the object store");
         let mut new_field_object = old_field_object.clone();
         let move_object = new_field_object
@@ -111,7 +112,7 @@ impl BfcSystemStateWrapper {
         );
         let new_contents = bcs::to_bytes(&field).expect("bcs serialization should never fail");
         move_object
-            .update_contents(new_contents,protocol_config)
+            .update_contents(new_contents, protocol_config)
             .expect("Update bfc system object content cannot fail since it should be small");
     }
 }
@@ -207,21 +208,19 @@ impl BFCSystemState {
     }
 }
 impl BfcSystemStateTrait for BfcSystemStateInnerV1 {
-    fn round(&self) -> u64{
+    fn round(&self) -> u64 {
         0
     }
 
-    fn bfc_round_safe_mode(&mut self){}
-
+    fn bfc_round_safe_mode(&mut self) {}
 }
 
 impl BfcSystemStateTrait for BfcSystemStateInnerV2 {
-    fn round(&self) -> u64{
+    fn round(&self) -> u64 {
         0
     }
 
-    fn bfc_round_safe_mode(&mut self){}
-
+    fn bfc_round_safe_mode(&mut self) {}
 }
 
 pub fn get_stable_rate_map(object_store: &dyn ObjectStore) -> Result<VecMap<String, u64>, SuiError> {
@@ -248,7 +247,7 @@ pub fn get_stable_rate_with_base_point(object_store: &dyn ObjectStore) -> Result
     };
 
     #[cfg(msim)]
-        let result = bfc_get_stable_rate_with_base_point_result_injection::maybe_modify_result(result);
+    let result = bfc_get_stable_rate_with_base_point_result_injection::maybe_modify_result(result);
 
     result
 }
@@ -274,12 +273,27 @@ pub fn get_oracle_address(object_store: &dyn ObjectStore) -> Result<Option<Accou
 }
 
 pub fn get_oracle_price(object_store: &dyn ObjectStore) -> Result<OraclePrice, SuiError> {
-    let address = get_oracle_address(object_store)?;
+    let result = get_oracle_address(object_store);
+    if result.is_err() {
+        return Err(SuiError::SuiSystemStateReadError(
+            format!("Oracle address not found, err: {}", result.err().unwrap())));
+    }
+
+    let address = result?;
     if let Some(address) = address {
         let id = address.into();
         get_oracle_price_by_id(object_store, id)
     } else {
         Err(SuiError::SuiSystemStateReadError("Oracle address not found".to_owned()))
+    }
+}
+
+pub fn is_enabled_oracle(object_store: &dyn ObjectStore) -> bool {
+    let address = get_oracle_address(object_store);
+    if address.is_ok() && address.unwrap().is_some() {
+        true
+    } else {
+        false
     }
 }
 
@@ -338,7 +352,7 @@ pub fn get_bfc_system_state(object_store: &dyn ObjectStore) -> Result<BFCSystemS
     };
 
     #[cfg(msim)]
-        let result = bfc_get_stable_rate_result_injection::maybe_modify_result(result);
+    let result = bfc_get_stable_rate_result_injection::maybe_modify_result(result);
 
     result
 }

@@ -366,7 +366,7 @@ title: Module `0xc8::treasury`
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -375,7 +375,7 @@ title: Module `0xc8::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
     <b>assert</b>!(
         <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(
             &_treasury.id,
@@ -1375,22 +1375,6 @@ Rebalance
     <b>let</b> amount = 1_000_000_000;
 
     <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BUSD&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;MGG&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BJPY&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BKRW&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BAUD&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BARS&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BBRL&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BCAD&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BEUR&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BGBP&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BIDR&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BINR&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BRUB&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BSAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BTRY&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BZAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
-    // <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BMXN&gt;(_treasury, &<b>mut</b> rate_map, amount);
 
     rate_map
 }

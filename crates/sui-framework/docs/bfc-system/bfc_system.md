@@ -11,6 +11,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `create`](#0xc8_bfc_system_create)
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
+-  [Function `bfc_round_v2`](#0xc8_bfc_system_bfc_round_v2)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
 -  [Function `load_system_state_by_uid`](#0xc8_bfc_system_load_system_state_by_uid)
@@ -348,6 +349,38 @@ title: Module `0xc8::bfc_system`
 ) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(wrapper);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round">bfc_system_state_inner::update_round</a>(inner_state, round);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(inner_state, epoch_start_time);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_bfc_round_v2"></a>
+
+## Function `bfc_round_v2`
+
+
+
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_round_v2">bfc_round_v2</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, round: u64, epoch_start_time: u64, stable_type_name_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, stable_rate_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u64&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_bfc_round_v2">bfc_round_v2</a>(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    round: u64,
+    epoch_start_time: u64,
+    stable_type_name_vector : <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;,
+    stable_rate_vector : <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u64&gt;,
+) {
+    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(wrapper);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round_v2">bfc_system_state_inner::update_round_v2</a>(inner_state, round, stable_type_name_vector, stable_rate_vector);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_judge_proposal_state">bfc_system_state_inner::judge_proposal_state</a>(inner_state, epoch_start_time);
 }
 </code></pre>
