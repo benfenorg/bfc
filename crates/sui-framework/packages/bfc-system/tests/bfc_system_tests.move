@@ -5,8 +5,10 @@ module bfc_system::bfc_system_tests {
     use std::ascii;
     use std::debug;
     use std::vector;
+    use bfc_system::treasury_pool;
     use bfc_system::usdc::USDC;
     use bfc_system::busd::BUSD;
+    use bfc_system::bjpy::BJPY;
     use bfc_system::treasury;
     use bfc_system::treasury::Treasury;
     use sui::object;
@@ -66,6 +68,11 @@ module bfc_system::bfc_system_tests {
             debug::print(key);
             i = i + 1;
         };
+
+        let (_treasury, treasury_pool) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+
+        debug::print(&std::ascii::string(b"system_state_v2, treasury_pool.balance"));
+        debug::print(&treasury_pool::get_balance(treasury_pool));
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
@@ -561,6 +568,38 @@ module bfc_system::bfc_system_tests {
 
         test_scenario::return_shared(system_state);
         object::delete(id);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_inner_busd_to_bfc_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+        let balance = balance::create_for_testing<BUSD>(100);
+        let result = bfc_system::inner_stablecoin_to_bfc_test(&mut system_state, balance, 100, ctx);
+        assert!(result.value() == 100, 1);
+
+        test_scenario::return_shared(system_state);
+        coin::burn_for_testing(coin::from_balance(result, ctx));
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_inner_bjpy_to_bfc_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+        let balance = balance::create_for_testing<BJPY>(100);
+        let result = bfc_system::inner_stablecoin_to_bfc_test(&mut system_state, balance, 100, ctx);
+        assert!(result.value() == 100, 1);
+
+        test_scenario::return_shared(system_state);
+        coin::burn_for_testing(coin::from_balance(result, ctx));
         tearDown(scenario_val);
     }
 }

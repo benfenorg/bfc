@@ -60,6 +60,7 @@ title: Module `0xc8::vault`
 -  [Function `rebalance`](#0xc8_vault_rebalance)
 -  [Function `increase_coin_a`](#0xc8_vault_increase_coin_a)
 -  [Function `decrease_coin_a`](#0xc8_vault_decrease_coin_a)
+-  [Function `clear_coin_b`](#0xc8_vault_clear_coin_b)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -2688,6 +2689,30 @@ State checker
 <pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_decrease_coin_a">decrease_coin_a</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> TxContext) :Coin&lt;StableCoinType&gt; {
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/coin.md#0x2_coin_take">coin::take</a>(&<b>mut</b> _vault.coin_a, amount, ctx);
     <a href="../sui-framework/coin.md#0x2_coin">coin</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_vault_clear_coin_b"></a>
+
+## Function `clear_coin_b`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(_vault: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;) : Balance&lt;BFC&gt; {
+    <a href="../sui-framework/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> _vault.coin_b)
 }
 </code></pre>
 

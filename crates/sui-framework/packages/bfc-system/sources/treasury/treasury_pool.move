@@ -86,4 +86,8 @@ module bfc_system::treasury_pool {
     public fun get_balance(self: &TreasuryPool): u64 {
         balance::value(&self.balance)
     }
+
+    public(package) fun increase_balance(self: &mut TreasuryPool, balance: Balance<BFC>): u64 {
+        balance::join(&mut self.balance, balance)
+    }
 }

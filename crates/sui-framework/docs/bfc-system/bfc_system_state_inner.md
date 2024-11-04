@@ -73,6 +73,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `reset_daily_use_out_limit`](#0xc8_bfc_system_state_inner_reset_daily_use_out_limit)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
+-  [Function `transfer_bfc_from_value_to_treasury_pool`](#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool)
 -  [Function `add_coin_2_stake_pool`](#0xc8_bfc_system_state_inner_add_coin_2_stake_pool)
 -  [Function `get_operation_capability`](#0xc8_bfc_system_state_inner_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_state_inner_get_operation_capability_by_key)
@@ -2461,18 +2462,49 @@ deprecated
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDC&gt;(coin_bag, usdc_coin);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_coin_2_stake_pool">add_coin_2_stake_pool</a>&lt;USDT&gt;(coin_bag, usdt_coin);
 
-    <b>let</b> stable_rate = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">get_rate_map</a>(self);
-    <b>let</b> length = stable_rate.size();
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;MGG&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BJPY&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BKRW&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BAUD&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BARS&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BBRL&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BCAD&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BEUR&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BGBP&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BIDR&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BINR&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BRUB&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BSAR&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BTRY&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BZAR&gt;(self);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;BMXN&gt;(self);
+}
+</code></pre>
 
-    <b>let</b> <b>mut</b> i = 0;
-    <b>while</b> (i &lt; length) {
-        <b>let</b> (key, _value) = stable_rate.get_entry_by_idx(i);
-        <b>if</b> (*key == <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;()) {
-            i = i + 1;
-            <b>continue</b>
-        };
-        i = i + 1;
-    }
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool"></a>
+
+## Function `transfer_bfc_from_value_to_treasury_pool`
+
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;StableCoinType&gt;(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_value_to_treasury_pool">transfer_bfc_from_value_to_treasury_pool</a>&lt;StableCoinType&gt;(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+    <b>let</b> vaule_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> <a href="vault.md#0xc8_vault">vault</a> = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, vaule_key);
+    <b>let</b> bfc_balance = <a href="vault.md#0xc8_vault_clear_coin_b">vault::clear_coin_b</a>(<a href="vault.md#0xc8_vault">vault</a>);
+    <b>let</b> _increased = <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">treasury_pool::increase_balance</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, bfc_balance);
 }
 </code></pre>
 

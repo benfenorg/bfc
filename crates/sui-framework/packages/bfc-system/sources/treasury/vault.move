@@ -1171,4 +1171,8 @@ module bfc_system::vault {
         let coin = coin::take(&mut _vault.coin_a, amount, ctx);
         coin
     }
+
+    public(package) fun clear_coin_b<StableCoinType>(_vault: &mut Vault<StableCoinType>) : Balance<BFC> {
+        balance::withdraw_all(&mut _vault.coin_b)
+    }
 }

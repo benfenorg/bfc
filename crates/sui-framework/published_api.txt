@@ -4588,6 +4588,9 @@ increase_coin_a
 decrease_coin_a
 	public(package) fun
 	0xc8::vault
+clear_coin_b
+	public(package) fun
+	0xc8::vault
 MGG
 	public struct
 	0xc8::mgg
@@ -4861,6 +4864,9 @@ withdraw_to_treasury
 get_balance
 	public fun
 	0xc8::treasury_pool
+increase_balance
+	public(package) fun
+	0xc8::treasury_pool
 BfcSystemStateInner
 	public struct
 	0xc8::bfc_system_state_inner
@@ -5064,6 +5070,9 @@ set_daily_out_limit
 	0xc8::bfc_system_state_inner
 init_bfc_system_state_v2
 	public(package) fun
+	0xc8::bfc_system_state_inner
+transfer_bfc_from_value_to_treasury_pool
+	fun
 	0xc8::bfc_system_state_inner
 add_coin_2_stake_pool
 	fun

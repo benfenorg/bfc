@@ -14,7 +14,7 @@ module bfc_system::bfc_system_state_inner {
     use sui::clock::Clock;
     use sui::coin;
     use sui::coin::Coin;
-    use sui::vec_map::{Self, VecMap, size};
+    use sui::vec_map::{Self, VecMap};
     use sui::vec_set;
     use sui::vec_set::VecSet;
 
@@ -266,6 +266,11 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun get_rate_map(self: &BfcSystemStateInnerV2): VecMap<ascii::String, u64> {
         self.stable_rate
+    }
+
+    #[test_only]
+    public(package) fun get_treasury_and_treasury_pool(self: &BfcSystemStateInnerV2): (&Treasury, &TreasuryPool) {
+        (&self.treasury, &self.treasury_pool)
     }
 
     /// swap bfc to stablecoin
@@ -786,18 +791,29 @@ module bfc_system::bfc_system_state_inner {
         add_coin_2_stake_pool<USDC>(coin_bag, usdc_coin);
         add_coin_2_stake_pool<USDT>(coin_bag, usdt_coin);
 
-        let stable_rate = get_rate_map(self);
-        let length = stable_rate.size();
+        transfer_bfc_from_value_to_treasury_pool<MGG>(self);
+        transfer_bfc_from_value_to_treasury_pool<BJPY>(self);
+        transfer_bfc_from_value_to_treasury_pool<BKRW>(self);
+        transfer_bfc_from_value_to_treasury_pool<BAUD>(self);
+        transfer_bfc_from_value_to_treasury_pool<BARS>(self);
+        transfer_bfc_from_value_to_treasury_pool<BBRL>(self);
+        transfer_bfc_from_value_to_treasury_pool<BCAD>(self);
+        transfer_bfc_from_value_to_treasury_pool<BEUR>(self);
+        transfer_bfc_from_value_to_treasury_pool<BGBP>(self);
+        transfer_bfc_from_value_to_treasury_pool<BIDR>(self);
+        transfer_bfc_from_value_to_treasury_pool<BINR>(self);
+        transfer_bfc_from_value_to_treasury_pool<BRUB>(self);
+        transfer_bfc_from_value_to_treasury_pool<BSAR>(self);
+        transfer_bfc_from_value_to_treasury_pool<BTRY>(self);
+        transfer_bfc_from_value_to_treasury_pool<BZAR>(self);
+        transfer_bfc_from_value_to_treasury_pool<BMXN>(self);
+    }
 
-        let mut i = 0;
-        while (i < length) {
-            let (key, _value) = stable_rate.get_entry_by_idx(i);
-            if (*key == treasury::get_vault_key<BUSD>()) {
-                i = i + 1;
-                continue
-            };
-            i = i + 1;
-        }
+    fun transfer_bfc_from_value_to_treasury_pool<StableCoinType>(self: &mut BfcSystemStateInnerV2) {
+        let vaule_key = treasury::get_vault_key<StableCoinType>();
+        let vault = treasury::borrow_mut_vault<StableCoinType>(&mut self.treasury, vaule_key);
+        let bfc_balance = vault::clear_coin_b(vault);
+        let _increased = treasury_pool::increase_balance(&mut self.treasury_pool, bfc_balance);
     }
 
     fun add_coin_2_stake_pool<StableCoinType>(bag: &mut Bag, coin: Coin<StableCoinType>) {

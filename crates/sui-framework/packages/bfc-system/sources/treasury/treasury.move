@@ -665,7 +665,7 @@ module bfc_system::treasury {
         _treasury: &mut Treasury,
         balance: Balance<StableCoinType>,
     ): u64 {
-        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(),ERR_UNSUPPORTED_BUSD);
+        assert!(std::type_name::get<StableCoinType>() != std::type_name::get<BUSD>(),ERR_UNSUPPORTED_BUSD);
         let vault_key = get_vault_key<StableCoinType>();
         let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
         vault::increase_coin_a(mut_vault, balance)
