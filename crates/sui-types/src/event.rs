@@ -18,6 +18,7 @@ use serde_with::serde_as;
 use serde_with::Bytes;
 
 use crate::base_types::{ObjectID, SuiAddress, TransactionDigest};
+use crate::collection_types::VecMap;
 use crate::error::{SuiError, SuiResult};
 use crate::object::bounded_visitor::BoundedVisitor;
 use crate::sui_serde::BigInt;
@@ -174,4 +175,5 @@ pub struct SystemEpochInfoEvent {
     pub total_gas_fees: u64,
     pub total_stake_rewards_distributed: u64,
     pub leftover_storage_fund_inflow: u64,
+    pub stable_rate: VecMap<Vec<u8>, u64>,
 }
