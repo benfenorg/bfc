@@ -25,8 +25,8 @@ pub struct TempDb {
     //
     // NOTE: This needs to be the last entry in this struct so that the database is dropped before
     // and has a chance to gracefully shutdown before the directory is deleted.
-    //dir: tempfile::TempDir,
-    dir: PathBuf, // 修改为 PathBuf
+    dir: tempfile::TempDir,
+    //dir: PathBuf, // 修改为 PathBuf
 }
 
 impl TempDb {
@@ -35,11 +35,11 @@ impl TempDb {
     /// A fresh database will be initialized in a temporary directory that will be cleandup on drop.
     /// The running `postgres` service will be serving traffic on an available, os-assigned port.
     pub fn new() -> Result<Self> {
-        //let dir = tempfile::TempDir::new()?;
-        let dir = tempdir()?.into_path(); // 获取 PathBuf
+        let dir = tempfile::TempDir::new()?;
+        //let dir = tempdir()?.into_path(); // 获取 PathBuf
         let port = get_available_port();
 
-        let database = LocalDatabase::new_initdb(dir.to_owned(), port)?;
+        let database = LocalDatabase::new_initdb(dir.path().to_owned(), port)?;
 
         Ok(Self { dir, database })
     }
@@ -53,7 +53,7 @@ impl TempDb {
     }
 
     pub fn dir(&self) -> &Path {
-        self.dir.as_path()
+        self.dir.path()
     }
 }
 
@@ -417,10 +417,10 @@ mod test {
         telemetry_subscribers::init_for_testing();
 
         let db = TempDb::new().unwrap();
-        println!("dir: {:?}", db.dir.path());
+        //println!("dir: {:?}", db.dir.path());
 
         let url = db.database.url();
-        println!("url: {}", url.as_str());
+        //println!("url: {}", url.as_str());
         let mut connection = Connection::dedicated(url).await.unwrap();
 
         // Run a simple query to verify the db can properly be queried
