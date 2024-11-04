@@ -4,13 +4,13 @@ task 1, lines 6-23:
 //# publish
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5608800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5928000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 25:
 //# run Test::M1::create --args 0
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, line 27:
 //# create-checkpoint
@@ -23,7 +23,7 @@ Epoch advanced: 0
 task 5, line 31:
 //# run Test::M1::mutate --args object(2,0) 1
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2302800,  storage_rebate: 2279772, non_refundable_storage_fee: 23028
+gas summary: computation_cost: 1000000, storage_cost: 2622000,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
 
 task 6, line 33:
 //# create-checkpoint
@@ -34,7 +34,7 @@ task 7, lines 35-40:
 Response: {
   "data": {
     "object": {
-      "digest": "5SXEg3CCA8xgEzDmyyqtpFjrhn3m53ziW4gaDuCgdSjt"
+      "digest": "C71sKhdsdCxFJDT8AgaUEZWjJprZDBRxDopJRPeLiRnH"
     }
   }
 }
@@ -44,7 +44,7 @@ task 8, lines 42-47:
 Response: {
   "data": {
     "object": {
-      "digest": "7VWN2PsjurHdwiHhSYsrH7RVJPmS6Lrmqw9hNcGkqPWv"
+      "digest": "2cXD3wt94NMCtzzFHQhaVhQ5uBP8JEKXcKJeV4z55WQv"
     }
   }
 }
@@ -62,7 +62,7 @@ task 11, lines 54-59:
 Response: {
   "data": {
     "object": {
-      "digest": "5SXEg3CCA8xgEzDmyyqtpFjrhn3m53ziW4gaDuCgdSjt"
+      "digest": "C71sKhdsdCxFJDT8AgaUEZWjJprZDBRxDopJRPeLiRnH"
     }
   }
 }

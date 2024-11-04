@@ -44,7 +44,7 @@ task 6, lines 46-54:
 Response: {
   "data": {
     "object1": {
-      "digest": "Ga1SnrGKhUdVUS9KFLLT4Jn93AYPPTxKH1DaD98Lc1un"
+      "digest": "89MYP63SYNXQrJxE4N5H4U5mffcQA3hEr8TMV8V6ohbe"
     },
     "object2": {
       "digest": null
@@ -81,7 +81,7 @@ Response: {
       "digest": null
     },
     "object2": {
-      "digest": "6snRf3ofjWbcv3bka4BLnPF1o5mrta3KKn5PDDahtWbY"
+      "digest": "B8yFDstRzmMyrqxGawj5FeJH7H5HMAmwDtpK238UCN5F"
     }
   }
 }
@@ -104,7 +104,7 @@ task 13, lines 82-90:
 Response: {
   "data": {
     "object1": {
-      "digest": "7Aqrz1k7Ri6B7BQo9fg3KQp3BznnjtcpDdrUZptkxLZ5"
+      "digest": "C7VXC6sMEYKm1ToF7vMdeDoJNGyeJdujgru1PmjAxFq6"
     },
     "object2": {
       "digest": null
