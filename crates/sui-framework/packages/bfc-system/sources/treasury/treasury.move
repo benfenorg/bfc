@@ -53,6 +53,7 @@ module bfc_system::treasury {
     const ERR_INSUFFICIENT: u64 = 103;
     const ERR_UNINITIALIZE_TREASURY: u64 = 104;
     const ERR_DEADLINE_EXCEED: u64 = 105;
+    const ERR_UNSUPPORTED_BUSD: u64 = 106;
 
     public struct TreasuryPauseCap has key, store {
         id: UID
@@ -148,6 +149,14 @@ module bfc_system::treasury {
         let coin = sui::coin::from_balance(balance, _ctx);
 
         coin
+    }
+
+    public(package) fun exchange_busd_to_stable<StableCoinType>(_treasury: &mut Treasury,
+                                                    coin: Coin<StableCoinType>,
+                                                    _ctx: &mut TxContext) {
+        let key = get_vault_key<StableCoinType>();
+        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
+        balance::decrease_supply(supply, coin::into_balance(coin));
     }
 
     public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {
@@ -490,23 +499,7 @@ module bfc_system::treasury {
         _treasury.updated_at = current_ts;
         let mut bfc_in_vault = 0;
         let key = get_vault_key<StableCoinType>();
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, key != get_vault_key<MGG>(), _ctx);
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, key != get_vault_key<BUSD>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, key != get_vault_key<BJPY>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BKRW>(_treasury, _update, key != get_vault_key<BKRW>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BAUD>(_treasury, _update, key != get_vault_key<BAUD>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BARS>(_treasury, _update, key != get_vault_key<BARS>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BBRL>(_treasury, _update, key != get_vault_key<BBRL>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BCAD>(_treasury, _update, key != get_vault_key<BCAD>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BEUR>(_treasury, _update, key != get_vault_key<BEUR>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BGBP>(_treasury, _update, key != get_vault_key<BGBP>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BIDR>(_treasury, _update, key != get_vault_key<BIDR>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BINR>(_treasury, _update, key != get_vault_key<BINR>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BRUB>(_treasury, _update, key != get_vault_key<BRUB>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BSAR>(_treasury, _update, key != get_vault_key<BSAR>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BTRY>(_treasury, _update, key != get_vault_key<BTRY>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BZAR>(_treasury, _update, key != get_vault_key<BZAR>(), _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BMXN>(_treasury, _update, key != get_vault_key<BMXN>(), _ctx);
         _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + balance::value(&_treasury.bfc_balance);
     }
 
@@ -542,22 +535,6 @@ module bfc_system::treasury {
         let mut bfc_in_vault = 0;
         let return_amount = false;
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BKRW>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BAUD>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BARS>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BBRL>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BCAD>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BEUR>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BGBP>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BIDR>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BINR>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BRUB>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BSAR>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BTRY>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BZAR>(_treasury, _update, return_amount, _ctx);
-        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BMXN>(_treasury, _update, return_amount, _ctx);
         bfc_in_vault
     }
 
@@ -674,5 +651,23 @@ module bfc_system::treasury {
             key,
             vault::calculated_swap_result_amount_out(&calculate_swap_result<StableCoinType>(_treasury, true, _amount)),
         );
+    }
+
+    public(package) fun withdraw_balance(
+        _treasury: &mut Treasury,
+        amount: u64,
+    ): Balance<BFC> {
+        assert!(balance::value(&_treasury.bfc_balance) >= amount, ERR_INSUFFICIENT);
+        balance::split(&mut _treasury.bfc_balance, amount)
+    }
+
+    public(package) fun increase_other_stablecoin_balance<StableCoinType>(
+        _treasury: &mut Treasury,
+        balance: Balance<StableCoinType>,
+    ): u64 {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(),ERR_UNSUPPORTED_BUSD);
+        let vault_key = get_vault_key<StableCoinType>();
+        let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
+        vault::increase_coin_a(mut_vault, balance)
     }
 }

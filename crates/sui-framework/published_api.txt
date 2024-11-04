@@ -4585,6 +4585,12 @@ rebalance
 increase_coin_a
 	public(package) fun
 	0xc8::vault
+decrease_coin_a
+	public(package) fun
+	0xc8::vault
+clear_coin_b
+	public(package) fun
+	0xc8::vault
 MGG
 	public struct
 	0xc8::mgg
@@ -4729,6 +4735,9 @@ vault_info
 mint_stable
 	public(package) fun
 	0xc8::treasury
+exchange_busd_to_stable
+	public(package) fun
+	0xc8::treasury
 add_supply
 	public(package) fun
 	0xc8::treasury
@@ -4810,6 +4819,12 @@ one_coin_bfc_required
 one_coin_exchange_rate
 	public(package) fun
 	0xc8::treasury
+withdraw_balance
+	public(package) fun
+	0xc8::treasury
+increase_other_stablecoin_balance
+	public(package) fun
+	0xc8::treasury
 USDT
 	public struct
 	0xc8::usdt
@@ -4848,6 +4863,9 @@ withdraw_to_treasury
 	0xc8::treasury_pool
 get_balance
 	public fun
+	0xc8::treasury_pool
+increase_balance
+	public(package) fun
 	0xc8::treasury_pool
 BfcSystemStateInner
 	public struct
@@ -5044,11 +5062,17 @@ v1_to_v2
 get_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
+reset_daily_use_out_limit
+	public(package) fun
+	0xc8::bfc_system_state_inner
 set_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
 init_bfc_system_state_v2
 	public(package) fun
+	0xc8::bfc_system_state_inner
+transfer_bfc_from_value_to_treasury_pool
+	fun
 	0xc8::bfc_system_state_inner
 add_coin_2_stake_pool
 	fun
@@ -5071,10 +5095,10 @@ remove_operation_capability
 verify_operation_capability
 	public(package) fun
 	0xc8::bfc_system_state_inner
-set_oracle_address
+withdraw_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
-get_oracle_address
+add_balance_to_vault
 	public(package) fun
 	0xc8::bfc_system_state_inner
 BfcSystemState
@@ -5146,12 +5170,6 @@ remove_operation_capability
 set_operation_capability
 	public fun
 	0xc8::bfc_system
-set_oracle_address
-	public fun
-	0xc8::bfc_system
-get_oracle_address
-	public fun
-	0xc8::bfc_system
 remove_propose
 	public entry fun
 	0xc8::bfc_system
@@ -5192,6 +5210,9 @@ rebalance
 	public fun
 	0xc8::bfc_system
 rebalance_with_one_stablecoin
+	public fun
+	0xc8::bfc_system
+advance_epoch
 	public fun
 	0xc8::bfc_system
 mint_stable

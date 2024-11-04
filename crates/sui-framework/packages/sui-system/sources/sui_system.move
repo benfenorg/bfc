@@ -71,7 +71,10 @@ module sui_system::sui_system {
     const EWrongInnerVersion: u64 = 1;
 
     /// Errors
-    const ERR_REQUEST_SET_DAILY_OUT_LIMIT: u64 = 100;
+    const ERR_REQUEST_SET_OPERATION_CAPABILITY: u64 = 96;
+    const ERR_REQUEST_REMOVE_OPERATION_CAPABILITY: u64 = 97;
+    const ERR_REQUEST_ADD_OPERATION_CAPABILITY: u64 = 98;
+    const ERR_REQUEST_SET_DAILY_OUT_LIMIT: u64 = 99;
 
     // ==== functions that can only be called by genesis ====
 
@@ -628,6 +631,8 @@ module sui_system::sui_system {
             ctx,
         );
 
+        bfc_system::advance_epoch(&mut wrapper.bfc_system_id);
+
         storage_rebate
     }
 
@@ -706,7 +711,7 @@ module sui_system::sui_system {
         ctx: &TxContext,
     ) {
         let inner = load_system_state(self);
-        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 99);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_ADD_OPERATION_CAPABILITY);
         bfc_system::add_operation_capability(&mut self.bfc_system_id, key, addr)
     }
 
@@ -718,7 +723,7 @@ module sui_system::sui_system {
         ctx: &TxContext,
     ) {
         let inner = load_system_state(self);
-        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 97);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_REMOVE_OPERATION_CAPABILITY);
         bfc_system::remove_operation_capability(&mut self.bfc_system_id, &key, addr)
     }
     #[allow(unused_function)]
@@ -729,7 +734,7 @@ module sui_system::sui_system {
         ctx: &TxContext,
     ) {
         let inner = load_system_state(self);
-        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), 96);
+        assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_SET_OPERATION_CAPABILITY);
         bfc_system::set_operation_capability(&mut self.bfc_system_id, key, addr_set)
     }
 

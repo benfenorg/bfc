@@ -136,6 +136,14 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
+    public fun load_system_state_mut_test(
+        _self: &mut BfcSystemState,
+        _ctx: &mut TxContext
+    ): (&mut BfcSystemStateInnerV2, &mut TxContext) {
+        load_system_state_mut(_self, _ctx)
+    }
+
+    #[test_only]
     public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
@@ -152,16 +160,18 @@ module bfc_system::bfc_system {
 
     #[allow(unused_function)]
     fun inner_stablecoin_to_bfc<StableCoinType>(
-        _self: &mut BfcSystemState,
-        _balance: Balance<StableCoinType>,
-        expect: u64,
-        _ctx: &mut TxContext,
-    ): Balance<BFC>
-    {
-        // wouldn't return remain balance<StableCoinType> to system
+    _self: &mut BfcSystemState,
+    _balance: Balance<StableCoinType>,
+    expect: u64,
+    _ctx: &mut TxContext,
+    ): Balance<BFC> {
         let (inner_state, ctx) = load_system_state_mut(_self, _ctx);
-        let bfc_balance = bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, ctx), expect, ctx);
-        bfc_balance
+        if (std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>()) {
+            bfc_system_state_inner::swap_stablecoin_to_bfc_balance(inner_state, coin::from_balance(_balance, ctx), expect, ctx)
+        } else {
+            bfc_system_state_inner::add_balance_to_vault(inner_state, _balance, ctx);
+            bfc_system_state_inner::withdraw_balance(inner_state, expect)
+        }
     }
 
     public fun request_gas_balance(
@@ -228,6 +238,13 @@ module bfc_system::bfc_system {
              _self.version
         );
         (inner, _ctx)
+    }
+
+    #[test_only]
+    public fun load_system_state_mut_for_test(self: &mut BfcSystemState,
+            _ctx: &mut TxContext
+    ): (&mut BfcSystemStateInnerV2, &mut TxContext) {
+        return load_system_state_mut(self, _ctx)
     }
 
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
@@ -400,6 +417,11 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, _ctx);
     }
 
+    public fun advance_epoch(bfc_system_id: &mut UID) {
+        let inner = load_system_state_mut_by_uid(bfc_system_id);
+        bfc_system_state_inner::reset_daily_use_out_limit(inner);
+    }
+
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
@@ -425,11 +447,10 @@ module bfc_system::bfc_system {
     public fun exchange_busd_to_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         busd_coin: Coin<BUSD>,
-        recipient: address,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, recipient, _ctx);
+        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
     }
 
     /// X treasury  swap bfc to stablecoin

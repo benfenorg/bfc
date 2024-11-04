@@ -12,6 +12,7 @@ title: Module `0xc8::treasury_pool`
 -  [Function `deposit_to_treasury_pool`](#0xc8_treasury_pool_deposit_to_treasury_pool)
 -  [Function `withdraw_to_treasury`](#0xc8_treasury_pool_withdraw_to_treasury)
 -  [Function `get_balance`](#0xc8_treasury_pool_get_balance)
+-  [Function `increase_balance`](#0xc8_treasury_pool_increase_balance)
 
 
 <pre><code><b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
@@ -272,6 +273,30 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 <pre><code><b>public</b> <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">get_balance</a>(self: &<a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>): u64 {
     <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_pool_increase_balance"></a>
+
+## Function `increase_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;BFC&gt;): u64 {
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>
 
