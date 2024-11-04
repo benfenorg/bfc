@@ -791,27 +791,27 @@ module bfc_system::bfc_system_state_inner {
         add_coin_2_stake_pool<USDC>(coin_bag, usdc_coin);
         add_coin_2_stake_pool<USDT>(coin_bag, usdt_coin);
 
-        transfer_bfc_from_value_to_treasury_pool<MGG>(self);
-        transfer_bfc_from_value_to_treasury_pool<BJPY>(self);
-        transfer_bfc_from_value_to_treasury_pool<BKRW>(self);
-        transfer_bfc_from_value_to_treasury_pool<BAUD>(self);
-        transfer_bfc_from_value_to_treasury_pool<BARS>(self);
-        transfer_bfc_from_value_to_treasury_pool<BBRL>(self);
-        transfer_bfc_from_value_to_treasury_pool<BCAD>(self);
-        transfer_bfc_from_value_to_treasury_pool<BEUR>(self);
-        transfer_bfc_from_value_to_treasury_pool<BGBP>(self);
-        transfer_bfc_from_value_to_treasury_pool<BIDR>(self);
-        transfer_bfc_from_value_to_treasury_pool<BINR>(self);
-        transfer_bfc_from_value_to_treasury_pool<BRUB>(self);
-        transfer_bfc_from_value_to_treasury_pool<BSAR>(self);
-        transfer_bfc_from_value_to_treasury_pool<BTRY>(self);
-        transfer_bfc_from_value_to_treasury_pool<BZAR>(self);
-        transfer_bfc_from_value_to_treasury_pool<BMXN>(self);
+        transfer_bfc_from_vault_to_treasury_pool<MGG>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BJPY>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BKRW>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BAUD>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BARS>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BBRL>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BCAD>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BEUR>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BGBP>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BIDR>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BINR>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BRUB>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BSAR>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BTRY>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
+        transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
     }
 
-    fun transfer_bfc_from_value_to_treasury_pool<StableCoinType>(self: &mut BfcSystemStateInnerV2) {
-        let vaule_key = treasury::get_vault_key<StableCoinType>();
-        let vault = treasury::borrow_mut_vault<StableCoinType>(&mut self.treasury, vaule_key);
+    fun transfer_bfc_from_vault_to_treasury_pool<StableCoinType>(self: &mut BfcSystemStateInnerV2) {
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        let vault = treasury::borrow_mut_vault<StableCoinType>(&mut self.treasury, vault_key);
         let bfc_balance = vault::clear_coin_b(vault);
         let _increased = treasury_pool::increase_balance(&mut self.treasury_pool, bfc_balance);
     }
