@@ -174,6 +174,16 @@ module bfc_system::bfc_system {
         }
     }
 
+    #[test_only]
+    public fun inner_stablecoin_to_bfc_test<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        balance: Balance<StableCoinType>,
+        expect: u64,
+        ctx: &mut TxContext,
+    ): Balance<BFC> {
+        inner_stablecoin_to_bfc<StableCoinType>(wrapper, balance, expect, ctx)
+    }
+
     public fun request_gas_balance(
         wrapper: &mut BfcSystemState,
         amount: u64,
