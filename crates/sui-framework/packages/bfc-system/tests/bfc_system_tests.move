@@ -108,6 +108,131 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
+    #[expected_failure]
+    fun test_round_v2_invalid_param() {
+        let bfc_addr = @0x0;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
+        vector::push_back(&mut stable_rate_vector, 1000000);
+
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_round_v2() {
+        let bfc_addr = @0x0;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        assert!(stable_rate.size() == 1, 1);
+        // check busd
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        vector::push_back(&mut stable_rate_vector, 1000000000);
+        // add beur，rate is 1000000000
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        assert!(stable_rate.size() == 2, 1);
+        // check beur
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 2);
+
+        // clear stable_type_name_vector, stable_rate_vector
+        stable_type_name_vector = vector::empty();
+        stable_rate_vector = vector::empty();
+        // add bjpy
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
+        vector::push_back(&mut stable_rate_vector, 10000);
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        assert!(stable_rate.size() == 3, 3);
+        // check bjpy
+        let bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
+        assert!(bjpy_rate != busd_rate, 4);
+        // check beur, no update
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 5);
+
+        // clear stable_type_name_vector, stable_rate_vector
+        stable_type_name_vector = vector::empty();
+        stable_rate_vector = vector::empty();
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        // should not update
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        assert!(stable_rate.size() == 3, 6);
+        // check bjpy
+        let new_bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
+        assert!(bjpy_rate == new_bjpy_rate, 7);
+        // check beur, no update
+        let new_beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == new_beur_rate, 8);
+
+
+        let old_bjpy_rate = new_bjpy_rate;
+        // clear stable_type_name_vector, stable_rate_vector
+        stable_type_name_vector = vector::empty();
+        stable_rate_vector = vector::empty();
+        // update bjpy, rate is 9999
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
+        vector::push_back(&mut stable_rate_vector, 9999);
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        assert!(stable_rate.size() == 3, 9);
+        // check bjpy
+        let new_bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
+        assert!(new_bjpy_rate != old_bjpy_rate, 10);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext, bfc_amount: u64) {
         let mut treasury_parameters = vec_map::empty<ascii::String, bfc_system_state_inner::TreasuryParameters>();
         vec_map::insert(

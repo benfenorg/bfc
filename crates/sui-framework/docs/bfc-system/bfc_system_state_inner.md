@@ -477,7 +477,7 @@ Errors
 
 
 
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>: u64 = 1006;
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>: u64 = 1007;
 </code></pre>
 
 
@@ -505,6 +505,15 @@ Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_NOT_SYSTEM_ADDRESS">ERR_NOT_SYSTEM_ADDRESS</a>: u64 = 1001;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD">ERR_REBALANCE_NOT_BUSD</a>: u64 = 1006;
 </code></pre>
 
 
@@ -1394,6 +1403,9 @@ deprecated
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>assert</b>!(vault_key == <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD">ERR_REBALANCE_NOT_BUSD</a>);
+
     <b>let</b> amount = <a href="treasury.md#0xc8_treasury_bfc_required_with_one_stablecoin">treasury::bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <b>if</b> (amount &gt; 0) {
         <b>let</b> withdraw_balance = <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
