@@ -784,7 +784,7 @@ module bfc_system::bfc_system_state_inner {
         self.daily_out_limit
     }
 
-    public(package) fun reset_daily_use_out_limit(self: &mut BfcSystemStateInnerV2) {
+    public(package) fun reset_daily_used_quantity(self: &mut BfcSystemStateInnerV2) {
         self.daily_used_quantity = 0u64;
     }
 
