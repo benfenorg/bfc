@@ -90,7 +90,7 @@ module bfc_system::bfc_system_state_inner {
 
         stake_coins: Bag,
         daily_out_limit: u64,
-        daily_use_out_limit: u64,
+        daily_used_quantity: u64,
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
         oracle_address: Option<address>,
@@ -504,7 +504,7 @@ module bfc_system::bfc_system_state_inner {
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
-        assert!(amount + system_state.daily_use_out_limit <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
+        assert!(amount + system_state.daily_used_quantity <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
 
         let key = treasury::get_vault_key<StableCoinType>();
         let mut exchange_key_bytes = std::ascii::into_bytes(key);
@@ -519,7 +519,7 @@ module bfc_system::bfc_system_state_inner {
         balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
         treasury::exchange_busd_to_stable<StableCoinType>(&mut system_state.treasury, stable_back);
 
-        system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
+        system_state.daily_used_quantity = system_state.daily_used_quantity + amount;
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInnerV2): VecMap<String, u64> {
@@ -771,7 +771,7 @@ module bfc_system::bfc_system_state_inner {
             stable_rate,
             stake_coins: coin_bag,
             daily_out_limit: 40000_000_000_000u64,
-            daily_use_out_limit: 0u64,
+            daily_used_quantity: 0u64,
             operation_capability: vec_map::empty(),
             oracle_address: option::none(),
         }, _ctx)
@@ -782,7 +782,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun reset_daily_use_out_limit(self: &mut BfcSystemStateInnerV2) {
-        self.daily_use_out_limit = 0u64;
+        self.daily_used_quantity = 0u64;
     }
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
