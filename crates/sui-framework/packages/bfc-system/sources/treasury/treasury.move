@@ -150,6 +150,13 @@ module bfc_system::treasury {
 
         coin
     }
+    #[test_only]
+    public fun get_coin_a_amount<StableCoinType>(_treasury: &Treasury): u64 {
+        let key = get_vault_key<StableCoinType>();
+        let vault = borrow_vault<StableCoinType>(_treasury, key);
+        let (a, _) = vault::balances(vault);
+        a
+    }
 
     public(package) fun exchange_busd_to_stable<StableCoinType>(_treasury: &mut Treasury,
                                                     coin: Coin<StableCoinType>,

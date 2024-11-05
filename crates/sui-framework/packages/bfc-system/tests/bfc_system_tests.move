@@ -397,6 +397,31 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    fun test_mint_bjpy_success() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let test_key = b"right_key";
+        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        //todo:transfer bjpy from vault
+        let bjpy = balance::create_for_testing<BJPY>(100);
+        let (system_state_v2, ctx2) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        bfc_system_state_inner::add_balance_to_vault(system_state_v2, bjpy, ctx2);
+
+        let (treasury, _) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+        let coin_a_amount = treasury::get_coin_a_amount<BJPY>(treasury); 
+        assert!(coin_a_amount == 100, 1);
+        
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, test_key, ctx);
+        assert!(coin.value() == 200, 1);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     #[expected_failure(abort_code = ERR_MINT_UNAUTHORIZED)]
     fun test_mint_stable_fail_unauthorized() {
         let mut scenario_val = setup(BFC_AMOUNT);
