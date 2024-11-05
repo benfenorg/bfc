@@ -1617,7 +1617,7 @@ Rebalance
     _treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
     <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;StableCoinType&gt;,
 ): u64 {
-    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() == std::type_name::get&lt;BUSD&gt;(),<a href="treasury.md#0xc8_treasury_ERR_UNSUPPORTED_BUSD">ERR_UNSUPPORTED_BUSD</a>);
+    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() != std::type_name::get&lt;BUSD&gt;(),<a href="treasury.md#0xc8_treasury_ERR_UNSUPPORTED_BUSD">ERR_UNSUPPORTED_BUSD</a>);
     <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> mut_vault = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(_treasury, vault_key);
     <a href="vault.md#0xc8_vault_increase_coin_a">vault::increase_coin_a</a>(mut_vault, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)

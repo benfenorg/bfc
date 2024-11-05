@@ -1,6 +1,5 @@
 module bfc_system::bfc_system {
     use std::ascii;
-    use std::ascii::String;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -187,6 +186,16 @@ module bfc_system::bfc_system {
         }
     }
 
+    #[test_only]
+    public fun inner_stablecoin_to_bfc_test<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        balance: Balance<StableCoinType>,
+        expect: u64,
+        ctx: &mut TxContext,
+    ): Balance<BFC> {
+        inner_stablecoin_to_bfc<StableCoinType>(wrapper, balance, expect, ctx)
+    }
+
     public fun request_gas_balance(
         wrapper: &mut BfcSystemState,
         amount: u64,
@@ -292,6 +301,10 @@ module bfc_system::bfc_system {
     public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::add_operation_capability(inner, key, address)
+    }
+    public fun add_operation_capability_v1(wrapper: &mut BfcSystemState, key: vector<u8>, address: address, ctx: &mut TxContext,) {
+        let (inner, _) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
     public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
@@ -438,22 +451,22 @@ module bfc_system::bfc_system {
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
-        key: &String,
+        key: vector<u8>,
         ctx: &mut TxContext,
     ): Coin<StableCoinType> {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx)
+        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx)
     }
 
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
-        key: &String,
+        key: vector<u8>,
         recipient: address,
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx);
         bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 

@@ -5074,7 +5074,7 @@ set_daily_out_limit
 init_bfc_system_state_v2
 	public(package) fun
 	0xc8::bfc_system_state_inner
-transfer_bfc_from_value_to_treasury_pool
+transfer_bfc_from_vault_to_treasury_pool
 	fun
 	0xc8::bfc_system_state_inner
 add_coin_2_stake_pool
@@ -5174,6 +5174,9 @@ get_operation_capability_by_key
 	public fun
 	0xc8::bfc_system
 add_operation_capability
+	public fun
+	0xc8::bfc_system
+add_operation_capability_v1
 	public fun
 	0xc8::bfc_system
 remove_operation_capability
