@@ -266,6 +266,7 @@ module bfc_system::bfc_system {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_daily_out_limit(inner)
     }
+
     public fun set_daily_out_limit(id: &mut UID, daily_out_limit: u64) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit);
@@ -276,27 +277,43 @@ module bfc_system::bfc_system {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_operation_capability(inner)
     }
+
     public fun get_operation_capability_by_key(id: &UID, key: &ascii::String): VecSet<address> {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_operation_capability_by_key(inner, key)
     }
+
     #[test_only]
-    public fun add_operation_capability_test(wrapper: &mut BfcSystemState, key: ascii::String, address: address, ctx: &mut TxContext,) {
+    public fun add_operation_capability_test(
+        wrapper: &mut BfcSystemState,
+        key: ascii::String,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
         let (inner, _) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::add_operation_capability(inner, key, address)
     }
+
     public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::add_operation_capability(inner, key, address)
     }
-    public fun add_operation_capability_v1(wrapper: &mut BfcSystemState, key: vector<u8>, address: address, ctx: &mut TxContext,) {
+
+    public fun add_operation_capability_v1(
+        wrapper: &mut BfcSystemState,
+        key: vector<u8>,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
         let (inner, _) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
+
     public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::remove_operation_capability(inner, key, address)
     }
+
     public fun set_operation_capability(id: &mut UID, key: ascii::String, addresses: VecSet<address>) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::set_operation_capability(inner, key, addresses)
@@ -332,8 +349,8 @@ module bfc_system::bfc_system {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, description, clock, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::propose(system_state, version_id, payment, action_id, action_delay, description, clock, ctx);
     }
 
     public entry fun create_bfcdao_action(
@@ -342,8 +359,8 @@ module bfc_system::bfc_system {
         actionName: vector<u8>,
         clock: &Clock,
         ctx: &mut TxContext) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::create_bfcdao_action(system_state, payment, actionName,clock, ctx);
     }
 
     public entry fun judge_proposal_state(_wrapper: &mut BfcSystemState, _current_time: u64) {
@@ -389,16 +406,16 @@ module bfc_system::bfc_system {
                                  voting_bfc: VotingBfc,
                                     clock: &Clock,
                                  ctx: &mut TxContext) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc,clock, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::withdraw_voting(system_state, voting_bfc,clock, ctx);
     }
 
     public entry fun create_voting_bfc(wrapper: &mut BfcSystemState,
                                  coin: Coin<BFC>,
                                     clock: &Clock,
                                  ctx: &mut TxContext) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::create_voting_bfc(system_state, coin,clock, ctx);
     }
 
     /// X treasury rebalance
@@ -407,8 +424,8 @@ module bfc_system::bfc_system {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::rebalance(inner_state, clock, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
     }
 
     public fun rebalance_with_one_stablecoin<StableCoinType>(
@@ -416,8 +433,8 @@ module bfc_system::bfc_system {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
 
     public fun advance_epoch(bfc_system_id: &mut UID) {
@@ -443,7 +460,12 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(
+            inner_state,
+            amount,
+            &std::ascii::string(key),
+            _ctx
+        );
         bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 
@@ -466,8 +488,8 @@ module bfc_system::bfc_system {
         deadline: u64,
         ctx: &mut TxContext,
     ) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     /// X treasury  swap stablecoin to bfc
@@ -480,8 +502,8 @@ module bfc_system::bfc_system {
         deadline: u64,
         ctx: &mut TxContext,
     ) {
-        let (system_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, _ctx);
+        let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, ctx);
     }
 
     public fun get_stablecoin_by_bfc<StableCoinType>(
@@ -559,9 +581,9 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
 
-    public fun deposit_to_treasury_inner(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, _ctx: &mut TxContext,
+    public fun deposit_to_treasury_inner(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, ctx: &mut TxContext,
     ) {
-        let (inner_state, ctx) = load_system_state_mut(self, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(self, ctx);
         let bfc= coin::from_balance(bfc_balance, ctx);
         bfc_system_state_inner::deposit_to_treasury(inner_state, bfc)
     }
@@ -572,8 +594,8 @@ module bfc_system::bfc_system {
     }
 
     public  fun deposit_to_treasury_pool_no_entry(self: &mut BfcSystemState, bfc_balance: Balance<BFC>, ctx: &mut TxContext) {
-        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
-        let bfc= coin::from_balance(bfc_balance, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(self, ctx);
+        let bfc= coin::from_balance(bfc_balance, ctx);
         bfc_system_state_inner::deposit_to_treasury_pool(inner_state, bfc)
     }
 
@@ -603,8 +625,8 @@ module bfc_system::bfc_system {
         clock: & Clock,
         ctx: &mut TxContext,
     )  {
-        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
-        bfc_system_state_inner::cast_vote(inner_state, proposal, coin, agreeInt, clock, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(self, ctx);
+        bfc_system_state_inner::cast_vote(inner_state, proposal, coin, agreeInt, clock, ctx);
     }
 
     public entry fun change_vote(
@@ -615,8 +637,8 @@ module bfc_system::bfc_system {
         clock: & Clock,
         ctx: &mut TxContext,
     ) {
-        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
-        bfc_system_state_inner::change_vote(inner_state, my_vote, proposal, agree, clock, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(self, ctx);
+        bfc_system_state_inner::change_vote(inner_state, my_vote, proposal, agree, clock, ctx);
     }
 
     public entry fun queue_proposal_action(
@@ -637,8 +659,8 @@ module bfc_system::bfc_system {
         clock: & Clock,
         ctx: &mut TxContext,
     ) {
-        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
-        bfc_system_state_inner::revoke_vote(inner_state, proposal, my_vote, voting_power, clock, _ctx);
+        let (inner_state, ctx) = load_system_state_mut(self, ctx);
+        bfc_system_state_inner::revoke_vote(inner_state, proposal, my_vote, voting_power, clock, ctx);
     }
 
     public entry fun unvote_votes(
