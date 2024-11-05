@@ -64,6 +64,8 @@ module bfc_system::bfc_system_state_inner {
     const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
     const ERR_MINT_BUSD: u64 = 1005;
+    const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
+
 
     //spec module { pragma verify = false; }
 
@@ -422,6 +424,9 @@ module bfc_system::bfc_system_state_inner {
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        assert!(vault_key == type_name::into_string(type_name::get<BUSD>()), ERR_REBALANCE_NOT_BUSD);
+
         let amount = treasury::bfc_required_with_one_stablecoin<StableCoinType>(&self.treasury);
         if (amount > 0) {
             let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
