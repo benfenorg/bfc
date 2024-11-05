@@ -139,6 +139,38 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    #[expected_failure]
+    fun test_round_v2_invalid_vector_length() {
+        let bfc_addr = @0x0;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
+        vector::push_back(&mut stable_rate_vector, 1000000);
+        vector::push_back(&mut stable_rate_vector, 1000000);
+
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+
+    #[test]
     fun test_round_v2() {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
