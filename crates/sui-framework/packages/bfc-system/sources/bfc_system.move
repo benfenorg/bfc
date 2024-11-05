@@ -278,25 +278,25 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_operation_capability(inner)
     }
 
-    public fun get_operation_capability_by_key(id: &UID, key: &ascii::String): VecSet<address> {
+    public fun get_operation_capability_by_key(id: &UID, key: vector<u8>): VecSet<address> {
         let inner = load_system_state_by_uid(id);
-        bfc_system_state_inner::get_operation_capability_by_key(inner, key)
+        bfc_system_state_inner::get_operation_capability_by_key(inner, &std::ascii::string(key))
     }
 
     #[test_only]
     public fun add_operation_capability_test(
         wrapper: &mut BfcSystemState,
-        key: ascii::String,
+        key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
     ) {
         let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, key, address)
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
 
-    public fun add_operation_capability(id: &mut UID, key: ascii::String, address: address) {
+    public fun add_operation_capability(id: &mut UID, key: vector<u8>, address: address) {
         let inner = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::add_operation_capability(inner, key, address)
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
 
     public fun add_operation_capability_v1(
@@ -309,24 +309,24 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
 
-    public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
+    public fun remove_operation_capability(id: &mut UID, key: vector<u8>, address: address) {
         let inner = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::remove_operation_capability(inner, key, address)
+        bfc_system_state_inner::remove_operation_capability(inner, &std::ascii::string(key), address)
     }
 
-    public fun set_operation_capability(id: &mut UID, key: ascii::String, addresses: VecSet<address>) {
+    public fun set_operation_capability(id: &mut UID, key: vector<u8>, addresses: VecSet<address>) {
         let inner = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::set_operation_capability(inner, key, addresses)
+        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses)
     }
 
-    public entry fun remove_propose( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,proposal_id: u64){
+    public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {
         let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
-        bfc_system_state_inner::remove_proposal(system_state,key,proposal_id);
+        bfc_system_state_inner::remove_proposal(system_state, key, proposal_id);
     }
 
-    public entry fun remove_action( wrapper: &mut BfcSystemState,key: &BFCDaoManageKey,action_id: u64){
+    public entry fun remove_action(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, action_id: u64) {
         let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
-        bfc_system_state_inner::remove_action(system_state,key,action_id);
+        bfc_system_state_inner::remove_action(system_state, key, action_id);
     }
 
     public entry fun destroy_terminated_proposal(
@@ -437,9 +437,9 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
 
-    public fun advance_epoch(bfc_system_id: &mut UID) {
+    public fun reset_daily_used_quantity(bfc_system_id: &mut UID) {
         let inner = load_system_state_mut_by_uid(bfc_system_id);
-        bfc_system_state_inner::reset_daily_use_out_limit(inner);
+        bfc_system_state_inner::reset_daily_used_quantity(inner);
     }
 
     public fun mint_stable<StableCoinType>(

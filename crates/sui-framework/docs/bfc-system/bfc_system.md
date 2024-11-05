@@ -722,7 +722,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
 </code></pre>
 
 
@@ -731,9 +731,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &UID, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): VecSet&lt;<b>address</b>&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): VecSet&lt;<b>address</b>&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability_by_key">bfc_system_state_inner::get_operation_capability_by_key</a>(inner, key)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability_by_key">bfc_system_state_inner::get_operation_capability_by_key</a>(inner, &std::ascii::string(key))
 }
 </code></pre>
 
@@ -747,7 +747,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>)
 </code></pre>
 
 
@@ -756,9 +756,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, key, <b>address</b>)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
 
@@ -802,7 +802,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>)
 </code></pre>
 
 
@@ -811,9 +811,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> UID, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, key, <b>address</b>)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, &std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
 
@@ -827,7 +827,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
 </code></pre>
 
 
@@ -836,9 +836,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addresses: VecSet&lt;<b>address</b>&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: VecSet&lt;<b>address</b>&gt;) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, key, addresses)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, std::ascii::string(key), addresses)
 }
 </code></pre>
 
@@ -861,9 +861,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>( wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,proposal_id: u64){
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: &BFCDaoManageKey, proposal_id: u64) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">bfc_system_state_inner::remove_proposal</a>(system_state,key,proposal_id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">bfc_system_state_inner::remove_proposal</a>(system_state, key, proposal_id);
 }
 </code></pre>
 
@@ -886,9 +886,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>( wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,action_id: u64){
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: &BFCDaoManageKey, action_id: u64) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">bfc_system_state_inner::remove_action</a>(system_state,key,action_id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">bfc_system_state_inner::remove_action</a>(system_state, key, action_id);
 }
 </code></pre>
 

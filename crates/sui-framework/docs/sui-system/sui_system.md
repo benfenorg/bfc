@@ -1684,7 +1684,7 @@ gas coins.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_operation_capability">request_add_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_operation_capability">request_add_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1695,7 +1695,7 @@ gas coins.
 
 <pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_operation_capability">request_add_operation_capability</a>(
     self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     addr: <b>address</b>,
     ctx: &TxContext,
 ) {
@@ -1715,7 +1715,7 @@ gas coins.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_remove_operation_capability">request_remove_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_remove_operation_capability">request_remove_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1726,13 +1726,13 @@ gas coins.
 
 <pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_remove_operation_capability">request_remove_operation_capability</a>(
     self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     addr: <b>address</b>,
     ctx: &TxContext,
 ) {
     <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
     <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_REMOVE_OPERATION_CAPABILITY">ERR_REQUEST_REMOVE_OPERATION_CAPABILITY</a>);
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_operation_capability">bfc_system::remove_operation_capability</a>(&<b>mut</b> self.bfc_system_id, &key, addr)
+    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_operation_capability">bfc_system::remove_operation_capability</a>(&<b>mut</b> self.bfc_system_id, key, addr)
 }
 </code></pre>
 
@@ -1746,7 +1746,7 @@ gas coins.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_operation_capability">request_set_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr_set: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_operation_capability">request_set_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr_set: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1757,7 +1757,7 @@ gas coins.
 
 <pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_operation_capability">request_set_operation_capability</a>(
     self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     addr_set: VecSet&lt;<b>address</b>&gt;,
     ctx: &TxContext,
 ) {

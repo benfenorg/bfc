@@ -405,7 +405,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
 
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, test_key, ctx);
         assert!(coin.value() == 100, 1);
@@ -465,7 +465,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
 
         let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, test_key, ctx);
 
@@ -482,7 +482,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, test_key, tx_context::sender(ctx), ctx);
 
         test_scenario::return_shared(system_state);
@@ -496,7 +496,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state,10000_000_000_000u64, test_key, tx_context::sender(ctx), ctx);
 
         let busd = balance::create_for_testing<BUSD>(100);
@@ -517,7 +517,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         // let coin = bfc_system::mint_stable<USDC>(&mut system_state, 50000_000_000_000u64, &test_key, ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 50000_000_000_000u64, test_key, tx_context::sender(ctx), ctx);
 
@@ -537,7 +537,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         // let coin = bfc_system::mint_stable<USDC>(&mut system_state, 10000_000_000_000u64, &test_key, ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 10000_000_000_000u64, test_key, tx_context::sender(ctx), ctx);
 
@@ -580,11 +580,11 @@ module bfc_system::bfc_system_tests {
         bfc_system::load_system_state_mut_test(&mut system_state, ctx);
 
         let mut id = object::bfc_system_state_for_test();
-        let key = ascii::string(b"key");
-        let before = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        let key = b"key";
+        let before = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(before.size() == 0, 1);
         bfc_system::add_operation_capability(&mut id, key, @0x0);
-        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 1, 1);
 
         test_scenario::return_shared(system_state);
@@ -601,10 +601,10 @@ module bfc_system::bfc_system_tests {
         bfc_system::load_system_state_mut_test(&mut system_state, ctx);
 
         let mut id = object::bfc_system_state_for_test();
-        let key = ascii::string(b"key");
+        let key = b"key";
         bfc_system::add_operation_capability(&mut id, key, @0x0);
-        bfc_system::remove_operation_capability(&mut id, &key, @0x0);
-        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        bfc_system::remove_operation_capability(&mut id, key, @0x0);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 0, 1);
 
         test_scenario::return_shared(system_state);
@@ -621,12 +621,12 @@ module bfc_system::bfc_system_tests {
         bfc_system::load_system_state_mut_test(&mut system_state, ctx);
 
         let mut id = object::bfc_system_state_for_test();
-        let key = ascii::string(b"key");
-        let before = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        let key = b"key";
+        let before = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(before.size() == 0, 1);
         let v = vec_set::singleton(@0x0);
         bfc_system::set_operation_capability(&mut id, key, v);
-        let after = bfc_system::get_operation_capability_by_key(&mut id, &key);
+        let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 1, 1);
 
         test_scenario::return_shared(system_state);
