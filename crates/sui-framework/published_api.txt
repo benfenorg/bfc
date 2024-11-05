@@ -5164,6 +5164,9 @@ get_operation_capability_by_key
 add_operation_capability
 	public fun
 	0xc8::bfc_system
+add_operation_capability_v1
+	public fun
+	0xc8::bfc_system
 remove_operation_capability
 	public fun
 	0xc8::bfc_system
@@ -5216,9 +5219,6 @@ advance_epoch
 	public fun
 	0xc8::bfc_system
 mint_stable
-	public fun
-	0xc8::bfc_system
-mint_stable_v1
 	public fun
 	0xc8::bfc_system
 exchange_stable_to_busd

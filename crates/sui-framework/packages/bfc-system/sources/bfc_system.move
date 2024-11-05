@@ -290,6 +290,10 @@ module bfc_system::bfc_system {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::add_operation_capability(inner, key, address)
     }
+    public fun add_operation_capability_v1(wrapper: &mut BfcSystemState, key: vector<u8>, address: address, ctx: &mut TxContext,) {
+        let (inner, _) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
+    }
     public fun remove_operation_capability(id: &mut UID, key: &ascii::String, address: address) {
         let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::remove_operation_capability(inner, key, address)
@@ -423,16 +427,6 @@ module bfc_system::bfc_system {
     }
 
     public fun mint_stable<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        key: &String,
-        ctx: &mut TxContext,
-    ): Coin<StableCoinType> {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, key, _ctx)
-    }
-
-    public fun mint_stable_v1<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
         key: vector<u8>,

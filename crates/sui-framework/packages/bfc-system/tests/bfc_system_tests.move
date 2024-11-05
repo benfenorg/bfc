@@ -384,10 +384,10 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"right_key");
-        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
+        let test_key = b"right_key";
+        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(b"right_key"), tx_context::sender(ctx), ctx);
 
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, test_key, ctx);
         assert!(coin.value() == 100, 1);
 
         coin::burn_for_testing(coin);
@@ -403,8 +403,8 @@ module bfc_system::bfc_system_tests {
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let test_key = std::ascii::string(b"wrong_key");
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &test_key, ctx);
+        let test_key = b"wrong_key";
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, test_key, ctx);
 
         coin::burn_for_testing(coin);
 

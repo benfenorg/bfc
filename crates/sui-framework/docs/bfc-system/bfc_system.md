@@ -26,6 +26,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `get_operation_capability`](#0xc8_bfc_system_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_get_operation_capability_by_key)
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
+-  [Function `add_operation_capability_v1`](#0xc8_bfc_system_add_operation_capability_v1)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_remove_operation_capability)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_set_operation_capability)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
@@ -44,7 +45,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `advance_epoch`](#0xc8_bfc_system_advance_epoch)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
--  [Function `mint_stable_v1`](#0xc8_bfc_system_mint_stable_v1)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_exchange_busd_to_stable)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
@@ -766,6 +766,31 @@ deprecated
 
 </details>
 
+<a name="0xc8_bfc_system_add_operation_capability_v1"></a>
+
+## Function `add_operation_capability_v1`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> TxContext,) {
+    <b>let</b> (inner, _) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_remove_operation_capability"></a>
 
 ## Function `remove_operation_capability`
@@ -1240,7 +1265,7 @@ X treasury rebalance
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -1250,36 +1275,6 @@ X treasury rebalance
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    amount: u64,
-    key: &String,
-    ctx: &<b>mut</b> TxContext,
-): Coin&lt;StableCoinType&gt; {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, key, _ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_mint_stable_v1"></a>
-
-## Function `mint_stable_v1`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_v1">mint_stable_v1</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_v1">mint_stable_v1</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
     key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
