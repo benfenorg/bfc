@@ -497,6 +497,15 @@ Errors
 
 
 
+<a name="0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD">ERR_REBALANCE_NOT_BUSD</a>: u64 = 1006;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_ERR_SWAP_STABLE_NOT_ENOUGH"></a>
 
 
@@ -1315,6 +1324,9 @@ deprecated
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>assert</b>!(vault_key == <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_REBALANCE_NOT_BUSD">ERR_REBALANCE_NOT_BUSD</a>);
+
     <b>let</b> amount = <a href="treasury.md#0xc8_treasury_bfc_required_with_one_stablecoin">treasury::bfc_required_with_one_stablecoin</a>&lt;StableCoinType&gt;(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <b>if</b> (amount &gt; 0) {
         <b>let</b> withdraw_balance = <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
@@ -1384,13 +1396,17 @@ deprecated
 ): Coin&lt;StableCoinType&gt; {
     <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
     <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() != <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
-    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;() || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
+    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
+    ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
     <b>if</b> (usdc_usdt_coint) {
         <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
     };
-    <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;());
-    <b>let</b> (balance_stable,_balance_bfc) = <a href="vault.md#0xc8_vault_balances">vault::balances</a>&lt;StableCoinType&gt;(vault_mut);
-    <b>if</b>(balance_stable&gt;=amount){
+    <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(
+        &<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>,
+        <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;()
+    );
+    <b>let</b> (balance_stable, _balance_bfc) = <a href="vault.md#0xc8_vault_balances">vault::balances</a>&lt;StableCoinType&gt;(vault_mut);
+    <b>if</b> (balance_stable &gt;= amount) {
         <b>return</b> <a href="vault.md#0xc8_vault_decrease_coin_a">vault::decrease_coin_a</a>(vault_mut, amount, ctx)
     };
     <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
@@ -1427,7 +1443,7 @@ deprecated
     // stake <a href="../sui-framework/coin.md#0x2_coin">coin</a> into stable_coins
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> <b>mut</b> exchange_key_bytes = std::ascii::into_bytes(key);
-    exchange_key_bytes.append( b"-exchange");
+    exchange_key_bytes.append(b"-exchange");
     <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&<b>mut</b> inner_state.stake_coins, exchange_key);
     <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, stable_coin);
@@ -1471,7 +1487,7 @@ deprecated
 
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> <b>mut</b> exchange_key_bytes = std::ascii::into_bytes(key);
-    exchange_key_bytes.append( b"-exchange");
+    exchange_key_bytes.append(b"-exchange");
     <b>let</b> exchange_key = std::ascii::string(exchange_key_bytes);
 
     <b>let</b> amount: u64 = busd_coin.value();
@@ -1480,7 +1496,7 @@ deprecated
     <b>let</b> stable_back = <a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(stable_sum, amount, ctx);
     <b>let</b> busd_sum = <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">treasury::get_busd_supply_mut</a>(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(busd_sum, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(busd_coin));
-    <a href="treasury.md#0xc8_treasury_exchange_busd_to_stable">treasury::exchange_busd_to_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_back, ctx);
+    <a href="treasury.md#0xc8_treasury_exchange_busd_to_stable">treasury::exchange_busd_to_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> system_state.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_back);
 
     system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
 }
@@ -2329,7 +2345,10 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_v1_to_v2">v1_to_v2</a>(self: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>, _ctx: &<b>mut</b> TxContext): (<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, &<b>mut</b> TxContext) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_v1_to_v2">v1_to_v2</a>(
+    self: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a>,
+    _ctx: &<b>mut</b> TxContext
+): (<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, &<b>mut</b> TxContext) {
     <b>let</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
         round,
         stable_base_points,
@@ -2349,7 +2368,7 @@ deprecated
         <a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>,
         stable_rate,
         stake_coins: coin_bag,
-        daily_out_limit : 40000_000_000_000u64,
+        daily_out_limit: 40000_000_000_000u64,
         daily_use_out_limit: 0u64,
         operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         oracle_address: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),

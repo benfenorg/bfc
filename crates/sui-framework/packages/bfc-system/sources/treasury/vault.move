@@ -1163,16 +1163,23 @@ module bfc_system::vault {
         _vault.last_bfc_rebalance_amount
     }
 
-    public(package) fun increase_coin_a<StableCoinType>(_vault: &mut Vault<StableCoinType>, balance: Balance<StableCoinType>) : u64 {
-        balance::join(&mut _vault.coin_a, balance)
+    public(package) fun increase_coin_a<StableCoinType>(
+        vault: &mut Vault<StableCoinType>,
+        balance: Balance<StableCoinType>
+    ): u64 {
+        balance::join(&mut vault.coin_a, balance)
     }
 
-    public(package) fun decrease_coin_a<StableCoinType>(_vault: &mut Vault<StableCoinType>, amount: u64, ctx: &mut TxContext) :Coin<StableCoinType> {
-        let coin = coin::take(&mut _vault.coin_a, amount, ctx);
+    public(package) fun decrease_coin_a<StableCoinType>(
+        vault: &mut Vault<StableCoinType>,
+        amount: u64,
+        ctx: &mut TxContext
+    ): Coin<StableCoinType> {
+        let coin = coin::take(&mut vault.coin_a, amount, ctx);
         coin
     }
 
-    public(package) fun clear_coin_b<StableCoinType>(_vault: &mut Vault<StableCoinType>) : Balance<BFC> {
-        balance::withdraw_all(&mut _vault.coin_b)
+    public(package) fun clear_coin_b<StableCoinType>(vault: &mut Vault<StableCoinType>): Balance<BFC> {
+        balance::withdraw_all(&mut vault.coin_b)
     }
 }

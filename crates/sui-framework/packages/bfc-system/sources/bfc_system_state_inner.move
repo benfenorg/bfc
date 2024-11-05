@@ -456,13 +456,17 @@ module bfc_system::bfc_system_state_inner {
     ): Coin<StableCoinType> {
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
         assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
-        let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>() || type_name::get<StableCoinType>() == type_name::get<USDC>();
+        let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>(
+        ) || type_name::get<StableCoinType>() == type_name::get<USDC>();
         if (usdc_usdt_coint) {
             return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
         };
-        let vault_mut = treasury::borrow_mut_vault<StableCoinType>(&mut inner_state.treasury, treasury::get_vault_key<StableCoinType>());
-        let (balance_stable,_balance_bfc) = vault::balances<StableCoinType>(vault_mut);
-        if(balance_stable>=amount){
+        let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
+            &mut inner_state.treasury,
+            treasury::get_vault_key<StableCoinType>()
+        );
+        let (balance_stable, _balance_bfc) = vault::balances<StableCoinType>(vault_mut);
+        if (balance_stable >= amount) {
             return vault::decrease_coin_a(vault_mut, amount, ctx)
         };
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
@@ -479,7 +483,7 @@ module bfc_system::bfc_system_state_inner {
         // stake coin into stable_coins
         let key = treasury::get_vault_key<StableCoinType>();
         let mut exchange_key_bytes = std::ascii::into_bytes(key);
-        exchange_key_bytes.append( b"-exchange");
+        exchange_key_bytes.append(b"-exchange");
         let exchange_key = std::ascii::string(exchange_key_bytes);
         let coin = bag::borrow_mut<String, Coin<StableCoinType>>(&mut inner_state.stake_coins, exchange_key);
         coin::join(coin, stable_coin);
@@ -504,7 +508,7 @@ module bfc_system::bfc_system_state_inner {
 
         let key = treasury::get_vault_key<StableCoinType>();
         let mut exchange_key_bytes = std::ascii::into_bytes(key);
-        exchange_key_bytes.append( b"-exchange");
+        exchange_key_bytes.append(b"-exchange");
         let exchange_key = std::ascii::string(exchange_key_bytes);
 
         let amount: u64 = busd_coin.value();
@@ -513,7 +517,7 @@ module bfc_system::bfc_system_state_inner {
         let stable_back = coin::split(stable_sum, amount, ctx);
         let busd_sum = treasury::get_busd_supply_mut(&mut system_state.treasury);
         balance::decrease_supply(busd_sum, coin::into_balance(busd_coin));
-        treasury::exchange_busd_to_stable<StableCoinType>(&mut system_state.treasury, stable_back, ctx);
+        treasury::exchange_busd_to_stable<StableCoinType>(&mut system_state.treasury, stable_back);
 
         system_state.daily_use_out_limit = system_state.daily_use_out_limit + amount;
     }
@@ -743,7 +747,10 @@ module bfc_system::bfc_system_state_inner {
         bfc_dao::create_voting_bfc(&mut system_state.dao, coin, clock, ctx);
     }
 
-    public(package) fun v1_to_v2(self: BfcSystemStateInner, _ctx: &mut TxContext): (BfcSystemStateInnerV2, &mut TxContext) {
+    public(package) fun v1_to_v2(
+        self: BfcSystemStateInner,
+        _ctx: &mut TxContext
+    ): (BfcSystemStateInnerV2, &mut TxContext) {
         let BfcSystemStateInner {
             round,
             stable_base_points,
@@ -763,7 +770,7 @@ module bfc_system::bfc_system_state_inner {
             treasury_pool,
             stable_rate,
             stake_coins: coin_bag,
-            daily_out_limit : 40000_000_000_000u64,
+            daily_out_limit: 40000_000_000_000u64,
             daily_use_out_limit: 0u64,
             operation_capability: vec_map::empty(),
             oracle_address: option::none(),
