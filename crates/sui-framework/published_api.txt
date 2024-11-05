@@ -4852,6 +4852,9 @@ WithdrawEvent
 DepositEvent
 	public struct
 	0xc8::treasury_pool
+TransferBalanceEvent
+	public struct
+	0xc8::treasury_pool
 create_treasury_pool
 	public(package) fun
 	0xc8::treasury_pool
@@ -5074,7 +5077,7 @@ init_bfc_system_state_v2
 transfer_bfc_from_vault_to_treasury_pool
 	fun
 	0xc8::bfc_system_state_inner
-add_coin_2_stake_pool
+add_coin_to_stake_pool
 	fun
 	0xc8::bfc_system_state_inner
 get_operation_capability
