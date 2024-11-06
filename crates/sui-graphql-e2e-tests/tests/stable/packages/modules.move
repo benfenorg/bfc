@@ -7,7 +7,7 @@
 
 module pkg::m {
     use sui::coin::{Self, Coin};
-    use sui::sui::SUI;
+    use sui::bfc::BFC;
 
     public fun foo<C: drop>(x: u64, c: &Coin<C>): u64 {
         coin::value(c) + x

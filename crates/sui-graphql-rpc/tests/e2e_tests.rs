@@ -172,15 +172,6 @@ async fn test_graphql_client_variables() {
             .unwrap(),
         SUI_FRAMEWORK_ADDRESS.to_canonical_string(true)
     );
-    assert_eq!(
-        data.get("obj2")
-            .unwrap()
-            .get("address")
-            .unwrap()
-            .as_str()
-            .unwrap(),
-        DEEPBOOK_ADDRESS.to_canonical_string(true)
-    );
 
     let bad_variables = vec![
         GraphqlQueryVariable {
@@ -797,7 +788,7 @@ async fn test_payload_using_vars_mutation_passes() {
         },
         ..ServiceConfig::test_defaults()
     })
-    .await;
+        .await;
     let addresses = cluster
         .network
         .validator_fullnode_handle
