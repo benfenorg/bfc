@@ -26,6 +26,7 @@ sui-sdk2.workspace = true
 prometheus.workspace = true
 openapiv3 = { git = "https://github.com/bmwill/openapiv3.git", rev = "ca4b4845b7c159a39f5c68ad8f7f76cb6f4d6963" }
 schemars.workspace = true
+tracing = "0.1.40"
 
 fastcrypto.workspace = true
 sui-types.workspace = true

@@ -571,6 +571,8 @@ pub async fn make_transfer_sui_transaction_with_gas(
     gas_object: ObjectRef,
 ) -> Transaction {
     let gas_price = context.get_reference_gas_price().await.unwrap();
+
+
     context.sign_transaction(
         &TestTransactionBuilder::new(sender, gas_object, gas_price)
             .transfer_sui(amount, recipient.unwrap_or(sender))

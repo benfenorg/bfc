@@ -3,7 +3,7 @@
 
 pub mod sdk;
 use sdk::Result;
-
+use tracing::info;
 pub use reqwest;
 
 use crate::transactions::ExecuteTransactionQueryParameters;
@@ -116,6 +116,8 @@ impl Client {
             .body(body)
             .send()
             .await?;
+
+        info!("========response: {:?}", response);
 
         self.inner.bcs(response).await.map(Response::into_inner)
     }
