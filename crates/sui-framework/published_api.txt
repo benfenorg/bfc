@@ -5065,7 +5065,7 @@ v1_to_v2
 get_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
-reset_daily_use_out_limit
+reset_daily_used_quantity
 	public(package) fun
 	0xc8::bfc_system_state_inner
 set_daily_out_limit
@@ -5218,7 +5218,7 @@ rebalance
 rebalance_with_one_stablecoin
 	public fun
 	0xc8::bfc_system
-advance_epoch
+reset_daily_used_quantity
 	public fun
 	0xc8::bfc_system
 mint_stable

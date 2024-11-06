@@ -1614,7 +1614,7 @@ gas coins.
         ctx,
     );
 
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_advance_epoch">bfc_system::advance_epoch</a>(&<b>mut</b> wrapper.bfc_system_id);
+    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">bfc_system::reset_daily_used_quantity</a>(&<b>mut</b> wrapper.bfc_system_id);
 
     storage_rebate
 }

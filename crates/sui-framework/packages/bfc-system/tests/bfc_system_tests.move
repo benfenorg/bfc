@@ -423,7 +423,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let test_key = b"right_key";
-        bfc_system::add_operation_capability_test(&mut system_state, std::ascii::string(test_key), tx_context::sender(ctx), ctx);
+        bfc_system::add_operation_capability_test(&mut system_state, test_key, tx_context::sender(ctx), ctx);
         //todo:transfer bjpy from vault
         let bjpy = balance::create_for_testing<BJPY>(100);
         let (system_state_v2, ctx2) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);

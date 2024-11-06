@@ -70,7 +70,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_state_inner_create_voting_bfc)
 -  [Function `v1_to_v2`](#0xc8_bfc_system_state_inner_v1_to_v2)
 -  [Function `get_daily_out_limit`](#0xc8_bfc_system_state_inner_get_daily_out_limit)
--  [Function `reset_daily_use_out_limit`](#0xc8_bfc_system_state_inner_reset_daily_use_out_limit)
+-  [Function `reset_daily_used_quantity`](#0xc8_bfc_system_state_inner_reset_daily_used_quantity)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
 -  [Function `transfer_bfc_from_vault_to_treasury_pool`](#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool)
@@ -2415,13 +2415,13 @@ deprecated
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_reset_daily_use_out_limit"></a>
+<a name="0xc8_bfc_system_state_inner_reset_daily_used_quantity"></a>
 
-## Function `reset_daily_use_out_limit`
+## Function `reset_daily_used_quantity`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_use_out_limit">reset_daily_use_out_limit</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
 </code></pre>
 
 
@@ -2430,7 +2430,7 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_use_out_limit">reset_daily_use_out_limit</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
     self.daily_used_quantity = 0u64;
 }
 </code></pre>
