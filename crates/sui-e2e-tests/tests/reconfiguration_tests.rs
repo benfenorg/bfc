@@ -3,6 +3,7 @@
 
 use futures::future::join_all;
 use rand::rngs::OsRng;
+use sui_types::collection_types::VecMap;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 use fastcrypto::encoding::Base64;
@@ -35,7 +36,7 @@ use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
     SuiSystemStateTrait,
 };
-use sui_types::transaction::{Argument, CallArg, Command, ObjectArg, ProgrammableMoveCall, ProgrammableTransaction, Transaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
+use sui_types::transaction::{Argument, CallArg, Command, ProgrammableMoveCall, ProgrammableTransaction, TransactionDataAPI, TransactionExpiration, TransactionKind, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use tokio::time::sleep;
 use tracing::{error, info};
@@ -54,8 +55,71 @@ use sui_json_rpc_api::WriteApiClient;
 use sui_json_rpc_api::TransactionBuilderClient;
 use sui_move_build::{BuildConfig, SuiPackageHooks};
 use sui_sdk::wallet_context::WalletContext;
-use sui_types::storage::ObjectStore;
 use sui_types::vault::VaultInfo;
+
+
+#[sim_test]
+async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(), Error> {
+    move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(1000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    test_cluster.set_safe_mode_expected(true);
+    test_cluster.wait_for_epoch(Some(2)).await;
+    let (_, package) = do_publish(&mut test_cluster).await?;
+
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        // should be none
+        assert!(_oracle_address.is_none());
+
+        let _rate_map: &VecMap<String, u64> = _state.get_rate_map();
+        println!("=============rate_map: {:?}", _rate_map);
+        // only busd
+        assert!(_rate_map.contents.len() == 1);
+    });
+
+    // set oracle price
+    check_oracle_price(&mut test_cluster, package).await;
+
+    // wait to get oracle price and call bfc_round_v2
+    test_cluster.wait_for_epoch(Some(3)).await;
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        assert!(_oracle_address.is_some());
+        println!("=============oracle_address: {}", _oracle_address.unwrap());
+
+        //rate_map
+        let _rate_map = _state.get_rate_map();
+        println!("=============rate_map: {:?}", _rate_map);
+        // after set oracle price by bfc_round_v2，we have two (busd, beur)
+        assert!(_rate_map.contents.len() == 2);
+    });
+
+    Ok(())
+}
 
 // #[cfg(msim)]
 #[sim_test]
