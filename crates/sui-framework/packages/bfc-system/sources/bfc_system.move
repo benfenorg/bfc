@@ -420,12 +420,11 @@ module bfc_system::bfc_system {
 
     /// X treasury rebalance
     public fun rebalance(
-        wrapper: &mut BfcSystemState,
-        clock: &Clock,
-        ctx: &mut TxContext,
+        _wrapper: &mut BfcSystemState,
+        _clock: &Clock,
+        _ctx: &mut TxContext,
     ) {
-        let (inner_state, ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::rebalance(inner_state, clock, ctx);
+        
     }
 
     public fun rebalance_with_one_stablecoin<StableCoinType>(
