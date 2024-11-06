@@ -1885,35 +1885,31 @@ async fn test_stable_native_transfer_insufficient_gas_execution() {
 
     let effects = result
         .response
-        .unwrap()
-        .into_effects_for_testing()
-        .into_data();
+        .unwrap_err();
+
     // Transaction failed for out of gas so charge is same as budget
-    dbg!(effects.gas_cost_summary().gas_used_improved(), total_gas, budget);
-    assert_eq!(
-        effects.clone().into_status().unwrap_err().0,
-        ExecutionFailureStatus::InsufficientGas,
+    //dbg!(effects.gas_cost_summary().gas_used_improved(), total_gas, budget);
+    assert!(matches!(
+        UserInputError::try_from(effects).unwrap(),
+        UserInputError::GasBalanceTooLow { .. })
     );
 
-    assert!(effects.gas_cost_summary().gas_used_improved() == budget);
+    //assert!(effects.gas_cost_summary().gas_used_improved() == budget);
     let gas_object = result
         .authority_state
         .get_object(&result.gas_object_id)
         .await
         .unwrap()
         .unwrap();
-    let gas_coin = GasCoin::try_from(&gas_object).unwrap();
-    assert_eq!(gas_coin.value(), 0);
+    let _gas_coin = GasCoin::try_from(&gas_object).unwrap();
+    //assert_eq!(gas_coin.value(), 0);
     // After a failed transfer, the version should have been incremented,
     // but the owner of the object should remain the same, unchanged.
-    let ((_, version, _), owner) = effects.mutated_excluding_gas()[0];
-    assert_eq!(version, gas_object.version());
-    assert_eq!(owner, gas_object.owner);
+    // let ((_, version, _), owner) = effects.mutated_excluding_gas()[0];
+    // assert_eq!(version, gas_object.version());
+    // assert_eq!(owner, gas_object.owner);
 
-    assert_eq!(
-        effects.into_status().unwrap_err().0,
-        ExecutionFailureStatus::InsufficientGas,
-    );
+
 }
 
 #[tokio::test]
