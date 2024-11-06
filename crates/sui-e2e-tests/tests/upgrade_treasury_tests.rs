@@ -34,7 +34,7 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_stable".to_string(),
+            "mint_stable_entry".to_string(),
             vec![SuiTypeTag::new("0xc8::usdc::USDC".to_string())],
             args,
             None,
@@ -110,7 +110,7 @@ async fn sim_test_mint_stable_with_busd() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_stable".to_string(),
+            "mint_stable_entry".to_string(),
             vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             None,
@@ -184,7 +184,7 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_stable".to_string(),
+            "mint_stable_entry".to_string(),
             vec![SuiTypeTag::new("0xc8::usdc::USDC".to_string())],
             args,
             None,
@@ -375,7 +375,7 @@ async fn sim_test_exchange_busd_to_stable_success() -> Result<(), anyhow::Error>
         )
         .await?;
     let tx2 = test_cluster.wallet.sign_transaction(&transaction_bytes2.to_data()?);
-    let (tx_bytes2, signatures2) = tx1.to_tx_bytes_and_signatures();
+    let (tx_bytes2, signatures2) = tx2.to_tx_bytes_and_signatures();
     let tx_response2 = http_client
         .execute_transaction_block(
             tx_bytes2,

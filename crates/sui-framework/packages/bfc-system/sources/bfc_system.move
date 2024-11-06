@@ -442,6 +442,17 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::reset_daily_used_quantity(inner);
     }
 
+    public entry fun mint_stable_entry<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        amount: u64,
+        key: vector<u8>,
+        ctx: &mut TxContext,
+    ) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx);
+        transfer::public_transfer(coin, tx_context::sender(ctx));
+    }
+
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,

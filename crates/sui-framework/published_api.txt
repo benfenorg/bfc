@@ -5221,6 +5221,9 @@ rebalance_with_one_stablecoin
 reset_daily_used_quantity
 	public fun
 	0xc8::bfc_system
+mint_stable_entry
+	public entry fun
+	0xc8::bfc_system
 mint_stable
 	public fun
 	0xc8::bfc_system
