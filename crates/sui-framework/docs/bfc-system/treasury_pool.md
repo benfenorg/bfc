@@ -16,7 +16,8 @@ title: Module `0xc8::treasury_pool`
 -  [Function `increase_balance`](#0xc8_treasury_pool_increase_balance)
 
 
-<pre><code><b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
+<pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
+<b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
@@ -157,6 +158,12 @@ title: Module `0xc8::treasury_pool`
 </dd>
 <dt>
 <code>deposit_amount: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>from_vault: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -320,7 +327,7 @@ The <code>withdraw</code> function only called by 0x0 address.
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">treasury_pool::TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -329,13 +336,14 @@ The <code>withdraw</code> function only called by 0x0 address.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;BFC&gt;) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">increase_balance</a>(self: &<b>mut</b> <a href="treasury_pool.md#0xc8_treasury_pool_TreasuryPool">TreasuryPool</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;BFC&gt;, vault_key: std::ascii::String) {
     <b>let</b> origin_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>);
     <b>let</b> deposit_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&<a href="../sui-framework/balance.md#0x2_balance">balance</a>);
     <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>);
     emit(<a href="treasury_pool.md#0xc8_treasury_pool_TransferBalanceEvent">TransferBalanceEvent</a> {
         <a href="../sui-framework/balance.md#0x2_balance">balance</a>: origin_amount,
-        deposit_amount
+        deposit_amount,
+        from_vault: vault_key
     });
 }
 </code></pre>

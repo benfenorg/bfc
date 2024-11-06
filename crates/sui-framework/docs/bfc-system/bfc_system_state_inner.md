@@ -8,6 +8,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Struct `BfcSystemStateInnerV2`](#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2)
 -  [Struct `TreasuryParameters`](#0xc8_bfc_system_state_inner_TreasuryParameters)
 -  [Struct `BfcSystemParameters`](#0xc8_bfc_system_state_inner_BfcSystemParameters)
+-  [Struct `StakeCoinPoolInitEvent`](#0xc8_bfc_system_state_inner_StakeCoinPoolInitEvent)
 -  [Constants](#@Constants_0)
 -  [Function `create_inner_state`](#0xc8_bfc_system_state_inner_create_inner_state)
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_state_inner_create_stake_manager_key)
@@ -94,6 +95,7 @@ title: Module `0xc8::bfc_system_state_inner`
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
+<b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
@@ -372,6 +374,33 @@ title: Module `0xc8::bfc_system_state_inner`
 </dd>
 <dt>
 <code>treasury_parameters: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_TreasuryParameters">bfc_system_state_inner::TreasuryParameters</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_StakeCoinPoolInitEvent"></a>
+
+## Struct `StakeCoinPoolInitEvent`
+
+
+
+<pre><code><b>struct</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_StakeCoinPoolInitEvent">StakeCoinPoolInitEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -1121,7 +1150,7 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_next_epoch_bfc_required_v2">next_epoch_bfc_required_v2</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
-    <a href="treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
+    <a href="treasury.md#0xc8_treasury_bfc_required_v2">treasury::bfc_required_v2</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>)
 }
 </code></pre>
 
@@ -1243,7 +1272,7 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury">deposit_to_treasury</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, coin_bfc: Coin&lt;BFC&gt;) {
-    <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_bfc);
+    <a href="treasury.md#0xc8_treasury_deposit_v2">treasury::deposit_v2</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_bfc);
 }
 </code></pre>
 
@@ -1281,7 +1310,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(_self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, _clock: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1291,21 +1320,10 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">rebalance</a>(
-    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-    <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
-    ctx: &<b>mut</b> TxContext,
+    _self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    _clock: &Clock,
+    _ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> amount = <a href="treasury.md#0xc8_treasury_bfc_required">treasury::bfc_required</a>(&self.<a href="treasury.md#0xc8_treasury">treasury</a>);
-    <b>if</b> (amount &gt; 0) {
-        <b>let</b> withdraw_balance = <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
-        <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&withdraw_balance) &gt; 0) {
-            <a href="treasury.md#0xc8_treasury_deposit">treasury::deposit</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(withdraw_balance, ctx));
-        } <b>else</b> {
-            <a href="../sui-framework/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(withdraw_balance);
-        };
-    };
-    <b>let</b> pool_balance = <a href="treasury_pool.md#0xc8_treasury_pool_get_balance">treasury_pool::get_balance</a>(&self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>);
-    <a href="treasury.md#0xc8_treasury_rebalance">treasury::rebalance</a>(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pool_balance, <b>true</b>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -2537,7 +2555,7 @@ deprecated
     <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
     <b>let</b> <a href="vault.md#0xc8_vault">vault</a> = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, vault_key);
     <b>let</b> bfc_balance = <a href="vault.md#0xc8_vault_clear_coin_b">vault::clear_coin_b</a>(<a href="vault.md#0xc8_vault">vault</a>);
-    <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">treasury_pool::increase_balance</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, bfc_balance);
+    <a href="treasury_pool.md#0xc8_treasury_pool_increase_balance">treasury_pool::increase_balance</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, bfc_balance, vault_key);
 }
 </code></pre>
 
@@ -2564,6 +2582,9 @@ deprecated
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
 
     <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(<a href="../sui-framework/bag.md#0x2_bag">bag</a>, key, <a href="../sui-framework/coin.md#0x2_coin">coin</a>);
+    sui::event::emit(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_StakeCoinPoolInitEvent">StakeCoinPoolInitEvent</a> {
+        coin_name: key
+    })
 }
 </code></pre>
 

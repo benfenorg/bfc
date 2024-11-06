@@ -112,6 +112,10 @@ module bfc_system::bfc_system_state_inner {
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
     }
 
+    public struct StakeCoinPoolInitEvent has copy, drop {
+        coin_name: String
+    }
+
     const BFC_SYSTEM_TREASURY_KEY: u64 = 1;
 
     public(package) fun create_inner_state(
@@ -372,7 +376,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun next_epoch_bfc_required_v2(self: &BfcSystemStateInnerV2): u64 {
-        treasury::bfc_required(&self.treasury)
+        treasury::bfc_required_v2(&self.treasury)
     }
 
     #[allow(unused_variable)]
@@ -395,7 +399,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun deposit_to_treasury(self: &mut BfcSystemStateInnerV2, coin_bfc: Coin<BFC>) {
-        treasury::deposit(&mut self.treasury, coin_bfc);
+        treasury::deposit_v2(&mut self.treasury, coin_bfc);
     }
 
     public(package) fun deposit_to_treasury_pool(self: &mut BfcSystemStateInnerV2, coin_bfc: Coin<BFC>) {
@@ -403,21 +407,10 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun rebalance(
-        self: &mut BfcSystemStateInnerV2,
-        clock: &Clock,
-        ctx: &mut TxContext,
+        _self: &mut BfcSystemStateInnerV2,
+        _clock: &Clock,
+        _ctx: &mut TxContext,
     ) {
-        let amount = treasury::bfc_required(&self.treasury);
-        if (amount > 0) {
-            let withdraw_balance = treasury_pool::withdraw_to_treasury(&mut self.treasury_pool, amount, ctx);
-            if (balance::value(&withdraw_balance) > 0) {
-                treasury::deposit(&mut self.treasury, coin::from_balance(withdraw_balance, ctx));
-            } else {
-                balance::destroy_zero(withdraw_balance);
-            };
-        };
-        let pool_balance = treasury_pool::get_balance(&self.treasury_pool);
-        treasury::rebalance(&mut self.treasury, pool_balance, true, clock, ctx);
     }
 
     public(package) fun rebalance_with_one_stablecoin<StableCoinType>(
@@ -831,13 +824,16 @@ module bfc_system::bfc_system_state_inner {
         let vault_key = treasury::get_vault_key<StableCoinType>();
         let vault = treasury::borrow_mut_vault<StableCoinType>(&mut self.treasury, vault_key);
         let bfc_balance = vault::clear_coin_b(vault);
-        treasury_pool::increase_balance(&mut self.treasury_pool, bfc_balance);
+        treasury_pool::increase_balance(&mut self.treasury_pool, bfc_balance, vault_key);
     }
 
     fun add_coin_to_stake_pool<StableCoinType>(bag: &mut Bag, coin: Coin<StableCoinType>) {
         let key = treasury::get_vault_key<StableCoinType>();
 
         bag::add(bag, key, coin);
+        sui::event::emit(StakeCoinPoolInitEvent {
+            coin_name: key
+        })
     }
 
     public(package)  fun get_operation_capability(self: &BfcSystemStateInnerV2): VecMap<String, VecSet<address>> {

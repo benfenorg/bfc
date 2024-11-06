@@ -36,7 +36,8 @@ module bfc_system::treasury_pool {
 
     public struct TransferBalanceEvent has copy, drop {
         balance: u64,
-        deposit_amount: u64
+        deposit_amount: u64,
+        from_vault: std::ascii::String
     }
 
     public(package) fun create_treasury_pool(
@@ -92,13 +93,14 @@ module bfc_system::treasury_pool {
         balance::value(&self.balance)
     }
 
-    public(package) fun increase_balance(self: &mut TreasuryPool, balance: Balance<BFC>) {
+    public(package) fun increase_balance(self: &mut TreasuryPool, balance: Balance<BFC>, vault_key: std::ascii::String) {
         let origin_amount = balance::value(&self.balance);
         let deposit_amount = balance::value(&balance);
         balance::join(&mut self.balance, balance);
         emit(TransferBalanceEvent {
             balance: origin_amount,
-            deposit_amount
+            deposit_amount,
+            from_vault: vault_key
         });
     }
 }

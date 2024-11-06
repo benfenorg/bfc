@@ -418,6 +418,7 @@ module bfc_system::treasury {
         )
     }
 
+    /// deprecated for v2
     public(package) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
         let min_amount = bfc_required(_treasury);
         let input = coin::into_balance(_coin_bfc);
@@ -427,6 +428,18 @@ module bfc_system::treasury {
 
         if (!_treasury.init) {
             _treasury.init = true
+        }
+    }
+
+    public(package) fun deposit_v2(treasury: &mut Treasury, coin_bfc: Coin<BFC>) {
+        let min_amount = bfc_required_v2(treasury);
+        let input = coin::into_balance(coin_bfc);
+        let input_amount = balance::value(&input);
+        assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
+        balance::join(&mut treasury.bfc_balance, input);
+
+        if (!treasury.init) {
+            treasury.init = true
         }
     }
 
@@ -441,7 +454,7 @@ module bfc_system::treasury {
         balance::join(&mut _treasury.bfc_balance, input);
     }
 
-    /// Rebalance
+    /// Rebalance, deprecated for v2
     public(package) fun bfc_required(_treasury: &Treasury): u64 {
         let treasury_total_bfc_supply = _treasury.total_bfc_supply;
 
@@ -464,6 +477,19 @@ module bfc_system::treasury {
             one_coin_bfc_required<BARS>(_treasury, treasury_total_bfc_supply);
 
         let get_treasury_balance = get_balance(_treasury);
+        if (total > get_treasury_balance) {
+            total - get_treasury_balance
+        } else {
+            0
+        }
+    }
+
+    public(package) fun bfc_required_v2(treasury: &Treasury): u64 {
+        let treasury_total_bfc_supply = treasury.total_bfc_supply;
+
+        let total = one_coin_bfc_required<BUSD>(treasury, treasury_total_bfc_supply);
+
+        let get_treasury_balance = get_balance(treasury);
         if (total > get_treasury_balance) {
             total - get_treasury_balance
         } else {

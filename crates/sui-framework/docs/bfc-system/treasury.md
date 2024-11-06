@@ -33,8 +33,10 @@ title: Module `0xc8::treasury`
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
 -  [Function `deposit`](#0xc8_treasury_deposit)
+-  [Function `deposit_v2`](#0xc8_treasury_deposit_v2)
 -  [Function `deposit_with_one_stablecoin`](#0xc8_treasury_deposit_with_one_stablecoin)
 -  [Function `bfc_required`](#0xc8_treasury_bfc_required)
+-  [Function `bfc_required_v2`](#0xc8_treasury_bfc_required_v2)
 -  [Function `bfc_required_with_one_stablecoin`](#0xc8_treasury_bfc_required_with_one_stablecoin)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_treasury_rebalance_with_one_stablecoin)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
@@ -1090,6 +1092,7 @@ Internal swap
 
 ## Function `deposit`
 
+deprecated for v2
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit">deposit</a>(_treasury: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_bfc: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
@@ -1110,6 +1113,38 @@ Internal swap
 
     <b>if</b> (!_treasury.init) {
         _treasury.init = <b>true</b>
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_deposit_v2"></a>
+
+## Function `deposit_v2`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit_v2">deposit_v2</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, coin_bfc: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_deposit_v2">deposit_v2</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, coin_bfc: Coin&lt;BFC&gt;) {
+    <b>let</b> min_amount = <a href="treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> input = <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(coin_bfc);
+    <b>let</b> input_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&input);
+    <b>assert</b>!(input_amount &gt;= min_amount, <a href="treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.bfc_balance, input);
+
+    <b>if</b> (!<a href="treasury.md#0xc8_treasury">treasury</a>.init) {
+        <a href="treasury.md#0xc8_treasury">treasury</a>.init = <b>true</b>
     }
 }
 </code></pre>
@@ -1153,7 +1188,7 @@ Internal swap
 
 ## Function `bfc_required`
 
-Rebalance
+Rebalance, deprecated for v2
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_bfc_required">bfc_required</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): u64
@@ -1187,6 +1222,39 @@ Rebalance
         <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BARS&gt;(_treasury, treasury_total_bfc_supply);
 
     <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
+    <b>if</b> (total &gt; get_treasury_balance) {
+        total - get_treasury_balance
+    } <b>else</b> {
+        0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_bfc_required_v2"></a>
+
+## Function `bfc_required_v2`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="treasury.md#0xc8_treasury">treasury</a>: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>): u64 {
+    <b>let</b> treasury_total_bfc_supply = <a href="treasury.md#0xc8_treasury">treasury</a>.total_bfc_supply;
+
+    <b>let</b> total = <a href="treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BUSD&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>, treasury_total_bfc_supply);
+
+    <b>let</b> get_treasury_balance = <a href="treasury.md#0xc8_treasury_get_balance">get_balance</a>(<a href="treasury.md#0xc8_treasury">treasury</a>);
     <b>if</b> (total &gt; get_treasury_balance) {
         total - get_treasury_balance
     } <b>else</b> {

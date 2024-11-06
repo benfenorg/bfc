@@ -4783,10 +4783,16 @@ swap_internal
 deposit
 	public(package) fun
 	0xc8::treasury
+deposit_v2
+	public(package) fun
+	0xc8::treasury
 deposit_with_one_stablecoin
 	public(package) fun
 	0xc8::treasury
 bfc_required
+	public(package) fun
+	0xc8::treasury
+bfc_required_v2
 	public(package) fun
 	0xc8::treasury
 bfc_required_with_one_stablecoin
@@ -4880,6 +4886,9 @@ TreasuryParameters
 	public struct
 	0xc8::bfc_system_state_inner
 BfcSystemParameters
+	public struct
+	0xc8::bfc_system_state_inner
+StakeCoinPoolInitEvent
 	public struct
 	0xc8::bfc_system_state_inner
 create_inner_state
