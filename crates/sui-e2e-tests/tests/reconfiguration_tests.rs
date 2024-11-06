@@ -43,7 +43,7 @@ use tokio::time::sleep;
 use tracing::{error, info};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag, object};
 use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
@@ -627,24 +627,10 @@ async fn sim_test_bfc_dao_create_action() -> Result<(), anyhow::Error> {
 }
 
 async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
-    let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
-    let data_option = SuiObjectDataOptions::new()
-        .with_type()
-        .with_owner()
-        .with_previous_transaction();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new(
-                Option::Some(filter),
-                Option::Some(data_option),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
+    info!("=========create_active_proposal=======");
 
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    info!("=========get_owned_objects_with_filter======= size:{}", objects.len());
 
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
@@ -653,6 +639,9 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    info!("=========create_stake_manager_key======={}", manager_obj.to_string());
+    sleep(Duration::from_secs(2)).await;
+
 
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
 
@@ -663,7 +652,11 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::new(json!("60000"))?,
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
+    sleep(Duration::from_secs(2)).await;
 
+
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = objects.first().unwrap().object().unwrap();
     let function = "set_voting_delay".to_string();
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
@@ -673,6 +666,12 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
     // now do the call
+
+    sleep(Duration::from_secs(2)).await;
+
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = objects.first().unwrap().object().unwrap();
+    let payment = objects.get(2).unwrap().object().unwrap();
     let function = "create_bfcdao_action".to_string();
     let propose_function = "propose".to_string();
     let arg = vec![
@@ -682,10 +681,15 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
 
+    info!("=========call create_bfcdao_action");
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
 
-    let coin_obj = objects.get(3).unwrap().object().unwrap();
+    sleep(Duration::from_secs(2)).await;
+
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = objects.first().unwrap().object().unwrap();
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
@@ -696,8 +700,8 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         SuiJsonValue::new(json!("hello world"))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
-
-
+    //do propose call
+    info!("=========call propose");
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), propose_function.clone(), arg).await?;
 
     Ok(())
@@ -778,26 +782,13 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
     let function = "create_stake_manager_key".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
 
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    let payment = objects.get(1).unwrap().object().unwrap();
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let payment = objects.get(2).unwrap().object().unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module, function, arg).await?;
+    info!("=========create_stake_manager_key=======");
     let objects = do_get_owned_objects_with_filter("0xc8::bfc_dao_manager::BFCDaoManageKey", http_client, address).await?;
     let manager_obj = objects.get(0).unwrap().object().unwrap();
     Ok(manager_obj.object_id)
@@ -1219,7 +1210,7 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     let start_version = 44u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(4500000)
+        .with_epoch_duration_ms(450000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -1246,13 +1237,17 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
-    let gas1 = bfc_objects.first().unwrap().object().unwrap();
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
-    create_active_proposal(http_client, gas1, address, &cluster).await?;
+    let _ = sleep(Duration::from_secs(2)).await;
+    create_active_proposal(http_client, gas, address, &cluster).await?;
+    let _ = sleep(Duration::from_secs(2)).await;
     // //create votingBfc
     // // now do the call
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
+
     case_vote(http_client, gas, address, &cluster).await?;
     let result = http_client.get_inner_dao_info().await?;
     let dao = result as DaoRPC;
@@ -1272,6 +1267,9 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
 
     let queue_proposal_action_function = "queue_proposal_action".to_string();
     let _ = sleep(Duration::from_secs(60)).await;
+
+    let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
+    let gas = bfc_objects.first().unwrap().object().unwrap();
 
     do_move_call(http_client, gas, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
 
