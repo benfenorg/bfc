@@ -1344,6 +1344,22 @@ Rebalance
     <b>let</b> <b>mut</b> bfc_in_vault = 0;
     <b>let</b> return_amount = <b>false</b>;
     bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BUSD&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;MGG&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BJPY&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BKRW&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BAUD&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BARS&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BBRL&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BCAD&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BEUR&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BGBP&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BIDR&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BINR&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BRUB&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BSAR&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BTRY&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BZAR&gt;(_treasury, _update, return_amount, _ctx);
+    bfc_in_vault = bfc_in_vault + <a href="treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BMXN&gt;(_treasury, _update, return_amount, _ctx);
     bfc_in_vault
 }
 </code></pre>

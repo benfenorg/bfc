@@ -541,6 +541,22 @@ module bfc_system::treasury {
         let mut bfc_in_vault = 0;
         let return_amount = false;
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BKRW>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BAUD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BARS>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BBRL>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BCAD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BEUR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BGBP>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BIDR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BINR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BRUB>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BSAR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BTRY>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BZAR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BMXN>(_treasury, _update, return_amount, _ctx);
         bfc_in_vault
     }
 
