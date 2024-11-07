@@ -66,7 +66,9 @@ module bfc_system::bfc_system_state_inner {
     const ERR_MINT_BUSD: u64 = 1005;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
-    const ERR_INVALID_PARAM: u64 = 1008;
+
+
+    const ERR_INVALID_PARAM: u64 = 1100;
 
     //spec module { pragma verify = false; }
 
