@@ -23,7 +23,7 @@ module bfc_system::bfc_system_tests {
     use sui::vec_map::{Self};
     use sui::vec_set;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
-    use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD};
+    use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD};
 
     use bfc_system::busd;
     use bfc_system::bjpy;
@@ -392,6 +392,23 @@ module bfc_system::bfc_system_tests {
         clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
 
         bfc_system::rebalance_with_one_stablecoin<BUSD>(&mut system_state, &clock, test_scenario::ctx(&mut scenario_val));
+
+        test_scenario::return_shared(system_state);
+        clock::destroy_for_testing(clock);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_REBALANCE_NOT_BUSD)]
+    fun test_rebalance_stablecoin_not_busd() {
+        let mut scenario_val = setup(BFC_AMOUNT);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        // Add 4 hours and 1 second
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+
+        bfc_system::rebalance_with_one_stablecoin<BJPY>(&mut system_state, &clock, test_scenario::ctx(&mut scenario_val));
 
         test_scenario::return_shared(system_state);
         clock::destroy_for_testing(clock);
