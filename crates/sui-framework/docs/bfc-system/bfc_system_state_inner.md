@@ -87,6 +87,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `verify_operation_capability`](#0xc8_bfc_system_state_inner_verify_operation_capability)
 -  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
+-  [Function `create_bfc_system_state_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_state_cap)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -503,6 +504,15 @@ title: Module `0xc8::bfc_system_state_inner`
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt; = [0];
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_DEFAULT_BFC_STATE_ADMIN_ADDRESSES"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_BFC_STATE_ADMIN_ADDRESSES">DEFAULT_BFC_STATE_ADMIN_ADDRESSES</a>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt; = [0];
 </code></pre>
 
 
@@ -2651,6 +2661,16 @@ deprecated
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BZAR&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BMXN&gt;(self);
 
+    <b>let</b> admin = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_BFC_STATE_ADMIN_ADDRESSES">DEFAULT_BFC_STATE_ADMIN_ADDRESSES</a>;
+    <b>let</b> count = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&admin);
+
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; count) {
+        <b>let</b> admin = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&admin, i);
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(_ctx, *admin);
+        i = i + 1;
+    };
+
     std::debug::print(&b"init_bfc_system_state_v2 end");
 }
 </code></pre>
@@ -2941,6 +2961,33 @@ deprecated
     _ctx: &<b>mut</b> TxContext
 ) {
     <a href="treasury.md#0xc8_treasury_increase_other_stablecoin_balance">treasury::increase_other_stablecoin_balance</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_create_bfc_system_state_cap"></a>
+
+## Function `create_bfc_system_state_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
+    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">BfcSystemStateCap</a> {
+        id : <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+    };
+    <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
 }
 </code></pre>
 

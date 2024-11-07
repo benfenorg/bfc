@@ -69,6 +69,9 @@ module bfc_system::bfc_system_state_inner {
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
     const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
 
+    const DEFAULT_BFC_STATE_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
+
+
     //spec module { pragma verify = false; }
 
     public struct BfcSystemStateInner has store {
@@ -535,7 +538,6 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
-    #[allow(lint(self_transfer))]
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
@@ -856,6 +858,16 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
 
+        let admin = DEFAULT_BFC_STATE_ADMIN_ADDRESSES;
+        let count = vector::length(&admin);
+
+        let mut i = 0;
+        while (i < count) {
+            let admin = vector::borrow(&admin, i);
+            create_bfc_system_state_cap(_ctx, *admin);
+            i = i + 1;
+        };
+
         std::debug::print(&b"init_bfc_system_state_v2 end");
     }
 
@@ -946,6 +958,13 @@ module bfc_system::bfc_system_state_inner {
         _ctx: &mut TxContext
     ) {
         treasury::increase_other_stablecoin_balance<StableCoinType>(&mut self.treasury, balance);
+    }
+
+    public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
+        let cap = BfcSystemStateCap {
+            id : object::new(ctx),
+        };
+        transfer::transfer(cap, recipient);
     }
 
 }
