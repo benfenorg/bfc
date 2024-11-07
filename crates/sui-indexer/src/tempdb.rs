@@ -10,8 +10,8 @@ use std::{
     process::{Child, Command},
     time::{Duration, Instant},
 };
-use clap::arg;
-use tempfile::tempdir;
+//use clap::arg;
+//use tempfile::tempdir;
 use tracing::trace;
 use url::Url;
 
@@ -339,7 +339,7 @@ fn initdb(dir: &Path) -> Result<()> {
     let output;
     if cfg!(target_os = "linux") {
 
-         let changeDir = Command::new("sudo")
+         let _change_dir = Command::new("sudo")
              .arg("chown")
                 .arg("postgres.postgres")
                 .arg(dir).output();
