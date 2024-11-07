@@ -98,6 +98,15 @@ module bfc_system::bfc_system_state_inner {
         oracle_address: Option<address>,
     }
 
+    public struct BfcSystemStateCap has key, store {
+        uid: UID,
+    }
+
+    public struct BfcSystemModifyCap has key, store {
+        uid: UID,
+        key: ascii::String,
+    }
+
     public struct TreasuryParameters has drop, copy {
         position_number: u32,
         tick_spacing: u32,
