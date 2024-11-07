@@ -2843,14 +2843,56 @@ pub async fn build_and_try_publish_test_package(
     );
     let transaction = to_sender_signed_transaction(data, sender_key);
 
+
+    let result = send_and_confirm_transaction(authority, transaction.clone())
+        .await;
     (
         transaction.clone(),
-        send_and_confirm_transaction(authority, transaction)
-            .await
-            .unwrap()
-            .1,
+        result.unwrap().1,
     )
 }
+
+pub async fn build_and_try_publish_test_package_with_error(
+    authority: &AuthorityState,
+    sender: &SuiAddress,
+    sender_key: &AccountKeyPair,
+    gas_object_id: &ObjectID,
+    test_dir: &str,
+    gas_budget: u64,
+    gas_price: u64,
+    with_unpublished_deps: bool,
+) -> (Transaction, Result<(CertifiedTransaction, SignedTransactionEffects), SuiError>) {
+    move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.extend(["src", "unit_tests", "data", test_dir]);
+
+    let compiled_package = BuildConfig::new_for_testing().build(&path).unwrap();
+    let all_module_bytes = compiled_package.get_package_bytes(with_unpublished_deps);
+    let dependencies = compiled_package.get_dependency_storage_package_ids();
+
+    let gas_object = authority.get_object(gas_object_id).await.unwrap();
+    let gas_object_ref = gas_object.unwrap().compute_object_reference();
+
+    let data = TransactionData::new_module(
+        *sender,
+        gas_object_ref,
+        all_module_bytes,
+        dependencies,
+        gas_budget,
+        gas_price,
+    );
+    let transaction = to_sender_signed_transaction(data, sender_key);
+
+
+    let result = send_and_confirm_transaction(authority, transaction.clone())
+        .await;
+
+    (
+        transaction.clone(),
+        result,
+    )
+}
+
 
 pub async fn build_and_publish_test_package(
     authority: &AuthorityState,

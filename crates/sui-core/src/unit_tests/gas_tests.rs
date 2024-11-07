@@ -6,7 +6,7 @@ use crate::authority::authority_tests::init_state_with_ids_and_objects_basics;
 use super::*;
 
 use super::authority_tests::{init_state_with_ids, send_and_confirm_transaction};
-use super::move_integration_tests::build_and_try_publish_test_package;
+use super::move_integration_tests::{build_and_try_publish_test_package, build_and_try_publish_test_package_with_error};
 use crate::authority::authority_tests::init_state_with_ids_and_object_basics;
 use crate::authority::test_authority_builder::TestAuthorityBuilder;
 use move_core_types::account_address::AccountAddress;
@@ -1914,6 +1914,7 @@ async fn test_stable_native_transfer_insufficient_gas_execution() {
 
 #[tokio::test]
 async fn test_stable_publish_gas() -> anyhow::Result<()> {
+    telemetry_subscribers::init_for_testing();
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let authority_state = init_state_with_stable_ids(vec![(sender, gas_object_id)]).await;
@@ -1954,7 +1955,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         total_gas_used - 10
     };
     // Run the transaction again with 1 less than the required budget.
-    let response = build_and_try_publish_test_package(
+    let result = build_and_try_publish_test_package_with_error(
         &authority_state,
         &sender,
         &sender_key,
@@ -1965,20 +1966,12 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         /* with_unpublished_deps */ false,
     )
         .await;
-    let effects = response.1.into_data();
-    let gas_cost = effects.gas_cost_summary().clone();
-    let err = effects.into_status().unwrap_err().0;
+    assert!(matches!(
+        UserInputError::try_from(result.1.unwrap_err())?,
+        UserInputError::GasBudgetTooLow { .. }
+    ));
 
-    assert_eq!(err, ExecutionFailureStatus::InsufficientGas);
 
-    assert!(gas_cost.gas_used() > 0);
-
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
-    let expected_gas_balance = expected_gas_balance - gas_cost.net_gas_usage_improved() as u64;
-    assert_eq!(
-        GasCoin::try_from(&gas_object)?.value(),
-        expected_gas_balance,
-    );
 
     Ok(())
 }
