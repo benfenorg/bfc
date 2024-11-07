@@ -212,19 +212,17 @@ module bfc_system::bfc_system {
 
     /// deprecated
     public fun load_bfc_system_state(id: &UID): &BfcSystemStateInner {
-        // todo always have error when upgraded. need deprecated.
         dynamic_field::borrow(id, BFC_SYSTEM_STATE_VERSION_V1)
     }
     /// deprecated
     public fun load_bfc_system_state_mut(id: &mut UID): &mut BfcSystemStateInner {
-        // todo always have error when upgraded. need deprecated.
         dynamic_field::borrow_mut(id, BFC_SYSTEM_STATE_VERSION_V1)
     }
 
     fun load_system_state_mut_no_ctx(
-        _self: &mut BfcSystemState,
+        self: &mut BfcSystemState,
     ): (&mut BfcSystemStateInnerV2) {
-        dynamic_field::borrow_mut(&mut _self.id, BFC_SYSTEM_STATE_VERSION_V2)
+        dynamic_field::borrow_mut(&mut self.id, BFC_SYSTEM_STATE_VERSION_V2)
     }
 
     fun load_system_state_mut(
