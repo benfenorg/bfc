@@ -514,7 +514,6 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id: &UID): &BfcSystemStateInner {
-    // todo always have error when upgraded. need deprecated.
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
 }
 </code></pre>
@@ -540,7 +539,6 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> UID): &<b>mut</b> BfcSystemStateInner {
-    // todo always have error when upgraded. need deprecated.
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
 }
 </code></pre>
@@ -555,7 +553,7 @@ deprecated
 
 
 
-<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>
 </code></pre>
 
 
@@ -565,9 +563,9 @@ deprecated
 
 
 <pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(
-    _self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
 ): (&<b>mut</b> BfcSystemStateInnerV2) {
-    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> _self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V2">BFC_SYSTEM_STATE_VERSION_V2</a>)
+    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V2">BFC_SYSTEM_STATE_VERSION_V2</a>)
 }
 </code></pre>
 

@@ -46,6 +46,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use std::type_name;
+    use bfc_system::auth_utils;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
@@ -66,7 +67,7 @@ module bfc_system::bfc_system_state_inner {
     const ERR_MINT_BUSD: u64 = 1005;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
-
+    const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
 
     //spec module { pragma verify = false; }
 
@@ -455,9 +456,10 @@ module bfc_system::bfc_system_state_inner {
         let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>(
         ) || type_name::get<StableCoinType>() == type_name::get<USDC>();
         if (usdc_usdt_coint) {
+            assert!(auth_utils::has_mint_usdt_usdc(key), ERR_MINT_OPERATION_UNAUTHORIZED);
             return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
         };
-
+        assert!(auth_utils::has_mint_other_stablecoin(key), ERR_MINT_OPERATION_UNAUTHORIZED);
         let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
             &mut inner_state.treasury,
             treasury::get_vault_key<StableCoinType>()
