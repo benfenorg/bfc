@@ -4891,6 +4891,12 @@ BfcSystemStateInner
 BfcSystemStateInnerV2
 	public struct
 	0xc8::bfc_system_state_inner
+BfcSystemStateCap
+	public struct
+	0xc8::bfc_system_state_inner
+BfcSystemModifyCap
+	public struct
+	0xc8::bfc_system_state_inner
 TreasuryParameters
 	public struct
 	0xc8::bfc_system_state_inner
@@ -4979,6 +4985,9 @@ request_gas_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
 mint_stable
+	public(package) fun
+	0xc8::bfc_system_state_inner
+mint_stable_V1
 	public(package) fun
 	0xc8::bfc_system_state_inner
 exchange_stable_to_busd
@@ -5245,7 +5254,13 @@ mint_stable_entry
 mint_stable
 	public fun
 	0xc8::bfc_system
+mint_stable_V1
+	public fun
+	0xc8::bfc_system
 exchange_stable_to_busd
+	public fun
+	0xc8::bfc_system
+exchange_stable_to_busd_V1
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_stable
