@@ -14853,6 +14853,7 @@ dependencies = [
  "tap",
  "thiserror",
  "tokio",
+ "tracing",
  "url",
 ]
 

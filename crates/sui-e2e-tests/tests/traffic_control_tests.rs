@@ -13,6 +13,7 @@ use jsonrpsee::{
 use std::fs::File;
 use std::num::NonZeroUsize;
 use std::time::Duration;
+use tracing::info;
 use sui_core::traffic_controller::{
     nodefw_test_server::NodeFwTestServer, TrafficController, TrafficSim,
 };
@@ -325,6 +326,7 @@ async fn test_fullnode_traffic_control_spam_blocked() -> Result<(), anyhow::Erro
 
 #[tokio::test]
 async fn test_fullnode_traffic_control_error_blocked() -> Result<(), anyhow::Error> {
+    //telemetry_subscribers::init_for_testing();
     let txn_count = 5;
     let policy_config = PolicyConfig {
         connection_blocklist_ttl_sec: 3,
@@ -361,7 +363,7 @@ async fn test_fullnode_traffic_control_error_blocked() -> Result<(), anyhow::Err
             ExecuteTransactionRequestType::WaitForLocalExecution
         ];
         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("sui_executeTransactionBlock", params.clone())
+            .request("bfc_executeTransactionBlock", params.clone())
             .await;
         if let Err(err) = response {
             if err.to_string().contains("Too many requests") {

@@ -9911,7 +9911,7 @@ async fn test_stable_gas_smashing() {
         }
         let object_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
         let (authority_state, pkg_ref) = init_state_with_objects_and_object_basics(gas_coins).await;
-        let effects = create_move_object_with_gas_coins(
+        let sui_result_effects = create_move_object_with_gas_coins(
             &pkg_ref.0,
             &authority_state,
             &object_ids,
@@ -9919,8 +9919,12 @@ async fn test_stable_gas_smashing() {
             &sender,
             &sender_key,
         )
-            .await
-            .unwrap();
+            .await;
+
+        if !sui_result_effects.is_ok() {
+            info!("create_obj failed: {:?}", sui_result_effects);
+        }
+        let effects = sui_result_effects.unwrap();
         (authority_state, effects)
     }
 
