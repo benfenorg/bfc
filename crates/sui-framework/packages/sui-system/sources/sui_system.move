@@ -631,7 +631,7 @@ module sui_system::sui_system {
             ctx,
         );
 
-        bfc_system::advance_epoch(&mut wrapper.bfc_system_id);
+        bfc_system::reset_daily_used_quantity(&mut wrapper.bfc_system_id);
 
         storage_rebate
     }
@@ -706,7 +706,7 @@ module sui_system::sui_system {
     #[allow(unused_function)]
     public fun request_add_operation_capability(
         self: &mut SuiSystemState,
-        key: ascii::String,
+        key: vector<u8>,
         addr: address,
         ctx: &TxContext,
     ) {
@@ -718,18 +718,18 @@ module sui_system::sui_system {
     #[allow(unused_function)]
     public fun request_remove_operation_capability(
         self: &mut SuiSystemState,
-        key: ascii::String,
+        key: vector<u8>,
         addr: address,
         ctx: &TxContext,
     ) {
         let inner = load_system_state(self);
         assert!(inner.is_active_validator_by_sui_address(ctx.sender()), ERR_REQUEST_REMOVE_OPERATION_CAPABILITY);
-        bfc_system::remove_operation_capability(&mut self.bfc_system_id, &key, addr)
+        bfc_system::remove_operation_capability(&mut self.bfc_system_id, key, addr)
     }
     #[allow(unused_function)]
     public fun request_set_operation_capability(
         self: &mut SuiSystemState,
-        key: ascii::String,
+        key: vector<u8>,
         addr_set: VecSet<address>,
         ctx: &TxContext,
     ) {

@@ -62,8 +62,6 @@ title: Module `0xc8::usdt`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="usdt.md#0xc8_usdt_new">new</a>(ctx: &<b>mut</b> TxContext): Supply&lt;<a href="usdt.md#0xc8_usdt_USDT">USDT</a>&gt; {
-    // <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, ENotSystemAddress);
-    // <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, EAlreadyMinted);
     <b>let</b> (cap, metadata) = <a href="../sui-framework/coin.md#0x2_coin_create_currency">coin::create_currency</a>(
         <a href="usdt.md#0xc8_usdt_USDT">USDT</a> {},
         9,

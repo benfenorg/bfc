@@ -4783,10 +4783,16 @@ swap_internal
 deposit
 	public(package) fun
 	0xc8::treasury
+deposit_v2
+	public(package) fun
+	0xc8::treasury
 deposit_with_one_stablecoin
 	public(package) fun
 	0xc8::treasury
 bfc_required
+	public(package) fun
+	0xc8::treasury
+bfc_required_v2
 	public(package) fun
 	0xc8::treasury
 bfc_required_with_one_stablecoin
@@ -4852,6 +4858,9 @@ WithdrawEvent
 DepositEvent
 	public struct
 	0xc8::treasury_pool
+TransferBalanceEvent
+	public struct
+	0xc8::treasury_pool
 create_treasury_pool
 	public(package) fun
 	0xc8::treasury_pool
@@ -4877,6 +4886,9 @@ TreasuryParameters
 	public struct
 	0xc8::bfc_system_state_inner
 BfcSystemParameters
+	public struct
+	0xc8::bfc_system_state_inner
+StakeCoinPoolInitEvent
 	public struct
 	0xc8::bfc_system_state_inner
 create_inner_state
@@ -5065,7 +5077,7 @@ v1_to_v2
 get_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
-reset_daily_use_out_limit
+reset_daily_used_quantity
 	public(package) fun
 	0xc8::bfc_system_state_inner
 set_daily_out_limit
@@ -5077,7 +5089,7 @@ init_bfc_system_state_v2
 transfer_bfc_from_vault_to_treasury_pool
 	fun
 	0xc8::bfc_system_state_inner
-add_coin_2_stake_pool
+add_coin_to_stake_pool
 	fun
 	0xc8::bfc_system_state_inner
 get_operation_capability
@@ -5233,8 +5245,11 @@ rebalance
 rebalance_with_one_stablecoin
 	public fun
 	0xc8::bfc_system
-advance_epoch
+reset_daily_used_quantity
 	public fun
+	0xc8::bfc_system
+mint_stable_entry
+	public entry fun
 	0xc8::bfc_system
 mint_stable
 	public fun

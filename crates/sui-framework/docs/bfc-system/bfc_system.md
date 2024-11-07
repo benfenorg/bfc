@@ -46,7 +46,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
--  [Function `advance_epoch`](#0xc8_bfc_system_advance_epoch)
+-  [Function `reset_daily_used_quantity`](#0xc8_bfc_system_reset_daily_used_quantity)
+-  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_exchange_busd_to_stable)
@@ -549,7 +550,6 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state">load_bfc_system_state</a>(id: &UID): &BfcSystemStateInner {
-    // todo always have error when upgraded. need deprecated.
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow">dynamic_field::borrow</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
 }
 </code></pre>
@@ -575,7 +575,6 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_bfc_system_state_mut">load_bfc_system_state_mut</a>(id: &<b>mut</b> UID): &<b>mut</b> BfcSystemStateInner {
-    // todo always have error when upgraded. need deprecated.
     <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V1">BFC_SYSTEM_STATE_VERSION_V1</a>)
 }
 </code></pre>
@@ -590,7 +589,7 @@ deprecated
 
 
 
-<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(_self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>
+<pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>): &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>
 </code></pre>
 
 
@@ -600,9 +599,9 @@ deprecated
 
 
 <pre><code><b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_no_ctx">load_system_state_mut_no_ctx</a>(
-    _self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
 ): (&<b>mut</b> BfcSystemStateInnerV2) {
-    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> _self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V2">BFC_SYSTEM_STATE_VERSION_V2</a>)
+    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_borrow_mut">dynamic_field::borrow_mut</a>(&<b>mut</b> self.id, <a href="bfc_system.md#0xc8_bfc_system_BFC_SYSTEM_STATE_VERSION_V2">BFC_SYSTEM_STATE_VERSION_V2</a>)
 }
 </code></pre>
 
@@ -758,7 +757,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;
 </code></pre>
 
 
@@ -767,9 +766,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &UID, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): VecSet&lt;<b>address</b>&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): VecSet&lt;<b>address</b>&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability_by_key">bfc_system_state_inner::get_operation_capability_by_key</a>(inner, key)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability_by_key">bfc_system_state_inner::get_operation_capability_by_key</a>(inner, &std::ascii::string(key))
 }
 </code></pre>
 
@@ -783,7 +782,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>)
 </code></pre>
 
 
@@ -792,9 +791,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, key, <b>address</b>)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
 
@@ -817,7 +816,12 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> TxContext,) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    <b>address</b>: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>let</b> (inner, _) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
 }
@@ -833,7 +837,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>)
 </code></pre>
 
 
@@ -842,9 +846,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> UID, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <b>address</b>) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, key, <b>address</b>)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, &std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
 
@@ -858,7 +862,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
 </code></pre>
 
 
@@ -867,9 +871,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addresses: VecSet&lt;<b>address</b>&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(id: &<b>mut</b> UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: VecSet&lt;<b>address</b>&gt;) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, key, addresses)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, std::ascii::string(key), addresses)
 }
 </code></pre>
 
@@ -942,9 +946,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>( wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,proposal_id: u64){
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_propose">remove_propose</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: &BFCDaoManageKey, proposal_id: u64) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">bfc_system_state_inner::remove_proposal</a>(system_state,key,proposal_id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">bfc_system_state_inner::remove_proposal</a>(system_state, key, proposal_id);
 }
 </code></pre>
 
@@ -967,9 +971,9 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>( wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,key: &BFCDaoManageKey,action_id: u64){
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_action">remove_action</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, key: &BFCDaoManageKey, action_id: u64) {
     <b>let</b> system_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(&<b>mut</b> wrapper.id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">bfc_system_state_inner::remove_action</a>(system_state,key,action_id);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">bfc_system_state_inner::remove_action</a>(system_state, key, action_id);
 }
 </code></pre>
 
@@ -1032,8 +1036,8 @@ deprecated
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_propose">bfc_system_state_inner::propose</a>(system_state, version_id, payment, action_id, action_delay, description, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_propose">bfc_system_state_inner::propose</a>(system_state, version_id, payment, action_id, action_delay, description, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1062,8 +1066,8 @@ deprecated
     actionName: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfcdao_action">bfc_system_state_inner::create_bfcdao_action</a>(system_state, payment, actionName,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1224,8 +1228,8 @@ deprecated
                              voting_bfc: VotingBfc,
                                 <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
                              ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_voting">bfc_system_state_inner::withdraw_voting</a>(system_state, voting_bfc,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_voting">bfc_system_state_inner::withdraw_voting</a>(system_state, voting_bfc,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1252,8 +1256,8 @@ deprecated
                              <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
                                 <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
                              ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">bfc_system_state_inner::create_voting_bfc</a>(system_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">bfc_system_state_inner::create_voting_bfc</a>(system_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>,<a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1268,7 +1272,7 @@ deprecated
 X treasury rebalance
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(_wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _clock: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1278,12 +1282,11 @@ X treasury rebalance
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
-    ctx: &<b>mut</b> TxContext,
+    _wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _clock: &Clock,
+    _ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance">bfc_system_state_inner::rebalance</a>(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+
 }
 </code></pre>
 
@@ -1311,8 +1314,8 @@ X treasury rebalance
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin">bfc_system_state_inner::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin">bfc_system_state_inner::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -1320,13 +1323,13 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_advance_epoch"></a>
+<a name="0xc8_bfc_system_reset_daily_used_quantity"></a>
 
-## Function `advance_epoch`
+## Function `reset_daily_used_quantity`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_advance_epoch">advance_epoch</a>(bfc_system_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">reset_daily_used_quantity</a>(bfc_system_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>)
 </code></pre>
 
 
@@ -1335,9 +1338,40 @@ X treasury rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_advance_epoch">advance_epoch</a>(bfc_system_id: &<b>mut</b> UID) {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">reset_daily_used_quantity</a>(bfc_system_id: &<b>mut</b> UID) {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(bfc_system_id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_use_out_limit">bfc_system_state_inner::reset_daily_use_out_limit</a>(inner);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">bfc_system_state_inner::reset_daily_used_quantity</a>(inner);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_mint_stable_entry"></a>
+
+## Function `mint_stable_entry`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_entry">mint_stable_entry</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_entry">mint_stable_entry</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    amount: u64,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &std::ascii::string(key), _ctx);
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>
 
@@ -1398,7 +1432,12 @@ X treasury rebalance
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &std::ascii::string(key), _ctx);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(
+        inner_state,
+        amount,
+        &std::ascii::string(key),
+        _ctx
+    );
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">bfc_system_state_inner::exchange_stable_to_busd</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, recipient, _ctx);
 }
 </code></pre>
@@ -1461,8 +1500,8 @@ X treasury  swap bfc to stablecoin
     deadline: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_bfc_to_stablecoin">bfc_system_state_inner::swap_bfc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, native_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_bfc_to_stablecoin">bfc_system_state_inner::swap_bfc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, native_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, ctx);
 }
 </code></pre>
 
@@ -1495,8 +1534,8 @@ X treasury  swap stablecoin to bfc
     deadline: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (system_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc">bfc_system_state_inner::swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(system_state, stable_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, _ctx);
+    <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc">bfc_system_state_inner::swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(system_state, stable_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, ctx);
 }
 </code></pre>
 
@@ -1845,7 +1884,7 @@ X treasury  swap stablecoin to bfc
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_inner">deposit_to_treasury_inner</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, bfc_balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_inner">deposit_to_treasury_inner</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, bfc_balance: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1854,9 +1893,9 @@ X treasury  swap stablecoin to bfc
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_inner">deposit_to_treasury_inner</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, bfc_balance: Balance&lt;BFC&gt;, _ctx: &<b>mut</b> TxContext,
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_inner">deposit_to_treasury_inner</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, bfc_balance: Balance&lt;BFC&gt;, ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
     <b>let</b> <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>= <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury">bfc_system_state_inner::deposit_to_treasury</a>(inner_state, <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>)
 }
@@ -1907,8 +1946,8 @@ X treasury  swap stablecoin to bfc
 
 
 <pre><code><b>public</b>  <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_deposit_to_treasury_pool_no_entry">deposit_to_treasury_pool_no_entry</a>(self: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, bfc_balance: Balance&lt;BFC&gt;, ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
-    <b>let</b> <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>= <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
+    <b>let</b> <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>= <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(bfc_balance, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_deposit_to_treasury_pool">bfc_system_state_inner::deposit_to_treasury_pool</a>(inner_state, <a href="../sui-framework/bfc.md#0x2_bfc">bfc</a>)
 }
 </code></pre>
@@ -1998,8 +2037,8 @@ X treasury  swap stablecoin to bfc
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
 )  {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_cast_vote">bfc_system_state_inner::cast_vote</a>(inner_state, proposal, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, agreeInt, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_cast_vote">bfc_system_state_inner::cast_vote</a>(inner_state, proposal, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, agreeInt, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -2030,8 +2069,8 @@ X treasury  swap stablecoin to bfc
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_change_vote">bfc_system_state_inner::change_vote</a>(inner_state, my_vote, proposal, agree, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_change_vote">bfc_system_state_inner::change_vote</a>(inner_state, my_vote, proposal, agree, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 
@@ -2092,8 +2131,8 @@ X treasury  swap stablecoin to bfc
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_revoke_vote">bfc_system_state_inner::revoke_vote</a>(inner_state, proposal, my_vote, voting_power, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, _ctx);
+    <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(self, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_revoke_vote">bfc_system_state_inner::revoke_vote</a>(inner_state, proposal, my_vote, voting_power, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
 

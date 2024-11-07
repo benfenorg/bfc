@@ -1,6 +1,6 @@
 #[allow(unused_const)]
 module bfc_system::treasury {
-    use std::ascii::{String};
+    use std::ascii::String;
     use std::type_name;
 
     use sui::bag::{Self, Bag};
@@ -140,28 +140,34 @@ module bfc_system::treasury {
         )
     }
 
-    public(package) fun mint_stable<StableCoinType>(_treasury: &mut Treasury,
-                                            _amount: u64,
-                                           _ctx: &mut TxContext) : Coin<StableCoinType> {
+    public(package) fun mint_stable<StableCoinType>(treasury: &mut Treasury,
+                                                    amount: u64,
+                                                    ctx: &mut TxContext): Coin<StableCoinType> {
         let key = get_vault_key<StableCoinType>();
-        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
-        let balance = balance::increase_supply(supply, _amount);
-        let coin = sui::coin::from_balance(balance, _ctx);
+        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut treasury.supplies, key);
+        let balance = balance::increase_supply(supply, amount);
+        let coin = sui::coin::from_balance(balance, ctx);
 
         coin
     }
-
-    public(package) fun exchange_busd_to_stable<StableCoinType>(_treasury: &mut Treasury,
-                                                    coin: Coin<StableCoinType>,
-                                                    _ctx: &mut TxContext) {
+    #[test_only]
+    public fun get_coin_a_amount<StableCoinType>(_treasury: &Treasury): u64 {
         let key = get_vault_key<StableCoinType>();
-        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut _treasury.supplies, key);
+        let vault = borrow_vault<StableCoinType>(_treasury, key);
+        let (a, _) = vault::balances(vault);
+        a
+    }
+
+    public(package) fun exchange_busd_to_stable<StableCoinType>(treasury: &mut Treasury,
+                                                                coin: Coin<StableCoinType>) {
+        let key = get_vault_key<StableCoinType>();
+        let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut treasury.supplies, key);
         balance::decrease_supply(supply, coin::into_balance(coin));
     }
 
-    public(package) fun add_supply<StableCoinType>(_treasury: &mut Treasury, supply: Supply<StableCoinType>) {
+    public(package) fun add_supply<StableCoinType>(treasury: &mut Treasury, supply: Supply<StableCoinType>) {
         let key = get_vault_key<StableCoinType>();
-        bag::add(&mut _treasury.supplies, key, supply);
+        bag::add(&mut treasury.supplies, key, supply);
     }
 
     public(package) fun vault_set_pause<StableCoinType>(_: &TreasuryPauseCap, _treasury: &mut Treasury, _pause: bool) {
@@ -412,6 +418,7 @@ module bfc_system::treasury {
         )
     }
 
+    /// deprecated for v2
     public(package) fun deposit(_treasury: &mut Treasury, _coin_bfc: Coin<BFC>) {
         let min_amount = bfc_required(_treasury);
         let input = coin::into_balance(_coin_bfc);
@@ -421,6 +428,18 @@ module bfc_system::treasury {
 
         if (!_treasury.init) {
             _treasury.init = true
+        }
+    }
+
+    public(package) fun deposit_v2(treasury: &mut Treasury, coin_bfc: Coin<BFC>) {
+        let min_amount = bfc_required_v2(treasury);
+        let input = coin::into_balance(coin_bfc);
+        let input_amount = balance::value(&input);
+        assert!(input_amount >= min_amount, ERR_INSUFFICIENT);
+        balance::join(&mut treasury.bfc_balance, input);
+
+        if (!treasury.init) {
+            treasury.init = true
         }
     }
 
@@ -435,7 +454,7 @@ module bfc_system::treasury {
         balance::join(&mut _treasury.bfc_balance, input);
     }
 
-    /// Rebalance
+    /// Rebalance, deprecated for v2
     public(package) fun bfc_required(_treasury: &Treasury): u64 {
         let treasury_total_bfc_supply = _treasury.total_bfc_supply;
 
@@ -458,6 +477,19 @@ module bfc_system::treasury {
             one_coin_bfc_required<BARS>(_treasury, treasury_total_bfc_supply);
 
         let get_treasury_balance = get_balance(_treasury);
+        if (total > get_treasury_balance) {
+            total - get_treasury_balance
+        } else {
+            0
+        }
+    }
+
+    public(package) fun bfc_required_v2(treasury: &Treasury): u64 {
+        let treasury_total_bfc_supply = treasury.total_bfc_supply;
+
+        let total = one_coin_bfc_required<BUSD>(treasury, treasury_total_bfc_supply);
+
+        let get_treasury_balance = get_balance(treasury);
         if (total > get_treasury_balance) {
             total - get_treasury_balance
         } else {
@@ -535,6 +567,22 @@ module bfc_system::treasury {
         let mut bfc_in_vault = 0;
         let return_amount = false;
         bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BUSD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<MGG>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BJPY>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BKRW>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BAUD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BARS>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BBRL>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BCAD>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BEUR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BGBP>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BIDR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BINR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BRUB>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BSAR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BTRY>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BZAR>(_treasury, _update, return_amount, _ctx);
+        bfc_in_vault = bfc_in_vault + one_coin_rebalance_internal<BMXN>(_treasury, _update, return_amount, _ctx);
         bfc_in_vault
     }
 
@@ -563,9 +611,12 @@ module bfc_system::treasury {
     }
 
     public(package) fun get_busd_supply_mut(
-        _self: &mut Treasury
+        self: &mut Treasury
     ): &mut Supply<BUSD> {
-        let supply = bag::borrow_mut<String, Supply<BUSD>>(&mut _self.supplies, std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+        let supply = bag::borrow_mut<String, Supply<BUSD>>(
+            &mut self.supplies,
+            std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD")
+        );
         supply
     }
 
@@ -638,20 +689,20 @@ module bfc_system::treasury {
     }
 
     public(package) fun withdraw_balance(
-        _treasury: &mut Treasury,
+        treasury: &mut Treasury,
         amount: u64,
     ): Balance<BFC> {
-        assert!(balance::value(&_treasury.bfc_balance) >= amount, ERR_INSUFFICIENT);
-        balance::split(&mut _treasury.bfc_balance, amount)
+        assert!(balance::value(&treasury.bfc_balance) >= amount, ERR_INSUFFICIENT);
+        balance::split(&mut treasury.bfc_balance, amount)
     }
 
     public(package) fun increase_other_stablecoin_balance<StableCoinType>(
-        _treasury: &mut Treasury,
+        treasury: &mut Treasury,
         balance: Balance<StableCoinType>,
     ): u64 {
-        assert!(std::type_name::get<StableCoinType>() != std::type_name::get<BUSD>(),ERR_UNSUPPORTED_BUSD);
+        assert!(std::type_name::get<StableCoinType>() != std::type_name::get<BUSD>(), ERR_UNSUPPORTED_BUSD);
         let vault_key = get_vault_key<StableCoinType>();
-        let mut_vault = borrow_mut_vault<StableCoinType>(_treasury, vault_key);
+        let mut_vault = borrow_mut_vault<StableCoinType>(treasury, vault_key);
         vault::increase_coin_a(mut_vault, balance)
     }
 }

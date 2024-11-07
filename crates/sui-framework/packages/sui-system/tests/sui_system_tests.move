@@ -1111,7 +1111,7 @@ module sui_system::sui_system_tests {
 
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let ctx = test_scenario::ctx(&mut scenario_val);
-        sui_system::request_add_operation_capability(&mut system_state, ascii::string(b"key"), @0x0, ctx);
+        sui_system::request_add_operation_capability(&mut system_state, b"key", @0x0, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
@@ -1126,7 +1126,7 @@ module sui_system::sui_system_tests {
 
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let ctx = test_scenario::ctx(&mut scenario_val);
-        sui_system::request_remove_operation_capability(&mut system_state, ascii::string(b"key"), @0x0, ctx);
+        sui_system::request_remove_operation_capability(&mut system_state, b"key", @0x0, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
@@ -1142,7 +1142,7 @@ module sui_system::sui_system_tests {
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
         let ctx = test_scenario::ctx(&mut scenario_val);
         let v = vec_set::singleton(@0x0);
-        sui_system::request_set_operation_capability(&mut system_state, ascii::string(b"key"), v, ctx);
+        sui_system::request_set_operation_capability(&mut system_state, b"key", v, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
