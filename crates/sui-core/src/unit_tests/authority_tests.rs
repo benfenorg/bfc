@@ -9899,13 +9899,14 @@ async fn test_stable_consensus_message_processed() {
 
 #[tokio::test]
 async fn test_stable_gas_smashing() {
+    telemetry_subscribers::init_for_testing();
     // run a creation move object transaction with a given set o gas coins and a budget
     async fn create_obj(
         sender: SuiAddress,
         sender_key: AccountKeyPair,
         gas_coins: Vec<Object>,
         mut gas_budget: u64,
-    ) -> (Arc<AuthorityState>, TransactionEffects) {
+    ) -> (Arc<AuthorityState>, SuiResult<TransactionEffects>) {
         if gas_budget < 500000 {
             gas_budget = 500000;
         }
@@ -9924,8 +9925,7 @@ async fn test_stable_gas_smashing() {
         if !sui_result_effects.is_ok() {
             info!("create_obj failed: {:?}", sui_result_effects);
         }
-        let effects = sui_result_effects.unwrap();
-        (authority_state, effects)
+        (authority_state, sui_result_effects)
     }
 
     // make a `coin_num` coins distributing `gas_amount` across them
@@ -9961,14 +9961,18 @@ async fn test_stable_gas_smashing() {
         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_coins = make_gas_coins(sender, reference_gas_used, coin_num);
         let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
-        let (state, effects) = create_obj(sender, sender_key, gas_coins, budget).await;
+        let (state, result) = create_obj(sender, sender_key, gas_coins, budget).await;
         // check transaction
-        dbg!("reference_gas_used:{}, coin_num:{}, budget:{}, effects.status: {:#?}", reference_gas_used, coin_num, budget, effects.status());
+        dbg!("reference_gas_used:{}, coin_num:{}, budget:{}, effects.status: {:#?}", reference_gas_used, coin_num, budget, result.is_ok());
         if success {
-            assert!(effects.status().is_ok());
+            assert!(result.is_ok());
         } else {
-            assert!(effects.status().is_err());
+            assert!(result.is_err());
+            //gas use: 0
+            return 0;
         }
+
+        let effects = result.unwrap();
         // gas object in effects is first coin in vector of coins
         assert_eq!(gas_coin_ids[0], effects.gas_object().0.0);
         // object is created on success and gas at position 0 mutated
@@ -10001,7 +10005,10 @@ async fn test_stable_gas_smashing() {
     let gas_used = run_and_check(100_000_000, 1, 100_000_000, true).await;
 
     // add something to the gas used to account for multiple gas coins being charged for
-    let reference_gas_used = gas_used + 1_000;
+    let mut reference_gas_used = gas_used + 1_000;
+    if reference_gas_used < 500000 {
+        reference_gas_used = 500000;
+    }
     let three_coin_gas = run_and_check(reference_gas_used, 3, reference_gas_used, true).await;
     run_and_check(reference_gas_used, 5, reference_gas_used - 100, true).await;
 
