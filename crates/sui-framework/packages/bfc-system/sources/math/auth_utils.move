@@ -37,13 +37,7 @@ module bfc_system::auth_utils {
         assert!(!has_mint_other_stablecoin(&s3), 2);
     }
     
-    /// 提取 ASCII 字符串的子串
-    /// 参数：
-    /// - s: 输入的 ASCII 字符串
-    /// - start: 子串的起始位置（包含）
-    /// - end: 子串的结束位置（不包含）
-    /// 返回：
-    /// - 子串，如果起始位置或结束位置无效，则返回错误
+    
     public fun substring(s: String, start: u64, end: u64): std::string::String {
         let str_std = std::string::from_ascii(s);
         if (start >= end || end > std::string::length(&str_std)) {

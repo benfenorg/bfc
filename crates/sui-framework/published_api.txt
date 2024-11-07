@@ -3259,6 +3259,15 @@ mul_shl
 full_mul
 	public fun
 	0xc8::full_math_u64
+has_mint_usdt_usdc
+	public fun
+	0xc8::auth_utils
+has_mint_other_stablecoin
+	public fun
+	0xc8::auth_utils
+substring
+	public fun
+	0xc8::auth_utils
 BARS
 	public struct
 	0xc8::bars

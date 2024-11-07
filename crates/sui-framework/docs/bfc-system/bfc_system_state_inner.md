@@ -100,6 +100,7 @@ title: Module `0xc8::bfc_system_state_inner`
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="../sui-framework/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
+<b>use</b> <a href="auth_utils.md#0xc8_auth_utils">0xc8::auth_utils</a>;
 <b>use</b> <a href="bars.md#0xc8_bars">0xc8::bars</a>;
 <b>use</b> <a href="baud.md#0xc8_baud">0xc8::baud</a>;
 <b>use</b> <a href="bbrl.md#0xc8_bbrl">0xc8::bbrl</a>;
@@ -513,6 +514,15 @@ Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>: u64 = 1005;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>: u64 = 1008;
 </code></pre>
 
 
@@ -1428,9 +1438,10 @@ deprecated
     <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
     ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
     <b>if</b> (usdc_usdt_coint) {
+        <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_usdt_usdc">auth_utils::has_mint_usdt_usdc</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
         <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
     };
-
+    <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">auth_utils::has_mint_other_stablecoin</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
     <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(
         &<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>,
         <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;()
