@@ -1033,18 +1033,7 @@ mod checked {
         };
 
         // query oracle rate
-        let mut stable_coin_type: Vec<String> = vec![];
-        let mut stable_coin_rate_against_busd: Vec<u64> = vec![];
-        let rate_result = temporary_store.get_oracle_price();
-        if rate_result.is_err() {
-            tracing::error!("Failed to get oracle price, Error: {:?}", rate_result.err());
-        } else {
-            let stable_coin_rate = rate_result.unwrap().to_exchange_rate_against_busd();
-            for (k, v) in stable_coin_rate.iter() {
-                stable_coin_type.push(k.clone());
-                stable_coin_rate_against_busd.push(*v);
-            }
-        }
+        let (stable_coin_type, stable_coin_rate_against_busd) = get_oracle_rate(temporary_store);
 
         let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard,
                                                           stable_coin_type, stable_coin_rate_against_busd)?;
@@ -1344,5 +1333,22 @@ mod checked {
             )
             .expect("Unable to generate coin_deny_list_create transaction!");
         builder
+    }
+
+    fn get_oracle_rate(temporary_store: &mut TemporaryStore<'_>) -> (Vec<String>, Vec<u64>) {
+        let mut stable_coin_type: Vec<String> = vec![];
+        let mut stable_coin_rate_against_busd: Vec<u64> = vec![];
+        let rate_result = temporary_store.get_oracle_price();
+        if rate_result.is_err() {
+            tracing::error!("Failed to get oracle price, Error: {:?}", rate_result.err());
+        } else {
+            let stable_coin_rate = rate_result.unwrap().to_exchange_rate_against_busd();
+            for (k, v) in stable_coin_rate.iter() {
+                stable_coin_type.push(k.clone());
+                stable_coin_rate_against_busd.push(*v);
+            }
+        }
+
+        (stable_coin_type, stable_coin_rate_against_busd)
     }
 }
