@@ -3,7 +3,7 @@
 
 use futures::future::join_all;
 use rand::rngs::OsRng;
-use sui_types::collection_types::VecMap;
+use sui_types::collection_types::{Entry, VecMap};
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 use fastcrypto::encoding::Base64;
@@ -70,6 +70,7 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
     test_cluster.wait_for_epoch(Some(2)).await;
     let (_, package) = do_publish(&mut test_cluster).await?;
 
+    let mut beur_rate: u64 = 0;
     test_cluster
     .swarm
     .validator_nodes()
@@ -86,9 +87,14 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
         assert!(_oracle_address.is_none());
 
         let _rate_map: &VecMap<String, u64> = _state.get_rate_map();
-        println!("=============rate_map: {:?}", _rate_map);
+        println!("=============rate_map: {:?}", &_rate_map);
         // only busd
-        assert!(_rate_map.contents.len() == 1);
+        for entry in _rate_map.clone().contents.into_iter() {
+            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR" {
+                println!("beur {:?}", entry.value);
+                beur_rate = entry.value;
+            }
+        }
     });
 
     // set oracle price
@@ -113,9 +119,21 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
 
         //rate_map
         let _rate_map = _state.get_rate_map();
-        println!("=============rate_map: {:?}", _rate_map);
-        // after set oracle price by bfc_round_v2，we have two (busd, beur)
-        assert!(_rate_map.contents.len() == 2);
+        println!("=============rate_map: {:?}", &_rate_map);
+
+        let mut pass = false;
+        for entry in _rate_map.clone().contents.into_iter() {
+            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR" {
+                println!("beur {:?}", entry.value);
+
+                assert!(beur_rate != entry.value);
+                // we set beur rate < 10000 in oracle
+                assert!(10000 > entry.value);
+                pass = true;
+            }
+        }
+
+        assert!(pass);
     });
 
     Ok(())

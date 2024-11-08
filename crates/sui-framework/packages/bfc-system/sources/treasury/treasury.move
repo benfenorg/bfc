@@ -594,7 +594,23 @@ module bfc_system::treasury {
         let amount = 1_000_000_000;
 
         one_coin_exchange_rate<BUSD>(_treasury, &mut rate_map, amount);
-
+        one_coin_exchange_rate<MGG>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BJPY>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BKRW>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BAUD>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BARS>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BBRL>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BCAD>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BEUR>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BGBP>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BIDR>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BINR>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BRUB>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BSAR>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BTRY>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BZAR>(_treasury, &mut rate_map, amount);
+        one_coin_exchange_rate<BMXN>(_treasury, &mut rate_map, amount);
+        
         rate_map
     }
 

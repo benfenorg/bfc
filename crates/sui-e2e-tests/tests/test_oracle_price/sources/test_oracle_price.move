@@ -20,7 +20,7 @@ module test_oracle_price::test_oracle {
         price_map.insert(PriceIdentifier { 
                 coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR", 
                 coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
-            77777777,
+            100,
             );
         dynamic_field::add(&mut uid, b"Test oracle price", price_map);
 

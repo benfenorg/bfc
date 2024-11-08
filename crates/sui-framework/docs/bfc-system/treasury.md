@@ -1458,6 +1458,22 @@ Rebalance
     <b>let</b> amount = 1_000_000_000;
 
     <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BUSD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;MGG&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BJPY&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BKRW&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BAUD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BARS&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BBRL&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BCAD&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BEUR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BGBP&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BIDR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BINR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BRUB&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BSAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BTRY&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BZAR&gt;(_treasury, &<b>mut</b> rate_map, amount);
+    <a href="treasury.md#0xc8_treasury_one_coin_exchange_rate">one_coin_exchange_rate</a>&lt;BMXN&gt;(_treasury, &<b>mut</b> rate_map, amount);
 
     rate_map
 }
