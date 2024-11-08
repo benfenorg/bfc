@@ -5248,13 +5248,7 @@ mint_stable_entry
 mint_stable
 	public fun
 	0xc8::bfc_system
-mint_stable_V1
-	public fun
-	0xc8::bfc_system
 exchange_stable_to_busd
-	public fun
-	0xc8::bfc_system
-exchange_stable_to_busd_V1
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_stable

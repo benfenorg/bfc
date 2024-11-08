@@ -475,18 +475,6 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
     }
 
-    public fun mint_stable_V1<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        cap: BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ): Coin<StableCoinType> {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let r = bfc_system_state_inner::mint_stable_V1<StableCoinType>(inner_state, amount, &cap, _ctx);
-        transfer::public_transfer(cap, tx_context::sender(ctx));
-        r
-    }
-
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
@@ -501,24 +489,6 @@ module bfc_system::bfc_system {
             &cap.get_bfc_system_modify_cap_key(),
             _ctx
         );
-        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
-    }
-
-    public fun exchange_stable_to_busd_V1<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        cap: BfcSystemModifyCap,
-        recipient: address,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable_V1<StableCoinType>(
-            inner_state,
-            amount,
-            &cap,
-            _ctx
-        );
-        transfer::public_transfer(cap, tx_context::sender(_ctx));
         bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 
