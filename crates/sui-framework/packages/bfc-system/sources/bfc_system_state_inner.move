@@ -46,6 +46,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use std::type_name;
+    use sui::tx_context::epoch;
     use bfc_system::auth_utils;
 
     ///Default stable base points
@@ -68,9 +69,13 @@ module bfc_system::bfc_system_state_inner {
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
     const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
+    const ERR_ADD_ADMIN_COUNT_ZERO: u64 = 1009;
+    const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
+
 
 
     const ERR_INVALID_PARAM: u64 = 1100;
+
 
     const DEFAULT_BFC_STATE_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
 
@@ -98,13 +103,15 @@ module bfc_system::bfc_system_state_inner {
 
         stake_coins: Bag,
         daily_out_limit: u64,
+        daily_used_epoch: u64,
         daily_used_quantity: u64,
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
+        admin_capability_addresses: VecSet<address>,
         oracle_address: Option<address>,
     }
 
-    public struct BfcSystemStateCap has key, store {
+    public struct BfcSystemAdminCap has key, store {
         id: UID,
     }
 
@@ -590,12 +597,20 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
+    public(package) fun daily_epoch_check(system_state: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, ) {
+        if (system_state.daily_used_epoch != epoch(ctx)) {
+            system_state.daily_used_epoch = epoch(ctx);
+            system_state.daily_used_quantity = 0;
+        };
+    }
+
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
+        daily_epoch_check(system_state, ctx);
         assert!(amount + system_state.daily_used_quantity <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
 
         let key = treasury::get_vault_key<StableCoinType>();
@@ -864,18 +879,16 @@ module bfc_system::bfc_system_state_inner {
             stable_rate,
             stake_coins: coin_bag,
             daily_out_limit: 40000_000_000_000u64,
+            daily_used_epoch: 0u64,
             daily_used_quantity: 0u64,
             operation_capability: vec_map::empty(),
+            admin_capability_addresses: vec_set::empty(),
             oracle_address: option::none(),
         }, _ctx)
     }
 
     public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
         self.daily_out_limit
-    }
-
-    public(package) fun reset_daily_used_quantity(self: &mut BfcSystemStateInnerV2) {
-        self.daily_used_quantity = 0u64;
     }
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
@@ -914,15 +927,8 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
 
-        let admin = DEFAULT_BFC_STATE_ADMIN_ADDRESSES;
-        let count = vector::length(&admin);
-
-        let mut i = 0;
-        while (i < count) {
-            let admin = vector::borrow(&admin, i);
-            create_bfc_system_state_cap(_ctx, *admin);
-            i = i + 1;
-        };
+        let admins = DEFAULT_BFC_STATE_ADMIN_ADDRESSES;
+        add_bfc_system_admin_cap(_ctx, admins, self);
 
         std::debug::print(&b"init_bfc_system_state_v2 end");
     }
@@ -960,7 +966,8 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun set_operation_capability(
         self: &mut BfcSystemStateInnerV2,
         key: String,
-        value: VecSet<address>
+        value: VecSet<address>,
+        ctx: &mut TxContext,
     ) {
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
@@ -970,6 +977,7 @@ module bfc_system::bfc_system_state_inner {
                 let addr = &source_contents[i];
                 if (!vec_set::contains(new_capability, addr)) {
                     vec_set::insert(new_capability, *addr);
+                    create_bfc_system_modify_cap(ctx, *addr, key);
                 };
                 i = i + 1;
             };
@@ -978,7 +986,12 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
-    public(package) fun add_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: address) {
+    public(package) fun add_operation_capability(
+        self: &mut BfcSystemStateInnerV2,
+        key: String,
+        value: address,
+        ctx: &mut TxContext,
+    ) {
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
             vec_set::insert(new_capability, value);
@@ -986,7 +999,8 @@ module bfc_system::bfc_system_state_inner {
             let mut new_set = vec_set::empty();
             vec_set::insert(&mut new_set, value);
             vec_map::insert(&mut self.operation_capability, key, new_set);
-        }
+        };
+        create_bfc_system_modify_cap(ctx, value, key);
     }
 
     public(package) fun remove_operation_capability(self: &mut BfcSystemStateInnerV2, key: &String, value: address) {
@@ -1030,14 +1044,50 @@ module bfc_system::bfc_system_state_inner {
         treasury::increase_other_stablecoin_balance<StableCoinType>(&mut self.treasury, balance);
     }
 
-    public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
-        let cap = BfcSystemStateCap {
+    public(package) fun get_bfc_system_modify_cap_key(self: &BfcSystemModifyCap) : String {
+        self.key
+    }
+
+    #[test_only]
+    public(package) fun create_bfc_system_admin_cap_for_test(ctx: &mut TxContext, recipient: address) {
+        create_bfc_system_admin_cap(ctx, recipient)
+    }
+
+    fun create_bfc_system_admin_cap(ctx: &mut TxContext, recipient: address) {
+        let cap = BfcSystemAdminCap {
             id : object::new(ctx),
         };
         transfer::transfer(cap, recipient);
     }
 
-    #[test_only]
+    public(package) fun verify_admin_capability(self: &BfcSystemStateInnerV2, addr: address): bool {
+        vec_set::contains(&self.admin_capability_addresses, &addr)
+    }
+
+    public(package) fun add_bfc_system_admin_cap(ctx: &mut TxContext, admins: vector<address>, state_v2: &mut BfcSystemStateInnerV2) {
+        let count = vector::length(&admins);
+        assert!(count > 0, ERR_ADD_ADMIN_COUNT_ZERO);
+
+        let mut i = 0;
+        while (i < count) {
+            let admin = vector::borrow(&admins, i);
+            create_bfc_system_admin_cap(ctx, *admin);
+            state_v2.admin_capability_addresses.insert(*admin);
+            i = i + 1;
+        };
+    }
+
+    public(package) fun remove_bfc_system_admin_cap(addr: address, cap: &mut BfcSystemAdminCap, state_v2: &mut BfcSystemStateInnerV2) {
+        let _ = cap;
+
+        let mut admin_addresses = state_v2.admin_capability_addresses;
+        if (admin_addresses.contains(&addr)) {
+            admin_addresses.remove(&addr);
+        };
+
+        assert!(admin_addresses.size() > 0, ERR_ADMIN_COUNT_ZERO);
+    }
+
     public(package) fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
         let cap = BfcSystemModifyCap {
             id: object::new(ctx),

@@ -1171,18 +1171,6 @@ advance_epoch
 get_stable_rate_from_bfc
 	fun
 	0x3::sui_system
-request_set_daily_out_limit
-	public fun
-	0x3::sui_system
-request_add_operation_capability
-	public fun
-	0x3::sui_system
-request_remove_operation_capability
-	public fun
-	0x3::sui_system
-request_set_operation_capability
-	public fun
-	0x3::sui_system
 get_stable_rate
 	public fun
 	0x3::sui_system
@@ -4891,7 +4879,7 @@ BfcSystemStateInner
 BfcSystemStateInnerV2
 	public struct
 	0xc8::bfc_system_state_inner
-BfcSystemStateCap
+BfcSystemAdminCap
 	public struct
 	0xc8::bfc_system_state_inner
 BfcSystemModifyCap
@@ -4996,6 +4984,9 @@ mint_stable_V1
 exchange_stable_to_busd
 	public(package) fun
 	0xc8::bfc_system_state_inner
+daily_epoch_check
+	public(package) fun
+	0xc8::bfc_system_state_inner
 exchange_busd_to_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5095,9 +5086,6 @@ v1_to_v2
 get_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
-reset_daily_used_quantity
-	public(package) fun
-	0xc8::bfc_system_state_inner
 set_daily_out_limit
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5140,7 +5128,22 @@ withdraw_balance
 add_balance_to_vault
 	public(package) fun
 	0xc8::bfc_system_state_inner
-create_bfc_system_state_cap
+get_bfc_system_modify_cap_key
+	public(package) fun
+	0xc8::bfc_system_state_inner
+create_bfc_system_admin_cap
+	fun
+	0xc8::bfc_system_state_inner
+verify_admin_capability
+	public(package) fun
+	0xc8::bfc_system_state_inner
+add_bfc_system_admin_cap
+	public(package) fun
+	0xc8::bfc_system_state_inner
+remove_bfc_system_admin_cap
+	public(package) fun
+	0xc8::bfc_system_state_inner
+create_bfc_system_modify_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
 BfcSystemState
@@ -5209,9 +5212,6 @@ get_operation_capability_by_key
 add_operation_capability
 	public fun
 	0xc8::bfc_system
-add_operation_capability_v1
-	public fun
-	0xc8::bfc_system
 remove_operation_capability
 	public fun
 	0xc8::bfc_system
@@ -5266,22 +5266,13 @@ rebalance
 rebalance_with_one_stablecoin
 	public fun
 	0xc8::bfc_system
-reset_daily_used_quantity
-	public fun
-	0xc8::bfc_system
 mint_stable_entry
 	public entry fun
 	0xc8::bfc_system
 mint_stable
 	public fun
 	0xc8::bfc_system
-mint_stable_V1
-	public fun
-	0xc8::bfc_system
 exchange_stable_to_busd
-	public fun
-	0xc8::bfc_system
-exchange_stable_to_busd_V1
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_stable

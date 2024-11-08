@@ -6,7 +6,7 @@ title: Module `0xc8::bfc_system_state_inner`
 
 -  [Struct `BfcSystemStateInner`](#0xc8_bfc_system_state_inner_BfcSystemStateInner)
 -  [Struct `BfcSystemStateInnerV2`](#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2)
--  [Resource `BfcSystemStateCap`](#0xc8_bfc_system_state_inner_BfcSystemStateCap)
+-  [Resource `BfcSystemAdminCap`](#0xc8_bfc_system_state_inner_BfcSystemAdminCap)
 -  [Resource `BfcSystemModifyCap`](#0xc8_bfc_system_state_inner_BfcSystemModifyCap)
 -  [Struct `TreasuryParameters`](#0xc8_bfc_system_state_inner_TreasuryParameters)
 -  [Struct `BfcSystemParameters`](#0xc8_bfc_system_state_inner_BfcSystemParameters)
@@ -42,6 +42,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
 -  [Function `mint_stable_V1`](#0xc8_bfc_system_state_inner_mint_stable_V1)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_state_inner_exchange_stable_to_busd)
+-  [Function `daily_epoch_check`](#0xc8_bfc_system_state_inner_daily_epoch_check)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_state_inner_exchange_busd_to_stable)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
@@ -75,7 +76,6 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_state_inner_create_voting_bfc)
 -  [Function `v1_to_v2`](#0xc8_bfc_system_state_inner_v1_to_v2)
 -  [Function `get_daily_out_limit`](#0xc8_bfc_system_state_inner_get_daily_out_limit)
--  [Function `reset_daily_used_quantity`](#0xc8_bfc_system_state_inner_reset_daily_used_quantity)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
 -  [Function `transfer_bfc_from_vault_to_treasury_pool`](#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool)
@@ -90,7 +90,12 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `get_oracle_address`](#0xc8_bfc_system_state_inner_get_oracle_address)
 -  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
--  [Function `create_bfc_system_state_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_state_cap)
+-  [Function `get_bfc_system_modify_cap_key`](#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key)
+-  [Function `create_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap)
+-  [Function `verify_admin_capability`](#0xc8_bfc_system_state_inner_verify_admin_capability)
+-  [Function `add_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap)
+-  [Function `remove_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap)
+-  [Function `create_bfc_system_modify_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -274,6 +279,12 @@ title: Module `0xc8::bfc_system_state_inner`
 
 </dd>
 <dt>
+<code>daily_used_epoch: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>daily_used_quantity: u64</code>
 </dt>
 <dd>
@@ -281,6 +292,12 @@ title: Module `0xc8::bfc_system_state_inner`
 </dd>
 <dt>
 <code>operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>admin_capability_addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;</code>
 </dt>
 <dd>
 
@@ -296,13 +313,13 @@ title: Module `0xc8::bfc_system_state_inner`
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_BfcSystemStateCap"></a>
+<a name="0xc8_bfc_system_state_inner_BfcSystemAdminCap"></a>
 
-## Resource `BfcSystemStateCap`
+## Resource `BfcSystemAdminCap`
 
 
 
-<pre><code><b>struct</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">BfcSystemStateCap</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a> <b>has</b> store, key
 </code></pre>
 
 
@@ -554,6 +571,24 @@ Default stable base points
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>: <b>address</b> = 0;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_ADD_ADMIN_COUNT_ZERO"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_ADD_ADMIN_COUNT_ZERO">ERR_ADD_ADMIN_COUNT_ZERO</a>: u64 = 1009;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERR_ADMIN_COUNT_ZERO"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_ADMIN_COUNT_ZERO">ERR_ADMIN_COUNT_ZERO</a>: u64 = 1010;
 </code></pre>
 
 
@@ -1708,6 +1743,33 @@ deprecated
 
 </details>
 
+<a name="0xc8_bfc_system_state_inner_daily_epoch_check"></a>
+
+## Function `daily_epoch_check`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, ctx: &<b>mut</b> TxContext, ) {
+    <b>if</b> (system_state.daily_used_epoch != epoch(ctx)) {
+        system_state.daily_used_epoch = epoch(ctx);
+        system_state.daily_used_quantity = 0;
+    };
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_state_inner_exchange_busd_to_stable"></a>
 
 ## Function `exchange_busd_to_stable`
@@ -1729,6 +1791,7 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> amount: u64 = busd_coin.value();
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state, ctx);
     <b>assert</b>!(amount + system_state.daily_used_quantity &lt;= system_state.daily_out_limit, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT">ERR_DAILY_LIMIT</a>);
 
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
@@ -2616,8 +2679,10 @@ deprecated
         stable_rate,
         stake_coins: coin_bag,
         daily_out_limit: 40000_000_000_000u64,
+        daily_used_epoch: 0u64,
         daily_used_quantity: 0u64,
         operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        admin_capability_addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>(),
         oracle_address: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
     }, _ctx)
 }
@@ -2644,30 +2709,6 @@ deprecated
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">get_daily_out_limit</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
     self.daily_out_limit
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_reset_daily_used_quantity"></a>
-
-## Function `reset_daily_used_quantity`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
-    self.daily_used_quantity = 0u64;
 }
 </code></pre>
 
@@ -2746,15 +2787,8 @@ deprecated
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BZAR&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BMXN&gt;(self);
 
-    <b>let</b> admin = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_BFC_STATE_ADMIN_ADDRESSES">DEFAULT_BFC_STATE_ADMIN_ADDRESSES</a>;
-    <b>let</b> count = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&admin);
-
-    <b>let</b> <b>mut</b> i = 0;
-    <b>while</b> (i &lt; count) {
-        <b>let</b> admin = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&admin, i);
-        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(_ctx, *admin);
-        i = i + 1;
-    };
+    <b>let</b> admins = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_BFC_STATE_ADMIN_ADDRESSES">DEFAULT_BFC_STATE_ADMIN_ADDRESSES</a>;
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">add_bfc_system_admin_cap</a>(_ctx, admins, self);
 
     std::debug::print(&b"init_bfc_system_state_v2 end");
 }
@@ -2880,7 +2914,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2892,7 +2926,8 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(
     self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
     key: String,
-    value: VecSet&lt;<b>address</b>&gt;
+    value: VecSet&lt;<b>address</b>&gt;,
+    ctx: &<b>mut</b> TxContext,
 ) {
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
@@ -2902,6 +2937,7 @@ deprecated
             <b>let</b> addr = &source_contents[i];
             <b>if</b> (!<a href="../sui-framework/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(new_capability, addr)) {
                 <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(new_capability, *addr);
+                <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx, *addr, key);
             };
             i = i + 1;
         };
@@ -2921,7 +2957,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <b>address</b>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2930,7 +2966,12 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, key: String, value: <b>address</b>) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    key: String,
+    value: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
         <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(new_capability, value);
@@ -2938,7 +2979,8 @@ deprecated
         <b>let</b> <b>mut</b> new_set = <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>();
         <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(&<b>mut</b> new_set, value);
         <a href="../sui-framework/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.operation_capability, key, new_set);
-    }
+    };
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx, value, key);
 }
 </code></pre>
 
@@ -3105,13 +3147,13 @@ deprecated
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_create_bfc_system_state_cap"></a>
+<a name="0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key"></a>
 
-## Function `create_bfc_system_state_cap`
+## Function `get_bfc_system_modify_cap_key`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key">get_bfc_system_modify_cap_key</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
 </code></pre>
 
 
@@ -3120,9 +3162,149 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
-    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">BfcSystemStateCap</a> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key">get_bfc_system_modify_cap_key</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a>) : String {
+    self.key
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_create_bfc_system_admin_cap"></a>
+
+## Function `create_bfc_system_admin_cap`
+
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
+    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a> {
         id : <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+    };
+    <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_verify_admin_capability"></a>
+
+## Function `verify_admin_capability`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, addr: <b>address</b>): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>): bool {
+    <a href="../sui-framework/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(&self.admin_capability_addresses, &addr)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_add_bfc_system_admin_cap"></a>
+
+## Function `add_bfc_system_admin_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">add_bfc_system_admin_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, admins: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt;, state_v2: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">add_bfc_system_admin_cap</a>(ctx: &<b>mut</b> TxContext, admins: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt;, state_v2: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+    <b>let</b> count = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&admins);
+    <b>assert</b>!(count &gt; 0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_ADD_ADMIN_COUNT_ZERO">ERR_ADD_ADMIN_COUNT_ZERO</a>);
+
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; count) {
+        <b>let</b> admin = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&admins, i);
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx, *admin);
+        state_v2.admin_capability_addresses.insert(*admin);
+        i = i + 1;
+    };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap"></a>
+
+## Function `remove_bfc_system_admin_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(addr: <b>address</b>, cap: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">bfc_system_state_inner::BfcSystemAdminCap</a>, state_v2: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(addr: <b>address</b>, cap: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a>, state_v2: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+    <b>let</b> _ = cap;
+
+    <b>let</b> <b>mut</b> admin_addresses = state_v2.admin_capability_addresses;
+    <b>if</b> (admin_addresses.contains(&addr)) {
+        admin_addresses.remove(&addr);
+    };
+
+    <b>assert</b>!(admin_addresses.size() &gt; 0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_ADMIN_COUNT_ZERO">ERR_ADMIN_COUNT_ZERO</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_create_bfc_system_modify_cap"></a>
+
+## Function `create_bfc_system_modify_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>, key: std::ascii::String) {
+    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a> {
+        id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+        key,
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
 }

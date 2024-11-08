@@ -86,10 +86,6 @@ the SuiSystemStateInner version, or vice versa.
 -  [Function `active_validator_addresses`](#0x3_sui_system_active_validator_addresses)
 -  [Function `advance_epoch`](#0x3_sui_system_advance_epoch)
 -  [Function `get_stable_rate_from_bfc`](#0x3_sui_system_get_stable_rate_from_bfc)
--  [Function `request_set_daily_out_limit`](#0x3_sui_system_request_set_daily_out_limit)
--  [Function `request_add_operation_capability`](#0x3_sui_system_request_add_operation_capability)
--  [Function `request_remove_operation_capability`](#0x3_sui_system_request_remove_operation_capability)
--  [Function `request_set_operation_capability`](#0x3_sui_system_request_set_operation_capability)
 -  [Function `get_stable_rate`](#0x3_sui_system_get_stable_rate)
 -  [Function `load_system_state`](#0x3_sui_system_load_system_state)
 -  [Function `load_system_state_mut`](#0x3_sui_system_load_system_state_mut)
@@ -107,7 +103,6 @@ the SuiSystemStateInner version, or vice versa.
 <b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
-<b>use</b> <a href="../sui-framework/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
 <b>use</b> <a href="stable_pool.md#0x3_stable_pool">0x3::stable_pool</a>;
 <b>use</b> <a href="stake_subsidy.md#0x3_stake_subsidy">0x3::stake_subsidy</a>;
 <b>use</b> <a href="staking_pool.md#0x3_staking_pool">0x3::staking_pool</a>;
@@ -177,43 +172,6 @@ the SuiSystemStateInner version, or vice versa.
 
 
 <pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_EWrongInnerVersion">EWrongInnerVersion</a>: u64 = 1;
-</code></pre>
-
-
-
-<a name="0x3_sui_system_ERR_REQUEST_ADD_OPERATION_CAPABILITY"></a>
-
-
-
-<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_ADD_OPERATION_CAPABILITY">ERR_REQUEST_ADD_OPERATION_CAPABILITY</a>: u64 = 98;
-</code></pre>
-
-
-
-<a name="0x3_sui_system_ERR_REQUEST_REMOVE_OPERATION_CAPABILITY"></a>
-
-
-
-<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_REMOVE_OPERATION_CAPABILITY">ERR_REQUEST_REMOVE_OPERATION_CAPABILITY</a>: u64 = 97;
-</code></pre>
-
-
-
-<a name="0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT"></a>
-
-
-
-<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT">ERR_REQUEST_SET_DAILY_OUT_LIMIT</a>: u64 = 99;
-</code></pre>
-
-
-
-<a name="0x3_sui_system_ERR_REQUEST_SET_OPERATION_CAPABILITY"></a>
-
-Errors
-
-
-<pre><code><b>const</b> <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_OPERATION_CAPABILITY">ERR_REQUEST_SET_OPERATION_CAPABILITY</a>: u64 = 96;
 </code></pre>
 
 
@@ -1613,9 +1571,6 @@ gas coins.
         epoch_start_timestamp_ms,
         ctx,
     );
-
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">bfc_system::reset_daily_used_quantity</a>(&<b>mut</b> wrapper.bfc_system_id);
-
     storage_rebate
 }
 </code></pre>
@@ -1641,129 +1596,6 @@ gas coins.
 
 <pre><code><b>fun</b> <a href="sui_system.md#0x3_sui_system_get_stable_rate_from_bfc">get_stable_rate_from_bfc</a>(id: &UID) : VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_exchange_rate">bfc_system::get_exchange_rate</a>(id)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_request_set_daily_out_limit"></a>
-
-## Function `request_set_daily_out_limit`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_daily_out_limit">request_set_daily_out_limit</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, daily_out_limit: u64, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_daily_out_limit">request_set_daily_out_limit</a>(
-    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    daily_out_limit: u64,
-    ctx: &TxContext,
-) {
-    <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
-    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_DAILY_OUT_LIMIT">ERR_REQUEST_SET_DAILY_OUT_LIMIT</a>);
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_set_daily_out_limit">bfc_system::set_daily_out_limit</a>(&<b>mut</b> self.bfc_system_id, daily_out_limit)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_request_add_operation_capability"></a>
-
-## Function `request_add_operation_capability`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_operation_capability">request_add_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_add_operation_capability">request_add_operation_capability</a>(
-    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    addr: <b>address</b>,
-    ctx: &TxContext,
-) {
-    <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
-    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_ADD_OPERATION_CAPABILITY">ERR_REQUEST_ADD_OPERATION_CAPABILITY</a>);
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_operation_capability">bfc_system::add_operation_capability</a>(&<b>mut</b> self.bfc_system_id, key, addr)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_request_remove_operation_capability"></a>
-
-## Function `request_remove_operation_capability`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_remove_operation_capability">request_remove_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr: <b>address</b>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_remove_operation_capability">request_remove_operation_capability</a>(
-    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    addr: <b>address</b>,
-    ctx: &TxContext,
-) {
-    <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
-    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_REMOVE_OPERATION_CAPABILITY">ERR_REQUEST_REMOVE_OPERATION_CAPABILITY</a>);
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_remove_operation_capability">bfc_system::remove_operation_capability</a>(&<b>mut</b> self.bfc_system_id, key, addr)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x3_sui_system_request_set_operation_capability"></a>
-
-## Function `request_set_operation_capability`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_operation_capability">request_set_operation_capability</a>(self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">sui_system::SuiSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addr_set: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="sui_system.md#0x3_sui_system_request_set_operation_capability">request_set_operation_capability</a>(
-    self: &<b>mut</b> <a href="sui_system.md#0x3_sui_system_SuiSystemState">SuiSystemState</a>,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    addr_set: VecSet&lt;<b>address</b>&gt;,
-    ctx: &TxContext,
-) {
-    <b>let</b> inner = <a href="sui_system.md#0x3_sui_system_load_system_state">load_system_state</a>(self);
-    <b>assert</b>!(inner.is_active_validator_by_sui_address(ctx.sender()), <a href="sui_system.md#0x3_sui_system_ERR_REQUEST_SET_OPERATION_CAPABILITY">ERR_REQUEST_SET_OPERATION_CAPABILITY</a>);
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_set_operation_capability">bfc_system::set_operation_capability</a>(&<b>mut</b> self.bfc_system_id, key, addr_set)
 }
 </code></pre>
 

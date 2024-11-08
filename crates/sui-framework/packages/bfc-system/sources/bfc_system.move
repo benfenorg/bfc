@@ -38,7 +38,9 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
-    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2, BfcSystemModifyCap};
+    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2, BfcSystemModifyCap,
+        BfcSystemAdminCap
+    };
     use bfc_system::treasury::{TreasuryPauseCap};
 
     public struct BfcSystemState has key {
@@ -289,62 +291,67 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::get_rate_map(inner)
     }
 
-    // operation for daily out limit
     public fun get_daily_out_limit(id: &UID): u64 {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_daily_out_limit(inner)
     }
 
-    public fun set_daily_out_limit(id: &mut UID, daily_out_limit: u64) {
-        let inner = load_system_state_mut_by_uid(id);
+    public fun set_daily_out_limit(wrapper: &mut BfcSystemState,
+                                   _cap: &BfcSystemAdminCap,
+                                   daily_out_limit: u64,
+                                   ctx: &mut TxContext, ) {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit);
     }
 
-    // operation for capability
-    public fun get_operation_capability(id: &UID): VecMap<ascii::String, VecSet<address>> {
-        let inner = load_system_state_by_uid(id);
+    public fun get_operation_capability(
+        wrapper: &mut BfcSystemState,
+        ctx: &mut TxContext,
+    ): VecMap<ascii::String, VecSet<address>> {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::get_operation_capability(inner)
     }
 
-    public fun get_operation_capability_by_key(id: &UID, key: vector<u8>): VecSet<address> {
-        let inner = load_system_state_by_uid(id);
+    public fun get_operation_capability_by_key(
+        wrapper: &mut BfcSystemState,
+        key: vector<u8>,
+        ctx: &mut TxContext,
+    ): VecSet<address> {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::get_operation_capability_by_key(inner, &std::ascii::string(key))
     }
 
-    #[test_only]
-    public fun add_operation_capability_test(
+    public fun add_operation_capability(
         wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemAdminCap,
+        key: vector<u8>,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address, _ctx)
+    }
+
+    public fun remove_operation_capability(
+        wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemAdminCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
     ) {
         let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
-    }
-
-    public fun add_operation_capability(id: &mut UID, key: vector<u8>, address: address) {
-        let inner = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
-    }
-
-    public fun add_operation_capability_v1(
-        wrapper: &mut BfcSystemState,
-        key: vector<u8>,
-        address: address,
-        ctx: &mut TxContext,
-    ) {
-        let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
-    }
-
-    public fun remove_operation_capability(id: &mut UID, key: vector<u8>, address: address) {
-        let inner = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::remove_operation_capability(inner, &std::ascii::string(key), address)
     }
 
-    public fun set_operation_capability(id: &mut UID, key: vector<u8>, addresses: VecSet<address>) {
-        let inner = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses)
+    public fun set_operation_capability(
+        wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemAdminCap,
+        key: vector<u8>,
+        addresses: VecSet<address>,
+        ctx: &mut TxContext,
+    ) {
+        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses, ctx)
     }
 
     public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address) {
@@ -474,82 +481,41 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
 
-    public fun reset_daily_used_quantity(bfc_system_id: &mut UID) {
-        let inner = load_system_state_mut_by_uid(bfc_system_id);
-        bfc_system_state_inner::reset_daily_used_quantity(inner);
-    }
-
     public entry fun mint_stable_entry<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
-        key: vector<u8>,
         cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
-        let _ = cap;
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
         transfer::public_transfer(coin, tx_context::sender(ctx));
     }
 
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
-        key: vector<u8>,
         ctx: &mut TxContext,
         cap: &BfcSystemModifyCap
     ): Coin<StableCoinType> {
-        let _ = cap;
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &std::ascii::string(key), _ctx)
-    }
-
-    public fun mint_stable_V1<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        cap: BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ): Coin<StableCoinType> {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let r = bfc_system_state_inner::mint_stable_V1<StableCoinType>(inner_state, amount, &cap, _ctx);
-        transfer::public_transfer(cap, tx_context::sender(ctx));
-        r
+        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
     }
 
     public fun exchange_stable_to_busd<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
-        key: vector<u8>,
         recipient: address,
         ctx: &mut TxContext,
         cap: &BfcSystemModifyCap
     ) {
-        let _ = cap;
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let coin = bfc_system_state_inner::mint_stable<StableCoinType>(
             inner_state,
             amount,
-            &std::ascii::string(key),
+            &cap.get_bfc_system_modify_cap_key(),
             _ctx
         );
-        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
-    }
-
-    public fun exchange_stable_to_busd_V1<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        cap: BfcSystemModifyCap,
-        recipient: address,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable_V1<StableCoinType>(
-            inner_state,
-            amount,
-            &cap,
-            _ctx
-        );
-        transfer::public_transfer(cap, tx_context::sender(_ctx));
         bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
     }
 
@@ -557,9 +523,7 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         busd_coin: Coin<BUSD>,
         ctx: &mut TxContext,
-        cap: &BfcSystemModifyCap
     ) {
-        let _ = cap;
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
     }
