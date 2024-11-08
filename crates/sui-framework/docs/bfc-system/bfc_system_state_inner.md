@@ -89,6 +89,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
 -  [Function `get_bfc_system_modify_cap_key`](#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key)
 -  [Function `create_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap)
+-  [Function `create_bfc_system_modify_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -2807,7 +2808,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2816,7 +2817,12 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, key: String, value: VecSet&lt;<b>address</b>&gt;) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">set_operation_capability</a>(
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    key: String,
+    value: VecSet&lt;<b>address</b>&gt;,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
         <b>let</b> source_contents = <a href="../sui-framework/vec_set.md#0x2_vec_set_keys">vec_set::keys</a>(&value);
@@ -2825,6 +2831,7 @@ deprecated
             <b>let</b> addr = &source_contents[i];
             <b>if</b> (!<a href="../sui-framework/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(new_capability, addr)) {
                 <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(new_capability, *addr);
+                <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx, *addr, key);
             };
             i = i + 1;
         };
@@ -2844,7 +2851,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <b>address</b>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, value: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2853,7 +2860,12 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, key: String, value: <b>address</b>) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">add_operation_capability</a>(
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    key: String,
+    value: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
         <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(new_capability, value);
@@ -2861,7 +2873,8 @@ deprecated
         <b>let</b> <b>mut</b> new_set = <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>();
         <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(&<b>mut</b> new_set, value);
         <a href="../sui-framework/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.operation_capability, key, new_set);
-    }
+    };
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx, value, key);
 }
 </code></pre>
 
@@ -3022,6 +3035,34 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
     <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a> {
         id : <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+    };
+    <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_create_bfc_system_modify_cap"></a>
+
+## Function `create_bfc_system_modify_cap`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>, key: std::ascii::String) {
+    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a> {
+        id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
+        key,
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
 }

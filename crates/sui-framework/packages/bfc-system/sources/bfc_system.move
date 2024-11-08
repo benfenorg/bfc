@@ -274,36 +274,21 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit);
     }
 
-    public fun get_operation_capability(id: &UID): VecMap<ascii::String, VecSet<address>> {
-        let inner = load_system_state_by_uid(id);
+    public fun get_operation_capability(
+        wrapper: &mut BfcSystemState,
+        ctx: &mut TxContext,
+    ): VecMap<ascii::String, VecSet<address>> {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::get_operation_capability(inner)
     }
 
-    public fun get_operation_capability_by_key(id: &UID, key: vector<u8>): VecSet<address> {
-        let inner = load_system_state_by_uid(id);
-        bfc_system_state_inner::get_operation_capability_by_key(inner, &std::ascii::string(key))
-    }
-
-    #[test_only]
-    public fun add_operation_capability_test(
+    public fun get_operation_capability_by_key(
         wrapper: &mut BfcSystemState,
         key: vector<u8>,
-        address: address,
         ctx: &mut TxContext,
-    ) {
-        let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
-    }
-
-    public fun add_system_state_capability(
-        wrapper: &mut BfcSystemState,
-        _cap: &BfcSystemAdminCap,
-        key: vector<u8>,
-        address: address,
-        ctx: &mut TxContext,
-    ) {
+    ): VecSet<address> {
         let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
+        bfc_system_state_inner::get_operation_capability_by_key(inner, &std::ascii::string(key))
     }
 
     public fun add_operation_capability(
@@ -314,7 +299,7 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address, _ctx)
     }
 
     public fun remove_operation_capability(
@@ -335,8 +320,8 @@ module bfc_system::bfc_system {
         addresses: VecSet<address>,
         ctx: &mut TxContext,
     ) {
-        let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses)
+        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses, ctx)
     }
 
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {

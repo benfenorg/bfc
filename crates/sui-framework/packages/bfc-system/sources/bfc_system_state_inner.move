@@ -908,7 +908,12 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
-    public(package) fun set_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: VecSet<address>) {
+    public(package) fun set_operation_capability(
+        self: &mut BfcSystemStateInnerV2,
+        key: String,
+        value: VecSet<address>,
+        ctx: &mut TxContext,
+    ) {
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
             let source_contents = vec_set::keys(&value);
@@ -917,6 +922,7 @@ module bfc_system::bfc_system_state_inner {
                 let addr = &source_contents[i];
                 if (!vec_set::contains(new_capability, addr)) {
                     vec_set::insert(new_capability, *addr);
+                    create_bfc_system_modify_cap(ctx, *addr, key);
                 };
                 i = i + 1;
             };
@@ -925,7 +931,12 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
-    public(package) fun add_operation_capability(self: &mut BfcSystemStateInnerV2, key: String, value: address) {
+    public(package) fun add_operation_capability(
+        self: &mut BfcSystemStateInnerV2,
+        key: String,
+        value: address,
+        ctx: &mut TxContext,
+    ) {
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
             vec_set::insert(new_capability, value);
@@ -933,7 +944,8 @@ module bfc_system::bfc_system_state_inner {
             let mut new_set = vec_set::empty();
             vec_set::insert(&mut new_set, value);
             vec_map::insert(&mut self.operation_capability, key, new_set);
-        }
+        };
+        create_bfc_system_modify_cap(ctx, value, key);
     }
 
     public(package) fun remove_operation_capability(self: &mut BfcSystemStateInnerV2, key: &String, value: address) {
@@ -978,7 +990,6 @@ module bfc_system::bfc_system_state_inner {
         transfer::transfer(cap, recipient);
     }
 
-    #[test_only]
     public(package) fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
         let cap = BfcSystemModifyCap {
             id: object::new(ctx),

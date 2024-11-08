@@ -5125,6 +5125,9 @@ get_bfc_system_modify_cap_key
 create_bfc_system_admin_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
+create_bfc_system_modify_cap
+	public(package) fun
+	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
 	0xc8::bfc_system
@@ -5183,9 +5186,6 @@ get_operation_capability
 	public fun
 	0xc8::bfc_system
 get_operation_capability_by_key
-	public fun
-	0xc8::bfc_system
-add_system_state_capability
 	public fun
 	0xc8::bfc_system
 add_operation_capability
