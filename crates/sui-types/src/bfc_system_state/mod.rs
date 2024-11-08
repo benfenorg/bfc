@@ -147,8 +147,10 @@ pub struct BfcSystemStateInnerV2 {
     pub rate_map: VecMap<String, u64>,
     pub stake_coins: Bag,
     pub daily_out_limit: u64,
-    pub daily_use_out_limit: u64,
+    pub daily_used_epoch: u64,
+    pub daily_used_quantity: u64,
     pub operation_capability: VecMap<String, VecSet<AccountAddress>>,
+    pub admin_capability_addresses: VecSet<AccountAddress>,
     pub oracle_address: Option<AccountAddress>,
 }
 
