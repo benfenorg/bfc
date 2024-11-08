@@ -91,6 +91,7 @@ use super::{
     ExecutionCacheReconfigAPI, ExecutionCacheWrite, NotifyReadWrapper, StateSyncAPI,
 };
 use sui_types::collection_types::VecMap;
+use sui_types::oracle_price::{get_oracle_price_by_id, OraclePrice};
 use sui_types::sui_system_state::{get_bfc_system_proposal_map};
 use sui_types::proposal::ProposalStatus;
 
@@ -1266,6 +1267,10 @@ impl ExecutionCacheRead for WritebackCache {
             },
             |digests| self.store.multi_get_events(digests),
         )
+    }
+
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
+        get_oracle_price_by_id(self, id)
     }
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {

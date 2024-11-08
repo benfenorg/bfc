@@ -66,13 +66,13 @@ mod checked {
         base_types::{ObjectRef, SuiAddress, TransactionDigest, TxContext},
         object::{Object, ObjectInner},
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        bfc_system_state::{BFC_SYSTEM_MODULE_NAME, BFC_ROUND_FUNCTION_NAME},
+        bfc_system_state::{BFC_SYSTEM_MODULE_NAME},
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS,
         SUI_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
     };
 
     use sui_types::{BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -726,9 +726,11 @@ mod checked {
         params: &AdvanceEpochParams,
         is_safe_mode: bool,
         discard: bool,
+        stable_coin_type: Vec<String>,
+        stable_coin_rate_against_busd: Vec<u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard)?;
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
         // Step 2: Advance the epoch.
@@ -830,6 +832,8 @@ mod checked {
         builder: &mut ProgrammableTransactionBuilder,
         is_safe_mode: bool,
         discard: bool,
+        stable_coin_type: Vec<String>,
+        stable_coin_rate_against_busd: Vec<u64>,
     ) -> Result<(), ExecutionError> {
         if !is_safe_mode { // if safe mode skip judge dao vote result
             let mut arguments = vec![];
@@ -837,6 +841,8 @@ mod checked {
                 CallArg::BFC_SYSTEM_MUT,
                 CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()),
+                CallArg::Pure(bcs::to_bytes(&stable_coin_rate_against_busd).unwrap()),
             ].into_iter()
                 .map(|a| builder.input(a))
                 .collect::<Result<_, _>>();
@@ -848,7 +854,7 @@ mod checked {
             builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
-                BFC_ROUND_FUNCTION_NAME.to_owned(),
+                BFC_ROUND_V2_FUNCTION_NAME.to_owned(),
                 vec![],
                 arguments,
             );
@@ -1026,7 +1032,11 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
         };
 
-        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard)?;
+        // query oracle rate
+        let (stable_coin_type, stable_coin_rate_against_busd) = get_oracle_rate(temporary_store);
+
+        let advance_epoch_pt = construct_advance_epoch_pt(&obc_params, builder, &params, is_safe_mode, discard,
+                                                          stable_coin_type, stable_coin_rate_against_busd)?;
         let result = programmable_transactions::execution::execute::<execution_mode::System>(
             protocol_config,
             metrics.clone(),
@@ -1323,5 +1333,22 @@ mod checked {
             )
             .expect("Unable to generate coin_deny_list_create transaction!");
         builder
+    }
+
+    fn get_oracle_rate(temporary_store: &mut TemporaryStore<'_>) -> (Vec<String>, Vec<u64>) {
+        let mut stable_coin_type: Vec<String> = vec![];
+        let mut stable_coin_rate_against_busd: Vec<u64> = vec![];
+        let rate_result = temporary_store.get_oracle_price();
+        if rate_result.is_err() {
+            tracing::error!("Failed to get oracle price, Error: {:?}", rate_result.err());
+        } else {
+            let stable_coin_rate = rate_result.unwrap().to_exchange_rate_against_busd();
+            for (k, v) in stable_coin_rate.iter() {
+                stable_coin_type.push(k.clone());
+                stable_coin_rate_against_busd.push(*v);
+            }
+        }
+
+        (stable_coin_type, stable_coin_rate_against_busd)
     }
 }

@@ -4715,7 +4715,7 @@ get_balance
 	public fun
 	0xc8::treasury
 check_vault
-	fun
+	public fun
 	0xc8::treasury
 get_vault_key
 	public fun
@@ -4904,6 +4904,9 @@ unstake_manager_key
 	public(package) fun
 	0xc8::bfc_system_state_inner
 update_round
+	public(package) fun
+	0xc8::bfc_system_state_inner
+update_round_v2
 	public(package) fun
 	0xc8::bfc_system_state_inner
 init_vault_with_positions
@@ -5113,6 +5116,12 @@ remove_operation_capability
 verify_operation_capability
 	public(package) fun
 	0xc8::bfc_system_state_inner
+set_oracle_address
+	public(package) fun
+	0xc8::bfc_system_state_inner
+get_oracle_address
+	public(package) fun
+	0xc8::bfc_system_state_inner
 withdraw_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5153,6 +5162,9 @@ change_round
 	public entry fun
 	0xc8::bfc_system
 bfc_round
+	fun
+	0xc8::bfc_system
+bfc_round_v2
 	fun
 	0xc8::bfc_system
 inner_stablecoin_to_bfc
@@ -5204,6 +5216,12 @@ remove_operation_capability
 	public fun
 	0xc8::bfc_system
 set_operation_capability
+	public fun
+	0xc8::bfc_system
+set_oracle_address
+	public fun
+	0xc8::bfc_system
+get_oracle_address
 	public fun
 	0xc8::bfc_system
 remove_propose

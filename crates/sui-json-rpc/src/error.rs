@@ -474,7 +474,6 @@ mod tests {
             expected_code.assert_eq(&error_object.code().to_string());
             let expected_message =
                 expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object \"BFC000000000000000000000000000000000000000000000000000000000000000060e0\" at version None.."];
-            expect!["Transaction execution failed due to issues with transaction inputs, please review the errors and try again: Could not find the referenced object 0x0000000000000000000000000000000000000000000000000000000000000000 at version None.."];
             expected_message.assert_eq(error_object.message());
         }
 

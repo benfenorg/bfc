@@ -136,6 +136,19 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
 
+    #[allow(unused_function)]
+    fun bfc_round_v2(
+        wrapper: &mut BfcSystemState,
+        round: u64,
+        epoch_start_time: u64,
+        stable_type_name_vector : vector<ascii::String>,
+        stable_rate_vector : vector<u64>,
+    ) {
+        let inner_state = load_system_state_mut_no_ctx(wrapper);
+        bfc_system_state_inner::update_round_v2(inner_state, round, stable_type_name_vector, stable_rate_vector);
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
+    }
+
     #[test_only]
     public fun load_system_state_mut_test(
         _self: &mut BfcSystemState,
@@ -154,6 +167,23 @@ module bfc_system::bfc_system {
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::update_round(inner_state, round);
+        // X-treasury rebalance
+        bfc_system_state_inner::rebalance(inner_state, clock, _ctx);
+        bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
+    }
+
+    #[test_only]
+    public fun bfc_round_v2_test(
+        wrapper: &mut BfcSystemState,
+        clock: &Clock,
+        round: u64,
+        epoch_start_time: u64,
+        stable_type_name_vector : vector<ascii::String>,
+        stable_rate_vector : vector<u64>,
+        ctx: &mut TxContext,
+    ) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::update_round_v2(inner_state, round, stable_type_name_vector, stable_rate_vector);
         // X-treasury rebalance
         bfc_system_state_inner::rebalance(inner_state, clock, _ctx);
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
@@ -322,6 +352,16 @@ module bfc_system::bfc_system {
     ) {
         let (inner, ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses, ctx)
+    }
+
+    public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address) {
+        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
+        inner.set_oracle_address(address)
+    }
+
+    public fun get_oracle_address(wrapper: &mut BfcSystemState): Option<address> {
+        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
+        inner.get_oracle_address()
     }
 
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {

@@ -16,6 +16,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_state_inner_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_state_inner_unstake_manager_key)
 -  [Function `update_round`](#0xc8_bfc_system_state_inner_update_round)
+-  [Function `update_round_v2`](#0xc8_bfc_system_state_inner_update_round_v2)
 -  [Function `init_vault_with_positions`](#0xc8_bfc_system_state_inner_init_vault_with_positions)
 -  [Function `create_treasury`](#0xc8_bfc_system_state_inner_create_treasury)
 -  [Function `get_rate_map`](#0xc8_bfc_system_state_inner_get_rate_map)
@@ -85,6 +86,8 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `add_operation_capability`](#0xc8_bfc_system_state_inner_add_operation_capability)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_state_inner_remove_operation_capability)
 -  [Function `verify_operation_capability`](#0xc8_bfc_system_state_inner_verify_operation_capability)
+-  [Function `set_oracle_address`](#0xc8_bfc_system_state_inner_set_oracle_address)
+-  [Function `get_oracle_address`](#0xc8_bfc_system_state_inner_get_oracle_address)
 -  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
 -  [Function `get_bfc_system_modify_cap_key`](#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key)
@@ -609,6 +612,15 @@ Errors
 
 
 
+<a name="0xc8_bfc_system_state_inner_ERR_INVALID_PARAM"></a>
+
+
+
+<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>: u64 = 1100;
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO"></a>
 
 
@@ -718,7 +730,6 @@ Errors
     parameters: <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemParameters">BfcSystemParameters</a>,
     ctx: &<b>mut</b> TxContext,
 ): <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInner">BfcSystemStateInner</a> {
-
     <b>let</b> dao = <a href="bfc_dao.md#0xc8_bfc_dao_create_dao">bfc_dao::create_dao</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_ADMIN_ADDRESSES">DEFAULT_ADMIN_ADDRESSES</a>, ctx);
     <a href="treasury.md#0xc8_treasury_create_treasury_pause_cap">treasury::create_treasury_pause_cap</a>(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>, ctx);
     <b>let</b> (t, remain_balance, rate_map) = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_treasury">create_treasury</a>(
@@ -776,7 +787,7 @@ Errors
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_stake_manager_key">create_stake_manager_key</a>(payment: Coin&lt;BFC&gt;,
-                                            ctx: &<b>mut</b> TxContext) {
+                                             ctx: &<b>mut</b> TxContext) {
     <a href="bfc_dao.md#0xc8_bfc_dao_create_stake_manager_key">bfc_dao::create_stake_manager_key</a>(payment, ctx);
 }
 </code></pre>
@@ -801,8 +812,8 @@ Errors
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_unstake_manager_key">unstake_manager_key</a>(key: BFCDaoManageKey,
-                                       token: ManagerKeyBfc,
-                                       ctx: &<b>mut</b> TxContext) {
+                                        token: ManagerKeyBfc,
+                                        ctx: &<b>mut</b> TxContext) {
     <a href="bfc_dao.md#0xc8_bfc_dao_unstake_manager_key">bfc_dao::unstake_manager_key</a>(key, token, ctx);
 }
 </code></pre>
@@ -832,6 +843,74 @@ Errors
 ) {
     _ = round;
     inner.stable_rate = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_update_round_v2"></a>
+
+## Function `update_round_v2`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round_v2">update_round_v2</a>(inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, round: u64, stable_type_name_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, stable_rate_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u64&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_update_round_v2">update_round_v2</a>(
+    inner: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    round: u64,
+    stable_type_name_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;,
+    stable_rate_vector: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u64&gt;,
+) {
+    // check
+    <b>if</b> (<a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector) != <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_rate_vector)) {
+        <b>abort</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>
+    };
+    <b>let</b> len = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector);
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; len) {
+        <b>let</b> stable_type_name = stable_type_name_vector[i];
+        <a href="treasury.md#0xc8_treasury_check_vault">treasury::check_vault</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_type_name);
+        i = i + 1;
+    };
+
+    _ = round;
+    <b>let</b> stable_rate_map = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> busd_vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;();
+    <b>let</b> <b>mut</b> busd_rate_some = stable_rate_map.try_get(&busd_vault_key);
+    <b>if</b> (busd_rate_some.is_some()) {
+        <b>let</b> busd_rate: u64 = busd_rate_some.extract();
+        // <b>update</b> <a href="busd.md#0xc8_busd">busd</a> rate
+        <b>if</b> (inner.stable_rate.contains(&busd_vault_key)) {
+            inner.stable_rate.remove(&busd_vault_key);
+            inner.stable_rate.insert(busd_vault_key, busd_rate);
+        };
+
+        // <b>update</b> other stable rate
+        <b>let</b> len = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector);
+        <b>let</b> <b>mut</b> i = 0;
+        <b>while</b> (i &lt; len) {
+            <b>let</b> stable_type_name = stable_type_name_vector[i];
+            <b>let</b> rate_against_busd = stable_rate_vector[i];
+            <b>if</b> (inner.stable_rate.contains(&stable_type_name)) {
+                inner.stable_rate.remove(&stable_type_name);
+            };
+
+            // oracle price decimal = 1_000_000_000
+            <b>let</b> rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
+            inner.stable_rate.insert(stable_type_name, rate_against_bfc);
+            i = i + 1;
+        }
+    };
 }
 </code></pre>
 
@@ -1097,8 +1176,8 @@ swap stablecoin to bfc
     <b>let</b> amount = <a href="../sui-framework/coin.md#0x2_coin_value">coin::value</a>(&coin_sc);
     <b>assert</b>!(amount &lt;= <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_INNER_STABLECOIN_TO_BFC_LIMIT">INNER_STABLECOIN_TO_BFC_LIMIT</a>, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>);
     <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_NOT_SYSTEM_ADDRESS">ERR_NOT_SYSTEM_ADDRESS</a>);
-    <b>let</b> <b>mut</b> result_balance= <a href="treasury.md#0xc8_treasury_redeem_internal">treasury::redeem_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx);
-    <b>if</b> (expected_amount == 0||<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&result_balance) == expected_amount) {
+    <b>let</b> <b>mut</b> result_balance = <a href="treasury.md#0xc8_treasury_redeem_internal">treasury::redeem_internal</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, coin_sc, amount, ctx);
+    <b>if</b> (expected_amount == 0 || <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&result_balance) == expected_amount) {
         result_balance
     }
     <b>else</b> <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&result_balance) &gt; expected_amount) {
@@ -1108,7 +1187,7 @@ swap stablecoin to bfc
     } <b>else</b> {
         <b>let</b> amount = expected_amount - <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&result_balance) ;
         <b>let</b> <b>mut</b> result = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_request_gas_balance">request_gas_balance</a>(self, amount, ctx);
-        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> result,result_balance);
+        <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> result, result_balance);
         result
     }
 }
@@ -1477,7 +1556,10 @@ deprecated
     <b>if</b> (amount &gt; 0) {
         <b>let</b> withdraw_balance = <a href="treasury_pool.md#0xc8_treasury_pool_withdraw_to_treasury">treasury_pool::withdraw_to_treasury</a>(&<b>mut</b> self.<a href="treasury_pool.md#0xc8_treasury_pool">treasury_pool</a>, amount, ctx);
         <b>if</b> (<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&withdraw_balance) &gt; 0) {
-            <a href="treasury.md#0xc8_treasury_deposit_with_one_stablecoin">treasury::deposit_with_one_stablecoin</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(withdraw_balance, ctx));
+            <a href="treasury.md#0xc8_treasury_deposit_with_one_stablecoin">treasury::deposit_with_one_stablecoin</a>&lt;StableCoinType&gt;(
+                &<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>,
+                <a href="../sui-framework/coin.md#0x2_coin_from_balance">coin::from_balance</a>(withdraw_balance, ctx)
+            );
         } <b>else</b> {
             <a href="../sui-framework/balance.md#0x2_balance_destroy_zero">balance::destroy_zero</a>(withdraw_balance);
         };
@@ -1547,7 +1629,6 @@ deprecated
     <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
     ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
     <b>if</b> (usdc_usdt_coint) {
-        <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_usdt_usdc">auth_utils::has_mint_usdt_usdc</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
         <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
     };
     <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">auth_utils::has_mint_other_stablecoin</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
@@ -1992,7 +2073,11 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause_v2">vault_set_pause_v2</a>&lt;StableCoinType&gt;(cap: &TreasuryPauseCap, self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, pause: bool) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_vault_set_pause_v2">vault_set_pause_v2</a>&lt;StableCoinType&gt;(
+    cap: &TreasuryPauseCap,
+    self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    pause: bool
+) {
     <a href="treasury.md#0xc8_treasury_vault_set_pause">treasury::vault_set_pause</a>&lt;StableCoinType&gt;(cap, &<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, pause)
 }
 </code></pre>
@@ -2148,8 +2233,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">remove_proposal</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,key: &BFCDaoManageKey,proposal_id: u64){
-    <a href="bfc_dao.md#0xc8_bfc_dao_remove_proposal">bfc_dao::remove_proposal</a>(&<b>mut</b> self.dao,key,proposal_id);
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_proposal">remove_proposal</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, key: &BFCDaoManageKey, proposal_id: u64) {
+    <a href="bfc_dao.md#0xc8_bfc_dao_remove_proposal">bfc_dao::remove_proposal</a>(&<b>mut</b> self.dao, key, proposal_id);
 }
 </code></pre>
 
@@ -2172,8 +2257,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">remove_action</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,key: &BFCDaoManageKey,action_id: u64){
-    <a href="bfc_dao.md#0xc8_bfc_dao_remove_action">bfc_dao::remove_action</a>(&<b>mut</b> self.dao,key,action_id);
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_action">remove_action</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, key: &BFCDaoManageKey, action_id: u64) {
+    <a href="bfc_dao.md#0xc8_bfc_dao_remove_action">bfc_dao::remove_action</a>(&<b>mut</b> self.dao, key, action_id);
 }
 </code></pre>
 
@@ -2517,9 +2602,9 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_voting">withdraw_voting</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-                           voting_bfc: VotingBfc,
-                           <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
-                           ctx: &<b>mut</b> TxContext) {
+                                    voting_bfc: VotingBfc,
+                                    <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
+                                    ctx: &<b>mut</b> TxContext) {
     <a href="bfc_dao.md#0xc8_bfc_dao_withdraw_voting">bfc_dao::withdraw_voting</a>(&<b>mut</b> system_state.dao, voting_bfc, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
@@ -2544,9 +2629,9 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_voting_bfc">create_voting_bfc</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-                                     <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
-                                     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
-                                     ctx: &<b>mut</b> TxContext) {
+                                      <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;BFC&gt;,
+                                      <a href="../sui-framework/clock.md#0x2_clock">clock</a>: & Clock,
+                                      ctx: &<b>mut</b> TxContext) {
     <a href="bfc_dao.md#0xc8_bfc_dao_create_voting_bfc">bfc_dao::create_voting_bfc</a>(&<b>mut</b> system_state.dao, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
 }
 </code></pre>
@@ -2784,7 +2869,7 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package)  <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability">get_operation_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): VecMap&lt;String, VecSet&lt;<b>address</b>&gt;&gt; {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability">get_operation_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): VecMap&lt;String, VecSet&lt;<b>address</b>&gt;&gt; {
     self.operation_capability
 }
 </code></pre>
@@ -2952,6 +3037,54 @@ deprecated
     } <b>else</b> {
         <b>false</b>
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_set_oracle_address"></a>
+
+## Function `set_oracle_address`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_oracle_address">set_oracle_address</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, <b>address</b>: <b>address</b>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_oracle_address">set_oracle_address</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, <b>address</b>: <b>address</b>) {
+    self.oracle_address = <a href="../move-stdlib/option.md#0x1_option_some">option::some</a>(<b>address</b>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_get_oracle_address"></a>
+
+## Function `get_oracle_address`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_oracle_address">get_oracle_address</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<b>address</b>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_oracle_address">get_oracle_address</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): Option&lt;<b>address</b>&gt; {
+    self.oracle_address
 }
 </code></pre>
 

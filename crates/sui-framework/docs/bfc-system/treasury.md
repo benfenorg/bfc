@@ -368,7 +368,7 @@ title: Module `0xc8::treasury`
 
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -377,7 +377,7 @@ title: Module `0xc8::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
     <b>assert</b>!(
         <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(
             &_treasury.id,

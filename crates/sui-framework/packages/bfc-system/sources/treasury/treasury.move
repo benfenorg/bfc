@@ -104,7 +104,7 @@ module bfc_system::treasury {
         balance::value(&_treasury.bfc_balance)
     }
 
-    fun check_vault(_treasury: &Treasury, _vault_key: String) {
+    public fun check_vault(_treasury: &Treasury, _vault_key: String) {
         assert!(
             dynamic_field::exists_(
                 &_treasury.id,
@@ -610,7 +610,7 @@ module bfc_system::treasury {
         one_coin_exchange_rate<BTRY>(_treasury, &mut rate_map, amount);
         one_coin_exchange_rate<BZAR>(_treasury, &mut rate_map, amount);
         one_coin_exchange_rate<BMXN>(_treasury, &mut rate_map, amount);
-
+        
         rate_map
     }
 
