@@ -87,6 +87,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `verify_operation_capability`](#0xc8_bfc_system_state_inner_verify_operation_capability)
 -  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
+-  [Function `get_bfc_system_modify_cap_key`](#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key)
 -  [Function `create_bfc_system_state_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_state_cap)
 
 
@@ -2961,6 +2962,30 @@ deprecated
     _ctx: &<b>mut</b> TxContext
 ) {
     <a href="treasury.md#0xc8_treasury_increase_other_stablecoin_balance">treasury::increase_other_stablecoin_balance</a>&lt;StableCoinType&gt;(&<b>mut</b> self.<a href="treasury.md#0xc8_treasury">treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key"></a>
+
+## Function `get_bfc_system_modify_cap_key`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key">get_bfc_system_modify_cap_key</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key">get_bfc_system_modify_cap_key</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a>) : String {
+    self.key
 }
 </code></pre>
 

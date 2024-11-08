@@ -1287,7 +1287,7 @@ X treasury rebalance
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_entry">mint_stable_entry</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_entry">mint_stable_entry</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1299,13 +1299,11 @@ X treasury rebalance
 <pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable_entry">mint_stable_entry</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     cap: &BfcSystemModifyCap,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> _ = cap;
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &std::ascii::string(key), _ctx);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
     <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>
@@ -1320,7 +1318,7 @@ X treasury rebalance
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -1332,13 +1330,11 @@ X treasury rebalance
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext,
     cap: &BfcSystemModifyCap
 ): Coin&lt;StableCoinType&gt; {
-    <b>let</b> _ = cap;
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &std::ascii::string(key), _ctx)
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
 }
 </code></pre>
 
@@ -1384,7 +1380,7 @@ X treasury rebalance
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, recipient: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>)
 </code></pre>
 
 
@@ -1396,17 +1392,15 @@ X treasury rebalance
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     amount: u64,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     recipient: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
     cap: &BfcSystemModifyCap
 ) {
-    <b>let</b> _ = cap;
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(
         inner_state,
         amount,
-        &std::ascii::string(key),
+        &cap.get_bfc_system_modify_cap_key(),
         _ctx
     );
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">bfc_system_state_inner::exchange_stable_to_busd</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, recipient, _ctx);
@@ -1461,7 +1455,7 @@ X treasury rebalance
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, busd_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, busd_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1474,9 +1468,7 @@ X treasury rebalance
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     busd_coin: Coin&lt;BUSD&gt;,
     ctx: &<b>mut</b> TxContext,
-    cap: &BfcSystemModifyCap
 ) {
-    <b>let</b> _ = cap;
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_busd_to_stable">bfc_system_state_inner::exchange_busd_to_stable</a>&lt;StableCoinType&gt;(inner_state, busd_coin, _ctx);
 }

@@ -960,6 +960,10 @@ module bfc_system::bfc_system_state_inner {
         treasury::increase_other_stablecoin_balance<StableCoinType>(&mut self.treasury, balance);
     }
 
+    public(package) fun get_bfc_system_modify_cap_key(self: &BfcSystemModifyCap) : String {
+        self.key
+    }
+
     public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
         let cap = BfcSystemStateCap {
             id : object::new(ctx),

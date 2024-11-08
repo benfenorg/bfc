@@ -5119,6 +5119,9 @@ withdraw_balance
 add_balance_to_vault
 	public(package) fun
 	0xc8::bfc_system_state_inner
+get_bfc_system_modify_cap_key
+	public(package) fun
+	0xc8::bfc_system_state_inner
 create_bfc_system_state_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
