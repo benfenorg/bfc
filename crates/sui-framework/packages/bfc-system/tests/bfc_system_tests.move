@@ -600,7 +600,7 @@ module bfc_system::bfc_system_tests {
         let before = bfc_system::get_daily_out_limit(&mut id);
         assert!(before == 40000_000_000_000u64, 1);
 
-        bfc_system::set_daily_out_limit(&mut id, limit);
+        bfc_system::set_daily_out_limit(&mut system_state, limit, ctx);
         let after = bfc_system::get_daily_out_limit(&mut id);
         assert!(after == limit, 1);
 
@@ -621,7 +621,7 @@ module bfc_system::bfc_system_tests {
         let key = b"key";
         let before = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(before.size() == 0, 1);
-        bfc_system::add_operation_capability(&mut id, key, @0x0);
+        bfc_system::add_operation_capability(&mut system_state, key, @0x0, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 1, 1);
 
@@ -640,8 +640,8 @@ module bfc_system::bfc_system_tests {
 
         let mut id = object::bfc_system_state_for_test();
         let key = b"key";
-        bfc_system::add_operation_capability(&mut id, key, @0x0);
-        bfc_system::remove_operation_capability(&mut id, key, @0x0);
+        bfc_system::add_operation_capability(&mut system_state, key, @0x0, ctx);
+        bfc_system::remove_operation_capability(&mut system_state, key, @0x0, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 0, 1);
 
@@ -663,7 +663,7 @@ module bfc_system::bfc_system_tests {
         let before = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(before.size() == 0, 1);
         let v = vec_set::singleton(@0x0);
-        bfc_system::set_operation_capability(&mut id, key, v);
+        bfc_system::set_operation_capability(&mut system_state, key, v, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut id, key);
         assert!(after.size() == 1, 1);
 

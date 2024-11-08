@@ -1171,18 +1171,6 @@ advance_epoch
 get_stable_rate_from_bfc
 	fun
 	0x3::sui_system
-request_set_daily_out_limit
-	public fun
-	0x3::sui_system
-request_add_operation_capability
-	public fun
-	0x3::sui_system
-request_remove_operation_capability
-	public fun
-	0x3::sui_system
-request_set_operation_capability
-	public fun
-	0x3::sui_system
 get_stable_rate
 	public fun
 	0x3::sui_system
