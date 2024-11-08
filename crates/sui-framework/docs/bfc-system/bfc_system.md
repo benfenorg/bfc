@@ -26,7 +26,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `get_operation_capability`](#0xc8_bfc_system_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_get_operation_capability_by_key)
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
--  [Function `add_operation_capability_v1`](#0xc8_bfc_system_add_operation_capability_v1)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_remove_operation_capability)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_set_operation_capability)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
@@ -671,7 +670,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, daily_out_limit: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">bfc_system_state_inner::BfcSystemStateCap</a>, daily_out_limit: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -681,6 +680,7 @@ deprecated
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+                               _cap: &BfcSystemStateCap,
                                daily_out_limit: u64,
                                ctx: &<b>mut</b> TxContext, ) {
     <b>let</b> (inner, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
@@ -748,7 +748,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">bfc_system_state_inner::BfcSystemStateCap</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -759,41 +759,12 @@ deprecated
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability">add_operation_capability</a>(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _cap: &BfcSystemStateCap,
     key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     <b>address</b>: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> (inner, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_add_operation_capability_v1"></a>
-
-## Function `add_operation_capability_v1`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_operation_capability_v1">add_operation_capability_v1</a>(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    <b>address</b>: <b>address</b>,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> (inner, _) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
@@ -808,7 +779,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">bfc_system_state_inner::BfcSystemStateCap</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -819,6 +790,7 @@ deprecated
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_operation_capability">remove_operation_capability</a>(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _cap: &BfcSystemStateCap,
     key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     <b>address</b>: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
@@ -838,7 +810,7 @@ deprecated
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">bfc_system_state_inner::BfcSystemStateCap</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, addresses: <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -849,6 +821,7 @@ deprecated
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_operation_capability">set_operation_capability</a>(
     wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _cap: &BfcSystemStateCap,
     key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     addresses: VecSet&lt;<b>address</b>&gt;,
     ctx: &<b>mut</b> TxContext,

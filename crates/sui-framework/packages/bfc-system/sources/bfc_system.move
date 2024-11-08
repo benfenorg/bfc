@@ -38,7 +38,9 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao_manager::{BFCDaoManageKey, ManagerKeyBfc};
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
-    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2, BfcSystemModifyCap};
+    use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2, BfcSystemModifyCap,
+        BfcSystemStateCap
+    };
     use bfc_system::treasury::{TreasuryPauseCap};
 
     public struct BfcSystemState has key {
@@ -265,6 +267,7 @@ module bfc_system::bfc_system {
     }
 
     public fun set_daily_out_limit(wrapper: &mut BfcSystemState,
+                                   _cap: &BfcSystemStateCap,
                                    daily_out_limit: u64,
                                    ctx: &mut TxContext, ) {
         let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
@@ -282,6 +285,13 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
+    public fun get_capability_systemstatecap_test(
+        ctx: &mut TxContext,
+    ): BfcSystemStateCap {
+        bfc_system_state_inner::create_bfc_system_state_cap_test(ctx)
+    }
+
+    #[test_only]
     public fun add_operation_capability_test(
         wrapper: &mut BfcSystemState,
         key: vector<u8>,
@@ -294,6 +304,7 @@ module bfc_system::bfc_system {
 
     public fun add_operation_capability(
         wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemStateCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
@@ -302,18 +313,9 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
 
-    public fun add_operation_capability_v1(
-        wrapper: &mut BfcSystemState,
-        key: vector<u8>,
-        address: address,
-        ctx: &mut TxContext,
-    ) {
-        let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
-    }
-
     public fun remove_operation_capability(
         wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemStateCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
@@ -324,6 +326,7 @@ module bfc_system::bfc_system {
 
     public fun set_operation_capability(
         wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemStateCap,
         key: vector<u8>,
         addresses: VecSet<address>,
         ctx: &mut TxContext,
