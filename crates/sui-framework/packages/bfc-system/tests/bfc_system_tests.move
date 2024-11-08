@@ -261,7 +261,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
 
         create_sui_system_state_for_testing(ctx, bfc_amount);
-        bfc_system_state_inner::create_bfc_system_modify_cap(ctx,bfc_addr);
+        bfc_system_state_inner::create_bfc_system_modify_cap(ctx,bfc_addr, std::ascii::string(b"right_key"));
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
         scenario_val
     }
