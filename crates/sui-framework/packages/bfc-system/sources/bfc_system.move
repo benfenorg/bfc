@@ -300,8 +300,8 @@ module bfc_system::bfc_system {
                                    _cap: &BfcSystemAdminCap,
                                    daily_out_limit: u64,
                                    ctx: &mut TxContext, ) {
-        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit);
+        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit, ctx);
     }
 
     public fun get_operation_capability(
@@ -339,8 +339,8 @@ module bfc_system::bfc_system {
         address: address,
         ctx: &mut TxContext,
     ) {
-        let (inner, _) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::remove_operation_capability(inner, &std::ascii::string(key), address)
+        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::remove_operation_capability(inner, &std::ascii::string(key), address, ctx)
     }
 
     public fun set_operation_capability(

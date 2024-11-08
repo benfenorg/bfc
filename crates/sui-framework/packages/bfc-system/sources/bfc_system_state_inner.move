@@ -46,7 +46,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use std::type_name;
-    use sui::tx_context::epoch;
+    use sui::tx_context::{epoch, sender};
     use bfc_system::auth_utils;
 
     ///Default stable base points
@@ -71,6 +71,7 @@ module bfc_system::bfc_system_state_inner {
     const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
     const ERR_ADD_ADMIN_COUNT_ZERO: u64 = 1009;
     const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
+    const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
 
 
 
@@ -891,7 +892,8 @@ module bfc_system::bfc_system_state_inner {
         self.daily_out_limit
     }
 
-    public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {
+    public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64, ctx: &mut TxContext, ) {
+        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
         self.daily_out_limit = new_limit;
     }
 
@@ -992,6 +994,7 @@ module bfc_system::bfc_system_state_inner {
         value: address,
         ctx: &mut TxContext,
     ) {
+        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
             vec_set::insert(new_capability, value);
@@ -1003,7 +1006,13 @@ module bfc_system::bfc_system_state_inner {
         create_bfc_system_modify_cap(ctx, value, key);
     }
 
-    public(package) fun remove_operation_capability(self: &mut BfcSystemStateInnerV2, key: &String, value: address) {
+    public(package) fun remove_operation_capability(
+        self: &mut BfcSystemStateInnerV2,
+        key: &String,
+        value: address,
+        ctx: &mut TxContext,
+    ) {
+        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
         if (vec_map::contains(&self.operation_capability, key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
             vec_set::remove(new_capability, &value);

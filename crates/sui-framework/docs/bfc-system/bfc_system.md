@@ -718,8 +718,8 @@ deprecated
                                _cap: &BfcSystemAdminCap,
                                daily_out_limit: u64,
                                ctx: &<b>mut</b> TxContext, ) {
-    <b>let</b> (inner, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_daily_out_limit">bfc_system_state_inner::set_daily_out_limit</a>(inner, daily_out_limit);
+    <b>let</b> (inner, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_daily_out_limit">bfc_system_state_inner::set_daily_out_limit</a>(inner, daily_out_limit, ctx);
 }
 </code></pre>
 
@@ -837,8 +837,8 @@ deprecated
     <b>address</b>: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (inner, _) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, &std::ascii::string(key), <b>address</b>)
+    <b>let</b> (inner, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_operation_capability">bfc_system_state_inner::remove_operation_capability</a>(inner, &std::ascii::string(key), <b>address</b>, ctx)
 }
 </code></pre>
 
