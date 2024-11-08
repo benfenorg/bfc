@@ -53,12 +53,12 @@ module sui_system::genesis {
         validator_low_stake_grace_period: u64,
     }
 
-    public struct TokenDistributionSchedule has drop {
+    public struct TokenDistributionSchedule {
         stake_subsidy_fund_mist: u64,
         allocations: vector<TokenAllocation>,
     }
 
-    public struct TokenAllocation has drop {
+    public struct TokenAllocation {
         recipient_address: address,
         amount_mist: u64,
 

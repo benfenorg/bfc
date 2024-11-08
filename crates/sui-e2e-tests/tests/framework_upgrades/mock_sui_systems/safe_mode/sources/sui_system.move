@@ -42,8 +42,8 @@ module sui_system::sui_system {
     use std::ascii;
     use sui::balance::Balance;
 
+    use sui_system::staking_pool::{StakedBfc, FungibleStakedSui};
     use sui::coin::{Self, Coin};
-    use sui_system::staking_pool::StakedBfc;
     use sui::bfc::BFC;
     use sui::table::Table;
     use sui_system::validator::Validator;
@@ -305,6 +305,26 @@ module sui_system::sui_system {
         transfer::public_transfer(coin::from_balance(reward, ctx), tx_context::sender(ctx));
     }
 
+    /// Convert StakedSui into a FungibleStakedSui object.
+    public fun convert_to_fungible_staked_sui(
+        wrapper: &mut SuiSystemState,
+        staked_sui: StakedBfc,
+        ctx: &mut TxContext,
+    ): FungibleStakedSui {
+        let self = load_system_state_mut(wrapper);
+        self.convert_to_fungible_staked_sui(staked_sui, ctx)
+    }
+
+    /// Convert FungibleStakedSui into a StakedSui object.
+    public fun redeem_fungible_staked_sui(
+        wrapper: &mut SuiSystemState,
+        fungible_staked_sui: FungibleStakedSui,
+        ctx: &TxContext,
+    ): Balance<BFC> {
+        let self = load_system_state_mut(wrapper);
+        self.redeem_fungible_staked_sui(fungible_staked_sui, ctx)
+    }
+
     /// Non-entry version of `request_withdraw_stake` that returns the withdrawn SUI instead of transferring it to the sender.
     public fun request_withdraw_stake_non_entry(
         wrapper: &mut SuiSystemState,
@@ -551,6 +571,11 @@ module sui_system::sui_system {
     ) {
         let self = load_system_state_mut(self);
         sui_system_state_inner::update_candidate_validator_network_pubkey(self, network_pubkey, ctx)
+    }
+
+    public fun validator_address_by_pool_id(wrapper: &mut SuiSystemState, pool_id: &ID): address {
+        let self = load_system_state_mut(wrapper);
+        self.validator_address_by_pool_id(pool_id)
     }
 
     /// Getter of the pool token exchange rate of a staking pool. Works for both active and inactive pools.
