@@ -5185,6 +5185,9 @@ get_operation_capability
 get_operation_capability_by_key
 	public fun
 	0xc8::bfc_system
+add_system_state_capability
+	public fun
+	0xc8::bfc_system
 add_operation_capability
 	public fun
 	0xc8::bfc_system

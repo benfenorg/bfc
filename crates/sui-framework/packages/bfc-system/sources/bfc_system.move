@@ -285,13 +285,6 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
-    public fun get_capability_systemstatecap_test(
-        ctx: &mut TxContext,
-    ): BfcSystemStateCap {
-        bfc_system_state_inner::create_bfc_system_state_cap_test(ctx)
-    }
-
-    #[test_only]
     public fun add_operation_capability_test(
         wrapper: &mut BfcSystemState,
         key: vector<u8>,
@@ -299,6 +292,17 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ) {
         let (inner, _) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
+    }
+
+    public fun add_system_state_capability(
+        wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemStateCap,
+        key: vector<u8>,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
+        let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::add_operation_capability(inner, std::ascii::string(key), address)
     }
 

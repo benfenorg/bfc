@@ -971,13 +971,6 @@ module bfc_system::bfc_system_state_inner {
         self.key
     }
 
-    #[test_only]
-    public(package) fun create_bfc_system_state_cap_test(ctx: &mut TxContext): BfcSystemStateCap {
-        BfcSystemStateCap {
-            id : object::new(ctx),
-        }
-    }
-
     public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
         let cap = BfcSystemStateCap {
             id : object::new(ctx),

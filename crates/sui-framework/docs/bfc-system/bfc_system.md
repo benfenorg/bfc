@@ -25,6 +25,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_set_daily_out_limit)
 -  [Function `get_operation_capability`](#0xc8_bfc_system_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_get_operation_capability_by_key)
+-  [Function `add_system_state_capability`](#0xc8_bfc_system_add_system_state_capability)
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_remove_operation_capability)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_set_operation_capability)
@@ -734,6 +735,37 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_operation_capability_by_key">get_operation_capability_by_key</a>(id: &UID, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): VecSet&lt;<b>address</b>&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_operation_capability_by_key">bfc_system_state_inner::get_operation_capability_by_key</a>(inner, &std::ascii::string(key))
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_add_system_state_capability"></a>
+
+## Function `add_system_state_capability`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_system_state_capability">add_system_state_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">bfc_system_state_inner::BfcSystemStateCap</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_system_state_capability">add_system_state_capability</a>(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _cap: &BfcSystemStateCap,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    <b>address</b>: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (inner, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_operation_capability">bfc_system_state_inner::add_operation_capability</a>(inner, std::ascii::string(key), <b>address</b>)
 }
 </code></pre>
 
