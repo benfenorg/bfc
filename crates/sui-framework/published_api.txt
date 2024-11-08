@@ -5123,6 +5123,15 @@ get_bfc_system_modify_cap_key
 	public(package) fun
 	0xc8::bfc_system_state_inner
 create_bfc_system_admin_cap
+	fun
+	0xc8::bfc_system_state_inner
+verify_admin_capability
+	public(package) fun
+	0xc8::bfc_system_state_inner
+add_bfc_system_admin_cap
+	public(package) fun
+	0xc8::bfc_system_state_inner
+remove_bfc_system_admin_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
 create_bfc_system_modify_cap
