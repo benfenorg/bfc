@@ -3259,6 +3259,15 @@ mul_shl
 full_mul
 	public fun
 	0xc8::full_math_u64
+has_mint_usdt_usdc
+	public fun
+	0xc8::auth_utils
+has_mint_other_stablecoin
+	public fun
+	0xc8::auth_utils
+substring
+	public fun
+	0xc8::auth_utils
 BARS
 	public struct
 	0xc8::bars
@@ -4882,6 +4891,12 @@ BfcSystemStateInner
 BfcSystemStateInnerV2
 	public struct
 	0xc8::bfc_system_state_inner
+BfcSystemStateCap
+	public struct
+	0xc8::bfc_system_state_inner
+BfcSystemModifyCap
+	public struct
+	0xc8::bfc_system_state_inner
 TreasuryParameters
 	public struct
 	0xc8::bfc_system_state_inner
@@ -4973,6 +4988,9 @@ request_gas_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
 mint_stable
+	public(package) fun
+	0xc8::bfc_system_state_inner
+mint_stable_V1
 	public(package) fun
 	0xc8::bfc_system_state_inner
 exchange_stable_to_busd
@@ -5122,6 +5140,9 @@ withdraw_balance
 add_balance_to_vault
 	public(package) fun
 	0xc8::bfc_system_state_inner
+create_bfc_system_state_cap
+	public(package) fun
+	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
 	0xc8::bfc_system
@@ -5254,7 +5275,13 @@ mint_stable_entry
 mint_stable
 	public fun
 	0xc8::bfc_system
+mint_stable_V1
+	public fun
+	0xc8::bfc_system
 exchange_stable_to_busd
+	public fun
+	0xc8::bfc_system
+exchange_stable_to_busd_V1
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_stable

@@ -46,6 +46,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use std::type_name;
+    use bfc_system::auth_utils;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
@@ -66,9 +67,13 @@ module bfc_system::bfc_system_state_inner {
     const ERR_MINT_BUSD: u64 = 1005;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
+    const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
 
 
     const ERR_INVALID_PARAM: u64 = 1100;
+
+    const DEFAULT_BFC_STATE_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
+
 
     //spec module { pragma verify = false; }
 
@@ -97,6 +102,15 @@ module bfc_system::bfc_system_state_inner {
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
         oracle_address: Option<address>,
+    }
+
+    public struct BfcSystemStateCap has key, store {
+        id: UID,
+    }
+
+    public struct BfcSystemModifyCap has key, store {
+        id: UID,
+        key: ascii::String,
     }
 
     public struct TreasuryParameters has drop, copy {
@@ -509,7 +523,35 @@ module bfc_system::bfc_system_state_inner {
         if (usdc_usdt_coint) {
             return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
         };
+        assert!(auth_utils::has_mint_other_stablecoin(key), ERR_MINT_OPERATION_UNAUTHORIZED);
+        let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
+            &mut inner_state.treasury,
+            treasury::get_vault_key<StableCoinType>()
+        );
+        let (balance_stable, _balance_bfc) = vault::balances<StableCoinType>(vault_mut);
+        if (balance_stable >= amount) {
+            return vault::decrease_coin_a(vault_mut, amount, ctx)
+        };
 
+        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+    }
+
+    public(package) fun mint_stable_V1<StableCoinType>(
+        inner_state: &mut BfcSystemStateInnerV2,
+        amount: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ): Coin<StableCoinType> {
+        assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
+        assert!(verify_operation_capability(inner_state, &cap.key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
+        assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
+        let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>(
+        ) || type_name::get<StableCoinType>() == type_name::get<USDC>();
+        if (usdc_usdt_coint) {
+            assert!(auth_utils::has_mint_usdt_usdc(&cap.key), ERR_MINT_OPERATION_UNAUTHORIZED);
+            return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+        };
+        assert!(auth_utils::has_mint_other_stablecoin(&cap.key), ERR_MINT_OPERATION_UNAUTHORIZED);
         let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
             &mut inner_state.treasury,
             treasury::get_vault_key<StableCoinType>()
@@ -548,7 +590,6 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
-    #[allow(lint(self_transfer))]
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
@@ -873,6 +914,16 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
 
+        let admin = DEFAULT_BFC_STATE_ADMIN_ADDRESSES;
+        let count = vector::length(&admin);
+
+        let mut i = 0;
+        while (i < count) {
+            let admin = vector::borrow(&admin, i);
+            create_bfc_system_state_cap(_ctx, *admin);
+            i = i + 1;
+        };
+
         std::debug::print(&b"init_bfc_system_state_v2 end");
     }
 
@@ -978,4 +1029,21 @@ module bfc_system::bfc_system_state_inner {
     ) {
         treasury::increase_other_stablecoin_balance<StableCoinType>(&mut self.treasury, balance);
     }
+
+    public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
+        let cap = BfcSystemStateCap {
+            id : object::new(ctx),
+        };
+        transfer::transfer(cap, recipient);
+    }
+
+    #[test_only]
+    public(package) fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
+        let cap = BfcSystemModifyCap {
+            id: object::new(ctx),
+            key,
+        };
+        transfer::transfer(cap, recipient);
+    }
+
 }
