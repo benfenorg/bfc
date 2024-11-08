@@ -258,8 +258,10 @@ module bfc_system::bfc_system_tests {
     fun setup(bfc_amount: u64): Scenario {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
+        let ctx = test_scenario::ctx(&mut scenario_val);
 
-        create_sui_system_state_for_testing(test_scenario::ctx(&mut scenario_val), bfc_amount);
+        create_sui_system_state_for_testing(ctx, bfc_amount);
+        bfc_system_state_inner::create_bfc_system_modify_cap(ctx,bfc_addr);
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
         scenario_val
     }

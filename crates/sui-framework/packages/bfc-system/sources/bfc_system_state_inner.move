@@ -47,6 +47,8 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::tick::Tick;
     use std::type_name;
     use bfc_system::auth_utils;
+    #[test_only]
+    use std::string;
 
     ///Default stable base points
     const DEFAULT_STABLE_BASE_POINTS: u64 = 10;
@@ -963,6 +965,15 @@ module bfc_system::bfc_system_state_inner {
     public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
         let cap = BfcSystemStateCap {
             id : object::new(ctx),
+        };
+        transfer::transfer(cap, recipient);
+    }
+
+    #[test_only]
+    public(package) fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address) {
+        let cap = BfcSystemModifyCap {
+            id : object::new(ctx),
+            key: std::ascii::string(b"system_test"),
         };
         transfer::transfer(cap, recipient);
     }
