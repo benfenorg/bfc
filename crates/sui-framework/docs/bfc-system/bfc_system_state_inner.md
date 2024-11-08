@@ -6,7 +6,7 @@ title: Module `0xc8::bfc_system_state_inner`
 
 -  [Struct `BfcSystemStateInner`](#0xc8_bfc_system_state_inner_BfcSystemStateInner)
 -  [Struct `BfcSystemStateInnerV2`](#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2)
--  [Resource `BfcSystemStateCap`](#0xc8_bfc_system_state_inner_BfcSystemStateCap)
+-  [Resource `BfcSystemAdminCap`](#0xc8_bfc_system_state_inner_BfcSystemAdminCap)
 -  [Resource `BfcSystemModifyCap`](#0xc8_bfc_system_state_inner_BfcSystemModifyCap)
 -  [Struct `TreasuryParameters`](#0xc8_bfc_system_state_inner_TreasuryParameters)
 -  [Struct `BfcSystemParameters`](#0xc8_bfc_system_state_inner_BfcSystemParameters)
@@ -88,7 +88,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `withdraw_balance`](#0xc8_bfc_system_state_inner_withdraw_balance)
 -  [Function `add_balance_to_vault`](#0xc8_bfc_system_state_inner_add_balance_to_vault)
 -  [Function `get_bfc_system_modify_cap_key`](#0xc8_bfc_system_state_inner_get_bfc_system_modify_cap_key)
--  [Function `create_bfc_system_state_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_state_cap)
+-  [Function `create_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -300,13 +300,13 @@ title: Module `0xc8::bfc_system_state_inner`
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_BfcSystemStateCap"></a>
+<a name="0xc8_bfc_system_state_inner_BfcSystemAdminCap"></a>
 
-## Resource `BfcSystemStateCap`
+## Resource `BfcSystemAdminCap`
 
 
 
-<pre><code><b>struct</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">BfcSystemStateCap</a> <b>has</b> store, key
+<pre><code><b>struct</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a> <b>has</b> store, key
 </code></pre>
 
 
@@ -2679,7 +2679,7 @@ deprecated
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; count) {
         <b>let</b> admin = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&admin, i);
-        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(_ctx, *admin);
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(_ctx, *admin);
         i = i + 1;
     };
 
@@ -3004,13 +3004,13 @@ deprecated
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_create_bfc_system_state_cap"></a>
+<a name="0xc8_bfc_system_state_inner_create_bfc_system_admin_cap"></a>
 
-## Function `create_bfc_system_state_cap`
+## Function `create_bfc_system_admin_cap`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>)
 </code></pre>
 
 
@@ -3019,8 +3019,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_state_cap">create_bfc_system_state_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
-    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateCap">BfcSystemStateCap</a> {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>) {
+    <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">BfcSystemAdminCap</a> {
         id : <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);

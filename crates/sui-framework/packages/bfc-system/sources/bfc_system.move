@@ -39,7 +39,7 @@ module bfc_system::bfc_system {
     use bfc_system::bfc_dao::{Proposal, Vote};
     use bfc_system::bfc_system_state_inner;
     use bfc_system::bfc_system_state_inner::{BfcSystemStateInner, BfcSystemParameters, BfcSystemStateInnerV2, BfcSystemModifyCap,
-        BfcSystemStateCap
+        BfcSystemAdminCap
     };
     use bfc_system::treasury::{TreasuryPauseCap};
 
@@ -267,7 +267,7 @@ module bfc_system::bfc_system {
     }
 
     public fun set_daily_out_limit(wrapper: &mut BfcSystemState,
-                                   _cap: &BfcSystemStateCap,
+                                   _cap: &BfcSystemAdminCap,
                                    daily_out_limit: u64,
                                    ctx: &mut TxContext, ) {
         let (inner, _ctx) = load_system_state_mut(wrapper, ctx);
@@ -297,7 +297,7 @@ module bfc_system::bfc_system {
 
     public fun add_system_state_capability(
         wrapper: &mut BfcSystemState,
-        _cap: &BfcSystemStateCap,
+        _cap: &BfcSystemAdminCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
@@ -308,7 +308,7 @@ module bfc_system::bfc_system {
 
     public fun add_operation_capability(
         wrapper: &mut BfcSystemState,
-        _cap: &BfcSystemStateCap,
+        _cap: &BfcSystemAdminCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
@@ -319,7 +319,7 @@ module bfc_system::bfc_system {
 
     public fun remove_operation_capability(
         wrapper: &mut BfcSystemState,
-        _cap: &BfcSystemStateCap,
+        _cap: &BfcSystemAdminCap,
         key: vector<u8>,
         address: address,
         ctx: &mut TxContext,
@@ -330,7 +330,7 @@ module bfc_system::bfc_system {
 
     public fun set_operation_capability(
         wrapper: &mut BfcSystemState,
-        _cap: &BfcSystemStateCap,
+        _cap: &BfcSystemAdminCap,
         key: vector<u8>,
         addresses: VecSet<address>,
         ctx: &mut TxContext,

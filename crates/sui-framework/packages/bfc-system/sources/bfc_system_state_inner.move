@@ -103,7 +103,7 @@ module bfc_system::bfc_system_state_inner {
         oracle_address: Option<address>,
     }
 
-    public struct BfcSystemStateCap has key, store {
+    public struct BfcSystemAdminCap has key, store {
         id: UID,
     }
 
@@ -871,7 +871,7 @@ module bfc_system::bfc_system_state_inner {
         let mut i = 0;
         while (i < count) {
             let admin = vector::borrow(&admin, i);
-            create_bfc_system_state_cap(_ctx, *admin);
+            create_bfc_system_admin_cap(_ctx, *admin);
             i = i + 1;
         };
 
@@ -971,8 +971,8 @@ module bfc_system::bfc_system_state_inner {
         self.key
     }
 
-    public(package) fun create_bfc_system_state_cap(ctx: &mut TxContext, recipient: address) {
-        let cap = BfcSystemStateCap {
+    public(package) fun create_bfc_system_admin_cap(ctx: &mut TxContext, recipient: address) {
+        let cap = BfcSystemAdminCap {
             id : object::new(ctx),
         };
         transfer::transfer(cap, recipient);

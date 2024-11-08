@@ -4879,7 +4879,7 @@ BfcSystemStateInner
 BfcSystemStateInnerV2
 	public struct
 	0xc8::bfc_system_state_inner
-BfcSystemStateCap
+BfcSystemAdminCap
 	public struct
 	0xc8::bfc_system_state_inner
 BfcSystemModifyCap
@@ -5122,7 +5122,7 @@ add_balance_to_vault
 get_bfc_system_modify_cap_key
 	public(package) fun
 	0xc8::bfc_system_state_inner
-create_bfc_system_state_cap
+create_bfc_system_admin_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
 BfcSystemState
