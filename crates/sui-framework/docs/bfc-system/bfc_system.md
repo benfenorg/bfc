@@ -42,7 +42,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
--  [Function `reset_daily_used_quantity`](#0xc8_bfc_system_reset_daily_used_quantity)
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
@@ -1220,31 +1219,6 @@ X treasury rebalance
 ) {
     <b>let</b> (inner_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin">bfc_system_state_inner::rebalance_with_one_stablecoin</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_reset_daily_used_quantity"></a>
-
-## Function `reset_daily_used_quantity`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">reset_daily_used_quantity</a>(bfc_system_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">reset_daily_used_quantity</a>(bfc_system_id: &<b>mut</b> UID) {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(bfc_system_id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">bfc_system_state_inner::reset_daily_used_quantity</a>(inner);
 }
 </code></pre>
 

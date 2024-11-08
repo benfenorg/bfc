@@ -41,6 +41,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
 -  [Function `mint_stable_V1`](#0xc8_bfc_system_state_inner_mint_stable_V1)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_state_inner_exchange_stable_to_busd)
+-  [Function `daily_epoch_check`](#0xc8_bfc_system_state_inner_daily_epoch_check)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_state_inner_exchange_busd_to_stable)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
@@ -74,7 +75,6 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_state_inner_create_voting_bfc)
 -  [Function `v1_to_v2`](#0xc8_bfc_system_state_inner_v1_to_v2)
 -  [Function `get_daily_out_limit`](#0xc8_bfc_system_state_inner_get_daily_out_limit)
--  [Function `reset_daily_used_quantity`](#0xc8_bfc_system_state_inner_reset_daily_used_quantity)
 -  [Function `set_daily_out_limit`](#0xc8_bfc_system_state_inner_set_daily_out_limit)
 -  [Function `init_bfc_system_state_v2`](#0xc8_bfc_system_state_inner_init_bfc_system_state_v2)
 -  [Function `transfer_bfc_from_vault_to_treasury_pool`](#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool)
@@ -267,6 +267,12 @@ title: Module `0xc8::bfc_system_state_inner`
 </dd>
 <dt>
 <code>daily_out_limit: u64</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>daily_used_epoch: u64</code>
 </dt>
 <dd>
 
@@ -1628,6 +1634,33 @@ deprecated
 
 </details>
 
+<a name="0xc8_bfc_system_state_inner_daily_epoch_check"></a>
+
+## Function `daily_epoch_check`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, ctx: &<b>mut</b> TxContext, ) {
+    <b>if</b> (system_state.daily_used_epoch != epoch(ctx)) {
+        system_state.daily_used_epoch = epoch(ctx);
+        system_state.daily_used_quantity = 0;
+    };
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_state_inner_exchange_busd_to_stable"></a>
 
 ## Function `exchange_busd_to_stable`
@@ -1649,6 +1682,7 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> amount: u64 = busd_coin.value();
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state, ctx);
     <b>assert</b>!(amount + system_state.daily_used_quantity &lt;= system_state.daily_out_limit, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT">ERR_DAILY_LIMIT</a>);
 
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
@@ -2532,6 +2566,7 @@ deprecated
         stable_rate,
         stake_coins: coin_bag,
         daily_out_limit: 40000_000_000_000u64,
+        daily_used_epoch: 0u64,
         daily_used_quantity: 0u64,
         operation_capability: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         oracle_address: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
@@ -2560,30 +2595,6 @@ deprecated
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">get_daily_out_limit</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
     self.daily_out_limit
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_reset_daily_used_quantity"></a>
-
-## Function `reset_daily_used_quantity`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_reset_daily_used_quantity">reset_daily_used_quantity</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
-    self.daily_used_quantity = 0u64;
 }
 </code></pre>
 

@@ -624,9 +624,6 @@ module sui_system::sui_system {
             epoch_start_timestamp_ms,
             ctx,
         );
-
-        bfc_system::reset_daily_used_quantity(&mut wrapper.bfc_system_id);
-
         storage_rebate
     }
 

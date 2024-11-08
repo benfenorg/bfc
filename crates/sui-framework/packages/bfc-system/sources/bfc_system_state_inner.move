@@ -46,6 +46,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use std::type_name;
+    use sui::tx_context::epoch;
     use bfc_system::auth_utils;
 
     ///Default stable base points
@@ -95,6 +96,7 @@ module bfc_system::bfc_system_state_inner {
 
         stake_coins: Bag,
         daily_out_limit: u64,
+        daily_used_epoch: u64,
         daily_used_quantity: u64,
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
@@ -538,12 +540,20 @@ module bfc_system::bfc_system_state_inner {
         transfer::public_transfer(busd, recipient);
     }
 
+    public(package) fun daily_epoch_check(system_state: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, ) {
+        if (system_state.daily_used_epoch != epoch(ctx)) {
+            system_state.daily_used_epoch = epoch(ctx);
+            system_state.daily_used_quantity = 0;
+        };
+    }
+
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
+        daily_epoch_check(system_state, ctx);
         assert!(amount + system_state.daily_used_quantity <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
 
         let key = treasury::get_vault_key<StableCoinType>();
@@ -808,6 +818,7 @@ module bfc_system::bfc_system_state_inner {
             stable_rate,
             stake_coins: coin_bag,
             daily_out_limit: 40000_000_000_000u64,
+            daily_used_epoch: 0u64,
             daily_used_quantity: 0u64,
             operation_capability: vec_map::empty(),
             oracle_address: option::none(),
@@ -816,10 +827,6 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun get_daily_out_limit(self: &BfcSystemStateInnerV2): u64 {
         self.daily_out_limit
-    }
-
-    public(package) fun reset_daily_used_quantity(self: &mut BfcSystemStateInnerV2) {
-        self.daily_used_quantity = 0u64;
     }
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64) {

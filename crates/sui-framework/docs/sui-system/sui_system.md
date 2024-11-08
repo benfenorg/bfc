@@ -1571,9 +1571,6 @@ gas coins.
         epoch_start_timestamp_ms,
         ctx,
     );
-
-    <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_reset_daily_used_quantity">bfc_system::reset_daily_used_quantity</a>(&<b>mut</b> wrapper.bfc_system_id);
-
     storage_rebate
 }
 </code></pre>

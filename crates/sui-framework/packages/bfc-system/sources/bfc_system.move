@@ -452,11 +452,6 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::rebalance_with_one_stablecoin<StableCoinType>(inner_state, clock, ctx);
     }
 
-    public fun reset_daily_used_quantity(bfc_system_id: &mut UID) {
-        let inner = load_system_state_mut_by_uid(bfc_system_id);
-        bfc_system_state_inner::reset_daily_used_quantity(inner);
-    }
-
     public entry fun mint_stable_entry<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
