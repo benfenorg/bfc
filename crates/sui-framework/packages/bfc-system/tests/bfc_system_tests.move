@@ -425,18 +425,37 @@ module bfc_system::bfc_system_tests {
     fun setup(bfc_amount: u64, t: u64): Scenario {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
-        let ctx = test_scenario::ctx(&mut scenario_val);
-
-        create_sui_system_state_for_testing(ctx, bfc_amount);
-        if (t == 0) {
-            bfc_system_state_inner::create_bfc_system_modify_cap(ctx, bfc_addr, std::ascii::string(MINT_USDC_USDT_RIGHT_KEY));
-        };
-        if (t == 1) {
-            bfc_system_state_inner::create_bfc_system_modify_cap(ctx, bfc_addr, std::ascii::string(MINT_OTHER_STABLECOIN_RIGHT_KEY));
-        };
-        bfc_system_state_inner::create_bfc_system_admin_cap_for_test(ctx, bfc_addr);
 
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
+        {
+            let ctx = test_scenario::ctx(&mut scenario_val);
+
+            create_sui_system_state_for_testing(ctx, bfc_amount);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, bfc_addr);
+        {
+            let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+            let ctx1 = test_scenario::ctx(&mut scenario_val);
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx1);
+
+            bfc_system_state_inner::create_bfc_system_admin_cap_for_test(system_state_v2, _ctx, bfc_addr);
+
+            let mut operate_addresses = vec_set::empty<address>();
+            operate_addresses.insert(bfc_addr);
+
+            if (t == 0) {
+                bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_USDC_USDT_RIGHT_KEY), operate_addresses, _ctx);
+            };
+            if (t == 1) {
+                bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_OTHER_STABLECOIN_RIGHT_KEY), operate_addresses, _ctx);
+            };
+
+            test_scenario::return_shared(system_state);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, bfc_addr);
+
         scenario_val
     }
 

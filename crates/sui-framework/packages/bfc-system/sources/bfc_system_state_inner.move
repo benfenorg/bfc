@@ -1055,8 +1055,8 @@ module bfc_system::bfc_system_state_inner {
     }
 
     #[test_only]
-    public(package) fun create_bfc_system_admin_cap_for_test(ctx: &mut TxContext, recipient: address) {
-        create_bfc_system_admin_cap(ctx, recipient)
+    public(package) fun create_bfc_system_admin_cap_for_test(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, recipient: address) {
+        add_bfc_system_admin_cap(self, ctx, vector[recipient]);
     }
 
     fun create_bfc_system_admin_cap(ctx: &mut TxContext, recipient: address) {
