@@ -10,7 +10,7 @@ use std::{
 };
 use sui_genesis_builder::validator_info::GenesisValidatorInfo;
 
-use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID}, multiaddr::Multiaddr, object::Owner, SUI_SYSTEM_PACKAGE_ID, sui_system_state::{
+use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, BFC_SYSTEM_PACKAGE_ID, crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID}, multiaddr::Multiaddr, object::Owner, SUI_SYSTEM_PACKAGE_ID, sui_system_state::{
     sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
     sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
 }};
@@ -698,7 +698,7 @@ async fn set_daily_out_limit(
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
         CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
     ];
-    call_0x5(context, "request_set_daily_out_limit", args, gas_budget).await
+    call_0xc9(context, "request_set_daily_out_limit", args, gas_budget).await
 }
 
 async fn operation_capability(
@@ -716,7 +716,7 @@ async fn operation_capability(
         CallArg::Pure(bcs::to_bytes(&key).unwrap()),
         CallArg::Pure(bcs::to_bytes(&address).unwrap()),
     ];
-    call_0x5(context, function, args, gas_budget).await
+    call_0xc9(context, function, args, gas_budget).await
 }
 
 async fn init_admin_capability(
@@ -727,7 +727,7 @@ async fn init_admin_capability(
     let args = vec![
         CallArg::Pure(bcs::to_bytes(&addresses).unwrap()),
     ];
-    call_0x5(context, "init_admin_capability", args, gas_budget).await
+    call_0xc9(context, "init_admin_capability", args, gas_budget).await
 }
 
 async fn add_admin_capability(
@@ -742,7 +742,7 @@ async fn add_admin_capability(
         CallArg::Pure(bcs::to_bytes(&addresses).unwrap()),
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
     ];
-    call_0x5(context, "add_admin_capability", args, gas_budget).await
+    call_0xc9(context, "add_admin_capability", args, gas_budget).await
 }
 
 async fn remove_admin_capability(
@@ -757,7 +757,7 @@ async fn remove_admin_capability(
         CallArg::Pure(bcs::to_bytes(&address).unwrap()),
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
     ];
-    call_0x5(context, "remove_admin_capability", args, gas_budget).await
+    call_0xc9(context, "remove_admin_capability", args, gas_budget).await
 }
 
 
@@ -882,6 +882,64 @@ async fn call_0x5(
         )
         .await
         .map_err(|err| anyhow::anyhow!(err.to_string()))
+}
+
+async fn call_0xc9(
+    context: &mut WalletContext,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<SuiTransactionBlockResponse> {
+    let sender = context.active_address()?;
+    let tx_data =
+        construct_unsigned_0xc9_txn(context, sender, function, call_args, gas_budget).await?;
+    let signature =
+        context
+            .config
+            .keystore
+            .sign_secure(&sender, &tx_data, Intent::sui_transaction())?;
+    let transaction = Transaction::from_data(tx_data, vec![signature]);
+    let sui_client = context.get_client().await?;
+    sui_client
+        .quorum_driver_api()
+        .execute_transaction_block(
+            transaction,
+            SuiTransactionBlockResponseOptions::new()
+                .with_input()
+                .with_effects(),
+            Some(sui_types::quorum_driver_types::ExecuteTransactionRequestType::WaitForLocalExecution),
+        )
+        .await
+        .map_err(|err| anyhow::anyhow!(err.to_string()))
+}
+
+async fn construct_unsigned_0xc9_txn(
+    context: &mut WalletContext,
+    sender: SuiAddress,
+    function: &'static str,
+    call_args: Vec<CallArg>,
+    gas_budget: u64,
+) -> anyhow::Result<TransactionData> {
+    let sui_client = context.get_client().await?;
+    let mut args = vec![CallArg::BFC_SYSTEM_MUT];
+    args.extend(call_args);
+    let rgp = sui_client
+        .governance_api()
+        .get_reference_gas_price()
+        .await?;
+
+    let gas_obj_ref = get_gas_obj_ref(sender, &sui_client, gas_budget).await?;
+    TransactionData::new_move_call(
+        sender,
+        BFC_SYSTEM_PACKAGE_ID,
+        ident_str!("bfc_system").to_owned(),
+        ident_str!(function).to_owned(),
+        vec![],
+        gas_obj_ref,
+        args,
+        gas_budget,
+        rgp,
+    )
 }
 
 impl Display for SuiValidatorCommandResponse {

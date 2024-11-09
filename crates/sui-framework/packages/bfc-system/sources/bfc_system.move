@@ -528,19 +528,19 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
     }
 
-    public fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
+    public entry fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, addresses);
+        bfc_system_state_inner::init_bfc_system_admins(inner_state, _ctx, addresses);
     }
 
-    public fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
+    public entry fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let _ =  cap;
         bfc_system_state_inner::verify_admin_capability(inner_state, _ctx.sender());
         bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, addresses);
     }
 
-    public fun remove_admin_capability(wrapper: &mut BfcSystemState, address: address, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
+    public entry fun remove_admin_capability(wrapper: &mut BfcSystemState, address: address, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let _ =  cap;
         bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address, _ctx);

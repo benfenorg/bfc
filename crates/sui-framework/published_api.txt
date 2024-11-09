@@ -5282,13 +5282,13 @@ exchange_busd_to_stable
 	public fun
 	0xc8::bfc_system
 init_admin_capability
-	public fun
+	public entry fun
 	0xc8::bfc_system
 add_admin_capability
-	public fun
+	public entry fun
 	0xc8::bfc_system
 remove_admin_capability
-	public fun
+	public entry fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin
 	public entry fun
