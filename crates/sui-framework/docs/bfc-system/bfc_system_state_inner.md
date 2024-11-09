@@ -3307,8 +3307,8 @@ deprecated
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; count) {
         <b>let</b> admin = <a href="../move-stdlib/vector.md#0x1_vector_borrow">vector::borrow</a>(&admins, i);
-        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx, *admin);
         self.admin_capability_addresses.insert(*admin);
+        <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_admin_cap">create_bfc_system_admin_cap</a>(ctx, *admin);
         i = i + 1;
     };
 }
@@ -3336,7 +3336,9 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>, ctx: &<b>mut</b> TxContext) {
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, ctx.sender());
     <b>let</b> <b>mut</b> admin_addresses = self.admin_capability_addresses;
+    std::debug::print(&b"0 see it");
     <b>if</b> (admin_addresses.contains(&addr)) {
+        std::debug::print(&b"see it");
         admin_addresses.remove(&addr);
     };
 

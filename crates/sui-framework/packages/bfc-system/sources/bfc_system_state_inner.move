@@ -962,6 +962,11 @@ module bfc_system::bfc_system_state_inner {
         }
     }
 
+    #[test_only]
+    public(package) fun get_admin_capability(self: &BfcSystemStateInnerV2): VecSet<address> {
+        self.admin_capability_addresses
+    }
+
     public(package) fun set_operation_capability(
         self: &mut BfcSystemStateInnerV2,
         key: String,
@@ -1086,8 +1091,8 @@ module bfc_system::bfc_system_state_inner {
         let mut i = 0;
         while (i < count) {
             let admin = vector::borrow(&admins, i);
-            create_bfc_system_admin_cap(ctx, *admin);
             self.admin_capability_addresses.insert(*admin);
+            create_bfc_system_admin_cap(ctx, *admin);
             i = i + 1;
         };
     }
