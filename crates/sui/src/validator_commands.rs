@@ -492,7 +492,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_add_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "add_operation_capability").await?;
                 SuiValidatorCommandResponse::AddOperationCapability(resp)
             }
             SuiValidatorCommand::RemoveOperationCapability {
@@ -503,7 +503,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_remove_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "remove_operation_capability").await?;
                 SuiValidatorCommandResponse::RemoveOperationCapability(resp)
             }
             SuiValidatorCommand::SetOperationCapability {
@@ -514,7 +514,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "request_set_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "set_operation_capability").await?;
                 SuiValidatorCommandResponse::SetOperationCapability(resp)
             }
 
@@ -698,7 +698,7 @@ async fn set_daily_out_limit(
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
         CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
     ];
-    call_0xc9(context, "request_set_daily_out_limit", args, gas_budget).await
+    call_0xc9(context, "set_daily_out_limit", args, gas_budget).await
 }
 
 async fn operation_capability(
