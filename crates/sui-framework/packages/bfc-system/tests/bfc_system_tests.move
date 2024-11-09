@@ -57,7 +57,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun print_stable_rate() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
@@ -79,6 +79,11 @@ module bfc_system::bfc_system_tests {
 
             i = i + 1;
         };
+
+        let (_treasury, treasury_pool) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+
+        debug::print(&std::ascii::string(b"system_state_v2, treasury_pool.balance"));
+        debug::print(&treasury_pool::get_balance(treasury_pool));
 
         test_scenario::return_shared(system_state);
         test_scenario::end(scenario_val);
@@ -416,7 +421,8 @@ module bfc_system::bfc_system_tests {
         );
     }
 
-    fun setup(bfc_amount: u64, t: u64): Scenario {
+
+    fun setup(bfc_amount: u64, key: vector<u8>): Scenario {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
 
@@ -437,14 +443,7 @@ module bfc_system::bfc_system_tests {
 
             let mut operate_addresses = vec_set::empty<address>();
             operate_addresses.insert(bfc_addr);
-
-            if (t == 0) {
-                bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_USDC_USDT_RIGHT_KEY), operate_addresses, _ctx);
-            };
-            if (t == 1) {
-                bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_OTHER_STABLECOIN_RIGHT_KEY), operate_addresses, _ctx);
-            };
-
+            bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(key), operate_addresses, _ctx);
             test_scenario::return_shared(system_state);
         };
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
@@ -458,7 +457,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_next_epoch_bfc_required() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
 
         let system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
@@ -493,7 +492,7 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_INSUFFICIENT)]
     fun test_deposit_with_error() {
-        let mut scenario_val = setup(0, 0);
+        let mut scenario_val = setup(0, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
@@ -516,7 +515,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_deposit_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
@@ -537,7 +536,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_fetch_positions() {
-        let scenario_val = setup(BFC_AMOUNT, 0);
+        let scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
         let positons = bfc_system::vault_positions<BUSD>(&system_state);
         assert!(vector::length(&positons) == 9, 300);
@@ -547,7 +546,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_vault_set_pause() {
-        let scenario_val = setup(BFC_AMOUNT, 0);
+        let scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let cap = test_scenario::take_from_sender<TreasuryPauseCap>(&scenario_val);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&scenario_val);
         bfc_system::vault_set_pause<BUSD>(&cap, &mut system_state, true);
@@ -558,7 +557,7 @@ module bfc_system::bfc_system_tests {
     }
     #[test]
     fun test_rebalance_stablecoin() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -574,7 +573,7 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_REBALANCE_NOT_BUSD)]
     fun test_rebalance_stablecoin_not_busd() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
@@ -590,7 +589,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_mint_stable_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
@@ -610,13 +609,12 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_mint_bjpy_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 1);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_OTHER_STABLECOIN_RIGHT_KEY, tx_context::sender(ctx), ctx);
         //todo:transfer bjpy from vault
         let bjpy = balance::create_for_testing<BJPY>(100);
         let (system_state_v2, ctx2) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
@@ -639,14 +637,13 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_MINT_UNAUTHORIZED)]
     fun test_mint_stable_fail_unauthorized() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_WRONG_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, tx_context::sender(ctx), ctx);
-
+        bfc_system::remove_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
 
         coin::burn_for_testing(coin);
@@ -660,13 +657,12 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_MINT_BUSD)]
     fun test_mint_stable_fail_busd() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
 
         let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
 
@@ -680,13 +676,12 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_exchange_stable_to_busd_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
 
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, tx_context::sender(ctx), &modify_cap, ctx);
 
@@ -698,13 +693,12 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_exchange_busd_to_stable_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state,10000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(100);
@@ -722,13 +716,12 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_DAILY_LIMIT)]
     fun test_exchange_busd_to_stable_exceed_daily_limit() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 50000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(50000_000_000_000u64);
@@ -744,13 +737,12 @@ module bfc_system::bfc_system_tests {
     #[test]
     #[expected_failure(abort_code = ERR_SWAP_STABLE_NOT_ENOUGH)]
     fun test_exchange_busd_to_stable_swap_stable_not_enough() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 10000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(20000_000_000_000u64);
@@ -765,9 +757,9 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_request_set_daily_out_limit_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-        let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::load_system_state_mut_test(&mut system_state, ctx);
 
@@ -775,39 +767,39 @@ module bfc_system::bfc_system_tests {
         let limit = 1000u64;
         let before = bfc_system::get_daily_out_limit(&mut id);
         assert!(before == 40000_000_000_000u64, 1);
-        bfc_system::set_daily_out_limit(&mut system_state, &cap, limit, ctx);
+        bfc_system::set_daily_out_limit(&mut system_state, &admin_cap, limit, ctx);
         let after = bfc_system::get_daily_out_limit(&mut id);
         assert!(after == limit, 1);
 
         test_scenario::return_shared(system_state);
-        test_scenario::return_to_sender(&scenario_val, cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
         object::delete(id);
         tearDown(scenario_val);
     }
 
     #[test]
     fun test_add_operation_capability_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-        let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::load_system_state_mut_test(&mut system_state, ctx);
 
         let key = b"key";
         let before = bfc_system::get_operation_capability_by_key(&mut system_state, key, ctx);
         assert!(before.size() == 0, 1);
-        bfc_system::add_operation_capability(&mut system_state, &cap, key, @0x0, ctx);
+        bfc_system::add_operation_capability(&mut system_state, &admin_cap, key, @0x0, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut system_state, key, ctx);
         assert!(after.size() == 1, 1);
 
         test_scenario::return_shared(system_state);
-        test_scenario::return_to_sender(&scenario_val, cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
         tearDown(scenario_val);
     }
 
     #[test]
     fun test_remove_operation_capability_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
@@ -826,7 +818,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_set_operation_capability_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
@@ -847,7 +839,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_inner_busd_to_bfc_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
 
@@ -863,7 +855,7 @@ module bfc_system::bfc_system_tests {
 
     #[test]
     fun test_inner_bjpy_to_bfc_success() {
-        let mut scenario_val = setup(BFC_AMOUNT, 0);
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let ctx = test_scenario::ctx(&mut scenario_val);
 
