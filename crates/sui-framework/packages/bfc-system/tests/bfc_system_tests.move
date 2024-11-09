@@ -24,7 +24,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury_pool;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD,
-        BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO,
+        BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
         BfcSystemAdminCap
     };
 
@@ -972,6 +972,8 @@ module bfc_system::bfc_system_tests {
     fun test_remove_admin_capability_success() {
         let test_address = @0x639a680b36b6a02ff29061383efec63c89c8d70d642357fa6b01d2fc7f293457;
         let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+
+        // add
         {
             let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
@@ -979,7 +981,7 @@ module bfc_system::bfc_system_tests {
             let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
             let ctx = test_scenario::ctx(&mut scenario_val);
-            // add
+
             bfc_system::add_admin_capability(&mut system_state, test_addresses, &admin_cap, ctx);
 
             test_scenario::return_to_sender(&scenario_val, admin_cap);
@@ -993,17 +995,35 @@ module bfc_system::bfc_system_tests {
             let new_admin_cap = test_scenario::take_from_address<BfcSystemAdminCap>(&scenario_val, test_address);
 
             let ctx = test_scenario::ctx(&mut scenario_val);
-
             bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &new_admin_cap, ctx);
 
-            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_test(&mut system_state, ctx);
-            std::debug::print(&system_state_v2.get_admin_capability());
+            let (system_state_v2, _) = bfc_system::load_system_state_mut_test(&mut system_state, ctx);
             assert!(vec_set::size(&system_state_v2.get_admin_capability()) == 1, 1);
 
             test_scenario::return_to_address(test_address, new_admin_cap);
             test_scenario::return_shared(system_state);
         };
         test_scenario::next_tx(&mut scenario_val, BFC_ADDR);
+
+        tearDown(scenario_val);
+    }
+
+    #[test]
+
+    #[expected_failure(abort_code = ERR_ADMIN_COUNT_ZERO)]
+    fun test_remove_admin_capability_fail() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        // remove
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &admin_cap, ctx);
+
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
 
         tearDown(scenario_val);
     }

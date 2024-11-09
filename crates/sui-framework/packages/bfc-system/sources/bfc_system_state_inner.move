@@ -1099,12 +1099,11 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun remove_bfc_system_admin_cap(self: &mut BfcSystemStateInnerV2, addr: address, ctx: &mut TxContext) {
         verify_admin_capability(self, ctx.sender());
-        let mut admin_addresses = self.admin_capability_addresses;
-        if (admin_addresses.contains(&addr)) {
-            admin_addresses.remove(&addr);
+        if (self.admin_capability_addresses.contains(&addr)) {
+            self.admin_capability_addresses.remove(&addr);
         };
 
-        assert!(admin_addresses.size() > 0, ERR_ADMIN_COUNT_ZERO);
+        assert!(self.admin_capability_addresses.size() > 0, ERR_ADMIN_COUNT_ZERO);
     }
 
     fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
