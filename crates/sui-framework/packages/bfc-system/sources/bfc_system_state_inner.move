@@ -968,6 +968,7 @@ module bfc_system::bfc_system_state_inner {
         value: VecSet<address>,
         ctx: &mut TxContext,
     ) {
+        verify_admin_capability(self, sender(ctx));
         let source_contents = vec_set::keys(&value);
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
