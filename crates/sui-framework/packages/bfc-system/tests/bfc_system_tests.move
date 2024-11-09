@@ -21,6 +21,7 @@ module bfc_system::bfc_system_tests {
     use sui::tx_context;
     use sui::vec_map::{Self};
     use sui::vec_set;
+    use bfc_system::treasury_pool;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD,
         BfcSystemModifyCap,
@@ -643,7 +644,7 @@ module bfc_system::bfc_system_tests {
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::remove_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, sender(ctx), ctx);
+        bfc_system::remove_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, tx_context::sender(ctx), ctx);
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
 
         coin::burn_for_testing(coin);
