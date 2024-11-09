@@ -151,7 +151,9 @@ pub struct BfcSystemStateInnerV2 {
     pub daily_used_quantity: u64,
     pub operation_capability: VecMap<String, VecSet<AccountAddress>>,
     pub admin_capability_addresses: VecSet<AccountAddress>,
+    pub admin_init: bool,
     pub oracle_address: Option<AccountAddress>,
+    pub extra_fields: Bag,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

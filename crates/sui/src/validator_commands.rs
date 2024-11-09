@@ -161,6 +161,37 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
+    /// init admin capability
+    #[clap(name = "init-admin-capability")]
+    InitAdminCapability {
+        #[clap(name = "addresses")]
+        addresses: Vec<SuiAddress>,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    /// add admin capability
+    #[clap(name = "add-admin-capability")]
+    AddAdminCapability {
+        #[clap(name = "admin-cap-id", long)]
+        admin_cap_id: Option<ObjectID>,
+        #[clap(name = "address")]
+        addresses: Vec<SuiAddress>,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    /// remove admin capability
+    #[clap(name = "remove-admin-capability")]
+    RemoveAdminCapability {
+        #[clap(name = "admin-cap-id", long)]
+        admin_cap_id: Option<ObjectID>,
+        #[clap(name = "address")]
+        address: SuiAddress,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
     /// Report or un-report a validator.
     #[clap(name = "report-validator")]
     ReportValidator {
@@ -221,6 +252,9 @@ pub enum SuiValidatorCommandResponse {
     AddOperationCapability(SuiTransactionBlockResponse),
     RemoveOperationCapability(SuiTransactionBlockResponse),
     SetOperationCapability(SuiTransactionBlockResponse),
+    InitAdminCapability(SuiTransactionBlockResponse),
+    AddAdminCapability(SuiTransactionBlockResponse),
+    RemoveAdminCapability(SuiTransactionBlockResponse),
     ReportValidator(SuiTransactionBlockResponse),
     SerializedPayload(String),
     DisplayGasPriceUpdateRawTxn {
@@ -483,6 +517,37 @@ impl SuiValidatorCommand {
                     operation_capability(context, operation_cap_id, key, address, gas_budget, "request_set_operation_capability").await?;
                 SuiValidatorCommandResponse::SetOperationCapability(resp)
             }
+
+            SuiValidatorCommand::InitAdminCapability {
+                addresses,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    init_admin_capability(context, addresses, gas_budget).await?;
+                SuiValidatorCommandResponse::AddAdminCapability(resp)
+            }
+            SuiValidatorCommand::AddAdminCapability {
+                admin_cap_id,
+                addresses,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    add_admin_capability(context, admin_cap_id, addresses, gas_budget).await?;
+                SuiValidatorCommandResponse::AddAdminCapability(resp)
+            }
+            SuiValidatorCommand::RemoveAdminCapability {
+                admin_cap_id,
+                address,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    remove_admin_capability(context, admin_cap_id, address, gas_budget).await?;
+                SuiValidatorCommandResponse::RemoveAdminCapability(resp)
+            }
+
             SuiValidatorCommand::ReportValidator {
                 operation_cap_id,
                 reportee_address,
@@ -654,6 +719,48 @@ async fn operation_capability(
     call_0x5(context, function, args, gas_budget).await
 }
 
+async fn init_admin_capability(
+    context: &mut WalletContext,
+    addresses: Vec<SuiAddress>,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&addresses).unwrap()),
+    ];
+    call_0x5(context, "init_admin_capability", args, gas_budget).await
+}
+
+async fn add_admin_capability(
+    context: &mut WalletContext,
+    admin_cap_id: Option<ObjectID>,
+    addresses: Vec<SuiAddress>,
+    gas_budget: u64
+) -> Result<SuiTransactionBlockResponse> {
+    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, admin_cap_id).await?;
+
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&addresses).unwrap()),
+        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
+    ];
+    call_0x5(context, "add_admin_capability", args, gas_budget).await
+}
+
+async fn remove_admin_capability(
+    context: &mut WalletContext,
+    admin_cap_id: Option<ObjectID>,
+    address: SuiAddress,
+    gas_budget: u64
+) -> Result<SuiTransactionBlockResponse> {
+    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, admin_cap_id).await?;
+
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&address).unwrap()),
+        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
+    ];
+    call_0x5(context, "remove_admin_capability", args, gas_budget).await
+}
+
+
 async fn report_validator(
     context: &mut WalletContext,
     reportee_address: SuiAddress,
@@ -808,6 +915,15 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::SetOperationCapability(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::InitAdminCapability(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::AddAdminCapability(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::RemoveAdminCapability(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::ReportValidator(response) => {

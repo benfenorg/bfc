@@ -72,14 +72,10 @@ module bfc_system::bfc_system_state_inner {
     const ERR_ADD_ADMIN_COUNT_ZERO: u64 = 1009;
     const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
-
+    const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
 
 
     const ERR_INVALID_PARAM: u64 = 1100;
-
-
-    const DEFAULT_BFC_STATE_ADMIN_ADDRESSES: vector<address> = vector[@0x0];
-
 
     //spec module { pragma verify = false; }
 
@@ -109,7 +105,9 @@ module bfc_system::bfc_system_state_inner {
         // other dapps can use this cap to mint stable coin
         operation_capability: VecMap<String, VecSet<address>>,
         admin_capability_addresses: VecSet<address>,
+        admin_init: bool,
         oracle_address: Option<address>,
+        extra_fields: Bag,
     }
 
     public struct BfcSystemAdminCap has key, store {
@@ -884,7 +882,9 @@ module bfc_system::bfc_system_state_inner {
             daily_used_quantity: 0u64,
             operation_capability: vec_map::empty(),
             admin_capability_addresses: vec_set::empty(),
+            admin_init: false,
             oracle_address: option::none(),
+            extra_fields: bag::new(_ctx),
         }, _ctx)
     }
 
@@ -928,9 +928,6 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BTRY>(self);
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
-
-        let admins = DEFAULT_BFC_STATE_ADMIN_ADDRESSES;
-        add_bfc_system_admin_cap(_ctx, admins, self);
 
         std::debug::print(&b"init_bfc_system_state_v2 end");
     }
@@ -1073,7 +1070,13 @@ module bfc_system::bfc_system_state_inner {
         vec_set::contains(&self.admin_capability_addresses, &addr)
     }
 
-    public(package) fun add_bfc_system_admin_cap(ctx: &mut TxContext, admins: vector<address>, state_v2: &mut BfcSystemStateInnerV2) {
+    public(package) fun init_bfc_system_admins(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, admins: vector<address>) {
+        assert!(!self.admin_init, ERR_ADMIN_ALREADY_INITED);
+        add_bfc_system_admin_cap(self, ctx, admins);
+        self.admin_init = true;
+    }
+
+    public(package) fun add_bfc_system_admin_cap(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, admins: vector<address>) {
         let count = vector::length(&admins);
         assert!(count > 0, ERR_ADD_ADMIN_COUNT_ZERO);
 
@@ -1081,15 +1084,13 @@ module bfc_system::bfc_system_state_inner {
         while (i < count) {
             let admin = vector::borrow(&admins, i);
             create_bfc_system_admin_cap(ctx, *admin);
-            state_v2.admin_capability_addresses.insert(*admin);
+            self.admin_capability_addresses.insert(*admin);
             i = i + 1;
         };
     }
 
-    public(package) fun remove_bfc_system_admin_cap(addr: address, cap: &mut BfcSystemAdminCap, state_v2: &mut BfcSystemStateInnerV2) {
-        let _ = cap;
-
-        let mut admin_addresses = state_v2.admin_capability_addresses;
+    public(package) fun remove_bfc_system_admin_cap(self: &mut BfcSystemStateInnerV2, addr: address) {
+        let mut admin_addresses = self.admin_capability_addresses;
         if (admin_addresses.contains(&addr)) {
             admin_addresses.remove(&addr);
         };

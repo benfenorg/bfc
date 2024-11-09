@@ -599,7 +599,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
 
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, ctx, &modify_cap);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
         assert!(coin.value() == 100, 1);
 
         coin::burn_for_testing(coin);
@@ -628,7 +628,7 @@ module bfc_system::bfc_system_tests {
         let coin_a_amount = treasury::get_coin_a_amount<BJPY>(treasury); 
         assert!(coin_a_amount == 100, 1);
 
-        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, ctx, &modify_cap);
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, &modify_cap, ctx);
         assert!(coin.value() == 200, 1);
         coin::burn_for_testing(coin);
 
@@ -649,7 +649,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, tx_context::sender(ctx), ctx);
 
-        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, ctx, &modify_cap);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
 
         coin::burn_for_testing(coin);
 
@@ -670,7 +670,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
 
-        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, ctx, &modify_cap);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
 
         coin::burn_for_testing(coin);
 
@@ -690,7 +690,7 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
 
-        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, tx_context::sender(ctx), ctx, &modify_cap);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, tx_context::sender(ctx), &modify_cap, ctx);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
@@ -707,7 +707,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
-        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state,10000_000_000_000u64, tx_context::sender(ctx), ctx, &modify_cap);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state,10000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(100);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
@@ -731,7 +731,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
-        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 50000_000_000_000u64, tx_context::sender(ctx), ctx, &modify_cap);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 50000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(50000_000_000_000u64);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));
@@ -753,7 +753,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_RIGHT_KEY, tx_context::sender(ctx), ctx);
-        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 10000_000_000_000u64, tx_context::sender(ctx), ctx, &modify_cap);
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 10000_000_000_000u64, tx_context::sender(ctx), &modify_cap, ctx);
 
         let busd = balance::create_for_testing<BUSD>(20000_000_000_000u64);
         let busd_coin = coin::from_balance(busd, test_scenario::ctx(&mut scenario_val));

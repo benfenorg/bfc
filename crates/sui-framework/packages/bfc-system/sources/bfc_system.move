@@ -495,8 +495,8 @@ module bfc_system::bfc_system {
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,
+        cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
-        cap: &BfcSystemModifyCap
     ): Coin<StableCoinType> {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
@@ -506,8 +506,8 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         amount: u64,
         recipient: address,
+        cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
-        cap: &BfcSystemModifyCap
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let coin = bfc_system_state_inner::mint_stable<StableCoinType>(
@@ -526,6 +526,23 @@ module bfc_system::bfc_system {
     ) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
+    }
+
+    public fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, addresses);
+    }
+
+    public fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        let _ =  cap;
+        bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, addresses);
+    }
+
+    public fun remove_admin_capability(wrapper: &mut BfcSystemState, address: address, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
+        let (inner_state, _) = load_system_state_mut(wrapper, ctx);
+        let _ =  cap;
+        bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address);
     }
 
     /// X treasury  swap bfc to stablecoin

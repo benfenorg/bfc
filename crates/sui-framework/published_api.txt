@@ -5137,6 +5137,9 @@ create_bfc_system_admin_cap
 verify_admin_capability
 	public(package) fun
 	0xc8::bfc_system_state_inner
+init_bfc_system_admins
+	public(package) fun
+	0xc8::bfc_system_state_inner
 add_bfc_system_admin_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5276,6 +5279,15 @@ exchange_stable_to_busd
 	public fun
 	0xc8::bfc_system
 exchange_busd_to_stable
+	public fun
+	0xc8::bfc_system
+init_admin_capability
+	public fun
+	0xc8::bfc_system
+add_admin_capability
+	public fun
+	0xc8::bfc_system
+remove_admin_capability
 	public fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin
