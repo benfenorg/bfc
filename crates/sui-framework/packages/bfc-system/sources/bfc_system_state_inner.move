@@ -1102,7 +1102,7 @@ module bfc_system::bfc_system_state_inner {
         assert!(admin_addresses.size() > 0, ERR_ADMIN_COUNT_ZERO);
     }
 
-    public(package) fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
+    fun create_bfc_system_modify_cap(ctx: &mut TxContext, recipient: address, key: std::ascii::String) {
         let cap = BfcSystemModifyCap {
             id: object::new(ctx),
             key,

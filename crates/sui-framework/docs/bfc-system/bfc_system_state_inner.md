@@ -2951,6 +2951,7 @@ deprecated
     value: VecSet&lt;<b>address</b>&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
     <b>let</b> source_contents = <a href="../sui-framework/vec_set.md#0x2_vec_set_keys">vec_set::keys</a>(&value);
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
@@ -3353,7 +3354,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>, recipient: <b>address</b>, key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -3362,7 +3363,7 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>, key: std::ascii::String) {
+<pre><code><b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx: &<b>mut</b> TxContext, recipient: <b>address</b>, key: std::ascii::String) {
     <b>let</b> cap = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
         key,

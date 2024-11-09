@@ -5147,7 +5147,7 @@ remove_bfc_system_admin_cap
 	public(package) fun
 	0xc8::bfc_system_state_inner
 create_bfc_system_modify_cap
-	public(package) fun
+	fun
 	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
