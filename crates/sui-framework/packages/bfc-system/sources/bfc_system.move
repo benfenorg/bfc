@@ -536,13 +536,14 @@ module bfc_system::bfc_system {
     public fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let _ =  cap;
+        bfc_system_state_inner::verify_admin_capability(inner_state, _ctx.sender());
         bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, addresses);
     }
 
     public fun remove_admin_capability(wrapper: &mut BfcSystemState, address: address, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {
-        let (inner_state, _) = load_system_state_mut(wrapper, ctx);
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let _ =  cap;
-        bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address);
+        bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address, _ctx);
     }
 
     /// X treasury  swap bfc to stablecoin

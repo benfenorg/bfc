@@ -893,7 +893,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun set_daily_out_limit(self: &mut BfcSystemStateInnerV2, new_limit: u64, ctx: &mut TxContext, ) {
-        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
+        verify_admin_capability(self, sender(ctx));
         self.daily_out_limit = new_limit;
     }
 
@@ -968,9 +968,9 @@ module bfc_system::bfc_system_state_inner {
         value: VecSet<address>,
         ctx: &mut TxContext,
     ) {
+        let source_contents = vec_set::keys(&value);
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
-            let source_contents = vec_set::keys(&value);
             let mut i = 0;
             while (i < vec_set::size(&value)) {
                 let addr = &source_contents[i];
@@ -982,6 +982,13 @@ module bfc_system::bfc_system_state_inner {
             };
         } else {
             vec_map::insert(&mut self.operation_capability, key, value);
+            let mut i = 0;
+            let length = vec_set::size(&value);
+            while (i < length) {
+                let addr = &source_contents[i];
+                create_bfc_system_modify_cap(ctx, *addr, key);
+                i = i + 1;
+            };
         }
     }
 
@@ -991,7 +998,7 @@ module bfc_system::bfc_system_state_inner {
         value: address,
         ctx: &mut TxContext,
     ) {
-        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
+        verify_admin_capability(self, sender(ctx));
         if (vec_map::contains(&self.operation_capability, &key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, &key);
             vec_set::insert(new_capability, value);
@@ -1009,7 +1016,7 @@ module bfc_system::bfc_system_state_inner {
         value: address,
         ctx: &mut TxContext,
     ) {
-        assert!(verify_admin_capability(self, sender(ctx)), ERR_SET_CONFIG_UNAUTHORIZED);
+        verify_admin_capability(self, sender(ctx));
         if (vec_map::contains(&self.operation_capability, key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
             vec_set::remove(new_capability, &value);
@@ -1054,11 +1061,6 @@ module bfc_system::bfc_system_state_inner {
         self.key
     }
 
-    #[test_only]
-    public(package) fun create_bfc_system_admin_cap_for_test(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, recipient: address) {
-        add_bfc_system_admin_cap(self, ctx, vector[recipient]);
-    }
-
     fun create_bfc_system_admin_cap(ctx: &mut TxContext, recipient: address) {
         let cap = BfcSystemAdminCap {
             id : object::new(ctx),
@@ -1066,8 +1068,8 @@ module bfc_system::bfc_system_state_inner {
         transfer::transfer(cap, recipient);
     }
 
-    public(package) fun verify_admin_capability(self: &BfcSystemStateInnerV2, addr: address): bool {
-        vec_set::contains(&self.admin_capability_addresses, &addr)
+    public(package) fun verify_admin_capability(self: &BfcSystemStateInnerV2, addr: address) {
+        assert!(vec_set::contains(&self.admin_capability_addresses, &addr), ERR_SET_CONFIG_UNAUTHORIZED);
     }
 
     public(package) fun init_bfc_system_admins(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, admins: vector<address>) {
@@ -1089,7 +1091,8 @@ module bfc_system::bfc_system_state_inner {
         };
     }
 
-    public(package) fun remove_bfc_system_admin_cap(self: &mut BfcSystemStateInnerV2, addr: address) {
+    public(package) fun remove_bfc_system_admin_cap(self: &mut BfcSystemStateInnerV2, addr: address, ctx: &mut TxContext) {
+        verify_admin_capability(self, ctx.sender());
         let mut admin_addresses = self.admin_capability_addresses;
         if (admin_addresses.contains(&addr)) {
             admin_addresses.remove(&addr);

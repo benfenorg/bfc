@@ -2756,7 +2756,7 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_daily_out_limit">set_daily_out_limit</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, new_limit: u64, ctx: &<b>mut</b> TxContext, ) {
-    <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx)), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SET_CONFIG_UNAUTHORIZED">ERR_SET_CONFIG_UNAUTHORIZED</a>);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
     self.daily_out_limit = new_limit;
 }
 </code></pre>
@@ -2951,9 +2951,9 @@ deprecated
     value: VecSet&lt;<b>address</b>&gt;,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>let</b> source_contents = <a href="../sui-framework/vec_set.md#0x2_vec_set_keys">vec_set::keys</a>(&value);
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
-        <b>let</b> source_contents = <a href="../sui-framework/vec_set.md#0x2_vec_set_keys">vec_set::keys</a>(&value);
         <b>let</b> <b>mut</b> i = 0;
         <b>while</b> (i &lt; <a href="../sui-framework/vec_set.md#0x2_vec_set_size">vec_set::size</a>(&value)) {
             <b>let</b> addr = &source_contents[i];
@@ -2965,6 +2965,13 @@ deprecated
         };
     } <b>else</b> {
         <a href="../sui-framework/vec_map.md#0x2_vec_map_insert">vec_map::insert</a>(&<b>mut</b> self.operation_capability, key, value);
+        <b>let</b> <b>mut</b> i = 0;
+        <b>let</b> length = <a href="../sui-framework/vec_set.md#0x2_vec_set_size">vec_set::size</a>(&value);
+        <b>while</b> (i &lt; length) {
+            <b>let</b> addr = &source_contents[i];
+            <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap">create_bfc_system_modify_cap</a>(ctx, *addr, key);
+            i = i + 1;
+        };
     }
 }
 </code></pre>
@@ -2994,7 +3001,7 @@ deprecated
     value: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx)), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SET_CONFIG_UNAUTHORIZED">ERR_SET_CONFIG_UNAUTHORIZED</a>);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, &key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, &key);
         <a href="../sui-framework/vec_set.md#0x2_vec_set_insert">vec_set::insert</a>(new_capability, value);
@@ -3032,7 +3039,7 @@ deprecated
     value: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx)), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SET_CONFIG_UNAUTHORIZED">ERR_SET_CONFIG_UNAUTHORIZED</a>);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, key);
         <a href="../sui-framework/vec_set.md#0x2_vec_set_remove">vec_set::remove</a>(new_capability, &value);
@@ -3233,7 +3240,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, addr: <b>address</b>): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, addr: <b>address</b>)
 </code></pre>
 
 
@@ -3242,8 +3249,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>): bool {
-    <a href="../sui-framework/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(&self.admin_capability_addresses, &addr)
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>) {
+    <b>assert</b>!(<a href="../sui-framework/vec_set.md#0x2_vec_set_contains">vec_set::contains</a>(&self.admin_capability_addresses, &addr), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SET_CONFIG_UNAUTHORIZED">ERR_SET_CONFIG_UNAUTHORIZED</a>);
 }
 </code></pre>
 
@@ -3316,7 +3323,7 @@ deprecated
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, addr: <b>address</b>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, addr: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -3325,7 +3332,8 @@ deprecated
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>) {
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">remove_bfc_system_admin_cap</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, addr: <b>address</b>, ctx: &<b>mut</b> TxContext) {
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, ctx.sender());
     <b>let</b> <b>mut</b> admin_addresses = self.admin_capability_addresses;
     <b>if</b> (admin_addresses.contains(&addr)) {
         admin_addresses.remove(&addr);

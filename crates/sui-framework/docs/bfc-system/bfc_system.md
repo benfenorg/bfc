@@ -1492,6 +1492,7 @@ X treasury rebalance
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_add_admin_capability">add_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, addresses: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt;, cap: &BfcSystemAdminCap, ctx: &<b>mut</b> TxContext) {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <b>let</b> _ =  cap;
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">bfc_system_state_inner::verify_admin_capability</a>(inner_state, _ctx.sender());
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">bfc_system_state_inner::add_bfc_system_admin_cap</a>(inner_state, _ctx, addresses);
 }
 </code></pre>
@@ -1516,9 +1517,9 @@ X treasury rebalance
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_remove_admin_capability">remove_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <b>address</b>: <b>address</b>, cap: &BfcSystemAdminCap, ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (inner_state, _) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <b>let</b> _ =  cap;
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">bfc_system_state_inner::remove_bfc_system_admin_cap</a>(inner_state, <b>address</b>);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">bfc_system_state_inner::remove_bfc_system_admin_cap</a>(inner_state, <b>address</b>, _ctx);
 }
 </code></pre>
 
