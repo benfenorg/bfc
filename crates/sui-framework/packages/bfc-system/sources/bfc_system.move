@@ -13,6 +13,7 @@ module bfc_system::bfc_system {
     use sui::bfc::BFC;
     use sui::clock;
     use sui::vec_map::VecMap;
+    use sui::vec_set;
     use sui::vec_set::VecSet;
 
     use bfc_system::busd::{BUSD};
@@ -354,6 +355,17 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), addresses, ctx)
     }
 
+    public fun set_single_operation_capability(
+        wrapper: &mut BfcSystemState,
+        _cap: &BfcSystemAdminCap,
+        key: vector<u8>,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
+        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), vec_set::singleton(address), ctx)
+    }
+
     public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address) {
         let inner = load_system_state_mut_by_uid(&mut wrapper.id);
         inner.set_oracle_address(address)
@@ -531,6 +543,11 @@ module bfc_system::bfc_system {
     public entry fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::init_bfc_system_admins(inner_state, _ctx, addresses);
+    }
+
+    public fun init_single_admin_capability(wrapper: &mut BfcSystemState, address: address, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, vector[address]);
     }
 
     public entry fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {

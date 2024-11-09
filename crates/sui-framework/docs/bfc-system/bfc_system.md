@@ -29,6 +29,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
 -  [Function `remove_operation_capability`](#0xc8_bfc_system_remove_operation_capability)
 -  [Function `set_operation_capability`](#0xc8_bfc_system_set_operation_capability)
+-  [Function `set_single_operation_capability`](#0xc8_bfc_system_set_single_operation_capability)
 -  [Function `set_oracle_address`](#0xc8_bfc_system_set_oracle_address)
 -  [Function `get_oracle_address`](#0xc8_bfc_system_get_oracle_address)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
@@ -50,6 +51,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_exchange_busd_to_stable)
 -  [Function `init_admin_capability`](#0xc8_bfc_system_init_admin_capability)
+-  [Function `init_single_admin_capability`](#0xc8_bfc_system_init_single_admin_capability)
 -  [Function `add_admin_capability`](#0xc8_bfc_system_add_admin_capability)
 -  [Function `remove_admin_capability`](#0xc8_bfc_system_remove_admin_capability)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
@@ -880,6 +882,37 @@ deprecated
 
 </details>
 
+<a name="0xc8_bfc_system_set_single_operation_capability"></a>
+
+## Function `set_single_operation_capability`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_single_operation_capability">set_single_operation_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">bfc_system_state_inner::BfcSystemAdminCap</a>, key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_single_operation_capability">set_single_operation_capability</a>(
+    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    _cap: &BfcSystemAdminCap,
+    key: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    <b>address</b>: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (inner, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_operation_capability">bfc_system_state_inner::set_operation_capability</a>(inner, std::ascii::string(key), <a href="../sui-framework/vec_set.md#0x2_vec_set_singleton">vec_set::singleton</a>(<b>address</b>), ctx)
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_bfc_system_set_oracle_address"></a>
 
 ## Function `set_oracle_address`
@@ -1467,6 +1500,31 @@ X treasury rebalance
 <pre><code><b>public</b> entry <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_init_admin_capability">init_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, addresses: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt;, ctx: &<b>mut</b> TxContext) {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_bfc_system_admins">bfc_system_state_inner::init_bfc_system_admins</a>(inner_state, _ctx, addresses);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_init_single_admin_capability"></a>
+
+## Function `init_single_admin_capability`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_init_single_admin_capability">init_single_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_init_single_admin_capability">init_single_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">bfc_system_state_inner::add_bfc_system_admin_cap</a>(inner_state, _ctx, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[<b>address</b>]);
 }
 </code></pre>
 

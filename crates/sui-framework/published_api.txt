@@ -5221,6 +5221,9 @@ remove_operation_capability
 set_operation_capability
 	public fun
 	0xc8::bfc_system
+set_single_operation_capability
+	public fun
+	0xc8::bfc_system
 set_oracle_address
 	public fun
 	0xc8::bfc_system
@@ -5283,6 +5286,9 @@ exchange_busd_to_stable
 	0xc8::bfc_system
 init_admin_capability
 	public entry fun
+	0xc8::bfc_system
+init_single_admin_capability
+	public fun
 	0xc8::bfc_system
 add_admin_capability
 	public entry fun
