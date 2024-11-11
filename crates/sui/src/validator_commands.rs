@@ -161,6 +161,15 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
+    /// set oracle price object address
+    #[clap(name = "set-oracle-price-address")]
+    SetOraclePriceAddress {
+        #[clap(name = "address")]
+        address: SuiAddress,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
     /// init admin capability
     #[clap(name = "init-admin-capability")]
     InitAdminCapability {
@@ -248,6 +257,7 @@ pub enum SuiValidatorCommandResponse {
     LeaveCommittee(SuiTransactionBlockResponse),
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
+    SetOraclePriceAddress(SuiTransactionBlockResponse),
     SetDailyOutLimit(SuiTransactionBlockResponse),
     AddOperationCapability(SuiTransactionBlockResponse),
     RemoveOperationCapability(SuiTransactionBlockResponse),
@@ -473,6 +483,15 @@ impl SuiValidatorCommand {
                     update_gas_price(context, operation_cap_id, gas_price, gas_budget).await?;
                 SuiValidatorCommandResponse::UpdateGasPrice(resp)
             }
+            SuiValidatorCommand::SetOraclePriceAddress {
+                address,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    set_oracle_price_object_address(context, address, gas_budget).await?;
+                SuiValidatorCommandResponse::SetOraclePriceAddress(resp)
+            }
 
             SuiValidatorCommand::SetDailyOutLimit {
                 operation_cap_id,
@@ -684,6 +703,18 @@ async fn update_gas_price(
         CallArg::Pure(bcs::to_bytes(&gas_price).unwrap()),
     ];
     call_0x5(context, "request_set_gas_price", args, gas_budget).await
+}
+
+async fn set_oracle_price_object_address(
+    context: &mut WalletContext,
+    address: SuiAddress,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&address).unwrap()),
+    ];
+    call_0xc9(context, "set_oracle_address", args, gas_budget).await
 }
 
 async fn set_daily_out_limit(
@@ -961,6 +992,9 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::UpdateGasPrice(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::SetOraclePriceAddress(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::SetDailyOutLimit(response) => {
