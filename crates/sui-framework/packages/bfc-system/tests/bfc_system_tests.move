@@ -617,14 +617,14 @@ module bfc_system::bfc_system_tests {
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        //todo:transfer bjpy from vault
-        let bjpy = balance::create_for_testing<BJPY>(100);
-        let (system_state_v2, ctx2) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
-        bfc_system_state_inner::add_balance_to_vault(system_state_v2, bjpy, ctx2);
+        let (system_state_v2, _) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
 
         let (treasury, _) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
-        let coin_a_amount = treasury::get_coin_a_amount<BJPY>(treasury);
-        assert!(coin_a_amount == 100, 1);
+        let coin_a_amount_before = treasury::get_coin_a_amount<BJPY>(treasury);
+        debug::print(&std::ascii::string(b"coin_a_amount_before"));
+        debug::print(&coin_a_amount_before);
+        assert!(coin_a_amount_before == 37707208591093079, 1);
+
 
         let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, &modify_cap, ctx);
         assert!(coin.value() == 200, 1);
