@@ -1813,11 +1813,14 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ) {
     <b>let</b> amount: u64 = busd_coin.value();
+    <b>if</b> (amount == 0) {
+        <a href="../sui-framework/coin.md#0x2_coin_destroy_zero">coin::destroy_zero</a>(busd_coin);
+        <b>return</b>
+    };
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_daily_epoch_check">daily_epoch_check</a>(system_state, ctx);
     <b>assert</b>!(amount + system_state.daily_used_quantity &lt;= system_state.daily_out_limit, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT">ERR_DAILY_LIMIT</a>);
 
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
-
     <b>let</b> amount: u64 = busd_coin.value();
     <b>let</b> stable_sum = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&<b>mut</b> system_state.stake_coins, key);
     <b>assert</b>!(stable_sum.value() &gt;= amount, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SWAP_STABLE_NOT_ENOUGH">ERR_SWAP_STABLE_NOT_ENOUGH</a>);
