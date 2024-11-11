@@ -25,7 +25,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD,
         BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
-        BfcSystemAdminCap
+        BfcSystemAdminCap, ERR_MINT_AMOUNT_ZERO
     };
 
     use bfc_system::busd;
@@ -597,12 +597,10 @@ module bfc_system::bfc_system_tests {
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-
         let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
         assert!(coin.value() == 100, 1);
 
         coin::burn_for_testing(coin);
-
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);
@@ -630,6 +628,24 @@ module bfc_system::bfc_system_tests {
         assert!(coin.value() == 200, 1);
         coin::burn_for_testing(coin);
 
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_AMOUNT_ZERO)]
+    fun test_mint_stable_with_zero() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<USDC>(&mut system_state, 0, &modify_cap, ctx);
+
+        coin::burn_for_testing(coin);
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);
