@@ -3044,6 +3044,8 @@ deprecated
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
+    <a href="../move-stdlib/debug.md#0x1_debug_print">debug::print</a>(key);
+    <a href="../move-stdlib/debug.md#0x1_debug_print">debug::print</a>(&<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, key));
     <b>if</b> (<a href="../sui-framework/vec_map.md#0x2_vec_map_contains">vec_map::contains</a>(&self.operation_capability, key)) {
         <b>let</b> new_capability = <a href="../sui-framework/vec_map.md#0x2_vec_map_get_mut">vec_map::get_mut</a>(&<b>mut</b> self.operation_capability, key);
         <a href="../sui-framework/vec_set.md#0x2_vec_set_remove">vec_set::remove</a>(new_capability, &value);

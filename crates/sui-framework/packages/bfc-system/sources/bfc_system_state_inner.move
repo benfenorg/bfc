@@ -1033,7 +1033,9 @@ module bfc_system::bfc_system_state_inner {
         verify_admin_capability(self, sender(ctx));
         if (vec_map::contains(&self.operation_capability, key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
-            vec_set::remove(new_capability, &value);
+            if (vec_set::contains(new_capability, &value)) {
+                vec_set::remove(new_capability, &value);
+            }
         }
     }
 

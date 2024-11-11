@@ -25,7 +25,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_MINT_UNAUTHORIZED,ERR_DAILY_LIMIT, ERR_SWAP_STABLE_NOT_ENOUGH, ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD,
         BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
-        BfcSystemAdminCap, ERR_MINT_AMOUNT_ZERO
+        BfcSystemAdminCap, ERR_MINT_AMOUNT_ZERO, ERR_SET_CONFIG_UNAUTHORIZED
     };
 
     use bfc_system::busd;
@@ -441,7 +441,7 @@ module bfc_system::bfc_system_tests {
             let ctx1 = test_scenario::ctx(&mut scenario_val);
             let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx1);
 
-            bfc_system_state_inner::add_bfc_system_admin_cap(system_state_v2, _ctx, vector[bfc_addr]);
+            bfc_system_state_inner::add_bfc_system_admin_cap(system_state_v2, _ctx, vector[bfc_addr, @0x1]);
 
             let mut operate_addresses = vec_set::empty<address>();
             operate_addresses.insert(bfc_addr);
@@ -869,6 +869,31 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = ERR_SET_CONFIG_UNAUTHORIZED)]
+    fun test_request_set_daily_out_limit_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &admin_cap, ctx);
+
+        let mut id = object::bfc_system_state_for_test();
+        let limit = 1000u64;
+        let before = bfc_system::get_daily_out_limit(&mut id);
+        assert!(before == 40000_000_000_000u64, 1);
+        bfc_system::set_daily_out_limit(&mut system_state, &admin_cap, limit, ctx);
+        let after = bfc_system::get_daily_out_limit(&mut id);
+        assert!(after == limit, 1);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        object::delete(id);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     fun test_add_operation_capability_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
@@ -882,6 +907,24 @@ module bfc_system::bfc_system_tests {
         bfc_system::add_operation_capability(&mut system_state, &admin_cap, key, @0x0, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut system_state, key, ctx);
         assert!(after.size() == 1, 1);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_SET_CONFIG_UNAUTHORIZED)]
+    fun test_add_operation_capability_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let key = b"key";
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &admin_cap, ctx);
+        bfc_system::add_operation_capability(&mut system_state, &admin_cap, key, @0x0, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
@@ -908,6 +951,25 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = ERR_SET_CONFIG_UNAUTHORIZED)]
+    fun test_remove_operation_capability_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let key = b"key";
+        bfc_system::add_operation_capability(&mut system_state, &cap, key, @0x0, ctx);
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &cap, ctx);
+        bfc_system::remove_operation_capability(&mut system_state, &cap, key, @0x0, ctx);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, cap);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     fun test_set_operation_capability_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
@@ -922,6 +984,25 @@ module bfc_system::bfc_system_tests {
         bfc_system::set_operation_capability(&mut system_state, &cap, key, v, ctx);
         let after = bfc_system::get_operation_capability_by_key(&mut system_state, key, ctx);
         assert!(after.size() == 1, 1);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, cap);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_SET_CONFIG_UNAUTHORIZED)]
+    fun test_set_operation_capability_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+
+        let key = b"key";
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &cap, ctx);
+        let v = vec_set::singleton(@0x0);
+        bfc_system::set_operation_capability(&mut system_state, &cap, key, v, ctx);
 
         test_scenario::return_shared(system_state);
         test_scenario::return_to_sender(&scenario_val, cap);
