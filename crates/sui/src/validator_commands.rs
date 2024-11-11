@@ -115,7 +115,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "set-daily-out-limit")]
     SetDailyOutLimit {
         #[clap(name = "operation-cap-id", long)]
-        operation_cap_id: Option<ObjectID>,
+        operation_cap_id: ObjectID,
         #[clap(name = "daily-out-limit")]
         daily_out_limit: u64,
         /// Gas budget for this transaction.
@@ -126,7 +126,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "add-operation-capability")]
     AddOperationCapability {
         #[clap(name = "operation-cap-id", long)]
-        operation_cap_id: Option<ObjectID>,
+        operation_cap_id: ObjectID,
         #[clap(name = "key")]
         key: String,
         #[clap(name = "address")]
@@ -139,7 +139,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "remove-operation-capability")]
     RemoveOperationCapability {
         #[clap(name = "operation-cap-id", long)]
-        operation_cap_id: Option<ObjectID>,
+        operation_cap_id: ObjectID,
         #[clap(name = "key")]
         key: String,
         #[clap(name = "address")]
@@ -152,7 +152,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "set-operation-capability")]
     SetOperationCapability {
         #[clap(name = "operation-cap-id", long)]
-        operation_cap_id: Option<ObjectID>,
+        operation_cap_id: ObjectID,
         #[clap(name = "key")]
         key: String,
         #[clap(name = "address")]
@@ -189,7 +189,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "add-admin-capability")]
     AddAdminCapability {
         #[clap(name = "admin-cap-id", long)]
-        admin_cap_id: Option<ObjectID>,
+        admin_cap_id: ObjectID,
         #[clap(name = "address")]
         addresses: Vec<SuiAddress>,
         /// Gas budget for this transaction.
@@ -200,7 +200,7 @@ pub enum SuiValidatorCommand {
     #[clap(name = "remove-admin-capability")]
     RemoveAdminCapability {
         #[clap(name = "admin-cap-id", long)]
-        admin_cap_id: Option<ObjectID>,
+        admin_cap_id: ObjectID,
         #[clap(name = "address")]
         address: SuiAddress,
         /// Gas budget for this transaction.
@@ -515,7 +515,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    set_daily_out_limit(context, operation_cap_id, daily_out_limit, gas_budget).await?;
+                    set_daily_out_limit(context, Some(operation_cap_id), daily_out_limit, gas_budget).await?;
                 SuiValidatorCommandResponse::SetDailyOutLimit(resp)
             }
             SuiValidatorCommand::AddOperationCapability {
@@ -526,7 +526,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "add_operation_capability").await?;
+                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "add_operation_capability").await?;
                 SuiValidatorCommandResponse::AddOperationCapability(resp)
             }
             SuiValidatorCommand::RemoveOperationCapability {
@@ -537,7 +537,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "remove_operation_capability").await?;
+                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "remove_operation_capability").await?;
                 SuiValidatorCommandResponse::RemoveOperationCapability(resp)
             }
             SuiValidatorCommand::SetOperationCapability {
@@ -548,7 +548,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, operation_cap_id, key, address, gas_budget, "set_operation_capability").await?;
+                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "set_operation_capability").await?;
                 SuiValidatorCommandResponse::SetOperationCapability(resp)
             }
 
@@ -568,7 +568,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    add_admin_capability(context, admin_cap_id, addresses, gas_budget).await?;
+                    add_admin_capability(context, Some(admin_cap_id), addresses, gas_budget).await?;
                 SuiValidatorCommandResponse::AddAdminCapability(resp)
             }
             SuiValidatorCommand::RemoveAdminCapability {
@@ -578,7 +578,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    remove_admin_capability(context, admin_cap_id, address, gas_budget).await?;
+                    remove_admin_capability(context, Some(admin_cap_id), address, gas_budget).await?;
                 SuiValidatorCommandResponse::RemoveAdminCapability(resp)
             }
 

@@ -159,6 +159,16 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
+    public fun set_daily_epoch(
+        self: &mut BfcSystemState,
+        epoch: u64,
+        ctx: &mut TxContext
+    ) {
+        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
+        bfc_system_state_inner::set_daily_epoch(inner_state, epoch);
+    }
+
+    #[test_only]
     public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,

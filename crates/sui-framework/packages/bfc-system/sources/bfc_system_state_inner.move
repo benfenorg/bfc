@@ -603,17 +603,25 @@ module bfc_system::bfc_system_state_inner {
         };
     }
 
+    #[test_only]
+    public(package) fun set_daily_epoch(system_state: &mut BfcSystemStateInnerV2, epoch: u64) {
+        system_state.daily_used_epoch = epoch;
+    }
+
     public(package) fun exchange_busd_to_stable<StableCoinType>(
         system_state: &mut BfcSystemStateInnerV2,
         busd_coin: Coin<BUSD>,
         ctx: &mut TxContext,
     ) {
         let amount: u64 = busd_coin.value();
+        if (amount == 0) {
+            coin::destroy_zero(busd_coin);
+            return
+        };
         daily_epoch_check(system_state, ctx);
         assert!(amount + system_state.daily_used_quantity <= system_state.daily_out_limit, ERR_DAILY_LIMIT);
 
         let key = treasury::get_vault_key<StableCoinType>();
-
         let amount: u64 = busd_coin.value();
         let stable_sum = bag::borrow_mut<String, Coin<StableCoinType>>(&mut system_state.stake_coins, key);
         assert!(stable_sum.value() >= amount, ERR_SWAP_STABLE_NOT_ENOUGH);
@@ -1025,7 +1033,9 @@ module bfc_system::bfc_system_state_inner {
         verify_admin_capability(self, sender(ctx));
         if (vec_map::contains(&self.operation_capability, key)) {
             let new_capability = vec_map::get_mut(&mut self.operation_capability, key);
-            vec_set::remove(new_capability, &value);
+            if (vec_set::contains(new_capability, &value)) {
+                vec_set::remove(new_capability, &value);
+            }
         }
     }
 
