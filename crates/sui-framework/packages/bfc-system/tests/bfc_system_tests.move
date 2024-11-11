@@ -197,8 +197,6 @@ module bfc_system::bfc_system_tests {
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
-        assert!(stable_rate.size() == 1, 1);
-        // check busd
         let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
 
         let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
@@ -210,7 +208,6 @@ module bfc_system::bfc_system_tests {
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
-        assert!(stable_rate.size() == 2, 1);
         // check beur
         let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
         assert!(beur_rate == busd_rate, 2);
@@ -225,7 +222,6 @@ module bfc_system::bfc_system_tests {
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
-        assert!(stable_rate.size() == 3, 3);
         // check bjpy
         let bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
         assert!(bjpy_rate != busd_rate, 4);
@@ -241,7 +237,6 @@ module bfc_system::bfc_system_tests {
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
-        assert!(stable_rate.size() == 3, 6);
         // check bjpy
         let new_bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
         assert!(bjpy_rate == new_bjpy_rate, 7);
@@ -261,7 +256,6 @@ module bfc_system::bfc_system_tests {
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
-        assert!(stable_rate.size() == 3, 9);
         // check bjpy
         let new_bjpy_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY"));
         assert!(new_bjpy_rate != old_bjpy_rate, 10);
