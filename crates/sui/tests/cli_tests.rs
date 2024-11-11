@@ -60,7 +60,7 @@ const TEST_DATA_DIR: &str = "tests/data/";
 
 #[sim_test]
 async fn test_set_oracle_price_address_command() -> Result<(), anyhow::Error> {
-    let mut test_cluster = TestClusterBuilder::new().build().await;
+    let mut test_cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000).build().await;
     test_cluster.set_safe_mode_expected(true);
     let addr = SuiAddress::random_for_testing_only();
     SuiValidatorCommand::SetOraclePriceAddress { 
@@ -73,12 +73,23 @@ async fn test_set_oracle_price_address_command() -> Result<(), anyhow::Error> {
 
     test_cluster.wait_for_epoch(Some(2)).await;
 
-    SuiValidatorCommand::GetOraclePriceAddress { 
-        gas_budget: None,
-    }
-    .execute(&mut test_cluster.wallet)
-    .await?
-    .print(true);
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        // should be some
+        assert!(_oracle_address.is_some());
+        println!("addr:{:?} == addr:{:?}", addr.to_string(),_oracle_address.unwrap().to_string());
+        assert!(addr.to_vec() == _oracle_address.unwrap().to_vec());
+    });
 
     Ok(())
 }

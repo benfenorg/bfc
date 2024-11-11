@@ -170,12 +170,6 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
-    #[clap(name = "get-oracle-price-address")]
-    GetOraclePriceAddress {
-        /// Gas budget for this transaction.
-        #[clap(name = "gas-budget", long)]
-        gas_budget: Option<u64>,
-    },
     /// init admin capability
     #[clap(name = "init-admin-capability")]
     InitAdminCapability {
@@ -264,7 +258,6 @@ pub enum SuiValidatorCommandResponse {
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
     SetOraclePriceAddress(SuiTransactionBlockResponse),
-    GetOraclePriceAddress(SuiTransactionBlockResponse),
     SetDailyOutLimit(SuiTransactionBlockResponse),
     AddOperationCapability(SuiTransactionBlockResponse),
     RemoveOperationCapability(SuiTransactionBlockResponse),
@@ -499,14 +492,6 @@ impl SuiValidatorCommand {
                     set_oracle_price_object_address(context, address, gas_budget).await?;
                 SuiValidatorCommandResponse::SetOraclePriceAddress(resp)
             }
-            SuiValidatorCommand::GetOraclePriceAddress {
-                gas_budget,
-            } => {
-                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
-                let resp =
-                    get_oracle_price_object_address(context, gas_budget).await?;
-                SuiValidatorCommandResponse::GetOraclePriceAddress(resp)
-            }
 
             SuiValidatorCommand::SetDailyOutLimit {
                 operation_cap_id,
@@ -730,14 +715,6 @@ async fn set_oracle_price_object_address(
         CallArg::Pure(bcs::to_bytes(&address).unwrap()),
     ];
     call_0xc9(context, "set_oracle_address", args, gas_budget).await
-}
-
-async fn get_oracle_price_object_address(
-    context: &mut WalletContext,
-    gas_budget: u64,
-) -> Result<SuiTransactionBlockResponse> {
-    let args = vec![];
-    call_0xc9(context, "get_oracle_address", args, gas_budget).await
 }
 
 async fn set_daily_out_limit(
@@ -1020,9 +997,6 @@ impl Display for SuiValidatorCommandResponse {
             SuiValidatorCommandResponse::SetOraclePriceAddress(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
-            SuiValidatorCommandResponse::GetOraclePriceAddress(response) => {
-                write!(writer, "{}", write_transaction_response(response)?)?;
-            }
             SuiValidatorCommandResponse::SetDailyOutLimit(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
@@ -1139,8 +1113,6 @@ pub fn write_transaction_response(
         response.transaction.as_ref().unwrap().to_string(),
         String::from("----- Transaction Effects ----"),
         response.effects.as_ref().unwrap().to_string(),
-        String::from("----- Raw Effects ----"),
-        format!("{:?}", response.raw_effects),
     ];
     let mut writer = String::new();
     for line in lines {
