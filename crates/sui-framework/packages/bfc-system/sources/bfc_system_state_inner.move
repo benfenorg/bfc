@@ -363,7 +363,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun swap_bfc_to_stablecoin_balance<StableCoinType>(
-        self: &mut BfcSystemStateInner,
+        self: &mut BfcSystemStateInnerV2,
         coin_bfc: Coin<BFC>,
         amount: u64,
         ctx: &mut TxContext,
@@ -798,7 +798,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun modify_proposal(
-        system_state: &mut BfcSystemStateInner,
+        system_state: &mut BfcSystemStateInnerV2,
         proposal_obj: &mut Proposal,
         index: u8,
         clock: &Clock

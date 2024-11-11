@@ -131,8 +131,9 @@ module bfc_system::bfc_system {
         wrapper: &mut BfcSystemState,
         round: u64,
         epoch_start_time: u64,
+        ctx: &mut TxContext
     ) {
-        let inner_state = load_system_state_mut_no_ctx(wrapper);
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::update_round(inner_state, round);
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
@@ -144,8 +145,9 @@ module bfc_system::bfc_system {
         epoch_start_time: u64,
         stable_type_name_vector : vector<ascii::String>,
         stable_rate_vector : vector<u64>,
+        ctx: &mut TxContext
     ) {
-        let inner_state = load_system_state_mut_no_ctx(wrapper);
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::update_round_v2(inner_state, round, stable_type_name_vector, stable_rate_vector);
         bfc_system_state_inner::judge_proposal_state(inner_state, epoch_start_time);
     }
