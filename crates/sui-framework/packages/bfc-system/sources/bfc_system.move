@@ -366,14 +366,14 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::set_operation_capability(inner, std::ascii::string(key), vec_set::singleton(address), ctx)
     }
 
-    public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address) {
-        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
-        inner.set_oracle_address(address)
+    public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.set_oracle_address(address)
     }
 
-    public fun get_oracle_address(wrapper: &mut BfcSystemState): Option<address> {
-        let inner = load_system_state_mut_by_uid(&mut wrapper.id);
-        inner.get_oracle_address()
+    public fun get_oracle_address(wrapper: &mut BfcSystemState, ctx: &mut TxContext): Option<address> {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.get_oracle_address()
     }
 
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {

@@ -13,6 +13,7 @@ use expect_test::expect;
 use move_package::{lock_file::schema::ManagedPackage, BuildConfig as MoveBuildConfig};
 use serde_json::json;
 use sui::key_identity::{get_identity_address, KeyIdentity};
+use sui::validator_commands::SuiValidatorCommand;
 use sui_sdk::SuiClient;
 use sui_test_transaction_builder::batch_make_transfer_transactions;
 use sui_types::object::{Object, Owner};
@@ -55,6 +56,32 @@ use sui_types::{base_types::ObjectID, crypto::get_key_pair, gas_coin::GasCoin};
 use test_cluster::{TestCluster, TestClusterBuilder};
 
 const TEST_DATA_DIR: &str = "tests/data/";
+
+
+#[sim_test]
+async fn test_set_oracle_price_address_command() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new().build().await;
+    test_cluster.set_safe_mode_expected(true);
+    let addr = SuiAddress::random_for_testing_only();
+    SuiValidatorCommand::SetOraclePriceAddress { 
+        address: addr, 
+        gas_budget: None,
+    }
+    .execute(&mut test_cluster.wallet)
+    .await?
+    .print(true);
+
+    test_cluster.wait_for_epoch(Some(2)).await;
+
+    SuiValidatorCommand::GetOraclePriceAddress { 
+        gas_budget: None,
+    }
+    .execute(&mut test_cluster.wallet)
+    .await?
+    .print(true);
+
+    Ok(())
+}
 
 #[sim_test]
 async fn test_genesis() -> Result<(), anyhow::Error> {
