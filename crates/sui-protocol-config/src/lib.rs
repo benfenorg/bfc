@@ -2145,7 +2145,7 @@ impl ProtocolConfig {
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.consensus_choice = ConsensusChoice::SwapEachEpoch;
                     }
-                },
+                }
                 45 => {
 
                 }
