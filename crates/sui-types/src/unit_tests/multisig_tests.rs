@@ -6,7 +6,7 @@ use crate::{
     base_types::SuiAddress,
     crypto::{
         get_key_pair, get_key_pair_from_rng, Ed25519SuiSignature, PublicKey, Signature, SuiKeyPair,
-        SuiSignatureInner, ZkLoginPublicIdentifier,
+        SuiSignatureInner, ZkLoginPublicIdentifier,EncodeDecodeBase64,
     },
     multisig::{as_indices, MultiSig, MAX_SIGNER_IN_MULTISIG},
     multisig_legacy::bitmap_to_u16,
@@ -32,8 +32,13 @@ use rand::{rngs::StdRng, SeedableRng};
 use roaring::RoaringBitmap;
 use shared_crypto::intent::{Intent, IntentMessage, PersonalMessage};
 use std::str::FromStr;
-use fastcrypto::traits::KeyPair;
+use fastcrypto::ed25519::{Ed25519PublicKey, Ed25519Signature};
+use fastcrypto::encoding::Hex;
+use fastcrypto::hash::HashFunction;
+use fastcrypto::traits::{KeyPair, VerifyingKey};
 use num_bigint::BigUint;
+use crate::crypto::DefaultHash;
+use crate::utils::{make_ed25519sig};
 
 #[test]
 fn test_combine_sigs() {
@@ -171,6 +176,39 @@ fn test_multisig_pk_new() {
     assert!(
         MultiSigPublicKey::new(vec![pk1.clone(), pk1.clone(), pk1], vec![1, 2, 3], 4,).is_err()
     );
+}
+
+#[test]
+fn test_multisig_pk_1key() {
+    let pk1 = PublicKey::try_from_bytes(crate::crypto::SignatureScheme::ED25519, &Hex::decode("8d2a2c5259b4612ebceb4a290dcfa134711559bc11ef016f7fa35d48f058e385").unwrap()).unwrap();
+    let pk2 = PublicKey::try_from_bytes(crate::crypto::SignatureScheme::ED25519, &Hex::decode("a6b7401f713c3da3096f14a6ac3b5f67e0044a149b7f1cf1501dc728d41daaff").unwrap()).unwrap();
+    let pk3 = PublicKey::try_from_bytes(crate::crypto::SignatureScheme::ED25519, &Hex::decode("9d18bff8cc0ae944422debd3f55bbf46577621765a6715c32ab3f48dfcaa444c").unwrap()).unwrap();
+
+    let _mpk = MultiSigPublicKey::new(vec![pk1, pk2, pk3], vec![1, 1, 1], 2,).unwrap();
+
+    let sig1_str = "b3c3b4dc17d5f8c9025fe8d32f892f458cf5d72a45bf371deafc4541ea2c8bc14c58c4d09ceda306ad6062cd97c106cf8770bb76281e58d9dba9a701e22dda0d";
+    let sig2_str = "748a21bbf85a56c2c48f0bf844328829ffb32695e1e2939925cf8176dbc2ab83c844b06e7da066f3a4a2445c4148b197b8b35e5921651ecafa378e0f24ba5006";
+    let sig3_str = "f227b5703affdf239d396708887745365804c881c6cc9511882f0fd415fd8144b49bbd059d5e7a7f03842581605953e435a76cfbf92256363c8a95e23e6cf00f";
+
+    let _gsig1   = make_ed25519sig(Hex::decode("8d2a2c5259b4612ebceb4a290dcfa134711559bc11ef016f7fa35d48f058e385").unwrap(),Hex::decode(sig1_str).unwrap());
+    let _gsig2 = make_ed25519sig(Hex::decode("353264145a6681f2df5896d398ea33eca98c7b39e19876845a160d3636a5dda1").unwrap(),Hex::decode(sig2_str).unwrap());
+
+    let data = Hex::decode("00000000000100200000000000000000000000000000000000000000000000000000000000000000010101000100003b14d728d4f471f82130c2c00be484c737d22411afc7cd3c451fed195aa79a2101fb13d326ef46a1a7c5e3243110a7d4279312bba47836b7a92cb7bf0802ab519c020000000000000020e2be2975329fe8e194191683b713bb4e4aa68697eb50495f494d329198a9dea83b14d728d4f471f82130c2c00be484c737d22411afc7cd3c451fed195aa79a216400000000000000002d31010000000000").unwrap();
+    let mut hasher = DefaultHash::default();
+    hasher.update(&data);
+    let digest = hasher.finalize().digest;
+
+    println!("digest is {:?}",digest);
+    let pkk1 = Ed25519PublicKey::from_bytes(&Hex::decode("8d2a2c5259b4612ebceb4a290dcfa134711559bc11ef016f7fa35d48f058e385").unwrap()).unwrap();
+    let pkk2 = Ed25519PublicKey::from_bytes(&Hex::decode("a6b7401f713c3da3096f14a6ac3b5f67e0044a149b7f1cf1501dc728d41daaff").unwrap()).unwrap();
+    let pkk3 = Ed25519PublicKey::from_bytes(&Hex::decode("9d18bff8cc0ae944422debd3f55bbf46577621765a6715c32ab3f48dfcaa444c").unwrap()).unwrap();
+
+    pkk1.verify(&digest,&Ed25519Signature::from_bytes(&Hex::decode(sig1_str).unwrap()).unwrap()).unwrap();
+    pkk2.verify(&digest,&Ed25519Signature::from_bytes(&Hex::decode(sig2_str).unwrap()).unwrap()).unwrap();
+    pkk3.verify(&digest,&Ed25519Signature::from_bytes(&Hex::decode(sig3_str).unwrap()).unwrap()).unwrap();
+
+    let a :Vec<u8>= vec![179, 195, 180, 220, 23, 213, 248, 201, 2, 95, 232, 211, 47, 137, 47, 69, 140, 245, 215, 42, 69, 191, 55, 29, 234, 252, 69, 65, 234, 44, 139, 193, 76, 88, 196, 208, 156, 237, 163, 6, 173, 96, 98, 205, 151, 193, 6, 207, 135, 112, 187, 118, 40, 30, 88, 217, 219, 169, 167, 1, 226, 45, 218, 13];
+    println!("sig is {:?}",Hex::encode(a));
 }
 
 #[test]

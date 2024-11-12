@@ -4,6 +4,7 @@
 use fastcrypto::traits::EncodeDecodeBase64;
 use shared_crypto::intent::{Intent, IntentMessage};
 use std::net::SocketAddr;
+use fastcrypto::encoding::{Encoding, Hex};
 use sui_core::authority_client::AuthorityAPI;
 use sui_macros::sim_test;
 use sui_protocol_config::ProtocolConfig;
@@ -23,6 +24,8 @@ use sui_types::{
     utils::{keys, load_test_vectors, make_upgraded_multisig_tx},
     zk_login_authenticator::ZkLoginAuthenticator,
 };
+use sui_types::crypto::SignatureScheme;
+use sui_types::utils::make_ed25519sig;
 use test_cluster::{TestCluster, TestClusterBuilder};
 
 async fn do_upgraded_multisig_test() -> SuiResult {
@@ -174,6 +177,82 @@ async fn test_multisig_e2e() {
         .unwrap_err()
         .to_string()
         .contains(format!("Invalid sig for pk={}", pk3.encode_base64()).as_str()));
+}
+
+#[sim_test]
+async fn test_multisig_e2e_with1k() {
+    let test_cluster = TestClusterBuilder::new().build().await;
+    let context = &test_cluster.wallet;
+    let rgp = test_cluster.get_reference_gas_price().await;
+
+    let pk1 = PublicKey::try_from_bytes(SignatureScheme::ED25519, &Hex::decode("8d2a2c5259b4612ebceb4a290dcfa134711559bc11ef016f7fa35d48f058e385").unwrap()).unwrap();
+    let pk2 = PublicKey::try_from_bytes(SignatureScheme::ED25519, &Hex::decode("a6b7401f713c3da3096f14a6ac3b5f67e0044a149b7f1cf1501dc728d41daaff").unwrap()).unwrap();
+    let pk3 = PublicKey::try_from_bytes(SignatureScheme::ED25519, &Hex::decode("9d18bff8cc0ae944422debd3f55bbf46577621765a6715c32ab3f48dfcaa444c").unwrap()).unwrap();
+
+    let multisig_pk = MultiSigPublicKey::insecure_new(
+        vec![(pk1.clone(), 1), (pk2.clone(), 1), (pk3.clone(), 1)],
+        2,
+    );
+    let multisig_addr = SuiAddress::from(&multisig_pk);
+
+    tracing::error!("multisig_addr is {:?}",multisig_addr);
+
+    // fund wallet and get a gas object to use later.
+    let gas = test_cluster
+        .fund_address_and_return_gas(rgp, Some(20000000000), multisig_addr)
+        .await;
+
+    // 1. sign with key 0 and 1 executes successfully.
+    let tx1_builder = TestTransactionBuilder::new(multisig_addr, gas, rgp)
+        .transfer_sui(None, SuiAddress::ZERO);
+        //.build_and_sign_multisig(multisig_pk.clone(), &[&keys[0], &keys[1]], 0b011);
+    let data = tx1_builder.build();
+    let intent_msg = IntentMessage::new(Intent::sui_transaction(), data.clone());
+    tracing::error!("intent_msg is {:?}",Hex::encode(&bcs::to_bytes(&intent_msg).unwrap()));
+
+    let sig1_str = "b3c3b4dc17d5f8c9025fe8d32f892f458cf5d72a45bf371deafc4541ea2c8bc14c58c4d09ceda306ad6062cd97c106cf8770bb76281e58d9dba9a701e22dda0d";
+    let sig2_str = "748a21bbf85a56c2c48f0bf844328829ffb32695e1e2939925cf8176dbc2ab83c844b06e7da066f3a4a2445c4148b197b8b35e5921651ecafa378e0f24ba5006";
+    //let sig3_str = "f227b5703affdf239d396708887745365804c881c6cc9511882f0fd415fd8144b49bbd059d5e7a7f03842581605953e435a76cfbf92256363c8a95e23e6cf00f";
+
+    let gsig1: CompressedSignature = make_ed25519sig(Hex::decode("8d2a2c5259b4612ebceb4a290dcfa134711559bc11ef016f7fa35d48f058e385").unwrap(),Hex::decode(sig1_str).unwrap()).to_compressed().unwrap();
+    let gsig2: CompressedSignature = make_ed25519sig(Hex::decode("a6b7401f713c3da3096f14a6ac3b5f67e0044a149b7f1cf1501dc728d41daaff").unwrap(),Hex::decode(sig2_str).unwrap()).to_compressed().unwrap();
+    let sigs = vec![gsig1,gsig2];
+
+    let multisig =
+        GenericSignature::MultiSig(MultiSig::insecure_new(sigs, 0b011, multisig_pk.clone()));
+
+    let tx1  = Transaction::from_generic_sig_data(data, vec![multisig]);
+
+    let res = context.execute_transaction_must_succeed(tx1).await;
+    assert!(res.status_ok().unwrap());
+
+    // // 2. sign with key 1 and 2 executes successfully.
+    let gas = test_cluster
+        .fund_address_and_return_gas(rgp, Some(20000000000), multisig_addr)
+        .await;
+
+    let tx1_builder = TestTransactionBuilder::new(multisig_addr, gas, rgp)
+        .transfer_sui(None, SuiAddress::ZERO);
+    //.build_and_sign_multisig(multisig_pk.clone(), &[&keys[0], &keys[1]], 0b011);
+    let data = tx1_builder.build();
+    let intent_msg = IntentMessage::new(Intent::sui_transaction(), data.clone());
+    tracing::error!("intent_msg is {:?}",Hex::encode(&bcs::to_bytes(&intent_msg).unwrap()));
+
+    let sig2_str = "d4e916fadb0570a9dfa249794e050a95868eb7253d763a72a51ab526ee8920a870c57a519809c1937faa06f064e4508e7caa3eb3637009971c2069df7a3a5f0c";
+    let sig3_str = "3efd6781f25606a3113910056419cbfe79f2332289a982431ea64f5b213a25ad547ac9c80565784c97f22614ed543aa9e1e73516a62be024be6475512e91750c";
+
+    let gsig2: CompressedSignature = make_ed25519sig(Hex::decode("a6b7401f713c3da3096f14a6ac3b5f67e0044a149b7f1cf1501dc728d41daaff").unwrap(), Hex::decode(sig2_str).unwrap()).to_compressed().unwrap();
+    let gsig3: CompressedSignature = make_ed25519sig(Hex::decode("9d18bff8cc0ae944422debd3f55bbf46577621765a6715c32ab3f48dfcaa444c").unwrap(), Hex::decode(sig3_str).unwrap()).to_compressed().unwrap();
+    let sigs = vec![gsig2,gsig3];
+
+    let multisig =
+        GenericSignature::MultiSig(MultiSig::insecure_new(sigs, 0b110, multisig_pk));
+
+    let tx1  = Transaction::from_generic_sig_data(data, vec![multisig]);
+
+    let res = context.execute_transaction_must_succeed(tx1).await;
+    assert!(res.status_ok().unwrap());
+
 }
 
 #[sim_test]
