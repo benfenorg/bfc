@@ -72,7 +72,9 @@ mod checked {
     };
 
     use sui_types::{BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+
+    const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
 
     /// If a transaction digest shows up in this list, when executing such transaction,
     /// we will always return `ExecutionError::CertificateDenied` without executing it (but still do
@@ -730,7 +732,7 @@ mod checked {
         stable_coin_rate_against_busd: Vec<u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd)?;
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd, params)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
         // Step 2: Advance the epoch.
@@ -834,16 +836,24 @@ mod checked {
         discard: bool,
         stable_coin_type: Vec<String>,
         stable_coin_rate_against_busd: Vec<u64>,
+        params: &AdvanceEpochParams,
     ) -> Result<(), ExecutionError> {
         if !is_safe_mode { // if safe mode skip judge dao vote result
             let mut arguments = vec![];
-            let args = vec![
+            let mut arg_vec = vec![
                 CallArg::BFC_SYSTEM_MUT,
                 CallArg::Pure(bcs::to_bytes(&param.epoch).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&param.epoch_start_timestamp_ms).unwrap()),
-                CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()),
-                CallArg::Pure(bcs::to_bytes(&stable_coin_rate_against_busd).unwrap()),
-            ].into_iter()
+            ];
+
+            let mut bfc_round_function_name = BFC_ROUND_FUNCTION_NAME;
+            if params.next_protocol_version.as_u64() >= BFC_ROUND_V2_PROTOCOL_VERSION {
+                arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()));
+                arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_rate_against_busd).unwrap()));
+                bfc_round_function_name = BFC_ROUND_V2_FUNCTION_NAME;
+            }
+
+            let args = arg_vec.into_iter()
                 .map(|a| builder.input(a))
                 .collect::<Result<_, _>>();
 
@@ -854,7 +864,7 @@ mod checked {
             builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
-                BFC_ROUND_V2_FUNCTION_NAME.to_owned(),
+                bfc_round_function_name.to_owned(),
                 vec![],
                 arguments,
             );
