@@ -57,7 +57,7 @@ use test_cluster::{TestCluster, TestClusterBuilder};
 
 const TEST_DATA_DIR: &str = "tests/data/";
 
-
+#[cfg(msim)]
 #[sim_test]
 async fn test_set_oracle_price_address_command() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new().with_epoch_duration_ms(1000).build().await;
