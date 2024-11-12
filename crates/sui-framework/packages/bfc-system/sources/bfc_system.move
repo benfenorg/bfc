@@ -380,12 +380,12 @@ module bfc_system::bfc_system {
 
     public fun set_oracle_address(wrapper: &mut BfcSystemState, address: address, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        inner_state.set_oracle_address(address)
+        inner_state.set_oracle_address(address, _ctx)
     }
 
     public fun get_oracle_address(wrapper: &mut BfcSystemState, ctx: &mut TxContext): Option<address> {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        inner_state.get_oracle_address()
+        inner_state.get_oracle_address(_ctx)
     }
 
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {

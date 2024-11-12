@@ -888,6 +888,42 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    fun test_set_get_oracle_address_success() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+       
+        bfc_system::set_oracle_address(&mut system_state, @0x99, ctx);
+        let addr = bfc_system::get_oracle_address(&mut system_state, ctx);
+        assert!(addr.borrow() == @0x99, 1);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_SET_CONFIG_UNAUTHORIZED)]
+    fun test_set_get_oracle_address_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::load_system_state_mut_test(&mut system_state, ctx);
+        bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &admin_cap, ctx);
+
+        bfc_system::set_oracle_address(&mut system_state, @0x99, ctx);
+        let addr = bfc_system::get_oracle_address(&mut system_state, ctx);
+        assert!(addr.borrow() == @0x99, 1);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     fun test_add_operation_capability_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);

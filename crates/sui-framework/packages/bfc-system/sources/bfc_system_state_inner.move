@@ -1049,12 +1049,14 @@ module bfc_system::bfc_system_state_inner {
     }
 
     // set oracle address
-    public(package) fun set_oracle_address(self: &mut BfcSystemStateInnerV2, address: address) {
+    public(package) fun set_oracle_address(self: &mut BfcSystemStateInnerV2, address: address, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
         self.oracle_address = option::some(address);
     }
 
     // get oracle address
-    public(package) fun get_oracle_address(self: &BfcSystemStateInnerV2): Option<address> {
+    public(package) fun get_oracle_address(self: &BfcSystemStateInnerV2, ctx: &mut TxContext): Option<address> {
+        verify_admin_capability(self, sender(ctx));
         self.oracle_address
     }
 

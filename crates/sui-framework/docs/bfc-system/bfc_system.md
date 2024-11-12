@@ -932,7 +932,7 @@ deprecated
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> TxContext) {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    inner_state.<a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(<b>address</b>)
+    inner_state.<a href="bfc_system.md#0xc8_bfc_system_set_oracle_address">set_oracle_address</a>(<b>address</b>, _ctx)
 }
 </code></pre>
 
@@ -957,7 +957,7 @@ deprecated
 
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, ctx: &<b>mut</b> TxContext): Option&lt;<b>address</b>&gt; {
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    inner_state.<a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>()
+    inner_state.<a href="bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(_ctx)
 }
 </code></pre>
 
