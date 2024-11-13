@@ -1198,7 +1198,7 @@ module bfc_system::bfc_system_tests {
             bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &new_admin_cap, ctx);
 
             let (system_state_v2, _) = bfc_system::load_system_state_mut_test(&mut system_state, ctx);
-            assert!(vec_set::size(&system_state_v2.get_admin_capability()) == 1, 1);
+            assert!(vec_set::size(&system_state_v2.get_admin_capability()) == 2, 1);
 
             test_scenario::return_to_address(test_address, new_admin_cap);
             test_scenario::return_shared(system_state);
@@ -1209,20 +1209,22 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-
     #[expected_failure(abort_code = ERR_ADMIN_COUNT_ZERO)]
     fun test_remove_admin_capability_fail() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
-        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_address<BfcSystemAdminCap>(&scenario_val, BFC_ADDR);
+        let admin_cap_1 = test_scenario::take_from_address<BfcSystemAdminCap>(&scenario_val, @0x1);
 
         // remove
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
 
+        bfc_system::remove_admin_capability(&mut system_state, @0x1, &admin_cap_1, ctx);
         bfc_system::remove_admin_capability(&mut system_state, BFC_ADDR, &admin_cap, ctx);
 
-        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_to_address(BFC_ADDR, admin_cap);
+        test_scenario::return_to_address(@0x1, admin_cap_1);
         test_scenario::return_shared(system_state);
 
         tearDown(scenario_val);
