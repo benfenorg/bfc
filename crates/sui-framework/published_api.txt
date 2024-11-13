@@ -5299,10 +5299,7 @@ add_admin_capability
 remove_admin_capability
 	public entry fun
 	0xc8::bfc_system
-get_stake_coin_amount
-	public fun
-	0xc8::bfc_system
-get_daily_used_quantity
+get_daily_out_data
 	public fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin

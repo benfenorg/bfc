@@ -3352,6 +3352,7 @@ deprecated
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">get_stake_coin_amount</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>assert</b>!(<a href="../sui-framework/bag.md#0x2_bag_contains">bag::contains</a>(&self.stake_coins, key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>);
     <b>let</b> stake_coin = <a href="../sui-framework/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&self.stake_coins, key);
     stake_coin.value()
 }

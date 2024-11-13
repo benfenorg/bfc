@@ -575,14 +575,12 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address, _ctx);
     }
 
-    public fun get_stake_coin_amount<StableCoinType>(id: &UID): u64 {
+    public fun get_daily_out_data<StableCoinType>(id: &UID): (u64, u64, u64) {
         let inner_state = load_system_state_by_uid(id);
-        bfc_system_state_inner::get_stake_coin_amount<StableCoinType>(inner_state)
-    }
-
-    public fun get_daily_used_quantity(id: &UID): u64 {
-        let inner_state = load_system_state_by_uid(id);
-        bfc_system_state_inner::get_daily_used_quantity(inner_state)
+        let daily_used_quantity = bfc_system_state_inner::get_daily_used_quantity(inner_state);
+        let daily_out_limit = bfc_system_state_inner::get_daily_out_limit(inner_state);
+        let staken_amount = bfc_system_state_inner::get_stake_coin_amount<StableCoinType>(inner_state);
+        (daily_used_quantity, daily_out_limit, staken_amount)
     }
 
     /// X treasury  swap bfc to stablecoin

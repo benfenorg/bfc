@@ -726,8 +726,10 @@ module bfc_system::bfc_system_tests {
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, tx_context::sender(ctx), &modify_cap, ctx);
 
         let id = object::bfc_system_state_for_test();
-        let staked_amount = bfc_system::get_stake_coin_amount<USDC>(&id);
+        let (daily_used_quantity, daily_out_limit, staked_amount) = bfc_system::get_daily_out_data<USDC>(&id);
         assert!(staked_amount == 100, 1);
+        assert!(daily_out_limit == 40000_000_000_000u64, 1);
+        assert!(daily_used_quantity == 0u64, 1);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
