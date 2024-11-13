@@ -872,6 +872,8 @@ impl AuthorityState {
         &self,
         transaction: &VerifiedTransaction,
         epoch_store: &Arc<AuthorityPerEpochStore>,
+        stable_rate: Option<u64>,
+        base_point: Option<u64>,
     ) -> SuiResult<CheckedInputObjects> {
         let tx_digest = transaction.digest();
         let tx_data = transaction.data().transaction_data();
@@ -906,8 +908,8 @@ impl AuthorityState {
             &receiving_objects,
             &self.metrics.bytecode_verifier_metrics,
             &self.config.verifier_signing_config,
-            None,
-            None, //todo
+            stable_rate,
+            base_point, //todo
         )?;
 
         if epoch_store.coin_deny_list_v1_enabled() {
@@ -942,8 +944,14 @@ impl AuthorityState {
         // Ensure that validator cannot reconfigure while we are signing the tx
         let _execution_lock = self.execution_lock_for_signing().await;
 
+        let (stable_rate, base_point) = if !transaction.is_system_tx() {
+            self.get_stable_rate_and_base_points(transaction.gas()).await?
+        }else {
+            (None, None)
+        };
+
         let checked_input_objects =
-            self.handle_transaction_deny_checks(&transaction, epoch_store)?;
+            self.handle_transaction_deny_checks(&transaction, epoch_store, stable_rate, base_point)?;
 
         let owned_objects = checked_input_objects.inner().filter_owned_objects();
 
