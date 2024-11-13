@@ -865,6 +865,12 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
 
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+
     let function = "set_voting_period".to_string();
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
@@ -938,6 +944,12 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
 
     let function = "set_voting_delay".to_string();
     let arg = vec![
@@ -1444,6 +1456,12 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
+
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
 
     // modify voting quorum
     let function = "set_voting_quorum_rate".to_string();

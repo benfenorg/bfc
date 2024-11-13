@@ -40,7 +40,6 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
--  [Function `mint_stable_V1`](#0xc8_bfc_system_state_inner_mint_stable_V1)
 -  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_state_inner_exchange_stable_to_busd)
 -  [Function `daily_epoch_check`](#0xc8_bfc_system_state_inner_daily_epoch_check)
 -  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_state_inner_exchange_busd_to_stable)
@@ -1673,54 +1672,6 @@ deprecated
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_mint_stable_V1"></a>
-
-## Function `mint_stable_V1`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable_V1">mint_stable_V1</a>&lt;StableCoinType&gt;(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, amount: u64, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable_V1">mint_stable_V1</a>&lt;StableCoinType&gt;(
-    inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-    amount: u64,
-    cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">BfcSystemModifyCap</a>,
-    ctx: &<b>mut</b> TxContext,
-): Coin&lt;StableCoinType&gt; {
-    <b>assert</b>!(amount &gt; 0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO">ERR_MINT_AMOUNT_ZERO</a>);
-    <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, &cap.key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
-    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() != <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
-    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
-    ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
-    <b>if</b> (usdc_usdt_coint) {
-        <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_usdt_usdc">auth_utils::has_mint_usdt_usdc</a>(&cap.key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
-        <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
-    };
-    <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">auth_utils::has_mint_other_stablecoin</a>(&cap.key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
-    <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(
-        &<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>,
-        <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;()
-    );
-    <b>let</b> (balance_stable, _balance_bfc) = <a href="vault.md#0xc8_vault_balances">vault::balances</a>&lt;StableCoinType&gt;(vault_mut);
-    <b>if</b> (balance_stable &gt;= amount) {
-        <b>return</b> <a href="vault.md#0xc8_vault_decrease_coin_a">vault::decrease_coin_a</a>(vault_mut, amount, ctx)
-    };
-
-    <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_bfc_system_state_inner_exchange_stable_to_busd"></a>
 
 ## Function `exchange_stable_to_busd`
@@ -1746,6 +1697,11 @@ deprecated
     <b>if</b> (amount == 0) {
         <a href="../sui-framework/coin.md#0x2_coin_destroy_zero">coin::destroy_zero</a>(stable_coin);
         <b>return</b>
+    };
+    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
+    ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
+    <b>if</b> (usdc_usdt_coint) {
+
     };
 
     // stake <a href="../sui-framework/coin.md#0x2_coin">coin</a> into stable_coins

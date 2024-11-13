@@ -542,34 +542,6 @@ module bfc_system::bfc_system_state_inner {
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
     }
 
-    public(package) fun mint_stable_V1<StableCoinType>(
-        inner_state: &mut BfcSystemStateInnerV2,
-        amount: u64,
-        cap: &BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ): Coin<StableCoinType> {
-        assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
-        assert!(verify_operation_capability(inner_state, &cap.key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
-        let usdc_usdt_coint = type_name::get<StableCoinType>() == type_name::get<USDT>(
-        ) || type_name::get<StableCoinType>() == type_name::get<USDC>();
-        if (usdc_usdt_coint) {
-            assert!(auth_utils::has_mint_usdt_usdc(&cap.key), ERR_MINT_OPERATION_UNAUTHORIZED);
-            return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
-        };
-        assert!(auth_utils::has_mint_other_stablecoin(&cap.key), ERR_MINT_OPERATION_UNAUTHORIZED);
-        let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
-            &mut inner_state.treasury,
-            treasury::get_vault_key<StableCoinType>()
-        );
-        let (balance_stable, _balance_bfc) = vault::balances<StableCoinType>(vault_mut);
-        if (balance_stable >= amount) {
-            return vault::decrease_coin_a(vault_mut, amount, ctx)
-        };
-
-        treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
-    }
-
     public(package) fun exchange_stable_to_busd<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
         stable_coin: Coin<StableCoinType>,
