@@ -918,6 +918,20 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     Ok(())
 }
 
+async fn state_to_v2(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+    Ok(())
+}
+
 async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
     let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
     let data_option = SuiObjectDataOptions::new()
@@ -1806,6 +1820,13 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
     let module = "bfc_system".to_string();
     let function = "set_voting_period".to_string();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&manager_obj.to_string())?,
@@ -2727,6 +2748,9 @@ async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
     ];
+
+    state_to_v2(http_client, gas, address, test_cluster).await?;
+
     let transaction_bytes: TransactionBlockBytes = http_client
         .move_call(
             address,
