@@ -266,6 +266,34 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
+    public fun create_sui_system_state_for_testing_v2(scenario_val: &mut Scenario, bfc_amount: u64) {
+        let bfc_addr = test_scenario::sender(scenario_val);
+        test_scenario::next_tx(scenario_val, bfc_addr);
+        {
+            let ctx = test_scenario::ctx(scenario_val);
+            create_sui_system_state_for_testing(ctx, bfc_amount);
+        };
+
+        test_scenario::next_tx(scenario_val, bfc_addr);
+        {
+            let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario_val);
+
+            let ctx = test_scenario::ctx(scenario_val);
+            // let (_system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+            bfc_system_state_inner::add_bfc_system_admin_cap(system_state_v2, _ctx, vector[bfc_addr]);
+
+            let mut operate_addresses = vec_set::empty<address>();
+            operate_addresses.insert(bfc_addr);
+            bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_USDC_USDT_RIGHT_KEY), operate_addresses, _ctx);
+
+            test_scenario::return_shared(system_state);
+        };
+
+        test_scenario::next_tx(scenario_val, bfc_addr);
+    }
+
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext, bfc_amount: u64) {
         let mut treasury_parameters = vec_map::empty<ascii::String, bfc_system_state_inner::TreasuryParameters>();
         vec_map::insert(

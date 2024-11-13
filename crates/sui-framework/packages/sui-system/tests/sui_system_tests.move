@@ -678,7 +678,7 @@ module sui_system::sui_system_tests {
             ctx
         );
         vector::push_back(&mut validators, validator);
-        create_sui_system_state_for_testing(validators, 1000, 0, ctx);
+        create_sui_system_state_for_testing(validators, 1000, 0, scenario);
 
         test_scenario::next_tx(scenario, validator_addr);
 
@@ -1023,7 +1023,7 @@ module sui_system::sui_system_tests {
             true,
             ctx
         );
-        create_sui_system_state_for_testing(vector[validator], 1000, 0, ctx);
+        create_sui_system_state_for_testing(vector[validator], 1000, 0, scenario);
 
         test_scenario::next_tx(scenario, new_addr);
 

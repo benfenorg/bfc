@@ -5149,6 +5149,12 @@ remove_bfc_system_admin_cap
 create_bfc_system_modify_cap
 	fun
 	0xc8::bfc_system_state_inner
+get_stake_coin_amount
+	public(package) fun
+	0xc8::bfc_system_state_inner
+get_daily_used_quantity
+	public(package) fun
+	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
 	0xc8::bfc_system
@@ -5295,6 +5301,12 @@ add_admin_capability
 	0xc8::bfc_system
 remove_admin_capability
 	public entry fun
+	0xc8::bfc_system
+get_stake_coin_amount
+	public fun
+	0xc8::bfc_system
+get_daily_used_quantity
+	public fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin
 	public entry fun

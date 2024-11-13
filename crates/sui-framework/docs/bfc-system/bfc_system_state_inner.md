@@ -97,6 +97,8 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `add_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap)
 -  [Function `remove_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap)
 -  [Function `create_bfc_system_modify_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap)
+-  [Function `get_stake_coin_amount`](#0xc8_bfc_system_state_inner_get_stake_coin_amount)
+-  [Function `get_daily_used_quantity`](#0xc8_bfc_system_state_inner_get_daily_used_quantity)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -3375,6 +3377,56 @@ deprecated
         key,
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_transfer">transfer::transfer</a>(cap, recipient);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_get_stake_coin_amount"></a>
+
+## Function `get_stake_coin_amount`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">get_stake_coin_amount</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">get_stake_coin_amount</a>&lt;StableCoinType&gt;(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
+    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> stake_coin = <a href="../sui-framework/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;String, Coin&lt;StableCoinType&gt;&gt;(&self.stake_coins, key);
+    stake_coin.value()
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_get_daily_used_quantity"></a>
+
+## Function `get_daily_used_quantity`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_used_quantity">get_daily_used_quantity</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_used_quantity">get_daily_used_quantity</a>(self: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): u64 {
+    self.daily_used_quantity
 }
 </code></pre>
 
