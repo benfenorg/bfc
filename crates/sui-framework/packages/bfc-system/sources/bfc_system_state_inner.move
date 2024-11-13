@@ -1126,4 +1126,14 @@ module bfc_system::bfc_system_state_inner {
         transfer::transfer(cap, recipient);
     }
 
+    public(package) fun get_stake_coin_amount<StableCoinType>(self: &BfcSystemStateInnerV2): u64 {
+        let key = treasury::get_vault_key<StableCoinType>();
+        let stake_coin = bag::borrow<String, Coin<StableCoinType>>(&self.stake_coins, key);
+        stake_coin.value()
+    }
+
+    public(package) fun get_daily_used_quantity(self: &BfcSystemStateInnerV2): u64 {
+        self.daily_used_quantity
+    }
+
 }

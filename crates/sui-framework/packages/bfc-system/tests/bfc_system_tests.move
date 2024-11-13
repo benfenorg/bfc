@@ -697,9 +697,34 @@ module bfc_system::bfc_system_tests {
 
         bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 100, tx_context::sender(ctx), &modify_cap, ctx);
 
+        let id = object::bfc_system_state_for_test();
+        let staked_amount = bfc_system::get_stake_coin_amount<USDC>(&id);
+        assert!(staked_amount == 100, 1);
+
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);
+        object::delete(id);
+
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_AMOUNT_ZERO)]
+    fun test_exchange_stable_to_busd_zero() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        bfc_system::exchange_stable_to_busd<USDC>(&mut system_state, 0, tx_context::sender(ctx), &modify_cap, ctx);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+
         tearDown(scenario_val);
     }
 
