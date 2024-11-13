@@ -54,8 +54,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `init_single_admin_capability`](#0xc8_bfc_system_init_single_admin_capability)
 -  [Function `add_admin_capability`](#0xc8_bfc_system_add_admin_capability)
 -  [Function `remove_admin_capability`](#0xc8_bfc_system_remove_admin_capability)
--  [Function `get_stake_coin_amount`](#0xc8_bfc_system_get_stake_coin_amount)
--  [Function `get_daily_used_quantity`](#0xc8_bfc_system_get_daily_used_quantity)
+-  [Function `get_daily_out_data`](#0xc8_bfc_system_get_daily_out_data)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
 -  [Function `swap_stablecoin_to_bfc`](#0xc8_bfc_system_swap_stablecoin_to_bfc)
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
@@ -1589,13 +1588,13 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_get_stake_coin_amount"></a>
+<a name="0xc8_bfc_system_get_daily_out_data"></a>
 
-## Function `get_stake_coin_amount`
+## Function `get_daily_out_data`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stake_coin_amount">get_stake_coin_amount</a>&lt;StableCoinType&gt;(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_data">get_daily_out_data</a>&lt;StableCoinType&gt;(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): (u64, u64, u64)
 </code></pre>
 
 
@@ -1604,34 +1603,12 @@ X treasury rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_stake_coin_amount">get_stake_coin_amount</a>&lt;StableCoinType&gt;(id: &UID): u64 {
+<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_data">get_daily_out_data</a>&lt;StableCoinType&gt;(id: &UID): (u64, u64, u64) {
     <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">bfc_system_state_inner::get_stake_coin_amount</a>&lt;StableCoinType&gt;(inner_state)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_get_daily_used_quantity"></a>
-
-## Function `get_daily_used_quantity`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_used_quantity">get_daily_used_quantity</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_used_quantity">get_daily_used_quantity</a>(id: &UID): u64 {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_used_quantity">bfc_system_state_inner::get_daily_used_quantity</a>(inner_state)
+    <b>let</b> daily_used_quantity = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_used_quantity">bfc_system_state_inner::get_daily_used_quantity</a>(inner_state);
+    <b>let</b> daily_out_limit = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">bfc_system_state_inner::get_daily_out_limit</a>(inner_state);
+    <b>let</b> staken_amount = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">bfc_system_state_inner::get_stake_coin_amount</a>&lt;StableCoinType&gt;(inner_state);
+    (daily_used_quantity, daily_out_limit, staken_amount)
 }
 </code></pre>
 
