@@ -1698,11 +1698,6 @@ deprecated
         <a href="../sui-framework/coin.md#0x2_coin_destroy_zero">coin::destroy_zero</a>(stable_coin);
         <b>return</b>
     };
-    <b>let</b> usdc_usdt_coint = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDT&gt;(
-    ) || <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;USDC&gt;();
-    <b>if</b> (usdc_usdt_coint) {
-
-    };
 
     // stake <a href="../sui-framework/coin.md#0x2_coin">coin</a> into stable_coins
     <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
