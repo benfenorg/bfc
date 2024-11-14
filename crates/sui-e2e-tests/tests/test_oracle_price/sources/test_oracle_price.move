@@ -20,7 +20,7 @@ module test_oracle_price::test_oracle {
         price_map.insert(PriceIdentifier { 
                 coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR", 
                 coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
-            400,
+            100,
             );
         price_map.insert(PriceIdentifier { 
                 coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY", 

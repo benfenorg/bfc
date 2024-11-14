@@ -36,19 +36,72 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        assert!(_oracle_address.is_none());
+
+        //rate_map
+        let _rate_map = _state.get_rate_map();
+        // println!("=============rate_map: {:?}", &_rate_map);
+
+        let mut pass = false;
+        for entry in _rate_map.clone().contents.into_iter() {
+            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" {
+                println!("bjpy before {:?}", entry.value);
+                pass = true;
+            }
+        }
+        assert!(pass);
+    });
     let mut  http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let (_, package) = do_publish(&mut test_cluster).await?;
     //add oracle price
     check_oracle_price(&mut test_cluster, package).await;
-    // check_oracle_price(&mut test_cluster, package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(3)).await;
+    test_cluster.wait_for_epoch(Some(2)).await;
     get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
     swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
     swap_stablecoin_to_bfc_by_bjpy_gas(&test_cluster, &mut http_client, address, 100000).await?;
-    test_cluster.wait_for_epoch(Some(1)).await;
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        assert!(_oracle_address.is_some());
+        // println!("=============oracle_address: {}", _oracle_address.unwrap());
+
+        //rate_map
+        let _rate_map = _state.get_rate_map();
+        // println!("=============rate_map: {:?}", &_rate_map);
+
+        let mut pass = false;
+        for entry in _rate_map.clone().contents.into_iter() {
+            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" {
+                println!("bjpy after {:?}", entry.value);
+                pass = true;
+            }
+        }
+        assert!(pass);
+    });
     Ok(())
 }
 
