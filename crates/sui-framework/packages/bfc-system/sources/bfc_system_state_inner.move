@@ -542,6 +542,17 @@ module bfc_system::bfc_system_state_inner {
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
     }
 
+    public(package) fun mint_busd(
+        inner_state: &mut BfcSystemStateInnerV2,
+        amount: u64,
+        key: &String,
+        ctx: &mut TxContext,
+    ): Coin<BUSD> {
+        assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
+        assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
+        return treasury::mint_stable<BUSD>(&mut inner_state.treasury, amount, ctx)
+    }
+
     public(package) fun exchange_stable_to_busd<StableCoinType>(
         inner_state: &mut BfcSystemStateInnerV2,
         stable_coin: Coin<StableCoinType>,

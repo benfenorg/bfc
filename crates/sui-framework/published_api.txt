@@ -4978,6 +4978,9 @@ request_gas_balance
 mint_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
+mint_busd
+	public(package) fun
+	0xc8::bfc_system_state_inner
 exchange_stable_to_busd
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5279,6 +5282,9 @@ mint_stable_entry
 	public entry fun
 	0xc8::bfc_system
 mint_stable
+	public fun
+	0xc8::bfc_system
+mint_busd
 	public fun
 	0xc8::bfc_system
 exchange_stable_to_busd

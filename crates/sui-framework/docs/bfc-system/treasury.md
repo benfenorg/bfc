@@ -520,7 +520,6 @@ title: Module `0xc8::treasury`
     <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, key);
     <b>let</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a> = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = sui::coin::from_balance(<a href="../sui-framework/balance.md#0x2_balance">balance</a>, ctx);
-
     <a href="../sui-framework/coin.md#0x2_coin">coin</a>
 }
 </code></pre>
