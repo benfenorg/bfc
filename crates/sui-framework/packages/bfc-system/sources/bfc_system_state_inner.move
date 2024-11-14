@@ -959,6 +959,7 @@ module bfc_system::bfc_system_state_inner {
 
     public(package) fun init_bfc_system_admins(self: &mut BfcSystemStateInnerV2, ctx: &mut TxContext, admins: vector<address>) {
         assert!(!self.admin_init, ERR_ADMIN_ALREADY_INITED);
+        self.admin_capability_addresses = vec_set::empty();
         add_bfc_system_admin_cap(self, ctx, admins);
         self.admin_init = true;
     }

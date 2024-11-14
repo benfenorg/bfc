@@ -2986,6 +2986,7 @@ deprecated
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_bfc_system_admins">init_bfc_system_admins</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, ctx: &<b>mut</b> TxContext, admins: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<b>address</b>&gt;) {
     <b>assert</b>!(!self.admin_init, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_ADMIN_ALREADY_INITED">ERR_ADMIN_ALREADY_INITED</a>);
+    self.admin_capability_addresses = <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>();
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_bfc_system_admin_cap">add_bfc_system_admin_cap</a>(self, ctx, admins);
     self.admin_init = <b>true</b>;
 }
