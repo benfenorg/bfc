@@ -51,7 +51,7 @@ module bfc_system::bfc_system_tests {
 
     const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
     const MINT_USDC_USDT_RIGHT_KEY: vector<u8> = b"MINT-USDT-USDC-right_key";
-    // const MINT_USDC_USDT_WRONG_KEY: vector<u8> = b"MINT-USDT-USDC-wrong_key";
+    const MINT_USDC_USDT_WRONG_KEY: vector<u8> = b"MINT-USDT-USDC-wrong_key";
     const MINT_OTHER_STABLECOIN_RIGHT_KEY: vector<u8> = b"MINT-OTHER-STABLECOIN-right_key";
     const BFC_ADDR: address = @0x0 ;
 
@@ -779,43 +779,40 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
-    // #[test]
-    // #[expected_failure(abort_code = ERR_MINT_AMOUNT_ZERO)]
-    // fun test_mint_stable_with_zero() {
-    //     let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-    //     let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
-    //     let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
-    //
-    //     let ctx = test_scenario::ctx(&mut scenario_val);
-    //     let coin = bfc_system::mint_stable<USDC>(&mut system_state, 0, &modify_cap, ctx);
-    //
-    //     coin::burn_for_testing(coin);
-    //     test_scenario::return_to_sender(&scenario_val, modify_cap);
-    //     test_scenario::return_to_sender(&scenario_val, admin_cap);
-    //     test_scenario::return_shared(system_state);
-    //     tearDown(scenario_val);
-    // }
-    //
-    // #[test]
-    // #[expected_failure(abort_code = ERR_MINT_UNAUTHORIZED)]
-    // fun test_mint_stable_fail_unauthorized() {
-    //     let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_WRONG_KEY);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-    //     let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
-    //     let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
-    //
-    //     let ctx = test_scenario::ctx(&mut scenario_val);
-    //     bfc_system::remove_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, tx_context::sender(ctx), ctx);
-    //     let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
-    //
-    //     coin::burn_for_testing(coin);
-    //
-    //     test_scenario::return_to_sender(&scenario_val, modify_cap);
-    //     test_scenario::return_to_sender(&scenario_val, admin_cap);
-    //     test_scenario::return_shared(system_state);
-    //     tearDown(scenario_val);
-    // }
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_AMOUNT_ZERO)]
+    fun test_mint_stable_with_zero() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::mint_busd(&mut system_state, 0, BFC_ADDR, &modify_cap, ctx);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_UNAUTHORIZED)]
+    fun test_mint_stable_fail_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_WRONG_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::remove_operation_capability(&mut system_state, &admin_cap, MINT_USDC_USDT_WRONG_KEY, tx_context::sender(ctx), ctx);
+        bfc_system::mint_busd(&mut system_state, 100, BFC_ADDR, &modify_cap, ctx);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
 
     #[test]
     #[expected_failure(abort_code = ERR_MINT_BUSD)]
@@ -827,9 +824,7 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
 
-        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
-
-        coin::burn_for_testing(coin);
+        bfc_system::mint_busd(&mut system_state, 100, BFC_ADDR, &modify_cap, ctx);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
