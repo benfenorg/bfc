@@ -36,6 +36,7 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+    test_cluster.wait_for_epoch(Some(2)).await;
     test_cluster
     .swarm
     .validator_nodes()
@@ -70,10 +71,13 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     //add oracle price
     check_oracle_price(&mut test_cluster, package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(2)).await;
+    test_cluster.wait_for_epoch(Some(3)).await;
     get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
     swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
     swap_stablecoin_to_bfc_by_bjpy_gas(&test_cluster, &mut http_client, address, 100000).await?;
+
+    test_cluster.wait_for_epoch(Some(4)).await;
+
     test_cluster
     .swarm
     .validator_nodes()
