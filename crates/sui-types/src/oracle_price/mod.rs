@@ -43,18 +43,27 @@ impl OraclePrice {
         self.value.get(id).cloned()
     }
 
-    pub fn to_exchange_rate_against_busd(&self) -> HashMap<String, u64> {
-        let mut result = HashMap::new();
+    pub fn to_exchange_rate_against_busd(&self) -> (Vec<String>, Vec<u64>) {
+        let mut data: Vec<(String, u64)> = vec![];
         for (key, value) in self.value.iter() {
             let coin_type_a = String::from_utf8(key.coin_type_a.clone()).unwrap();
             let coin_type_b = String::from_utf8(key.coin_type_b.clone()).unwrap();
 
             if coin_type_b == BUSD_COIN_TYPE {
-                result.insert(coin_type_a, *value);
+                data.push((coin_type_a, *value));
             }
         }
 
-        result
+        data.sort();
+
+        let mut stable_coin_type: Vec<String> = Vec::with_capacity(data.len());
+        let mut stable_coin_rate_against_busd: Vec<u64> = Vec::with_capacity(data.len());
+        for v in data {
+            stable_coin_type.push(v.0);
+            stable_coin_rate_against_busd.push(v.1);
+        }
+
+        (stable_coin_type, stable_coin_rate_against_busd)
     }
 }
 
@@ -109,11 +118,15 @@ mod test {
             100000,
         );
 
-        let prices = result.to_exchange_rate_against_busd();
-        println!("{:?}", prices);
-        assert_eq!(
-            prices.get("00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"),
-            Some(&100000),
-        )
+        let (stable_coin_type, stable_coin_rate_against_busd) = result.to_exchange_rate_against_busd();
+
+        for (i, k)  in stable_coin_type.iter().enumerate()  {
+            if k == "00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR" {
+                assert_eq!(
+                    stable_coin_rate_against_busd.get(i),
+                    Some(&100000),
+                )
+            }
+        }        
     }
 }

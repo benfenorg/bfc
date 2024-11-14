@@ -1352,11 +1352,7 @@ mod checked {
         if rate_result.is_err() {
             tracing::error!("Failed to get oracle price, Error: {:?}", rate_result.err());
         } else {
-            let stable_coin_rate = rate_result.unwrap().to_exchange_rate_against_busd();
-            for (k, v) in stable_coin_rate.iter() {
-                stable_coin_type.push(k.clone());
-                stable_coin_rate_against_busd.push(*v);
-            }
+            (stable_coin_type, stable_coin_rate_against_busd) = rate_result.unwrap().to_exchange_rate_against_busd();
         }
 
         (stable_coin_type, stable_coin_rate_against_busd)
