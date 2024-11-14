@@ -1,6 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+mod upgrade_treasury_tests;
+
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use sui_types::collection_types::{Entry, VecMap};
@@ -57,7 +59,7 @@ use sui_move_build::{BuildConfig, SuiPackageHooks};
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::vault::VaultInfo;
 
-#[cfg(msim)]
+
 #[sim_test]
 async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(), Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
@@ -66,7 +68,9 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
         .with_num_validators(5)
         .build()
         .await;
-    test_cluster.set_safe_mode_expected(true);
+
+    upgrade_treasury_tests::setup_auth(&test_cluster).await?;
+
     test_cluster.wait_for_epoch(Some(2)).await;
     let (_, package) = do_publish(&mut test_cluster).await?;
 
@@ -139,7 +143,6 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
     Ok(())
 }
 
-#[cfg(msim)]
 #[sim_test]
 async fn test_get_oracle_price() -> Result<(), Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
@@ -148,7 +151,9 @@ async fn test_get_oracle_price() -> Result<(), Error> {
         .with_num_validators(5)
         .build()
         .await;
-    test_cluster.set_safe_mode_expected(true);
+
+    upgrade_treasury_tests::setup_auth(&test_cluster).await?;
+
     test_cluster.wait_for_epoch(Some(2)).await;
     let (_, package) = do_publish(&mut test_cluster).await?;
 

@@ -1,4 +1,5 @@
 
+mod upgrade_treasury_tests;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -25,9 +26,6 @@ use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tracing::error;
 
-
-
-
 #[sim_test]
 async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     // init
@@ -36,6 +34,9 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
         .with_num_validators(5)
         .build()
         .await;
+
+    upgrade_treasury_tests::setup_auth(&test_cluster).await?;
+
     test_cluster.wait_for_epoch(Some(2)).await;
     test_cluster
     .swarm

@@ -782,7 +782,7 @@ async fn sim_test_exchange_busd_to_stable_success() -> Result<(), anyhow::Error>
 }
 
 
-async fn setup_auth(test_cluster: &test_cluster::TestCluster) -> Result<(), anyhow::Error> {
+pub async fn setup_auth(test_cluster: &test_cluster::TestCluster) -> Result<(), anyhow::Error> {
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
