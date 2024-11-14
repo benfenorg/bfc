@@ -1032,9 +1032,8 @@ module bfc_system::bfc_system_state_inner {
     }
 
     // set oracle address
-    public(package) fun set_oracle_address(self: &mut BfcSystemStateInnerV2, address: address, _ctx: &mut TxContext) {
-        //todo 把权限校验打开
-        // verify_admin_capability(self, sender(ctx));
+    public(package) fun set_oracle_address(self: &mut BfcSystemStateInnerV2, address: address, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
         self.oracle_address = option::some(address);
     }
 
