@@ -97,6 +97,13 @@ module sui::object {
         }
     }
 
+    #[test_only]
+    public fun create_uid_from_address_for_test(addr: address): UID {
+        UID {
+            id: ID { bytes: addr },
+        }
+    }
+
 
     /// Make an `ID` from raw bytes.
     public fun id_from_bytes(bytes: vector<u8>): ID {

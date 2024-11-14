@@ -85,50 +85,41 @@ module sui_system::governance_test_utils {
     }
 
     public fun create_sui_system_state_for_testing(
-        validators: vector<Validator>, sui_supply_amount: u64, storage_fund_amount: u64, scenario: &mut Scenario
+        validators: vector<Validator>, sui_supply_amount: u64, storage_fund_amount: u64, ctx: &mut TxContext
     ) {
+        let system_parameters = sui_system_state_inner::create_system_parameters(
+            42,  // epoch_duration_ms, doesn't matter what number we put here
+            0,   // stake_subsidy_start_epoch
 
-        let sender = test_scenario::sender(scenario);
-        test_scenario::next_tx(scenario, sender);
-        {
-            create_bfc_system_state(scenario, BFC_AMOUNT);
-        };
+            150, // max_validator_count
+            1,   // min_validator_joining_stake
+            1,   // validator_low_stake_threshold
+            0,   // validator_very_low_stake_threshold
+            7,   // validator_low_stake_grace_period
+            ctx,
+        );
 
-        {
-            let ctx = test_scenario::ctx(scenario);
-            let system_parameters = sui_system_state_inner::create_system_parameters(
-                42,  // epoch_duration_ms, doesn't matter what number we put here
-                0,   // stake_subsidy_start_epoch
+        let stake_subsidy = stake_subsidy::create(
+            balance::create_for_testing<BFC>(sui_supply_amount * MIST_PER_SUI), // sui_supply
+            0,   // stake subsidy initial distribution amount
+            10,  // stake_subsidy_period_length
+            0,   // stake_subsidy_decrease_rate
+            ctx,
+        );
 
-                150, // max_validator_count
-                1,   // min_validator_joining_stake
-                1,   // validator_low_stake_threshold
-                0,   // validator_very_low_stake_threshold
-                7,   // validator_low_stake_grace_period
-                ctx,
-            );
+        let bfc_system_address = create_bfc_system_state(ctx, BFC_AMOUNT);
+        sui_system::create(
+            object::new(ctx), // it doesn't matter what ID sui system state has in tests
+            object::create_uid_from_address_for_test(bfc_system_address),
+            validators,
+            balance::create_for_testing<BFC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
+            1,   // protocol version
+            0,   // chain_start_timestamp_ms
+            system_parameters,
+            stake_subsidy,
+            ctx,
+        )
 
-            let stake_subsidy = stake_subsidy::create(
-                balance::create_for_testing<BFC>(sui_supply_amount * MIST_PER_SUI), // sui_supply
-                0,   // stake subsidy initial distribution amount
-                10,  // stake_subsidy_period_length
-                0,   // stake_subsidy_decrease_rate
-                ctx,
-            );
-
-            sui_system::create(
-                object::new(ctx), // it doesn't matter what ID sui system state has in tests
-                object::bfc_system_state_for_test(),
-                validators,
-                balance::create_for_testing<BFC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
-                1,   // protocol version
-                0,   // chain_start_timestamp_ms
-                system_parameters,
-                stake_subsidy,
-                ctx,
-            )
-        };
-        test_scenario::next_tx(scenario, sender);
 
     }
 
@@ -145,7 +136,7 @@ module sui_system::governance_test_utils {
             );
         };
 
-        create_sui_system_state_for_testing(validators, 1000, 0, scenario);
+        create_sui_system_state_for_testing(validators, 1000, 0, ctx);
         test_scenario::end(scenario_val);
     }
 
@@ -246,8 +237,6 @@ module sui_system::governance_test_utils {
     ) {
         test_scenario::next_tx(scenario, staker);
         let stake_sui_ids = test_scenario::ids_for_sender<StakedStable<BUSD>>(scenario);
-        std::debug::print(&staked_sui_idx);
-        std::debug::print(&stake_sui_ids);
         let staked_sui = test_scenario::take_from_sender_by_id(scenario, *vector::borrow(&stake_sui_ids, staked_sui_idx));
         let mut system_state = test_scenario::take_shared<SuiSystemState>(scenario);
 

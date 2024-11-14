@@ -121,6 +121,69 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
     }
 
+    #[test_only]
+    public(package) fun create_for_test(
+        bfc_balance: Balance<BFC>,
+        usd_supply: Supply<BUSD>,
+        jpy_supply: Supply<BJPY>,
+        krw_supply: Supply<BKRW>,
+        aud_supply: Supply<BAUD>,
+        ars_supply: Supply<BARS>,
+        brl_supply: Supply<BBRL>,
+        cad_supply: Supply<BCAD>,
+        eur_supply: Supply<BEUR>,
+        gbp_supply: Supply<BGBP>,
+        idr_supply: Supply<BIDR>,
+        inr_supply: Supply<BINR>,
+        rub_supply: Supply<BRUB>,
+        sar_supply: Supply<BSAR>,
+        try_supply: Supply<BTRY>,
+        zar_supply: Supply<BZAR>,
+        mxn_supply: Supply<BMXN>,
+        mgg_supply: Supply<MGG>,
+        parameters: BfcSystemParameters,
+        ctx: &mut TxContext
+    ): address {
+        let inner_state = bfc_system_state_inner::create_inner_state(
+            bfc_balance,
+            usd_supply,
+            jpy_supply,
+            krw_supply,
+            aud_supply,
+            ars_supply,
+            brl_supply,
+            cad_supply,
+            eur_supply,
+            gbp_supply,
+            idr_supply,
+            inr_supply,
+            rub_supply,
+            sar_supply,
+            try_supply,
+            zar_supply,
+            mxn_supply,
+            mgg_supply,
+            parameters,
+            ctx,
+        );
+
+        let id = sui::object::new(ctx);
+
+        let mut self = BfcSystemState {
+            id: id,
+            version: BFC_SYSTEM_STATE_VERSION_V1
+        };
+
+        let system_address = object::id_address<BfcSystemState>(&self);
+
+
+        dynamic_field::add(&mut self.id, BFC_SYSTEM_STATE_VERSION_V1, inner_state);
+        load_system_state_mut(&mut self, ctx);
+
+        transfer::share_object(self);
+        system_address
+    }
+
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut_no_ctx(wrapper);
         bfc_system_state_inner::update_round(inner_state, round);

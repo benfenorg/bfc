@@ -266,32 +266,157 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
-    public fun create_sui_system_state_for_testing_v2(scenario_val: &mut Scenario, bfc_amount: u64) {
-        let bfc_addr = test_scenario::sender(scenario_val);
-        test_scenario::next_tx(scenario_val, bfc_addr);
-        {
-            let ctx = test_scenario::ctx(scenario_val);
-            create_sui_system_state_for_testing(ctx, bfc_amount);
-        };
+    public fun create_sui_system_state_for_testing_v2(ctx: &mut TxContext, bfc_amount: u64) : address {
+        let mut treasury_parameters = vec_map::empty<ascii::String, bfc_system_state_inner::TreasuryParameters>();
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BUSD"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 58333726687135162368, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"MGG"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 14986205729530720256, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BJPY"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 4915287178933356544, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BKRW"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 1618695223101379840, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BAUD"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 48103223333394006016, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BARS"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 2020739568339092224, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BBRL"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 26731871811266244608, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BCAD"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 50854163925868765184, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BEUR"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 61180928696206655488, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BGBP"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 65738771359798919168, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BIDR"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 470301539970485312, 10000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BINR"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 6390139593977006080, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BRUB"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 6118092869620665344, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BSAR"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 30311093525086388224, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BTRY"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 10756207731032303616, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BZAR"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 13555533118889377792, 50000_000_000_000, 4
+            )
+        );
+        vec_map::insert(
+            &mut treasury_parameters,
+            ascii::string(b"BMXN"),
+            bfc_system_state_inner::bfc_system_treasury_parameters(
+                9, 1, 2, 14169212980379457536, 50000_000_000_000, 4
+            )
+        );
 
-        test_scenario::next_tx(scenario_val, bfc_addr);
-        {
-            let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario_val);
-
-            let ctx = test_scenario::ctx(scenario_val);
-            // let (_system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
-
-            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
-            bfc_system_state_inner::add_bfc_system_admin_cap(system_state_v2, _ctx, vector[bfc_addr]);
-
-            let mut operate_addresses = vec_set::empty<address>();
-            operate_addresses.insert(bfc_addr);
-            bfc_system_state_inner::set_operation_capability(system_state_v2, std::ascii::string(MINT_USDC_USDT_RIGHT_KEY), operate_addresses, _ctx);
-
-            test_scenario::return_shared(system_state);
-        };
-
-        test_scenario::next_tx(scenario_val, bfc_addr);
+        bfc_system::create_for_test(
+            // object::new(ctx),
+            // object::bfc_system_state(ctx),
+            // object::bfc_system_state_for_test(),
+            balance::create_for_testing<BFC>(bfc_amount),
+            busd::new_for_test(ctx),
+            bjpy::new_for_test(ctx),
+            bkrw::new_for_test(ctx),
+            baud::new_for_test(ctx),
+            bars::new_for_test(ctx),
+            bbrl::new_for_test(ctx),
+            bcad::new_for_test(ctx),
+            beur::new_for_test(ctx),
+            bgbp::new_for_test(ctx),
+            bidr::new_for_test(ctx),
+            binr::new_for_test(ctx),
+            brub::new_for_test(ctx),
+            bsar::new_for_test(ctx),
+            btry::new_for_test(ctx),
+            bzar::new_for_test(ctx),
+            bmxn::new_for_test(ctx),
+            mgg::new_for_test(ctx),
+            bfc_system_state_inner::bfc_system_parameters(
+                3600 * 4,
+                2000,
+                treasury_parameters,
+            ),
+            ctx,
+        )
     }
 
     public fun create_sui_system_state_for_testing(ctx: &mut TxContext, bfc_amount: u64) {

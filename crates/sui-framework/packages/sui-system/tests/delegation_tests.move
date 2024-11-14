@@ -991,7 +991,7 @@ module sui_system::stake_tests {
             create_validator_for_testing(VALIDATOR_ADDR_1, 100, ctx),
             create_validator_for_testing(VALIDATOR_ADDR_2, 100, ctx)
         ];
-        create_sui_system_state_for_testing(validators, 0, 0, scenario);
+        create_sui_system_state_for_testing(validators, 0, 0, ctx);
         scenario_val.end();
     }
 
@@ -1004,7 +1004,7 @@ module sui_system::stake_tests {
             create_validator_for_testing(VALIDATOR_ADDR_1, 100, ctx),
             create_validator_for_testing(VALIDATOR_ADDR_2, 100, ctx)
         ];
-        create_sui_system_state_for_testing(validators, 300, 100, scenario);
+        create_sui_system_state_for_testing(validators, 300, 100, ctx);
         scenario_val.end();
     }
 }

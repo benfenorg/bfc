@@ -922,7 +922,7 @@ module sui_system::rewards_distribution_tests {
             i = i + 1;
         };
 
-        create_sui_system_state_for_testing(validators, 0, 0, scenario);
+        create_sui_system_state_for_testing(validators, 0, 0, ctx);
         // Each validator's stake gets doubled.
         advance_epoch_with_reward_amounts(0, 10000, scenario);
 
@@ -957,7 +957,7 @@ module sui_system::rewards_distribution_tests {
             i = i + 1;
         };
 
-        create_sui_system_state_for_testing(validators, 0, 0, scenario);
+        create_sui_system_state_for_testing(validators, 0, 0, ctx);
         // Each validator's stake gets doubled.
         advance_epoch_with_reward_amounts(0, 10000, scenario);
 
@@ -985,7 +985,7 @@ module sui_system::rewards_distribution_tests {
             create_validator_for_testing(VALIDATOR_ADDR_3, 300, ctx),
             create_validator_for_testing(VALIDATOR_ADDR_4, 400, ctx),
         ];
-        create_sui_system_state_for_testing(validators, 1000, 0, scenario);
+        create_sui_system_state_for_testing(validators, 1000, 0, ctx);
         scenario_val.end();
     }
 
@@ -1000,7 +1000,7 @@ module sui_system::rewards_distribution_tests {
             create_validator_for_testing(VALIDATOR_ADDR_3, 300000000, ctx),
             create_validator_for_testing(VALIDATOR_ADDR_4, 400000000, ctx),
         ];
-        create_sui_system_state_for_testing(validators, 1000000000, 0, scenario);
+        create_sui_system_state_for_testing(validators, 1000000000, 0, ctx);
         scenario_val.end();
     }
 
