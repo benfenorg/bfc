@@ -224,16 +224,6 @@ module bfc_system::bfc_system {
     }
 
     #[test_only]
-    public fun set_daily_epoch(
-        self: &mut BfcSystemState,
-        epoch: u64,
-        ctx: &mut TxContext
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(self, ctx);
-        bfc_system_state_inner::set_daily_epoch(inner_state, epoch);
-    }
-
-    #[test_only]
     public fun bfc_round_test(
         wrapper: &mut BfcSystemState,
         clock: &Clock,
@@ -365,19 +355,6 @@ module bfc_system::bfc_system {
     public fun get_exchange_rate(id: &UID): VecMap<ascii::String, u64> {
         let inner = load_system_state_by_uid(id);
         bfc_system_state_inner::get_rate_map(inner)
-    }
-
-    public fun get_daily_out_limit(id: &UID): u64 {
-        let inner = load_system_state_by_uid(id);
-        bfc_system_state_inner::get_daily_out_limit(inner)
-    }
-
-    public fun set_daily_out_limit(wrapper: &mut BfcSystemState,
-                                   _cap: &BfcSystemAdminCap,
-                                   daily_out_limit: u64,
-                                   ctx: &mut TxContext, ) {
-        let (inner, ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::set_daily_out_limit(inner, daily_out_limit, ctx);
     }
 
     public fun get_operation_capability(
@@ -601,32 +578,6 @@ module bfc_system::bfc_system {
         transfer::public_transfer(coin, recipient);
     }
 
-    public fun exchange_stable_to_busd<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        recipient: address,
-        cap: &BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(
-            inner_state,
-            amount,
-            &cap.get_bfc_system_modify_cap_key(),
-            _ctx
-        );
-        bfc_system_state_inner::exchange_stable_to_busd<StableCoinType>(inner_state, coin, recipient, _ctx);
-    }
-
-    public fun exchange_busd_to_stable<StableCoinType>(
-        wrapper: &mut BfcSystemState,
-        busd_coin: Coin<BUSD>,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::exchange_busd_to_stable<StableCoinType>(inner_state, busd_coin, _ctx);
-    }
-
     public entry fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::init_bfc_system_admins(inner_state, _ctx, addresses);
@@ -648,14 +599,6 @@ module bfc_system::bfc_system {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         let _ =  cap;
         bfc_system_state_inner::remove_bfc_system_admin_cap(inner_state, address, _ctx);
-    }
-
-    public fun get_daily_out_data<StableCoinType>(id: &UID): (u64, u64, u64) {
-        let inner_state = load_system_state_by_uid(id);
-        let daily_used_quantity = bfc_system_state_inner::get_daily_used_quantity(inner_state);
-        let daily_out_limit = bfc_system_state_inner::get_daily_out_limit(inner_state);
-        let staken_amount = bfc_system_state_inner::get_stake_coin_amount<StableCoinType>(inner_state);
-        (daily_used_quantity, daily_out_limit, staken_amount)
     }
 
     /// X treasury  swap bfc to stablecoin

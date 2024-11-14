@@ -4828,24 +4828,6 @@ withdraw_balance
 increase_other_stablecoin_balance
 	public(package) fun
 	0xc8::treasury
-USDT
-	public struct
-	0xc8::usdt
-new
-	public fun
-	0xc8::usdt
-transfer
-	public entry fun
-	0xc8::usdt
-USDC
-	public struct
-	0xc8::usdc
-new
-	public fun
-	0xc8::usdc
-transfer
-	public entry fun
-	0xc8::usdc
 TreasuryPool
 	public struct
 	0xc8::treasury_pool
@@ -4889,9 +4871,6 @@ TreasuryParameters
 	public struct
 	0xc8::bfc_system_state_inner
 BfcSystemParameters
-	public struct
-	0xc8::bfc_system_state_inner
-StakeCoinPoolInitEvent
 	public struct
 	0xc8::bfc_system_state_inner
 create_inner_state
@@ -4979,15 +4958,6 @@ mint_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
 mint_busd
-	public(package) fun
-	0xc8::bfc_system_state_inner
-exchange_stable_to_busd
-	public(package) fun
-	0xc8::bfc_system_state_inner
-daily_epoch_check
-	public(package) fun
-	0xc8::bfc_system_state_inner
-exchange_busd_to_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
 get_all_stable_rate
@@ -5083,19 +5053,10 @@ create_voting_bfc
 v1_to_v2
 	public(package) fun
 	0xc8::bfc_system_state_inner
-get_daily_out_limit
-	public(package) fun
-	0xc8::bfc_system_state_inner
-set_daily_out_limit
-	public(package) fun
-	0xc8::bfc_system_state_inner
 init_bfc_system_state_v2
 	public(package) fun
 	0xc8::bfc_system_state_inner
 transfer_bfc_from_vault_to_treasury_pool
-	fun
-	0xc8::bfc_system_state_inner
-add_coin_to_stake_pool
 	fun
 	0xc8::bfc_system_state_inner
 get_operation_capability
@@ -5149,12 +5110,6 @@ remove_bfc_system_admin_cap
 create_bfc_system_modify_cap
 	fun
 	0xc8::bfc_system_state_inner
-get_stake_coin_amount
-	public(package) fun
-	0xc8::bfc_system_state_inner
-get_daily_used_quantity
-	public(package) fun
-	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
 	0xc8::bfc_system
@@ -5204,12 +5159,6 @@ load_system_state_mut
 	fun
 	0xc8::bfc_system
 get_exchange_rate
-	public fun
-	0xc8::bfc_system
-get_daily_out_limit
-	public fun
-	0xc8::bfc_system
-set_daily_out_limit
 	public fun
 	0xc8::bfc_system
 get_operation_capability
@@ -5287,12 +5236,6 @@ mint_stable
 mint_busd
 	public fun
 	0xc8::bfc_system
-exchange_stable_to_busd
-	public fun
-	0xc8::bfc_system
-exchange_busd_to_stable
-	public fun
-	0xc8::bfc_system
 init_admin_capability
 	public entry fun
 	0xc8::bfc_system
@@ -5304,9 +5247,6 @@ add_admin_capability
 	0xc8::bfc_system
 remove_admin_capability
 	public entry fun
-	0xc8::bfc_system
-get_daily_out_data
-	public fun
 	0xc8::bfc_system
 swap_bfc_to_stablecoin
 	public entry fun

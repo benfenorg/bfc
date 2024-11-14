@@ -22,8 +22,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `load_system_state_mut_no_ctx`](#0xc8_bfc_system_load_system_state_mut_no_ctx)
 -  [Function `load_system_state_mut`](#0xc8_bfc_system_load_system_state_mut)
 -  [Function `get_exchange_rate`](#0xc8_bfc_system_get_exchange_rate)
--  [Function `get_daily_out_limit`](#0xc8_bfc_system_get_daily_out_limit)
--  [Function `set_daily_out_limit`](#0xc8_bfc_system_set_daily_out_limit)
 -  [Function `get_operation_capability`](#0xc8_bfc_system_get_operation_capability)
 -  [Function `get_operation_capability_by_key`](#0xc8_bfc_system_get_operation_capability_by_key)
 -  [Function `add_operation_capability`](#0xc8_bfc_system_add_operation_capability)
@@ -49,13 +47,10 @@ title: Module `0xc8::bfc_system`
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
 -  [Function `mint_busd`](#0xc8_bfc_system_mint_busd)
--  [Function `exchange_stable_to_busd`](#0xc8_bfc_system_exchange_stable_to_busd)
--  [Function `exchange_busd_to_stable`](#0xc8_bfc_system_exchange_busd_to_stable)
 -  [Function `init_admin_capability`](#0xc8_bfc_system_init_admin_capability)
 -  [Function `init_single_admin_capability`](#0xc8_bfc_system_init_single_admin_capability)
 -  [Function `add_admin_capability`](#0xc8_bfc_system_add_admin_capability)
 -  [Function `remove_admin_capability`](#0xc8_bfc_system_remove_admin_capability)
--  [Function `get_daily_out_data`](#0xc8_bfc_system_get_daily_out_data)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
 -  [Function `swap_stablecoin_to_bfc`](#0xc8_bfc_system_swap_stablecoin_to_bfc)
 -  [Function `get_stablecoin_by_bfc`](#0xc8_bfc_system_get_stablecoin_by_bfc)
@@ -676,59 +671,6 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_exchange_rate">get_exchange_rate</a>(id: &UID): VecMap&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, u64&gt; {
     <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_rate_map">bfc_system_state_inner::get_rate_map</a>(inner)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_get_daily_out_limit"></a>
-
-## Function `get_daily_out_limit`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_limit">get_daily_out_limit</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): u64
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_limit">get_daily_out_limit</a>(id: &UID): u64 {
-    <b>let</b> inner = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">bfc_system_state_inner::get_daily_out_limit</a>(inner)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_set_daily_out_limit"></a>
-
-## Function `set_daily_out_limit`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, _cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemAdminCap">bfc_system_state_inner::BfcSystemAdminCap</a>, daily_out_limit: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_set_daily_out_limit">set_daily_out_limit</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-                               _cap: &BfcSystemAdminCap,
-                               daily_out_limit: u64,
-                               ctx: &<b>mut</b> TxContext, ) {
-    <b>let</b> (inner, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_set_daily_out_limit">bfc_system_state_inner::set_daily_out_limit</a>(inner, daily_out_limit, ctx);
 }
 </code></pre>
 
@@ -1452,72 +1394,6 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_exchange_stable_to_busd"></a>
-
-## Function `exchange_stable_to_busd`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: u64, recipient: <b>address</b>, cap: &<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_stable_to_busd">exchange_stable_to_busd</a>&lt;StableCoinType&gt;(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    amount: u64,
-    recipient: <b>address</b>,
-    cap: &BfcSystemModifyCap,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(
-        inner_state,
-        amount,
-        &cap.get_bfc_system_modify_cap_key(),
-        _ctx
-    );
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_stable_to_busd">bfc_system_state_inner::exchange_stable_to_busd</a>&lt;StableCoinType&gt;(inner_state, <a href="../sui-framework/coin.md#0x2_coin">coin</a>, recipient, _ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_exchange_busd_to_stable"></a>
-
-## Function `exchange_busd_to_stable`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, busd_coin: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(
-    wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
-    busd_coin: Coin&lt;BUSD&gt;,
-    ctx: &<b>mut</b> TxContext,
-) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_exchange_busd_to_stable">bfc_system_state_inner::exchange_busd_to_stable</a>&lt;StableCoinType&gt;(inner_state, busd_coin, _ctx);
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_bfc_system_init_admin_capability"></a>
 
 ## Function `init_admin_capability`
@@ -1614,34 +1490,6 @@ X treasury rebalance
     <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <b>let</b> _ =  cap;
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap">bfc_system_state_inner::remove_bfc_system_admin_cap</a>(inner_state, <b>address</b>, _ctx);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_get_daily_out_data"></a>
-
-## Function `get_daily_out_data`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_data">get_daily_out_data</a>&lt;StableCoinType&gt;(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): (u64, u64, u64)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_get_daily_out_data">get_daily_out_data</a>&lt;StableCoinType&gt;(id: &UID): (u64, u64, u64) {
-    <b>let</b> inner_state = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
-    <b>let</b> daily_used_quantity = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_used_quantity">bfc_system_state_inner::get_daily_used_quantity</a>(inner_state);
-    <b>let</b> daily_out_limit = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_daily_out_limit">bfc_system_state_inner::get_daily_out_limit</a>(inner_state);
-    <b>let</b> staken_amount = <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_stake_coin_amount">bfc_system_state_inner::get_stake_coin_amount</a>&lt;StableCoinType&gt;(inner_state);
-    (daily_used_quantity, daily_out_limit, staken_amount)
 }
 </code></pre>
 
