@@ -76,8 +76,6 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
     swap_stablecoin_to_bfc_by_bjpy_gas(&test_cluster, &mut http_client, address, 100000).await?;
 
-    test_cluster.wait_for_epoch(Some(4)).await;
-
     test_cluster
     .swarm
     .validator_nodes()
@@ -267,7 +265,7 @@ async fn add_auth_key(test_cluster: &TestCluster, http_client: &HttpClient, addr
 async fn mint_stable_coin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, bfc_status_address: &&SuiAddress, modify_cap: &&SuiObjectData,coint_type: &str) -> Result<(), Error> {
     let args = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(1000000000u64.to_string()))?,
+        SuiJsonValue::new(json!(25000000000u64.to_string()))?,
         SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
     ];
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -303,9 +301,9 @@ async fn mint_stable_coin(test_cluster: &TestCluster, http_client: &HttpClient, 
 async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64) -> Result<(), anyhow::Error> {
     let bjpy_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::bjpy::BJPY>", http_client, address).await.unwrap();
     let bjpy_coin = bjpy_response_vec.last().unwrap().object().unwrap();
-    let gas_budget = 1_000_000_000;
+    let gas_budget = 25_000_000_000;
     let split_coin_txn_bytes = http_client.split_coin(address, bjpy_coin.object_id, vec![BigInt::from(gas_budget)],
-                                                      None, BigInt::from(10000000)).await?.to_data()?;
+                                                      None, BigInt::from(gas_budget)).await?.to_data()?;
     let split_coin_txn = test_cluster.wallet.sign_transaction(&split_coin_txn_bytes);
     let _response = test_cluster.wallet.execute_transaction_must_succeed(split_coin_txn).await;
     let bjpy_response_vec = do_get_owned_objects_with_filter(
