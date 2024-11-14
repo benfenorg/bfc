@@ -12,7 +12,7 @@ use sui_graphql_rpc::client::simple_client::GraphqlQueryVariable;
 use sui_graphql_rpc::client::ClientError;
 use sui_graphql_rpc::config::Limits;
 use sui_graphql_rpc::config::ServiceConfig;
-use sui_graphql_rpc::test_infra::cluster::prep_executor_cluster;
+use sui_graphql_rpc::test_infra::cluster::{prep_executor_cluster, start_cluster_with_long_epoch};
 use sui_graphql_rpc::test_infra::cluster::start_cluster;
 use sui_types::digests::ChainIdentifier;
 use sui_types::gas_coin::GAS;
@@ -270,7 +270,7 @@ async fn test_graphql_client_variables() {
 async fn test_transaction_execution() {
     telemetry_subscribers::init_for_testing();
 
-    let cluster = start_cluster(ServiceConfig::test_defaults()).await;
+    let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
 
     let addresses = cluster
         .network
@@ -780,7 +780,7 @@ async fn test_epoch_data() {
 #[tokio::test]
 async fn test_payload_using_vars_mutation_passes() {
     telemetry_subscribers::init_for_testing();
-    let cluster = sui_graphql_rpc::test_infra::cluster::start_cluster(ServiceConfig {
+    let cluster = sui_graphql_rpc::test_infra::cluster::start_cluster_with_long_epoch(ServiceConfig {
         limits: Limits {
             max_query_payload_size: 5000,
             max_tx_payload_size: 6000,

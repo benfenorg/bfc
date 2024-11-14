@@ -11,6 +11,7 @@ use sui_graphql_rpc::{
         wait_for_graphql_checkpoint_catchup, wait_for_graphql_server, NetworkCluster,
     },
 };
+use sui_graphql_rpc::test_infra::cluster::start_network_cluster_with_long_epoch;
 use sui_graphql_rpc_client::simple_client::SimpleClient;
 use sui_indexer::tempdb::get_available_port;
 use sui_json_rpc::name_service::{Domain, DomainFormat};
@@ -39,7 +40,7 @@ struct UpgradeCap(ObjectID, SequenceNumber, ObjectDigest);
 
 #[tokio::test]
 async fn test_move_registry_e2e() {
-    let network_cluster = start_network_cluster().await;
+    let network_cluster = start_network_cluster_with_long_epoch().await;
 
     let external_network_chain_id = network_cluster
         .validator_fullnode_handle

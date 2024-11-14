@@ -35,6 +35,7 @@ use tracing::info;
 const VALIDATOR_COUNT: usize = 4;
 const EPOCH_DURATION_MS: u64 = 10000;
 
+const LONG_EPOCH_DURATION_MS: u64 = 45000;
 const ACCOUNT_NUM: usize = 20;
 const GAS_OBJECT_COUNT: usize = 3;
 
@@ -70,6 +71,39 @@ pub struct NetworkCluster {
     pub graphql_connection_config: ConnectionConfig,
 }
 
+pub async fn start_cluster_with_long_epoch(service_config: ServiceConfig) -> Cluster {
+    let network_cluster = start_network_cluster_with_long_epoch().await;
+    let graphql_connection_config = network_cluster.graphql_connection_config.clone();
+
+    let fn_rpc_url: String = network_cluster
+        .validator_fullnode_handle
+        .rpc_url()
+        .to_string();
+
+    let server_url = format!(
+        "http://{}:{}/",
+        graphql_connection_config.host, graphql_connection_config.port
+    );
+
+    let graphql_server_handle = start_graphql_server_with_fn_rpc(
+        graphql_connection_config,
+        Some(fn_rpc_url),
+        Some(network_cluster.cancellation_token.clone()),
+        service_config,
+    )
+        .await;
+
+    // Starts graphql client
+    let client = SimpleClient::new(server_url);
+    wait_for_graphql_server(&client).await;
+
+    Cluster {
+        network: network_cluster,
+        graphql_server_join_handle: graphql_server_handle,
+        graphql_client: client,
+    }
+}
+
 /// Starts a validator, fullnode, indexer, and graphql service for testing.
 pub async fn start_cluster(service_config: ServiceConfig) -> Cluster {
     let network_cluster = start_network_cluster().await;
@@ -101,6 +135,45 @@ pub async fn start_cluster(service_config: ServiceConfig) -> Cluster {
         network: network_cluster,
         graphql_server_join_handle: graphql_server_handle,
         graphql_client: client,
+    }
+}
+
+pub async fn start_network_cluster_with_long_epoch() -> NetworkCluster {
+    let database = TempDb::new().unwrap();
+    let graphql_connection_config = ConnectionConfig {
+        port: get_available_port(),
+        host: "127.0.0.1".to_owned(),
+        db_url: database.database().url().as_str().to_owned(),
+        db_pool_size: 5,
+        prom_host: "127.0.0.1".to_owned(),
+        prom_port: get_available_port(),
+        skip_migration_consistency_check: false,
+    };
+    let data_ingestion_path = tempfile::tempdir().unwrap();
+    let db_url = graphql_connection_config.db_url.clone();
+    let cancellation_token = CancellationToken::new();
+
+    // Starts validator+fullnode
+    let val_fn = start_validator_with_fullnode_with_long_epoch(data_ingestion_path.path().to_path_buf()).await;
+
+    // Starts indexer
+    let (pg_store, pg_handle) = start_test_indexer_impl(
+        db_url,
+        val_fn.rpc_url().to_string(),
+        ReaderWriterConfig::writer_mode(None, None),
+        Some(data_ingestion_path.path().to_path_buf()),
+        cancellation_token.clone(),
+    )
+        .await;
+
+    NetworkCluster {
+        validator_fullnode_handle: val_fn,
+        indexer_store: pg_store,
+        indexer_join_handle: pg_handle,
+        cancellation_token,
+        data_ingestion_path,
+        database,
+        graphql_connection_config,
     }
 }
 
@@ -289,6 +362,22 @@ pub async fn start_graphql_server_with_fn_rpc(
             .await
             .unwrap();
     })
+}
+
+async fn start_validator_with_fullnode_with_long_epoch(data_ingestion_dir: PathBuf) -> TestCluster {
+    TestClusterBuilder::new()
+        .with_num_validators(VALIDATOR_COUNT)
+        .with_epoch_duration_ms(LONG_EPOCH_DURATION_MS)
+        .with_data_ingestion_dir(data_ingestion_dir)
+        .with_accounts(vec![
+            AccountConfig {
+                address: None,
+                gas_amounts: vec![DEFAULT_GAS_AMOUNT; GAS_OBJECT_COUNT],
+            };
+            ACCOUNT_NUM
+        ])
+        .build()
+        .await
 }
 
 async fn start_validator_with_fullnode(data_ingestion_dir: PathBuf) -> TestCluster {
