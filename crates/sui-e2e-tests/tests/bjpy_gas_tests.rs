@@ -35,8 +35,6 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
         .build()
         .await;
 
-    upgrade_treasury_tests::setup_auth(&test_cluster).await?;
-
     test_cluster.wait_for_epoch(Some(2)).await;
     test_cluster
     .swarm
@@ -70,10 +68,11 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let (_, package) = do_publish(&mut test_cluster).await?;
     //add oracle price
+    get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
     check_oracle_price(&mut test_cluster, package).await;
     // wait to get oracle price and call bfc_round_v2
     test_cluster.wait_for_epoch(Some(3)).await;
-    get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
+    
     swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
     swap_stablecoin_to_bfc_by_bjpy_gas(&test_cluster, &mut http_client, address, 100000).await?;
 
