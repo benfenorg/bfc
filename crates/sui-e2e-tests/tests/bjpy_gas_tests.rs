@@ -301,10 +301,10 @@ async fn mint_stable_coin(test_cluster: &TestCluster, http_client: &HttpClient, 
 }
 
 async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, amount: u64) -> Result<(), anyhow::Error> {
-    let bfc_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::bjpy::BJPY>", http_client, address).await.unwrap();
-    let stable_coin = bfc_response_vec.last().unwrap().object().unwrap();
+    let bjpy_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::bjpy::BJPY>", http_client, address).await.unwrap();
+    let bjpy_coin = bjpy_response_vec.last().unwrap().object().unwrap();
     let gas_budget = 1_000_000_000;
-    let split_coin_txn_bytes = http_client.split_coin(address, stable_coin.object_id, vec![BigInt::from(gas_budget)],
+    let split_coin_txn_bytes = http_client.split_coin(address, bjpy_coin.object_id, vec![BigInt::from(gas_budget)],
                                                       None, BigInt::from(10000000)).await?.to_data()?;
     let split_coin_txn = test_cluster.wallet.sign_transaction(&split_coin_txn_bytes);
     let _response = test_cluster.wallet.execute_transaction_must_succeed(split_coin_txn).await;
@@ -323,6 +323,7 @@ async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_cli
             gas_id = Some(bjpy_data.object_id);
         }
     }
+    println!("gas_id is {:?}",gas_id);
     assert!(gas_id.is_some());
     //get busd
     let busd_response_vec = do_get_owned_objects_with_filter(
@@ -330,10 +331,8 @@ async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_cli
         http_client,
         address,
     ).await?;
-    let busd_obj = busd_response_vec.first().unwrap().object().unwrap();
-    println!("busd_obj is {:?}",busd_obj);
-    let coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
-    println!("coin_id is {:?}",coin_id);
+    let busd_coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
+    println!("busd_coin_id is {:?}",busd_coin_id);
 
     // let balance = get_balance(&gas);
     // tracing::error!("balance is {:?} objid {:?}",balance,gas.object_id);
@@ -343,7 +342,7 @@ async fn swap_stablecoin_to_bfc_by_bjpy_gas(test_cluster: &TestCluster, http_cli
     let function = "swap_stablecoin_to_bfc".to_string();
     let args = vec![
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
-        SuiJsonValue::from_str(&coin_id.to_string())?,
+        SuiJsonValue::from_str(&busd_coin_id.to_string())?,
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
         SuiJsonValue::new(json!(&amount.to_string()))?,
         SuiJsonValue::new(json!("0"))?,
