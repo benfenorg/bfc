@@ -2951,7 +2951,9 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
     info!("rebalance start===========");
 
     rebalance(&test_cluster, http_client, address).await?;
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 100*1000000000).await?;
+    info!("rebalance finish===========");
+
+    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 50*1000000000).await?;
     let _ = sleep(Duration::from_secs(4)).await;
     info!("swap bfc finish ===========");
 
@@ -2969,7 +2971,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
     info!("make_transfer_sui_transaction_with_gas start===========busd balance before:{}", busd_balance_before);
     let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
                                                     Some(receiver_address),
-                                                    Some(amount), address, busd_data.object_ref()).await;
+                                                    Some(1000), address, busd_data.object_ref()).await;
 
     let _response = test_cluster
         .execute_transaction(tx.clone())
