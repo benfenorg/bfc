@@ -147,9 +147,9 @@ module bfc_system::treasury {
         let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut treasury.supplies, key);
         let balance = balance::increase_supply(supply, amount);
         let coin = sui::coin::from_balance(balance, ctx);
-
         coin
     }
+
     #[test_only]
     public fun get_coin_a_amount<StableCoinType>(_treasury: &Treasury): u64 {
         let key = get_vault_key<StableCoinType>();
