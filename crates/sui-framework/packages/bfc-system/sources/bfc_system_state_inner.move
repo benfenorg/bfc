@@ -532,6 +532,8 @@ module bfc_system::bfc_system_state_inner {
     ): Coin<BUSD> {
         assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
+        assert!(auth_utils::has_mint_busd(key), ERR_MINT_OPERATION_UNAUTHORIZED);
+
         return treasury::mint_stable<BUSD>(&mut inner_state.treasury, amount, ctx)
     }
 
@@ -922,8 +924,7 @@ module bfc_system::bfc_system_state_inner {
     }
 
     // get oracle address
-    public(package) fun get_oracle_address(self: &BfcSystemStateInnerV2, ctx: &mut TxContext): Option<address> {
-        verify_admin_capability(self, sender(ctx));
+    public(package) fun get_oracle_address(self: &BfcSystemStateInnerV2, _ctx: &mut TxContext): Option<address> {
         self.oracle_address
     }
 
