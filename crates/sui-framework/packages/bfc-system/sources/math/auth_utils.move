@@ -3,9 +3,9 @@ module bfc_system::auth_utils {
     use std::ascii::String;
 
     
-    public fun has_mint_usdt_usdc(s: &String): bool {
-        let sub = substring(*s, 0, 14);
-        std::string::bytes(&sub) == b"MINT-USDT-USDC"
+    public fun has_mint_busd(s: &String): bool {
+        let sub = substring(*s, 0, 9);
+        std::string::bytes(&sub) == b"MINT-BUSD"
     }
 
     public fun has_mint_other_stablecoin(s: &String): bool {
@@ -14,15 +14,15 @@ module bfc_system::auth_utils {
     }
 
     #[test]
-    fun test_has_mint_usdt_usdc() {
-        let s = std::ascii::string(b"MINT-USDT-USDC-TEST");
-        assert!(has_mint_usdt_usdc(&s), 0);
+    fun test_has_mint_busd() {
+        let s = std::ascii::string(b"MINT-BUSD-TEST");
+        assert!(has_mint_busd(&s), 0);
 
         let s2 = std::ascii::string(b"MINT-OTHER-TEST");
-        assert!(!has_mint_usdt_usdc(&s2), 1);
+        assert!(!has_mint_busd(&s2), 1);
 
         let s3 = std::ascii::string(b"");
-        assert!(!has_mint_usdt_usdc(&s3), 2);
+        assert!(!has_mint_busd(&s3), 2);
     }
 
     #[test]
@@ -30,7 +30,7 @@ module bfc_system::auth_utils {
         let s = std::ascii::string(b"MINT-OTHER-STABLECOIN-TEST");
         assert!(has_mint_other_stablecoin(&s), 0);
 
-        let s2 = std::ascii::string(b"MINT-USDT-TEST");
+        let s2 = std::ascii::string(b"MINT-BUSD-TEST");
         assert!(!has_mint_other_stablecoin(&s2), 1);
 
         let s3 = std::ascii::string(b"");
@@ -48,15 +48,15 @@ module bfc_system::auth_utils {
 
     #[test]
     fun test_substring() {
-        let s = std::ascii::string(b"MINT-USDT-USDC-POLY");
-        let sub = substring(s, 0, 19);
+        let s = std::ascii::string(b"MINT-BUSD-POLY");
+        let sub = substring(s, 0, 14);
         std::debug::print(&sub);
-        assert!(std::string::bytes(&sub) == &b"MINT-USDT-USDC-POLY", 0);
+        assert!(std::string::bytes(&sub) == &b"MINT-BUSD-POLY", 0);
 
-        let sub2 = substring(s, 0, 14); 
-        assert!(std::string::bytes(&sub2) == &b"MINT-USDT-USDC", 1);
+        let sub2 = substring(s, 0, 9);
+        assert!(std::string::bytes(&sub2) == &b"MINT-BUSD", 1);
 
-        let sub3 = substring(s, 15, 19);
+        let sub3 = substring(s, 10, 14);
         assert!(std::string::bytes(&sub3) == &b"POLY", 2);
 
         let sub4 = substring(s, 0, 0);
