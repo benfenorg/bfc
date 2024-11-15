@@ -634,6 +634,7 @@ mod test {
 
     #[sim_test(config = "test_config()")]
     async fn sim_test_upgrade_compatibility() {
+        telemetry_subscribers::init_for_testing();
         // This test is intended to test the compatibility of the latest protocol version with
         // the previous protocol version. It does this by starting a network with
         // the previous protocol version that this binary supports, and then upgrading the network
@@ -653,8 +654,10 @@ mod test {
         let Some((& starting_version, _)) = manifest.range(..max_ver).last() else {
             panic!("Couldn't find previously supported version");
         };
+        info!("=======starting version is {:?}", starting_version);
         let init_framework =
             sui_framework_snapshot::load_bytecode_snapshot(starting_version).unwrap();
+
         let test_cluster = Arc::new(
             init_test_cluster_builder(4, 15000)
                 .with_protocol_version(ProtocolVersion::new(starting_version))
