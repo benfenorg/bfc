@@ -5234,7 +5234,7 @@ mint_stable
 	public fun
 	0xc8::bfc_system
 mint_busd
-	public entry fun
+	public fun
 	0xc8::bfc_system
 init_admin_capability
 	public entry fun
