@@ -101,7 +101,7 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
     let args1 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
-        SuiJsonValue::new(json!(b"MINT-USDT-USDC-right_key"))?,
+        SuiJsonValue::new(json!(b"MINT-BUSD-right_key"))?,
         SuiJsonValue::new(json!(address.to_string()))?,
     ];
     let transaction_bytes1: TransactionBlockBytes = http_client
@@ -132,7 +132,7 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
     let args2 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
-        SuiJsonValue::new(json!(b"MINT-USDT-USDC-right_key"))?,
+        SuiJsonValue::new(json!(b"MINT-BUSD-right_key"))?,
         SuiJsonValue::new(json!(address.to_string()))?,
     ];
     let transaction_bytes2: TransactionBlockBytes = http_client
@@ -243,7 +243,7 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
     let args1 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
-        SuiJsonValue::new(json!(b"MINT-USDT-USDC-right_key"))?,
+        SuiJsonValue::new(json!(b"MINT-BUSD-right_key"))?,
         SuiJsonValue::new(json!(address.to_string()))?,
     ];
     let transaction_bytes1: TransactionBlockBytes = http_client
@@ -457,7 +457,7 @@ pub async fn setup_auth(test_cluster: &test_cluster::TestCluster) -> Result<(), 
     let args1 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
-        SuiJsonValue::new(json!(b"MINT-USDT-USDC-right_key"))?,
+        SuiJsonValue::new(json!(b"MINT-BUSD-right_key"))?,
         SuiJsonValue::new(json!(address.to_string()))?,
     ];
     let transaction_bytes1: TransactionBlockBytes = http_client
