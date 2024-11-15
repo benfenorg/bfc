@@ -1469,9 +1469,6 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = bfc_objects.first().unwrap().object().unwrap();
 
-    // now do the call
-    // modify voting period
-    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -1481,6 +1478,10 @@ async fn sim_test_bfc_dao_queue_proposal_action() -> Result<(), anyhow::Error> {
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+
+    // now do the call
+    // modify voting period
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
 
     // modify voting quorum
     let function = "set_voting_quorum_rate".to_string();
@@ -1811,16 +1812,6 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
 
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = bfc_objects.first().unwrap().object().unwrap();
-
-
-    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
-
-
-    // now do the call  public entry fun set_voting_period(
-    //         wrapper: &mut BfcSystemState,
-    //         manager_key: &BFCDaoManageKey,
-    //         value: u64,
-    //     )
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let module = "bfc_system".to_string();
     let function = "set_voting_period".to_string();
@@ -1831,6 +1822,15 @@ async fn test_bfc_dao_change_setting_config() -> Result<(), anyhow::Error> {
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
     ];
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+
+    // now do the call  public entry fun set_voting_period(
+    //         wrapper: &mut BfcSystemState,
+    //         manager_key: &BFCDaoManageKey,
+    //         value: u64,
+    //     )
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
