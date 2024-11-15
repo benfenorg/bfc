@@ -1033,7 +1033,7 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
         .await?
         .data;
 
-    let payment = objects.get(1).unwrap().object().unwrap();
+    let payment = objects.get(2).unwrap().object().unwrap();
     let arg = vec![
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
     ];
