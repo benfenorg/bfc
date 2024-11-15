@@ -9727,7 +9727,7 @@ async fn test_stable_consensus_message_processed() {
         let owner = Owner::Shared {
             initial_shared_version: obj.version(),
         };
-        Object::new_move(obj, owner, TransactionDigest::genesis())
+        Object::new_move(obj, owner, TransactionDigest::genesis_marker())
     };
     let initial_shared_version = shared_object.version();
 
@@ -9760,7 +9760,8 @@ async fn test_stable_consensus_message_processed() {
 
     let seed = [1u8; 32];
     let mut rng = StdRng::from_seed(seed);
-    for _ in 0..50 {
+    for counter in 0..50 {
+        info!("=========Counter: {}", counter);
         let certificate = make_test_transaction(
             &sender,
             &keypair,
@@ -9788,6 +9789,7 @@ async fn test_stable_consensus_message_processed() {
         }
 
         let effects2 = if send_first && rng.gen_bool(0.5) {
+            info!("=====part 1:==authority2 try_execute_for_test: ");
             authority2
                 .try_execute_for_test(&certificate)
                 .await
@@ -9805,63 +9807,13 @@ async fn test_stable_consensus_message_processed() {
                 .await
                 .unwrap();
             authority2.try_execute_for_test(&certificate).await.unwrap();
+            let result =
             authority2
-                .database_for_testing()
-                .get_executed_effects(transaction_digest)
-                .unwrap()
-                .unwrap()
-        };
+                .get_transaction_cache_reader()
+                .get_executed_effects(transaction_digest);
+            info!("=====part 1:==authority2 get_executed_effects: {:?}", result.clone());
 
-        assert_eq!(effects1.data(), &effects2);
-
-        // If we didn't send consensus before handle_node_sync_certificate, we need to do it now.
-        if !send_first {
-            send_consensus(&authority2, &certificate).await;
-        }
-
-        // Sometimes send one more consensus message.
-        if rng.gen_bool(0.5) {
-            send_consensus(&authority2, &certificate).await;
-        }
-
-        // Update to the new gas object for new tx
-        gas_object_ref = *effects1
-            .data()
-            .mutated()
-            .iter()
-            .map(|(objref, _)| objref)
-            .find(|objref| objref.0 == gas_object_ref.0)
-            .unwrap();
-        // now, on authority2, we send 0 or 1 consensus messages, then we either sequence and execute via
-        // effects or via handle_certificate, then send 0 or 1 consensus messages.
-        let send_first = rng.gen_bool(0.5);
-        if send_first {
-            send_consensus(&authority2, &certificate).await;
-        }
-
-        let effects2 = if send_first && rng.gen_bool(0.5) {
-            authority2
-                .try_execute_for_test(&certificate)
-                .await
-                .unwrap()
-                .0
-                .into_message()
-        } else {
-            let epoch_store = authority2.epoch_store_for_testing();
-            epoch_store
-                .acquire_shared_locks_from_effects(
-                    &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
-                    &effects1,
-                    authority2.get_object_cache_reader().as_ref(),
-                )
-                .await
-                .unwrap();
-            authority2.try_execute_for_test(&certificate).await.unwrap();
-            authority2
-                .database_for_testing()
-                .get_executed_effects(transaction_digest)
-                .unwrap()
-                .unwrap()
+            result.unwrap().unwrap()
         };
 
         assert_eq!(effects1.data(), &effects2);
