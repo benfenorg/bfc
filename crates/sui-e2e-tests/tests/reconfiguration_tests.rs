@@ -61,7 +61,7 @@ use sui_types::vault::VaultInfo;
 
 
 #[sim_test]
-async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(), Error> {
+async fn sim_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(), Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)
@@ -144,7 +144,7 @@ async fn test_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<()
 }
 
 #[sim_test]
-async fn test_get_oracle_price() -> Result<(), Error> {
+async fn sim_get_oracle_price() -> Result<(), Error> {
     move_package::package_hooks::register_package_hooks(Box::new(SuiPackageHooks));
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(1000)

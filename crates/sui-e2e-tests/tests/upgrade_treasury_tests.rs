@@ -15,7 +15,7 @@ use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui::validator_commands::SuiValidatorCommand;
 
 #[sim_test]
-async fn test_set_oracle_price_address_by_cli_success() -> Result<(), anyhow::Error> {
+async fn sim_set_oracle_price_address_by_cli_success() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new()
     .with_epoch_duration_ms(6000)
     .with_num_validators(5)
