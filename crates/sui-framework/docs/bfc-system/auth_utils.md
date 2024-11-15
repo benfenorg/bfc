@@ -4,7 +4,7 @@ title: Module `0xc8::auth_utils`
 
 
 
--  [Function `has_mint_usdt_usdc`](#0xc8_auth_utils_has_mint_usdt_usdc)
+-  [Function `has_mint_busd`](#0xc8_auth_utils_has_mint_busd)
 -  [Function `has_mint_other_stablecoin`](#0xc8_auth_utils_has_mint_other_stablecoin)
 -  [Function `substring`](#0xc8_auth_utils_substring)
 
@@ -15,13 +15,13 @@ title: Module `0xc8::auth_utils`
 
 
 
-<a name="0xc8_auth_utils_has_mint_usdt_usdc"></a>
+<a name="0xc8_auth_utils_has_mint_busd"></a>
 
-## Function `has_mint_usdt_usdc`
+## Function `has_mint_busd`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_usdt_usdc">has_mint_usdt_usdc</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
 </code></pre>
 
 
@@ -30,9 +30,9 @@ title: Module `0xc8::auth_utils`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_usdt_usdc">has_mint_usdt_usdc</a>(s: &String): bool {
-    <b>let</b> sub = <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 14);
-    std::string::bytes(&sub) == b"MINT-USDT-USDC"
+<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &String): bool {
+    <b>let</b> sub = <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 9);
+    std::string::bytes(&sub) == b"MINT-BUSD"
 }
 </code></pre>
 

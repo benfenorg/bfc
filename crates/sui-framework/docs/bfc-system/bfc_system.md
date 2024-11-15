@@ -1522,6 +1522,7 @@ X treasury  swap bfc to stablecoin
     deadline: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() == std::type_name::get&lt;BUSD&gt;(), 0);
     <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_bfc_to_stablecoin">bfc_system_state_inner::swap_bfc_to_stablecoin</a>&lt;StableCoinType&gt;(system_state, native_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, ctx);
 }
@@ -1556,6 +1557,7 @@ X treasury  swap stablecoin to bfc
     deadline: u64,
     ctx: &<b>mut</b> TxContext,
 ) {
+    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() == std::type_name::get&lt;BUSD&gt;(), 0);
     <b>let</b> (system_state, ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_swap_stablecoin_to_bfc">bfc_system_state_inner::swap_stablecoin_to_bfc</a>&lt;StableCoinType&gt;(system_state, stable_coin, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, amount, min_amount, deadline, ctx);
 }

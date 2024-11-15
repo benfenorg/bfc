@@ -611,6 +611,7 @@ module bfc_system::bfc_system {
         deadline: u64,
         ctx: &mut TxContext,
     ) {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
         let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::swap_bfc_to_stablecoin<StableCoinType>(system_state, native_coin, clock, amount, min_amount, deadline, ctx);
     }
@@ -625,6 +626,7 @@ module bfc_system::bfc_system {
         deadline: u64,
         ctx: &mut TxContext,
     ) {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
         let (system_state, ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::swap_stablecoin_to_bfc<StableCoinType>(system_state, stable_coin, clock, amount, min_amount, deadline, ctx);
     }
@@ -634,6 +636,7 @@ module bfc_system::bfc_system {
         amount: u64,
     ): vault::CalculatedSwapResult
     {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::get_stablecoin_by_bfc<StableCoinType>(system_state, amount)
     }
@@ -643,6 +646,7 @@ module bfc_system::bfc_system {
         amount: u64,
     ): vault::CalculatedSwapResult
     {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), 0);
         let system_state = load_system_state(wrapper);
         bfc_system_state_inner::get_bfc_by_stablecoin<StableCoinType>(system_state, amount)
     }
