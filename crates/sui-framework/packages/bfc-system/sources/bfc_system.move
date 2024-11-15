@@ -566,7 +566,7 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
     }
 
-    public fun mint_busd(
+    public entry fun mint_busd(
         wrapper: &mut BfcSystemState,
         amount: u64,
         recipient: address,
