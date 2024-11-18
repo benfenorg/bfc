@@ -740,7 +740,7 @@ async fn test_dry_run_failed_execution() {
 async fn test_epoch_data() {
     telemetry_subscribers::init_for_testing();
 
-    let cluster = start_cluster(ServiceConfig::test_defaults()).await;
+    let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
 
     cluster
         .network
