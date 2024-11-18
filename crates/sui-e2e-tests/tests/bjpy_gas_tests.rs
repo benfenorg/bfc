@@ -1,5 +1,6 @@
 
 mod upgrade_treasury_tests;
+mod auth;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -67,6 +68,8 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     let address = test_cluster.get_address_0();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let (_, package) = do_publish(&mut test_cluster).await?;
+
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, &bfc_status_address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     //add oracle price
     get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
     check_oracle_price(&mut test_cluster, package).await;
@@ -108,37 +111,6 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
 }
 
 async fn get_bjpy(test_cluster: &TestCluster, http_client: &mut HttpClient, address: SuiAddress, bfc_status_address: &SuiAddress) -> Result<(), Error> {
-    let args0 = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
-    ];
-    let transaction_bytes0: TransactionBlockBytes = http_client.move_call(
-        address,
-        BFC_SYSTEM_PACKAGE_ID,
-        "bfc_system".to_string(),
-        "init_single_admin_capability".to_string(),
-        vec![],
-        args0,
-        None,
-        10_000_00000.into(),
-        None,
-    )
-        .await?;
-    let tx0 = test_cluster
-        .wallet
-        .sign_transaction(&transaction_bytes0.to_data()?);
-    let (tx_bytes0, signatures0) = tx0.to_tx_bytes_and_signatures();
-    http_client
-        .execute_transaction_block(
-            tx_bytes0,
-            signatures0,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    let admin_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemAdminCap", http_client, address).await.unwrap();
-    let admin_cap = admin_cap_vec.first().unwrap().object().unwrap();
-    add_auth_key(test_cluster, http_client, address, &bfc_status_address, &admin_cap,"MINT-OTHER-STABLECOIN-POLLY").await?;
     let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
     let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
     mint_stable_coin(test_cluster, http_client, address, &bfc_status_address, &modify_cap,"0xc8::bjpy::BJPY").await?;
