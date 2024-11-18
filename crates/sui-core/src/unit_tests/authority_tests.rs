@@ -7838,10 +7838,25 @@ async fn test_invalid_obj_gas_handle_move_transaction() {
     match result {
         Ok(_) => panic!("Expected error"),
         Err(e) => {
-            assert_eq!(e,SuiError::UserInputError{error:UserInputError::InvalidGasObject {object_id:created_object_id}});
+            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
         }
     }
 
+    let result = create_move_object(
+        &pkg_ref.0,
+        &authority_state,
+        &invalid_gas_payment_object_id,
+        &sender,
+        &sender_key,
+    )
+        .await;
+
+    match result {
+        Ok(_) => panic!("Expected error"),
+        Err(e) => {
+            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"00000000000000000000000000000000000000000000000000000000000000c8::usdx::usdx".to_string()}});
+        }
+    }
 
 }
 

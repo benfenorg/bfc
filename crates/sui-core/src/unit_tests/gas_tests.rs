@@ -23,6 +23,7 @@ use crate::authority::authority_test_utils::init_state_with_stable_ids;
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::utils::to_sender_signed_transaction;
 use sui_types::{base_types::dbg_addr, crypto::get_key_pair};
+use sui_types::gas::calculate_divide_rate;
 use sui_types::stable_coin::stable::checked::STABLE::BJPY;
 
 // The cost table is used only to get the max budget available which is not dependent on
@@ -1539,7 +1540,7 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
     // This test creates a transaction that sets a gas_budget less than the minimum
     // transaction requirement. It's expected to fail early during transaction
     // handling phase.
-    let min = 500000;
+    let min = 4999;
     let budget = min - 1;
     let result = execute_stable_transfer(*MAX_GAS_BUDGET, budget, false, false).await;
 
@@ -1547,11 +1548,10 @@ async fn test_stable_tx_less_than_minimum_gas_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBudgetTooLow {
             gas_budget: budget ,
-            min_budget: 500000,
+            min_budget: 49995,
         }
     );
 }
-
 #[tokio::test]
 async fn test_stable_tx_more_than_maximum_gas_budget() {
     // This test creates a transaction that sets a gas_budget more than the maximum
@@ -1564,7 +1564,7 @@ async fn test_stable_tx_more_than_maximum_gas_budget() {
         UserInputError::try_from(result.response.unwrap_err()).unwrap(),
         UserInputError::GasBudgetTooHigh {
             gas_budget: budget,
-            max_budget: 50000000000, //calculate_divide_rate(*MAX_GAS_BUDGET, result.stable_rate),
+            max_budget: calculate_divide_rate(*MAX_GAS_BUDGET, result.stable_rate),
         }
     );
 }
@@ -1717,15 +1717,16 @@ async fn test_stable_transfer_sui_insufficient_gas() {
 
     let effects = send_and_confirm_transaction(&authority_state, tx)
         .await
-        .unwrap_err();
+        .unwrap()
+        .1
+        .into_data();
     // We expect this to fail due to insufficient gas.
-    assert!(matches!(
-        UserInputError::try_from(effects).unwrap(),
-        UserInputError::GasBudgetTooLow { .. }
-    ));
+    assert_eq!(
+        *effects.status(),
+        ExecutionStatus::new_failure(ExecutionFailureStatus::InsufficientGas, None)
+    );
     // Ensure that the owner of the object did not change if the transfer failed.
-    let original_obj = authority_state.get_object(&gas_object_id).await.unwrap().unwrap();
-    assert_eq!(original_obj.owner().get_owner_address().unwrap(), sender);
+    assert_eq!(effects.mutated()[0].1, sender);
 }
 
 #[tokio::test]
@@ -1847,19 +1848,19 @@ async fn test_stable_native_transfer_insufficient_gas_reading_objects() {
 
 
     let effects = result
-        .response
-        .unwrap_err();
+        .response.unwrap().into_effects_for_testing().into_data();
+
 
     info!("{:?}",effects);
 
-    assert!(matches!(
-        UserInputError::try_from(effects).unwrap(),
-        UserInputError::GasBudgetTooLow { .. }
-    ));
-    //     rt_eq!(
-    //     effects.into_status().unwrap_err().0,
-    //     ExecutionFailureStatus::InsufficientGas
-    // );
+    // assert!(matches!(
+    //     UserInputError::try_from(effects).unwrap(),
+    //     UserInputError::GasBudgetTooLow { .. }
+    // ));
+    assert_eq!(
+        effects.into_status().unwrap_err().0,
+        ExecutionFailureStatus::InsufficientGas
+    );
 }
 
 #[tokio::test]
@@ -1914,7 +1915,6 @@ async fn test_stable_native_transfer_insufficient_gas_execution() {
 
 #[tokio::test]
 async fn test_stable_publish_gas() -> anyhow::Result<()> {
-    telemetry_subscribers::init_for_testing();
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
     let authority_state = init_state_with_stable_ids(vec![(sender, gas_object_id)]).await;
@@ -1955,7 +1955,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         total_gas_used - 10
     };
     // Run the transaction again with 1 less than the required budget.
-    let result = build_and_try_publish_test_package_with_error(
+    let response = build_and_try_publish_test_package(
         &authority_state,
         &sender,
         &sender_key,
@@ -1966,12 +1966,20 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
         /* with_unpublished_deps */ false,
     )
         .await;
-    assert!(matches!(
-        UserInputError::try_from(result.1.unwrap_err())?,
-        UserInputError::GasBudgetTooLow { .. }
-    ));
+    let effects = response.1.into_data();
+    let gas_cost = effects.gas_cost_summary().clone();
+    let err = effects.into_status().unwrap_err().0;
 
+    assert_eq!(err, ExecutionFailureStatus::InsufficientGas);
 
+    assert!(gas_cost.gas_used() > 0);
+
+    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let expected_gas_balance = expected_gas_balance - gas_cost.net_gas_usage_improved() as u64;
+    assert_eq!(
+        GasCoin::try_from(&gas_object)?.value(),
+        expected_gas_balance,
+    );
 
     Ok(())
 }
