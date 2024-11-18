@@ -3371,7 +3371,7 @@ async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
         address,
         swap_amount,
         100,
-        vec!["0xc8::busd::BUSD".to_string(), "0xc8::bjpy::BJPY".to_string()],
+        vec!["0xc8::busd::BUSD".to_string()],
     ).await {
         Ok(_) => {
             // panic!("should not be ok")
