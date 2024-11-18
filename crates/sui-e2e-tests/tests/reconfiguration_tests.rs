@@ -841,6 +841,19 @@ async fn test_bfc_dao_create_action() -> Result<(), anyhow::Error> {
 }
 
 async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
+    let module = "bfc_system".to_string();
+    let package_id = BFC_SYSTEM_PACKAGE_ID;
+    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+
+    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
+    let function0 = "get_operation_capability".to_string();
+    let arg0 = vec![
+        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
+    ];
+    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
+
+
     let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap());
     let data_option = SuiObjectDataOptions::new()
         .with_type()
@@ -864,17 +877,6 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     // now do the call
     let payment = objects.get(2).unwrap().object().unwrap();
-    let module = "bfc_system".to_string();
-    let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
-
-    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-
-    let function0 = "get_operation_capability".to_string();
-    let arg0 = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-    ];
-    do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function0.clone(), arg0).await?;
 
     let function = "set_voting_period".to_string();
     let arg = vec![
@@ -2850,7 +2852,7 @@ async fn swap_bfc_to_stablecoin_with_tag(
             )
         )), None, None).await?.data;
     // api ： https://docs.sui.io/sui-api-ref#suix_getownedobjects
-    let coin = objects.first().unwrap().object().unwrap();
+    let coin = objects.last().unwrap().object().unwrap();
 
     let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
     let module = "bfc_system".to_string();
