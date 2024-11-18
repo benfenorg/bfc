@@ -958,7 +958,7 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
 
 
     // now do the call
-    let payment = objects.get(2).unwrap().object().unwrap();
+    let payment = objects.get(1).unwrap().object().unwrap();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
