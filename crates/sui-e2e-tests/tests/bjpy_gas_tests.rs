@@ -1,6 +1,7 @@
 
 mod upgrade_treasury_tests;
 mod auth;
+mod stable;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -66,12 +67,12 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     });
     let mut  http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
-    let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+    // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let (_, package) = do_publish(&mut test_cluster).await?;
 
-    auth::auth_setup(&mut test_cluster, &mut http_client, address, &bfc_status_address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     //add oracle price
-    get_bjpy(&test_cluster, &mut http_client, address, &bfc_status_address).await?;
+    get_bjpy(&test_cluster, &mut http_client, address).await?;
     check_oracle_price(&mut test_cluster, package).await;
     // wait to get oracle price and call bfc_round_v2
     test_cluster.wait_for_epoch(Some(3)).await;
@@ -110,10 +111,8 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     Ok(())
 }
 
-async fn get_bjpy(test_cluster: &TestCluster, http_client: &mut HttpClient, address: SuiAddress, bfc_status_address: &SuiAddress) -> Result<(), Error> {
-    let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
-    let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
-    mint_stable_coin(test_cluster, http_client, address, &bfc_status_address, &modify_cap,"0xc8::bjpy::BJPY").await?;
+async fn get_bjpy(test_cluster: &TestCluster, http_client: &mut HttpClient, address: SuiAddress) -> Result<(), Error> {
+    stable::mint_stable_coin(25_000_000_000,test_cluster, http_client, address,"0xc8::bjpy::BJPY").await?;
     Ok(())
 }
 
