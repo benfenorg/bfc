@@ -16,7 +16,11 @@
       },
       "timestamp_ms": 1702658952900,
       "checkpoint_commitments": [],
-      "end_of_epoch_data": null,
+      "end_of_epoch_data":   {
+        "nextEpochCommittee":[["i/XWHscqpfLgRqHE7XIvLpWFyFuutbranY0Zye0KaaOt+u4Tl8g99dFjJtFZkdHDBYqwHp0GmR8V01z0bZ/8pGSYbPmMJecVS1Odbn0Z/uiW3X5169lBNyjK1YOXhejh","10000"]],
+        "nextEpochProtocolVersion":"44",
+        "epochCommitments":[]
+      },
       "version_specific_data": [],
       "epoch_rolling_stable_gas_cost_summary_map":{}
     },

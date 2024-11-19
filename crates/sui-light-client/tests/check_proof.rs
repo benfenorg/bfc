@@ -14,6 +14,9 @@ use sui_rest_api::CheckpointData;
 
 use std::io::Read;
 use std::{fs, path::PathBuf};
+use sui_types::crypto::AuthorityQuorumSignInfo;
+use sui_types::messages_checkpoint::CheckpointSummary;
+use sui_types::message_envelope::Envelope;
 
 async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
     println!("Reading checkpoint from {:?}", checkpoint_path);
@@ -23,6 +26,49 @@ async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<Check
     let (_, data): (u8, CheckpointData) =
         bcs::from_bytes(&buffer).map_err(|e| anyhow!("Unable to parse checkpoint file: {}", e))?;
     Ok(data)
+}
+
+async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
+    let mut reader = fs::File::open(checkpoint_path.clone())?;
+    let mut json: String = String::new();
+    let _ = reader.read_to_string(&mut json);
+    let _rs: CheckpointData = serde_json::from_str(&json).unwrap();
+
+    serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
+}
+
+async fn read_data_test_data() -> (Committee, CheckpointData) {
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("example_config/right.yaml");
+    let mut reader = fs::File::open(d.clone()).unwrap();
+    let metadata = fs::metadata(&d).unwrap();
+    let mut buffer = vec![0; metadata.len() as usize];
+    reader.read_exact(&mut buffer).unwrap();
+    let checkpoint: Envelope<CheckpointSummary, AuthorityQuorumSignInfo<true>> =
+        bcs::from_bytes(&buffer)
+            .map_err(|_| anyhow!("Unable to parse checkpoint file"))
+            .unwrap();
+
+    let prev_committee = checkpoint
+        .end_of_epoch_data
+        .as_ref()
+        .ok_or(anyhow!(
+                "Expected all checkpoints to be end-of-epoch checkpoints"
+            ))
+        .unwrap()
+        .next_epoch_committee
+        .iter()
+        .cloned()
+        .collect();
+
+    // Make a committee object using this
+    let committee = Committee::new(checkpoint.epoch().checked_add(1).unwrap(), prev_committee);
+
+    let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    d.push("example_config/checkpoint.json");
+    let full_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
+
+    (committee, full_checkpoint)
 }
 
 async fn read_data(committee_seq: u64, seq: u64) -> (Committee, CheckpointData) {
@@ -62,7 +108,7 @@ async fn read_data(committee_seq: u64, seq: u64) -> (Committee, CheckpointData) 
 
 #[tokio::test]
 async fn check_can_read_test_data() {
-    let (_committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (_committee, full_checkpoint) = read_data_test_data().await;
     assert!(full_checkpoint
         .checkpoint_summary
         .end_of_epoch_data
