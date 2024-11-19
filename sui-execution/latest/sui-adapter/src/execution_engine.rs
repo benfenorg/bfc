@@ -847,7 +847,7 @@ mod checked {
             ];
 
             let mut bfc_round_function_name = BFC_ROUND_FUNCTION_NAME;
-            if params.next_protocol_version.as_u64() >= BFC_ROUND_V2_PROTOCOL_VERSION {
+            if param.current_protocol_version.as_u64() >= BFC_ROUND_V2_PROTOCOL_VERSION {
                 arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()));
                 arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_rate_against_busd).unwrap()));
                 bfc_round_function_name = BFC_ROUND_V2_FUNCTION_NAME;
@@ -1017,6 +1017,9 @@ mod checked {
             discard = true;
         }
 
+        // todo to be deleted
+        println!("protocol_verison={:?}, next_version={:?}", protocol_config.version, change_epoch.protocol_version );
+
         let obc_params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
@@ -1025,6 +1028,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
             reward_rate,
             storage_rebate,
+            current_protocol_version: protocol_config.version,
         };
         let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
         let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;
