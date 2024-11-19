@@ -111,17 +111,6 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
-    /// set daily out limit
-    #[clap(name = "set-daily-out-limit")]
-    SetDailyOutLimit {
-        #[clap(name = "operation-cap-id", long)]
-        operation_cap_id: ObjectID,
-        #[clap(name = "daily-out-limit")]
-        daily_out_limit: u64,
-        /// Gas budget for this transaction.
-        #[clap(name = "gas-budget", long)]
-        gas_budget: Option<u64>,
-    },
     /// add operation capability
     #[clap(name = "add-operation-capability")]
     AddOperationCapability {
@@ -258,7 +247,6 @@ pub enum SuiValidatorCommandResponse {
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
     SetOraclePriceAddress(SuiTransactionBlockResponse),
-    SetDailyOutLimit(SuiTransactionBlockResponse),
     AddOperationCapability(SuiTransactionBlockResponse),
     RemoveOperationCapability(SuiTransactionBlockResponse),
     SetOperationCapability(SuiTransactionBlockResponse),
@@ -492,17 +480,6 @@ impl SuiValidatorCommand {
                     set_oracle_price_object_address(context, address, gas_budget).await?;
                 SuiValidatorCommandResponse::SetOraclePriceAddress(resp)
             }
-
-            SuiValidatorCommand::SetDailyOutLimit {
-                operation_cap_id,
-                daily_out_limit,
-                gas_budget,
-            } => {
-                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
-                let resp =
-                    set_daily_out_limit(context, Some(operation_cap_id), daily_out_limit, gas_budget).await?;
-                SuiValidatorCommandResponse::SetDailyOutLimit(resp)
-            }
             SuiValidatorCommand::AddOperationCapability {
                 operation_cap_id,
                 key,
@@ -544,7 +521,7 @@ impl SuiValidatorCommand {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
                     init_admin_capability(context, addresses, gas_budget).await?;
-                SuiValidatorCommandResponse::AddAdminCapability(resp)
+                SuiValidatorCommandResponse::InitAdminCapability(resp)
             }
             SuiValidatorCommand::AddAdminCapability {
                 admin_cap_id,
@@ -688,6 +665,27 @@ async fn get_cap_object_ref(
     }
 }
 
+async fn get_cap_object_ref_v2(
+    context: &mut WalletContext,
+    operation_cap_id: Option<ObjectID>,
+) -> Result<ObjectRef> {
+    let sui_client = context.get_client().await?;
+    if let Some(operation_cap_id) = operation_cap_id {
+        let cap_obj_ref = sui_client
+            .read_api()
+            .get_object_with_options(
+                operation_cap_id,
+                SuiObjectDataOptions::default().with_owner(),
+            )
+            .await?
+            .object_ref_if_exists()
+            .ok_or_else(|| anyhow!("OperationCap {} does not exist", operation_cap_id))?;
+        Ok::<ObjectRef, anyhow::Error>(cap_obj_ref)
+    } else {
+        panic!("get_cap_object_ref_v2");
+    }
+}
+
 async fn update_gas_price(
     context: &mut WalletContext,
     operation_cap_id: Option<ObjectID>,
@@ -740,7 +738,7 @@ async fn operation_capability(
     gas_budget: u64,
     function: &'static str,
 ) -> Result<SuiTransactionBlockResponse> {
-    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, operation_cap_id).await?;
+    let cap_obj_ref = get_cap_object_ref_v2(context, operation_cap_id).await?;
 
     let args = vec![
         CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
@@ -767,7 +765,7 @@ async fn add_admin_capability(
     addresses: Vec<SuiAddress>,
     gas_budget: u64
 ) -> Result<SuiTransactionBlockResponse> {
-    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, admin_cap_id).await?;
+    let cap_obj_ref = get_cap_object_ref_v2(context, admin_cap_id).await?;
 
     let args = vec![
         CallArg::Pure(bcs::to_bytes(&addresses).unwrap()),
@@ -782,7 +780,7 @@ async fn remove_admin_capability(
     address: SuiAddress,
     gas_budget: u64
 ) -> Result<SuiTransactionBlockResponse> {
-    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, admin_cap_id).await?;
+    let cap_obj_ref = get_cap_object_ref_v2(context, admin_cap_id).await?;
 
     let args = vec![
         CallArg::Pure(bcs::to_bytes(&address).unwrap()),
@@ -995,9 +993,6 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::SetOraclePriceAddress(response) => {
-                write!(writer, "{}", write_transaction_response(response)?)?;
-            }
-            SuiValidatorCommandResponse::SetDailyOutLimit(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::AddOperationCapability(response) => {
