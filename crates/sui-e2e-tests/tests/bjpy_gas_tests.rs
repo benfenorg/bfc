@@ -6,9 +6,10 @@ mod publish_coin;
 
 use std::path::PathBuf;
 use std::str::FromStr;
+use std::time::Duration;
 use anyhow::Error;
 use chrono::Utc;
-use jsonrpsee::http_client::HttpClient;
+use jsonrpsee::http_client::{self, HttpClient};
 use move_core_types::parser::parse_struct_tag;
 use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_types::{ObjectChange, SuiExecutionStatus, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects};
@@ -20,13 +21,14 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::sui_serde::BigInt;
-use sui_types::transaction::TEST_ONLY_GAS_UNIT_FOR_PUBLISH;
+use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID,BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
+use sui_types::{parse_sui_struct_tag, TypeTag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
 use serde_json::json;
 use sui_json_rpc_api::{IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
+use tokio::time::sleep;
 use tracing::error;
 
 #[sim_test]
@@ -108,6 +110,30 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
         }
         assert!(pass);
     });
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    let (cap, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_coin_code").await?;
+    publish_coin::do_mint(&mut test_cluster, cap, package).await;
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    sleep(Duration::from_secs(10)).await;
+    let filter=format!("{}{}{}","0x2::coin::Coin<",package,"::test_coin::TEST_COIN>");
+    let coin_type=format!("{}{}",package,"::test_coin::TEST_COIN");
+    
+    let objects = get_owned_objects(filter.as_str(), &mut http_client, address).await?;
+    println!("objects is {:?}",objects);
+    assert_eq!(objects.len(), 1);
+    let response = stable::mint_stable_coin_with_gas(100000000000, &test_cluster, &mut http_client, address, "0xc8::bjpy::BJPY", filter.as_str()).await;
+    assert!(response.is_err());
     Ok(())
 }
 

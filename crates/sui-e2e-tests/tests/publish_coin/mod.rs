@@ -4,8 +4,9 @@ use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommand
 use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects};
 use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
-use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::transaction::TEST_ONLY_GAS_UNIT_FOR_PUBLISH;
+use sui_test_transaction_builder::TestTransactionBuilder;
+use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestCluster;
 
 
@@ -77,4 +78,36 @@ async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &Ob
         .execute(context)
         .await?;
     Ok(resp)
+}
+
+
+pub async fn do_mint(test_cluster: &mut TestCluster, cap: ObjectRef, package: ObjectID) {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    let gas = context
+        .get_one_gas_object_owned_by_address(address)
+        .await
+        .unwrap()
+        .unwrap();
+    let mint_tx = make_mint_test_coin_transaction(context, address, gas, package, cap, 10000000000000).await;
+    test_cluster.execute_transaction(mint_tx).await;
+}
+
+async fn make_mint_test_coin_transaction(
+    context: &WalletContext,
+    sender :SuiAddress,
+    gas_object :ObjectRef,
+    package_id:ObjectID,
+    treasury_cap: ObjectRef,
+    amount:u64,
+) -> Transaction {
+    let addresses= context.get_addresses();
+    let recipient= addresses.first().unwrap();
+    let gas_price = context.get_reference_gas_price().await.unwrap();
+    println!("sender:{:?} recipient:{:?}",sender,recipient);
+    context.sign_transaction(
+        &TestTransactionBuilder::new(sender, gas_object, gas_price)
+            .call_mint_test_coin(package_id,treasury_cap,amount,*recipient)
+            .build(),
+    )
 }
