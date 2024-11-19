@@ -4,6 +4,7 @@
 mod upgrade_treasury_tests;
 mod auth;
 mod stable;
+mod publish_coin;
 use futures::future::join_all;
 use rand::rngs::OsRng;
 use sui_types::collection_types::VecMap;
@@ -73,7 +74,7 @@ async fn sim_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(),
     upgrade_treasury_tests::setup_auth(&test_cluster).await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
-    let (_, package) = do_publish(&mut test_cluster).await?;
+    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
 
     let mut beur_rate: u64 = 0;
     test_cluster
@@ -156,7 +157,7 @@ async fn sim_get_oracle_price() -> Result<(), Error> {
     upgrade_treasury_tests::setup_auth(&test_cluster).await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
-    let (_, package) = do_publish(&mut test_cluster).await?;
+    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
 
     check_oracle_price(&mut test_cluster, package).await;
     Ok(())
@@ -245,74 +246,6 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
         .await?;
 
     Ok(())
-}
-
-async fn do_publish(test_cluster: &mut TestCluster) -> Result<(ObjectRef, ObjectID), Error> {
-    let address = test_cluster.get_address_0();
-
-    let rgp = test_cluster.get_reference_gas_price().await;
-    let mut context = &mut test_cluster.wallet;
-    let client = context.get_client().await?;
-    let object_refs = client
-        .read_api()
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    // Check log output contains all object ids.
-    let gas_obj = object_refs.last().unwrap().object().unwrap();
-    let gas_obj_id = &gas_obj.object_id;
-    //step 1: publish coin
-    let resp = do_publish_inner(rgp, &mut context, gas_obj_id).await?;
-
-    // // Print it out to CLI/logs
-    // resp.print(true);
-
-    let SuiClientCommandResult::Publish(response) = resp else {
-        unreachable!("Invalid response");
-    };
-
-    let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
-    assert!(effects.status.is_ok());
-    // assert_eq!(effects.gas_object().object_id(), gas_obj_id);
-    let cap = effects.created.get(1).unwrap().reference.to_object_ref();
-    println!("cap:{:?}", cap);
-    let mut published = vec![];
-    let obj_changed = &response.object_changes.unwrap();
-    for obj in obj_changed {
-        match obj {
-            ObjectChange::Published { .. } => published.push(obj),
-            _ => {}
-        };
-    }
-    let package = published.first().unwrap();
-    Ok((cap, package.object_id()))
-}
-
-async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
-    let mut package_path = PathBuf::from("tests/test_oracle_price/");
-    package_path.push("sources");
-    let build_config = BuildConfig::new_for_testing().config;
-    let resp = SuiClientCommands::Publish {
-        package_path: package_path.clone(),
-        build_config,
-        skip_dependency_verification: false,
-        with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-    }
-        .execute(context)
-        .await?;
-    Ok(resp)
 }
 
 

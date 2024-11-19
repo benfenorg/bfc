@@ -2,6 +2,7 @@
 mod upgrade_treasury_tests;
 mod auth;
 mod stable;
+mod publish_coin;
 
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -68,8 +69,7 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     let mut  http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
     // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-    let (_, package) = do_publish(&mut test_cluster).await?;
-
+    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     //add oracle price
     get_bjpy(&test_cluster, &mut http_client, address).await?;
@@ -195,77 +195,6 @@ async fn swap_bfc_to_stablecoin_with_tag(
             assert!(_effects.status.is_ok());
         }
     };
-    Ok(())
-}
-
-async fn add_auth_key(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, bfc_status_address: &&SuiAddress, admin_cap: &&SuiObjectData,auth_key: &str) -> Result<(), Error> {
-    let args1 = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
-        SuiJsonValue::new(json!(auth_key))?,
-        SuiJsonValue::new(json!(address.to_string()))?,
-    ];
-    let transaction_bytes1: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            BFC_SYSTEM_PACKAGE_ID,
-            "bfc_system".to_string(),
-            "set_single_operation_capability".to_string(),
-            vec![],
-            args1,
-            None,
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-    let tx1 = test_cluster
-        .wallet
-        .sign_transaction(&transaction_bytes1.to_data()?);
-    let (tx_bytes1, signatures1) = tx1.to_tx_bytes_and_signatures();
-    http_client
-        .execute_transaction_block(
-            tx_bytes1,
-            signatures1,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    Ok(())
-}
-
-async fn mint_stable_coin(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, bfc_status_address: &&SuiAddress, modify_cap: &&SuiObjectData,coint_type: &str) -> Result<(), Error> {
-    let args = vec![
-        SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(25000000000u64.to_string()))?,
-        SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
-    ];
-    let transaction_bytes: TransactionBlockBytes = http_client
-        .move_call(
-            address,
-            BFC_SYSTEM_PACKAGE_ID,
-            "bfc_system".to_string(),
-            "mint_stable_entry".to_string(),
-            vec![SuiTypeTag::new(coint_type.to_string())],
-            args,
-            None,
-            10_000_00000.into(),
-            None,
-        )
-        .await?;
-    let tx = test_cluster
-        .wallet
-        .sign_transaction(&transaction_bytes.to_data()?);
-    let (tx_bytes, signatures) = tx.to_tx_bytes_and_signatures();
-    let tx_response = http_client
-        .execute_transaction_block(
-            tx_bytes,
-            signatures,
-            Some(SuiTransactionBlockResponseOptions::new().with_effects()),
-            Some(ExecuteTransactionRequestType::WaitForLocalExecution),
-        )
-        .await?;
-    let effects = tx_response.effects.unwrap().clone();
-    effect_success(effects);
     Ok(())
 }
 
@@ -408,21 +337,6 @@ async fn get_owned_objects(filter_tag: &str, http_client: &HttpClient, address: 
     Ok(objects)
 }
 
-// fn effect_fail(effects: SuiTransactionBlockEffects, s: &str) {
-//     match effects {
-//         SuiTransactionBlockEffects::V1(_effects) => {
-//             match _effects.status {
-//                 SuiExecutionStatus::Success => {
-//                     assert!(false);
-//                 }
-//                 SuiExecutionStatus::Failure { error } => {
-//                     assert!(error.contains(s));
-//                 }
-//             }
-//         }
-//     };
-// }
-
 fn effect_success(effects: SuiTransactionBlockEffects) {
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
@@ -521,72 +435,4 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
         .await?;
     println!("set_oracle_address tx_response: {:#?}", tx_response);
     Ok(())
-}
-
-async fn do_publish(test_cluster: &mut TestCluster) -> Result<(ObjectRef, ObjectID), Error> {
-    let address = test_cluster.get_address_0();
-
-    let rgp = test_cluster.get_reference_gas_price().await;
-    let mut context = &mut test_cluster.wallet;
-    let client = context.get_client().await?;
-    let object_refs = client
-        .read_api()
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new_with_options(
-                SuiObjectDataOptions::new()
-                    .with_type()
-                    .with_owner()
-                    .with_previous_transaction(),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-    // Check log output contains all object ids.
-    let gas_obj = object_refs.first().unwrap().object().unwrap();
-    let gas_obj_id = &gas_obj.object_id;
-    //step 1: publish coin
-    let resp = do_publish_inner(rgp, &mut context, gas_obj_id).await?;
-
-    // // Print it out to CLI/logs
-    // resp.print(true);
-
-    let SuiClientCommandResult::Publish(response) = resp else {
-        unreachable!("Invalid response");
-    };
-
-    let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
-    assert!(effects.status.is_ok());
-    // assert_eq!(effects.gas_object().object_id(), gas_obj_id);
-    let cap = effects.created.get(1).unwrap().reference.to_object_ref();
-    println!("cap:{:?}", cap);
-    let mut published = vec![];
-    let obj_changed = &response.object_changes.unwrap();
-    for obj in obj_changed {
-        match obj {
-            ObjectChange::Published { .. } => published.push(obj),
-            _ => {}
-        };
-    }
-    let package = published.first().unwrap();
-    Ok((cap, package.object_id()))
-}
-
-async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
-    let mut package_path = PathBuf::from("tests/test_oracle_price/");
-    package_path.push("sources");
-    let build_config = BuildConfig::new_for_testing().config;
-    let resp = SuiClientCommands::Publish {
-        package_path: package_path.clone(),
-        build_config,
-        skip_dependency_verification: false,
-        with_unpublished_dependencies: false,
-        opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
-    }
-        .execute(context)
-        .await?;
-    Ok(resp)
 }
