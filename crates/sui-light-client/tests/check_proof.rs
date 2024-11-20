@@ -37,24 +37,17 @@ async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Re
     serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
 }
 
-async fn read_data_test_data() -> (Committee, CheckpointData) {
+async fn read_data_test_data(path :String) -> (Committee, CheckpointData) {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("example_config/right.yaml");
-    let mut reader = fs::File::open(d.clone()).unwrap();
-    let metadata = fs::metadata(&d).unwrap();
-    let mut buffer = vec![0; metadata.len() as usize];
-    reader.read_exact(&mut buffer).unwrap();
-    let checkpoint: Envelope<CheckpointSummary, AuthorityQuorumSignInfo<true>> =
-        bcs::from_bytes(&buffer)
-            .map_err(|_| anyhow!("Unable to parse checkpoint file"))
-            .unwrap();
+    d.push(format!("example_config/checkpoint_for_commit_checkpoint.json"));
+    let committee_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
+    let j = serde_json::to_string(&committee_checkpoint);
 
-    let prev_committee = checkpoint
+    let prev_committee = committee_checkpoint
+        .checkpoint_summary
         .end_of_epoch_data
         .as_ref()
-        .ok_or(anyhow!(
-                "Expected all checkpoints to be end-of-epoch checkpoints"
-            ))
+        .ok_or(anyhow!("Expected checkpoint to be end-of-epoch"))
         .unwrap()
         .next_epoch_committee
         .iter()
@@ -62,10 +55,17 @@ async fn read_data_test_data() -> (Committee, CheckpointData) {
         .collect();
 
     // Make a committee object using this
-    let committee = Committee::new(checkpoint.epoch().checked_add(1).unwrap(), prev_committee);
+    let committee = Committee::new(
+        committee_checkpoint
+            .checkpoint_summary
+            .epoch()
+            .checked_add(1)
+            .unwrap(),
+        prev_committee,
+    );
 
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push("example_config/checkpoint.json");
+    d.push(format!("example_config/{}", path));
     let full_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
 
     (committee, full_checkpoint)
@@ -108,7 +108,7 @@ async fn read_data(committee_seq: u64, seq: u64) -> (Committee, CheckpointData) 
 
 #[tokio::test]
 async fn check_can_read_test_data() {
-    let (_committee, full_checkpoint) = read_data_test_data().await;
+    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
     assert!(full_checkpoint
         .checkpoint_summary
         .end_of_epoch_data
@@ -152,7 +152,7 @@ async fn test_new_committee() {
 // Fail if the new committee does not match the target of the proof
 #[tokio::test]
 async fn test_incorrect_new_committee() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
 
     let committee_proof = Proof {
         checkpoint_summary: full_checkpoint.checkpoint_summary.clone(),
@@ -166,7 +166,7 @@ async fn test_incorrect_new_committee() {
 // Fail if the certificate is incorrect even if no proof targets are given
 #[tokio::test]
 async fn test_fail_incorrect_cert() {
-    let (_committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
 
     let new_committee_data = full_checkpoint
         .checkpoint_summary
@@ -220,14 +220,13 @@ async fn test_object_target_fail_no_data() {
 
 #[tokio::test]
 async fn test_object_target_success() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_target_success.json".to_string()).await;
 
     let sample_object: Object = full_checkpoint.transactions[0].output_objects[0].clone();
     let sample_ref = sample_object.compute_object_reference();
 
     let target = ProofTarget::new().add_object(sample_ref, sample_object);
     let object_proof = construct_proof(target, &full_checkpoint).unwrap();
-
     assert!(verify_proof(&committee, &object_proof).is_ok());
 }
 
