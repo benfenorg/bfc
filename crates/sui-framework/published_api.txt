@@ -4717,6 +4717,9 @@ get_balance
 check_vault
 	public fun
 	0xc8::treasury
+has_vault
+	public fun
+	0xc8::treasury
 get_vault_key
 	public fun
 	0xc8::treasury

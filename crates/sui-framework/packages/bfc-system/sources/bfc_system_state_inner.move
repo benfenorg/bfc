@@ -214,32 +214,28 @@ module bfc_system::bfc_system_state_inner {
         if (vector::length(&stable_type_name_vector) != vector::length(&stable_rate_vector)) {
             abort ERR_INVALID_PARAM
         };
-        let len = vector::length(&stable_type_name_vector);
-        let mut i = 0;
-        while (i < len) {
-            let stable_type_name = stable_type_name_vector[i];
-            treasury::check_vault(&inner.treasury, stable_type_name);
-            i = i + 1;
-        };
 
         _ = round;
         let stable_rate_map = treasury::get_exchange_rates(&inner.treasury);
         let busd_vault_key = treasury::get_vault_key<BUSD>();
         let mut busd_rate_some = stable_rate_map.try_get(&busd_vault_key);
-        if (busd_rate_some.is_some()) {
-            let busd_rate: u64 = busd_rate_some.extract();
-            // update busd rate
-            if (inner.stable_rate.contains(&busd_vault_key)) {
-                inner.stable_rate.remove(&busd_vault_key);
-                inner.stable_rate.insert(busd_vault_key, busd_rate);
-            };
 
-            // update other stable rate
-            let len = vector::length(&stable_type_name_vector);
-            let mut i = 0;
-            while (i < len) {
-                let stable_type_name = stable_type_name_vector[i];
-                let rate_against_busd = stable_rate_vector[i];
+        if (busd_rate_some.is_none()) return;
+
+        let busd_rate: u64 = busd_rate_some.extract();
+        // update busd rate
+        if (inner.stable_rate.contains(&busd_vault_key)) {
+            inner.stable_rate.remove(&busd_vault_key);
+            inner.stable_rate.insert(busd_vault_key, busd_rate);
+        };
+
+        // update other stable rate
+        let len = vector::length(&stable_type_name_vector);
+        let mut i = 0;
+        while (i < len) {
+            let stable_type_name = stable_type_name_vector[i];
+            let rate_against_busd = stable_rate_vector[i];
+            if (treasury::has_vault(&inner.treasury, stable_type_name)) {
                 if (inner.stable_rate.contains(&stable_type_name)) {
                     inner.stable_rate.remove(&stable_type_name);
                 };
@@ -247,9 +243,9 @@ module bfc_system::bfc_system_state_inner {
                 // oracle price decimal = 1_000_000_000
                 let rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
                 inner.stable_rate.insert(stable_type_name, rate_against_bfc);
-                i = i + 1;
-            }
-        };
+            }; 
+            i = i + 1;
+        }
     }
 
     fun init_vault_with_positions<StableCoinType>(

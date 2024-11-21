@@ -12,6 +12,7 @@ title: Module `0xc8::treasury`
 -  [Function `index`](#0xc8_treasury_index)
 -  [Function `get_balance`](#0xc8_treasury_get_balance)
 -  [Function `check_vault`](#0xc8_treasury_check_vault)
+-  [Function `has_vault`](#0xc8_treasury_has_vault)
 -  [Function `get_vault_key`](#0xc8_treasury_get_vault_key)
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
@@ -385,6 +386,30 @@ title: Module `0xc8::treasury`
         ),
         <a href="treasury.md#0xc8_treasury_ERR_POOL_NOT_EXISTS">ERR_POOL_NOT_EXISTS</a>
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_has_vault"></a>
+
+## Function `has_vault`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_has_vault">has_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xc8_treasury_has_vault">has_vault</a>(_treasury: &<a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String): bool {
+    <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(&_treasury.id, _vault_key)
 }
 </code></pre>
 

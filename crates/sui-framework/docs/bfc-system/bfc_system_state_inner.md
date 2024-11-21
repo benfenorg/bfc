@@ -826,32 +826,28 @@ Errors
     <b>if</b> (<a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector) != <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_rate_vector)) {
         <b>abort</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>
     };
-    <b>let</b> len = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector);
-    <b>let</b> <b>mut</b> i = 0;
-    <b>while</b> (i &lt; len) {
-        <b>let</b> stable_type_name = stable_type_name_vector[i];
-        <a href="treasury.md#0xc8_treasury_check_vault">treasury::check_vault</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_type_name);
-        i = i + 1;
-    };
 
     _ = round;
     <b>let</b> stable_rate_map = <a href="treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>);
     <b>let</b> busd_vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;();
     <b>let</b> <b>mut</b> busd_rate_some = stable_rate_map.try_get(&busd_vault_key);
-    <b>if</b> (busd_rate_some.is_some()) {
-        <b>let</b> busd_rate: u64 = busd_rate_some.extract();
-        // <b>update</b> <a href="busd.md#0xc8_busd">busd</a> rate
-        <b>if</b> (inner.stable_rate.contains(&busd_vault_key)) {
-            inner.stable_rate.remove(&busd_vault_key);
-            inner.stable_rate.insert(busd_vault_key, busd_rate);
-        };
 
-        // <b>update</b> other stable rate
-        <b>let</b> len = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector);
-        <b>let</b> <b>mut</b> i = 0;
-        <b>while</b> (i &lt; len) {
-            <b>let</b> stable_type_name = stable_type_name_vector[i];
-            <b>let</b> rate_against_busd = stable_rate_vector[i];
+    <b>if</b> (busd_rate_some.is_none()) <b>return</b>;
+
+    <b>let</b> busd_rate: u64 = busd_rate_some.extract();
+    // <b>update</b> <a href="busd.md#0xc8_busd">busd</a> rate
+    <b>if</b> (inner.stable_rate.contains(&busd_vault_key)) {
+        inner.stable_rate.remove(&busd_vault_key);
+        inner.stable_rate.insert(busd_vault_key, busd_rate);
+    };
+
+    // <b>update</b> other stable rate
+    <b>let</b> len = <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector);
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; len) {
+        <b>let</b> stable_type_name = stable_type_name_vector[i];
+        <b>let</b> rate_against_busd = stable_rate_vector[i];
+        <b>if</b> (<a href="treasury.md#0xc8_treasury_has_vault">treasury::has_vault</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_type_name)) {
             <b>if</b> (inner.stable_rate.contains(&stable_type_name)) {
                 inner.stable_rate.remove(&stable_type_name);
             };
@@ -859,9 +855,9 @@ Errors
             // oracle price decimal = 1_000_000_000
             <b>let</b> rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
             inner.stable_rate.insert(stable_type_name, rate_against_bfc);
-            i = i + 1;
-        }
-    };
+        };
+        i = i + 1;
+    }
 }
 </code></pre>
 

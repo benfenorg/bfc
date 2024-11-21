@@ -137,6 +137,10 @@ async fn sim_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(),
                 assert!(10000 > entry.value);
                 pass = true;
             }
+
+            if entry.key == "00000000000000000000000000000000000000000000000000000000000000c8::error::ERROR" {
+                assert!(false);
+            }
         }
 
         assert!(pass);
