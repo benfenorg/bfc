@@ -61,7 +61,6 @@ module bfc_system::bfc_system_state_inner {
     const ERR_DAILY_LIMIT: u64 = 1002;
     const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
-    const ERR_MINT_BUSD: u64 = 1005;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
     const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
@@ -510,7 +509,12 @@ module bfc_system::bfc_system_state_inner {
     ): Coin<StableCoinType> {
         assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        let busd_key = treasury::get_vault_key<BUSD>();
+        if (vault_key == busd_key) {
+            assert!(auth_utils::has_mint_busd(key), ERR_MINT_OPERATION_UNAUTHORIZED);
+            return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+        };
         assert!(auth_utils::has_mint_other_stablecoin(key), ERR_MINT_OPERATION_UNAUTHORIZED);
         let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
             &mut inner_state.treasury,
@@ -522,19 +526,6 @@ module bfc_system::bfc_system_state_inner {
         };
 
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
-    }
-
-    public(package) fun mint_busd(
-        inner_state: &mut BfcSystemStateInnerV2,
-        amount: u64,
-        key: &String,
-        ctx: &mut TxContext,
-    ): Coin<BUSD> {
-        assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
-        assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(auth_utils::has_mint_busd(key), ERR_MINT_OPERATION_UNAUTHORIZED);
-
-        return treasury::mint_stable<BUSD>(&mut inner_state.treasury, amount, ctx)
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInnerV2): VecMap<String, u64> {

@@ -4957,9 +4957,6 @@ request_gas_balance
 mint_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
-mint_busd
-	public(package) fun
-	0xc8::bfc_system_state_inner
 get_all_stable_rate
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5231,9 +5228,6 @@ mint_stable_entry
 	public entry fun
 	0xc8::bfc_system
 mint_stable
-	public fun
-	0xc8::bfc_system
-mint_busd
 	public fun
 	0xc8::bfc_system
 init_admin_capability

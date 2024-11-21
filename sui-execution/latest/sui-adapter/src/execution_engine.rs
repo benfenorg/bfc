@@ -732,7 +732,7 @@ mod checked {
         stable_coin_rate_against_busd: Vec<u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd, params)?;
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
         // Step 2: Advance the epoch.
@@ -835,8 +835,7 @@ mod checked {
         is_safe_mode: bool,
         discard: bool,
         stable_coin_type: Vec<String>,
-        stable_coin_rate_against_busd: Vec<u64>,
-        params: &AdvanceEpochParams,
+        stable_coin_rate_against_busd: Vec<u64>
     ) -> Result<(), ExecutionError> {
         if !is_safe_mode { // if safe mode skip judge dao vote result
             let mut arguments = vec![];

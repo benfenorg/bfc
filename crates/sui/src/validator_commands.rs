@@ -715,21 +715,6 @@ async fn set_oracle_price_object_address(
     call_0xc9(context, "set_oracle_address", args, gas_budget).await
 }
 
-async fn set_daily_out_limit(
-    context: &mut WalletContext,
-    operation_cap_id: Option<ObjectID>,
-    daily_out_limit: u64,
-    gas_budget: u64,
-) -> Result<SuiTransactionBlockResponse> {
-    let (_status, _summary, cap_obj_ref) = get_cap_object_ref(context, operation_cap_id).await?;
-
-    let args = vec![
-        CallArg::Object(ObjectArg::ImmOrOwnedObject(cap_obj_ref)),
-        CallArg::Pure(bcs::to_bytes(&daily_out_limit).unwrap()),
-    ];
-    call_0xc9(context, "set_daily_out_limit", args, gas_budget).await
-}
-
 async fn operation_capability(
     context: &mut WalletContext,
     operation_cap_id: Option<ObjectID>,

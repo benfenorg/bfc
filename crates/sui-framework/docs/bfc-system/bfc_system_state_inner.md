@@ -39,7 +39,6 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
--  [Function `mint_busd`](#0xc8_bfc_system_state_inner_mint_busd)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
 -  [Function `vault_ticks`](#0xc8_bfc_system_state_inner_vault_ticks)
@@ -578,15 +577,6 @@ Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO">ERR_MINT_AMOUNT_ZERO</a>: u64 = 1007;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_system_state_inner_ERR_MINT_BUSD"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>: u64 = 1005;
 </code></pre>
 
 
@@ -1585,7 +1575,12 @@ deprecated
 ): Coin&lt;StableCoinType&gt; {
     <b>assert</b>!(amount &gt; 0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO">ERR_MINT_AMOUNT_ZERO</a>);
     <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
-    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;StableCoinType&gt;() != <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_BUSD">ERR_MINT_BUSD</a>);
+    <b>let</b> vault_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> busd_key = <a href="treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;BUSD&gt;();
+    <b>if</b> (vault_key == busd_key) {
+        <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">auth_utils::has_mint_busd</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
+        <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
+    };
     <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">auth_utils::has_mint_other_stablecoin</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
     <b>let</b> vault_mut = <a href="treasury.md#0xc8_treasury_borrow_mut_vault">treasury::borrow_mut_vault</a>&lt;StableCoinType&gt;(
         &<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>,
@@ -1597,39 +1592,6 @@ deprecated
     };
 
     <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_state_inner_mint_busd"></a>
-
-## Function `mint_busd`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_busd">mint_busd</a>(inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, amount: u64, key: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_busd">mint_busd</a>(
-    inner_state: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
-    amount: u64,
-    key: &String,
-    ctx: &<b>mut</b> TxContext,
-): Coin&lt;BUSD&gt; {
-    <b>assert</b>!(amount &gt; 0, <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO">ERR_MINT_AMOUNT_ZERO</a>);
-    <b>assert</b>!(<a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
-    <b>assert</b>!(<a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">auth_utils::has_mint_busd</a>(key), <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_OPERATION_UNAUTHORIZED">ERR_MINT_OPERATION_UNAUTHORIZED</a>);
-
-    <b>return</b> <a href="treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;BUSD&gt;(&<b>mut</b> inner_state.<a href="treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
 }
 </code></pre>
 
