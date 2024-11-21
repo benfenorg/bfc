@@ -114,6 +114,10 @@ module bfc_system::treasury {
         );
     }
 
+    public fun has_vault(_treasury: &Treasury, _vault_key: String): bool {
+        dynamic_field::exists_(&_treasury.id, _vault_key)
+    }
+
     public fun get_vault_key<StableCoinType>(): String {
         type_name::into_string(type_name::get<StableCoinType>())
     }

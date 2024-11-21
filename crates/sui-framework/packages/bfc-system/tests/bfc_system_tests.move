@@ -130,12 +130,39 @@ module bfc_system::bfc_system_tests {
         test_scenario::next_tx(scenario, bfc_addr);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        vector::push_back(&mut stable_rate_vector, 1000000000);
+        // add beur，rate is 1000000000
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        // check beur
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 2);
+
+        // add unknow coion
         let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
         let mut stable_rate_vector : vector<u64> = vector::empty();
         vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
         vector::push_back(&mut stable_rate_vector, 1000000);
 
         bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        // check beur, no update
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 5);
+                
+        // should abort
+        let _ = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
 
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);
