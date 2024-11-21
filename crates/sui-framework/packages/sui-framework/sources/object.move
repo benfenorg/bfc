@@ -105,6 +105,18 @@ public fun id_to_address(id: &ID): address {
 public fun id_from_bytes(bytes: vector<u8>): ID {
     address::from_bytes(bytes).to_id()
 }
+    #[test_only]
+    public fun create_uid_from_address_for_test(addr: address): UID {
+        UID {
+            id: ID { bytes: addr },
+        }
+    }
+
+
+    /// Make an `ID` from raw bytes.
+    public fun id_from_bytes(bytes: vector<u8>): ID {
+        address::from_bytes(bytes).to_id()
+    }
 
 /// Make an `ID` from an address.
 public fun id_from_address(bytes: address): ID {

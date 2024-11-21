@@ -128,11 +128,12 @@ pub fn to_sender_signed_transaction_with_multi_signers(
 
 
 mod zk_login {
+    use fastcrypto::traits::ToFromBytes;
     use fastcrypto_zkp::bn254::zk_login::ZkLoginInputs;
     use shared_crypto::intent::PersonalMessage;
 
     use crate::{crypto::PublicKey, zk_login_util::get_zklogin_inputs};
-
+    use crate::crypto::Ed25519SuiSignature;
     use super::*;
     pub static DEFAULT_ADDRESS_SEED: &str =
         "20794788559620669596206457022966176986688727876128223628113916380927502737911";
@@ -258,6 +259,13 @@ mod zk_login {
         let kp2: SuiKeyPair = SuiKeyPair::Secp256k1(get_key_pair_from_rng(&mut seed).1);
         let kp3: SuiKeyPair = SuiKeyPair::Secp256r1(get_key_pair_from_rng(&mut seed).1);
         vec![kp1, kp2, kp3]
+    }
+
+    pub fn make_ed25519sig(pk :Vec<u8> , sig :Vec<u8>) -> GenericSignature{
+        let mut sig1 = vec![0];
+        sig1.extend(&sig);
+        sig1.extend(&pk);
+        Signature::Ed25519SuiSignature(Ed25519SuiSignature::from_bytes(&sig1).unwrap()).into()
     }
 
     pub fn make_upgraded_multisig_tx() -> Transaction {

@@ -1067,8 +1067,8 @@ impl ReadApiServer for ReadApi {
     #[instrument(skip(self))]
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         let inner_system_state = self.state.get_bfc_system_state()
-            .expect("Reading bfc system state object cannot fail").inner_state();
-        let dao = inner_system_state.dao;
+            .expect("Reading bfc system state object cannot fail");
+        let dao = inner_system_state.get_dao().clone();
         let mut proposal_record = Vec::new();
         for proposal in dao.proposal_record.contents {
             proposal_record.push(proposal.value);

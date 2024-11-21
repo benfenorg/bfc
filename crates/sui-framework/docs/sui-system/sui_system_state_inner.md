@@ -29,6 +29,7 @@ title: Module `0x3::sui_system_state_inner`
 -  [Function `redeem_fungible_staked_sui`](#0x3_sui_system_state_inner_redeem_fungible_staked_sui)
 -  [Function `request_withdraw_stable_stake`](#0x3_sui_system_state_inner_request_withdraw_stable_stake)
 -  [Function `report_validator`](#0x3_sui_system_state_inner_report_validator)
+-  [Function `is_active_validator_by_sui_address`](#0x3_sui_system_state_inner_is_active_validator_by_sui_address)
 -  [Function `undo_report_validator`](#0x3_sui_system_state_inner_undo_report_validator)
 -  [Function `report_validator_impl`](#0x3_sui_system_state_inner_report_validator_impl)
 -  [Function `undo_report_validator_impl`](#0x3_sui_system_state_inner_undo_report_validator_impl)
@@ -1480,10 +1481,34 @@ cap: &UnverifiedValidatorOperationCap,
 reportee_addr: <b>address</b>,
 ) {
 // Reportee needs <b>to</b> be an active <a href="validator.md#0x3_validator">validator</a>
-<b>assert</b>!(self.validators.is_active_validator_by_sui_address(reportee_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ENotValidator">ENotValidator</a>);
+<b>assert</b>!(self.validators.<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_is_active_validator_by_sui_address">is_active_validator_by_sui_address</a>(reportee_addr), <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ENotValidator">ENotValidator</a>);
 // Verify the represented reporter <b>address</b> is an active <a href="validator.md#0x3_validator">validator</a>, and the capability is still valid.
 <b>let</b> verified_cap = self.validators.verify_cap(cap, <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_ACTIVE_VALIDATOR_ONLY">ACTIVE_VALIDATOR_ONLY</a>);
 <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_report_validator_impl">report_validator_impl</a>(verified_cap, reportee_addr, &<b>mut</b> self.validator_report_records);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x3_sui_system_state_inner_is_active_validator_by_sui_address"></a>
+
+## Function `is_active_validator_by_sui_address`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_is_active_validator_by_sui_address">is_active_validator_by_sui_address</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">sui_system_state_inner::SuiSystemStateInnerV2</a>, <b>address</b>: <b>address</b>): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="sui_system_state_inner.md#0x3_sui_system_state_inner_is_active_validator_by_sui_address">is_active_validator_by_sui_address</a>(self: &<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_SuiSystemStateInnerV2">SuiSystemStateInnerV2</a> , <b>address</b>: <b>address</b>): bool {
+    self.validators.<a href="sui_system_state_inner.md#0x3_sui_system_state_inner_is_active_validator_by_sui_address">is_active_validator_by_sui_address</a>(<b>address</b>)
 }
 </code></pre>
 

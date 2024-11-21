@@ -92,6 +92,7 @@ pub mod versioned;
 pub mod zk_login_authenticator;
 pub mod zk_login_util;
 
+pub mod oracle_price;
 pub mod base_types_bfc;
 pub mod bfc_system_state;
 //mod bfc_base_types;

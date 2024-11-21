@@ -1660,7 +1660,6 @@ gas coins.
         epoch_start_timestamp_ms,
         ctx,
     );
-
     storage_rebate
 }
 </code></pre>

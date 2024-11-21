@@ -18,7 +18,7 @@ module sui_system::governance_test_utils {
     use std::type_name;
     use sui::test_scenario::{Self, Scenario};
     use sui::balance::Balance;
-    use bfc_system::bfc_system_tests::create_sui_system_state_for_testing as create_bfc_system_state;
+    use bfc_system::bfc_system_tests::create_sui_system_state_for_testing_v2 as create_bfc_system_state;
     use bfc_system::busd::BUSD;
     use sui::vec_map;
     use sui_system::validator_set;
@@ -107,10 +107,10 @@ module sui_system::governance_test_utils {
             ctx,
         );
 
-        create_bfc_system_state(ctx, BFC_AMOUNT);
+        let bfc_system_address = create_bfc_system_state(ctx, BFC_AMOUNT);
         sui_system::create(
             object::new(ctx), // it doesn't matter what ID sui system state has in tests
-            object::bfc_system_state_for_test(),
+            object::create_uid_from_address_for_test(bfc_system_address),
             validators,
             balance::create_for_testing<BFC>(storage_fund_amount * MIST_PER_SUI), // storage_fund
             1,   // protocol version
@@ -119,6 +119,8 @@ module sui_system::governance_test_utils {
             stake_subsidy,
             ctx,
         )
+
+
     }
 
     public fun set_up_sui_system_state(mut addrs: vector<address>) {

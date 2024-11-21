@@ -58,8 +58,9 @@ module sui_system::sui_system {
 
 
     #[test_only] use sui::balance;
+    #[test_only]
+    use sui::vec_set::VecSet;
     #[test_only] use sui_system::validator_set::ValidatorSet;
-    #[test_only] use sui::vec_set::VecSet;
 
     public struct SuiSystemState has key {
         id: UID,
@@ -69,7 +70,6 @@ module sui_system::sui_system {
 
     const ENotSystemAddress: u64 = 0;
     const EWrongInnerVersion: u64 = 1;
-
     // ==== functions that can only be called by genesis ====
 
     /// Create a new SuiSystemState object and make it shared.
@@ -649,7 +649,6 @@ module sui_system::sui_system {
             epoch_start_timestamp_ms,
             ctx,
         );
-
         storage_rebate
     }
 

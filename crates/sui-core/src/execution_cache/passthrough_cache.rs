@@ -39,6 +39,7 @@ use tracing::instrument;
 use typed_store::Map;
 use sui_types::sui_system_state::get_bfc_system_proposal_map;
 use sui_types::bfc_system_state::get_bfc_system_state;
+use sui_types::oracle_price::{get_oracle_price_by_id, OraclePrice};
 use sui_types::collection_types::VecMap;
 use sui_types::proposal::ProposalStatus;
 
@@ -72,6 +73,27 @@ impl PassthroughCache {
 
     pub fn store_for_testing(&self) -> &Arc<AuthorityStore> {
         &self.store
+    }
+
+    pub async fn prune_objects_and_compact_for_testing(
+        &self,
+        checkpoint_store: &Arc<CheckpointStore>,
+    ) {
+        let pruning_config = AuthorityStorePruningConfig {
+            num_epochs_to_retain: 0,
+            ..Default::default()
+        };
+        let _ = AuthorityStorePruner::prune_objects_for_eligible_epochs(
+            &self.store.perpetual_tables,
+            checkpoint_store,
+            &self.store.objects_lock_table,
+            pruning_config,
+            AuthorityStorePruningMetrics::new_for_test(),
+            usize::MAX,
+            EPOCH_DURATION_MS_FOR_TESTING,
+        )
+            .await;
+        let _ = AuthorityStorePruner::compact(&self.store.perpetual_tables);
     }
 
     fn revert_state_update_impl(&self, digest: &TransactionDigest) -> SuiResult {
@@ -240,6 +262,25 @@ impl TransactionCacheRead for PassthroughCache {
         &'a self,
         digests: &'a [TransactionDigest],
     ) -> BoxFuture<'a, SuiResult<Vec<TransactionEffectsDigest>>> {
+        async move {
+            let registrations = self
+                .executed_effects_digests_notify_read
+                .register_all(digests);
+
+            let executed_effects_digests = self.multi_get_executed_effects_digests(digests)?;
+
+            let results = executed_effects_digests
+                .into_iter()
+                .zip(registrations)
+                .map(|(a, r)| match a {
+                    // Note that Some() clause also drops registration that is already fulfilled
+                    Some(ready) => Either::Left(futures::future::ready(ready)),
+                    None => Either::Right(r),
+                });
+
+            Ok(join_all(results).await)
+        }
+            .boxed()
         self.executed_effects_digests_notify_read
             .read(digests, |digests| {
                 self.multi_get_executed_effects_digests(digests)
@@ -254,7 +295,21 @@ impl TransactionCacheRead for PassthroughCache {
         self.store.multi_get_events(event_digests)
     }
 
+    fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState> {
+        get_sui_system_state(self)
+    }
 
+    fn get_bfc_system_state_object(&self) -> SuiResult<BFCSystemState> {
+        get_bfc_system_state(self)
+    }
+
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
+        get_oracle_price_by_id(self, id)
+    }
+
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
+        get_bfc_system_proposal_map(self)
+    }
 
     // fn get_marker_value(
     //     &self,
@@ -310,7 +365,7 @@ impl ExecutionCacheWrite for PassthroughCache {
 
             Ok(())
         }
-        .boxed()
+            .boxed()
     }
 
     fn acquire_transaction_locks<'a>(
@@ -323,7 +378,7 @@ impl ExecutionCacheWrite for PassthroughCache {
             .acquire_transaction_locks(epoch_store, owned_input_objects, transaction)
             .boxed()
     }
-    
+
 }
 
 impl AccumulatorStore for PassthroughCache {
@@ -362,7 +417,7 @@ impl AccumulatorStore for PassthroughCache {
     fn iter_live_object_set(
         &self,
         include_wrapped_tombstone: bool,
-    ) -> Box<dyn Iterator<Item = crate::authority::authority_store_tables::LiveObject> + '_> {
+    ) -> Box<dyn Iterator<Item=crate::authority::authority_store_tables::LiveObject> + '_> {
         self.store.iter_live_object_set(include_wrapped_tombstone)
     }
 }

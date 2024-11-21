@@ -173,6 +173,7 @@ use crate::validator_tx_finalizer::ValidatorTxFinalizer;
 use sui_types::committee::CommitteeTrait;
 use sui_types::deny_list_v2::check_coin_deny_list_v2_during_signing;
 use sui_types::execution_config_utils::to_binary_config;
+use sui_types::oracle_price::OraclePrice;
 
 #[cfg(test)]
 #[path = "unit_tests/authority_tests.rs"]
@@ -899,6 +900,21 @@ impl AuthorityState {
             &receiving_objects_refs,
             epoch_store.epoch(),
         )?;
+        let (input_objects, receiving_objects) = self
+            .input_loader
+            .read_objects_for_signing(
+                tx_digest,
+                &input_object_kinds,
+                &receiving_objects_refs,
+                epoch_store.epoch(),
+            )
+            .await?;
+
+        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
+            self.get_stable_rate_and_base_points(transaction.gas()).await?
+        } else {
+            (None, None)
+        };
 
         let (_gas_status, checked_input_objects) = sui_transaction_checks::check_transaction_input(
             epoch_store.protocol_config(),
@@ -1697,8 +1713,8 @@ impl AuthorityState {
         tx_data.validity_check(epoch_store.protocol_config())?;
         // The cost of partially re-auditing a transaction before execution is tolerated.
         let (stable_rate, base_point) = if !tx_data.is_system_txn() {
-                self.get_stable_rate_and_base_points(tx_data.gas()).await?
-        }else {
+            self.get_stable_rate_and_base_points(tx_data.gas()).await?
+        } else {
             (None, None)
         };
         let (gas_status, input_objects) = sui_transaction_checks::check_certificate_input(
@@ -1741,7 +1757,7 @@ impl AuthorityState {
         //let mut gas_charger = GasCharger::new(tx_digest, gas, gas_status, protocol_config);
 
         #[allow(unused_mut)]
-            let (inner_temp_store, _, mut effects, execution_error_opt) =
+        let (inner_temp_store, _, mut effects, execution_error_opt) =
             epoch_store.executor().execute_transaction_to_effects(
                 self.get_backing_store().as_ref(),
                 protocol_config,
@@ -1909,7 +1925,7 @@ impl AuthorityState {
         } else {
             let (stable_rate, base_point) = if !transaction.is_system_txn() {
                 self.get_stable_rate_and_base_points(transaction.gas()).await?
-            }else {
+            } else {
                 (None, None)
             };
             (
@@ -2158,7 +2174,7 @@ impl AuthorityState {
             } else {
                 let (stable_rate, base_point) = if !transaction.is_system_txn() {
                     self.get_stable_rate_and_base_points(transaction.gas()).await?
-                }else {
+                } else {
                     (None, None)
                 };
                 sui_transaction_checks::check_transaction_input(
@@ -2378,6 +2394,10 @@ impl AuthorityState {
                 else {
                     panic!("tx_digest={:?}, error processing object owner index, cannot find owner for object {:?} at version {:?}", tx_digest, id, old_version);
                 };
+                let Some(old_object) = self.execution_cache.get_object_by_key(id, *old_version)?
+                else {
+                    panic!("tx_digest={:?}, error processing object owner index, cannot find owner for object {:?} at version {:?}", tx_digest, id, old_version);
+                };
                 if old_object.owner != owner {
                     match old_object.owner {
                         Owner::AddressOwner(addr) => {
@@ -2429,10 +2449,10 @@ impl AuthorityState {
                             None
                         }
                         )
-                        else {
-                            // Skip indexing for non dynamic field objects.
-                            continue;
-                        };
+                    else {
+                        // Skip indexing for non dynamic field objects.
+                        continue;
+                    };
                     new_dynamic_fields.push(((ObjectID::from(owner), *id), df_info))
                 }
                 _ => {}
@@ -3023,9 +3043,9 @@ impl AuthorityState {
                         &BTreeMap::new(),
                         layout_resolver.as_mut(),
                     )?
-                        else {
-                            continue;
-                        };
+                    else {
+                        continue;
+                    };
                     new_dynamic_fields.push(((ObjectID::from(object_id), id), info));
                 }
                 _ => {}
@@ -3367,13 +3387,13 @@ impl AuthorityState {
             .compute_object_reference())
     }
 
-    pub async  fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
+    pub async fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
         if gas_ref.is_empty() {
-            return Ok((None, None));//dry run /dev inspect
+            return Ok((None, None)); //dry run /dev inspect
         }
 
         let gas = self.get_object(&gas_ref[0].0).await?
-            .ok_or_else(|| SuiError::UserInputError{error:UserInputError::ObjectNotFound {object_id:gas_ref[0].0,version:None}})?;
+            .ok_or_else(|| SuiError::UserInputError { error: UserInputError::ObjectNotFound { object_id: gas_ref[0].0, version: None } })?;
 
         if gas.is_gas_coin() {
             return Ok((None, None)); // bfc gas
@@ -3381,28 +3401,27 @@ impl AuthorityState {
 
         let gas_tag = gas.coin_type_maybe();
         if gas_tag.is_none() {
-            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
+            return Err(SuiError::UserInputError { error: UserInputError::GasCoinInvalid { coin_type: "None".to_string() } });
         }
 
         let tag = gas_tag.unwrap();
 
         if !gas.is_stable_gas_coin() {
-            return Err(SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type: tag.to_canonical_string(false)}});
+            return Err(SuiError::UserInputError { error: UserInputError::GasCoinInvalid { coin_type: tag.to_canonical_string(false) } });
         }
 
         let bfc_system_state = self.get_bfc_system_state()?;
-        let inner_state =bfc_system_state.inner_state();
-        let rate_map: HashMap<String, u64> = inner_state.rate_map.contents
+        let rate_map: HashMap<String, u64> = bfc_system_state.get_rate_map().contents
             .iter()
             .map(|entity| ((*entity.key).to_string(), entity.value))
             .collect();
 
-        let base_points = inner_state.clone().stable_base_points;
+        let base_points = bfc_system_state.get_base_points();
         let rate_option = rate_map.get(&tag.to_canonical_string(false)).or_else(|| rate_map.get(&tag.to_string())).copied();
         if let Some(rate) = rate_option {
             Ok((Some(rate), Some(base_points)))
-        }else {
-            return Err(SuiError::UserInputError{error:UserInputError::NoRateFoundInBfcSystem {coin_type: tag.to_canonical_string(false)}});
+        } else {
+            return Err(SuiError::UserInputError { error: UserInputError::NoRateFoundInBfcSystem { coin_type: tag.to_canonical_string(false) } });
         }
     }
 
@@ -3423,6 +3442,10 @@ impl AuthorityState {
 
     pub fn get_bfc_system_state_object_for_testing(&self) -> SuiResult<BFCSystemState> {
         self.get_object_cache_reader().get_bfc_system_state_object()
+    }
+
+    pub fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
+        self.execution_cache.get_oracle_price_by_id(id)
     }
 
     pub fn get_bfc_system_state(&self) -> SuiResult<BFCSystemState> {
@@ -3505,8 +3528,8 @@ impl AuthorityState {
 
     #[instrument(level = "trace", skip_all)]
     pub fn get_move_object<T>(&self, object_id: &ObjectID) -> SuiResult<T>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let o = self.get_object_read(object_id)?.into_object()?;
         if let Some(move_object) = o.data.try_as_move() {
@@ -3537,9 +3560,9 @@ impl AuthorityState {
         let Some(obj_ref) = self
             .get_object_cache_reader()
             .get_latest_object_ref_or_tombstone(*object_id)?
-            else {
-                return Ok(PastObjectRead::ObjectNotExists(*object_id));
-            };
+        else {
+            return Ok(PastObjectRead::ObjectNotExists(*object_id));
+        };
 
         if version > obj_ref.1 {
             return Ok(PastObjectRead::VersionTooHigh {
@@ -3685,8 +3708,8 @@ impl AuthorityState {
         owner: SuiAddress,
         type_: MoveObjectType,
     ) -> SuiResult<Vec<T>>
-        where
-            T: DeserializeOwned,
+    where
+        T: DeserializeOwned,
     {
         let object_ids = self
             .get_owner_objects_iterator(owner, None, None)?
@@ -4487,6 +4510,10 @@ impl AuthorityState {
             else {
                 return vec![];
             };
+                .await
+            else {
+                return vec![];
+            };
             results.push(obj_ref);
         }
 
@@ -5013,15 +5040,15 @@ impl AuthorityState {
         info!("===========protocol: {:?} detecting next version:{:?}", version, next_bfc_p_version);
         info!("===========system package size {:?}", next_epoch_system_packages.len());
 
-        if cfg!(feature="bfc_skip_dao_update") {
-            info!("===========msim test skip ========");
-        } else if proposal_result == false {
-            info!("=========skip system package update, proposal fail=======",);
-            next_epoch_system_packages.clear();
-            next_epoch_protocol_version = epoch_store.protocol_version();
-        } else {
-            info!("======= system package update, proposal success=======");
-        };
+        // if cfg!(feature="bfc_skip_dao_update") {
+        //     info!("===========msim test skip ========");
+        // } else if proposal_result == false {
+        //     info!("=========skip system package update, proposal fail=======",);
+        //     next_epoch_system_packages.clear();
+        //     next_epoch_protocol_version = epoch_store.protocol_version();
+        // } else {
+        //     info!("======= system package update, proposal success=======");
+        // };
 
         // since system packages are created during the current epoch, they should abide by the
         // rules of the current epoch, including the current epoch's max Move binary format version
