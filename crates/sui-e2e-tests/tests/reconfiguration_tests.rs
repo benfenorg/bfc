@@ -878,22 +878,6 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
         .with_type()
         .with_owner()
         .with_previous_transaction();
-    let objects = http_client
-        .get_owned_objects(
-            address,
-            Some(SuiObjectResponseQuery::new(
-                Option::Some(filter),
-                Option::Some(data_option),
-            )),
-            None,
-            None,
-        )
-        .await?
-        .data;
-
-
-    // now do the call
-    let payment = objects.get(1).unwrap().object().unwrap();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -911,10 +895,24 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
         SuiJsonValue::from_str(&manager_obj.to_string())?,
         SuiJsonValue::new(json!("1"))?,
     ];
-
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
+
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                Option::Some(filter),
+                Option::Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    // now do the call
+    let payment = objects.get(1).unwrap().object().unwrap();
 
     // now do the call
     let function = "create_bfcdao_action".to_string();
@@ -928,8 +926,7 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-
-    let coin_obj = objects.get(4).unwrap().object().unwrap();
+    let coin_obj = objects.last().unwrap().object().unwrap();
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
