@@ -320,6 +320,22 @@ module bfc_system::bfc_system_state_inner {
             init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
         }else{
             init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
+            init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
+            init_vault_with_positions<BKRW>(&mut t, ascii::string(b"BKRW"), krw_supply, parameters, ctx);
+            init_vault_with_positions<BAUD>(&mut t, ascii::string(b"BAUD"), aud_supply, parameters, ctx);
+            init_vault_with_positions<BARS>(&mut t, ascii::string(b"BARS"), ars_supply, parameters, ctx);
+            init_vault_with_positions<BBRL>(&mut t, ascii::string(b"BBRL"), brl_supply, parameters, ctx);
+            init_vault_with_positions<BCAD>(&mut t, ascii::string(b"BCAD"), cad_supply, parameters, ctx);
+            init_vault_with_positions<BEUR>(&mut t, ascii::string(b"BEUR"), eur_supply, parameters, ctx);
+            init_vault_with_positions<BGBP>(&mut t, ascii::string(b"BGBP"), gbp_supply, parameters, ctx);
+            init_vault_with_positions<BIDR>(&mut t, ascii::string(b"BIDR"), idr_supply, parameters, ctx);
+            init_vault_with_positions<BINR>(&mut t, ascii::string(b"BINR"), inr_supply, parameters, ctx);
+            init_vault_with_positions<BRUB>(&mut t, ascii::string(b"BRUB"), rub_supply, parameters, ctx);
+            init_vault_with_positions<BSAR>(&mut t, ascii::string(b"BSAR"), sar_supply, parameters, ctx);
+            init_vault_with_positions<BTRY>(&mut t, ascii::string(b"BTRY"), try_supply, parameters, ctx);
+            init_vault_with_positions<BZAR>(&mut t, ascii::string(b"BZAR"), zar_supply, parameters, ctx);
+            init_vault_with_positions<BMXN>(&mut t, ascii::string(b"BMXN"), mxn_supply, parameters, ctx);
+            init_vault_with_positions<MGG>(&mut t, ascii::string(b"MGG"), mgg_supply, parameters, ctx);
         };
         let mut rate_map = vec_map::empty<ascii::String, u64>();
         if (balance::value<BFC>(&bfc_balance) > 0) {

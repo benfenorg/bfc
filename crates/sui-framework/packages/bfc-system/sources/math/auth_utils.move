@@ -1,3 +1,4 @@
+#[allow(deprecated_usage)]
 module bfc_system::auth_utils {
 
     use std::ascii::String;

@@ -2653,7 +2653,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -2662,11 +2662,11 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(
-    <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_increase_coin_a">increase_coin_a</a>&lt;StableCoinType&gt;(
+    <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
     <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;StableCoinType&gt;
-): u64 {
-    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="vault.md#0xc8_vault">vault</a>.coin_a, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault">vault</a>.coin_a, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>
 
@@ -2680,7 +2680,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_decrease_coin_a">decrease_coin_a</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, amount: u64, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_decrease_coin_a">decrease_coin_a</a>&lt;StableCoinType&gt;(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
 </code></pre>
 
 
@@ -2689,12 +2689,12 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_decrease_coin_a">decrease_coin_a</a>&lt;StableCoinType&gt;(
-    <a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
-    amount: u64,
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_decrease_coin_a">decrease_coin_a</a>&lt;StableCoinType&gt;(
+    <a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &<b>mut</b> TxContext
 ): Coin&lt;StableCoinType&gt; {
-    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/coin.md#0x2_coin_take">coin::take</a>(&<b>mut</b> <a href="vault.md#0xc8_vault">vault</a>.coin_a, amount, ctx);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../sui-framework/coin.md#0x2_coin_take">coin::take</a>(&<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault">vault</a>.coin_a, amount, ctx);
     <a href="../sui-framework/coin.md#0x2_coin">coin</a>
 }
 </code></pre>
@@ -2709,7 +2709,7 @@ State checker
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">vault::Vault</a>&lt;StableCoinType&gt;): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
 </code></pre>
 
 
@@ -2718,8 +2718,8 @@ State checker
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(<a href="vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): Balance&lt;BFC&gt; {
-    <a href="../sui-framework/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> <a href="vault.md#0xc8_vault">vault</a>.coin_b)
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/vault.md#0xc8_vault_clear_coin_b">clear_coin_b</a>&lt;StableCoinType&gt;(<a href="../bfc-system/vault.md#0xc8_vault">vault</a>: &<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault_Vault">Vault</a>&lt;StableCoinType&gt;): Balance&lt;BFC&gt; {
+    <a href="../sui-framework/balance.md#0x2_balance_withdraw_all">balance::withdraw_all</a>(&<b>mut</b> <a href="../bfc-system/vault.md#0xc8_vault">vault</a>.coin_b)
 }
 </code></pre>
 

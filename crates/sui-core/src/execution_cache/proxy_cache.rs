@@ -8,6 +8,7 @@ use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfigTra
 use crate::authority::AuthorityStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
+use sui_types::oracle_price::OraclePrice;
 
 use futures::future::BoxFuture;
 use futures::FutureExt;
@@ -113,6 +114,10 @@ impl ObjectCacheRead for ProxyCache {
 
     fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>> {
         delegate_method!(self.get_bfc_system_proposal_state_map())
+    }
+
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
+        delegate_method!(self.get_oracle_price_by_id(id))
     }
 
     fn get_object(&self, id: &ObjectID) -> SuiResult<Option<Object>> {
@@ -245,6 +250,7 @@ impl TransactionCacheRead for ProxyCache {
     ) -> SuiResult<Vec<Option<TransactionEvents>>> {
         delegate_method!(self.multi_get_events(event_digests))
     }
+
 }
 
 impl ExecutionCacheWrite for ProxyCache {

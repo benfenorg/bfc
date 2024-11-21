@@ -74,11 +74,13 @@ use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, ObjectStore,
 use sui_types::sui_system_state::{get_sui_system_state, SuiSystemState};
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use sui_types::bfc_system_state::get_bfc_system_state;
-use sui_types::collection_types::VecMap;
 use sui_types::bfc_system_state::get_bfc_system_proposal_state_map;
 use sui_types::bfc_system_state::BFCSystemState;
-use sui_types::proposal::ProposalStatus;
-
+use crate::checkpoints::CheckpointStore;
+use sui_config::node::AuthorityStorePruningConfig;
+use crate::authority::authority_store_pruner::AuthorityStorePruner;
+use crate::authority::authority_store_pruner::AuthorityStorePruningMetrics;
+use crate::authority::authority_store_pruner::EPOCH_DURATION_MS_FOR_TESTING;
 use tap::TapOptional;
 use tracing::{debug, info, instrument, trace, warn};
 
@@ -443,7 +445,6 @@ macro_rules! check_cache_entry_by_latest {
 impl WritebackCache {
     pub fn new(store: Arc<AuthorityStore>, metrics: Arc<ExecutionCacheMetrics>) -> Self {
         let packages = MokaCache::builder()
-            .max_capacity(MAX_CACHE_SIZE)
             .max_capacity(MAX_CACHE_SIZE)
             .build();
         Self {

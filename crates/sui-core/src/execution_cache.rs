@@ -212,6 +212,7 @@ pub trait ObjectCacheRead: Send + Sync {
         Ok(ret)
     }
 
+    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
     fn get_latest_object_ref_or_tombstone(
         &self,
         object_id: ObjectID,
@@ -421,6 +422,7 @@ pub trait ObjectCacheRead: Send + Sync {
         }
     }
 
+
     /// If the shared object was deleted, return deletion info for the specified version.
     fn get_deleted_shared_object_previous_tx_digest(
         &self,
@@ -609,79 +611,27 @@ pub trait TransactionCacheRead: Send + Sync {
             .boxed()
     }
 
-    fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
-    fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
-    fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
+    // fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
+    // fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
+    // fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
 
         // Marker methods
 
-    /// Get the marker at a specific version
-    fn get_marker_value(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<MarkerValue>>;
+    // fn get_marker_value(
+    //     &self,
+    //     object_id: &ObjectID,
+    //     version: SequenceNumber,
+    //     epoch_id: EpochId,
+    // ) -> SuiResult<Option<MarkerValue>>;
+    //
+    // /// Get the latest marker for a given object.
+    // fn get_latest_marker(
+    //     &self,
+    //     object_id: &ObjectID,
+    //     epoch_id: EpochId,
+    // ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>>;
 
-    /// Get the latest marker for a given object.
-    fn get_latest_marker(
-        &self,
-        object_id: &ObjectID,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>>;
-
-    /// If the shared object was deleted, return deletion info for the current live version
-    fn get_last_shared_object_deletion_info(
-        &self,
-        object_id: &ObjectID,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<(SequenceNumber, TransactionDigest)>> {
-        match self.get_latest_marker(object_id, epoch_id)? {
-            Some((version, MarkerValue::SharedDeleted(digest))) => Ok(Some((version, digest))),
-            _ => Ok(None),
-        }
-    }
-
-    /// If the shared object was deleted, return deletion info for the specified version.
-    fn get_deleted_shared_object_previous_tx_digest(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<Option<TransactionDigest>> {
-        match self.get_marker_value(object_id, version, epoch_id)? {
-            Some(MarkerValue::SharedDeleted(digest)) => Ok(Some(digest)),
-            _ => Ok(None),
-        }
-    }
-
-    fn have_received_object_at_version(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<bool> {
-        match self.get_marker_value(object_id, version, epoch_id)? {
-            Some(MarkerValue::Received) => Ok(true),
-            _ => Ok(false),
-        }
-    }
-
-    fn have_deleted_owned_object_at_version_or_after(
-        &self,
-        object_id: &ObjectID,
-        version: SequenceNumber,
-        epoch_id: EpochId,
-    ) -> SuiResult<bool> {
-        match self.get_latest_marker(object_id, epoch_id)? {
-            Some((marker_version, MarkerValue::OwnedDeleted)) if marker_version >= version => {
-                Ok(true)
-            }
-            _ => Ok(false),
-        }
-    }
-
-    fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
+    // fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
     // Marker methods
 }
 

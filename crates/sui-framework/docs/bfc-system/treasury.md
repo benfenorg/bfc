@@ -16,6 +16,9 @@ title: Module `0xc8::treasury`
 -  [Function `borrow_vault`](#0xc8_treasury_borrow_vault)
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
+-  [Function `mint_stable`](#0xc8_treasury_mint_stable)
+-  [Function `exchange_busd_to_stable`](#0xc8_treasury_exchange_busd_to_stable)
+-  [Function `add_supply`](#0xc8_treasury_add_supply)
 -  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
 -  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
@@ -30,17 +33,22 @@ title: Module `0xc8::treasury`
 -  [Function `transfer_or_delete`](#0xc8_treasury_transfer_or_delete)
 -  [Function `swap_internal`](#0xc8_treasury_swap_internal)
 -  [Function `deposit`](#0xc8_treasury_deposit)
+-  [Function `deposit_v2`](#0xc8_treasury_deposit_v2)
 -  [Function `deposit_with_one_stablecoin`](#0xc8_treasury_deposit_with_one_stablecoin)
 -  [Function `bfc_required`](#0xc8_treasury_bfc_required)
+-  [Function `bfc_required_v2`](#0xc8_treasury_bfc_required_v2)
 -  [Function `bfc_required_with_one_stablecoin`](#0xc8_treasury_bfc_required_with_one_stablecoin)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_treasury_rebalance_with_one_stablecoin)
 -  [Function `rebalance`](#0xc8_treasury_rebalance)
 -  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
 -  [Function `get_total_supply`](#0xc8_treasury_get_total_supply)
+-  [Function `get_busd_supply_mut`](#0xc8_treasury_get_busd_supply_mut)
 -  [Function `one_coin_rebalance_internal`](#0xc8_treasury_one_coin_rebalance_internal)
 -  [Function `one_coin_bfc_required`](#0xc8_treasury_one_coin_bfc_required)
 -  [Function `one_coin_exchange_rate`](#0xc8_treasury_one_coin_exchange_rate)
+-  [Function `withdraw_balance`](#0xc8_treasury_withdraw_balance)
+-  [Function `increase_other_stablecoin_balance`](#0xc8_treasury_increase_other_stablecoin_balance)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -228,6 +236,15 @@ title: Module `0xc8::treasury`
 
 
 
+<a name="0xc8_treasury_ERR_UNSUPPORTED_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bfc-system/treasury.md#0xc8_treasury_ERR_UNSUPPORTED_BUSD">ERR_UNSUPPORTED_BUSD</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 106;
+</code></pre>
+
+
+
 <a name="0xc8_treasury_ERR_ZERO_AMOUNT"></a>
 
 
@@ -351,7 +368,7 @@ title: Module `0xc8::treasury`
 
 
 
-<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _vault_key: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -360,7 +377,7 @@ title: Module `0xc8::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_check_vault">check_vault</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>, _vault_key: String) {
     <b>assert</b>!(
         <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field_exists_">dynamic_field::exists_</a>(
             &_treasury.id,
@@ -474,6 +491,88 @@ title: Module `0xc8::treasury`
     <a href="../bfc-system/vault.md#0xc8_vault_vault_info">vault::vault_info</a>(
         <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_vault">borrow_vault</a>&lt;StableCoinType&gt;(_treasury, <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;())
     )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_mint_stable"></a>
+
+## Function `mint_stable`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_mint_stable">mint_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+                                                amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+                                                ctx: &<b>mut</b> TxContext): Coin&lt;StableCoinType&gt; {
+    <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.supplies, key);
+    <b>let</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a> = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = sui::coin::from_balance(<a href="../sui-framework/balance.md#0x2_balance">balance</a>, ctx);
+    <a href="../sui-framework/coin.md#0x2_coin">coin</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_exchange_busd_to_stable"></a>
+
+## Function `exchange_busd_to_stable`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+                                                            <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;StableCoinType&gt;) {
+    <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.supplies, key);
+    <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(supply, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>));
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_add_supply"></a>
+
+## Function `add_supply`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>, supply: Supply&lt;StableCoinType&gt;) {
+    <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.supplies, key, supply);
 }
 </code></pre>
 
@@ -992,6 +1091,7 @@ Internal swap
 
 ## Function `deposit`
 
+deprecated for v2
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_deposit">deposit</a>(_treasury: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, _coin_bfc: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
@@ -1012,6 +1112,38 @@ Internal swap
 
     <b>if</b> (!_treasury.init) {
         _treasury.init = <b>true</b>
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_deposit_v2"></a>
+
+## Function `deposit_v2`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_deposit_v2">deposit_v2</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, coin_bfc: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_deposit_v2">deposit_v2</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>, coin_bfc: Coin&lt;BFC&gt;) {
+    <b>let</b> min_amount = <a href="../bfc-system/treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
+    <b>let</b> input = <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(coin_bfc);
+    <b>let</b> input_amount = <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&input);
+    <b>assert</b>!(input_amount &gt;= min_amount, <a href="../bfc-system/treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <a href="../sui-framework/balance.md#0x2_balance_join">balance::join</a>(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.bfc_balance, input);
+
+    <b>if</b> (!<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.init) {
+        <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.init = <b>true</b>
     }
 }
 </code></pre>
@@ -1055,7 +1187,7 @@ Internal swap
 
 ## Function `bfc_required`
 
-Rebalance
+Rebalance, deprecated for v2
 
 
 <pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_bfc_required">bfc_required</a>(_treasury: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
@@ -1089,6 +1221,39 @@ Rebalance
         <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BARS&gt;(_treasury, treasury_total_bfc_supply);
 
     <b>let</b> get_treasury_balance = <a href="../bfc-system/treasury.md#0xc8_treasury_get_balance">get_balance</a>(_treasury);
+    <b>if</b> (total &gt; get_treasury_balance) {
+        total - get_treasury_balance
+    } <b>else</b> {
+        0
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_bfc_required_v2"></a>
+
+## Function `bfc_required_v2`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_bfc_required_v2">bfc_required_v2</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> treasury_total_bfc_supply = <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.total_bfc_supply;
+
+    <b>let</b> total = <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_bfc_required">one_coin_bfc_required</a>&lt;BUSD&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, treasury_total_bfc_supply);
+
+    <b>let</b> get_treasury_balance = <a href="../bfc-system/treasury.md#0xc8_treasury_get_balance">get_balance</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
     <b>if</b> (total &gt; get_treasury_balance) {
         total - get_treasury_balance
     } <b>else</b> {
@@ -1170,23 +1335,7 @@ Rebalance
     _treasury.updated_at = current_ts;
     <b>let</b> <b>mut</b> bfc_in_vault = 0;
     <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;MGG&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;MGG&gt;(), _ctx);
     bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BUSD&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BUSD&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BJPY&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BJPY&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BKRW&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BKRW&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BAUD&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BAUD&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BARS&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BARS&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BBRL&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BBRL&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BCAD&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BCAD&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BEUR&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BEUR&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BGBP&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BGBP&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BIDR&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BIDR&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BINR&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BINR&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BRUB&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BRUB&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BSAR&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BSAR&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BTRY&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BTRY&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BZAR&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BZAR&gt;(), _ctx);
-    bfc_in_vault = bfc_in_vault + <a href="../bfc-system/treasury.md#0xc8_treasury_one_coin_rebalance_internal">one_coin_rebalance_internal</a>&lt;BMXN&gt;(_treasury, _update, key != <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;BMXN&gt;(), _ctx);
     _treasury.total_bfc_supply = _pool_balance + bfc_in_vault + <a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&_treasury.bfc_balance);
 }
 </code></pre>
@@ -1365,6 +1514,36 @@ Rebalance
 
 </details>
 
+<a name="0xc8_treasury_get_busd_supply_mut"></a>
+
+## Function `get_busd_supply_mut`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(self: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="../bfc-system/busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(
+    self: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>
+): &<b>mut</b> Supply&lt;BUSD&gt; {
+    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(
+        &<b>mut</b> self.supplies,
+        std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD")
+    );
+    supply
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xc8_treasury_one_coin_rebalance_internal"></a>
 
 ## Function `one_coin_rebalance_internal`
@@ -1485,6 +1664,64 @@ Rebalance
         key,
         <a href="../bfc-system/vault.md#0xc8_vault_calculated_swap_result_amount_out">vault::calculated_swap_result_amount_out</a>(&<a href="../bfc-system/treasury.md#0xc8_treasury_calculate_swap_result">calculate_swap_result</a>&lt;StableCoinType&gt;(_treasury, <b>true</b>, _amount)),
     );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_withdraw_balance"></a>
+
+## Function `withdraw_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_withdraw_balance">withdraw_balance</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_withdraw_balance">withdraw_balance</a>(
+    <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+): Balance&lt;BFC&gt; {
+    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance_value">balance::value</a>(&<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.bfc_balance) &gt;= amount, <a href="../bfc-system/treasury.md#0xc8_treasury_ERR_INSUFFICIENT">ERR_INSUFFICIENT</a>);
+    <a href="../sui-framework/balance.md#0x2_balance_split">balance::split</a>(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.bfc_balance, amount)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_increase_other_stablecoin_balance"></a>
+
+## Function `increase_other_stablecoin_balance`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_increase_other_stablecoin_balance">increase_other_stablecoin_balance</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;StableCoinType&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_increase_other_stablecoin_balance">increase_other_stablecoin_balance</a>&lt;StableCoinType&gt;(
+    <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,
+    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: Balance&lt;StableCoinType&gt;,
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() != std::type_name::get&lt;BUSD&gt;(), <a href="../bfc-system/treasury.md#0xc8_treasury_ERR_UNSUPPORTED_BUSD">ERR_UNSUPPORTED_BUSD</a>);
+    <b>let</b> vault_key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+    <b>let</b> mut_vault = <a href="../bfc-system/treasury.md#0xc8_treasury_borrow_mut_vault">borrow_mut_vault</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, vault_key);
+    <a href="../bfc-system/vault.md#0xc8_vault_increase_coin_a">vault::increase_coin_a</a>(mut_vault, <a href="../sui-framework/balance.md#0x2_balance">balance</a>)
 }
 </code></pre>
 

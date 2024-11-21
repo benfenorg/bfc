@@ -21,7 +21,7 @@ title: Module `0xc8::auth_utils`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
 </code></pre>
 
 
@@ -30,8 +30,8 @@ title: Module `0xc8::auth_utils`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &String): bool {
-    <b>let</b> sub = <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 9);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_has_mint_busd">has_mint_busd</a>(s: &String): bool {
+    <b>let</b> sub = <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 9);
     std::string::bytes(&sub) == b"MINT-BUSD"
 }
 </code></pre>
@@ -46,7 +46,7 @@ title: Module `0xc8::auth_utils`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">has_mint_other_stablecoin</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">has_mint_other_stablecoin</a>(s: &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
 </code></pre>
 
 
@@ -55,8 +55,8 @@ title: Module `0xc8::auth_utils`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">has_mint_other_stablecoin</a>(s: &String): bool {
-    <b>let</b> sub = <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 21);
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_has_mint_other_stablecoin">has_mint_other_stablecoin</a>(s: &String): bool {
+    <b>let</b> sub = <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_substring">substring</a>(*s, 0, 21);
     std::string::bytes(&sub) == b"MINT-OTHER-STABLECOIN"
 }
 </code></pre>
@@ -71,7 +71,7 @@ title: Module `0xc8::auth_utils`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(s: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, start: u64, end: u64): <a href="../move-stdlib/string.md#0x1_string_String">string::String</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_substring">substring</a>(s: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, start: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, end: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/string.md#0x1_string_String">string::String</a>
 </code></pre>
 
 
@@ -80,7 +80,7 @@ title: Module `0xc8::auth_utils`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="auth_utils.md#0xc8_auth_utils_substring">substring</a>(s: String, start: u64, end: u64): std::string::String {
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/auth_utils.md#0xc8_auth_utils_substring">substring</a>(s: String, start: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, end: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): std::string::String {
     <b>let</b> str_std = std::string::from_ascii(s);
     <b>if</b> (start &gt;= end || end &gt; std::string::length(&str_std)) {
         <b>return</b> std::string::from_ascii(std::ascii::string(b""))

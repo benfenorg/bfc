@@ -900,21 +900,6 @@ impl AuthorityState {
             &receiving_objects_refs,
             epoch_store.epoch(),
         )?;
-        let (input_objects, receiving_objects) = self
-            .input_loader
-            .read_objects_for_signing(
-                tx_digest,
-                &input_object_kinds,
-                &receiving_objects_refs,
-                epoch_store.epoch(),
-            )
-            .await?;
-
-        let (stable_rate, base_point) = if !tx_data.is_system_txn() {
-            self.get_stable_rate_and_base_points(transaction.gas()).await?
-        } else {
-            (None, None)
-        };
 
         let (_gas_status, checked_input_objects) = sui_transaction_checks::check_transaction_input(
             epoch_store.protocol_config(),
@@ -2394,10 +2379,7 @@ impl AuthorityState {
                 else {
                     panic!("tx_digest={:?}, error processing object owner index, cannot find owner for object {:?} at version {:?}", tx_digest, id, old_version);
                 };
-                let Some(old_object) = self.execution_cache.get_object_by_key(id, *old_version)?
-                else {
-                    panic!("tx_digest={:?}, error processing object owner index, cannot find owner for object {:?} at version {:?}", tx_digest, id, old_version);
-                };
+
                 if old_object.owner != owner {
                     match old_object.owner {
                         Owner::AddressOwner(addr) => {
@@ -3445,7 +3427,7 @@ impl AuthorityState {
     }
 
     pub fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice> {
-        self.execution_cache.get_oracle_price_by_id(id)
+        self.get_object_cache_reader().get_oracle_price_by_id(id)
     }
 
     pub fn get_bfc_system_state(&self) -> SuiResult<BFCSystemState> {
@@ -4507,10 +4489,6 @@ impl AuthorityState {
                 binary_config,
             )
             .await
-            else {
-                return vec![];
-            };
-                .await
             else {
                 return vec![];
             };
