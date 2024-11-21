@@ -336,11 +336,13 @@ pub type TrustedCheckpoint = TrustedEnvelope<CheckpointSummary, AuthorityStrongQ
 impl CertifiedCheckpointSummary {
     pub fn verify_authority_signatures(&self, committee: &Committee) -> SuiResult {
         self.data().verify_epoch(self.auth_sig().epoch)?;
-        self.auth_sig().verify_secure(
+        let j = self.auth_sig().verify_secure(
             self.data(),
             Intent::sui_app(IntentScope::CheckpointSummary),
             committee,
-        )
+        );
+        println!("verify_authority_signatures {:?}", j);
+        j
     }
 
     pub fn try_into_verified(self, committee: &Committee) -> SuiResult<VerifiedCheckpoint> {
@@ -353,9 +355,13 @@ impl CertifiedCheckpointSummary {
         committee: &Committee,
         contents: Option<&CheckpointContents>,
     ) -> SuiResult {
+        println!("suitype verify_with_contents 1");
         self.verify_authority_signatures(committee)?;
+        println!("suitype verify_with_contents 2");
 
         if let Some(contents) = contents {
+            println!("suitype verify_with_contents 3");
+
             let content_digest = *contents.digest();
             fp_ensure!(
                 content_digest == self.data().content_digest,

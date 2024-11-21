@@ -572,6 +572,7 @@ impl SuiAuthoritySignature for AuthoritySignature {
     where
         T: Serialize,
     {
+        println!("kitty verify_secure 1");
         let mut message = bcs::to_bytes(&value).expect("Message serialization should not fail");
         epoch.write(&mut message);
 
@@ -999,6 +1000,8 @@ impl<S: SuiSignatureInner + Sized> SuiSignature for S {
     where
         T: Serialize,
     {
+        println!("kitty verify_secure 2");
+
         let mut hasher = DefaultHash::default();
         hasher.update(bcs::to_bytes(&value).expect("Message serialization should not fail"));
         let digest = hasher.finalize().digest;
@@ -1083,6 +1086,8 @@ impl AuthoritySignInfoTrait for AuthoritySignInfo {
         intent: Intent,
         committee: &Committee,
     ) -> SuiResult<()> {
+        println!("kitty verify_secure 9");
+
         let mut obligation = VerificationObligation::default();
         let idx = obligation.add_message(data, self.epoch, intent);
         self.add_to_verification_obligation(committee, &mut obligation, idx)?;
@@ -1252,6 +1257,8 @@ impl<const STRONG_THRESHOLD: bool> AuthoritySignInfoTrait
         intent: Intent,
         committee: &Committee,
     ) -> SuiResult {
+        println!("kitty verify_secure 7");
+
         let mut obligation = VerificationObligation::default();
         let idx = obligation.add_message(data, self.epoch, intent);
         self.add_to_verification_obligation(committee, &mut obligation, idx)?;

@@ -107,8 +107,10 @@ pub fn verify_proof(committee: &Committee, proof: &Proof) -> anyhow::Result<()> 
         .as_ref()
         .map(|x| &x.checkpoint_contents);
 
+    println!("liqiong verify_proof 1");
     // Verify the checkpoint summary using the committee
     summary.verify_with_contents(committee, contents_ref)?;
+    println!("liqiong verify_proof 2");
 
     // MILESTONE 1 : summary and contents is correct
     // Note: this is unconditional on the proof targets, and always checked.
@@ -140,6 +142,7 @@ pub fn verify_proof(committee: &Committee, proof: &Proof) -> anyhow::Result<()> 
     }
 
     // MILESTONE 2: committee if requested is correct
+    println!("liqiong verify_proof 3");
 
     // Non empty object or event targets require the optional contents proof
     // If it is not present return an error

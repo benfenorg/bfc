@@ -204,7 +204,7 @@ async fn test_fail_incorrect_cert() {
 
 #[tokio::test]
 async fn test_object_target_fail_no_data() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
 
     let sample_object: Object = full_checkpoint.transactions[0].output_objects[0].clone();
     let sample_ref = sample_object.compute_object_reference();
@@ -298,7 +298,7 @@ async fn test_event_target_success() {
 
 #[tokio::test]
 async fn test_event_target_fail_bad_event() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
 
     let sample_event: Event = full_checkpoint.transactions[1]
         .events
