@@ -840,8 +840,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
 
     do_move_call(http_client, gas, address, &cluster, package_id, module.clone(), function.clone(), arg).await?;
 
-
-    let coin_obj = objects.get(3).unwrap().object().unwrap();
+    let coin_obj = objects.get(2).unwrap().object().unwrap();
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
@@ -969,7 +968,12 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
         .await?
         .data;
 
-    let payment = objects.get(2).unwrap().object().unwrap();
+    let mut i = 1;
+    let mut payment = objects.get(i).unwrap().object().unwrap();
+    while &payment.object_id == &gas.object_id {
+        i = i + 1;
+        payment = objects.get(i).unwrap().object().unwrap();
+    }
     let arg = vec![
         SuiJsonValue::from_str(&payment.object_id.to_string())?,
     ];
