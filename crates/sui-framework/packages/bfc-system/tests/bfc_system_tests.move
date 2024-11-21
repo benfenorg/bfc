@@ -23,7 +23,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_REBALANCE_NOT_BUSD,
         BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
-        BfcSystemAdminCap, ERR_SET_CONFIG_UNAUTHORIZED, ERR_MINT_AMOUNT_ZERO, ERR_MINT_UNAUTHORIZED
+        BfcSystemAdminCap, ERR_SET_CONFIG_UNAUTHORIZED, ERR_MINT_AMOUNT_ZERO, ERR_MINT_UNAUTHORIZED, ERR_MINT_OPERATION_UNAUTHORIZED
     };
 
     use bfc_system::busd;
@@ -808,6 +808,24 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::remove_operation_capability(&mut system_state, &admin_cap,
             MINT_BUSD_WRONG_KEY, tx_context::sender(ctx), ctx);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
         let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
         coin::burn_for_testing(coin);
 
