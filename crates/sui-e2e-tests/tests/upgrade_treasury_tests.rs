@@ -55,7 +55,6 @@ async fn sim_set_oracle_price_address_by_cli_success() -> Result<(), anyhow::Err
     Ok(())
 }
 
-
 #[sim_test]
 async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
     // init
@@ -165,7 +164,6 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
     let args = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::new(json!(100u64.to_string()))?,
-        SuiJsonValue::from_str(&test_cluster.get_address_1().to_string())?,
         SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
     ];
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -173,8 +171,8 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_busd".to_string(),
-            vec![],
+            "mint_stable_entry".to_string(),
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             None,
             10_000_00000.into(),
@@ -199,7 +197,7 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
 }
 
 #[sim_test]
-async fn sim_test_mint_busd_with_wrong_key() -> Result<(), anyhow::Error> {
+async fn sim_test_mint_busd_with_operation_unauthorized() -> Result<(), anyhow::Error> {
     // init
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(6000)
@@ -277,7 +275,6 @@ async fn sim_test_mint_busd_with_wrong_key() -> Result<(), anyhow::Error> {
     let args = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::new(json!(100u64.to_string()))?,
-        SuiJsonValue::from_str(&test_cluster.get_address_1().to_string())?,
         SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
     ];
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -285,8 +282,8 @@ async fn sim_test_mint_busd_with_wrong_key() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_busd".to_string(),
-            vec![],
+            "mint_stable_entry".to_string(),
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             None,
             10_000_00000.into(),
@@ -389,7 +386,6 @@ async fn sim_test_mint_busd_with_zero() -> Result<(), anyhow::Error> {
     let args = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::new(json!(0u64.to_string()))?,
-        SuiJsonValue::from_str(&test_cluster.get_address_1().to_string())?,
         SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
     ];
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -397,8 +393,8 @@ async fn sim_test_mint_busd_with_zero() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_busd".to_string(),
-            vec![],
+            "mint_stable_entry".to_string(),
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             None,
             10_000_00000.into(),
@@ -500,7 +496,6 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
     let args = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::new(json!(100u64.to_string()))?,
-        SuiJsonValue::from_str(&test_cluster.get_address_1().to_string())?,
         SuiJsonValue::from_str(&modify_cap.object_id.to_string())?,
     ];
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -508,8 +503,8 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "mint_busd".to_string(),
-            vec![],
+            "mint_stable_entry".to_string(),
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             None,
             10_000_00000.into(),
