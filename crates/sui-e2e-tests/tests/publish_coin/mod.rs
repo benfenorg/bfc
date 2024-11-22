@@ -1,11 +1,13 @@
 use std::path::PathBuf;
 use anyhow::Error;
+use jsonrpsee::http_client::HttpClient;
 use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
-use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponseQuery, SuiTransactionBlockEffects};
+use sui_json_rpc_api::IndexerApiClient;
+use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects};
 use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
-use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestCluster;
 
@@ -49,8 +51,8 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
 
     let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
     assert!(effects.status.is_ok());
-    // assert_eq!(effects.gas_object().object_id(), gas_obj_id);
-    let cap = effects.created.get(2).unwrap().reference.to_object_ref();
+    let cap = get_cap(&test_cluster.rpc_client().clone(), address).await?;
+    let cap_obj_ref = cap.object().unwrap().object_ref();
     let mut published = vec![];
     let obj_changed = &response.object_changes.unwrap();
     for obj in obj_changed {
@@ -60,7 +62,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
         };
     }
     let package = published.first().unwrap();
-    Ok((cap, package.object_id()))
+    Ok((cap_obj_ref, package.object_id()))
 }
 
 async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID,path:&str) -> Result<SuiClientCommandResult, Error> {
@@ -109,4 +111,46 @@ async fn make_mint_test_coin_transaction(
             .call_mint_test_coin(package_id,treasury_cap,amount,*recipient)
             .build(),
     )
+}
+
+//默认返回第一个TreasuryCap
+async fn get_cap(http_client: &HttpClient, address: SuiAddress) -> Result<SuiObjectResponse, anyhow::Error> {
+    let objects = get_coin_object(http_client, address).await?;
+    let cap = objects.into_iter().find(|ele| {
+        if let Some(data) = &ele.data {
+            if let Some(ObjectType::Struct(tp)) = &data.type_ {
+                if tp.name().to_string() == "TreasuryCap" {
+                    return true;
+                }
+            }
+        }
+        false
+    });
+    if let Some(cap) = cap {
+        Ok(cap)
+    } else {
+        Err(anyhow::anyhow!("no cap found"))
+    }
+}
+
+async fn get_coin_object(http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
+    let data_option = SuiObjectDataOptions::new()
+        .with_type()
+        .with_owner()
+        .with_previous_transaction()
+        .with_content();
+    let objects = http_client
+        .get_owned_objects(
+            address,
+            Some(SuiObjectResponseQuery::new(
+                None,
+                Some(data_option),
+            )),
+            None,
+            None,
+        )
+        .await?
+        .data;
+    // println!("objects {:?}",objects);
+    Ok(objects)
 }
