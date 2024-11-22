@@ -25,10 +25,23 @@ module test_oracle_price::test_oracle {
                 coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
             6400000,
             );
+        // Illegal data  
         price_map.insert(PriceIdentifier { 
                 coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::error::ERROR", 
                 coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
-            6400000,
+            1000,
+            );
+        // Illegal data  
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            1000,
+            );
+                // Illegal data  
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" }, 
+            1000,
             );
         dynamic_field::add(&mut uid, b"Test oracle price", price_map);
 

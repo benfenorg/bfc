@@ -207,7 +207,7 @@ async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
     println!("bfc_sys_state.get_oracle_address(): {:#?}", &bfc_sys_state.get_oracle_address().unwrap());
     let price = state.get_oracle_price_by_id(ObjectID::from(bfc_sys_state.get_oracle_address().unwrap())).unwrap();
     println!("price: {:?}", price);
-    assert!(price.value.len() > 0);
+    assert!(price.value.contents.len() > 0);
 }
 
 async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: String) -> Result<(), Error> {

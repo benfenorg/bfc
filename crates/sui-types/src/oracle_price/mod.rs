@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use std::string::FromUtf8Error;
+use crate::collection_types::VecMap;
 use jsonrpsee::core::Serialize;
 use serde::Deserialize;
 use crate::base_types::ObjectID;
@@ -35,22 +35,28 @@ impl PriceIdentifier {
 pub struct OraclePrice {
     pub id: UID,
     pub name: Vec<u8>,
-    pub value: HashMap<PriceIdentifier, u64>,
+    pub value: VecMap<PriceIdentifier, u64>,
 }
 
 impl OraclePrice {
     pub fn get_price(&self, id: &PriceIdentifier) -> Option<u64> {
-        self.value.get(id).cloned()
+        for e in self.value.contents.iter() {
+            if e.key == *id {
+               return Some(e.value)
+            }
+        }
+
+        None
     }
 
     pub fn to_exchange_rate_against_busd(&self) -> (Vec<String>, Vec<u64>) {
         let mut data: Vec<(String, u64)> = vec![];
-        for (key, value) in self.value.iter() {
-            let coin_type_a = String::from_utf8(key.coin_type_a.clone()).unwrap();
-            let coin_type_b = String::from_utf8(key.coin_type_b.clone()).unwrap();
+        for e in self.value.contents.iter() {
+            let coin_type_a = String::from_utf8(e.key.coin_type_a.clone()).unwrap();
+            let coin_type_b = String::from_utf8(e.key.coin_type_b.clone()).unwrap();
 
             if coin_type_b == BUSD_COIN_TYPE {
-                data.push((coin_type_a, *value));
+                data.push((coin_type_a, e.value));
             }
         }
 
@@ -103,13 +109,13 @@ mod test {
         let name = String::from_utf8(result.name.clone()).unwrap();
         println!("{:?}", name);
         assert_eq!(name, "fx_price_data");
-        result.value.iter().for_each(|(k, v)| {
+        result.value.contents.iter().for_each(|e| {
             // 00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR
-            let coin_type_a = k.coin_type_a_string().unwrap();
+            let coin_type_a = e.key.coin_type_a_string().unwrap();
             // 00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD
-            let coin_type_b = k.coin_type_b_string().unwrap();
+            let coin_type_b = e.key.coin_type_b_string().unwrap();
             println!("{}/{}", coin_type_a, coin_type_b);
-            println!("{}", v);
+            println!("{}", e.value);
         });
         assert_eq!(
             result.get_price(&PriceIdentifier::new(
