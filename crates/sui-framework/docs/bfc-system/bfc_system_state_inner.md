@@ -824,7 +824,7 @@ Errors
 ) {
     // check
     <b>if</b> (<a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector) != <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_rate_vector)) {
-        <b>abort</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>
+        <b>return</b>
     };
 
     _ = round;
@@ -847,7 +847,8 @@ Errors
     <b>while</b> (i &lt; len) {
         <b>let</b> stable_type_name = stable_type_name_vector[i];
         <b>let</b> rate_against_busd = stable_rate_vector[i];
-        <b>if</b> (<a href="treasury.md#0xc8_treasury_has_vault">treasury::has_vault</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_type_name)) {
+        <b>if</b> (<a href="treasury.md#0xc8_treasury_has_vault">treasury::has_vault</a>(&inner.<a href="treasury.md#0xc8_treasury">treasury</a>, stable_type_name) &&
+                        stable_type_name != busd_vault_key) {
             <b>if</b> (inner.stable_rate.contains(&stable_type_name)) {
                 inner.stable_rate.remove(&stable_type_name);
             };
