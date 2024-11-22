@@ -50,7 +50,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
     let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
     assert!(effects.status.is_ok());
     // assert_eq!(effects.gas_object().object_id(), gas_obj_id);
-    let cap = effects.created.get(2).unwrap().reference.to_object_ref();
+    let cap = effects.created.get(1).unwrap().reference.to_object_ref();
     let mut published = vec![];
     let obj_changed = &response.object_changes.unwrap();
     for obj in obj_changed {
