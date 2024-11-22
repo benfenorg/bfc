@@ -74,7 +74,7 @@ async fn sim_get_rate_map_after_set_oracle_price_by_bfc_round_v2() -> Result<(),
     upgrade_treasury_tests::setup_auth(&test_cluster).await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
-    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
+    let package = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
 
     let mut beur_rate: u64 = 0;
     test_cluster
@@ -161,7 +161,7 @@ async fn sim_get_oracle_price() -> Result<(), Error> {
     upgrade_treasury_tests::setup_auth(&test_cluster).await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
-    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
+    let package = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
 
     check_oracle_price(&mut test_cluster, package).await;
     Ok(())

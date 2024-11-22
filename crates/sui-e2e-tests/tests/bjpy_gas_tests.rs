@@ -71,7 +71,7 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     let mut  http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
     // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
-    let (_, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
+    let package = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     //add oracle price
     get_bjpy(&test_cluster, &mut http_client, address).await?;
@@ -122,8 +122,8 @@ async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
         .await;
     let mut http_client = test_cluster.rpc_client().clone();
     let address = test_cluster.get_address_0();
-    let (cap, package) = publish_coin::do_publish(&mut test_cluster,"tests/test_coin_code").await?;
-    publish_coin::do_mint(&mut test_cluster, cap, package).await;
+    let package= publish_coin::do_publish(&mut test_cluster,"tests/test_coin_code").await?;
+    publish_coin::do_mint(&mut test_cluster, package).await;
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     sleep(Duration::from_secs(10)).await;
     let filter=format!("{}{}{}","0x2::coin::Coin<",package,"::test_coin::TEST_COIN>");

@@ -14,7 +14,7 @@ use test_cluster::TestCluster;
 
 
 
-pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(ObjectRef, ObjectID), Error> {
+pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<ObjectID, Error> {
     let address = test_cluster.get_address_0();
 
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -51,8 +51,8 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
 
     let SuiTransactionBlockEffects::V1(effects) = response.effects.unwrap();
     assert!(effects.status.is_ok());
-    let cap = get_cap(&test_cluster.rpc_client().clone(), address).await?;
-    let cap_obj_ref = cap.object().unwrap().object_ref();
+    // let cap = get_cap(&test_cluster.rpc_client().clone(), address).await?;
+    // let cap_obj_ref = cap.object().unwrap().object_ref();
     let mut published = vec![];
     let obj_changed = &response.object_changes.unwrap();
     for obj in obj_changed {
@@ -62,7 +62,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
         };
     }
     let package = published.first().unwrap();
-    Ok((cap_obj_ref, package.object_id()))
+    Ok(package.object_id())
 }
 
 async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID,path:&str) -> Result<SuiClientCommandResult, Error> {
@@ -82,7 +82,7 @@ async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &Ob
 }
 
 
-pub async fn do_mint(test_cluster: &mut TestCluster, cap: ObjectRef, package: ObjectID) {
+pub async fn do_mint(test_cluster: &mut TestCluster, package: ObjectID) {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
     let gas = context
@@ -90,7 +90,9 @@ pub async fn do_mint(test_cluster: &mut TestCluster, cap: ObjectRef, package: Ob
         .await
         .unwrap()
         .unwrap();
-    let mint_tx = make_mint_test_coin_transaction(context, address, gas, package, cap, 10000000000000).await;
+    let cap = get_cap(&test_cluster.rpc_client().clone(), address).await;
+    let cap_obj_ref = cap.unwrap().object().unwrap().object_ref();
+    let mint_tx = make_mint_test_coin_transaction(context, address, gas, package, cap_obj_ref, 10000000000000).await;
     test_cluster.execute_transaction(mint_tx).await;
 }
 
