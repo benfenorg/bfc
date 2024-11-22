@@ -1016,9 +1016,6 @@ mod checked {
             discard = true;
         }
 
-        // todo to be deleted
-        println!("protocol_verison={:?}, next_version={:?}", protocol_config.version, change_epoch.protocol_version );
-
         let obc_params = ChangeObcRoundParams {
             epoch: change_epoch.epoch,
             stable_gas_summarys: change_epoch.stable_gas_summarys.clone(),
