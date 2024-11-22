@@ -2782,7 +2782,7 @@ async fn swap_bfc_to_stablecoin_v2(
     http_client: &HttpClient,
     address: SuiAddress,
     amount: u64,
-    f: bool,
+    f: bool, // 对应取swap_bfc_to_stablecoin_with_tag中coin的方式 true - last ；false - first。有一个单测需要拿first
 ) -> Result<(), anyhow::Error> {
     swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, amount,
                                     SuiTypeTag::new("0xc8::busd::BUSD".to_string()), f).await?;
