@@ -53,7 +53,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(7,0)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(3,0)
 deleted: object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 17214000,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
+gas summary: computation_cost: 1000000, storage_cost: 27534800,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
 
 task 8, line 36:
 //# create-checkpoint
@@ -109,13 +109,13 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IEgjmxN7UfF7x+Pbhr7WELqmhaA1mCQ09YEkawh7t2eNBAAAAAAAAAA=",
+            "cursor": "IADxrrhBTsXwiVvm1zKNBmH4wAw0yJn6XcofMoYjijfjBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           },
           {
-            "cursor": "IHnOBoAbaRYIoX8K9E+76MEjKtPIm9kswP3e35ncNhKbBAAAAAAAAAA=",
+            "cursor": "IIL65DpjqjHHyN/KLkThOwtMycn+/HyDlbj2LqQRKCVgBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -159,36 +159,36 @@ Response: {
   "data": {
     "coins_after_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": []
+        "edges": [
+          {
+            "cursor": "IIL65DpjqjHHyN/KLkThOwtMycn+/HyDlbj2LqQRKCVgAwAAAAAAAAA=",
+            "node": {
+              "principal": "10000000000"
+            }
+          }
+        ]
       }
     },
     "coins_before_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": [
-          {
-            "cursor": "IEgjmxN7UfF7x+Pbhr7WELqmhaA1mCQ09YEkawh7t2eNAwAAAAAAAAA=",
-            "node": {
-              "principal": "10000000000"
-            }
-          }
-        ]
+        "edges": []
       }
     },
     "coins_after_obj_7_0_chkpt_3": {
       "stakedSuis": {
+        "edges": []
+      }
+    },
+    "coins_before_obj_7_0_chkpt_3": {
+      "stakedSuis": {
         "edges": [
           {
-            "cursor": "IHnOBoAbaRYIoX8K9E+76MEjKtPIm9kswP3e35ncNhKbAwAAAAAAAAA=",
+            "cursor": "IADxrrhBTsXwiVvm1zKNBmH4wAw0yJn6XcofMoYjijfjAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           }
         ]
-      }
-    },
-    "coins_before_obj_7_0_chkpt_3": {
-      "stakedSuis": {
-        "edges": []
       }
     }
   }
