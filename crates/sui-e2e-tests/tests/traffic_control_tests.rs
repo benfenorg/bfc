@@ -13,7 +13,6 @@ use jsonrpsee::{
 use std::fs::File;
 use std::num::NonZeroUsize;
 use std::time::Duration;
-use tracing::info;
 use sui_core::traffic_controller::{
     nodefw_test_server::NodeFwTestServer, TrafficController, TrafficSim,
 };
