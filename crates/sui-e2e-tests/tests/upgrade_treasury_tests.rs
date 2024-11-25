@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use jsonrpsee::http_client::HttpClient;
-use serde_json::json;
+use serde_json::{json, Value};
 use std::str::FromStr;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
@@ -68,14 +68,14 @@ async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,
@@ -209,14 +209,14 @@ async fn sim_test_mint_busd_with_operation_unauthorized() -> Result<(), anyhow::
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,
@@ -320,14 +320,14 @@ async fn sim_test_mint_busd_with_zero() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,
@@ -429,16 +429,17 @@ async fn sim_test_mint_stable_with_success() -> Result<(), anyhow::Error> {
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
+
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,
@@ -541,14 +542,14 @@ async fn sim_test_mint_bjpy_with_success() -> Result<(), anyhow::Error> {
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,
@@ -644,14 +645,14 @@ pub async fn setup_auth(test_cluster: &test_cluster::TestCluster) -> Result<(), 
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client
         .move_call(
             address,
             BFC_SYSTEM_PACKAGE_ID,
             "bfc_system".to_string(),
-            "init_single_admin_capability".to_string(),
+            "init_admin_capability".to_string(),
             vec![],
             args0,
             None,

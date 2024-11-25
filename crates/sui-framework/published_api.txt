@@ -5236,9 +5236,6 @@ mint_stable
 init_admin_capability
 	public entry fun
 	0xc8::bfc_system
-init_single_admin_capability
-	public fun
-	0xc8::bfc_system
 add_admin_capability
 	public entry fun
 	0xc8::bfc_system

@@ -9,7 +9,7 @@ use sui_types::base_types::SuiAddress;
 use test_cluster::TestCluster;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID};
-use serde_json::json;
+use serde_json::{json, Value};
 use sui_json_rpc_api::{IndexerApiClient,  WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
@@ -19,13 +19,13 @@ pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpCl
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client.move_call(
         address,
         BFC_SYSTEM_PACKAGE_ID,
         "bfc_system".to_string(),
-        "init_single_admin_capability".to_string(),
+        "init_admin_capability".to_string(),
         vec![],
         args0,
         None,
@@ -56,13 +56,13 @@ pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClien
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
-        SuiJsonValue::new(json!(address.to_string()))?,
+        SuiJsonValue::new(Value::Array(vec![json!(address.to_string())]))?,
     ];
     let transaction_bytes0: TransactionBlockBytes = http_client.move_call(
         address,
         BFC_SYSTEM_PACKAGE_ID,
         "bfc_system".to_string(),
-        "init_single_admin_capability".to_string(),
+        "init_admin_capability".to_string(),
         vec![],
         args0,
         None,

@@ -1172,8 +1172,6 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::init_admin_capability(&mut system_state, test_addresses, ctx);
 
-        bfc_system::init_single_admin_capability(&mut system_state, test_address, ctx);
-
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }

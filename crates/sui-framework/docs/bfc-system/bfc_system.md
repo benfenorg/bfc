@@ -47,7 +47,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
 -  [Function `init_admin_capability`](#0xc8_bfc_system_init_admin_capability)
--  [Function `init_single_admin_capability`](#0xc8_bfc_system_init_single_admin_capability)
 -  [Function `add_admin_capability`](#0xc8_bfc_system_add_admin_capability)
 -  [Function `remove_admin_capability`](#0xc8_bfc_system_remove_admin_capability)
 -  [Function `swap_bfc_to_stablecoin`](#0xc8_bfc_system_swap_bfc_to_stablecoin)
