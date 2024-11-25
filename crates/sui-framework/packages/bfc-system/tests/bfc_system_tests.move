@@ -8,6 +8,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::busd::BUSD;
     use bfc_system::bjpy::BJPY;
     use bfc_system::treasury;
+    use bfc_system::math_u64;
     use bfc_system::treasury::Treasury;
     use sui::object;
     use sui::test_scenario;
@@ -205,6 +206,14 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
+    fun test_math_u64_overflowing() {
+        let (_, overflowing) = math_u64::overflowing_mul(1000000000000, 1000000000000);
+        assert!(overflowing, 1);
+        let (_, overflowing) = math_u64::overflowing_mul(1, 1);
+        assert!(!overflowing, 1);
+    }
+ 
     #[test]
     fun test_round_v2_overflowing() {
        let bfc_addr = BFC_ADDR;
