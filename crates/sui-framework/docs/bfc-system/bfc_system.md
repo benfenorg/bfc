@@ -1385,31 +1385,6 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_init_single_admin_capability"></a>
-
-## Function `init_single_admin_capability`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_init_single_admin_capability">init_single_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bfc_system.md#0xc8_bfc_system_init_single_admin_capability">init_single_admin_capability</a>(wrapper: &<b>mut</b> <a href="bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> TxContext) {
-    <b>let</b> (inner_state, _ctx) = <a href="bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_bfc_system_admins">bfc_system_state_inner::init_bfc_system_admins</a>(inner_state, _ctx, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[<b>address</b>]);
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_bfc_system_add_admin_capability"></a>
 
 ## Function `add_admin_capability`
