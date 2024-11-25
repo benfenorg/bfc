@@ -34,6 +34,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
     use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap};
+    use bfc_system::math_u64;
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -242,7 +243,14 @@ module bfc_system::bfc_system_state_inner {
                 };
 
                 // oracle price decimal = 1_000_000_000
-                let rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
+                let mut rate_against_bfc = 0;
+                let (temp_rate, overflowing) = math_u64::overflowing_mul(busd_rate, rate_against_busd);
+                if (overflowing) {
+                    rate_against_bfc = math_u64::wrapping_mul(busd_rate / 1_000_000_000, rate_against_busd);
+                } else {
+                    rate_against_bfc = temp_rate / 1_000_000_000;
+                };
+                
                 inner.stable_rate.insert(stable_type_name, rate_against_bfc);
             }; 
             i = i + 1;
