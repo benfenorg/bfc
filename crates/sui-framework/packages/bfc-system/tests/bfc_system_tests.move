@@ -51,8 +51,10 @@ module bfc_system::bfc_system_tests {
 
     const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
     const MINT_BUSD_RIGHT_KEY: vector<u8> = b"MINT-BUSD-right_key";
+    const MINT_BUSD_WRONG_SHORT_KEY: vector<u8> = b"MINT-B";
     const MINT_BUSD_WRONG_KEY: vector<u8> = b"MINT-BUSD-wrong_key";
     const MINT_OTHER_STABLECOIN_RIGHT_KEY: vector<u8> = b"MINT-OTHER-STABLECOIN-right_key";
+    const MINT_OTHER_STABLECOIN_WRONG_SHORT_KEY: vector<u8> = b"MINT-OTHER-S";
     const BFC_ADDR: address = @0x0 ;
 
     #[test]
@@ -794,24 +796,6 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
-    // #[test]
-    // fun test_mint_stable_success() {
-    //     let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-    //     let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
-    //     let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
-    //
-    //     let ctx = test_scenario::ctx(&mut scenario_val);
-    //     let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
-    //     assert!(coin.value() == 100, 1);
-    //
-    //     coin::burn_for_testing(coin);
-    //     test_scenario::return_to_sender(&scenario_val, modify_cap);
-    //     test_scenario::return_to_sender(&scenario_val, admin_cap);
-    //     test_scenario::return_shared(system_state);
-    //     tearDown(scenario_val);
-    // }
-
     #[test]
     fun test_mint_bjpy_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
@@ -828,9 +812,34 @@ module bfc_system::bfc_system_tests {
         debug::print(&coin_a_amount_before);
         assert!(coin_a_amount_before == 37707208591093079, 1);
 
-
         let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, &modify_cap, ctx);
         assert!(coin.value() == 200, 1);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_mint_bjpy_success_v2() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+
+        let (treasury, _) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+        let coin_a_amount_before = treasury::get_coin_a_amount<BJPY>(treasury);
+        debug::print(&std::ascii::string(b"coin_a_amount_before"));
+        debug::print(&coin_a_amount_before);
+        assert!(coin_a_amount_before == 37707208591093079, 1);
+
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 40000000000000000, &modify_cap, ctx);
+        assert!(coin.value() == 40000000000000000, 1);
         coin::burn_for_testing(coin);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
@@ -887,6 +896,42 @@ module bfc_system::bfc_system_tests {
 
         let ctx = test_scenario::ctx(&mut scenario_val);
         let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized_v2() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_WRONG_SHORT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized_v3() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_WRONG_SHORT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 100, &modify_cap, ctx);
         coin::burn_for_testing(coin);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
