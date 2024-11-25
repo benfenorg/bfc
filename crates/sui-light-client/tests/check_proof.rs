@@ -37,9 +37,9 @@ async fn read_full_checkpoint_from_json(checkpoint_path: &PathBuf) -> anyhow::Re
     serde_json::from_str(&json).map_err(|_| anyhow!("Unable to parse checkpoint file from json"))
 }
 
-async fn read_data_test_data(path :String) -> (Committee, CheckpointData) {
+async fn read_data_test_data(committee_seq_path1 :String, committee_seq_path2 :String) -> (Committee, CheckpointData) {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push(format!("example_config/checkpoint_for_commit_checkpoint.json"));
+    d.push(format!("example_config/{}", committee_seq_path1));
     let committee_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
     let j = serde_json::to_string(&committee_checkpoint);
 
@@ -65,7 +65,7 @@ async fn read_data_test_data(path :String) -> (Committee, CheckpointData) {
     );
 
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    d.push(format!("example_config/{}", path));
+    d.push(format!("example_config/{}", committee_seq_path2));
     let full_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
 
     (committee, full_checkpoint)
@@ -108,7 +108,7 @@ async fn read_data(committee_seq: u64, seq: u64) -> (Committee, CheckpointData) 
 
 #[tokio::test]
 async fn check_can_read_test_data() {
-    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
+    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
     assert!(full_checkpoint
         .checkpoint_summary
         .end_of_epoch_data
@@ -117,7 +117,7 @@ async fn check_can_read_test_data() {
 
 #[tokio::test]
 async fn test_new_committee() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
 
     let new_committee_data = full_checkpoint
         .checkpoint_summary
@@ -152,7 +152,7 @@ async fn test_new_committee() {
 // Fail if the new committee does not match the target of the proof
 #[tokio::test]
 async fn test_incorrect_new_committee() {
-    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
 
     let committee_proof = Proof {
         checkpoint_summary: full_checkpoint.checkpoint_summary.clone(),
@@ -166,7 +166,7 @@ async fn test_incorrect_new_committee() {
 // Fail if the certificate is incorrect even if no proof targets are given
 #[tokio::test]
 async fn test_fail_incorrect_cert() {
-    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
+    let (_committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(), "checkpoint_for_test_data.json".to_string()).await;
 
     let new_committee_data = full_checkpoint
         .checkpoint_summary
@@ -204,7 +204,7 @@ async fn test_fail_incorrect_cert() {
 
 #[tokio::test]
 async fn test_object_target_fail_no_data() {
-    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
 
     let sample_object: Object = full_checkpoint.transactions[0].output_objects[0].clone();
     let sample_ref = sample_object.compute_object_reference();
@@ -220,7 +220,7 @@ async fn test_object_target_fail_no_data() {
 
 #[tokio::test]
 async fn test_object_target_success() {
-    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_target_success.json".to_string()).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
 
     let sample_object: Object = full_checkpoint.transactions[0].output_objects[0].clone();
     let sample_ref = sample_object.compute_object_reference();
@@ -232,7 +232,7 @@ async fn test_object_target_success() {
 
 #[tokio::test]
 async fn test_object_target_fail_wrong_object() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
 
     let sample_object: Object = full_checkpoint.transactions[0].output_objects[0].clone();
     let wrong_object: Object = full_checkpoint.transactions[1].output_objects[1].clone();
@@ -253,7 +253,7 @@ async fn test_object_target_fail_wrong_object() {
 
 #[tokio::test]
 async fn test_event_target_fail_no_data() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
 
     let sample_event: Event = full_checkpoint.transactions[1]
         .events
@@ -277,7 +277,7 @@ async fn test_event_target_fail_no_data() {
 
 #[tokio::test]
 async fn test_event_target_success() {
-    let (committee, full_checkpoint) = read_data(15918264, 16005062).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_3051.json".to_string(),"checkpoint_3850.json".to_string()).await;
 
     let sample_event: Event = full_checkpoint.transactions[1]
         .events
@@ -298,7 +298,7 @@ async fn test_event_target_success() {
 
 #[tokio::test]
 async fn test_event_target_fail_bad_event() {
-    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_test_data.json".to_string()).await;
+    let (committee, full_checkpoint) = read_data_test_data("checkpoint_for_commit_checkpoint.json".to_string(),"checkpoint_for_test_data.json".to_string()).await;
 
     let sample_event: Event = full_checkpoint.transactions[1]
         .events
