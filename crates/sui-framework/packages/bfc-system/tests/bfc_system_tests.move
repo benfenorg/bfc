@@ -56,6 +56,7 @@ module bfc_system::bfc_system_tests {
     const MINT_OTHER_STABLECOIN_RIGHT_KEY: vector<u8> = b"MINT-OTHER-STABLECOIN-right_key";
     const MINT_OTHER_STABLECOIN_WRONG_SHORT_KEY: vector<u8> = b"MINT-OTHER-S";
     const BFC_ADDR: address = @0x0 ;
+    const OVERFLOW_TEST_INT: u64 = 2667027000000000;
 
     #[test]
     fun print_stable_rate() {
@@ -230,12 +231,45 @@ module bfc_system::bfc_system_tests {
         let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
         let mut stable_rate_vector : vector<u64> = vector::empty();
         vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
-        vector::push_back(&mut stable_rate_vector, 2667027000000000);
+        vector::push_back(&mut stable_rate_vector, OVERFLOW_TEST_INT);
         // add beur，rate is 1000000000
         bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         debug::print(&stable_rate);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure]
+    fun test_round_v2_overflowing2() {
+       let bfc_addr = BFC_ADDR;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        // shoud overflow
+        let _  = *busd_rate * OVERFLOW_TEST_INT;
+
 
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);
