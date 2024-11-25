@@ -85,6 +85,8 @@ impl NarwhalAuthoritySignature for Signature {
     where
         T: Serialize,
     {
+        println!("kitty verify_secure 6");
+
         let message = bcs::to_bytes(&value).expect("Message serialization should not fail");
         public_key.verify(&message, self)
     }
@@ -109,6 +111,8 @@ impl NarwhalAuthorityAggregateSignature for AggregateSignature {
     where
         T: Serialize,
     {
+        println!("kitty verify_secure 3");
+
         let message = bcs::to_bytes(&value).expect("Message serialization should not fail");
         self.verify(pks, &message)
     }
