@@ -1162,6 +1162,23 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = ERR_ADMIN_ALREADY_INITED)]
+    fun test_init_admin_capability_fail_v2() {
+        let test_address = @0x639a680b36b6a02ff29061383efec63c89c8d70d642357fa6b01d2fc7f293457;
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let test_addresses = vector[test_address];
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        bfc_system::init_admin_capability(&mut system_state, test_addresses, ctx);
+
+        bfc_system::init_single_admin_capability(&mut system_state, test_address, ctx);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
     fun test_add_admin_capability_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
 
