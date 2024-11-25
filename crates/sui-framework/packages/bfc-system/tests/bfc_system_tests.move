@@ -210,8 +210,11 @@ module bfc_system::bfc_system_tests {
     fun test_math_u64_overflowing() {
         let (_, overflowing) = math_u64::overflowing_mul(1000000000000, 1000000000000);
         assert!(overflowing, 1);
+        let c = math_u64::wrapping_mul(111, 3);
+        assert!(c == 333, 2);
+
         let (_, overflowing) = math_u64::overflowing_mul(1, 1);
-        assert!(!overflowing, 1);
+        assert!(!overflowing, 3);
     }
  
     #[test]
