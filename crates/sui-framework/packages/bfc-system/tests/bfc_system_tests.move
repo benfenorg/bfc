@@ -412,6 +412,7 @@ module bfc_system::bfc_system_tests {
                 3600 * 4,
                 2000,
                 treasury_parameters,
+                0,
             ),
             ctx,
         )
@@ -722,8 +723,6 @@ module bfc_system::bfc_system_tests {
     }
 
 
-    fun setup(bfc_amount: u64, key: vector<u8>): Scenario {
-        let bfc_addr = BFC_ADDR;
     fun setup_no_skip_init_vault(bfc_amount: u64): Scenario {
         let bfc_addr = @0x0;
         let mut scenario_val = test_scenario::begin(bfc_addr);
@@ -733,8 +732,8 @@ module bfc_system::bfc_system_tests {
         scenario_val
     }
 
-    fun setup(bfc_amount: u64): Scenario {
-        let bfc_addr = @0x0;
+    fun setup(bfc_amount: u64, key: vector<u8>): Scenario {
+        let bfc_addr = BFC_ADDR;
         let mut scenario_val = test_scenario::begin(bfc_addr);
 
         test_scenario::next_tx(&mut scenario_val, bfc_addr);
@@ -827,7 +826,6 @@ module bfc_system::bfc_system_tests {
     #[test]
     fun test_deposit_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
-        let mut scenario_val = setup_no_skip_init_vault(BFC_AMOUNT);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let amount = bfc_system::next_epoch_bfc_required(&system_state);
         let bfc = balance::create_for_testing<BFC>(amount);
