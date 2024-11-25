@@ -37,7 +37,13 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<Obje
         .data;
 
     // Check log output contains all object ids.
-    let gas_obj = object_refs.first().unwrap().object().unwrap();
+    let gas_obj = object_refs.iter().find(|r: &&SuiObjectResponse| {
+        if r.data.as_ref().unwrap().type_.as_ref().unwrap().is_coin() {
+            return true;
+        }
+
+        false
+    }).unwrap().object().unwrap();
     let gas_obj_id = &gas_obj.object_id;
     //step 1: publish coin
     let resp = do_publish_inner(rgp, &mut context, gas_obj_id,path).await?;
