@@ -209,7 +209,7 @@ mod sim_only_tests {
         ProtocolConfig::poison_get_for_min_version();
 
         let test_cluster = TestClusterBuilder::new()
-            .with_epoch_duration_ms(20000)
+            .with_epoch_duration_ms(40000)
             .with_supported_protocol_version_callback(Arc::new(|idx, name| {
                 if name.is_some() && idx == 0 {
                     // first validator only does not support version 2.
