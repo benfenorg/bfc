@@ -92,7 +92,6 @@ title: Module `0xc8::bfc_system_state_inner`
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
-<b>use</b> <a href="../move-stdlib/debug.md#0x1_debug">0x1::debug</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
 <b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../sui-framework/bag.md#0x2_bag">0x2::bag</a>;
@@ -2497,8 +2496,6 @@ deprecated
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_init_bfc_system_state_v2">init_bfc_system_state_v2</a>(self: &<b>mut</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, _ctx: &<b>mut</b> TxContext) {
-    std::debug::print(&b"init_bfc_system_state_v2 begin");
-
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;MGG&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BJPY&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BKRW&gt;(self);
@@ -2515,8 +2512,6 @@ deprecated
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BTRY&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BZAR&gt;(self);
     <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_transfer_bfc_from_vault_to_treasury_pool">transfer_bfc_from_vault_to_treasury_pool</a>&lt;BMXN&gt;(self);
-
-    std::debug::print(&b"init_bfc_system_state_v2 end");
 }
 </code></pre>
 

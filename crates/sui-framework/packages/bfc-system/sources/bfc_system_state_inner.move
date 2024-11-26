@@ -792,8 +792,6 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun init_bfc_system_state_v2(self: &mut BfcSystemStateInnerV2, _ctx: &mut TxContext) {
-        std::debug::print(&b"init_bfc_system_state_v2 begin");
-
         transfer_bfc_from_vault_to_treasury_pool<MGG>(self);
         transfer_bfc_from_vault_to_treasury_pool<BJPY>(self);
         transfer_bfc_from_vault_to_treasury_pool<BKRW>(self);
@@ -810,8 +808,6 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BTRY>(self);
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
-
-        std::debug::print(&b"init_bfc_system_state_v2 end");
     }
 
     fun transfer_bfc_from_vault_to_treasury_pool<StableCoinType>(self: &mut BfcSystemStateInnerV2) {
