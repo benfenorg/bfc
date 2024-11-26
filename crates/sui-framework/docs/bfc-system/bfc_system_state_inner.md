@@ -124,6 +124,7 @@ title: Module `0xc8::bfc_system_state_inner`
 <b>use</b> <a href="btry.md#0xc8_btry">0xc8::btry</a>;
 <b>use</b> <a href="busd.md#0xc8_busd">0xc8::busd</a>;
 <b>use</b> <a href="bzar.md#0xc8_bzar">0xc8::bzar</a>;
+<b>use</b> <a href="math_u64.md#0xc8_math_u64">0xc8::math_u64</a>;
 <b>use</b> <a href="mgg.md#0xc8_mgg">0xc8::mgg</a>;
 <b>use</b> <a href="position.md#0xc8_position">0xc8::position</a>;
 <b>use</b> <a href="tick.md#0xc8_tick">0xc8::tick</a>;
@@ -854,8 +855,15 @@ Errors
             };
 
             // oracle price decimal = 1_000_000_000
-            <b>let</b> rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
-            inner.stable_rate.insert(stable_type_name, rate_against_bfc);
+            <b>let</b> <b>mut</b> _rate_against_bfc = 0;
+            <b>let</b> (temp_rate, overflowing) = <a href="math_u64.md#0xc8_math_u64_overflowing_mul">math_u64::overflowing_mul</a>(busd_rate, rate_against_busd);
+            <b>if</b> (overflowing) {
+                _rate_against_bfc = <a href="math_u64.md#0xc8_math_u64_wrapping_mul">math_u64::wrapping_mul</a>(busd_rate / 1_000_000_000, rate_against_busd);
+            } <b>else</b> {
+                _rate_against_bfc = temp_rate / 1_000_000_000;
+            };
+
+            inner.stable_rate.insert(stable_type_name, _rate_against_bfc);
         };
         i = i + 1;
     }
