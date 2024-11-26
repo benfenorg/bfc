@@ -73,6 +73,7 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     // let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let package = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    test_cluster.wait_for_epoch(Some(3)).await;
     //add oracle price
     get_bjpy(&test_cluster, &mut http_client, address).await?;
     check_oracle_price(&mut test_cluster, package).await;

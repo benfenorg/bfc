@@ -37,7 +37,7 @@ pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpCl
         .wallet
         .sign_transaction(&transaction_bytes0.to_data()?);
     let (tx_bytes0, signatures0) = tx0.to_tx_bytes_and_signatures();
-    http_client
+    let tx_response = http_client
         .execute_transaction_block(
             tx_bytes0,
             signatures0,
@@ -45,6 +45,7 @@ pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpCl
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
+    println!("auth_setup tx_response is {:?}",tx_response);
     let admin_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemAdminCap", http_client, address).await.unwrap();
     let admin_cap = admin_cap_vec.first().unwrap().object().unwrap();
     add_auth_key(test_cluster, http_client, address, &&bfc_status_address, &admin_cap,auth_key).await?;
@@ -114,7 +115,7 @@ async fn add_auth_key(test_cluster: &TestCluster, http_client: &HttpClient, addr
         .wallet
         .sign_transaction(&transaction_bytes1.to_data()?);
     let (tx_bytes1, signatures1) = tx1.to_tx_bytes_and_signatures();
-    http_client
+    let tx_response = http_client
         .execute_transaction_block(
             tx_bytes1,
             signatures1,
@@ -122,6 +123,7 @@ async fn add_auth_key(test_cluster: &TestCluster, http_client: &HttpClient, addr
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
+    println!("add_auth_key tx_response is {:?}",tx_response);
     Ok(())
 }
 
