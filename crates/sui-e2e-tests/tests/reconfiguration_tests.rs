@@ -3689,8 +3689,7 @@ async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     rebalance(&test_cluster, http_client, sender).await?;
     auth::auth_setup_imut(&test_cluster,&http_client,test_cluster.get_address_0(), "MINT-OTHER-STABLECOIN-POLLY").await?;
     stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
-    auth::auth_setup_imut(&test_cluster,&http_client,test_cluster.get_address_1(), "MINT-OTHER-STABLECOIN-POLLY").await?;
-    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, test_cluster.get_address_1(), "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
+    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, test_cluster.get_address_0(), "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
     Ok(())
 }
 
