@@ -1437,10 +1437,10 @@ async fn test_bfc_dao_update_system_package_pass() -> Result<(), anyhow::Error> 
 
 #[sim_test]
 async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
-    let start_version = 44u64;
+    let start_version = 62u64;
 
     let cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(4500000)
+        .with_epoch_duration_ms(450000)
         .with_protocol_version(ProtocolVersion::new(start_version))
         .build()
         .await;
@@ -1491,13 +1491,13 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
     ];
 
     let queue_proposal_action_function = "queue_proposal_action".to_string();
-    let _ = sleep(Duration::from_secs(60)).await;
+    let _ = sleep(Duration::from_secs(30)).await;
 
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas2 = bfc_objects.first().unwrap().object().unwrap();
 
     do_move_call(http_client, gas2, address, &cluster, package_id, module, queue_proposal_action_function, arg).await?;
-    let _ = sleep(Duration::from_secs(60)).await;
+    let _ = sleep(Duration::from_secs(30)).await;
 
 
     let destroy_terminated_proposal_function = "destroy_terminated_proposal".to_string();
@@ -1509,7 +1509,7 @@ async fn sim_test_destroy_terminated_proposal() -> Result<(), anyhow::Error> {
         SuiJsonValue::new(json!(dao.proposal_record.get(0).unwrap().proposal_uid))?,
         SuiJsonValue::from_str(&clock.to_string())?,
     ];
-    let _ = sleep(Duration::from_secs(60)).await;
+    let _ = sleep(Duration::from_secs(30)).await;
 
     let bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas3 = bfc_objects.first().unwrap().object().unwrap();
