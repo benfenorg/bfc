@@ -788,7 +788,7 @@ mod checked {
         stable_coin_rate_against_busd: Vec<u64>,
     ) -> Result<ProgrammableTransaction, ExecutionError> {
         // obc
-        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd, params)?;
+        construct_bfc_round_pt(obc_params, &mut builder, is_safe_mode, discard, stable_coin_type, stable_coin_rate_against_busd)?;
         // Step 1: Create storage and computation rewards.
         let (storage_rewards, computation_rewards) = mint_epoch_rewards_in_pt(&mut builder, params);
         // Step 2: Advance the epoch.
@@ -891,8 +891,7 @@ mod checked {
         is_safe_mode: bool,
         discard: bool,
         stable_coin_type: Vec<String>,
-        stable_coin_rate_against_busd: Vec<u64>,
-        params: &AdvanceEpochParams,
+        stable_coin_rate_against_busd: Vec<u64>
     ) -> Result<(), ExecutionError> {
         if !is_safe_mode { // if safe mode skip judge dao vote result
             let mut arguments = vec![];
@@ -903,7 +902,7 @@ mod checked {
             ];
 
             let mut bfc_round_function_name = BFC_ROUND_FUNCTION_NAME;
-            if params.next_protocol_version.as_u64() >= BFC_ROUND_V2_PROTOCOL_VERSION {
+            if param.current_protocol_version.as_u64() >= BFC_ROUND_V2_PROTOCOL_VERSION {
                 arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()));
                 arg_vec.push(CallArg::Pure(bcs::to_bytes(&stable_coin_rate_against_busd).unwrap()));
                 bfc_round_function_name = BFC_ROUND_V2_FUNCTION_NAME;
@@ -1081,6 +1080,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
             reward_rate,
             storage_rebate,
+            current_protocol_version: protocol_config.version,
         };
         let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
         let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;

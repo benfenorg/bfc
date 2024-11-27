@@ -1,7 +1,5 @@
 module test_oracle_price::test_oracle {
     use sui::dynamic_field;
-    use sui::transfer;
-    use sui::tx_context::{TxContext};
     use sui::vec_map;
 
     public struct TestOraclePrice has key, store {
@@ -26,6 +24,54 @@ module test_oracle_price::test_oracle {
                 coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY", 
                 coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
             6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::mgg::MGG", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bkrw::BKRW", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::baud::BAUD", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bbrl::BBRL", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            );
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::bcad::BCAD", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            6400000,
+            ); 
+        // Illegal data  
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::error::ERROR", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            1000,
+            );
+        // Illegal data  
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD" }, 
+            1000,
+            );
+                // Illegal data  
+        price_map.insert(PriceIdentifier { 
+                coin_type_a: b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR", 
+                coin_type_b: b"00000000000000000000000000000000000000000000000000000000000000c8::bjpy::BJPY" }, 
+            1000,
             );
         dynamic_field::add(&mut uid, b"Test oracle price", price_map);
 

@@ -566,26 +566,9 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
     }
 
-    public fun mint_busd(
-        wrapper: &mut BfcSystemState,
-        amount: u64,
-        recipient: address,
-        cap: &BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        let coin = bfc_system_state_inner::mint_busd(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
-        transfer::public_transfer(coin, recipient);
-    }
-
     public entry fun init_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         bfc_system_state_inner::init_bfc_system_admins(inner_state, _ctx, addresses);
-    }
-
-    public fun init_single_admin_capability(wrapper: &mut BfcSystemState, address: address, ctx: &mut TxContext) {
-        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::add_bfc_system_admin_cap(inner_state, _ctx, vector[address]);
     }
 
     public entry fun add_admin_capability(wrapper: &mut BfcSystemState, addresses: vector<address>, cap: &BfcSystemAdminCap, ctx: &mut TxContext) {

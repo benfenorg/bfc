@@ -34,6 +34,7 @@ module bfc_system::bfc_system_state_inner {
     use bfc_system::bzar::BZAR;
     use bfc_system::mgg::MGG;
     use bfc_system::treasury::{Self, Treasury, TreasuryPauseCap};
+    use bfc_system::math_u64;
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::vault;
@@ -58,10 +59,7 @@ module bfc_system::bfc_system_state_inner {
     /// Errors
     const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
-    const ERR_DAILY_LIMIT: u64 = 1002;
-    const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
-    const ERR_MINT_BUSD: u64 = 1005;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
     const ERR_MINT_OPERATION_UNAUTHORIZED: u64 = 1008;
@@ -69,9 +67,6 @@ module bfc_system::bfc_system_state_inner {
     const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
     const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
-
-
-    const ERR_INVALID_PARAM: u64 = 1100;
 
     //spec module { pragma verify = false; }
 
@@ -214,44 +209,48 @@ module bfc_system::bfc_system_state_inner {
     ) {
         // check
         if (vector::length(&stable_type_name_vector) != vector::length(&stable_rate_vector)) {
-            abort ERR_INVALID_PARAM
-        };
-        let len = vector::length(&stable_type_name_vector);
-        let mut i = 0;
-        while (i < len) {
-            let stable_type_name = stable_type_name_vector[i];
-            treasury::check_vault(&inner.treasury, stable_type_name);
-            i = i + 1;
+            return
         };
 
         _ = round;
         let stable_rate_map = treasury::get_exchange_rates(&inner.treasury);
         let busd_vault_key = treasury::get_vault_key<BUSD>();
         let mut busd_rate_some = stable_rate_map.try_get(&busd_vault_key);
-        if (busd_rate_some.is_some()) {
-            let busd_rate: u64 = busd_rate_some.extract();
-            // update busd rate
-            if (inner.stable_rate.contains(&busd_vault_key)) {
-                inner.stable_rate.remove(&busd_vault_key);
-                inner.stable_rate.insert(busd_vault_key, busd_rate);
-            };
 
-            // update other stable rate
-            let len = vector::length(&stable_type_name_vector);
-            let mut i = 0;
-            while (i < len) {
-                let stable_type_name = stable_type_name_vector[i];
-                let rate_against_busd = stable_rate_vector[i];
+        if (busd_rate_some.is_none()) return;
+
+        let busd_rate: u64 = busd_rate_some.extract();
+        // update busd rate
+        if (inner.stable_rate.contains(&busd_vault_key)) {
+            inner.stable_rate.remove(&busd_vault_key);
+            inner.stable_rate.insert(busd_vault_key, busd_rate);
+        };
+
+        // update other stable rate
+        let len = vector::length(&stable_type_name_vector);
+        let mut i = 0;
+        while (i < len) {
+            let stable_type_name = stable_type_name_vector[i];
+            let rate_against_busd = stable_rate_vector[i];
+            if (treasury::has_vault(&inner.treasury, stable_type_name) &&
+                stable_type_name != busd_vault_key && rate_against_busd > 0) {
                 if (inner.stable_rate.contains(&stable_type_name)) {
                     inner.stable_rate.remove(&stable_type_name);
                 };
 
                 // oracle price decimal = 1_000_000_000
-                let rate_against_bfc = busd_rate * rate_against_busd / 1_000_000_000;
-                inner.stable_rate.insert(stable_type_name, rate_against_bfc);
-                i = i + 1;
-            }
-        };
+                let mut _rate_against_bfc = 0;
+                let (temp_rate, overflowing) = math_u64::overflowing_mul(busd_rate, rate_against_busd);
+                if (overflowing) {
+                    _rate_against_bfc = math_u64::wrapping_mul(busd_rate / 1_000_000_000, rate_against_busd);
+                } else {
+                    _rate_against_bfc = temp_rate / 1_000_000_000;
+                };
+                
+                inner.stable_rate.insert(stable_type_name, _rate_against_bfc);
+            }; 
+            i = i + 1;
+        }
     }
 
     fun init_vault_with_positions<StableCoinType>(
@@ -529,7 +528,12 @@ module bfc_system::bfc_system_state_inner {
     ): Coin<StableCoinType> {
         assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(type_name::get<StableCoinType>() != type_name::get<BUSD>(), ERR_MINT_BUSD);
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        let busd_key = treasury::get_vault_key<BUSD>();
+        if (vault_key == busd_key) {
+            assert!(auth_utils::has_mint_busd(key), ERR_MINT_OPERATION_UNAUTHORIZED);
+            return treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+        };
         assert!(auth_utils::has_mint_other_stablecoin(key), ERR_MINT_OPERATION_UNAUTHORIZED);
         let vault_mut = treasury::borrow_mut_vault<StableCoinType>(
             &mut inner_state.treasury,
@@ -541,19 +545,6 @@ module bfc_system::bfc_system_state_inner {
         };
 
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
-    }
-
-    public(package) fun mint_busd(
-        inner_state: &mut BfcSystemStateInnerV2,
-        amount: u64,
-        key: &String,
-        ctx: &mut TxContext,
-    ): Coin<BUSD> {
-        assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
-        assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
-        assert!(auth_utils::has_mint_busd(key), ERR_MINT_OPERATION_UNAUTHORIZED);
-
-        return treasury::mint_stable<BUSD>(&mut inner_state.treasury, amount, ctx)
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInnerV2): VecMap<String, u64> {
@@ -817,8 +808,6 @@ module bfc_system::bfc_system_state_inner {
     }
 
     public(package) fun init_bfc_system_state_v2(self: &mut BfcSystemStateInnerV2, _ctx: &mut TxContext) {
-        std::debug::print(&b"init_bfc_system_state_v2 begin");
-
         transfer_bfc_from_vault_to_treasury_pool<MGG>(self);
         transfer_bfc_from_vault_to_treasury_pool<BJPY>(self);
         transfer_bfc_from_vault_to_treasury_pool<BKRW>(self);
@@ -835,8 +824,6 @@ module bfc_system::bfc_system_state_inner {
         transfer_bfc_from_vault_to_treasury_pool<BTRY>(self);
         transfer_bfc_from_vault_to_treasury_pool<BZAR>(self);
         transfer_bfc_from_vault_to_treasury_pool<BMXN>(self);
-
-        std::debug::print(&b"init_bfc_system_state_v2 end");
     }
 
     fun transfer_bfc_from_vault_to_treasury_pool<StableCoinType>(self: &mut BfcSystemStateInnerV2) {

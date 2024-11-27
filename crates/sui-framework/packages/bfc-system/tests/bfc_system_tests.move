@@ -8,6 +8,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::busd::BUSD;
     use bfc_system::bjpy::BJPY;
     use bfc_system::treasury;
+    use bfc_system::math_u64;
     use bfc_system::treasury::Treasury;
     use sui::object;
     use sui::test_scenario;
@@ -21,9 +22,9 @@ module bfc_system::bfc_system_tests {
     use sui::vec_set;
     use bfc_system::treasury_pool;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
-    use bfc_system::bfc_system_state_inner::{ERR_MINT_BUSD, ERR_REBALANCE_NOT_BUSD,
+    use bfc_system::bfc_system_state_inner::{ERR_REBALANCE_NOT_BUSD,
         BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
-        BfcSystemAdminCap, ERR_SET_CONFIG_UNAUTHORIZED, ERR_MINT_AMOUNT_ZERO, ERR_MINT_UNAUTHORIZED
+        BfcSystemAdminCap, ERR_SET_CONFIG_UNAUTHORIZED, ERR_MINT_AMOUNT_ZERO, ERR_MINT_UNAUTHORIZED, ERR_MINT_OPERATION_UNAUTHORIZED
     };
 
     use bfc_system::busd;
@@ -51,9 +52,12 @@ module bfc_system::bfc_system_tests {
 
     const BFC_AMOUNT: u64 = 1_000_000_000_000_000_000;
     const MINT_BUSD_RIGHT_KEY: vector<u8> = b"MINT-BUSD-right_key";
+    const MINT_BUSD_WRONG_SHORT_KEY: vector<u8> = b"MINT-B";
     const MINT_BUSD_WRONG_KEY: vector<u8> = b"MINT-BUSD-wrong_key";
     const MINT_OTHER_STABLECOIN_RIGHT_KEY: vector<u8> = b"MINT-OTHER-STABLECOIN-right_key";
+    const MINT_OTHER_STABLECOIN_WRONG_SHORT_KEY: vector<u8> = b"MINT-OTHER-S";
     const BFC_ADDR: address = @0x0 ;
+    const OVERFLOW_TEST_INT: u64 = 2667027000000000;
 
     #[test]
     fun print_stable_rate() {
@@ -114,6 +118,63 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    fun test_round_v2_invalid_zero_price() {
+        let bfc_addr = BFC_ADDR;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        // debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        vector::push_back(&mut stable_rate_vector, 1000000000);
+        // add beur，rate is 1000000000
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        // debug::print(&stable_rate);
+        // check beur
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 2);
+
+        {
+            // set zero rate
+            let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+            let mut stable_rate_vector : vector<u64> = vector::empty();
+            vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+            vector::push_back(&mut stable_rate_vector, 0);
+            bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+            let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+            // debug::print(&stable_rate);
+            // check beur
+            let new_beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+            assert!(new_beur_rate != 0, 2);
+            assert!(new_beur_rate == beur_rate, 2);
+        };
+        
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     #[expected_failure]
     fun test_round_v2_invalid_param() {
         let bfc_addr = BFC_ADDR;
@@ -130,12 +191,41 @@ module bfc_system::bfc_system_tests {
         test_scenario::next_tx(scenario, bfc_addr);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        vector::push_back(&mut stable_rate_vector, 1000000000);
+        // add beur，rate is 1000000000
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        // check beur
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 2);
+
+        // add unknow coion
         let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
         let mut stable_rate_vector : vector<u64> = vector::empty();
         vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
         vector::push_back(&mut stable_rate_vector, 1000000);
 
         bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        // check beur, no update
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        assert!(beur_rate == busd_rate, 5);
+                
+        // should abort
+        let _ = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
 
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);
@@ -144,7 +234,6 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    #[expected_failure]
     fun test_round_v2_invalid_vector_length() {
         let bfc_addr = BFC_ADDR;
         let mut scenario_val = test_scenario::begin(bfc_addr);
@@ -174,6 +263,121 @@ module bfc_system::bfc_system_tests {
         test_scenario::end(scenario_val);
     }
 
+    #[test]
+    fun test_math_u64_overflowing() {
+        let (_, overflowing) = math_u64::overflowing_mul(1000000000000, 1000000000000);
+        assert!(overflowing, 1);
+        let c = math_u64::wrapping_mul(111, 3);
+        assert!(c == 333, 2);
+
+        let (_, overflowing) = math_u64::overflowing_mul(1, 1);
+        assert!(!overflowing, 3);
+    }
+ 
+    #[test]
+    fun test_round_v2_overflowing() {
+       let bfc_addr = BFC_ADDR;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+        debug::print(busd_rate);
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
+        vector::push_back(&mut stable_rate_vector, OVERFLOW_TEST_INT);
+        // add beur，rate is 1000000000
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure]
+    fun test_round_v2_overflowing2() {
+       let bfc_addr = BFC_ADDR;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        // before bfc_round_v2
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        debug::print(&stable_rate);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+
+        // shoud overflow
+        let _  = *busd_rate * OVERFLOW_TEST_INT;
+
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    fun test_round_v2_invalid_busd() {
+        let bfc_addr = BFC_ADDR;
+        let mut scenario_val = test_scenario::begin(bfc_addr);
+        test_utils::setup_without_parameters(&mut scenario_val, bfc_addr);
+        let mut clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        clock::increment_for_testing(&mut clock, 3600 * 4 * 1000 + 1000);
+        let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+        treasury::rebalance(&mut t, 0, true, &clock, test_scenario::ctx(&mut scenario_val));
+
+        let scenario = &mut scenario_val;
+        let ctx = test_scenario::ctx(scenario);
+        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        test_scenario::next_tx(scenario, bfc_addr);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
+
+        let mut stable_type_name_vector : vector<ascii::String> = vector::empty();
+        let mut stable_rate_vector : vector<u64> = vector::empty();
+        vector::push_back(&mut stable_type_name_vector, ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+        vector::push_back(&mut stable_rate_vector, 1_000);
+
+        bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, stable_type_name_vector, stable_rate_vector, test_scenario::ctx(scenario));
+        let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(scenario));
+        let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
+        let busd_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD"));
+        assert!(*busd_rate > 1_000_000_000, 5);
+
+        test_scenario::return_shared(system_state);
+        test_scenario::return_shared(t);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario_val);
+    }
 
     #[test]
     fun test_round_v2() {
@@ -897,24 +1101,6 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
-    // #[test]
-    // fun test_mint_stable_success() {
-    //     let mut scenario_val = setup(BFC_AMOUNT, MINT_USDC_USDT_RIGHT_KEY);
-    //     let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
-    //     let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&mut scenario_val);
-    //     let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
-    //
-    //     let ctx = test_scenario::ctx(&mut scenario_val);
-    //     let coin = bfc_system::mint_stable<USDC>(&mut system_state, 100, &modify_cap, ctx);
-    //     assert!(coin.value() == 100, 1);
-    //
-    //     coin::burn_for_testing(coin);
-    //     test_scenario::return_to_sender(&scenario_val, modify_cap);
-    //     test_scenario::return_to_sender(&scenario_val, admin_cap);
-    //     test_scenario::return_shared(system_state);
-    //     tearDown(scenario_val);
-    // }
-
     #[test]
     fun test_mint_bjpy_success() {
         let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
@@ -931,9 +1117,34 @@ module bfc_system::bfc_system_tests {
         debug::print(&coin_a_amount_before);
         assert!(coin_a_amount_before == 37707208591093079, 1);
 
-
         let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 200, &modify_cap, ctx);
         assert!(coin.value() == 200, 1);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    fun test_mint_bjpy_success_v2() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let (system_state_v2, _) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+
+        let (treasury, _) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
+        let coin_a_amount_before = treasury::get_coin_a_amount<BJPY>(treasury);
+        debug::print(&std::ascii::string(b"coin_a_amount_before"));
+        debug::print(&coin_a_amount_before);
+        assert!(coin_a_amount_before == 37707208591093079, 1);
+
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 40000000000000000, &modify_cap, ctx);
+        assert!(coin.value() == 40000000000000000, 1);
         coin::burn_for_testing(coin);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
@@ -951,8 +1162,9 @@ module bfc_system::bfc_system_tests {
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&mut scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        bfc_system::mint_busd(&mut system_state, 0, BFC_ADDR, &modify_cap, ctx);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 0, &modify_cap, ctx);
 
+        coin::burn_for_testing(coin);
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);
@@ -970,7 +1182,8 @@ module bfc_system::bfc_system_tests {
         let ctx = test_scenario::ctx(&mut scenario_val);
         bfc_system::remove_operation_capability(&mut system_state, &admin_cap,
             MINT_BUSD_WRONG_KEY, tx_context::sender(ctx), ctx);
-        bfc_system::mint_busd(&mut system_state, 100, BFC_ADDR, &modify_cap, ctx);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
@@ -979,19 +1192,53 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = ERR_MINT_BUSD)]
-    fun test_mint_stable_fail_busd() {
-        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-
         let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
-        bfc_system::mint_busd(&mut system_state, 100, BFC_ADDR, &modify_cap, ctx);
-
         coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized_v2() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_WRONG_SHORT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
+
+        test_scenario::return_to_sender(&scenario_val, modify_cap);
+        test_scenario::return_to_sender(&scenario_val, admin_cap);
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = ERR_MINT_OPERATION_UNAUTHORIZED)]
+    fun test_mint_stable_fail_operation_unauthorized_v3() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_OTHER_STABLECOIN_WRONG_SHORT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
+        let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 100, &modify_cap, ctx);
+        coin::burn_for_testing(coin);
+
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);

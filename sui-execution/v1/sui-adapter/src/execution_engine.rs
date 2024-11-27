@@ -1017,6 +1017,7 @@ mod checked {
             epoch_start_timestamp_ms: change_epoch.epoch_start_timestamp_ms,
             reward_rate,
             storage_rebate,
+            current_protocol_version: protocol_config.version,
         };
 
         let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;

@@ -526,6 +526,7 @@ pub struct ChangeObcRoundParams {
     pub epoch_start_timestamp_ms: u64,
     pub reward_rate: u64,
     pub storage_rebate: u64,
+    pub current_protocol_version: ProtocolVersion,
 }
 
 #[cfg(msim)]
