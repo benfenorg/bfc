@@ -59,8 +59,6 @@ module bfc_system::bfc_system_state_inner {
     /// Errors
     const ERR_INNER_STABLECOIN_TO_BFC_LIMIT: u64 = 1000;
     const ERR_NOT_SYSTEM_ADDRESS: u64 = 1001;
-    const ERR_DAILY_LIMIT: u64 = 1002;
-    const ERR_SWAP_STABLE_NOT_ENOUGH: u64 = 1003;
     const ERR_MINT_UNAUTHORIZED: u64 = 1004;
     const ERR_REBALANCE_NOT_BUSD: u64 = 1006;
     const ERR_MINT_AMOUNT_ZERO: u64 = 1007;
@@ -69,9 +67,6 @@ module bfc_system::bfc_system_state_inner {
     const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
     const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
-
-
-    const ERR_INVALID_PARAM: u64 = 1100;
 
     //spec module { pragma verify = false; }
 

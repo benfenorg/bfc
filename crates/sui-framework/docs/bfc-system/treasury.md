@@ -18,8 +18,6 @@ title: Module `0xc8::treasury`
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
 -  [Function `mint_stable`](#0xc8_treasury_mint_stable)
--  [Function `exchange_busd_to_stable`](#0xc8_treasury_exchange_busd_to_stable)
--  [Function `add_supply`](#0xc8_treasury_add_supply)
 -  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
 -  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
@@ -44,7 +42,6 @@ title: Module `0xc8::treasury`
 -  [Function `rebalance_internal`](#0xc8_treasury_rebalance_internal)
 -  [Function `get_exchange_rates`](#0xc8_treasury_get_exchange_rates)
 -  [Function `get_total_supply`](#0xc8_treasury_get_total_supply)
--  [Function `get_busd_supply_mut`](#0xc8_treasury_get_busd_supply_mut)
 -  [Function `one_coin_rebalance_internal`](#0xc8_treasury_one_coin_rebalance_internal)
 -  [Function `one_coin_bfc_required`](#0xc8_treasury_one_coin_bfc_required)
 -  [Function `one_coin_exchange_rate`](#0xc8_treasury_one_coin_exchange_rate)
@@ -546,58 +543,6 @@ title: Module `0xc8::treasury`
     <b>let</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a> = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = sui::coin::from_balance(<a href="../sui-framework/balance.md#0x2_balance">balance</a>, ctx);
     <a href="../sui-framework/coin.md#0x2_coin">coin</a>
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_treasury_exchange_busd_to_stable"></a>
-
-## Function `exchange_busd_to_stable`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_exchange_busd_to_stable">exchange_busd_to_stable</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>,
-                                                            <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;StableCoinType&gt;) {
-    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
-    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, key);
-    <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>(supply, <a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>));
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_treasury_add_supply"></a>
-
-## Function `add_supply`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, supply: <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;StableCoinType&gt;)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_add_supply">add_supply</a>&lt;StableCoinType&gt;(<a href="treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>, supply: Supply&lt;StableCoinType&gt;) {
-    <b>let</b> key = <a href="treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
-    <a href="../sui-framework/bag.md#0x2_bag_add">bag::add</a>(&<b>mut</b> <a href="treasury.md#0xc8_treasury">treasury</a>.supplies, key, supply);
 }
 </code></pre>
 
@@ -1532,36 +1477,6 @@ Rebalance
     };
     <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow">bag::borrow</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&_self.supplies, key);
     <a href="../sui-framework/balance.md#0x2_balance_supply_value">balance::supply_value</a>(supply)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_treasury_get_busd_supply_mut"></a>
-
-## Function `get_busd_supply_mut`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(self: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>): &<b>mut</b> <a href="../sui-framework/balance.md#0x2_balance_Supply">balance::Supply</a>&lt;<a href="busd.md#0xc8_busd_BUSD">busd::BUSD</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="treasury.md#0xc8_treasury_get_busd_supply_mut">get_busd_supply_mut</a>(
-    self: &<b>mut</b> <a href="treasury.md#0xc8_treasury_Treasury">Treasury</a>
-): &<b>mut</b> Supply&lt;BUSD&gt; {
-    <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;BUSD&gt;&gt;(
-        &<b>mut</b> self.supplies,
-        std::ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD")
-    );
-    supply
 }
 </code></pre>
 

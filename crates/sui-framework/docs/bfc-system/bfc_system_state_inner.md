@@ -544,30 +544,12 @@ Default stable base points
 
 
 
-<a name="0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_DAILY_LIMIT">ERR_DAILY_LIMIT</a>: u64 = 1002;
-</code></pre>
-
-
-
 <a name="0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT"></a>
 
 Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INNER_STABLECOIN_TO_BFC_LIMIT">ERR_INNER_STABLECOIN_TO_BFC_LIMIT</a>: u64 = 1000;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_system_state_inner_ERR_INVALID_PARAM"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_INVALID_PARAM">ERR_INVALID_PARAM</a>: u64 = 1100;
 </code></pre>
 
 
@@ -622,15 +604,6 @@ Errors
 
 
 <pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SET_CONFIG_UNAUTHORIZED">ERR_SET_CONFIG_UNAUTHORIZED</a>: u64 = 1011;
-</code></pre>
-
-
-
-<a name="0xc8_bfc_system_state_inner_ERR_SWAP_STABLE_NOT_ENOUGH"></a>
-
-
-
-<pre><code><b>const</b> <a href="bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_SWAP_STABLE_NOT_ENOUGH">ERR_SWAP_STABLE_NOT_ENOUGH</a>: u64 = 1003;
 </code></pre>
 
 

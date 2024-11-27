@@ -4735,12 +4735,6 @@ vault_info
 mint_stable
 	public(package) fun
 	0xc8::treasury
-exchange_busd_to_stable
-	public(package) fun
-	0xc8::treasury
-add_supply
-	public(package) fun
-	0xc8::treasury
 vault_set_pause
 	public(package) fun
 	0xc8::treasury
@@ -4811,9 +4805,6 @@ get_exchange_rates
 	public(package) fun
 	0xc8::treasury
 get_total_supply
-	public(package) fun
-	0xc8::treasury
-get_busd_supply_mut
 	public(package) fun
 	0xc8::treasury
 one_coin_rebalance_internal
