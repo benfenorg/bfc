@@ -3413,7 +3413,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
 
 #[sim_test]
 async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(), anyhow::Error> {
-    telemetry_subscribers::init_for_testing();
+    //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(80000)
         .with_num_validators(5)
@@ -3422,7 +3422,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
     let http_client = test_cluster.rpc_client();
     let address = test_cluster.get_address_0();
 
-    let amount = 1_000_000_000u64 * 600;
+    let amount = 1_000_000_000u64 * 60;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet,
                                            Option::Some(address),
                                            Option::Some(amount)).await;
@@ -3432,17 +3432,10 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
         .effects
         .unwrap();
     let _ = sleep(Duration::from_secs(2)).await;
-    info!("rebalance start===========");
 
     rebalance(&test_cluster, http_client, address).await?;
-    info!("rebalance finish===========");
-
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 50*1000000000, false).await?;
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10000000000000, false).await?;
     swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10000000000000).await?;
     let _ = sleep(Duration::from_secs(4)).await;
-    info!("swap bfc finish ===========");
-
 
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
 
@@ -3453,18 +3446,15 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc_stable_gas() -> Result<(),
     let busd_balance_before = get_balance(busd_data);
 
     let receiver_address = test_cluster.get_address_1();
-
-    info!("make_transfer_sui_transaction_with_gas start===========busd balance before:{}", busd_balance_before);
     let tx = make_transfer_sui_transaction_with_gas(&test_cluster.wallet,
                                                     Some(receiver_address),
-                                                    Some(1000), address, busd_data.object_ref()).await;
+                                                    Some(amount), address, busd_data.object_ref()).await;
 
     let _response = test_cluster
         .execute_transaction(tx.clone())
         .await
         .effects
         .unwrap();
-    info!("make_transfer_sui_transaction_with_gas finish===========");
 
     let _ = sleep(Duration::from_secs(4)).await;
 

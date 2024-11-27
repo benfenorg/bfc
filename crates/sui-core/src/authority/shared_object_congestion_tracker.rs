@@ -74,7 +74,7 @@ impl SharedObjectCongestionTracker {
     pub fn should_defer_due_to_object_congestion(
         &self,
         cert: &VerifiedExecutableTransaction,
-        max_accumulated_txn_cost_per_object_in_commit: u64,
+        max_accumulated_txn_cost_per_object_in_checkpoint: u64,
         previously_deferred_tx_digests: &HashMap<TransactionDigest, DeferralKey>,
         commit_round: Round,
     ) -> Option<(DeferralKey, Vec<ObjectID>)> {
@@ -87,7 +87,6 @@ impl SharedObjectCongestionTracker {
         }
         let start_cost = self.compute_tx_start_at_cost(&shared_input_objects);
 
-        if start_cost + tx_cost <= max_accumulated_txn_cost_per_object_in_commit {
         if start_cost.saturating_add(cert.gas_budget()) <= max_accumulated_txn_cost_per_object_in_checkpoint {
             return None;
         }
@@ -137,13 +136,6 @@ impl SharedObjectCongestionTracker {
 
         let shared_input_objects: Vec<_> = cert.shared_input_objects().collect();
         let start_cost = self.compute_tx_start_at_cost(&shared_input_objects);
-        let end_cost = start_cost + tx_cost;
-    pub fn bump_object_execution_cost(
-        &mut self,
-        shared_input_objects: &[SharedInputObject],
-        tx_cost: u64,
-    ) {
-        let start_cost = self.compute_tx_start_at_cost(shared_input_objects);
         let end_cost = start_cost.saturating_add(tx_cost);
 
         for obj in shared_input_objects {
@@ -268,8 +260,8 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_congested_objects(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalGasBudget,
+        PerObjectCongestionControlMode::TotalTxCount
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -368,8 +360,8 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_deferral_key(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalGasBudget,
+        PerObjectCongestionControlMode::TotalTxCount
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -391,12 +383,12 @@ mod object_cost_tests {
 
         // Test deferral key for a transaction that has not been deferred before.
         if let Some((
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
+                        DeferralKey::ConsensusRound {
+                            future_round,
+                            deferred_from_round,
+                        },
+                        _,
+                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             &tx,
             max_accumulated_txn_cost_per_object_in_commit,
             &previously_deferred_tx_digests,
@@ -418,12 +410,12 @@ mod object_cost_tests {
 
         // New deferral key should have deferred_from_round equal to the deferred randomness round.
         if let Some((
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
+                        DeferralKey::ConsensusRound {
+                            future_round,
+                            deferred_from_round,
+                        },
+                        _,
+                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             &tx,
             max_accumulated_txn_cost_per_object_in_commit,
             &previously_deferred_tx_digests,
@@ -446,12 +438,12 @@ mod object_cost_tests {
 
         // New deferral key should have deferred_from_round equal to the one in the old deferral key.
         if let Some((
-            DeferralKey::ConsensusRound {
-                future_round,
-                deferred_from_round,
-            },
-            _,
-        )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
+                        DeferralKey::ConsensusRound {
+                            future_round,
+                            deferred_from_round,
+                        },
+                        _,
+                    )) = shared_object_congestion_tracker.should_defer_due_to_object_congestion(
             &tx,
             max_accumulated_txn_cost_per_object_in_commit,
             &previously_deferred_tx_digests,
@@ -467,8 +459,8 @@ mod object_cost_tests {
     #[rstest]
     fn test_bump_object_execution_cost(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalGasBudget,
+        PerObjectCongestionControlMode::TotalTxCount
         )]
         mode: PerObjectCongestionControlMode,
     ) {
