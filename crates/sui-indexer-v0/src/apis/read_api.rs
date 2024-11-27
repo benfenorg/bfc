@@ -209,25 +209,31 @@ where
         digests: Vec<TransactionDigest>,
         options: Option<SuiTransactionBlockResponseOptions>,
     ) -> RpcResult<Vec<SuiTransactionBlockResponse>> {
-        if !self
+        let options_v1 = options.clone();
+        if self
             .migrated_methods
-            .contains(&"multi_get_transaction_blocks".to_string())
-        {
-            let multi_tx_guard = self
-                .state
-                .indexer_metrics()
-                .multi_get_transaction_blocks_latency
-                .start_timer();
-            let multi_tx_resp = self
-                .fullnode
-                .multi_get_transaction_blocks(digests, options)
-                .await;
-            multi_tx_guard.stop_and_record();
-            return multi_tx_resp;
+            .contains(&"multi_get_transaction_blocks".to_string()) {
+            let result = self.multi_get_transaction_blocks_internal(&digests, options).await;
+            match result {
+                Ok(r) => {
+                    if r.len() > 0 {
+                        return Ok(r);
+                    }
+                }
+                Err(_) => {}
+            }
         }
-        Ok(self
-            .multi_get_transaction_blocks_internal(&digests, options)
-            .await?)
+        let multi_tx_guard = self
+            .state
+            .indexer_metrics()
+            .multi_get_transaction_blocks_latency
+            .start_timer();
+        let multi_tx_resp = self
+            .fullnode
+            .multi_get_transaction_blocks(digests, options_v1)
+            .await;
+        multi_tx_guard.stop_and_record();
+        return multi_tx_resp;
     }
 
     async fn try_get_past_object(
