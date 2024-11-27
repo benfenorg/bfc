@@ -2441,7 +2441,7 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
                                            Option::Some(address),
                                            Option::Some(amount)).await;
     test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
-    swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10000000000000).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000, false).await?;
     let _ = sleep(Duration::from_secs(10)).await;
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     assert!(busd_response_vec.len() >= 1);
@@ -2804,6 +2804,8 @@ async fn swap_bfc_to_stablecoin_with_tag(
             )
         )), None, None).await?.data;
     // api ： https://docs.sui.io/sui-api-ref#suix_getownedobjects
+    // println!("objects {:?}", objects);
+    // panic!();
     let coin = if f {objects.last().unwrap().object().unwrap()} else {objects.first().unwrap().object().unwrap()};
 
     let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
@@ -3297,7 +3299,7 @@ async fn sim_test_bfc_stable_gas_multi() -> Result<(), anyhow::Error> {
 async fn sim_test_bfc_stable_gas_multi_mash() -> Result<(), anyhow::Error> {
     //telemetry_subscribers::init_for_testing();
     let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(4000)
+        .with_epoch_duration_ms(10000)
         .with_num_validators(5)
         .build()
         .await;
@@ -3689,7 +3691,7 @@ async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
     rebalance(&test_cluster, http_client, sender).await?;
     auth::auth_setup_imut(&test_cluster,&http_client,test_cluster.get_address_0(), "MINT-OTHER-STABLECOIN-POLLY").await?;
     stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
-    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, test_cluster.get_address_0(), "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
+    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
     Ok(())
 }
 
@@ -3723,7 +3725,7 @@ async fn stable_stake_and_withdraw(test_cluster: &TestCluster, validator_addr: S
         .object_ref();
     let gas = test_cluster
         .wallet
-        .gas_for_owner_budget(sender, 0, BTreeSet::from([gas_coin.0]))
+        .gas_for_owner_budget(sender, 1000000000, BTreeSet::from([gas_coin.0]))
         .await
         .unwrap()
         .1
@@ -3747,7 +3749,7 @@ async fn stable_stake_and_withdraw(test_cluster: &TestCluster, validator_addr: S
 
     let gas = test_cluster
         .wallet
-        .gas_for_owner_budget(sender, 0, BTreeSet::from([gas_coin.0]))
+        .gas_for_owner_budget(sender, 1000000000, BTreeSet::from([gas_coin.0]))
         .await
         .unwrap()
         .1
