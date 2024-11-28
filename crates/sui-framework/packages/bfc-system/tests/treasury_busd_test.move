@@ -4,6 +4,8 @@ module bfc_system::treasury_busd_test {
     use std::debug;
     use std::ascii::string;
     use std::debug::print;
+    use bfc_system::treasury_pool;
+    use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::clmm_math;
     use bfc_system::i32;
     use sui::coin::{Self, Coin};
@@ -13,6 +15,7 @@ module bfc_system::treasury_busd_test {
     use bfc_system::treasury::{Self, Treasury};
     use bfc_system::vault;
     use bfc_system::busd::{Self, BUSD};
+
 
     const IS_DEBUG: bool = false;
 
@@ -659,6 +662,55 @@ module bfc_system::treasury_busd_test {
         };
 
         test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    public fun test_treasury_pool() {
+        let mut scenario_val = init_vault();
+        init_treasury_pool(&mut scenario_val);
+
+        {
+            let tp = test_scenario::take_shared<TreasuryPool>(&scenario_val);
+            assert!(treasury_pool::get_balance(&tp) == 100000000_000000000, 1);
+            test_scenario::return_shared(tp);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, OWNER);
+        {
+            let mut tp = test_scenario::take_shared<TreasuryPool>(&scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+
+            transfer_bfc_from_vault_to_treasury_pool_for_test<BUSD>(&mut t, &mut tp);
+
+            // let value = treasury_pool::get_balance(&tp);
+            assert!(treasury_pool::get_balance(&tp) == 100001000_000000000, 2);
+            test_scenario::return_shared(tp);
+            test_scenario::return_shared(t);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    fun transfer_bfc_from_vault_to_treasury_pool_for_test<StableCoinType>(treasury: &mut Treasury, treasury_pool: &mut TreasuryPool) {
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        let vault = treasury::borrow_mut_vault<StableCoinType>(treasury, vault_key);
+        let bfc_balance = vault::clear_coin_b(vault);
+        treasury_pool::increase_balance(treasury_pool, bfc_balance, vault_key);
+    }
+
+    fun init_treasury_pool(scenario_val: &mut Scenario) {
+        //create treasury_pool
+        test_scenario::next_tx(scenario_val, OWNER);
+        {
+            let bfc = balance::create_for_testing<BFC>(100000000_000000000);
+            let t = treasury_pool::create_treasury_pool(
+                bfc,
+                test_scenario::ctx(scenario_val),
+            );
+            transfer::public_share_object(t);
+        };
+        test_scenario::next_tx(scenario_val, OWNER);
+
     }
 
 

@@ -1588,5 +1588,22 @@ module bfc_system::bfc_system_tests {
         tearDown(scenario_val);
     }
 
+    #[test]
+    fun test_deposit_to_treasury() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        let ctx = test_scenario::ctx(&mut scenario_val);
+
+        let coin =  coin::mint_for_testing<BFC>(100_000000000, ctx);
+        bfc_system::deposit_to_treasury(&mut system_state, coin);
+
+        let (parameter_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
+        let (t, _tp) = bfc_system_state_inner::get_treasury_and_treasury_pool(parameter_v2);
+        assert!(treasury::get_balance(t) == 8773437554378, 1);
+
+        test_scenario::return_shared(system_state);
+        tearDown(scenario_val);
+    }
 
 }
