@@ -693,9 +693,11 @@ module bfc_system::treasury_busd_test {
 
     fun transfer_bfc_from_vault_to_treasury_pool_for_test<StableCoinType>(treasury: &mut Treasury, treasury_pool: &mut TreasuryPool) {
         let vault_key = treasury::get_vault_key<StableCoinType>();
-        let vault = treasury::borrow_mut_vault<StableCoinType>(treasury, vault_key);
-        let bfc_balance = vault::clear_coin_b(vault);
-        treasury_pool::increase_balance(treasury_pool, bfc_balance, vault_key);
+        if (treasury::has_vault(treasury, vault_key)) {
+            let vault = treasury::borrow_mut_vault<StableCoinType>(treasury, vault_key);
+            let bfc_balance = vault::clear_coin_b(vault);
+            treasury_pool::increase_balance(treasury_pool, bfc_balance, vault_key);
+        }
     }
 
     fun init_treasury_pool(scenario_val: &mut Scenario) {
