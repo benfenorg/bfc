@@ -572,7 +572,6 @@ impl SuiAuthoritySignature for AuthoritySignature {
     where
         T: Serialize,
     {
-        println!("kitty verify_secure 1");
         let mut message = bcs::to_bytes(&value).expect("Message serialization should not fail");
         epoch.write(&mut message);
 
