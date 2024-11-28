@@ -3037,7 +3037,7 @@ async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address
     let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let function = "rebalance".to_string();
+    let function = "rebalance_with_one_stablecoin".to_string();
     let args = vec![
         SuiJsonValue::from_str(&bfc_system_address.to_string())?,
         SuiJsonValue::from_str(&SUI_CLOCK_OBJECT_ID.to_string())?,
@@ -3048,7 +3048,7 @@ async fn rebalance(test_cluster: &TestCluster, http_client: &HttpClient, address
             package_id,
             module,
             function,
-            vec![],
+            vec![SuiTypeTag::new("0xc8::busd::BUSD".to_string())],
             args,
             Some(gas.object_id),
             10_000_00000.into(),
@@ -3920,7 +3920,6 @@ async fn dev_inspect_call(cluster: &TestCluster, pt: ProgrammableTransaction) ->
         )
         .await
         .unwrap();
-
     let results = response.results.unwrap();
     let return_ = &results.first().unwrap().return_values.first().unwrap().0;
 
