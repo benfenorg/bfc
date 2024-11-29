@@ -4,6 +4,7 @@ module bfc_system::treasury_busd_test {
     use std::debug;
     use std::ascii::string;
     use std::debug::print;
+    use bfc_system::bjpy::BJPY;
     use bfc_system::treasury_pool;
     use bfc_system::treasury_pool::TreasuryPool;
     use bfc_system::clmm_math;
@@ -684,6 +685,33 @@ module bfc_system::treasury_busd_test {
 
             // let value = treasury_pool::get_balance(&tp);
             assert!(treasury_pool::get_balance(&tp) == 100001000_000000000, 2);
+            test_scenario::return_shared(tp);
+            test_scenario::return_shared(t);
+        };
+
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
+    public fun test_treasury_pool_v2() {
+        let mut scenario_val = init_vault();
+        init_treasury_pool(&mut scenario_val);
+
+        {
+            let tp = test_scenario::take_shared<TreasuryPool>(&scenario_val);
+            assert!(treasury_pool::get_balance(&tp) == 100000000_000000000, 1);
+            test_scenario::return_shared(tp);
+        };
+
+        test_scenario::next_tx(&mut scenario_val, OWNER);
+        {
+            let mut tp = test_scenario::take_shared<TreasuryPool>(&scenario_val);
+            let mut t = test_scenario::take_shared<Treasury>(&scenario_val);
+
+            transfer_bfc_from_vault_to_treasury_pool_for_test<BJPY>(&mut t, &mut tp);
+
+            // let value = treasury_pool::get_balance(&tp);
+            assert!(treasury_pool::get_balance(&tp) == 100000000_000000000, 2);
             test_scenario::return_shared(tp);
             test_scenario::return_shared(t);
         };
