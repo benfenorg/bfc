@@ -539,7 +539,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "add_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "add_operation_capability").await?;
                 SuiValidatorCommandResponse::AddOperationCapability(resp)
             }
             SuiValidatorCommand::RemoveOperationCapability {
@@ -550,7 +550,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "remove_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "remove_operation_capability").await?;
                 SuiValidatorCommandResponse::RemoveOperationCapability(resp)
             }
             SuiValidatorCommand::SetOperationCapability {
@@ -561,7 +561,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    operation_capability(context, Some(operation_cap_id), key, address, gas_budget, "set_operation_capability").await?;
+                    operation_capability(context, operation_cap_id, key, address, gas_budget, "set_operation_capability").await?;
                 SuiValidatorCommandResponse::SetOperationCapability(resp)
             }
 
@@ -581,7 +581,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    add_admin_capability(context, Some(admin_cap_id), addresses, gas_budget).await?;
+                    add_admin_capability(context, admin_cap_id, addresses, gas_budget).await?;
                 SuiValidatorCommandResponse::AddAdminCapability(resp)
             }
             SuiValidatorCommand::RemoveAdminCapability {
@@ -591,7 +591,7 @@ impl SuiValidatorCommand {
             } => {
                 let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
                 let resp =
-                    remove_admin_capability(context, Some(admin_cap_id), address, gas_budget).await?;
+                    remove_admin_capability(context, admin_cap_id, address, gas_budget).await?;
                 SuiValidatorCommandResponse::RemoveAdminCapability(resp)
             }
 
@@ -898,23 +898,19 @@ async fn get_cap_object_ref(
 
 async fn get_cap_object_ref_v2(
     context: &mut WalletContext,
-    operation_cap_id: Option<ObjectID>,
+    cap_id: ObjectID,
 ) -> Result<ObjectRef> {
     let sui_client = context.get_client().await?;
-    if let Some(operation_cap_id) = operation_cap_id {
-        let cap_obj_ref = sui_client
-            .read_api()
-            .get_object_with_options(
-                operation_cap_id,
-                SuiObjectDataOptions::default().with_owner(),
-            )
-            .await?
-            .object_ref_if_exists()
-            .ok_or_else(|| anyhow!("OperationCap {} does not exist", operation_cap_id))?;
-        Ok::<ObjectRef, anyhow::Error>(cap_obj_ref)
-    } else {
-        panic!("get_cap_object_ref_v2");
-    }
+    let cap_obj_ref = sui_client
+        .read_api()
+        .get_object_with_options(
+            cap_id,
+            SuiObjectDataOptions::default().with_owner(),
+        )
+        .await?
+        .object_ref_if_exists()
+        .ok_or_else(|| anyhow!("Cap {} does not exist", cap_id))?;
+    Ok::<ObjectRef, anyhow::Error>(cap_obj_ref)
 }
 
 async fn update_gas_price(
@@ -948,7 +944,7 @@ async fn set_oracle_price_object_address(
 
 async fn operation_capability(
     context: &mut WalletContext,
-    operation_cap_id: Option<ObjectID>,
+    operation_cap_id: ObjectID,
     key: String,
     address: SuiAddress,
     gas_budget: u64,
@@ -977,7 +973,7 @@ async fn init_admin_capability(
 
 async fn add_admin_capability(
     context: &mut WalletContext,
-    admin_cap_id: Option<ObjectID>,
+    admin_cap_id: ObjectID,
     addresses: Vec<SuiAddress>,
     gas_budget: u64
 ) -> Result<SuiTransactionBlockResponse> {
@@ -992,7 +988,7 @@ async fn add_admin_capability(
 
 async fn remove_admin_capability(
     context: &mut WalletContext,
-    admin_cap_id: Option<ObjectID>,
+    admin_cap_id: ObjectID,
     address: SuiAddress,
     gas_budget: u64
 ) -> Result<SuiTransactionBlockResponse> {
