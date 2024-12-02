@@ -445,10 +445,8 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         Ok(results.into_iter().map(|x| x.into()).collect())
     }
 
-    async fn init_stake_reward(&self, usd_rate: f64, jpy_rate: f64, epoch: u64, first_epoch_end_ms: u64, p: String) -> RpcResult<String> {
-        if p == "9cCK7QGrz0Rzb9kM3K6GTCdjbYKbNeQf" {
-            self.state.init_stake_reward(epoch, first_epoch_end_ms, usd_rate, jpy_rate).await?;
-        }
+    async fn init_stake_reward(&self, _usd_rate: f64, _jpy_rate: f64, _epoch: u64, _first_epoch_end_ms: u64, _p: String) -> RpcResult<String> {
+        // self.state.init_stake_reward(epoch, first_epoch_end_ms, usd_rate, jpy_rate).await?;
         Ok(String::from(""))
     }
 
