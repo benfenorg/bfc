@@ -994,26 +994,26 @@ impl<'backing> TemporaryStore<'backing> {
         pay_with_stable_gas : bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
-        let mut total_input_sui = 0;
+        let mut total_input_sui: u64 = 0;
         // total amount of SUI in output objects, including both coins and storage rebates
-        let mut total_output_sui = 0;
+        let mut total_output_sui: u64 = 0;
         // total amount of SUI in storage rebate of input objects
-        let mut total_input_rebate = 0;
+        let mut total_input_rebate: u64 = 0;
         // total amount of SUI in storage rebate of output objects
-        let mut total_output_rebate = 0;
+        let mut total_output_rebate: u64 = 0;
 
-        let mut total_input_stable_gas = 0;
-        let mut total_output_stable_gas = 0;
+        let mut total_input_stable_gas: u64 = 0;
+        let mut total_output_stable_gas: u64 = 0;
 
         for (id, input, output) in self.get_modified_objects() {
             if let Some(loaded_obj) = input {
-                total_input_rebate += loaded_obj.storage_rebate;
+                total_input_rebate = total_input_rebate.saturating_add(loaded_obj.storage_rebate);
                 let (stable_coin,rebate) = self.get_input_stable_with_bfc(&id, loaded_obj.version, layout_resolver)?;
-                total_input_stable_gas += stable_coin;
-                total_input_sui += rebate;
+                total_input_stable_gas = total_input_stable_gas.saturating_add(stable_coin);
+                total_input_sui = total_input_sui.saturating_add(rebate);
             }
             if let Some(object) = output {
-                total_output_rebate += object.storage_rebate;
+                total_output_rebate = total_output_rebate.saturating_add(object.storage_rebate);
                 let (stable_coin,bfc) = object.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
                     make_invariant_violation!(
                             "Failed looking up output Stable Coin in SUI conservation checking for \
@@ -1021,8 +1021,8 @@ impl<'backing> TemporaryStore<'backing> {
                             object.struct_tag(),
                         )
                 })?;
-                total_output_stable_gas += stable_coin;
-                total_output_sui += bfc;
+                total_output_stable_gas = total_output_stable_gas.saturating_add(stable_coin);
+                total_output_sui = total_output_sui.saturating_add(bfc);
             }
         }
         if do_expensive_checks {
@@ -1031,14 +1031,14 @@ impl<'backing> TemporaryStore<'backing> {
             // both computation costs and storage rebate inflow are
 
             if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-                total_input_sui += epoch_fees;
-                total_output_sui += epoch_rebates;
+                total_input_sui = total_input_sui.saturating_add(epoch_fees);
+                total_output_sui = total_output_sui.saturating_add(epoch_rebates);
             }
 
             if pay_with_stable_gas {
 
                 total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(gas_summary.computation_cost,gas_summary.rate,gas_summary.base_point);
-                total_output_sui +=  gas_summary.non_refundable_storage_fee;
+                total_output_sui =  total_output_sui.saturating_add(gas_summary.non_refundable_storage_fee);
 
                 let stable_amount=
                     if total_input_stable_gas>= total_output_stable_gas {
@@ -1068,7 +1068,7 @@ impl<'backing> TemporaryStore<'backing> {
                     );
                 }
             } else {
-                total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
+                total_output_sui = total_output_sui.saturating_add(gas_summary.computation_cost.saturating_add(gas_summary.non_refundable_storage_fee));
                 if total_input_sui != total_output_sui {
                     return Err(ExecutionError::invariant_violation(
                         format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
