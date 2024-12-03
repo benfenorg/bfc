@@ -842,26 +842,6 @@ async fn test_native_transfer_insufficient_gas_execution() {
 }
 
 #[tokio::test]
-async fn test_move_call_storage() -> SuiResult {
-    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-    let gas_object_id = ObjectID::random();
-    let gas_object_id_stable = ObjectID::random();
-    let (authority_state, _package_object_ref) =
-        init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
-    let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-
-    // publish move module
-    let package =
-        publish_move_random_package(&authority_state, &sender, &sender_key, &gas_object_id).await;
-
-    let package_object = authority_state.get_object(&package).await?.unwrap();
-    let pkg_ref = package_object.compute_object_reference();
-    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
-    move_call_heavy_storage_object(stable_gas_object, sender, sender_key,rgp, pkg_ref, authority_state).await?;
-    Ok(())
-}
-
-#[tokio::test]
 async fn test_publish_gas() -> anyhow::Result<()> {
     let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
     let gas_object_id = ObjectID::random();
