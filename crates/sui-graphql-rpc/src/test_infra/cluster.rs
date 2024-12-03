@@ -35,7 +35,7 @@ use tracing::info;
 const VALIDATOR_COUNT: usize = 4;
 const EPOCH_DURATION_MS: u64 = 10000;
 
-const LONG_EPOCH_DURATION_MS: u64 = 45000;
+const LONG_EPOCH_DURATION_MS: u64 = 65000;
 const ACCOUNT_NUM: usize = 20;
 const GAS_OBJECT_COUNT: usize = 3;
 
