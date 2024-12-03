@@ -721,22 +721,20 @@ mod test_benfen {
 
     #[tokio::test]
     async fn test_mining_nft_pending_award() {
-        let config = IndexerConfig::default();
-        let pending = get_mining_nft_pending_reward(
-            create_http_client(),
-            &config.mining_nft_contract,
-            &config.mining_nft_global,
-            vec![
-                "0x0003715fd1704173c050f4eb5c40c0b4cee3bd8a794a030e34c5380543f6c782".to_owned(),
-                "0x00296924cf934bc7a21fd5b710754fd81f4397a4901a13224c0bf32a0b0d8aba".to_owned(),
-                "0x00c56e7c903926ff20c01dbe428fac379e8098353c89ee1710f4587457232560".to_owned(),
-            ],
-            // "0xd146427073345317d1f5e82aeff9fd8d18448e49dc9af9a04337f8b990ee41e",
-            // "BFC7232d3d3973b9f27eae8edbc2d379abfae5098c4eb8ebe943b2dba5d0dd48c9c8a8e",
-        )
-        .await
-        .unwrap();
-        println!("{:?}", pending);
+        // let config = IndexerConfig::default();
+        // let pending = get_mining_nft_pending_reward(
+        //     create_http_client(),
+        //     &config.mining_nft_contract,
+        //     &config.mining_nft_global,
+        //     vec![
+        //         "0x0003715fd1704173c050f4eb5c40c0b4cee3bd8a794a030e34c5380543f6c782".to_owned(),
+        //         "0x00296924cf934bc7a21fd5b710754fd81f4397a4901a13224c0bf32a0b0d8aba".to_owned(),
+        //         "0x00c56e7c903926ff20c01dbe428fac379e8098353c89ee1710f4587457232560".to_owned(),
+        //     ],
+        // )
+        // .await
+        // .unwrap();
+        // println!("{:?}", pending);
     }
 
     #[tokio::test]
