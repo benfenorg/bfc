@@ -616,7 +616,7 @@ module bfc_system::bfc_system_tests {
                 3600 * 4,
                 2000,
                 treasury_parameters,
-                0,
+                1,
             ),
             ctx,
         )
