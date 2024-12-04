@@ -4264,7 +4264,7 @@ pub async fn init_state_with_ids_and_objects_basics<
     let state = TestAuthorityBuilder::new().build().await;
     for (address, (object_id, stable_id)) in objects {
         let obj = Object::with_id_owner_for_testing(object_id, address);
-        let stable_obj = Object::with_stable_id_owner_version_for_testing(stable_id, SequenceNumber::new(), address);
+        let stable_obj = Object::with_id_owner_version_for_testing(stable_id, SequenceNumber::new(), address);
 
         state.insert_genesis_object(obj).await;
         state.insert_genesis_object(stable_obj).await;
@@ -4290,7 +4290,7 @@ pub async fn publish_object_basics(state: Arc<AuthorityState>) -> (Arc<Authority
         digest,
         BuiltInFramework::genesis_move_packages(),
     )
-        .unwrap();
+    .unwrap();
     let pkg_ref = pkg.compute_object_reference();
     state.insert_genesis_object(pkg).await;
     (state, pkg_ref)
@@ -7793,72 +7793,7 @@ async fn test_stable_handle_move_transaction() {
     assert_eq!(created_obj.id(), created_object_id);
 }
 
-#[tokio::test]
-async fn test_invalid_obj_gas_handle_move_transaction() {
-    let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
-    let gas_payment_object_id = ObjectID::random();
-    let invalid_gas_payment_object_id = ObjectID::random();
 
-    let (authority_state, pkg_ref) =
-        init_state_with_stable_and_invalid_ids_and_object_basics(vec![(sender, gas_payment_object_id)],vec![(sender, invalid_gas_payment_object_id)]).await;
-
-    let effects = create_move_object(
-        &pkg_ref.0,
-        &authority_state,
-        &gas_payment_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await
-        .unwrap();
-
-    assert!(effects.status().is_ok());
-    assert_eq!(effects.created().len(), 1);
-    assert_eq!(effects.mutated().len(), 1);
-
-    let created_object_id = effects.created()[0].0 .0;
-    // check that transaction actually created an object with the expected ID, owner
-    let created_obj = authority_state
-        .get_object(&created_object_id)
-        .await
-        .unwrap()
-        .unwrap();
-    assert_eq!(created_obj.owner, sender);
-    assert_eq!(created_obj.id(), created_object_id);
-
-    let result = create_move_object(
-        &pkg_ref.0,
-        &authority_state,
-        &created_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await;
-
-    match result {
-        Ok(_) => panic!("Expected error"),
-        Err(e) => {
-            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"None".to_string()}});
-        }
-    }
-
-    let result = create_move_object(
-        &pkg_ref.0,
-        &authority_state,
-        &invalid_gas_payment_object_id,
-        &sender,
-        &sender_key,
-    )
-        .await;
-
-    match result {
-        Ok(_) => panic!("Expected error"),
-        Err(e) => {
-            assert_eq!(e,SuiError::UserInputError{error:UserInputError::GasCoinInvalid {coin_type:"00000000000000000000000000000000000000000000000000000000000000c8::usdx::usdx".to_string()}});
-        }
-    }
-
-}
 
 #[sim_test]
 async fn test_stable_conflicting_transactions() {
@@ -9866,20 +9801,16 @@ async fn test_stable_consensus_message_processed() {
 
 #[tokio::test]
 async fn test_stable_gas_smashing() {
-    telemetry_subscribers::init_for_testing();
-    // run a creation move object transaction with a given set o gas coins and a budget
+    // run a create move object transaction with a given set o gas coins and a budget
     async fn create_obj(
         sender: SuiAddress,
         sender_key: AccountKeyPair,
         gas_coins: Vec<Object>,
-        mut gas_budget: u64,
-    ) -> (Arc<AuthorityState>, SuiResult<TransactionEffects>) {
-        if gas_budget < 500000 {
-            gas_budget = 500000;
-        }
+        gas_budget: u64,
+    ) -> (Arc<AuthorityState>, TransactionEffects) {
         let object_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
         let (authority_state, pkg_ref) = init_state_with_objects_and_object_basics(gas_coins).await;
-        let sui_result_effects = create_move_object_with_gas_coins(
+        let effects = create_move_object_with_gas_coins(
             &pkg_ref.0,
             &authority_state,
             &object_ids,
@@ -9887,12 +9818,9 @@ async fn test_stable_gas_smashing() {
             &sender,
             &sender_key,
         )
-            .await;
-
-        if !sui_result_effects.is_ok() {
-            info!("create_obj failed: {:?}", sui_result_effects);
-        }
-        (authority_state, sui_result_effects)
+            .await
+            .unwrap();
+        (authority_state, effects)
     }
 
     // make a `coin_num` coins distributing `gas_amount` across them
@@ -9928,18 +9856,13 @@ async fn test_stable_gas_smashing() {
         let (sender, sender_key): (_, AccountKeyPair) = get_key_pair();
         let gas_coins = make_gas_coins(sender, reference_gas_used, coin_num);
         let gas_coin_ids: Vec<_> = gas_coins.iter().map(|obj| obj.id()).collect();
-        let (state, result) = create_obj(sender, sender_key, gas_coins, budget).await;
+        let (state, effects) = create_obj(sender, sender_key, gas_coins, budget).await;
         // check transaction
-        dbg!("reference_gas_used:{}, coin_num:{}, budget:{}, effects.status: {:#?}", reference_gas_used, coin_num, budget, result.is_ok());
         if success {
-            assert!(result.is_ok());
+            assert!(effects.status().is_ok());
         } else {
-            assert!(result.is_err());
-            //gas use: 0
-            return 0;
+            assert!(effects.status().is_err());
         }
-
-        let effects = result.unwrap();
         // gas object in effects is first coin in vector of coins
         assert_eq!(gas_coin_ids[0], effects.gas_object().0.0);
         // object is created on success and gas at position 0 mutated
@@ -9972,10 +9895,7 @@ async fn test_stable_gas_smashing() {
     let gas_used = run_and_check(100_000_000, 1, 100_000_000, true).await;
 
     // add something to the gas used to account for multiple gas coins being charged for
-    let mut reference_gas_used = gas_used + 1_000;
-    if reference_gas_used < 500000 {
-        reference_gas_used = 500000;
-    }
+    let reference_gas_used = gas_used + 1_000;
     let three_coin_gas = run_and_check(reference_gas_used, 3, reference_gas_used, true).await;
     run_and_check(reference_gas_used, 5, reference_gas_used - 100, true).await;
 

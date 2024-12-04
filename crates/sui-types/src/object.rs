@@ -1030,7 +1030,7 @@ impl Object {
         ObjectInner {
             owner: Owner::AddressOwner(owner),
             data,
-            previous_transaction: TransactionDigest::genesis(),
+            previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }.into()
     }
@@ -1142,7 +1142,7 @@ impl Object {
         ObjectInner {
             owner: Owner::AddressOwner(owner),
             data,
-            previous_transaction: TransactionDigest::genesis(),
+            previous_transaction: TransactionDigest::genesis_marker(),
             storage_rebate: 0,
         }.into()
     }
