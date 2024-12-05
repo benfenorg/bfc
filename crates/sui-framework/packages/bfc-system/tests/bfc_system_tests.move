@@ -129,7 +129,7 @@ module bfc_system::bfc_system_tests {
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        create_sui_system_state_no_skip_init_vault(ctx, BFC_AMOUNT);
         test_scenario::next_tx(scenario, bfc_addr);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
@@ -391,7 +391,7 @@ module bfc_system::bfc_system_tests {
 
         let scenario = &mut scenario_val;
         let ctx = test_scenario::ctx(scenario);
-        create_sui_system_state_for_testing(ctx, BFC_AMOUNT);
+        create_sui_system_state_no_skip_init_vault(ctx, BFC_AMOUNT);
         test_scenario::next_tx(scenario, bfc_addr);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(scenario);
 
