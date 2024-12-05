@@ -954,6 +954,7 @@ mod sim_only_tests {
         if let SuiSystemState::V2(inner) = system_state {
             // Make sure we have 1 inactive validator for latter testing.
             assert_eq!(inner.safe_mode_storage_rebates, 100);
+            assert_eq!(inner.validators.active_validators.len(), 4);
         } else {
             panic!("Expecting SimTestDeepV2 type");
         }

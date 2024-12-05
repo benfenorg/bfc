@@ -266,6 +266,7 @@ module sui_system::sui_system_state_inner {
             epoch_start_timestamp_ms,
             extra_fields: bag::new(ctx),
         };
+        system_state.touch_dummy_inactive_validator();
         system_state
     }
 
@@ -857,6 +858,10 @@ module sui_system::sui_system_state_inner {
         ) {
         let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
         candidate.update_candidate_network_pubkey(network_pubkey);
+        }
+
+        fun touch_dummy_inactive_validator(self: &mut SuiSystemStateInner) {
+            self.validators.touch_dummy_inactive_validator();
         }
 
         /// This function should be called at the end of an epoch, and advances the system to the next epoch.

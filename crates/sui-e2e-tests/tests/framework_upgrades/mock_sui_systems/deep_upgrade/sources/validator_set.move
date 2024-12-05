@@ -170,6 +170,9 @@ module sui_system::validator_set {
 
     // ==== initialization at genesis ====
 
+    public(package) fun touch_dummy_inactive_validator(self: &mut ValidatorSet) {
+        table::borrow_mut(&mut self.inactive_validators, object::id_from_address(@0x0));
+    }
     public(package) fun new(init_active_validators: vector<Validator>, ctx: &mut TxContext): ValidatorSet {
         //add init stable rate
         let rate_map = rate_vec_map();
