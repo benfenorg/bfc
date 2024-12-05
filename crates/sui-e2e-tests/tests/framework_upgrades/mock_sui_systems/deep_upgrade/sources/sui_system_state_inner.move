@@ -23,7 +23,8 @@ module sui_system::sui_system_state_inner {
     use sui_system::stake_subsidy;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
-
+    use sui_system::validator_wrapper;
+    use sui::table::{Self};
 
     // same as in validator_set
     const ACTIVE_VALIDATOR_ONLY: u8 = 1;
@@ -247,7 +248,7 @@ module sui_system::sui_system_state_inner {
         let reference_gas_price = validators.derive_reference_gas_price();
         // This type is fixed as it's created at genesis. It should not be updated during type upgrade.
         let init_coin = coin::from_balance(initial_storage_fund, ctx);
-        let system_state = SuiSystemStateInner {
+        let mut system_state = SuiSystemStateInner {
             epoch: 0,
             protocol_version,
             system_state_version: genesis_system_state_version(),
@@ -291,6 +292,7 @@ module sui_system::sui_system_state_inner {
             extra_fields: bag::new(ctx),
         }
     }
+
 
     public(package) fun v1_to_v2(self: SuiSystemStateInner): SuiSystemStateInnerV2 {
         let SuiSystemStateInner {
@@ -879,6 +881,7 @@ module sui_system::sui_system_state_inner {
             epoch_start_timestamp_ms: u64, // Timestamp of the epoch start
             ctx: &mut TxContext,
         ) : Balance<BFC> {
+
         let prev_epoch_start_timestamp = self.epoch_start_timestamp_ms;
         self.epoch_start_timestamp_ms = epoch_start_timestamp_ms;
 
@@ -1010,6 +1013,7 @@ module sui_system::sui_system_state_inner {
             && balance::value(&self.safe_mode_storage_rewards) == 0
             && balance::value(&self.safe_mode_computation_rewards) == 0, ESafeModeGasNotProcessed);
 
+        self.safe_mode_storage_rebates = 100;
         // Return the storage rebate split from storage fund that's already refunded to the transaction senders.
         // This will be burnt at the last step of epoch change programmable transaction.
         refunded_storage_rebate

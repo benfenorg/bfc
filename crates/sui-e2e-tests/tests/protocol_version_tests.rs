@@ -872,6 +872,11 @@ mod sim_only_tests {
 
     #[sim_test]
     async fn sui_system_state_shallow_upgrade_test() {
+        let _guard = ProtocolConfig::apply_overrides_for_testing(|_, mut config| {
+            config.set_disable_bridge_for_testing();
+            config
+        });
+
         override_sui_system_modules("mock_sui_systems/shallow_upgrade");
 
         let test_cluster = TestClusterBuilder::new()
@@ -912,6 +917,7 @@ mod sim_only_tests {
 
         override_sui_system_modules("mock_sui_systems/deep_upgrade");
 
+        telemetry_subscribers::init_for_testing();
         let test_cluster = TestClusterBuilder::new()
             .with_epoch_duration_ms(20000)
             .with_supported_protocol_versions(SupportedProtocolVersions::new_for_testing(
@@ -926,25 +932,14 @@ mod sim_only_tests {
         // but the system state object hasn't been upgraded yet.
         let system_state = test_cluster.wait_for_epoch(Some(1)).await;
         assert_eq!(system_state.protocol_version(), FINISH);
-        // assert_eq!(
-        //     system_state.system_state_version(),
-        //     SUI_SYSTEM_STATE_SIM_TEST_V1
-        // );
+        assert_eq!(
+            system_state.system_state_version(),
+            2
+        );
 
-        if let SuiSystemState::SimTestV1(inner) = system_state {
+        if let SuiSystemState::V2(inner) = system_state {
             // Make sure we have 1 inactive validator for latter testing.
-            assert_eq!(inner.validators.inactive_validators.size, 1);
-            get_validator_from_table(
-                test_cluster
-                    .fullnode_handle
-                    .sui_node
-                    .state()
-                    .get_object_store()
-                    .as_ref(),
-                inner.validators.inactive_validators.id,
-                &ID::new(ObjectID::ZERO),
-            )
-            .unwrap();
+            assert_eq!(inner.validators.inactive_validators.size, 0);
         } else {
             panic!("Expecting SimTestV1 type {:?}", system_state);
         }
@@ -954,22 +949,11 @@ mod sim_only_tests {
         let system_state = test_cluster.wait_for_epoch(Some(2)).await;
         assert_eq!(
             system_state.system_state_version(),
-            SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2
+            2
         );
-        if let SuiSystemState::SimTestDeepV2(inner) = system_state {
+        if let SuiSystemState::V2(inner) = system_state {
             // Make sure we have 1 inactive validator for latter testing.
-            assert_eq!(inner.validators.inactive_validators.size, 1);
-            get_validator_from_table(
-                test_cluster
-                    .fullnode_handle
-                    .sui_node
-                    .state()
-                    .get_object_store()
-                    .as_ref(),
-                inner.validators.inactive_validators.id,
-                &ID::new(ObjectID::ZERO),
-            )
-            .unwrap();
+            assert_eq!(inner.safe_mode_storage_rebates, 100);
         } else {
             panic!("Expecting SimTestDeepV2 type");
         }
