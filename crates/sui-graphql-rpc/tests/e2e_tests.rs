@@ -381,7 +381,7 @@ async fn test_zklogin_sig_verify() {
 
     telemetry_subscribers::init_for_testing();
 
-    let cluster = start_cluster(ServiceConfig::test_defaults()).await;
+    let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
 
     let test_cluster = &cluster.network.validator_fullnode_handle;
     test_cluster.wait_for_epoch_all_nodes(1).await;
@@ -403,7 +403,7 @@ async fn test_zklogin_sig_verify() {
     let eph_sig = Signature::new_secure(&msg, kp);
     let generic_sig = GenericSignature::ZkLoginAuthenticator(ZkLoginAuthenticator::new(
         inputs.clone(),
-        2,
+        10,
         eph_sig.clone(),
     ));
 
