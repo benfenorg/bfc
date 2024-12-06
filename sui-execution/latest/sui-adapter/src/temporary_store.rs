@@ -10,6 +10,11 @@ use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
+use sui_types::bfc_system_state::{
+    get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate,
+    get_stable_rate_with_base_point, is_enabled_oracle,
+};
+use sui_types::collection_types::VecMap;
 use sui_types::committee::EpochId;
 use sui_types::deny_list_v2::check_coin_deny_list_v2_during_execution;
 use sui_types::effects::{TransactionEffects, TransactionEvents};
@@ -18,20 +23,27 @@ use sui_types::execution::{
 };
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::execution_status::ExecutionStatus;
+use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
+use sui_types::layout_resolver::LayoutResolver;
+use sui_types::oracle_price::OraclePrice;
+use sui_types::proposal::ProposalStatus;
+use sui_types::storage::DenyListResult;
 use sui_types::storage::{BackingStore, PackageObject};
 use sui_types::sui_system_state::SuiSystemState;
-use sui_types::sui_system_state::{get_sui_system_state_wrapper, AdvanceEpochParams, get_sui_system_state, SuiSystemStateTrait};
-use sui_types::{base_types::{
-    ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest,
-}, error::{ExecutionError, SuiError, SuiResult},
-                 fp_bail, gas::GasCostSummary, object::Owner,
-                object::{Data, Object},
-                storage::{
-    BackingPackageStore, ChildObjectResolver, ParentSync, Storage,
-}, transaction::InputObjects};
-use sui_types::layout_resolver::LayoutResolver;
-use sui_types::storage::{ DenyListResult};
+use sui_types::sui_system_state::{
+    get_sui_system_state, get_sui_system_state_wrapper, AdvanceEpochParams, SuiSystemStateTrait,
+};
+use sui_types::{
+    base_types::{ObjectID, ObjectRef, SequenceNumber, SuiAddress, TransactionDigest},
+    error::{ExecutionError, SuiError, SuiResult},
+    fp_bail,
+    gas::GasCostSummary,
+    object::Owner,
+    object::{Data, Object},
+    storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
+    transaction::InputObjects,
+};
 use sui_types::{
     effects::EffectsObjectChange,
     //storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
@@ -39,11 +51,6 @@ use sui_types::{
     SUI_DENY_LIST_OBJECT_ID,
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
-use sui_types::collection_types::VecMap;
-use sui_types::bfc_system_state::{get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point, is_enabled_oracle};
-use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
-use sui_types::oracle_price::OraclePrice;
-use sui_types::proposal::ProposalStatus;
 
 pub struct TemporaryStore<'backing> {
     // The backing store for retrieving Move packages onchain.
@@ -400,9 +407,6 @@ impl<'backing> TemporaryStore<'backing> {
         self.execution_results.drop_writes();
     }
 
-
-
-
     pub fn estimate_effects_size_upperbound(&self) -> usize {
         TransactionEffects::estimate_effects_size_upperbound_v2(
             self.execution_results.written_objects.len(),
@@ -465,28 +469,28 @@ impl<'backing> TemporaryStore<'backing> {
     /// If there are unmetered storage rebate (due to system transaction), we put them into
     /// the storage rebate of 0x5 object.
     /// TODO: This will not work for potential future new system transactions if 0x5 is not in the input.
-            /// We should fix this.
+    /// We should fix this.
     pub fn conserve_unmetered_storage_rebate(&mut self, unmetered_storage_rebate: u64) {
-                if unmetered_storage_rebate == 0 {
-                    // If unmetered_storage_rebate is 0, we are most likely executing the genesis transaction.
-                    // And in that case we cannot mutate the 0x5 object because it's newly created.
-                    // And there is no storage rebate that needs distribution anyway.
-                    return;
-                }
-                tracing::debug!(
+        if unmetered_storage_rebate == 0 {
+            // If unmetered_storage_rebate is 0, we are most likely executing the genesis transaction.
+            // And in that case we cannot mutate the 0x5 object because it's newly created.
+            // And there is no storage rebate that needs distribution anyway.
+            return;
+        }
+        tracing::debug!(
             "Amount of unmetered storage rebate from system tx: {:?}",
             unmetered_storage_rebate
         );
-                let mut system_state_wrapper = self
-                    .read_object(&SUI_SYSTEM_STATE_OBJECT_ID)
-                    .expect("0x5 object must be mutated in system tx with unmetered storage rebate")
-                    .clone();
-                // In unmetered execution, storage_rebate field of mutated object must be 0.
-                // If not, we would be dropping SUI on the floor by overriding it.
-                assert_eq!(system_state_wrapper.storage_rebate, 0);
-                system_state_wrapper.storage_rebate = unmetered_storage_rebate;
-                self.mutate_input_object(system_state_wrapper);
-            }
+        let mut system_state_wrapper = self
+            .read_object(&SUI_SYSTEM_STATE_OBJECT_ID)
+            .expect("0x5 object must be mutated in system tx with unmetered storage rebate")
+            .clone();
+        // In unmetered execution, storage_rebate field of mutated object must be 0.
+        // If not, we would be dropping SUI on the floor by overriding it.
+        assert_eq!(system_state_wrapper.storage_rebate, 0);
+        system_state_wrapper.storage_rebate = unmetered_storage_rebate;
+        self.mutate_input_object(system_state_wrapper);
+    }
 
     /// Given an object ID, if it's not modified, returns None.
     /// Otherwise returns its metadata, including version, digest, owner and storage rebate.
@@ -532,7 +536,6 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 }
-
 
 impl<'backing> TemporaryStore<'backing> {
     // check that every object read is owned directly or indirectly by sender, sponsor,
@@ -750,11 +753,15 @@ impl<'backing> TemporaryStore<'backing> {
         self.mutate_child_object(old_object, new_object);
     }
 
-    pub fn get_bfc_system_proposal_status_map(& self) -> Result<VecMap<u64, ProposalStatus>,SuiError> {
+    pub fn get_bfc_system_proposal_status_map(
+        &self,
+    ) -> Result<VecMap<u64, ProposalStatus>, SuiError> {
         get_bfc_system_proposal_state_map(self.store.as_object_store())
     }
 
-    pub fn get_stable_rate_map_and_reward_rate(&self) -> Result<(VecMap<String, u64>, u64),SuiError> {
+    pub fn get_stable_rate_map_and_reward_rate(
+        &self,
+    ) -> Result<(VecMap<String, u64>, u64), SuiError> {
         get_stable_rate_and_reward_rate(self.store.as_object_store())
     }
 
@@ -766,45 +773,43 @@ impl<'backing> TemporaryStore<'backing> {
         is_enabled_oracle(self.store.as_object_store())
     }
 
-    pub fn get_stable_rate_with_base_point_by_name(&self, name: String) -> Result<(u64, u64),SuiError> {
+    pub fn get_stable_rate_with_base_point_by_name(
+        &self,
+        name: String,
+    ) -> Result<(u64, u64), SuiError> {
         let (wrapper, base_point) = get_stable_rate_with_base_point(self.store.as_object_store())?;
-        let rate = wrapper.contents.clone().into_iter()
+        let rate = wrapper
+            .contents
+            .clone()
+            .into_iter()
             .find(|e| e.key == name)
             .map(|e| e.value);
         match rate {
             Some(rate) => Ok((rate, base_point)),
-            None => Err(SuiError::BfcSystemStateReadError(format!("Stable rate not found by name: {}",name))),
+            None => Err(SuiError::BfcSystemStateReadError(format!(
+                "Stable rate not found by name: {}",
+                name
+            ))),
         }
     }
 
-    pub fn is_safe_mode(& self) -> bool {
+    pub fn is_safe_mode(&self) -> bool {
         let sui_system_state_result = get_sui_system_state(self.store.as_object_store());
         if let Ok(sui_system_state) = sui_system_state_result {
             match sui_system_state {
-                SuiSystemState::V1(inner)=>{
-                    inner.safe_mode()
-                },
-                SuiSystemState::V2(inner)=>{
-                    inner.safe_mode()
-                }
+                SuiSystemState::V1(inner) => inner.safe_mode(),
+                SuiSystemState::V2(inner) => inner.safe_mode(),
                 #[cfg(msim)]
-                SuiSystemState::SimTestV1(inner) =>{
-                    inner.safe_mode()
-                }
+                SuiSystemState::SimTestV1(inner) => inner.safe_mode(),
                 #[cfg(msim)]
-                SuiSystemState::SimTestShallowV2(inner) => {
-                    inner.safe_mode()
-                }
+                SuiSystemState::SimTestShallowV2(inner) => inner.safe_mode(),
                 #[cfg(msim)]
-                SuiSystemState::SimTestDeepV2(inner)=>{
-                    inner.safe_mode()
-                }
+                SuiSystemState::SimTestDeepV2(inner) => inner.safe_mode(),
             }
-        }else {
+        } else {
             true
         }
     }
-
 }
 
 type ModifiedObjectInfo<'a> = (
@@ -874,7 +879,7 @@ impl<'backing> TemporaryStore<'backing> {
             Ok(obj.clone())
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+            let Ok(Some(obj)) = self.store.get_object_by_key(id, expected_version) else {
                 invariant_violation!(
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
@@ -888,7 +893,7 @@ impl<'backing> TemporaryStore<'backing> {
         id: &ObjectID,
         expected_version: SequenceNumber,
         layout_resolver: &mut impl LayoutResolver,
-    ) -> Result<(u64,u64), ExecutionError> {
+    ) -> Result<(u64, u64), ExecutionError> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
             if obj.version() != expected_version {
@@ -899,27 +904,29 @@ impl<'backing> TemporaryStore<'backing> {
                     obj.version(),
                 );
             }
-            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
-                make_invariant_violation!(
-                    "Failed looking up input SUI in SUI conservation checking for input with \
+            obj.get_total_stable_coin_with_bfc(layout_resolver)
+                .map_err(|e| {
+                    make_invariant_violation!(
+                        "Failed looking up input SUI in SUI conservation checking for input with \
                          type {:?}: {e:#?}",
-                    obj.struct_tag(),
-                )
-            })
+                        obj.struct_tag(),
+                    )
+                })
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+            let Ok(Some(obj)) = self.store.get_object_by_key(id, expected_version) else {
                 invariant_violation!(
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
             };
-            obj.get_total_stable_coin_with_bfc(layout_resolver).map_err(|e| {
-                make_invariant_violation!(
-                    "Failed looking up input SUI in SUI conservation checking for type \
+            obj.get_total_stable_coin_with_bfc(layout_resolver)
+                .map_err(|e| {
+                    make_invariant_violation!(
+                        "Failed looking up input SUI in SUI conservation checking for type \
                          {:?}: {e:#?}",
-                    obj.struct_tag(),
-                )
-            })
+                        obj.struct_tag(),
+                    )
+                })
         }
     }
 
@@ -931,14 +938,20 @@ impl<'backing> TemporaryStore<'backing> {
         if let Some(obj) = self.input_objects.get(id) {
             // the assumption here is that if it is in the input objects must be the right one
             if obj.version() != expected_version {
-                return Err(ExecutionError::invariant_violation(format!("Version mismatching when resolving input object to check conservation--\
-                     expected {}, got {}",expected_version,obj.version())));
+                return Err(ExecutionError::invariant_violation(format!(
+                    "Version mismatching when resolving input object to check conservation--\
+                     expected {}, got {}",
+                    expected_version,
+                    obj.version()
+                )));
             }
             Ok(obj.clone())
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
-                return Err(ExecutionError::invariant_violation(format!( "Failed looking up dynamic field {id} in SUI conservation checking")));
+            let Ok(Some(obj)) = self.store.get_object_by_key(id, expected_version) else {
+                return Err(ExecutionError::invariant_violation(format!(
+                    "Failed looking up dynamic field {id} in SUI conservation checking"
+                )));
             };
             Ok(obj.clone())
         }
@@ -971,7 +984,6 @@ impl<'backing> TemporaryStore<'backing> {
             .collect()
     }
 
-
     /// Check that this transaction neither creates nor destroys SUI. This should hold for all txes
     /// except the epoch change tx, which mints staking rewards equal to the gas fees burned in the
     /// previous epoch.  Specifically, this checks two key invariants about storage
@@ -994,15 +1006,15 @@ impl<'backing> TemporaryStore<'backing> {
             return Ok(());
         }
         // total amount of SUI in storage rebate of input objects
-        let mut total_input_rebate = 0;
+        let mut total_input_rebate: u64 = 0;
         // total amount of SUI in storage rebate of output objects
-        let mut total_output_rebate = 0;
+        let mut total_output_rebate: u64 = 0;
         for (_, input, output) in self.get_modified_objects() {
             if let Some(input) = input {
-                total_input_rebate += input.storage_rebate;
+                total_input_rebate = total_input_rebate.saturating_add(input.storage_rebate);
             }
             if let Some(object) = output {
-                total_output_rebate += object.storage_rebate;
+                total_output_rebate = total_output_rebate.saturating_add(object.storage_rebate);
             }
         }
 
@@ -1019,9 +1031,11 @@ impl<'backing> TemporaryStore<'backing> {
             // A more typical condition is for all storage charges in summary to be 0 and
             // then input and output must be the same value
             if total_input_rebate
-                != total_output_rebate
-                    + gas_summary.storage_rebate
-                    + gas_summary.non_refundable_storage_fee
+                != total_output_rebate.saturating_add(
+                    gas_summary
+                        .storage_rebate
+                        .saturating_add(gas_summary.non_refundable_storage_fee),
+                )
             {
                 return Err(ExecutionError::invariant_violation(format!(
                     "SUI conservation failed -- no storage charges in gas summary \
@@ -1034,7 +1048,9 @@ impl<'backing> TemporaryStore<'backing> {
             // all SUI in storage rebate fields of input objects should flow either to
             // the transaction storage rebate, or the non-refundable storage rebate pool
             if total_input_rebate
-                != gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee
+                != gas_summary
+                    .storage_rebate
+                    .saturating_add(gas_summary.non_refundable_storage_fee)
             {
                 return Err(ExecutionError::invariant_violation(format!(
                     "SUI conservation failed -- {} SUI in storage rebate field of input objects, \
@@ -1073,45 +1089,99 @@ impl<'backing> TemporaryStore<'backing> {
         gas_summary: &GasCostSummary,
         advance_epoch_gas_summary: Option<(u64, u64)>,
         layout_resolver: &mut impl LayoutResolver,
+        pay_with_stable_gas: bool,
     ) -> Result<(), ExecutionError> {
         // total amount of SUI in input objects, including both coins and storage rebates
-        let mut total_input_sui = 0;
+        let mut total_input_sui: u64 = 0;
         // total amount of SUI in output objects, including both coins and storage rebates
-        let mut total_output_sui = 0;
+        let mut total_output_sui: u64 = 0;
+        let mut total_input_stable_gas: u64 = 0;
+        let mut total_output_stable_gas: u64 = 0;
+
         for (id, input, output) in self.get_modified_objects() {
             if let Some(input) = input {
-                total_input_sui += self.get_input_sui(&id, input.version, layout_resolver)?;
+                // stable coin
+                let (stable_coin, rebate) =
+                    self.get_input_stable_with_bfc(&id, input.version, layout_resolver)?;
+                total_input_stable_gas = total_input_stable_gas.saturating_add(stable_coin);
+                total_input_sui = total_input_sui.saturating_add(rebate);
             }
             if let Some(object) = output {
-                total_output_sui += object.get_total_sui(layout_resolver).map_err(|e| {
-                    make_invariant_violation!(
-                        "Failed looking up output SUI in SUI conservation checking for \
-                         mutated type {:?}: {e:#?}",
-                        object.struct_tag(),
-                    )
-                })?;
+                let (stable_coin, bfc) = object
+                    .get_total_stable_coin_with_bfc(layout_resolver)
+                    .map_err(|e| {
+                        make_invariant_violation!(
+                            "Failed looking up output Stable Coin in SUI conservation checking for \
+                             mutated type {:?}: {e:#?}",
+                            object.struct_tag(),
+                        )
+                    })?;
+                total_output_stable_gas = total_output_stable_gas.saturating_add(stable_coin);
+                total_output_sui = total_output_sui.saturating_add(bfc);
             }
         }
         // note: storage_cost flows into the storage_rebate field of the output objects, which is
         // why it is not accounted for here.
         // similarly, all of the storage_rebate *except* the storage_fund_rebate_inflow
         // gets credited to the gas coin both computation costs and storage rebate inflow are
-        total_output_sui += gas_summary.computation_cost + gas_summary.non_refundable_storage_fee;
         if let Some((epoch_fees, epoch_rebates)) = advance_epoch_gas_summary {
-            total_input_sui += epoch_fees;
-            total_output_sui += epoch_rebates;
+            total_input_sui = total_input_sui.saturating_add(epoch_fees);
+            total_output_sui = total_output_sui.saturating_add(epoch_rebates);
         }
-        if total_input_sui != total_output_sui {
-            return Err(ExecutionError::invariant_violation(format!(
-                "SUI conservation failed: input={}, output={}, \
-                    this transaction either mints or burns SUI",
-                total_input_sui, total_output_sui,
-            )));
+
+        if pay_with_stable_gas {
+            total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(
+                gas_summary.computation_cost,
+                gas_summary.rate,
+                gas_summary.base_point,
+            );
+            total_output_sui =
+                total_output_sui.saturating_add(gas_summary.non_refundable_storage_fee);
+
+            let stable_amount = if total_input_stable_gas >= total_output_stable_gas {
+                total_input_stable_gas - total_output_stable_gas
+            } else {
+                total_output_stable_gas - total_input_stable_gas
+            };
+            let sui_amount = if total_input_sui >= total_output_sui {
+                total_input_sui - total_output_sui
+            } else {
+                total_output_sui - total_input_sui
+            };
+
+            if stable_amount != gas_summary.storage_gas_usage_abs_improved() {
+                return Err(ExecutionError::invariant_violation(
+                    format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
+                            stable_amount,
+                            gas_summary.storage_gas_usage_abs_improved()))
+                );
+            }
+
+            if sui_amount != gas_summary.storage_gas_usage_abs() {
+                return Err(ExecutionError::invariant_violation(
+                    format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
+                            sui_amount,
+                            gas_summary.storage_gas_usage_abs()))
+                );
+            }
+        } else {
+            total_output_sui = total_output_sui.saturating_add(
+                gas_summary
+                    .computation_cost
+                    .saturating_add(gas_summary.non_refundable_storage_fee),
+            );
+            if total_input_sui != total_output_sui {
+                return Err(ExecutionError::invariant_violation(
+                    format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                            total_input_sui,
+                            total_output_sui))
+                );
+            }
         }
+
         Ok(())
     }
 }
-
 
 impl<'backing> ChildObjectResolver for TemporaryStore<'backing> {
     fn read_child_object(
@@ -1286,5 +1356,4 @@ impl<'backing> ParentSync for TemporaryStore<'backing> {
     ) -> SuiResult<Option<ObjectRef>> {
         unreachable!("Never called in newer protocol versions")
     }
-
 }
