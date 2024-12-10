@@ -7,7 +7,7 @@ use std::{path::PathBuf, time::Duration};
 use sui_graphql_rpc::{
     config::{ConnectionConfig, ServiceConfig},
     test_infra::cluster::{
-        start_graphql_server_with_fn_rpc, start_network_cluster,
+        start_graphql_server_with_fn_rpc,
         wait_for_graphql_checkpoint_catchup, wait_for_graphql_server, NetworkCluster,
     },
 };

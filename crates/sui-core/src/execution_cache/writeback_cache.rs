@@ -76,11 +76,6 @@ use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
 use sui_types::bfc_system_state::get_bfc_system_state;
 use sui_types::bfc_system_state::get_bfc_system_proposal_state_map;
 use sui_types::bfc_system_state::BFCSystemState;
-use crate::checkpoints::CheckpointStore;
-use sui_config::node::AuthorityStorePruningConfig;
-use crate::authority::authority_store_pruner::AuthorityStorePruner;
-use crate::authority::authority_store_pruner::AuthorityStorePruningMetrics;
-use crate::authority::authority_store_pruner::EPOCH_DURATION_MS_FOR_TESTING;
 use tap::TapOptional;
 use tracing::{debug, info, instrument, trace, warn};
 
@@ -95,7 +90,6 @@ use super::{
 //use sui_types::proposal::ProposalStatus;
 use sui_types::collection_types::VecMap;
 use sui_types::oracle_price::{get_oracle_price_by_id, OraclePrice};
-use sui_types::sui_system_state::{get_bfc_system_proposal_map};
 use sui_types::proposal::ProposalStatus;
 
 #[cfg(test)]

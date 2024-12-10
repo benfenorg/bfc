@@ -3,17 +3,12 @@
 
 use crate::authority::authority_per_epoch_store::AuthorityPerEpochStore;
 use crate::authority::authority_store::{ExecutionLockWriteGuard, SuiLockResult};
-use crate::rest_index::RestIndexStore;
 use crate::authority::AuthorityStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use sui_types::bfc_system_state::BFCSystemState;
 use crate::execution_cache::EpochStartConfiguration;
-use crate::checkpoints::CheckpointStore;
 use crate::execution_cache::EpochFlag;
-use sui_config::node::AuthorityStorePruningConfig;
-use crate::authority::authority_store_pruner::AuthorityStorePruner;
-use crate::authority::authority_store_pruner::AuthorityStorePruningMetrics;
 use crate::authority::authority_store_pruner::EPOCH_DURATION_MS_FOR_TESTING;
 
 use futures::{future::BoxFuture, FutureExt};

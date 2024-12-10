@@ -19,7 +19,6 @@ use sui_types::gas_coin::GAS;
 use sui_types::transaction::CallArg;
 use sui_types::transaction::ObjectArg;
 use sui_types::transaction::TransactionDataAPI;
-use sui_types::DEEPBOOK_ADDRESS;
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 use tempfile::tempdir;
