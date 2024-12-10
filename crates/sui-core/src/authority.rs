@@ -869,12 +869,10 @@ impl AuthorityState {
         self.checkpoint_store.get_epoch_state_commitments(epoch)
     }
 
-    fn handle_transaction_deny_checks(
+    async fn handle_transaction_deny_checks(
         &self,
         transaction: &VerifiedTransaction,
         epoch_store: &Arc<AuthorityPerEpochStore>,
-        stable_rate: Option<u64>,
-        base_point: Option<u64>,
     ) -> SuiResult<CheckedInputObjects> {
         let tx_digest = transaction.digest();
         let tx_data = transaction.data().transaction_data();
@@ -900,6 +898,12 @@ impl AuthorityState {
             &receiving_objects_refs,
             epoch_store.epoch(),
         )?;
+
+        let (stable_rate, base_point) = if !transaction.is_system_tx() {
+            self.get_stable_rate_and_base_points(transaction.gas()).await?
+        } else {
+            (None, None)
+        };
 
         let (_gas_status, checked_input_objects) = sui_transaction_checks::check_transaction_input(
             epoch_store.protocol_config(),
@@ -945,14 +949,8 @@ impl AuthorityState {
         // Ensure that validator cannot reconfigure while we are signing the tx
         let _execution_lock = self.execution_lock_for_signing().await;
 
-        let (stable_rate, base_point) = if !transaction.is_system_tx() {
-            self.get_stable_rate_and_base_points(transaction.gas()).await?
-        }else {
-            (None, None)
-        };
-
         let checked_input_objects =
-            self.handle_transaction_deny_checks(&transaction, epoch_store, stable_rate, base_point)?;
+            self.handle_transaction_deny_checks(&transaction, epoch_store).await?;
 
         let owned_objects = checked_input_objects.inner().filter_owned_objects();
 
