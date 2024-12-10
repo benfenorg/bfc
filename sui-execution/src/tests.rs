@@ -26,9 +26,6 @@ fn test_encapsulation() {
 
     // Identify the crates that are part of the execution layer
     let mut exec_crates: BTreeSet<_> = packages.normal_deps("sui-execution").collect();
-    for x in exec_crates.iter() {
-        println!("====={}", x);
-    }
 
     // Remove the crates that the execution layer depends on but which are not directly part of the
     // execution layer -- these don't need to be accessed exclusively via `sui-execution`.

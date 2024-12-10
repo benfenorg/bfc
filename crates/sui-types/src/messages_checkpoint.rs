@@ -341,7 +341,6 @@ impl CertifiedCheckpointSummary {
             Intent::sui_app(IntentScope::CheckpointSummary),
             committee,
         );
-        println!("verify_authority_signatures {:?}", j);
         j
     }
 
@@ -355,13 +354,9 @@ impl CertifiedCheckpointSummary {
         committee: &Committee,
         contents: Option<&CheckpointContents>,
     ) -> SuiResult {
-        println!("suitype verify_with_contents 1");
         self.verify_authority_signatures(committee)?;
-        println!("suitype verify_with_contents 2");
 
         if let Some(contents) = contents {
-            println!("suitype verify_with_contents 3");
-
             let content_digest = *contents.digest();
             fp_ensure!(
                 content_digest == self.data().content_digest,

@@ -378,13 +378,6 @@ impl<'backing> TemporaryStore<'backing> {
     pub fn read_object(&self, id: &ObjectID) -> Option<&Object> {
         // there should be no read after delete
         debug_assert!(!self.execution_results.deleted_object_ids.contains(id));
-        //println!("wubin read object id {} len{} and input_objects {}", id,
-        //                 self.execution_results.written_objects.len(),
-        //               self.input_objects.len());
-        // for (key, value) in self.input_objects.iter() {
-        //     // 对每个键值对执行操作
-        //     println!("\n====input map data Key: {:?}, Value: {:?}", key, value);
-        // }
 
         self.execution_results
             .written_objects
@@ -394,8 +387,6 @@ impl<'backing> TemporaryStore<'backing> {
     /// Delete a mutable input object. This is used to delete input objects outside of PT execution.
     pub fn delete_input_object(&mut self, id: &ObjectID) {
         // there should be no deletion after write
-        //println!("wubin delete_input_object {}", id);
-
         debug_assert!(!self.execution_results.written_objects.contains_key(id));
         debug_assert!(self.input_objects.contains_key(id));
         self.execution_results.modified_objects.insert(*id);
