@@ -64,7 +64,7 @@ Contents: Test::M1::Parent {
 
 task 7, line 98:
 //# view-object 2,0
-Owner: Object ID: ( BFC514462537cf9ced30f7476ff0d8fb2e7b4f8e483ce9cb70e315f0dc7b0df577de33b )
+Owner: Object ID: ( BFC3dc819a925f293da6ef0b49f6c4cc611d39d9948b06355f275460d26f925db2197b1 )
 Version: 3
 Contents: Test::M1::Child {
     id: sui::object::UID {
@@ -84,7 +84,7 @@ task 9, lines 102-164:
 Response: {
   "data": {
     "parent_version_2_no_dof": {
-      "address": "0x33b1fa9a74443b49d9165b1de9a7a1b0b6ff51b91a7da087dcccbc34002ed5fc",
+      "address": "0x464bb6a30c50b85852d0cb4974d0cd8a5a25fe740ee4e0b63350ea5930c23167",
       "dynamicFields": {
         "edges": []
       }
@@ -93,7 +93,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9AQAAAAAAAAA=",
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshAQAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "pAEAAAAAAAA=",
@@ -104,7 +104,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
                     "count": "1"
                   }
                 }
@@ -115,13 +115,13 @@ Response: {
       }
     },
     "child_version_2_no_parent": {
-      "address": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+      "address": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
       "owner": {}
     },
     "child_version_3_has_parent": {
       "owner": {
         "parent": {
-          "address": "0x514462537cf9ced30f7476ff0d8fb2e7b4f8e483ce9cb70e315f0dc7b0df577d"
+          "address": "0x3dc819a925f293da6ef0b49f6c4cc611d39d9948b06355f275460d26f925db21"
         }
       }
     }
@@ -150,7 +150,7 @@ Contents: Test::M1::Parent {
 
 task 12, line 172:
 //# view-object 2,0
-Owner: Object ID: ( BFC514462537cf9ced30f7476ff0d8fb2e7b4f8e483ce9cb70e315f0dc7b0df577de33b )
+Owner: Object ID: ( BFC3dc819a925f293da6ef0b49f6c4cc611d39d9948b06355f275460d26f925db2197b1 )
 Version: 4
 Contents: Test::M1::Child {
     id: sui::object::UID {
@@ -173,7 +173,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IEkPL0eXA0BYTKqTVehmXYKRqQN0ry3JhW8+tvVfBtdLAgAAAAAAAAA=",
+            "cursor": "IA5gXf33ppmPnNb3J5IZy3mnL7guLxirUZeXv3eYmKrHAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMg==",
@@ -187,40 +187,7 @@ Response: {
             }
           },
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9AgAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "pAEAAAAAAAA=",
-                "type": {
-                  "repr": "u64"
-                }
-              },
-              "value": {
-                "contents": {
-                  "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
-                    "count": "2"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAgAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMQ==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df1"
-              }
-            }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAgAAAAAAAAA=",
+            "cursor": "IDc5Ch/B+dM2qbqGsUgOKYsClAeIXlYSazhoxlYpwvCQAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMw==",
@@ -232,15 +199,9 @@ Response: {
                 "json": "df3"
               }
             }
-          }
-        ]
-      }
-    },
-    "parent_version_3_only_dof": {
-      "dynamicFields": {
-        "edges": [
+          },
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9AgAAAAAAAAA=",
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "pAEAAAAAAAA=",
@@ -251,7 +212,46 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
+                    "count": "2"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAgAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMQ==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df1"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "parent_version_3_only_dof": {
+      "dynamicFields": {
+        "edges": [
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshAgAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "pAEAAAAAAAA=",
+                "type": {
+                  "repr": "u64"
+                }
+              },
+              "value": {
+                "contents": {
+                  "json": {
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
                     "count": "1"
                   }
                 }
@@ -270,7 +270,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAgAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -280,20 +280,6 @@ Response: {
               },
               "value": {
                 "json": "df1"
-              }
-            }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAgAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMw==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df3"
               }
             }
           }
@@ -328,7 +314,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+              "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
               "count": "1"
             }
           }
@@ -347,7 +333,7 @@ Response: {
         "value": {
           "contents": {
             "json": {
-              "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+              "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
               "count": "2"
             }
           }
@@ -389,7 +375,7 @@ Contents: Test::M1::Parent {
 
 task 18, line 283:
 //# view-object 2,0
-Owner: Object ID: ( BFC514462537cf9ced30f7476ff0d8fb2e7b4f8e483ce9cb70e315f0dc7b0df577de33b )
+Owner: Object ID: ( BFC3dc819a925f293da6ef0b49f6c4cc611d39d9948b06355f275460d26f925db2197b1 )
 Version: 4
 Contents: Test::M1::Child {
     id: sui::object::UID {
@@ -412,7 +398,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IEkPL0eXA0BYTKqTVehmXYKRqQN0ry3JhW8+tvVfBtdLAwAAAAAAAAA=",
+            "cursor": "IA5gXf33ppmPnNb3J5IZy3mnL7guLxirUZeXv3eYmKrHAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMg==",
@@ -426,7 +412,21 @@ Response: {
             }
           },
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9AwAAAAAAAAA=",
+            "cursor": "IDc5Ch/B+dM2qbqGsUgOKYsClAeIXlYSazhoxlYpwvCQAwAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMw==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df3"
+              }
+            }
+          },
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "pAEAAAAAAAA=",
@@ -437,7 +437,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
                     "count": "2"
                   }
                 }
@@ -445,7 +445,7 @@ Response: {
             }
           },
           {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAwAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -455,20 +455,6 @@ Response: {
               },
               "value": {
                 "json": "df1"
-              }
-            }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMw==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df3"
               }
             }
           }
@@ -479,7 +465,88 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAgAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAgAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMQ==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df1"
+              }
+            }
+          }
+        ]
+      }
+    },
+    "parent_version_5_has_7_children": {
+      "dynamicFields": {
+        "edges": [
+          {
+            "cursor": "IAg7cYZ3gjuLLYljNl0d4Tr6/B2bNQGdva0EfQ0JVgq/AwAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmNg==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df6"
+              }
+            }
+          },
+          {
+            "cursor": "IA5gXf33ppmPnNb3J5IZy3mnL7guLxirUZeXv3eYmKrHAwAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMg==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df2"
+              }
+            }
+          },
+          {
+            "cursor": "IDc5Ch/B+dM2qbqGsUgOKYsClAeIXlYSazhoxlYpwvCQAwAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMw==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df3"
+              }
+            }
+          },
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshAwAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "pAEAAAAAAAA=",
+                "type": {
+                  "repr": "u64"
+                }
+              },
+              "value": {
+                "contents": {
+                  "json": {
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
+                    "count": "2"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -493,27 +560,21 @@ Response: {
             }
           },
           {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAgAAAAAAAAA=",
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLAwAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMw==",
+                "bcs": "A2RmNA==",
                 "type": {
                   "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
                 }
               },
               "value": {
-                "json": "df3"
+                "json": "df4"
               }
             }
-          }
-        ]
-      }
-    },
-    "parent_version_5_has_7_children": {
-      "dynamicFields": {
-        "edges": [
+          },
           {
-            "cursor": "IBX8CHx1PyFwo/GKpf4HXilPFK5eYO+QNskl/GRgyiL4AwAAAAAAAAA=",
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmNQ==",
@@ -525,95 +586,6 @@ Response: {
                 "json": "df5"
               }
             }
-          },
-          {
-            "cursor": "IEkPL0eXA0BYTKqTVehmXYKRqQN0ry3JhW8+tvVfBtdLAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMg==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df2"
-              }
-            }
-          },
-          {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9AwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "pAEAAAAAAAA=",
-                "type": {
-                  "repr": "u64"
-                }
-              },
-              "value": {
-                "contents": {
-                  "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
-                    "count": "2"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNA==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df4"
-              }
-            }
-          },
-          {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMQ==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df1"
-              }
-            }
-          },
-          {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNg==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df6"
-              }
-            }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMw==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df3"
-              }
-            }
           }
         ]
       }
@@ -622,21 +594,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRAwAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNA==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df4"
-              }
-            }
-          },
-          {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAwAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAwAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -650,30 +608,30 @@ Response: {
             }
           },
           {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxAwAAAAAAAAA=",
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLAwAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmNg==",
+                "bcs": "A2RmNA==",
                 "type": {
                   "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
                 }
               },
               "value": {
-                "json": "df6"
+                "json": "df4"
               }
             }
           },
           {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAwAAAAAAAAA=",
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnAwAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmMw==",
+                "bcs": "A2RmNQ==",
                 "type": {
                   "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
                 }
               },
               "value": {
-                "json": "df3"
+                "json": "df5"
               }
             }
           }
@@ -704,7 +662,7 @@ Contents: Test::M1::Parent {
 
 task 23, line 344:
 //# view-object 2,0
-Owner: Object ID: ( BFC514462537cf9ced30f7476ff0d8fb2e7b4f8e483ce9cb70e315f0dc7b0df577de33b )
+Owner: Object ID: ( BFC3dc819a925f293da6ef0b49f6c4cc611d39d9948b06355f275460d26f925db2197b1 )
 Version: 4
 Contents: Test::M1::Child {
     id: sui::object::UID {
@@ -727,7 +685,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IEkPL0eXA0BYTKqTVehmXYKRqQN0ry3JhW8+tvVfBtdLBAAAAAAAAAA=",
+            "cursor": "IA5gXf33ppmPnNb3J5IZy3mnL7guLxirUZeXv3eYmKrHBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMg==",
@@ -741,7 +699,21 @@ Response: {
             }
           },
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9BAAAAAAAAAA=",
+            "cursor": "IDc5Ch/B+dM2qbqGsUgOKYsClAeIXlYSazhoxlYpwvCQBAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmMw==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df3"
+              }
+            }
+          },
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "pAEAAAAAAAA=",
@@ -752,7 +724,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
                     "count": "2"
                   }
                 }
@@ -760,7 +732,7 @@ Response: {
             }
           },
           {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIBAAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -770,20 +742,6 @@ Response: {
               },
               "value": {
                 "json": "df1"
-              }
-            }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcBAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMw==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df3"
               }
             }
           }
@@ -794,7 +752,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IMmm6UI1Wx86bWvDminquTSeUoX1tnaScDiCoajGSKyIAgAAAAAAAAA=",
+            "cursor": "IH/LIsS92bFn9+H7EwP4rlgZeVHEvEXvibdbXqNc+0KdAgAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmMQ==",
@@ -806,20 +764,6 @@ Response: {
                 "json": "df1"
               }
             }
-          },
-          {
-            "cursor": "IOthhjLs+Y97nxEnK924MNmXhKQ87qJF9AKblM6MjZTcAgAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmMw==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df3"
-              }
-            }
           }
         ]
       }
@@ -828,7 +772,54 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IBX8CHx1PyFwo/GKpf4HXilPFK5eYO+QNskl/GRgyiL4BAAAAAAAAAA=",
+            "cursor": "IAg7cYZ3gjuLLYljNl0d4Tr6/B2bNQGdva0EfQ0JVgq/BAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmNg==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df6"
+              }
+            }
+          },
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshBAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "pAEAAAAAAAA=",
+                "type": {
+                  "repr": "u64"
+                }
+              },
+              "value": {
+                "contents": {
+                  "json": {
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
+                    "count": "2"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLBAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmNA==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df4"
+              }
+            }
+          },
+          {
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmNQ==",
@@ -840,53 +831,6 @@ Response: {
                 "json": "df5"
               }
             }
-          },
-          {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9BAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "pAEAAAAAAAA=",
-                "type": {
-                  "repr": "u64"
-                }
-              },
-              "value": {
-                "contents": {
-                  "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
-                    "count": "2"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRBAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNA==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df4"
-              }
-            }
-          },
-          {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxBAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNg==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df6"
-              }
-            }
           }
         ]
       }
@@ -895,7 +839,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRBAAAAAAAAAA=",
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmNA==",
@@ -909,16 +853,16 @@ Response: {
             }
           },
           {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxBAAAAAAAAAA=",
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnBAAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmNg==",
+                "bcs": "A2RmNQ==",
                 "type": {
                   "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
                 }
               },
               "value": {
-                "json": "df6"
+                "json": "df5"
               }
             }
           }
@@ -983,7 +927,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9CAAAAAAAAAA=",
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshCAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "pAEAAAAAAAA=",
@@ -994,7 +938,7 @@ Response: {
               "value": {
                 "contents": {
                   "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
                     "count": "2"
                   }
                 }
@@ -1009,7 +953,54 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IBX8CHx1PyFwo/GKpf4HXilPFK5eYO+QNskl/GRgyiL4CAAAAAAAAAA=",
+            "cursor": "IAg7cYZ3gjuLLYljNl0d4Tr6/B2bNQGdva0EfQ0JVgq/CAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmNg==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df6"
+              }
+            }
+          },
+          {
+            "cursor": "ID3IGakl8pPabvC0n2xMxhHTnZlIsGNV8nVGDSb5JdshCAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "pAEAAAAAAAA=",
+                "type": {
+                  "repr": "u64"
+                }
+              },
+              "value": {
+                "contents": {
+                  "json": {
+                    "id": "0x11b55ac8af113c43a6c941a9399ae08b1c0239aec8010724ed97ea9394a29514",
+                    "count": "2"
+                  }
+                }
+              }
+            }
+          },
+          {
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLCAAAAAAAAAA=",
+            "node": {
+              "name": {
+                "bcs": "A2RmNA==",
+                "type": {
+                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
+                }
+              },
+              "value": {
+                "json": "df4"
+              }
+            }
+          },
+          {
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnCAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmNQ==",
@@ -1021,53 +1012,6 @@ Response: {
                 "json": "df5"
               }
             }
-          },
-          {
-            "cursor": "IFFEYlN8+c7TD3R2/w2Psue0+OSDzpy3DjFfDcew31d9CAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "pAEAAAAAAAA=",
-                "type": {
-                  "repr": "u64"
-                }
-              },
-              "value": {
-                "contents": {
-                  "json": {
-                    "id": "0xe24ff35d6bf987c9521c91b8d5d16776ec668f526e7c626fbf56909c51e1ec6a",
-                    "count": "2"
-                  }
-                }
-              }
-            }
-          },
-          {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRCAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNA==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df4"
-              }
-            }
-          },
-          {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxCAAAAAAAAAA=",
-            "node": {
-              "name": {
-                "bcs": "A2RmNg==",
-                "type": {
-                  "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
-                }
-              },
-              "value": {
-                "json": "df6"
-              }
-            }
           }
         ]
       }
@@ -1076,7 +1020,7 @@ Response: {
       "dynamicFields": {
         "edges": [
           {
-            "cursor": "IJqq5x5wFvGWokZU93aqjDExWtc/dqQMbi1QGT8E3cmRBAAAAAAAAAA=",
+            "cursor": "IJmcnYUWHEQLUdeoW8CbNlJZNEiYERa2IZmqFMjGcKhLBAAAAAAAAAA=",
             "node": {
               "name": {
                 "bcs": "A2RmNA==",
@@ -1090,16 +1034,16 @@ Response: {
             }
           },
           {
-            "cursor": "IMpmztrVzBSrkq13TMCmCj4Hr1bBkpAs1Aq02renEvtxBAAAAAAAAAA=",
+            "cursor": "INtzwLjIKrGiasvZUPzK5gBzNKnpP6u11x8aNZYaqbDnBAAAAAAAAAA=",
             "node": {
               "name": {
-                "bcs": "A2RmNg==",
+                "bcs": "A2RmNQ==",
                 "type": {
                   "repr": "0x0000000000000000000000000000000000000000000000000000000000000001::string::String"
                 }
               },
               "value": {
-                "json": "df6"
+                "json": "df5"
               }
             }
           }
