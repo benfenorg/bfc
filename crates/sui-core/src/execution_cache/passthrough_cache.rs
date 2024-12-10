@@ -9,7 +9,6 @@ use crate::transaction_outputs::TransactionOutputs;
 use sui_types::bfc_system_state::BFCSystemState;
 use crate::execution_cache::EpochStartConfiguration;
 use crate::execution_cache::EpochFlag;
-use crate::authority::authority_store_pruner::EPOCH_DURATION_MS_FOR_TESTING;
 
 use futures::{future::BoxFuture, FutureExt};
 use mysten_common::sync::notify_read::NotifyRead;

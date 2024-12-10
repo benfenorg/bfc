@@ -6,7 +6,7 @@ use crate::{
     base_types::SuiAddress,
     crypto::{
         get_key_pair, get_key_pair_from_rng, Ed25519SuiSignature, PublicKey, Signature, SuiKeyPair,
-        SuiSignatureInner, ZkLoginPublicIdentifier,EncodeDecodeBase64,
+        SuiSignatureInner, ZkLoginPublicIdentifier,
     },
     multisig::{as_indices, MultiSig, MAX_SIGNER_IN_MULTISIG},
     multisig_legacy::bitmap_to_u16,

@@ -6,7 +6,7 @@ use crate::authority::authority_tests::init_state_with_ids_and_objects_basics;
 use super::*;
 
 use super::authority_tests::{init_state_with_ids, send_and_confirm_transaction};
-use super::move_integration_tests::{build_and_try_publish_test_package, build_and_try_publish_test_package_with_error};
+use super::move_integration_tests::{build_and_try_publish_test_package};
 use crate::authority::authority_tests::init_state_with_ids_and_object_basics;
 use crate::authority::test_authority_builder::TestAuthorityBuilder;
 use move_core_types::account_address::AccountAddress;

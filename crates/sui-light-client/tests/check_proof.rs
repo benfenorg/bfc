@@ -14,9 +14,6 @@ use sui_rest_api::CheckpointData;
 
 use std::io::Read;
 use std::{fs, path::PathBuf};
-use sui_types::crypto::AuthorityQuorumSignInfo;
-use sui_types::messages_checkpoint::CheckpointSummary;
-use sui_types::message_envelope::Envelope;
 
 async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
     println!("Reading checkpoint from {:?}", checkpoint_path);
