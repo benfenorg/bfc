@@ -472,7 +472,7 @@ mod checked {
                 gas_charger.reset(temporary_store);
                 gas_charger.charge_gas(temporary_store, &mut result);
                 // check conservation once more more
-                let mut layout_resolver =
+                let _layout_resolver =
                     TypeLayoutResolver::new(move_vm, Box::new(&*temporary_store));
                     if let Err(recovery_err) = {
                         temporary_store
