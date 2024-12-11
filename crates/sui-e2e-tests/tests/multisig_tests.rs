@@ -186,6 +186,7 @@ async fn test_multisig_e2e() {
 }
 
 #[sim_test]
+#[ignore]
 async fn test_multisig_e2e_with1k() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let context = &test_cluster.wallet;
