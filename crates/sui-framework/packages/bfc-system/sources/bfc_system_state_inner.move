@@ -119,7 +119,6 @@ module bfc_system::bfc_system_state_inner {
         chain_start_timestamp_ms: u64,
         time_interval: u32,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
-        bfc_skip_init_vault: u32,
     }
 
     const BFC_SYSTEM_TREASURY_KEY: u64 = 1;
@@ -144,6 +143,7 @@ module bfc_system::bfc_system_state_inner {
         mxn_supply: Supply<BMXN>,
         mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
+        bfc_skip_init_vault:u32,
         ctx: &mut TxContext,
     ): BfcSystemStateInner {
         let dao = bfc_dao::create_dao(DEFAULT_ADMIN_ADDRESSES, ctx);
@@ -168,6 +168,7 @@ module bfc_system::bfc_system_state_inner {
             mxn_supply,
             mgg_supply,
             parameters,
+            bfc_skip_init_vault,
             ctx);
         let tp = treasury_pool::create_treasury_pool(remain_balance, ctx);
 
@@ -296,10 +297,11 @@ module bfc_system::bfc_system_state_inner {
         mxn_supply: Supply<BMXN>,
         mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
+        bfc_skip_init_vault:u32,
         ctx: &mut TxContext
     ): (Treasury, Balance<BFC>, VecMap<ascii::String, u64>) {
         let mut t = treasury::create_treasury(parameters.time_interval, balance::value(&bfc_balance), ctx);
-        if (parameters.bfc_skip_init_vault == 0) {
+        if (bfc_skip_init_vault == 0) {
             init_vault_with_positions<BUSD>(&mut t, ascii::string(b"BUSD"), usd_supply, parameters, ctx);
             init_vault_with_positions<BJPY>(&mut t, ascii::string(b"BJPY"), jpy_supply, parameters, ctx);
             init_vault_with_positions<BKRW>(&mut t, ascii::string(b"BKRW"), krw_supply, parameters, ctx);
@@ -590,13 +592,11 @@ module bfc_system::bfc_system_state_inner {
         time_interval: u32,
         chain_start_timestamp_ms: u64,
         treasury_parameters: VecMap<ascii::String, TreasuryParameters>,
-        bfc_skip_init_vault: u32,
     ): BfcSystemParameters {
         BfcSystemParameters {
             time_interval,
             chain_start_timestamp_ms,
             treasury_parameters,
-            bfc_skip_init_vault,
         }
     }
 

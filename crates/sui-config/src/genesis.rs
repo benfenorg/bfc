@@ -628,7 +628,6 @@ pub struct BfcSystemParameters {
     /// re-balance time interval in seconds
     pub time_interval: u32,
     pub treasury_parameters: VecMap<String, TreasuryParameters>,
-    pub bfc_skip_init_vault: u32,
 }
 
 /// Initial set of parameters for a chain.
@@ -748,7 +747,6 @@ impl GenesisCeremonyParameters {
             // re-balance time interval, default 4h
             time_interval: 300,
             treasury_parameters: TreasuryParameters::to_genesis_treasury_parameters(),
-            bfc_skip_init_vault: 0,
         }
     }
 }

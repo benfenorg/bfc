@@ -616,8 +616,8 @@ module bfc_system::bfc_system_tests {
                 3600 * 4,
                 2000,
                 treasury_parameters,
-                1,
             ),
+            1,
             ctx,
         )
     }
@@ -768,8 +768,8 @@ module bfc_system::bfc_system_tests {
         3600 * 4,
         2000,
         treasury_parameters,
-        0,
         ),
+        0,
         ctx,
         );
     }
@@ -920,8 +920,8 @@ module bfc_system::bfc_system_tests {
                 3600 * 4,
                 2000,
                 treasury_parameters,
-                1,
             ),
+            1,
             ctx,
         );
     }

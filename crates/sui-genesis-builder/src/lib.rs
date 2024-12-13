@@ -874,8 +874,7 @@ fn build_unsigned_genesis_data(
     }
 
     let genesis_chain_parameters = parameters.to_genesis_chain_parameters();
-    let mut bfc_system_parameters = parameters.to_bfc_system_parameters();
-    bfc_system_parameters.bfc_skip_init_vault = bfc_skip_init_vault;
+    let bfc_system_parameters = parameters.to_bfc_system_parameters();
 
     let genesis_validators = validators
         .iter()
@@ -921,6 +920,7 @@ fn build_unsigned_genesis_data(
         &bfc_system_parameters,
         token_distribution_schedule,
         metrics.clone(),
+        bfc_skip_init_vault,
     );
 
     let protocol_config = get_genesis_protocol_config(parameters.protocol_version);
@@ -1119,6 +1119,7 @@ fn create_genesis_objects(
     bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
+    bfc_skip_init_vault: u32,
 ) -> Vec<Object> {
     let mut store = InMemoryStorage::new(Vec::new());
     // We don't know the chain ID here since we haven't yet created the genesis checkpoint.
@@ -1162,6 +1163,7 @@ fn create_genesis_objects(
         bfc_system_parameters,
         token_distribution_schedule,
         metrics,
+        bfc_skip_init_vault
     ).unwrap();
 
     store.into_inner().into_values().collect()
@@ -1368,6 +1370,7 @@ pub fn generate_genesis_system_object(
     bfc_system_parameters: &BfcSystemParameters,
     token_distribution_schedule: &TokenDistributionSchedule,
     metrics: Arc<LimitsMetrics>,
+    bfc_skip_init_vault: u32,
 ) -> anyhow::Result<()> {
     let protocol_config = ProtocolConfig::get_for_version(
         ProtocolVersion::new(genesis_chain_parameters.protocol_version),
@@ -1657,7 +1660,8 @@ pub fn generate_genesis_system_object(
             bzar_supply,
             bmxn_supply,
             mgg_supply,
-            builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?
+            builder.input(CallArg::Pure(bcs::to_bytes(&bfc_system_parameters).unwrap()))?,
+            builder.input(CallArg::Pure(bcs::to_bytes(&bfc_skip_init_vault).unwrap()))?,
         ];
 
         builder.programmable_move_call(

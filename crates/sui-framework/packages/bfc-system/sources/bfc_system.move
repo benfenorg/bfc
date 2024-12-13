@@ -87,6 +87,7 @@ module bfc_system::bfc_system {
         mxn_supply: Supply<BMXN>,
         mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
+        bfc_skip_init_vault: u32,
         ctx: &mut TxContext
     ) {
         let inner_state = bfc_system_state_inner::create_inner_state(
@@ -109,6 +110,7 @@ module bfc_system::bfc_system {
             mxn_supply,
             mgg_supply,
             parameters,
+            bfc_skip_init_vault,
             ctx,
         );
         let mut self = BfcSystemState {
@@ -142,6 +144,7 @@ module bfc_system::bfc_system {
         mxn_supply: Supply<BMXN>,
         mgg_supply: Supply<MGG>,
         parameters: BfcSystemParameters,
+        bfc_skip_init_vault: u32,
         ctx: &mut TxContext
     ): address {
         let inner_state = bfc_system_state_inner::create_inner_state(
@@ -164,6 +167,7 @@ module bfc_system::bfc_system {
             mxn_supply,
             mgg_supply,
             parameters,
+            bfc_skip_init_vault,
             ctx,
         );
 
