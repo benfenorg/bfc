@@ -9,7 +9,7 @@ task 1, lines 26-28:
 //> TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 30-32:
 //# programmable --sponsor A --sender B --inputs 2000000 @C
@@ -17,7 +17,7 @@ task 2, lines 30-32:
 //> TransferObjects([Result(0)], Input(1))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 34-36:
 //# programmable --sender A --inputs 3000000 @A
@@ -25,7 +25,7 @@ task 3, lines 34-36:
 //> TransferObjects([Result(0)], Input(1))
 created: object(3,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, lines 38-40:
 //# programmable --sender A --inputs 4000000 @A
@@ -33,19 +33,19 @@ task 4, lines 38-40:
 //> TransferObjects([Result(0)], Input(1))
 created: object(4,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 42-43:
 //# programmable --sender A --inputs @B --gas-payment 3,0 --gas-budget 3000000
 //> TransferObjects([Gas], Input(0))
 mutated: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, lines 45-46:
 //# programmable --sponsor A --sender B --inputs @C --gas-payment 4,0 --gas-budget 4000000
 //> TransferObjects([Gas], Input(0))
 mutated: object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 7, line 48:
 //# create-checkpoint
@@ -62,16 +62,6 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "1000000"
-                      }
-                    }
-                  }
-                },
-                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
@@ -82,7 +72,17 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
+                        "coinBalance": "299999995385600"
+                      }
+                    }
+                  }
+                },
+                {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "1000000"
                       }
                     }
                   }
@@ -95,22 +95,6 @@ Response: {
           "effects": {
             "objectChanges": {
               "nodes": [
-                {
-                  "inputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "299999996024000"
-                      }
-                    }
-                  },
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "299999992026120"
-                      }
-                    }
-                  }
-                },
                 {
                   "inputState": null,
                   "outputState": {
@@ -120,6 +104,22 @@ Response: {
                       }
                     }
                   }
+                },
+                {
+                  "inputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "299999995385600"
+                      }
+                    }
+                  },
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "299999991065328"
+                      }
+                    }
+                  }
                 }
               ]
             }
@@ -133,14 +133,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999992026120"
+                        "coinBalance": "299999991065328"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   }
@@ -167,14 +167,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999981030360"
+                        "coinBalance": "299999979424784"
                       }
                     }
                   }
@@ -208,7 +208,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "1990120"
+                        "coinBalance": "1986928"
                       }
                     }
                   }
@@ -232,7 +232,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "2990120"
+                        "coinBalance": "2986928"
                       }
                     }
                   }
@@ -251,16 +251,6 @@ Response: {
               "objectChanges": {
                 "nodes": [
                   {
-                    "inputState": null,
-                    "outputState": {
-                      "asMoveObject": {
-                        "asCoin": {
-                          "coinBalance": "1000000"
-                        }
-                      }
-                    }
-                  },
-                  {
                     "inputState": {
                       "asMoveObject": {
                         "asCoin": {
@@ -271,7 +261,17 @@ Response: {
                     "outputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "299999996024000"
+                          "coinBalance": "299999995385600"
+                        }
+                      }
+                    }
+                  },
+                  {
+                    "inputState": null,
+                    "outputState": {
+                      "asMoveObject": {
+                        "asCoin": {
+                          "coinBalance": "1000000"
                         }
                       }
                     }
@@ -284,22 +284,6 @@ Response: {
             "effects": {
               "objectChanges": {
                 "nodes": [
-                  {
-                    "inputState": {
-                      "asMoveObject": {
-                        "asCoin": {
-                          "coinBalance": "299999996024000"
-                        }
-                      }
-                    },
-                    "outputState": {
-                      "asMoveObject": {
-                        "asCoin": {
-                          "coinBalance": "299999992026120"
-                        }
-                      }
-                    }
-                  },
                   {
                     "inputState": null,
                     "outputState": {
@@ -309,6 +293,22 @@ Response: {
                         }
                       }
                     }
+                  },
+                  {
+                    "inputState": {
+                      "asMoveObject": {
+                        "asCoin": {
+                          "coinBalance": "299999995385600"
+                        }
+                      }
+                    },
+                    "outputState": {
+                      "asMoveObject": {
+                        "asCoin": {
+                          "coinBalance": "299999991065328"
+                        }
+                      }
+                    }
                   }
                 ]
               }
@@ -322,14 +322,14 @@ Response: {
                     "inputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "299999992026120"
+                          "coinBalance": "299999991065328"
                         }
                       }
                     },
                     "outputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "299999987028240"
+                          "coinBalance": "299999985745056"
                         }
                       }
                     }
@@ -356,14 +356,14 @@ Response: {
                     "inputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "299999987028240"
+                          "coinBalance": "299999985745056"
                         }
                       }
                     },
                     "outputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "299999981030360"
+                          "coinBalance": "299999979424784"
                         }
                       }
                     }
@@ -397,7 +397,7 @@ Response: {
                     "outputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "1990120"
+                          "coinBalance": "1986928"
                         }
                       }
                     }
@@ -421,7 +421,7 @@ Response: {
                     "outputState": {
                       "asMoveObject": {
                         "asCoin": {
-                          "coinBalance": "2990120"
+                          "coinBalance": "2986928"
                         }
                       }
                     }
@@ -440,16 +440,6 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "1000000"
-                      }
-                    }
-                  }
-                },
-                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
@@ -460,7 +450,17 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
+                        "coinBalance": "299999995385600"
+                      }
+                    }
+                  }
+                },
+                {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "1000000"
                       }
                     }
                   }
@@ -477,14 +477,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999992026120"
+                        "coinBalance": "299999991065328"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   }
@@ -511,14 +511,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999981030360"
+                        "coinBalance": "299999979424784"
                       }
                     }
                   }
@@ -552,7 +552,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "1990120"
+                        "coinBalance": "1986928"
                       }
                     }
                   }
@@ -570,16 +570,6 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "1000000"
-                      }
-                    }
-                  }
-                },
-                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
@@ -590,31 +580,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
-                      }
-                    }
-                  }
-                }
-              ]
-            }
-          }
-        },
-        {
-          "effects": {
-            "objectChanges": {
-              "nodes": [
-                {
-                  "inputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "299999996024000"
-                      }
-                    }
-                  },
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "299999992026120"
+                        "coinBalance": "299999995385600"
                       }
                     }
                   }
@@ -624,7 +590,41 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
+                        "coinBalance": "1000000"
+                      }
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        {
+          "effects": {
+            "objectChanges": {
+              "nodes": [
+                {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
                         "coinBalance": "2000000"
+                      }
+                    }
+                  }
+                },
+                {
+                  "inputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "299999995385600"
+                      }
+                    }
+                  },
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "299999991065328"
                       }
                     }
                   }
@@ -641,14 +641,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999992026120"
+                        "coinBalance": "299999991065328"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   }
@@ -675,14 +675,14 @@ Response: {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999987028240"
+                        "coinBalance": "299999985745056"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999981030360"
+                        "coinBalance": "299999979424784"
                       }
                     }
                   }
@@ -710,16 +710,6 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "1000000"
-                      }
-                    }
-                  }
-                },
-                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
@@ -730,7 +720,17 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
+                        "coinBalance": "299999995385600"
+                      }
+                    }
+                  }
+                },
+                {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "1000000"
                       }
                     }
                   }
@@ -744,27 +744,27 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "2000000"
+                      }
+                    }
+                  }
+                },
+                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
+                        "coinBalance": "299999995385600"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999992026120"
-                      }
-                    }
-                  }
-                },
-                {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "2000000"
+                        "coinBalance": "299999991065328"
                       }
                     }
                   }
@@ -788,7 +788,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "1990120"
+                        "coinBalance": "1986928"
                       }
                     }
                   }
@@ -812,7 +812,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "2990120"
+                        "coinBalance": "2986928"
                       }
                     }
                   }
@@ -830,27 +830,27 @@ Response: {
             "objectChanges": {
               "nodes": [
                 {
+                  "inputState": null,
+                  "outputState": {
+                    "asMoveObject": {
+                      "asCoin": {
+                        "coinBalance": "2000000"
+                      }
+                    }
+                  }
+                },
+                {
                   "inputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999996024000"
+                        "coinBalance": "299999995385600"
                       }
                     }
                   },
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "299999992026120"
-                      }
-                    }
-                  }
-                },
-                {
-                  "inputState": null,
-                  "outputState": {
-                    "asMoveObject": {
-                      "asCoin": {
-                        "coinBalance": "2000000"
+                        "coinBalance": "299999991065328"
                       }
                     }
                   }
@@ -874,7 +874,7 @@ Response: {
                   "outputState": {
                     "asMoveObject": {
                       "asCoin": {
-                        "coinBalance": "2990120"
+                        "coinBalance": "2986928"
                       }
                     }
                   }
