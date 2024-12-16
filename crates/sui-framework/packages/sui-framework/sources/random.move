@@ -78,8 +78,14 @@ public fun create_for_testing(ctx: &mut TxContext) {
 
 #[test_only]
 public fun destroy_for_testing(r: Random) {
-    let Random {id, inner: _} = r;
+    let Random {id, inner} = r;
     object::delete(id);
+    let RandomInner {
+        version: _,
+        epoch: _,
+        randomness_round: _,
+        random_bytes: _
+    } = versioned::destroy(inner);
 }
 
 fun load_inner_mut(self: &mut Random): &mut RandomInner {
