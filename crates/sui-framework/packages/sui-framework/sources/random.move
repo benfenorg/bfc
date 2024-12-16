@@ -60,7 +60,26 @@ fun create(ctx: &mut TxContext) {
 
 #[test_only]
 public fun create_for_testing(ctx: &mut TxContext) {
-    create(ctx);
+    let version = CURRENT_VERSION;
+
+    let inner = RandomInner {
+        version,
+        epoch: ctx.epoch(),
+        randomness_round: 0,
+        random_bytes: vector[],
+    };
+
+    let self = Random {
+        id: object::new(ctx),
+        inner: versioned::create(version, inner, ctx),
+    };
+    transfer::share_object(self);
+}
+
+#[test_only]
+public fun destroy_for_testing(r: Random) {
+    let Random {id, inner: _} = r;
+    object::delete(id);
 }
 
 fun load_inner_mut(self: &mut Random): &mut RandomInner {
