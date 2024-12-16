@@ -2578,7 +2578,6 @@ impl ProtocolConfig {
                     }
                 }
                 45 => {
-                    // Use tonic networking for consensus, in tests and devnet.
                     if chain != Chain::Testnet && chain != Chain::Mainnet {
                         cfg.feature_flags.consensus_network = ConsensusNetwork::Tonic;
                     }
@@ -2593,12 +2592,15 @@ impl ProtocolConfig {
                     // Also bumps framework snapshot to fix binop issue.
 
                     // enable bridge in devnet
+
+                }
+                46 => {
+                    // Use tonic networking for consensus, in tests and devnet.
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         cfg.feature_flags.bridge = true;
                     }
                 }
-                46 => {
-                    // enable bridge in devnet and testnet
+                47 => {
                     if chain != Chain::Mainnet {
                         cfg.feature_flags.bridge = true;
                     }
@@ -2606,7 +2608,6 @@ impl ProtocolConfig {
                     // Enable resharing at same initial version
                     cfg.feature_flags.reshare_at_same_initial_version = true;
                 }
-                47 => {}
                 48 => {
                     // Use tonic networking for Mysticeti.
                     cfg.feature_flags.consensus_network = ConsensusNetwork::Tonic;
