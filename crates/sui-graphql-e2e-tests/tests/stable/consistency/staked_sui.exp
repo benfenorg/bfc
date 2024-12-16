@@ -109,13 +109,13 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IGLiOBv9XFrn4eZp9C+puKtViur/4Lc3fefZWsJ+Za78BAAAAAAAAAA=",
+            "cursor": "ICxBs0Zyh5sjLIN1quoKWXMKvvfEyRdYtxCWPGlXLxVLBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           },
           {
-            "cursor": "IPRSvquqhgdHSr2wiJx2FFEaBqjMd68Ut20j07BtBT6QBAAAAAAAAAA=",
+            "cursor": "IK2j8WuvKTYCgWTkIkt7oHRzJOycy18Vagb9M4DGUSwXBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -159,36 +159,36 @@ Response: {
   "data": {
     "coins_after_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": []
+        "edges": [
+          {
+            "cursor": "IK2j8WuvKTYCgWTkIkt7oHRzJOycy18Vagb9M4DGUSwXAwAAAAAAAAA=",
+            "node": {
+              "principal": "10000000000"
+            }
+          }
+        ]
       }
     },
     "coins_before_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": [
-          {
-            "cursor": "IGLiOBv9XFrn4eZp9C+puKtViur/4Lc3fefZWsJ+Za78AwAAAAAAAAA=",
-            "node": {
-              "principal": "10000000000"
-            }
-          }
-        ]
+        "edges": []
       }
     },
     "coins_after_obj_7_0_chkpt_3": {
       "stakedSuis": {
+        "edges": []
+      }
+    },
+    "coins_before_obj_7_0_chkpt_3": {
+      "stakedSuis": {
         "edges": [
           {
-            "cursor": "IPRSvquqhgdHSr2wiJx2FFEaBqjMd68Ut20j07BtBT6QAwAAAAAAAAA=",
+            "cursor": "ICxBs0Zyh5sjLIN1quoKWXMKvvfEyRdYtxCWPGlXLxVLAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           }
         ]
-      }
-    },
-    "coins_before_obj_7_0_chkpt_3": {
-      "stakedSuis": {
-        "edges": []
       }
     }
   }

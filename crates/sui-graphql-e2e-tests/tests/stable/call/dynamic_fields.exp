@@ -49,16 +49,16 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject"
+              "__typename": "MoveValue"
             }
           },
           {
             "name": {
               "type": {
-                "repr": "vector<u8>"
+                "repr": "bool"
               },
               "data": {
-                "Vector": []
+                "Bool": false
               },
               "bcs": "AA=="
             },
@@ -77,16 +77,16 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveValue"
+              "__typename": "MoveObject"
             }
           },
           {
             "name": {
               "type": {
-                "repr": "bool"
+                "repr": "vector<u8>"
               },
               "data": {
-                "Bool": false
+                "Vector": []
               },
               "bcs": "AA=="
             },
@@ -129,16 +129,16 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject"
+              "__typename": "MoveValue"
             }
           },
           {
             "name": {
               "type": {
-                "repr": "vector<u8>"
+                "repr": "bool"
               },
               "data": {
-                "Vector": []
+                "Bool": false
               },
               "bcs": "AA=="
             },
@@ -157,16 +157,16 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveValue"
+              "__typename": "MoveObject"
             }
           },
           {
             "name": {
               "type": {
-                "repr": "bool"
+                "repr": "vector<u8>"
               },
               "data": {
-                "Bool": false
+                "Vector": []
               },
               "bcs": "AA=="
             },
@@ -187,38 +187,6 @@ Response: {
     "owner": {
       "dynamicFields": {
         "nodes": [
-          {
-            "name": {
-              "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveObject"
-            }
-          },
-          {
-            "name": {
-              "type": {
-                "repr": "vector<u8>"
-              },
-              "data": {
-                "Vector": []
-              },
-              "bcs": "AA=="
-            },
-            "value": {
-              "bcs": "AQAAAAAAAAA=",
-              "data": {
-                "Number": "1"
-              },
-              "__typename": "MoveValue"
-            }
-          },
           {
             "name": {
               "type": {
@@ -251,6 +219,38 @@ Response: {
               "bcs": "AgAAAAAAAAA=",
               "data": {
                 "Number": "2"
+              },
+              "__typename": "MoveValue"
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
+              "__typename": "MoveObject"
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "vector<u8>"
+              },
+              "data": {
+                "Vector": []
+              },
+              "bcs": "AA=="
+            },
+            "value": {
+              "bcs": "AQAAAAAAAAA=",
+              "data": {
+                "Number": "1"
               },
               "__typename": "MoveValue"
             }
