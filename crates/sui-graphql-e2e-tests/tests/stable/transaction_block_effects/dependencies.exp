@@ -65,7 +65,7 @@ Response: {
     "transactionBlocks": {
       "nodes": [
         {
-          "digest": "JDqemsZ549Y6dtjgj3K9AJww9UQzsSN5hWq4swqs1ao7",
+          "digest": "9UPsps8wNacrz1CtZ8fynrFCA1xgqRua9JhPZ5d266Qr",
           "effects": {
             "dependencies": {
               "pageInfo": {
@@ -78,25 +78,7 @@ Response: {
                 {
                   "cursor": "eyJpIjowLCJjIjoxfQ",
                   "node": {
-                    "digest": "7seHPLSsgDJ2moFHZULd1BSXCzxsSPgE1HWQ2tQDWVCP",
-                    "kind": {
-                      "__typename": "ProgrammableTransactionBlock",
-                      "transactions": {
-                        "nodes": [
-                          {},
-                          {
-                            "module": "package",
-                            "functionName": "make_immutable"
-                          }
-                        ]
-                      }
-                    }
-                  }
-                },
-                {
-                  "cursor": "eyJpIjoxLCJjIjoxfQ",
-                  "node": {
-                    "digest": "HqpECNP9eo5LD85uTx4GRviuwZbjxWxdEMKnRuiaurCQ",
+                    "digest": "2Hh8BJsN9jSzwzBN8Tz9AWuPQosJ7J6TqYwwnPUgr3ai",
                     "kind": {
                       "__typename": "ProgrammableTransactionBlock",
                       "transactions": {
@@ -116,6 +98,24 @@ Response: {
                           {
                             "module": "M1",
                             "functionName": "create"
+                          }
+                        ]
+                      }
+                    }
+                  }
+                },
+                {
+                  "cursor": "eyJpIjoxLCJjIjoxfQ",
+                  "node": {
+                    "digest": "JASBUToMW9SRacoXNMSiNw3G3Ta2CsEDpPW7yWUjwUcq",
+                    "kind": {
+                      "__typename": "ProgrammableTransactionBlock",
+                      "transactions": {
+                        "nodes": [
+                          {},
+                          {
+                            "module": "package",
+                            "functionName": "make_immutable"
                           }
                         ]
                       }
@@ -138,7 +138,7 @@ Response: {
     "transactionBlocks": {
       "nodes": [
         {
-          "digest": "JDqemsZ549Y6dtjgj3K9AJww9UQzsSN5hWq4swqs1ao7",
+          "digest": "9UPsps8wNacrz1CtZ8fynrFCA1xgqRua9JhPZ5d266Qr",
           "effects": {
             "dependencies": {
               "pageInfo": {
@@ -151,26 +151,15 @@ Response: {
                 {
                   "cursor": "eyJpIjoxLCJjIjoxfQ",
                   "node": {
-                    "digest": "HqpECNP9eo5LD85uTx4GRviuwZbjxWxdEMKnRuiaurCQ",
+                    "digest": "JASBUToMW9SRacoXNMSiNw3G3Ta2CsEDpPW7yWUjwUcq",
                     "kind": {
                       "__typename": "ProgrammableTransactionBlock",
                       "transactions": {
                         "nodes": [
+                          {},
                           {
-                            "module": "M1",
-                            "functionName": "sum"
-                          },
-                          {
-                            "module": "M1",
-                            "functionName": "sum"
-                          },
-                          {
-                            "module": "M1",
-                            "functionName": "sum"
-                          },
-                          {
-                            "module": "M1",
-                            "functionName": "create"
+                            "module": "package",
+                            "functionName": "make_immutable"
                           }
                         ]
                       }
