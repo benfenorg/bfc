@@ -535,6 +535,7 @@ async fn sim_test_mint_bjpy_with_success() -> Result<(), anyhow::Error> {
     let test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(6000)
         .with_num_validators(5)
+        .with_all_vault_init()
         .build()
         .await;
     let http_client = test_cluster.rpc_client();

@@ -32,6 +32,7 @@ async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(6000)
         .with_num_validators(5)
+        .with_all_vault_init()
         .build()
         .await;
 
@@ -114,6 +115,7 @@ async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(6000)
         .with_num_validators(5)
+        .with_all_vault_init()
         .build()
         .await;
     let mut http_client = test_cluster.rpc_client().clone();
