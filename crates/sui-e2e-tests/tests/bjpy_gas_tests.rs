@@ -166,7 +166,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     // get_bjpy(&test_cluster, &mut http_client, address).await?;
     let test_coion_type = format!("{}{}",package,"::test_coin::TEST_COIN").replace("0x", "");
     println!("test_coion_type is {:?}",test_coion_type);
-    init_oracele_with_new_test_coin(&mut test_cluster, "4a1c62cf8e9c3f102d65611233b36bd1377932992bef523053fd5ba720739f90::test_coin::TEST_COIN".to_string(), package).await;
+    init_oracele_with_new_test_coin(&mut test_cluster, "b45f6f8397235ee766c9eafdd1cb57853be430459d64d952fd26194ef1ac4e3f::test_coin::TEST_COIN".to_string(), package).await;
     // wait to get oracle price and call bfc_round_v2
     test_cluster.wait_for_epoch(Some(6)).await;
 
@@ -201,10 +201,11 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     let response = stable::mint_stable_coin_with_gas(100000000000, 
         &test_cluster, &mut http_client, address, 
         "0xc8::bjpy::BJPY", 
-        "0x4a1c62cf8e9c3f102d65611233b36bd1377932992bef523053fd5ba720739f90::test_coin::TEST_COIN").await;
+        "0xb45f6f8397235ee766c9eafdd1cb57853be430459d64d952fd26194ef1ac4e3f::test_coin::TEST_COIN").await;
 
-    println!("response is {:?}",response );
+    println!("response is {:?}",&response );
 
+    assert!(response.is_ok());
     Ok(())
 }
 
