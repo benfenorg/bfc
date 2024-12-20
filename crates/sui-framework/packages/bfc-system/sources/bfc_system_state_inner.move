@@ -208,6 +208,7 @@ module bfc_system::bfc_system_state_inner {
         stable_type_name_vector: vector<ascii::String>,
         stable_rate_vector: vector<u64>,
     ) {
+        abort 1;
         // check
         if (vector::length(&stable_type_name_vector) != vector::length(&stable_rate_vector)) {
             return
@@ -233,8 +234,8 @@ module bfc_system::bfc_system_state_inner {
         while (i < len) {
             let stable_type_name = stable_type_name_vector[i];
             let rate_against_busd = stable_rate_vector[i];
-            if (treasury::has_vault(&inner.treasury, stable_type_name) &&
-                stable_type_name != busd_vault_key && rate_against_busd > 0) {
+            // if (treasury::has_vault(&inner.treasury, stable_type_name) &&
+            if (stable_type_name != busd_vault_key && rate_against_busd > 0) {
                 if (inner.stable_rate.contains(&stable_type_name)) {
                     inner.stable_rate.remove(&stable_type_name);
                 };

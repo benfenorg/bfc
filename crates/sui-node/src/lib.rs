@@ -18,6 +18,7 @@ use fastcrypto_zkp::bn254::zk_login::JwkId;
 use fastcrypto_zkp::bn254::zk_login::OIDCProvider;
 use futures::TryFutureExt;
 use prometheus::Registry;
+use sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -499,6 +500,7 @@ impl SuiNode {
             )))
         };
 
+
         let epoch_options = default_db_options().optimize_db_for_write_throughput(4);
         let epoch_store = AuthorityPerEpochStore::new(
             config.protocol_public_key(),
@@ -854,6 +856,16 @@ impl SuiNode {
                 warn!("Reconfiguration finished with error {:?}", error);
             }
         });
+
+        let rate_map =  store.get_rate_map();
+        if rate_map.is_ok() {
+            update_allow_stable_gas_coins(rate_map.unwrap());
+        } else {
+            panic!("TODO delete it, just for test")
+        }
+
+
+
 
         Ok(node)
     }

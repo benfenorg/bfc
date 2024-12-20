@@ -10,12 +10,9 @@ mod checked {
     use move_binary_format::CompiledModule;
 
     use move_vm_runtime::move_vm::MoveVM;
-    use std::{
-        collections::{HashSet},
-        sync::Arc,
-    };
+    use std::{collections::HashSet, sync::Arc};
     //use crate::{temporary_store::TemporaryStore};
-    use sui_types::gas::{calculate_reward_rate, calculate_add};
+    use sui_types::gas::{calculate_add, calculate_reward_rate};
     use sui_types::gas_coin::GAS;
 
     use sui_types::balance::{
@@ -23,6 +20,8 @@ mod checked {
         BALANCE_MODULE_NAME,
     };
     //use sui_types::execution_mode::{self, ExecutionMode};
+    use crate::sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
+    use std::collections::HashMap;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
@@ -70,7 +69,9 @@ mod checked {
     use sui_types::storage::BackingStore;
     #[cfg(msim)]
     use sui_types::sui_system_state::advance_epoch_result_injection::maybe_modify_result;
-    use sui_types::sui_system_state::{AdvanceEpochParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME, ChangeObcRoundParams};
+    use sui_types::sui_system_state::{
+        AdvanceEpochParams, ChangeObcRoundParams, ADVANCE_EPOCH_SAFE_MODE_FUNCTION_NAME,
+    };
     use sui_types::transaction::{
         Argument, AuthenticatorStateExpire, AuthenticatorStateUpdate, CallArg, ChangeEpoch,
         Command, EndOfEpochTransactionKind, GenesisTransaction, ObjectArg, ProgrammableTransaction,
@@ -79,15 +80,18 @@ mod checked {
     use sui_types::transaction::{CheckedInputObjects, RandomnessStateUpdate};
     use sui_types::{
         base_types::{ObjectID, ObjectRef, SuiAddress, TransactionDigest, TxContext},
+        bfc_system_state::BFC_SYSTEM_MODULE_NAME,
         object::{Object, ObjectInner},
         sui_system_state::{ADVANCE_EPOCH_FUNCTION_NAME, SUI_SYSTEM_MODULE_NAME},
-        bfc_system_state::{BFC_SYSTEM_MODULE_NAME},
-        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS,
-        SUI_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID,
+        SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
+        SUI_SYSTEM_PACKAGE_ID,
     };
 
-    use sui_types::{BFC_SYSTEM_PACKAGE_ID};
-    use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{
+        BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME,
+        STABLE_COIN_TO_BFC_FUNCTION_NAME,
+    };
+    use sui_types::BFC_SYSTEM_PACKAGE_ID;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
 
@@ -938,6 +942,11 @@ mod checked {
 
             info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
+            for ele in stable_coin_type {
+                println!("DEBUG log xx: {}, {}", bfc_round_function_name, ele);
+    
+            }
+
             builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),
@@ -1083,8 +1092,8 @@ mod checked {
         }
         // check u64 overflow for advance_epoch_params
         if !discard && (storage_charge > u64::MAX - change_epoch.bfc_storage_charge
-            || computation_charge > u64::MAX - change_epoch.bfc_computation_charge
-            || storage_rebate > u64::MAX - change_epoch.bfc_storage_rebate
+                || computation_charge > u64::MAX - change_epoch.bfc_computation_charge
+                || storage_rebate > u64::MAX - change_epoch.bfc_storage_rebate
             || non_refundable_storage_fee > u64::MAX - change_epoch.bfc_non_refundable_storage_fee) {
             storage_charge = 0;
             computation_charge = 0;
@@ -1136,7 +1145,7 @@ mod checked {
         );
 
         #[cfg(msim)]
-            let result = maybe_modify_result(result, change_epoch.epoch);
+        let result = maybe_modify_result(result, change_epoch.epoch);
 
         if result.is_err() {
             tracing::error!(
@@ -1167,10 +1176,22 @@ mod checked {
                     gas_charger,
                     advance_epoch_safe_mode_pt,
                 )
-                    .expect("Advance epoch with safe mode must succeed");
+                .expect("Advance epoch with safe mode must succeed");
             }
         }
 
+        // set rate map to global-mutable-singleton
+        let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
+        if rate_result.is_ok() {
+            let (rate_map, _) = rate_result.unwrap();
+            let v: HashMap<String, u64> = rate_map
+                .contents
+                .iter()
+                .map(|entity| ((*entity.key).to_string(), entity.value))
+                .collect();
+
+            update_allow_stable_gas_coins(v);
+        }
 
         if protocol_config.fresh_vm_on_framework_upgrade() {
             let new_vm = new_move_vm(
@@ -1237,7 +1258,7 @@ mod checked {
                     gas_charger,
                     publish_pt,
                 )
-                    .expect("System Package Publish must succeed");
+                .expect("System Package Publish must succeed");
             } else {
                 let mut new_package = Object::new_system_package(
                     &deserialized_modules,

@@ -16,7 +16,9 @@ use sui_macros::sim_test;
 use sui_sdk::json::{type_args, SuiJsonValue};
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
+use sui_types::transaction::CallArg;
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
@@ -132,6 +134,72 @@ async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
     assert_eq!(objects.len(), 1);
     let response = stable::mint_stable_coin_with_gas(100000000000, &test_cluster, &mut http_client, address, "0xc8::bjpy::BJPY", filter.as_str()).await;
     assert!(response.is_err());
+    Ok(())
+}
+
+#[sim_test]
+async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        .with_all_vault_init()
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    let package= publish_coin::do_publish(&mut test_cluster,"tests/test_coin_code").await?;
+    publish_coin::do_mint(&mut test_cluster, package).await;
+    auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    sleep(Duration::from_secs(10)).await;
+    let filter=format!("{}{}{}","0x2::coin::Coin<",package,"::test_coin::TEST_COIN>");
+    let coin_type=format!("{}{}",package,"::test_coin::TEST_COIN");
+
+    let objects = get_owned_objects(filter.as_str(), &mut http_client, address).await?;
+    println!("objects is {:?}",objects);
+    assert_eq!(objects.len(), 1);
+
+    // oracle
+    let package = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
+    // auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
+    test_cluster.wait_for_epoch(Some(3)).await;
+    //add oracle price
+    // get_bjpy(&test_cluster, &mut http_client, address).await?;
+    let test_coion_type = format!("{}{}",package,"::test_coin::TEST_COIN").replace("0x", "");
+    println!("test_coion_type is {:?}",test_coion_type);
+    init_oracele_with_new_test_coin(&mut test_cluster, test_coion_type, package).await;
+    // wait to get oracle price and call bfc_round_v2
+    test_cluster.wait_for_epoch(Some(6)).await;
+
+    test_cluster
+    .swarm
+    .validator_nodes()
+    .next()
+    .unwrap()
+    .get_node_handle()
+    .unwrap()
+    .with(|node| {
+        let _state = node
+            .state()
+            .get_bfc_system_state_object_for_testing().unwrap();
+        let _oracle_address = _state.get_oracle_address();
+        assert!(_oracle_address.is_some());
+        //rate_map
+        let _rate_map = _state.get_rate_map();
+        println!("=============rate_map: {:?}", &_rate_map);
+    });
+
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in data {
+        println!("allow stable is {:?}",ele);
+    }
+
+
+
+
+
+
+    let response = stable::mint_stable_coin_with_gas(100000000000, &test_cluster, &mut http_client, address, "0xc8::bjpy::BJPY", filter.as_str()).await;
+    assert!(response.is_ok());
     Ok(())
 }
 
@@ -459,4 +527,48 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
         .await?;
     println!("set_oracle_address tx_response: {:#?}", tx_response);
     Ok(())
+}
+
+async fn init_oracele_with_new_test_coin(test_cluster: &mut TestCluster, test_coin: String, package: ObjectID) {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    println!("address: {:?}", address);
+    let gas = context
+        .get_one_gas_object_owned_by_address(address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx = context.sign_transaction(
+        &TestTransactionBuilder::new(address, gas, context.get_reference_gas_price().await.unwrap())
+            .move_call(
+                package,
+                "test_oracle",
+                "oracle_with_test_coin",
+                vec![
+                    CallArg::Pure(bcs::to_bytes(&test_coin).unwrap()),
+                ],
+            )
+            .build(),
+    );
+    let resp = test_cluster.execute_transaction(tx).await;
+
+    let oracle_id = resp.object_changes.unwrap().iter()
+        .find(|change| match change {
+            ObjectChange::Created {
+                object_type, owner, ..
+            } => {
+                object_type.to_string().contains("dynamic_field")
+            }
+            _ => false,
+        }).unwrap().object_id();
+
+    set_oracle_address(test_cluster, oracle_id.clone().to_bfc_address()).await.unwrap();
+
+    let state = test_cluster.fullnode_handle.sui_node.state().clone();
+    let bfc_sys_state = state.get_bfc_system_state_object_for_testing().unwrap();
+
+    println!("bfc_sys_state.get_oracle_address(): {:#?}", &bfc_sys_state.get_oracle_address().unwrap());
+    let price = state.get_oracle_price_by_id(ObjectID::from(bfc_sys_state.get_oracle_address().unwrap())).unwrap();
+    println!("oracle price: {:?}", price.to_exchange_rate_against_busd());
+    assert!(price.value.contents.len() > 0);
 }
