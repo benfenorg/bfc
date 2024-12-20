@@ -304,7 +304,14 @@ impl MoveObjectType {
     pub fn is_stable_gas_coin(&self) -> bool {
         match &self.0 {
             MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
-            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+            MoveObjectType_::Coin(tag) => {
+                println!("MoveObjectType_ nCoin");
+
+                STABLE::is_gas_type(tag)
+            }
+            MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => {
+                println!("MoveObjectType_ StakedSui Other");
+
                 false
             }
         }

@@ -540,6 +540,13 @@ module bfc_system::bfc_system {
 
     }
 
+    public fun rebalance2(
+        _wrapper: &mut BfcSystemState,
+        _ctx: &mut TxContext,
+    ) {
+
+    }
+
     public fun rebalance_with_one_stablecoin<StableCoinType>(
         wrapper: &mut BfcSystemState,
         clock: &Clock,

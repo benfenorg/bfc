@@ -142,7 +142,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     let mut test_cluster = TestClusterBuilder::new()
         .with_epoch_duration_ms(6000)
         .with_num_validators(5)
-        .with_all_vault_init()
+        // .with_all_vault_init()
         .build()
         .await;
     let mut http_client = test_cluster.rpc_client().clone();
@@ -166,7 +166,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     // get_bjpy(&test_cluster, &mut http_client, address).await?;
     let test_coion_type = format!("{}{}",package,"::test_coin::TEST_COIN").replace("0x", "");
     println!("test_coion_type is {:?}",test_coion_type);
-    init_oracele_with_new_test_coin(&mut test_cluster, test_coion_type, package).await;
+    init_oracele_with_new_test_coin(&mut test_cluster, "4a1c62cf8e9c3f102d65611233b36bd1377932992bef523053fd5ba720739f90::test_coin::TEST_COIN".to_string(), package).await;
     // wait to get oracle price and call bfc_round_v2
     test_cluster.wait_for_epoch(Some(6)).await;
 
@@ -198,8 +198,13 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
 
 
 
-    let response = stable::mint_stable_coin_with_gas(100000000000, &test_cluster, &mut http_client, address, "0xc8::bjpy::BJPY", filter.as_str()).await;
-    assert!(response.is_ok());
+    let response = stable::mint_stable_coin_with_gas(100000000000, 
+        &test_cluster, &mut http_client, address, 
+        "0xc8::bjpy::BJPY", 
+        "0x4a1c62cf8e9c3f102d65611233b36bd1377932992bef523053fd5ba720739f90::test_coin::TEST_COIN").await;
+
+    println!("response is {:?}",response );
+
     Ok(())
 }
 
@@ -533,11 +538,16 @@ async fn init_oracele_with_new_test_coin(test_cluster: &mut TestCluster, test_co
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
     println!("address: {:?}", address);
-    let gas = context
-        .get_one_gas_object_owned_by_address(address)
+    let mut gases = context
+        .get_all_gas_objects_owned_by_address(address)
         .await
-        .unwrap()
         .unwrap();
+    println!("gases: {:#?}", gases);
+    // gases.reverse();
+
+    let gas = gases.pop().unwrap();
+
+
     let tx = context.sign_transaction(
         &TestTransactionBuilder::new(address, gas, context.get_reference_gas_price().await.unwrap())
             .move_call(

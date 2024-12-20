@@ -5482,6 +5482,9 @@ create_voting_bfc
 rebalance
 	public fun
 	0xc8::bfc_system
+rebalance2
+	public fun
+	0xc8::bfc_system
 rebalance_with_one_stablecoin
 	public fun
 	0xc8::bfc_system

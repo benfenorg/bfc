@@ -63,14 +63,22 @@ pub mod checked {
 
     fn is_new_gas_type(other: &TypeTag) -> bool {
         let rate_map = get_allow_stable_gas_coins_rate_map();
-        rate_map.iter().any(|(key, _)| {
+        let r = rate_map.iter().any(|(key, _)| {
             let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
             if tag.is_err() {
+                tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
                 return false;
             }
 
-            return &(tag.unwrap()) == other;
-        })
+            let t = tag.unwrap();
+            println!("[DEBUG] is_new_gas_type: {} {}", &t, other);
+
+            return &t == other;
+        });
+
+        println!("[DEBUG] is_new_gas_type: {} {}", r, other);
+
+        r
     }
 
     pub enum STABLE {
