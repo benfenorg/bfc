@@ -822,8 +822,8 @@ Errors
     <b>while</b> (i &lt; len) {
         <b>let</b> stable_type_name = stable_type_name_vector[i];
         <b>let</b> rate_against_busd = stable_rate_vector[i];
-        <b>if</b> (<a href="../bfc-system/treasury.md#0xc8_treasury_has_vault">treasury::has_vault</a>(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, stable_type_name) &&
-            stable_type_name != busd_vault_key && rate_against_busd &gt; 0) {
+        // <b>if</b> (<a href="../bfc-system/treasury.md#0xc8_treasury_has_vault">treasury::has_vault</a>(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, stable_type_name) &&
+        <b>if</b> (stable_type_name != busd_vault_key && rate_against_busd &gt; 0) {
             <b>if</b> (inner.stable_rate.contains(&stable_type_name)) {
                 inner.stable_rate.remove(&stable_type_name);
             };

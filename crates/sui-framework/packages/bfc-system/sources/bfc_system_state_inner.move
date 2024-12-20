@@ -208,7 +208,6 @@ module bfc_system::bfc_system_state_inner {
         stable_type_name_vector: vector<ascii::String>,
         stable_rate_vector: vector<u64>,
     ) {
-        abort 1;
         // check
         if (vector::length(&stable_type_name_vector) != vector::length(&stable_rate_vector)) {
             return
