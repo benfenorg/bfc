@@ -1,37 +1,28 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { ErrorBoundary } from '_components/error-boundary';
 import { ampli } from '_src/shared/analytics/ampli';
-import { useBuyNLargeAssets } from '_src/ui/app/components/buynlarge/useBuyNLargeAssets';
+import { useBuyNLargeAsset } from '_src/ui/app/components/buynlarge/useBuyNLargeAsset';
 import { NFTDisplayCard } from '_src/ui/app/components/nft-display';
 import { Button } from '_src/ui/app/shared/ButtonUI';
-import { getKioskIdFromOwnerCap, isKioskOwnerToken } from '@mysten/core';
-import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
+import { type BenfenObjectData } from '@benfen/bfc.js/client';
 import { EyeClose16 } from '@mysten/icons';
-import { type SuiObjectData } from '@mysten/sui/client';
 import { Link } from 'react-router-dom';
 
 import { useHiddenAssets } from '../hidden-assets/HiddenAssetsProvider';
 
-export default function VisualAssets({ items }: { items: SuiObjectData[] }) {
+export default function VisualAssets({ items }: { items: BenfenObjectData[] }) {
 	const { hideAsset } = useHiddenAssets();
-	const kioskClient = useKioskClient();
-	const bnl = useBuyNLargeAssets();
+	const { objectType } = useBuyNLargeAsset();
 
 	return (
 		<div className="grid w-full grid-cols-2 gap-x-3.5 gap-y-4">
 			{items.map((object) => (
 				<Link
-					to={
-						isKioskOwnerToken(kioskClient.network, object)
-							? `/kiosk?${new URLSearchParams({
-									kioskId: getKioskIdFromOwnerCap(object),
-								})}`
-							: `/nft-details?${new URLSearchParams({
-									objectId: object.objectId,
-								}).toString()}`
-					}
+					to={`/nft-details?${new URLSearchParams({
+						objectId: object.objectId,
+					}).toString()}`}
 					onClick={() => {
 						ampli.clickedCollectibleCard({
 							objectId: object.objectId,
@@ -43,8 +34,7 @@ export default function VisualAssets({ items }: { items: SuiObjectData[] }) {
 				>
 					<div className="group">
 						<div className="w-full h-full justify-center z-10 absolute pointer-events-auto text-gray-60 transition-colors duration-200 p-0">
-							{!isKioskOwnerToken(kioskClient.network, object) &&
-							!bnl.some((item) => item?.objectType === object.type) ? (
+							{object.type !== objectType ? (
 								<div className="absolute top-2 right-3 rounded-md h-8 w-8 opacity-0 group-hover:opacity-100">
 									<Button
 										variant="hidden"
@@ -65,7 +55,7 @@ export default function VisualAssets({ items }: { items: SuiObjectData[] }) {
 						</div>
 						<ErrorBoundary>
 							<NFTDisplayCard
-								hideLabel
+								hideLabel={object.type === objectType}
 								objectId={object.objectId}
 								size="lg"
 								animateHover

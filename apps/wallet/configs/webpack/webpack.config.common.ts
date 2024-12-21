@@ -1,10 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { exec } from 'child_process';
 import { resolve } from 'path';
 import { randomBytes } from '@noble/hashes/utils';
-import SentryWebpackPlugin from '@sentry/webpack-plugin';
 import CopyPlugin from 'copy-webpack-plugin';
 import DotEnv from 'dotenv-webpack';
 import gitRevSync from 'git-rev-sync';
@@ -40,9 +39,12 @@ const SRC_ROOT = resolve(PROJECT_ROOT, 'src');
 const OUTPUT_ROOT = resolve(PROJECT_ROOT, 'dist');
 const TS_CONFIGS_ROOT = resolve(CONFIGS_ROOT, 'ts');
 const IS_DEV = process.env.NODE_ENV === 'development';
-const IS_PROD = process.env.NODE_ENV === 'production';
 const TS_CONFIG_FILE = resolve(TS_CONFIGS_ROOT, `tsconfig.${IS_DEV ? 'dev' : 'prod'}.json`);
-const APP_NAME = WALLET_BETA ? 'Sui Wallet (BETA)' : IS_DEV ? 'Sui Wallet (DEV)' : 'Sui Wallet';
+const APP_NAME = WALLET_BETA
+	? 'Benfen Wallet (BETA)'
+	: IS_DEV
+		? 'Benfen Wallet (DEV)'
+		: 'Benfen Wallet';
 
 function loadTsConfig(tsConfigFilePath: string) {
 	return new Promise<string>((res, rej) => {
@@ -89,7 +91,6 @@ async function generateAliasFromTs() {
 const commonConfig: () => Promise<Configuration> = async () => {
 	const alias = await generateAliasFromTs();
 	const walletVersionDetails = generateDateVersion(PATCH_VERISON);
-	const sentryAuthToken = process.env.SENTRY_AUTH_TOKEN;
 	return {
 		context: SRC_ROOT,
 		entry: {
@@ -110,7 +111,7 @@ const commonConfig: () => Promise<Configuration> = async () => {
 		},
 		resolve: {
 			extensions: ['.ts', '.tsx', '.js'],
-			// Fix .js imports from @mysten/sui since we are importing it from source
+			// Fix .js imports from @benfen/bfc.js since we are importing it from source
 			extensionAlias: {
 				'.js': ['.js', '.ts', '.tsx', '.jsx'],
 				'.mjs': ['.mjs', '.mts'],
@@ -130,6 +131,7 @@ const commonConfig: () => Promise<Configuration> = async () => {
 					loader: 'ts-loader',
 					options: {
 						configFile: TS_CONFIG_FILE,
+						transpileOnly: true,
 					},
 					exclude: /node_modules/,
 				},
@@ -215,15 +217,6 @@ const commonConfig: () => Promise<Configuration> = async () => {
 			}),
 			new ProvidePlugin({
 				Buffer: ['buffer', 'Buffer'],
-			}),
-			new SentryWebpackPlugin({
-				org: 'mysten-labs',
-				project: 'wallet',
-				include: OUTPUT_ROOT,
-				dryRun: !IS_PROD || !sentryAuthToken,
-				authToken: sentryAuthToken,
-				release: walletVersionDetails.version,
-				silent: true,
 			}),
 		],
 	};

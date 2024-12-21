@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import BottomMenuLayout, { Content, Menu } from '_app/shared/bottom-menu-layout';
@@ -12,17 +12,15 @@ import { useActiveAccount } from '_src/ui/app/hooks/useActiveAccount';
 import { useQredoTransaction } from '_src/ui/app/hooks/useQredoTransaction';
 import { useSigner } from '_src/ui/app/hooks/useSigner';
 import { QredoActionIgnoredByUser } from '_src/ui/app/QredoSigner';
-import { useGetKioskContents, useSuiNSEnabled } from '@mysten/core';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { isSuiNSName, useSuiNSEnabled } from '@mysten/core';
 import { ArrowRight16 } from '@mysten/icons';
-import { Transaction } from '@mysten/sui/transactions';
-import { isValidSuiNSName } from '@mysten/sui/utils';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Field, Form, Formik } from 'formik';
 import { toast } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
-import { useTransferKioskItem } from './useTransferKioskItem';
 import { createValidationSchema } from './validation';
 
 export function TransferNFTForm({
@@ -33,7 +31,7 @@ export function TransferNFTForm({
 	objectType?: string | null;
 }) {
 	const activeAddress = useActiveAddress();
-	const rpc = useSuiClient();
+	const rpc = useBenfenClient();
 	const suiNSEnabled = useSuiNSEnabled();
 	const validationSchema = createValidationSchema(rpc, suiNSEnabled, activeAddress || '', objectId);
 	const activeAccount = useActiveAccount();
@@ -41,9 +39,6 @@ export function TransferNFTForm({
 	const queryClient = useQueryClient();
 	const navigate = useNavigate();
 	const { clientIdentifier, notificationModal } = useQredoTransaction();
-	const { data: kiosk } = useGetKioskContents(activeAddress);
-	const transferKioskItem = useTransferKioskItem({ objectId, objectType });
-	const isContainedInKiosk = kiosk?.list.some((kioskItem) => kioskItem.data?.objectId === objectId);
 
 	const transferNFT = useMutation({
 		mutationFn: async (to: string) => {
@@ -51,7 +46,7 @@ export function TransferNFTForm({
 				throw new Error('Missing data');
 			}
 
-			if (suiNSEnabled && isValidSuiNSName(to)) {
+			if (suiNSEnabled && isSuiNSName(to)) {
 				const address = await rpc.resolveNameServiceAddress({
 					name: to,
 				});
@@ -61,11 +56,7 @@ export function TransferNFTForm({
 				to = address;
 			}
 
-			if (isContainedInKiosk) {
-				return transferKioskItem.mutateAsync({ to, clientIdentifier });
-			}
-
-			const tx = new Transaction();
+			const tx = new TransactionBlock();
 			tx.transferObjects([tx.object(objectId)], to);
 
 			return signer.signAndExecuteTransactionBlock(
@@ -82,7 +73,6 @@ export function TransferNFTForm({
 		},
 		onSuccess: (response) => {
 			queryClient.invalidateQueries({ queryKey: ['object', objectId] });
-			queryClient.invalidateQueries({ queryKey: ['get-kiosk-contents'] });
 			queryClient.invalidateQueries({ queryKey: ['get-owned-objects'] });
 
 			ampli.sentCollectible({ objectId });

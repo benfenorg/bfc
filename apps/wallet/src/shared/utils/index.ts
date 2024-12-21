@@ -1,11 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { useAppSelector } from '_hooks';
 import { setAttributes } from '_src/shared/experimentation/features';
+import { fromB64, toB64 } from '@benfen/bfc.js/utils';
 import { useGrowthBook } from '@growthbook/growthbook-react';
-import { fromBase64, toBase64 } from '@mysten/sui/utils';
-import * as Sentry from '@sentry/browser';
 import { useEffect } from 'react';
 import Browser from 'webextension-polyfill';
 
@@ -77,8 +76,8 @@ export function toSearchQueryString(searchParams: URLSearchParams) {
 }
 
 export function toUtf8OrB64(message: string | Uint8Array) {
-	const messageBytes = typeof message === 'string' ? fromBase64(message) : message;
-	let messageToReturn: string = typeof message === 'string' ? message : toBase64(message);
+	const messageBytes = typeof message === 'string' ? fromB64(message) : message;
+	let messageToReturn: string = typeof message === 'string' ? message : toB64(message);
 	let type: 'utf8' | 'base64' = 'base64';
 	try {
 		messageToReturn = new TextDecoder('utf8', { fatal: true }).decode(messageBytes);
@@ -90,28 +89,4 @@ export function toUtf8OrB64(message: string | Uint8Array) {
 		message: messageToReturn,
 		type,
 	};
-}
-
-export async function fetchWithSentry(name: string, ...params: Parameters<typeof fetch>) {
-	const url = params[0] instanceof URL ? params[0].href : String(params[0]);
-	const transaction = Sentry.startTransaction({
-		name,
-		op: 'http.request',
-		tags: {
-			url,
-		},
-	});
-	try {
-		const response = await fetch(...params);
-		if (!response.ok) {
-			throw new Error(`Request failed with status ${response.status} (${response.statusText})`);
-		}
-		transaction.setStatus('ok' as Sentry.SpanStatusType);
-		return response;
-	} catch (e) {
-		transaction.setStatus('unknown_error' as Sentry.SpanStatusType);
-		throw e;
-	} finally {
-		transaction.finish();
-	}
 }

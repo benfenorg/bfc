@@ -1,46 +1,41 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import type { Transaction } from '@mysten/sui/transactions';
 import type { IdentifierString, WalletAccount } from '@wallet-standard/core';
 
+import type { TransactionBlock } from '../../transactions/index.js';
+
 /** The latest API version of the signTransactionBlock API. */
-export type SuiSignTransactionBlockVersion = '1.0.0';
+export type BenfenSignTransactionBlockVersion = '1.0.0';
 
 /**
- * @deprecated Use `sui:signTransaction` instead.
- *
  * A Wallet Standard feature for signing a transaction, and returning the
  * serialized transaction and transaction signature.
  */
-export type SuiSignTransactionBlockFeature = {
+export type BenfenSignTransactionBlockFeature = {
 	/** Namespace for the feature. */
-	'sui:signTransactionBlock': {
+	'bfc:signTransactionBlock': {
 		/** Version of the feature API. */
-		version: SuiSignTransactionBlockVersion;
-		/** @deprecated Use `sui:signTransaction` instead. */
-		signTransactionBlock: SuiSignTransactionBlockMethod;
+		version: BenfenSignTransactionBlockVersion;
+		signTransactionBlock: BenfenSignTransactionBlockMethod;
 	};
 };
 
-/** @deprecated Use `sui:signTransaction` instead. */
-export type SuiSignTransactionBlockMethod = (
-	input: SuiSignTransactionBlockInput,
-) => Promise<SuiSignTransactionBlockOutput>;
+export type BenfenSignTransactionBlockMethod = (
+	input: BenfenSignTransactionBlockInput,
+) => Promise<BenfenSignTransactionBlockOutput>;
 
 /** Input for signing transactions. */
-export interface SuiSignTransactionBlockInput {
-	transactionBlock: Transaction;
+export interface BenfenSignTransactionBlockInput {
+	transactionBlock: TransactionBlock;
 	account: WalletAccount;
 	chain: IdentifierString;
 }
 
 /** Output of signing transactions. */
-export interface SuiSignTransactionBlockOutput extends SignedTransactionBlock {}
+export interface BenfenSignTransactionBlockOutput extends SignedTransactionBlock {}
 
 export interface SignedTransactionBlock {
-	/** Transaction as base64 encoded bcs. */
 	transactionBlockBytes: string;
-	/** Base64 encoded signature */
 	signature: string;
 }

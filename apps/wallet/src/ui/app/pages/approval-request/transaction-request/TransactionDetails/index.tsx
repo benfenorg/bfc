@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { useTransactionData } from '_src/ui/app/hooks';
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { Tab as HeadlessTab, type TabProps } from '@headlessui/react';
-import { type Transaction } from '@mysten/sui/transactions';
 
 import { SummaryCard } from '../SummaryCard';
 import { Command } from './Command';
@@ -11,7 +11,7 @@ import { Input } from './Input';
 
 interface Props {
 	sender?: string;
-	transaction: Transaction;
+	transaction: TransactionBlock;
 }
 
 const Tab = (props: TabProps<'div'>) => (
@@ -23,7 +23,7 @@ const Tab = (props: TabProps<'div'>) => (
 
 export function TransactionDetails({ sender, transaction }: Props) {
 	const { data: transactionData, isPending, isError } = useTransactionData(sender, transaction);
-	if (transactionData?.commands.length === 0 && transactionData.inputs.length === 0) {
+	if (transactionData?.transactions.length === 0 && transactionData.inputs.length === 0) {
 		return null;
 	}
 	return (
@@ -36,14 +36,14 @@ export function TransactionDetails({ sender, transaction }: Props) {
 				<div>
 					<HeadlessTab.Group>
 						<HeadlessTab.List className="flex gap-6 border-0 border-b border-solid border-gray-45 mb-6">
-							{!!transactionData.commands.length && <Tab>Commands</Tab>}
+							{!!transactionData.transactions.length && <Tab>Transactions</Tab>}
 							{!!transactionData.inputs.length && <Tab>Inputs</Tab>}
 						</HeadlessTab.List>
 						<HeadlessTab.Panels>
-							{!!transactionData.commands.length && (
+							{!!transactionData.transactions.length && (
 								<HeadlessTab.Panel className="flex flex-col gap-6">
 									{/* TODO: Rename components: */}
-									{transactionData.commands.map((command, index) => (
+									{transactionData.transactions.map((command, index) => (
 										<Command key={index} command={command} />
 									))}
 								</HeadlessTab.Panel>

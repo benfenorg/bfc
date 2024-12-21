@@ -1,11 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { describe, expect, test } from 'vitest';
 
-import { BcsReader, BcsWriter, toBase58, toBase64, toHex } from '../src';
-import { BcsType } from '../src/bcs-type.js';
-import { bcs } from '../src/bcs.js';
+import { bcs, BcsReader, BcsType, BcsWriter, toB58, toB64, toHEX } from '../../../src/bcs/index.js';
 
 describe('bcs', () => {
 	describe('base types', () => {
@@ -242,12 +240,9 @@ describe('bcs', () => {
 			Variant2: bcs.string(),
 		});
 
-		testType('Enum::Variant0(1)', E, { Variant0: 1 }, '000100', { $kind: 'Variant0', Variant0: 1 });
-		testType('Enum::Variant1(1)', E, { Variant1: 1 }, '0101', { $kind: 'Variant1', Variant1: 1 });
-		testType('Enum::Variant2("hello")', E, { Variant2: 'hello' }, '020568656c6c6f', {
-			$kind: 'Variant2',
-			Variant2: 'hello',
-		});
+		testType('Enum::Variant0(1)', E, { Variant0: 1 }, '000100');
+		testType('Enum::Variant1(1)', E, { Variant1: 1 }, '0101');
+		testType('Enum::Variant2("hello")', E, { Variant2: 'hello' }, '020568656c6c6f');
 	});
 });
 
@@ -261,20 +256,19 @@ function testType<T, Input>(
 	test(name, () => {
 		const serialized = schema.serialize(value);
 		const bytes = serialized.toBytes();
-		expect(toHex(bytes)).toBe(hex);
+		expect(toHEX(bytes)).toBe(hex);
 		expect(serialized.toHex()).toBe(hex);
-		expect(serialized.toBase64()).toBe(toBase64(bytes));
-		expect(serialized.toBase58()).toBe(toBase58(bytes));
+		expect(serialized.toBase64()).toBe(toB64(bytes));
+		expect(serialized.toBase58()).toBe(toB58(bytes));
 
 		const deserialized = schema.parse(bytes);
 		expect(deserialized).toEqual(expected);
 
-		const writer = new BcsWriter({ initialSize: bytes.length });
+		const writer = new BcsWriter({ size: bytes.length });
 		schema.write(value, writer);
-		expect(toHex(writer.toBytes())).toBe(hex);
+		expect(toHEX(writer.toBytes())).toBe(hex);
 
 		const reader = new BcsReader(bytes);
-
 		expect(schema.read(reader)).toEqual(expected);
 	});
 }

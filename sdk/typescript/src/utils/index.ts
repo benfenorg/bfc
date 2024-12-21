@@ -1,42 +1,53 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-export { formatAddress, formatDigest } from './format.js';
+import {
+	BENFEN_ADDRESS_LENGTH,
+	bfcDigitsToHumanReadable,
+	hexToString,
+	humanReadableToBfcDigits,
+	isValidBenfenAddress,
+	isValidBenfenObjectId,
+	isValidTransactionDigest,
+	normalizeBenfenObjectId,
+	normalizeHexAddress,
+	normalizeStructTag,
+	parseStructTag,
+	strToHex,
+} from './bf-types.js';
+import { bfc2HexAddress, formatAddress, formatDigest, hex2BfcAddress } from './format.js';
+
+export { fromB64, toB64, fromHEX, toHEX } from '../bcs/src/index.js';
+export { is, assert } from 'superstruct';
+
 export {
-	isValidSuiAddress,
-	isValidSuiObjectId,
+	formatAddress,
+	formatDigest,
+	isValidBenfenAddress,
+	isValidBenfenObjectId,
 	isValidTransactionDigest,
 	normalizeStructTag,
-	normalizeSuiAddress,
-	normalizeSuiObjectId,
+	normalizeHexAddress,
+	normalizeBenfenObjectId,
 	parseStructTag,
-	SUI_ADDRESS_LENGTH,
-} from './sui-types.js';
+	BENFEN_ADDRESS_LENGTH,
+	humanReadableToBfcDigits,
+	bfcDigitsToHumanReadable,
+	hexToString,
+	strToHex,
+	hex2BfcAddress,
+	bfc2HexAddress,
+};
 
-export {
-	fromB64,
-	toB64,
-	fromHEX,
-	toHex,
-	toHEX,
-	fromHex,
-	fromBase64,
-	toBase64,
-	fromBase58,
-	toBase58,
-} from '@mysten/bcs';
-export { isValidSuiNSName, normalizeSuiNSName } from './suins.js';
+export { isValidBenfenNSName, normalizeBenfenNSName } from './benfenns.js';
 
-export {
-	SUI_DECIMALS,
-	MIST_PER_SUI,
-	MOVE_STDLIB_ADDRESS,
-	SUI_FRAMEWORK_ADDRESS,
-	SUI_SYSTEM_ADDRESS,
-	SUI_CLOCK_OBJECT_ID,
-	SUI_SYSTEM_MODULE_NAME,
-	SUI_TYPE_ARG,
-	SUI_SYSTEM_STATE_OBJECT_ID,
-} from './constants.js';
+export const BFC_DECIMALS = 9;
+export const MIST_PER_BFC = BigInt(1000000000);
 
-export { isValidNamedPackage, isValidNamedType } from './move-registry.js';
+export const MOVE_STDLIB_ADDRESS = '0x1';
+export const BENFEN_FRAMEWORK_ADDRESS = '0x2';
+export const BENFEN_SYSTEM_ADDRESS = '0x3';
+export const BENFEN_CLOCK_OBJECT_ID = normalizeBenfenObjectId('0x6');
+export const BFC_SYSTEM_MODULE_NAME = 'bfc_system';
+export const BFC_TYPE_ARG = `${BENFEN_FRAMEWORK_ADDRESS}::bfc::BFC`;
+export const BFC_SYSTEM_STATE_OBJECT_ID: string = hex2BfcAddress('0x5');

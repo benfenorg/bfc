@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { createMessage } from '_messages';
@@ -30,8 +30,9 @@ import {
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { type SignedMessage, type SignedTransaction } from '_src/ui/app/WalletSigner';
 import type { AppDispatch } from '_store';
-import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { toBase64 } from '@mysten/sui/utils';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { type SerializedSignature } from '@benfen/bfc.js/cryptography';
+import { toB64 } from '@benfen/bfc.js/utils';
 import { type QueryKey } from '@tanstack/react-query';
 import { lastValueFrom, map, take } from 'rxjs';
 
@@ -95,7 +96,7 @@ export class BackgroundClient {
 	public sendTransactionRequestResponse(
 		txID: string,
 		approved: boolean,
-		txResult?: SuiTransactionBlockResponse | SignedMessage,
+		txResult?: BenfenTransactionBlockResponse | SignedMessage,
 		txResultError?: string,
 		txSigned?: SignedTransaction,
 	) {
@@ -150,13 +151,13 @@ export class BackgroundClient {
 		);
 	}
 
-	public signData(addressOrID: string, data: Uint8Array): Promise<string> {
+	public signData(addressOrID: string, data: Uint8Array): Promise<SerializedSignature> {
 		return lastValueFrom(
 			this.sendMessage(
 				createMessage<MethodPayload<'signData'>>({
 					type: 'method-payload',
 					method: 'signData',
-					args: { data: toBase64(data), id: addressOrID },
+					args: { data: toB64(data), id: addressOrID },
 				}),
 			).pipe(
 				take(1),
@@ -619,7 +620,7 @@ export class BackgroundClient {
 	}
 
 	private createPortStream() {
-		this._portStream = PortStream.connectToBackgroundService('sui_ui<->background');
+		this._portStream = PortStream.connectToBackgroundService('bfc_ui<->background');
 		this._portStream.onDisconnect.subscribe(() => {
 			this.createPortStream();
 		});

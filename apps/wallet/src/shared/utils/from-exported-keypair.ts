@@ -1,16 +1,16 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Keypair, type SignatureScheme } from '@mysten/sui/cryptography';
+import { type Keypair, type SignatureScheme } from '@benfen/bfc.js/cryptography';
 import {
-	decodeSuiPrivateKey,
+	decodeBenfenPrivateKey,
 	LEGACY_PRIVATE_KEY_SIZE,
 	PRIVATE_KEY_SIZE,
-} from '@mysten/sui/cryptography/keypair';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import { Secp256k1Keypair } from '@mysten/sui/keypairs/secp256k1';
-import { Secp256r1Keypair } from '@mysten/sui/keypairs/secp256r1';
-import { fromBase64 } from '@mysten/sui/utils';
+} from '@benfen/bfc.js/cryptography/keypair';
+import { Ed25519Keypair } from '@benfen/bfc.js/keypairs/ed25519';
+import { Secp256k1Keypair } from '@benfen/bfc.js/keypairs/secp256k1';
+import { Secp256r1Keypair } from '@benfen/bfc.js/keypairs/secp256r1';
+import { fromB64 } from '@benfen/bfc.js/utils';
 
 /**
  * Wallet stored data might contain imported accounts with their keys stored in the previous format.
@@ -31,10 +31,10 @@ export function fromExportedKeypair(
 		if (!legacySupport) {
 			throw new Error('Invalid type of secret key. A string value was expected.');
 		}
-		secretKey = fromBase64(secret.privateKey);
+		secretKey = fromB64(secret.privateKey);
 		schema = secret.schema;
 	} else {
-		const decoded = decodeSuiPrivateKey(secret);
+		const decoded = decodeBenfenPrivateKey(secret);
 		schema = decoded.schema;
 		secretKey = decoded.secretKey;
 	}

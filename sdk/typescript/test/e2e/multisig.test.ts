@@ -1,30 +1,27 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { tmpdir } from 'os';
-import path from 'path';
-import { fromBase64 } from '@mysten/bcs';
 import { describe, expect, it } from 'vitest';
 
-import { decodeSuiPrivateKey } from '../../src/cryptography';
+import { fromB64 } from '../../src/bcs/index.js';
+import { decodeBenfenPrivateKey } from '../../src/cryptography';
 import { Ed25519Keypair } from '../../src/keypairs/ed25519';
 import { MultiSigPublicKey } from '../../src/multisig/publickey';
-import { Transaction } from '../../src/transactions';
+import { TransactionBlock } from '../../src/transactions';
 import { getZkLoginSignature } from '../../src/zklogin';
-import { toZkLoginPublicIdentifier } from '../../src/zklogin/publickey';
+import { toZkLoginPublicIdentifier } from '../../src/zklogin/helper/publickey.js';
 import { DEFAULT_RECIPIENT, setupWithFundedAddress } from './utils/setup';
 
 describe('MultiSig with zklogin signature', () => {
 	it('Execute tx with multisig with 1 sig and 1 zkLogin sig combined', async () => {
-		// default ephemeral keypair, address_seed and zklogin inputs defined: https://github.com/MystenLabs/sui/blob/071a2955f7dbb83ee01c35d3a4257926a50a35f5/crates/sui-types/src/unit_tests/zklogin_test_vectors.json
 		// set up default zklogin public identifier with address seed consistent with default zklogin proof.
 		let pkZklogin = toZkLoginPublicIdentifier(
 			BigInt('2455937816256448139232531453880118833510874847675649348355284726183344259587'),
 			'https://id.twitch.tv/oauth2',
 		);
 		// set up ephemeral keypair, consistent with default zklogin proof.
-		let parsed = decodeSuiPrivateKey(
-			'suiprivkey1qzdlfxn2qa2lj5uprl8pyhexs02sg2wrhdy7qaq50cqgnffw4c2477kg9h3',
+		let parsed = decodeBenfenPrivateKey(
+			'benfenprivkey1qzdlfxn2qa2lj5uprl8pyhexs02sg2wrhdy7qaq50cqgnffw4c2477kg9h3',
 		);
 		let ephemeralKeypair = Ed25519Keypair.fromSecretKey(parsed.secretKey);
 
@@ -44,20 +41,19 @@ describe('MultiSig with zklogin signature', () => {
 				{ publicKey: pkZklogin, weight: 1 },
 			],
 		});
-		let multisigAddr = multiSigPublicKey.toSuiAddress();
-		const configPath = path.join(tmpdir(), 'client.yaml');
-		let toolbox = await setupWithFundedAddress(kp, multisigAddr, configPath);
+		let multisigAddr = multiSigPublicKey.toHexAddress();
+		let toolbox = await setupWithFundedAddress(kp, multisigAddr);
 
 		// construct a transfer from the multisig address.
-		const tx = new Transaction();
-		tx.setSenderIfNotSet(multisigAddr);
-		const coin = tx.splitCoins(tx.gas, [1]);
-		tx.transferObjects([coin], DEFAULT_RECIPIENT);
+		const txb = new TransactionBlock();
+		txb.setSenderIfNotSet(multisigAddr);
+		const coin = txb.splitCoins(txb.gas, [1]);
+		txb.transferObjects([coin], DEFAULT_RECIPIENT);
 		let client = toolbox.client;
-		let bytes = await tx.build({ client: toolbox.client });
+		let bytes = await txb.build({ client: toolbox.client });
 
 		// sign with the single keypair.
-		const singleSig = (await kp.signTransaction(bytes)).signature;
+		const singleSig = (await kp.signTransactionBlock(bytes)).signature;
 
 		const zkLoginInputs = {
 			addressSeed: '2455937816256448139232531453880118833510874847675649348355284726183344259587',
@@ -90,12 +86,12 @@ describe('MultiSig with zklogin signature', () => {
 				],
 			},
 		};
-		const ephemeralSig = (await ephemeralKeypair.signTransaction(bytes)).signature;
+		const ephemeralSig = (await ephemeralKeypair.signTransactionBlock(bytes)).signature;
 		// create zklogin signature based on default zk proof.
 		const zkLoginSig = getZkLoginSignature({
 			inputs: zkLoginInputs,
 			maxEpoch: '2',
-			userSignature: fromBase64(ephemeralSig),
+			userSignature: fromB64(ephemeralSig),
 		});
 
 		// combine to multisig and execute the transaction.
@@ -105,10 +101,9 @@ describe('MultiSig with zklogin signature', () => {
 			signature,
 			options: { showEffects: true },
 		});
-		await client.waitForTransaction({ digest: result.digest });
 
 		// check the execution result and digest.
-		const localDigest = await tx.getDigest({ client });
+		const localDigest = await txb.getDigest({ client });
 		expect(localDigest).toEqual(result.digest);
 		expect(result.effects?.status.status).toEqual('success');
 	});

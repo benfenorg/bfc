@@ -1,13 +1,12 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { resolve } from 'path';
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 
-import { OwnedObjectRef, SuiClient } from '../../src/client';
+import { BenfenClient, OwnedObjectRef } from '../../src/client';
 import type { Keypair } from '../../src/cryptography';
-import { Transaction } from '../../src/transactions';
-import { setup, TestToolbox } from './utils/setup';
+import { TransactionBlock } from '../../src/transactions';
+import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 function getOwnerAddress(o: OwnedObjectRef): string | undefined {
 	// const owner = getObjectOwner(o);
@@ -18,7 +17,7 @@ function getOwnerAddress(o: OwnedObjectRef): string | undefined {
 	}
 }
 
-describe('Transfer to Object', { retry: 3 }, () => {
+describe('Transfer to Object', () => {
 	let toolbox: TestToolbox;
 	let packageId: string;
 	let parentObjectId: OwnedObjectRef;
@@ -26,31 +25,32 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	let sharedObjectId: string;
 
 	beforeAll(async () => {
-		toolbox = await setup();
-		packageId = await toolbox.getPackage(resolve(__dirname, './data/tto'));
+		const packagePath = __dirname + '/./data/tto';
+		({ packageId } = await publishPackage(packagePath));
 	});
 
 	beforeEach(async () => {
-		const tx = new Transaction();
+		toolbox = await setup();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::start`,
 			typeArguments: [],
 			arguments: [],
 		});
 		const x = await validateTransaction(toolbox.client, toolbox.keypair, tx);
-		const y = x.effects?.created!.map((o) => getOwnerAddress(o))!;
-		receiveObjectId = x.effects?.created!.filter(
+		const y = (x.effects?.created)!.map((o) => getOwnerAddress(o))!;
+		receiveObjectId = (x.effects?.created)!.filter(
 			(o) => !y.includes(o.reference.objectId) && getOwnerAddress(o) !== undefined,
-		)[0]!;
-		parentObjectId = x.effects?.created!.filter(
+		)[0];
+		parentObjectId = (x.effects?.created)!.filter(
 			(o) => y.includes(o.reference.objectId) && getOwnerAddress(o) !== undefined,
-		)[0]!;
-		const sharedObject = x.effects?.created!.filter((o) => getOwnerAddress(o) === undefined)[0]!;
+		)[0];
+		const sharedObject = (x.effects?.created)!.filter((o) => getOwnerAddress(o) === undefined)[0];
 		sharedObjectId = sharedObject.reference.objectId;
 	});
 
 	it('Basic Receive: receive and then transfer', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::receiver`,
 			typeArguments: [],
@@ -63,7 +63,7 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 
 	it('Basic Receive: receive and then delete', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::deleter`,
 			typeArguments: [],
@@ -76,7 +76,7 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 
 	it('receive + return, then delete', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		const b = tx.moveCall({
 			target: `${packageId}::tto::return_`,
 			typeArguments: [],
@@ -94,7 +94,7 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 
 	it('Basic Receive: &Receiving arg type', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::invalid_call_immut_ref`,
 			typeArguments: [],
@@ -107,7 +107,7 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 
 	it('Basic Receive: &mut Receiving arg type', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::invalid_call_mut_ref`,
 			typeArguments: [],
@@ -120,7 +120,7 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 
 	it.fails('Trying to pass shared object as receiving argument', async () => {
-		const tx = new Transaction();
+		const tx = new TransactionBlock();
 		tx.moveCall({
 			target: `${packageId}::tto::receiver`,
 			typeArguments: [],
@@ -130,12 +130,12 @@ describe('Transfer to Object', { retry: 3 }, () => {
 	});
 });
 
-async function validateTransaction(client: SuiClient, signer: Keypair, tx: Transaction) {
-	tx.setSenderIfNotSet(signer.getPublicKey().toSuiAddress());
+async function validateTransaction(client: BenfenClient, signer: Keypair, tx: TransactionBlock) {
+	tx.setSenderIfNotSet(signer.getPublicKey().toHexAddress());
 	const localDigest = await tx.getDigest({ client });
-	const result = await client.signAndExecuteTransaction({
+	const result = await client.signAndExecuteTransactionBlock({
 		signer,
-		transaction: tx,
+		transactionBlock: tx,
 		options: {
 			showEffects: true,
 		},
@@ -143,6 +143,6 @@ async function validateTransaction(client: SuiClient, signer: Keypair, tx: Trans
 	expect(localDigest).toEqual(result.digest);
 	expect(result.effects?.status.status).toEqual('success');
 
-	await client.waitForTransaction({ digest: result.digest });
+	await client.waitForTransactionBlock({ digest: result.digest });
 	return result;
 }

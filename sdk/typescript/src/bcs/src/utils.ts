@@ -1,9 +1,9 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromBase58, toBase58 } from './b58.js';
-import { fromBase64, toBase64 } from './b64.js';
-import { fromHex, toHex } from './hex.js';
+import { fromB58, toB58 } from './b58.js';
+import { fromB64, toB64 } from './b64.js';
+import { fromHEX, toHEX } from './hex.js';
 import type { Encoding } from './types.js';
 
 /**
@@ -16,11 +16,11 @@ import type { Encoding } from './types.js';
 export function encodeStr(data: Uint8Array, encoding: Encoding): string {
 	switch (encoding) {
 		case 'base58':
-			return toBase58(data);
+			return toB58(data);
 		case 'base64':
-			return toBase64(data);
+			return toB64(data);
 		case 'hex':
-			return toHex(data);
+			return toHEX(data);
 		default:
 			throw new Error('Unsupported encoding, supported values are: base64, hex');
 	}
@@ -36,11 +36,11 @@ export function encodeStr(data: Uint8Array, encoding: Encoding): string {
 export function decodeStr(data: string, encoding: Encoding): Uint8Array {
 	switch (encoding) {
 		case 'base58':
-			return fromBase58(data);
+			return fromB58(data);
 		case 'base64':
-			return fromBase64(data);
+			return fromB64(data);
 		case 'hex':
-			return fromHex(data);
+			return fromHEX(data);
 		default:
 			throw new Error('Unsupported encoding, supported values are: base64, hex');
 	}

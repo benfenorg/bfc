@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { useResolveSuiNSName } from '_app/hooks/useAppResolveSuinsName';
 import { Text } from '_src/ui/app/shared/text';
+import { formatAddress, hex2BfcAddress } from '@benfen/bfc.js/utils';
+import { useResolveSuiNSName } from '@mysten/core';
 import { ArrowUpRight12, Copy12 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui/utils';
 import cn from 'clsx';
 import { forwardRef, type ReactNode } from 'react';
 
@@ -51,11 +51,14 @@ export const AccountItem = forwardRef<HTMLDivElement, AccountItemProps>(
 	) => {
 		const { data: accounts } = useAccounts();
 		const account = accounts?.find((account) => account.id === accountID);
-		const domainName = useResolveSuiNSName(account?.address);
+		const { data: domainName } = useResolveSuiNSName(account?.address);
 		const accountName = account?.nickname ?? domainName ?? formatAddress(account?.address || '');
-		const copyAddress = useCopyToClipboard(account?.address || '', {
-			copySuccessMessage: 'Address copied',
-		});
+		const copyAddress = useCopyToClipboard(
+			account?.address ? hex2BfcAddress(account.address) : '',
+			{
+				copySuccessMessage: 'Address copied',
+			},
+		);
 		const explorerHref = useExplorerLink({
 			type: ExplorerLinkType.address,
 			address: account?.address,

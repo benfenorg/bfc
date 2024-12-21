@@ -7,79 +7,71 @@ import { useNavigate } from 'react-router-dom';
 
 import { Text } from '../../shared/text';
 import Close from './close.svg';
-import { useBuyNLargeAssets } from './useBuyNLargeAssets';
+import { useBuyNLargeAsset } from './useBuyNLargeAsset';
+import { useConfig } from './useConfig';
 
-const SEEN_KEY = 'buy-n-large-seen-v2';
+const SEEN_KEY = 'buy-n-large-seen';
 
 export function BuyNLargeHomePanel() {
 	const navigate = useNavigate();
-	const [seen, setSeen] = useState<string[]>(() => {
+	const [seen, setSeen] = useState(() => {
 		const stored = localStorage.getItem(SEEN_KEY);
 		if (stored) {
 			return JSON.parse(stored);
 		}
-		return [];
+		return false;
 	});
+	const config = useConfig();
 
-	const bnl = useBuyNLargeAssets();
+	const { asset } = useBuyNLargeAsset();
+
+	if (seen || !config || !config.enabled || !asset) return null;
 
 	return (
-		<>
-			{bnl.map((item, index) => {
-				if (!item || !item.enabled || !item.asset || seen.includes(item?.objectType)) return null;
+		<div>
+			<div
+				role="button"
+				onClick={() => {
+					navigate(
+						`/nft-details?${new URLSearchParams({
+							objectId: asset.data?.objectId ?? '',
+						}).toString()}`,
+					);
 
-				return (
-					<div key={index}>
-						<div
-							role="button"
-							onClick={() => {
-								navigate(
-									`/nft-details?${new URLSearchParams({
-										objectId: item.asset?.data?.objectId ?? '',
-									}).toString()}`,
-								);
+					ampli.clickedCollectibleCard({
+						objectId: asset?.data?.objectId ?? '',
+						collectibleType: asset?.data?.type ?? '',
+						sourceScreen: 'HomePanel',
+					});
+				}}
+				className="bg-[#2249E3] flex flex-row items-center rounded-xl px-4 py-3 gap-4 w-full"
+			>
+				<div className="w-8 h-8">
+					<img src={config.homeImage} alt="" className="w-full h-full object-contain" />
+				</div>
 
-								ampli.clickedCollectibleCard({
-									objectId: item.asset?.data?.objectId ?? '',
-									collectibleType: item.asset?.data?.type ?? '',
-									sourceScreen: 'HomePanel',
-								});
-							}}
-							className="flex flex-row items-center rounded-xl px-4 py-3 gap-4 w-full"
-							style={{
-								backgroundColor: item.backgroundColor,
-							}}
-						>
-							<div className="w-8 h-8">
-								<img src={item.homeImage} alt="" className="w-full h-full object-contain" />
-							</div>
+				<div className="flex-1">
+					<Text variant="body" weight="medium" color="white">
+						{config.homeDescription}
+					</Text>
+				</div>
 
-							<div className="flex-1">
-								<Text variant="body" weight="medium" color="white">
-									{item.homeDescription}
-								</Text>
-							</div>
-
-							<div>
-								<button
-									type="button"
-									aria-label="Close"
-									className="bg-transparent p-0 m-0 border-none"
-									onClick={(e) => {
-										e.preventDefault();
-										e.stopPropagation();
-										const nextSeen = [...new Set([...seen, item?.objectType])];
-										localStorage.setItem(SEEN_KEY, JSON.stringify(nextSeen));
-										setSeen(nextSeen);
-									}}
-								>
-									<Close className="text-content-onColor" width={16} height={16} />
-								</button>
-							</div>
-						</div>
-					</div>
-				);
-			})}
-		</>
+				<div>
+					<button
+						type="button"
+						aria-label="Close"
+						className="bg-transparent p-0 m-0 border-none"
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+							localStorage.setItem(SEEN_KEY, JSON.stringify(true));
+							setSeen(true);
+						}}
+					>
+						<Close className="text-content-onColor" width={16} height={16} />
+					</button>
+				</div>
+			</div>
+		</div>
 	);
 }

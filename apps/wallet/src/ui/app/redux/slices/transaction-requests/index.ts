@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import type { ApprovalRequest } from '_payloads/transactions/ApprovalRequest';
@@ -10,9 +10,9 @@ import {
 	type WalletSigner,
 } from '_src/ui/app/WalletSigner';
 import type { AppThunkConfig } from '_store/thunk-extras';
-import { type SuiTransactionBlockResponse } from '@mysten/sui/client';
-import { Transaction } from '@mysten/sui/transactions';
-import { fromBase64 } from '@mysten/sui/utils';
+import { type BenfenTransactionBlockResponse } from '@benfen/bfc.js/client';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { fromB64 } from '@benfen/bfc.js/utils';
 import { createAsyncThunk, createEntityAdapter, createSlice } from '@reduxjs/toolkit';
 import type { PayloadAction } from '@reduxjs/toolkit';
 
@@ -28,7 +28,7 @@ export const respondToTransactionRequest = createAsyncThunk<
 	{
 		txRequestID: string;
 		approved: boolean;
-		txResponse: SuiTransactionBlockResponse | null;
+		txResponse: BenfenTransactionBlockResponse | null;
 	},
 	{
 		txRequestID: string;
@@ -49,19 +49,19 @@ export const respondToTransactionRequest = createAsyncThunk<
 			throw new Error(`TransactionRequest ${txRequestID} not found`);
 		}
 		let txSigned: SignedTransaction | undefined = undefined;
-		let txResult: SuiTransactionBlockResponse | SignedMessage | undefined = undefined;
+		let txResult: BenfenTransactionBlockResponse | SignedMessage | undefined = undefined;
 		let txResultError: string | undefined;
 		if (approved) {
 			try {
 				if (txRequest.tx.type === 'sign-message') {
 					txResult = await signer.signMessage(
 						{
-							message: fromBase64(txRequest.tx.message),
+							message: fromB64(txRequest.tx.message),
 						},
 						clientIdentifier,
 					);
 				} else if (txRequest.tx.type === 'transaction') {
-					const tx = Transaction.from(txRequest.tx.data);
+					const tx = TransactionBlock.from(txRequest.tx.data);
 					if (txRequest.tx.justSign) {
 						// Just a signing request, do not submit
 						txSigned = await signer.signTransactionBlock(

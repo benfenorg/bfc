@@ -19,7 +19,6 @@ pub fn version() -> String {
 
 #[wasm_bindgen]
 /// Deserialize the `Uint8Array`` bytecode into a JSON object.
-/// The JSON object contains the ABI (Application Binary Interface) of the module.
 ///
 /// ```javascript
 /// import * as template from '@mysten/move-binary-template';
@@ -87,7 +86,7 @@ pub fn update_identifiers(binary: &[u8], map: JsValue) -> Result<Box<[u8]>, JsEr
         });
 
     compiled_module
-        .datatype_handles
+        .struct_handles
         .iter_mut()
         .for_each(|handle| {
             handle.name.0 = find_pos(handle.name.0);
@@ -110,7 +109,7 @@ pub fn update_identifiers(binary: &[u8], map: JsValue) -> Result<Box<[u8]>, JsEr
 
     let mut binary = Vec::new();
     compiled_module
-        .serialize_with_version(compiled_module.version, &mut binary)
+        .serialize(&mut binary)
         .map_err(|err| JsErr {
             display: format!("{}", err),
             message: err.to_string(),
@@ -154,7 +153,7 @@ pub fn update_constants(
 
     let mut binary = Vec::new();
     compiled_module
-        .serialize_with_version(compiled_module.version, &mut binary)
+        .serialize(&mut binary)
         .map_err(|err| JsErr {
             display: format!("{}", err),
             message: err.to_string(),
@@ -200,7 +199,7 @@ pub fn serialize(json_module: JsValue) -> Result<Box<[u8]>, JsErr> {
     let compiled_module: CompiledModule = from_value(json_module)?;
     let mut binary = Vec::new();
     compiled_module
-        .serialize_with_version(compiled_module.version, &mut binary)
+        .serialize(&mut binary)
         .map_err(|err| JsErr {
             display: format!("{}", err),
             message: err.to_string(),

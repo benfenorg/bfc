@@ -1,14 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import nacl from 'tweetnacl';
 
-import {
-	decodeSuiPrivateKey,
-	encodeSuiPrivateKey,
-	Keypair,
-	PRIVATE_KEY_SIZE,
-} from '../../cryptography/keypair.js';
+import { encodeBenfenPrivateKey, Keypair, PRIVATE_KEY_SIZE } from '../../cryptography/keypair.js';
 import { isValidHardenedPath, mnemonicToSeedHex } from '../../cryptography/mnemonics.js';
 import type { SignatureScheme } from '../../cryptography/signature-scheme.js';
 import { derivePath } from './ed25519-hd-key.js';
@@ -68,23 +63,13 @@ export class Ed25519Keypair extends Keypair {
 	 *
 	 * @throws error if the provided secret key is invalid and validation is not skipped.
 	 *
-	 * @param secretKey secret key as a byte array or Bech32 secret key string
+	 * @param secretKey secret key byte array
 	 * @param options: skip secret key validation
 	 */
 	static fromSecretKey(
-		secretKey: Uint8Array | string,
+		secretKey: Uint8Array,
 		options?: { skipValidation?: boolean },
 	): Ed25519Keypair {
-		if (typeof secretKey === 'string') {
-			const decoded = decodeSuiPrivateKey(secretKey);
-
-			if (decoded.schema !== 'ED25519') {
-				throw new Error(`Expected a ED25519 keypair, got ${decoded.schema}`);
-			}
-
-			return this.fromSecretKey(decoded.secretKey, options);
-		}
-
 		const secretKeyLength = secretKey.length;
 		if (secretKeyLength !== PRIVATE_KEY_SIZE) {
 			throw new Error(
@@ -94,7 +79,7 @@ export class Ed25519Keypair extends Keypair {
 		const keypair = nacl.sign.keyPair.fromSeed(secretKey);
 		if (!options || !options.skipValidation) {
 			const encoder = new TextEncoder();
-			const signData = encoder.encode('sui validation');
+			const signData = encoder.encode('benfen validation');
 			const signature = nacl.sign.detached(signData, keypair.secretKey);
 			if (!nacl.sign.detached.verify(signData, signature, keypair.publicKey)) {
 				throw new Error('provided secretKey is invalid');
@@ -114,16 +99,20 @@ export class Ed25519Keypair extends Keypair {
 	 * The Bech32 secret key string for this Ed25519 keypair
 	 */
 	getSecretKey(): string {
-		return encodeSuiPrivateKey(
+		return encodeBenfenPrivateKey(
 			this.keypair.secretKey.slice(0, PRIVATE_KEY_SIZE),
 			this.getKeyScheme(),
 		);
 	}
 
+	async sign(data: Uint8Array) {
+		return this.signData(data);
+	}
+
 	/**
 	 * Return the signature for the provided data using Ed25519.
 	 */
-	async sign(data: Uint8Array) {
+	signData(data: Uint8Array): Uint8Array {
 		return nacl.sign.detached(data, this.keypair.secretKey);
 	}
 

@@ -1,11 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromBase64, toBase64 } from '@mysten/bcs';
-
 import { bcs } from '../bcs/index.js';
+import { fromB64, toB64 } from '../bcs/src/index.js';
 import type { MultiSigStruct } from '../multisig/publickey.js';
-import { parseSerializedZkLoginSignature } from '../zklogin/publickey.js';
+import { parseSerializedZkLoginSignature } from '../zklogin/helper/publickey.js';
 import type { PublicKey } from './publickey.js';
 import type { SignatureScheme } from './signature-scheme.js';
 import {
@@ -26,13 +25,19 @@ export type SerializeSignatureInput = {
 };
 
 /**
+ * (`flag || signature || pubkey` bytes, as base-64 encoded string).
+ * Signature is committed to the intent message of the transaction data, as base-64 encoded string.
+ */
+export type SerializedSignature = string;
+
+/**
  * Takes in a signature, its associated signing scheme and a public key, then serializes this data
  */
 export function toSerializedSignature({
 	signature,
 	signatureScheme,
 	publicKey,
-}: SerializeSignatureInput): string {
+}: SerializeSignatureInput): SerializedSignature {
 	if (!publicKey) {
 		throw new Error('`publicKey` is required');
 	}
@@ -42,14 +47,14 @@ export function toSerializedSignature({
 	serializedSignature.set([SIGNATURE_SCHEME_TO_FLAG[signatureScheme]]);
 	serializedSignature.set(signature, 1);
 	serializedSignature.set(pubKeyBytes, 1 + signature.length);
-	return toBase64(serializedSignature);
+	return toB64(serializedSignature);
 }
 
 /**
  * Decodes a serialized signature into its constituent components: the signature scheme, the actual signature, and the public key
  */
-export function parseSerializedSignature(serializedSignature: string) {
-	const bytes = fromBase64(serializedSignature);
+export function parseSerializedSignature(serializedSignature: SerializedSignature) {
+	const bytes = fromB64(serializedSignature);
 
 	const signatureScheme =
 		SIGNATURE_FLAG_TO_SCHEME[bytes[0] as keyof typeof SIGNATURE_FLAG_TO_SCHEME];

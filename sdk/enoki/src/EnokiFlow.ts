@@ -1,12 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiClient } from '@mysten/sui/client';
-import { decodeSuiPrivateKey } from '@mysten/sui/cryptography';
-import { Ed25519Keypair } from '@mysten/sui/keypairs/ed25519';
-import type { Transaction } from '@mysten/sui/transactions';
-import { fromBase64, toBase64 } from '@mysten/sui/utils';
-import type { ZkLoginSignatureInputs } from '@mysten/sui/zklogin';
+import type { SuiClient } from '@mysten/sui.js/client';
+import { decodeSuiPrivateKey } from '@mysten/sui.js/cryptography';
+import { Ed25519Keypair } from '@mysten/sui.js/keypairs/ed25519';
+import type { TransactionBlock } from '@mysten/sui.js/transactions';
+import { fromB64, toB64 } from '@mysten/sui.js/utils';
+import type { ZkLoginSignatureInputs } from '@mysten/sui.js/zklogin';
 import { decodeJwt } from 'jose';
 import type { WritableAtom } from 'nanostores';
 import { atom, onMount, onSet } from 'nanostores';
@@ -163,7 +163,7 @@ export class EnokiFlow {
 			expiresAt: estimatedExpiration,
 			maxEpoch,
 			randomness,
-			ephemeralKeyPair: toBase64(decodeSuiPrivateKey(ephemeralKeyPair.getSecretKey()).secretKey),
+			ephemeralKeyPair: toB64(decodeSuiPrivateKey(ephemeralKeyPair.getSecretKey()).secretKey),
 		});
 
 		return oauthUrl;
@@ -273,7 +273,7 @@ export class EnokiFlow {
 			throw new Error('Missing required parameters for proof generation');
 		}
 
-		const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(fromBase64(zkp.ephemeralKeyPair));
+		const ephemeralKeyPair = Ed25519Keypair.fromSecretKey(fromB64(zkp.ephemeralKeyPair));
 
 		const proof = await this.#enokiClient.createZkLoginZkp({
 			network,
@@ -311,17 +311,17 @@ export class EnokiFlow {
 			address,
 			maxEpoch: zkp.maxEpoch,
 			proof: zkp.proof,
-			ephemeralKeypair: Ed25519Keypair.fromSecretKey(fromBase64(zkp.ephemeralKeyPair)),
+			ephemeralKeypair: Ed25519Keypair.fromSecretKey(fromB64(zkp.ephemeralKeyPair)),
 		});
 	}
 
-	async sponsorTransaction({
+	async sponsorTransactionBlock({
 		network,
-		transaction,
+		transactionBlock,
 		client,
 	}: {
 		network?: 'mainnet' | 'testnet';
-		transaction: Transaction;
+		transactionBlock: TransactionBlock;
 		client: SuiClient;
 	}) {
 		const session = await this.getSession();
@@ -330,19 +330,26 @@ export class EnokiFlow {
 			throw new Error('Missing required data for sponsorship.');
 		}
 
-		const transactionKindBytes = await transaction.build({
+		const transactionBlockKindBytes = await transactionBlock.build({
 			onlyTransactionKind: true,
 			client,
+			// Theses limits will get verified during the final transaction construction, so we can safely ignore them here:
+			limits: {
+				maxGasObjects: Infinity,
+				maxPureArgumentSize: Infinity,
+				maxTxGas: Infinity,
+				maxTxSizeBytes: Infinity,
+			},
 		});
 
-		return await this.#enokiClient.createSponsoredTransaction({
+		return await this.#enokiClient.createSponsoredTransactionBlock({
 			jwt: session.jwt,
 			network,
-			transactionKindBytes: toBase64(transactionKindBytes),
+			transactionBlockKindBytes: toB64(transactionBlockKindBytes),
 		});
 	}
 
-	async executeTransaction({
+	async executeTransactionBlock({
 		network,
 		bytes,
 		digest,
@@ -354,33 +361,33 @@ export class EnokiFlow {
 		client: SuiClient;
 	}) {
 		const keypair = await this.getKeypair({ network });
-		const userSignature = await keypair.signTransaction(fromBase64(bytes));
+		const userSignature = await keypair.signTransactionBlock(fromB64(bytes));
 
-		await this.#enokiClient.executeSponsoredTransaction({
+		await this.#enokiClient.executeSponsoredTransactionBlock({
 			digest,
 			signature: userSignature.signature,
 		});
 
 		// TODO: Should the parent just do this?
-		await client.waitForTransaction({ digest });
+		await client.waitForTransactionBlock({ digest });
 
 		return { digest };
 	}
 
-	async sponsorAndExecuteTransaction({
+	async sponsorAndExecuteTransactionBlock({
 		network,
-		transaction,
+		transactionBlock,
 		client,
 	}: {
 		network?: 'mainnet' | 'testnet';
-		transaction: Transaction;
+		transactionBlock: TransactionBlock;
 		client: SuiClient;
 	}) {
-		const { bytes, digest } = await this.sponsorTransaction({
+		const { bytes, digest } = await this.sponsorTransactionBlock({
 			network,
-			transaction,
+			transactionBlock,
 			client,
 		});
-		return await this.executeTransaction({ network, bytes, digest, client });
+		return await this.executeTransactionBlock({ network, bytes, digest, client });
 	}
 }

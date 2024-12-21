@@ -1,11 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { resolve } from 'path';
 import { beforeAll, describe, expect, it } from 'vitest';
 
-import { SuiObjectData } from '../../src/client';
-import { setup, TestToolbox } from './utils/setup';
+import { BenfenObjectData } from '../../src/client/index.js';
+import { bfc2HexAddress } from '../../src/utils/index.js';
+import { publishPackage, setup, TestToolbox } from './utils/setup';
 
 describe('Dynamic Fields Reading API', () => {
 	let toolbox: TestToolbox;
@@ -14,7 +14,8 @@ describe('Dynamic Fields Reading API', () => {
 
 	beforeAll(async () => {
 		toolbox = await setup();
-		packageId = await toolbox.getPackage(resolve(__dirname, './data/dynamic_fields'));
+		const packagePath = __dirname + '/./data/dynamic_fields';
+		({ packageId } = await publishPackage(packagePath, toolbox));
 
 		await toolbox.client
 			.getOwnedObjects({
@@ -23,7 +24,7 @@ describe('Dynamic Fields Reading API', () => {
 				filter: { StructType: `${packageId}::dynamic_fields_test::Test` },
 			})
 			.then(function (objects) {
-				const data = objects.data[0].data as SuiObjectData;
+				const data = objects.data[0].data as BenfenObjectData;
 				parentObjectId = data.objectId;
 			});
 	});
@@ -62,8 +63,12 @@ describe('Dynamic Fields Reading API', () => {
 		for (const data of dynamicFields.data) {
 			const objName = data.name;
 
+			if (objName.type === '0x2::object::ID') {
+				objName.value = bfc2HexAddress(objName.value as string);
+			}
+
 			const object = await toolbox.client.getDynamicFieldObject({
-				parentId: parentObjectId,
+				parentId: bfc2HexAddress(parentObjectId),
 				name: objName,
 			});
 

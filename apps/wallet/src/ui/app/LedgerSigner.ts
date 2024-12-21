@@ -1,10 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
+import { type BenfenClient } from '@benfen/bfc.js/client';
+import {
+	toSerializedSignature,
+	type SerializedSignature,
+	type SignatureScheme,
+} from '@benfen/bfc.js/cryptography';
+import { Ed25519PublicKey } from '@benfen/bfc.js/keypairs/ed25519';
 import type SuiLedgerClient from '@mysten/ledgerjs-hw-app-sui';
-import { type SuiClient } from '@mysten/sui/client';
-import { toSerializedSignature, type SignatureScheme } from '@mysten/sui/cryptography';
-import { Ed25519PublicKey } from '@mysten/sui/keypairs/ed25519';
 
 import { WalletSigner } from './WalletSigner';
 
@@ -17,7 +21,7 @@ export class LedgerSigner extends WalletSigner {
 	constructor(
 		connectToLedger: () => Promise<SuiLedgerClient>,
 		derivationPath: string,
-		client: SuiClient,
+		client: BenfenClient,
 	) {
 		super(client);
 		this.#connectToLedger = connectToLedger;
@@ -38,7 +42,7 @@ export class LedgerSigner extends WalletSigner {
 		const ledgerClient = await this.#initializeSuiLedgerClient();
 		const publicKeyResult = await ledgerClient.getPublicKey(this.#derivationPath);
 		const publicKey = new Ed25519PublicKey(publicKeyResult.publicKey);
-		return publicKey.toSuiAddress();
+		return publicKey.toHexAddress();
 	}
 
 	async getPublicKey(): Promise<Ed25519PublicKey> {
@@ -47,7 +51,7 @@ export class LedgerSigner extends WalletSigner {
 		return new Ed25519PublicKey(publicKey);
 	}
 
-	async signData(data: Uint8Array): Promise<string> {
+	async signData(data: Uint8Array): Promise<SerializedSignature> {
 		const ledgerClient = await this.#initializeSuiLedgerClient();
 		const { signature } = await ledgerClient.signTransaction(this.#derivationPath, data);
 		const publicKey = await this.getPublicKey();
@@ -58,7 +62,7 @@ export class LedgerSigner extends WalletSigner {
 		});
 	}
 
-	connect(client: SuiClient) {
+	connect(client: BenfenClient) {
 		return new LedgerSigner(this.#connectToLedger, this.#derivationPath, client);
 	}
 }
