@@ -139,7 +139,7 @@ class Permissions {
 			throw new Error('Another permission request is pending.');
 		}
 		const alreadyAllowed = await this.hasPermissions(origin, permissionTypes, existingPermission);
-		if (alreadyAllowed && existingPermission) {
+		if (alreadyAllowed && existingPermission && existingPermission.allowed) {
 			return existingPermission;
 		}
 		const pRequest = await this.createPermissionRequest(

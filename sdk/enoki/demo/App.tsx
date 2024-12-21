@@ -1,8 +1,8 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { getFullnodeUrl, SuiClient } from '@mysten/sui/client';
-import { Transaction } from '@mysten/sui/transactions';
+import { getFullnodeUrl, SuiClient } from '@mysten/sui.js/client';
+import { TransactionBlock } from '@mysten/sui.js/transactions';
 import { useState } from 'react';
 
 import { useAuthCallback, useEnokiFlow, useZkLogin } from '../src/react.tsx';
@@ -38,19 +38,19 @@ export function App() {
 				<button
 					onClick={async () => {
 						try {
-							const transaction = new Transaction();
-							transaction.moveCall({
+							const transactionBlock = new TransactionBlock();
+							transactionBlock.moveCall({
 								target:
 									'0xfa0e78030bd16672174c2d6cc4cd5d1d1423d03c28a74909b2a148eda8bcca16::clock::access',
-								arguments: [transaction.object('0x6')],
+								arguments: [transactionBlock.object('0x6')],
 							});
 
-							const result = await flow.sponsorAndExecuteTransaction({
+							const result = await flow.sponsorAndExecuteTransactionBlock({
 								network: 'testnet',
 								// @ts-expect-error: Type references not quite doing their thing:
 								client: new SuiClient({ url: getFullnodeUrl('testnet') }),
 								// @ts-expect-error: Type references not quite doing their thing:
-								transaction,
+								transactionBlock,
 							});
 
 							setResult(result);

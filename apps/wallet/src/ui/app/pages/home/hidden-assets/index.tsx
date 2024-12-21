@@ -1,7 +1,6 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { useBlockedObjectList } from '_app/hooks/useBlockedObjectList';
 import Alert from '_components/alert';
 import { ErrorBoundary } from '_components/error-boundary';
 import Loading from '_components/loading';
@@ -10,10 +9,8 @@ import { NFTDisplayCard } from '_components/nft-display';
 import { ampli } from '_src/shared/analytics/ampli';
 import { Button } from '_src/ui/app/shared/ButtonUI';
 import PageTitle from '_src/ui/app/shared/PageTitle';
-import { getKioskIdFromOwnerCap, isKioskOwnerToken, useMultiGetObjects } from '@mysten/core';
-import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
+import { useMultiGetObjects } from '@mysten/core';
 import { EyeClose16 } from '@mysten/icons';
-import { normalizeStructTag } from '@mysten/sui/utils';
 import { keepPreviousData } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
@@ -22,8 +19,6 @@ import { useHiddenAssets } from './HiddenAssetsProvider';
 
 function HiddenNftsPage() {
 	const { hiddenAssetIds, showAsset } = useHiddenAssets();
-	const kioskClient = useKioskClient();
-	const { data: blockedObjectList } = useBlockedObjectList();
 
 	const { data, isLoading, isPending, isError, error } = useMultiGetObjects(
 		hiddenAssetIds,
@@ -45,13 +40,6 @@ function HiddenNftsPage() {
 
 		return hiddenNfts
 			?.filter((nft) => nft.data && hiddenAssetIds.includes(nft?.data?.objectId))
-			.filter((nft) => {
-				if (!nft.data?.type) {
-					return true;
-				}
-				const normalizedType = normalizeStructTag(nft.data.type);
-				return !blockedObjectList?.includes(normalizedType);
-			})
 			.sort((nftA, nftB) => {
 				let nameA = nftA.display?.name || '';
 				let nameB = nftB.display?.name || '';
@@ -63,7 +51,7 @@ function HiddenNftsPage() {
 				}
 				return 0;
 			});
-	}, [hiddenAssetIds, data, blockedObjectList]);
+	}, [hiddenAssetIds, data]);
 
 	if (isLoading) {
 		return (
@@ -92,15 +80,9 @@ function HiddenNftsPage() {
 							return (
 								<div className="flex justify-between items-center pt-2 pr-1" key={objectId}>
 									<Link
-										to={
-											isKioskOwnerToken(kioskClient.network, nft.data)
-												? `/kiosk?${new URLSearchParams({
-														kioskId: getKioskIdFromOwnerCap(nft.data!),
-													})}`
-												: `/nft-details?${new URLSearchParams({
-														objectId,
-													}).toString()}`
-										}
+										to={`/nft-details?${new URLSearchParams({
+											objectId,
+										}).toString()}`}
 										onClick={() => {
 											ampli.clickedCollectibleCard({
 												objectId,

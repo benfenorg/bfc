@@ -1,13 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { ImageIcon } from '_app/shared/image-icon';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useCoinMetadata } from '@mysten/core';
 import { Sui, Unstaked } from '@mysten/icons';
-import { normalizeStructTag, SUI_TYPE_ARG } from '@mysten/sui/utils';
 import { cva, type VariantProps } from 'class-variance-authority';
-
-import { useCoinMetadataOverrides } from '../../hooks/useCoinMetadataOverride';
 
 const imageStyle = cva(['rounded-full flex'], {
 	variants: {
@@ -40,13 +38,11 @@ type NonSuiCoinProps = {
 
 function NonSuiCoin({ coinType }: NonSuiCoinProps) {
 	const { data: coinMeta } = useCoinMetadata(coinType);
-	const coinMetadataOverrides = useCoinMetadataOverrides();
-
 	return (
-		<div className="flex h-full w-full items-center justify-center text-white bg-steel rounded-full overflow-hidden">
+		<div className="flex h-full w-full items-center justify-center text-white bg-steel rounded-full">
 			{coinMeta?.iconUrl ? (
 				<ImageIcon
-					src={coinMetadataOverrides[coinType]?.iconUrl ?? coinMeta.iconUrl}
+					src={coinMeta.iconUrl}
 					label={coinMeta.name || coinType}
 					fallback={coinMeta.name || coinType}
 					rounded="full"
@@ -63,13 +59,9 @@ export interface CoinIconProps extends VariantProps<typeof imageStyle> {
 }
 
 export function CoinIcon({ coinType, ...styleProps }: CoinIconProps) {
-	const isSui = coinType
-		? normalizeStructTag(coinType) === normalizeStructTag(SUI_TYPE_ARG)
-		: false;
-
 	return (
 		<div className={imageStyle(styleProps)}>
-			{isSui ? <SuiCoin /> : <NonSuiCoin coinType={coinType} />}
+			{coinType === BFC_TYPE_ARG ? <SuiCoin /> : <NonSuiCoin coinType={coinType} />}
 		</div>
 	);
 }

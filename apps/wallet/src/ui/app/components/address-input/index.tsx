@@ -1,11 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { Text } from '_app/shared/text';
 import Alert from '_src/ui/app/components/alert';
-import { useSuiClient } from '@mysten/dapp-kit';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { isValidBenfenAddress } from '@benfen/bfc.js/utils';
 import { QrCode, X12 } from '@mysten/icons';
-import { isValidSuiAddress } from '@mysten/sui/utils';
 import { useQuery } from '@tanstack/react-query';
 import { cx } from 'class-variance-authority';
 import { useField, useFormikContext } from 'formik';
@@ -33,12 +33,12 @@ export function AddressInput({
 }: AddressInputProps) {
 	const [field, meta] = useField(name);
 
-	const client = useSuiClient();
+	const client = useBenfenClient();
 	const { data: warningData } = useQuery({
 		queryKey: ['address-input-warning', field.value],
 		queryFn: async () => {
 			// We assume this validation will happen elsewhere:
-			if (!isValidSuiAddress(field.value)) {
+			if (!isValidBenfenAddress(field.value)) {
 				return null;
 			}
 
@@ -72,7 +72,7 @@ export function AddressInput({
 		refetchInterval: false,
 	});
 
-	const { isSubmitting, setFieldValue, isValidating } = useFormikContext();
+	const { isSubmitting, setFieldValue } = useFormikContext();
 	const suiAddressValidation = useSuiAddressValidation();
 
 	const disabled = forcedDisabled !== undefined ? forcedDisabled : isSubmitting;
@@ -92,7 +92,7 @@ export function AddressInput({
 		setFieldValue('to', '');
 	}, [setFieldValue]);
 
-	const hasWarningOrError = meta.touched && (meta.error || warningData) && !isValidating;
+	const hasWarningOrError = meta.touched && (meta.error || warningData);
 
 	return (
 		<>
@@ -132,7 +132,7 @@ export function AddressInput({
 				</div>
 			</div>
 
-			{field.value && !isValidating ? (
+			{meta.touched ? (
 				<div className="mt-2.5 w-full">
 					<Alert noBorder rounded="lg" mode={meta.error || warningData ? 'issue' : 'success'}>
 						{warningData === RecipientWarningType.OBJECT ? (

@@ -1,12 +1,16 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import networkEnv from '_src/background/NetworkEnv';
 import { type NetworkEnvType } from '_src/shared/api-env';
 import { deobfuscate, obfuscate } from '_src/shared/cryptography/keystore';
 import { fromExportedKeypair } from '_src/shared/utils/from-exported-keypair';
-import { toSerializedSignature, type PublicKey } from '@mysten/sui/cryptography';
-import { computeZkLoginAddress, genAddressSeed, getZkLoginSignature } from '@mysten/zklogin';
+import {
+	toSerializedSignature,
+	type PublicKey,
+	type SerializedSignature,
+} from '@benfen/bfc.js/cryptography';
+import { computeZkLoginAddress, genAddressSeed, getZkLoginSignature } from '@benfen/bfc.js/zklogin';
 import { blake2b } from '@noble/hashes/blake2b';
 import { decodeJwt } from 'jose';
 
@@ -20,7 +24,7 @@ import { getCurrentEpoch } from './current-epoch';
 import { type ZkLoginProvider } from './providers';
 import {
 	createPartialZkLoginSignature,
-	fetchSalt,
+	getSalt,
 	prepareZkLogin,
 	zkLoginAuthenticate,
 	type PartialZkLoginSignature,
@@ -104,7 +108,6 @@ export class ZkLoginAccount
 		provider: ZkLoginProvider;
 	}): Promise<Omit<ZkLoginAccountSerialized, 'id'>> {
 		const jwt = await zkLoginAuthenticate({ provider, prompt: true });
-		const salt = await fetchSalt(jwt);
 		const decodedJWT = decodeJwt(jwt);
 		if (!decodedJWT.sub || !decodedJWT.iss || !decodedJWT.aud) {
 			throw new Error('Missing jwt data');
@@ -125,6 +128,8 @@ export class ZkLoginAccount
 		};
 		const claimName = 'sub';
 		const claimValue = decodedJWT.sub;
+		const salt = await getSalt(jwt);
+
 		return {
 			type: 'zkLogin',
 			address: computeZkLoginAddress({
@@ -192,7 +197,7 @@ export class ZkLoginAccount
 		};
 	}
 
-	async signData(data: Uint8Array): Promise<string> {
+	async signData(data: Uint8Array): Promise<SerializedSignature> {
 		const digest = blake2b(data, { dkLen: 32 });
 		if (await this.isLocked()) {
 			throw new Error('Account is locked');

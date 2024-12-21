@@ -1,7 +1,7 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { type DelegatedStake } from '@mysten/sui/client';
+import { type DelegatedStake } from '@benfen/bfc.js/client';
 
 // Get total Stake SUI for a specific validator address
 export const getTokenStakeSuiForValidator = (

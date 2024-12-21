@@ -1,10 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { useFeatureValue } from '@growthbook/growthbook-react';
-import { useSuiClient } from '@mysten/dapp-kit';
-import { CoinMetadata } from '@mysten/sui/client';
-import { SUI_TYPE_ARG } from '@mysten/sui/utils';
+import { CoinMetadata } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { BFC_TYPE_ARG } from '@benfen/bfc.js/utils';
 import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import BigNumber from 'bignumber.js';
 import { useMemo } from 'react';
@@ -45,21 +44,8 @@ const ELLIPSIS = '\u{2026}';
 const SYMBOL_TRUNCATE_LENGTH = 5;
 const NAME_TRUNCATE_LENGTH = 10;
 
-type CoinMetadataOverrides = {
-	[coinType: string]: {
-		name?: string;
-		iconUrl?: string;
-		symbol?: string;
-	};
-};
-
 export function useCoinMetadata(coinType?: string | null) {
-	const client = useSuiClient();
-	const tokenMetadataOverrides = useFeatureValue<CoinMetadataOverrides>(
-		'token-metadata-overrides',
-		{},
-	);
-
+	const client = useBenfenClient();
 	return useQuery({
 		queryKey: ['coin-metadata', coinType],
 		queryFn: async () => {
@@ -68,14 +54,14 @@ export function useCoinMetadata(coinType?: string | null) {
 			}
 
 			// Optimize the known case of SUI to avoid a network call:
-			if (coinType === SUI_TYPE_ARG) {
+			if (coinType === BFC_TYPE_ARG) {
 				const metadata: CoinMetadata = {
 					id: null,
 					decimals: 9,
 					description: '',
 					iconUrl: null,
-					name: 'Sui',
-					symbol: 'SUI',
+					name: 'bfc',
+					symbol: 'BFC',
 				};
 
 				return metadata;
@@ -86,29 +72,16 @@ export function useCoinMetadata(coinType?: string | null) {
 		select(data) {
 			if (!data) return null;
 
-			const symbol =
-				coinType && tokenMetadataOverrides[coinType]?.symbol
-					? tokenMetadataOverrides[coinType].symbol
-					: data.symbol;
-			const name =
-				coinType && tokenMetadataOverrides[coinType]?.name
-					? tokenMetadataOverrides[coinType].name
-					: data.name;
-
 			return {
 				...data,
-				iconUrl:
-					coinType && tokenMetadataOverrides[coinType]?.iconUrl
-						? tokenMetadataOverrides[coinType].iconUrl
-						: data.iconUrl,
 				symbol:
-					symbol.length > SYMBOL_TRUNCATE_LENGTH
-						? symbol.slice(0, SYMBOL_TRUNCATE_LENGTH) + ELLIPSIS
-						: symbol,
+					data.symbol.length > SYMBOL_TRUNCATE_LENGTH
+						? data.symbol.slice(0, SYMBOL_TRUNCATE_LENGTH) + ELLIPSIS
+						: data.symbol,
 				name:
-					name.length > NAME_TRUNCATE_LENGTH
-						? name.slice(0, NAME_TRUNCATE_LENGTH) + ELLIPSIS
-						: name,
+					data.name.length > NAME_TRUNCATE_LENGTH
+						? data.name.slice(0, NAME_TRUNCATE_LENGTH) + ELLIPSIS
+						: data.name,
 			};
 		},
 		retry: false,

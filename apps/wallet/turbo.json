@@ -1,6 +1,6 @@
 {
 	"extends": ["//"],
-	"tasks": {
+	"pipeline": {
 		"build:prod": {
 			"dependsOn": ["^build"],
 			"outputs": ["dist/**"]

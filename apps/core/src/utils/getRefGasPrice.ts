@@ -1,7 +1,7 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { SuiValidatorSummary } from '@mysten/sui/client';
+import { BenfenValidatorSummary } from '@benfen/bfc.js/client';
 
 import { calculateStakeShare } from './calculateStakeShare';
 
@@ -13,7 +13,7 @@ const REF_THRESHOLD = 66.67;
  * 2. Add up stake share from low to high, until reaching REF_THRESHOLD
  * 3. Return the gas price of the last validator that was added to the sum
  */
-export function getRefGasPrice(validators?: SuiValidatorSummary[]) {
+export function getRefGasPrice(validators?: BenfenValidatorSummary[]) {
 	if (!validators?.length) {
 		return BigInt(0);
 	}

@@ -1,34 +1,35 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
+import { getWallets, isWalletWithRequiredFeatureSet } from '../../wallet-standard/index.js';
 import type {
 	MinimallyRequiredFeatures,
 	Wallet,
 	WalletWithFeatures,
-	WalletWithRequiredFeatures,
-} from '@mysten/wallet-standard';
-import { getWallets, isWalletWithRequiredFeatureSet } from '@mysten/wallet-standard';
+} from '../../wallet-standard/index.js';
+
+export {} from '@wallet-standard/core'; // fix ts error
 
 export function getRegisteredWallets<AdditionalFeatures extends Wallet['features']>(
 	preferredWallets: string[],
-	walletFilter?: (wallet: WalletWithRequiredFeatures) => boolean,
+	requiredFeatures?: (keyof AdditionalFeatures)[],
 ) {
 	const walletsApi = getWallets();
 	const wallets = walletsApi.get();
 
-	const suiWallets = wallets.filter(
+	const benfenWallets = wallets.filter(
 		(wallet): wallet is WalletWithFeatures<MinimallyRequiredFeatures & AdditionalFeatures> =>
-			isWalletWithRequiredFeatureSet(wallet) && (!walletFilter || walletFilter(wallet)),
+			isWalletWithRequiredFeatureSet(wallet, requiredFeatures),
 	);
 
 	return [
 		// Preferred wallets, in order:
 		...(preferredWallets
-			.map((name) => suiWallets.find((wallet) => wallet.name === name))
+			.map((name) => benfenWallets.find((wallet) => wallet.name === name))
 			.filter(Boolean) as WalletWithFeatures<MinimallyRequiredFeatures & AdditionalFeatures>[]),
 
 		// Wallets in default order:
-		...suiWallets.filter((wallet) => !preferredWallets.includes(wallet.name)),
+		...benfenWallets.filter((wallet) => !preferredWallets.includes(wallet.name)),
 	];
 }
 

@@ -1,27 +1,27 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { Text } from '_src/ui/app/shared/text';
+import { TypeTagSerializer, type TypeTag } from '@benfen/bfc.js/bcs';
+import { type TransactionArgument, type Transactions } from '@benfen/bfc.js/transactions';
+import { formatAddress, normalizeHexAddress, toB64 } from '@benfen/bfc.js/utils';
 import { ChevronDown12, ChevronRight12 } from '@mysten/icons';
-import { type Argument, type Commands, type TransactionData } from '@mysten/sui/transactions';
-import { toBase64 } from '@mysten/sui/utils';
 import { useState } from 'react';
 
-type TransactionType = TransactionData['commands'][0];
-type MakeMoveVecTransaction = ReturnType<(typeof Commands)['MakeMoveVec']>;
-type PublishTransaction = ReturnType<(typeof Commands)['Publish']>;
+type TransactionType = ReturnType<(typeof Transactions)[keyof typeof Transactions]>;
+type MakeMoveVecTransaction = ReturnType<(typeof Transactions)['MakeMoveVec']>;
+type PublishTransaction = ReturnType<(typeof Transactions)['Publish']>;
 
 function convertCommandArgumentToString(
 	arg:
-		| null
 		| string
 		| number
 		| string[]
 		| number[]
-		| Argument
-		| Argument[]
-		| MakeMoveVecTransaction['MakeMoveVec']['type']
-		| PublishTransaction['Publish']['modules'],
+		| TransactionArgument
+		| TransactionArgument[]
+		| MakeMoveVecTransaction['type']
+		| PublishTransaction['modules'],
 ): string | null {
 	if (!arg) return null;
 
@@ -31,24 +31,32 @@ function convertCommandArgumentToString(
 		return null;
 	}
 
+	if (typeof arg === 'object' && 'Some' in arg) {
+		if (typeof arg.Some === 'object') {
+			// MakeMoveVecTransaction['type'] is TypeTag type
+			return TypeTagSerializer.tagToString(arg.Some as TypeTag);
+		}
+		return arg.Some;
+	}
+
 	if (Array.isArray(arg)) {
 		// Publish transaction special casing:
 		if (typeof arg[0] === 'number') {
-			return toBase64(new Uint8Array(arg as number[]));
+			return toB64(new Uint8Array(arg as number[]));
 		}
 
 		return `[${arg.map((argVal) => convertCommandArgumentToString(argVal)).join(', ')}]`;
 	}
 
-	switch (arg.$kind) {
+	switch (arg.kind) {
 		case 'GasCoin':
 			return 'GasCoin';
 		case 'Input':
-			return `Input(${arg.Input})`;
+			return `Input(${arg.index})`;
 		case 'Result':
-			return `Result(${arg.Result})`;
+			return `Result(${arg.index})`;
 		case 'NestedResult':
-			return `NestedResult(${arg.NestedResult[0]}, ${arg.NestedResult[1]})`;
+			return `NestedResult(${arg.index}, ${arg.resultIndex})`;
 		default:
 			// eslint-disable-next-line no-console
 			console.warn('Unexpected command argument type.', arg);
@@ -56,68 +64,20 @@ function convertCommandArgumentToString(
 	}
 }
 
-function convertCommandToString(command: TransactionType) {
-	let normalizedCommand;
-	switch (command.$kind) {
-		case 'MoveCall':
-			normalizedCommand = {
-				kind: 'MoveCall',
-				...command.MoveCall,
-				typeArguments: command.MoveCall.typeArguments,
-			};
-			break;
-		case 'MakeMoveVec':
-			normalizedCommand = {
-				kind: 'MakeMoveVec',
-				type: command.MakeMoveVec.type,
-				elements: command.MakeMoveVec.elements,
-			};
-			break;
-		case 'MergeCoins':
-			normalizedCommand = {
-				kind: 'MergeCoins',
-				destination: command.MergeCoins.destination,
-				sources: command.MergeCoins.sources,
-			};
-			break;
-		case 'TransferObjects':
-			normalizedCommand = {
-				kind: 'TransferObjects',
-				objects: command.TransferObjects.objects,
-				address: command.TransferObjects.address,
-			};
-			break;
-		case 'SplitCoins':
-			normalizedCommand = {
-				kind: 'SplitCoins',
-				coin: command.SplitCoins.coin,
-				amounts: command.SplitCoins.amounts,
-			};
-			break;
-		case 'Publish':
-			normalizedCommand = {
-				kind: 'Publish',
-				modules: command.Publish.modules,
-				dependencies: command.Publish.dependencies,
-			};
-			break;
-		case 'Upgrade':
-			normalizedCommand = {
-				kind: 'Upgrade',
-				modules: command.Upgrade.modules,
-				dependencies: command.Upgrade.dependencies,
-				packageId: command.Upgrade.package,
-				ticket: command.Upgrade.ticket,
-			};
-			break;
-		case '$Intent': {
-			throw new Error('TransactionIntent is not supported');
-		}
-	}
+function convertCommandToString({ kind, ...command }: TransactionType) {
+	const commandArguments = Object.entries(command);
 
-	const commandArguments = Object.entries(normalizedCommand);
 	return commandArguments
 		.map(([key, value]) => {
+			if (key === 'target') {
+				const [packageId, moduleName, functionName] = value.split('::');
+				return [
+					`package: ${formatAddress(normalizeHexAddress(packageId))}`,
+					`module: ${moduleName}`,
+					`function: ${functionName}`,
+				].join(', ');
+			}
+
 			const stringValue = convertCommandArgumentToString(value);
 
 			if (!stringValue) return null;
@@ -142,7 +102,7 @@ export function Command({ command }: CommandProps) {
 				className="flex items-center gap-2 w-full bg-transparent border-none p-0"
 			>
 				<Text variant="body" weight="semibold" color="steel-darker">
-					{command.$kind}
+					{command.kind}
 				</Text>
 				<div className="h-px bg-gray-40 flex-1" />
 				<div className="text-steel">{expanded ? <ChevronDown12 /> : <ChevronRight12 />}</div>

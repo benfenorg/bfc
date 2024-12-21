@@ -1,18 +1,17 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { hasDisplayData, isKioskOwnerToken, useGetOwnedObjects } from '@mysten/core';
-import { useKioskClient } from '@mysten/core/src/hooks/useKioskClient';
-import { type SuiObjectData } from '@mysten/sui/client';
+import { type BenfenObjectData } from '@benfen/bfc.js/client';
+import { hasDisplayData, useGetOwnedObjects } from '@mysten/core';
 import { useMemo } from 'react';
 
-import { useBuyNLargeAssets } from '../components/buynlarge/useBuyNLargeAssets';
+import { useBuyNLargeAsset } from '../components/buynlarge/useBuyNLargeAsset';
 import { useHiddenAssets } from '../pages/home/hidden-assets/HiddenAssetsProvider';
 
 type OwnedAssets = {
-	visual: SuiObjectData[];
-	other: SuiObjectData[];
-	hidden: SuiObjectData[];
+	visual: BenfenObjectData[];
+	other: BenfenObjectData[];
+	hidden: BenfenObjectData[];
 };
 
 export enum AssetFilterTypes {
@@ -21,8 +20,7 @@ export enum AssetFilterTypes {
 }
 
 export function useGetNFTs(address?: string | null) {
-	const kioskClient = useKioskClient();
-	const bnl = useBuyNLargeAssets();
+	const { asset, objectType } = useBuyNLargeAsset();
 	const {
 		data,
 		isPending,
@@ -35,12 +33,9 @@ export function useGetNFTs(address?: string | null) {
 	} = useGetOwnedObjects(
 		address,
 		{
-			MatchNone: [
-				{ StructType: '0x2::coin::Coin' },
-				...(bnl
-					.filter((item) => !!item?.objectType)
-					.map((item) => ({ StructType: item?.objectType })) as { StructType: string }[]),
-			],
+			MatchNone: objectType
+				? [{ StructType: '0x2::coin::Coin' }, { StructType: objectType }]
+				: [{ StructType: '0x2::coin::Coin' }],
 		},
 		50,
 	);
@@ -57,22 +52,19 @@ export function useGetNFTs(address?: string | null) {
 			.flatMap((page) => page.data)
 			.filter((asset) => !hiddenAssetIds.includes(asset.data?.objectId!))
 			.reduce((acc, curr) => {
-				if (hasDisplayData(curr) || isKioskOwnerToken(kioskClient.network, curr))
-					acc.visual.push(curr.data as SuiObjectData);
-				if (!hasDisplayData(curr)) acc.other.push(curr.data as SuiObjectData);
+				if (hasDisplayData(curr)) acc.visual.push(curr.data as BenfenObjectData);
+				if (!hasDisplayData(curr)) acc.other.push(curr.data as BenfenObjectData);
 				if (hiddenAssetIds.includes(curr.data?.objectId!))
-					acc.hidden.push(curr.data as SuiObjectData);
+					acc.hidden.push(curr.data as BenfenObjectData);
 				return acc;
 			}, ownedAssets);
 
-		bnl.forEach((item) => {
-			if (item?.asset?.data) {
-				groupedAssets?.visual.unshift(item.asset.data);
-			}
-		});
+		if (asset?.data) {
+			groupedAssets?.visual.unshift(asset.data);
+		}
 
 		return groupedAssets;
-	}, [hiddenAssetIds, data?.pages, kioskClient.network, bnl]);
+	}, [hiddenAssetIds, data?.pages, asset]);
 
 	return {
 		data: assets,

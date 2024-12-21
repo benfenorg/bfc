@@ -1,30 +1,19 @@
 import {
   useCurrentAccount,
-  useSignAndExecuteTransaction,
+  useSignAndExecuteTransactionBlock,
   useSuiClient,
   useSuiClientQuery,
 } from "@mysten/dapp-kit";
-import type { SuiObjectData } from "@mysten/sui/client";
-import { Transaction } from "@mysten/sui/transactions";
+import type { SuiObjectData } from "@mysten/sui.js/client";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { Button, Flex, Heading, Text } from "@radix-ui/themes";
 import { useNetworkVariable } from "./networkConfig";
 
 export function Counter({ id }: { id: string }) {
-  const counterPackageId = useNetworkVariable("counterPackageId");
-  const suiClient = useSuiClient();
+  const client = useSuiClient();
   const currentAccount = useCurrentAccount();
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: async ({ bytes, signature }) =>
-      await suiClient.executeTransactionBlock({
-        transactionBlock: bytes,
-        signature,
-        options: {
-          // Raw effects are required so the effects can be reported back to the wallet
-          showRawEffects: true,
-          showEffects: true,
-        },
-      }),
-  });
+  const counterPackageId = useNetworkVariable("counterPackageId");
+  const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
   const { data, isPending, error, refetch } = useSuiClientQuery("getObject", {
     id,
     options: {
@@ -34,27 +23,33 @@ export function Counter({ id }: { id: string }) {
   });
 
   const executeMoveCall = (method: "increment" | "reset") => {
-    const tx = new Transaction();
+    const txb = new TransactionBlock();
 
     if (method === "reset") {
-      tx.moveCall({
-        arguments: [tx.object(id), tx.pure.u64(0)],
+      txb.moveCall({
+        arguments: [txb.object(id), txb.pure.u64(0)],
         target: `${counterPackageId}::counter::set_value`,
       });
     } else {
-      tx.moveCall({
-        arguments: [tx.object(id)],
+      txb.moveCall({
+        arguments: [txb.object(id)],
         target: `${counterPackageId}::counter::increment`,
       });
     }
 
     signAndExecute(
       {
-        transaction: tx,
+        transactionBlock: txb,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
+        },
       },
       {
-        onSuccess: async () => {
-          await refetch();
+        onSuccess: (tx) => {
+          client.waitForTransactionBlock({ digest: tx.digest }).then(() => {
+            refetch();
+          });
         },
       },
     );

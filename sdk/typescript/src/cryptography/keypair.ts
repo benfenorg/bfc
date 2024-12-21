@@ -1,29 +1,36 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { bcs, toBase64 } from '@mysten/bcs';
 import { blake2b } from '@noble/hashes/blake2b';
 import { bech32 } from 'bech32';
 
-import type { IntentScope } from './intent.js';
-import { messageWithIntent } from './intent.js';
+import { bcs } from '../bcs/index.js';
+import { toB64 } from '../bcs/src/index.js';
+import { IntentScope, messageWithIntent } from './intent.js';
 import type { PublicKey } from './publickey.js';
 import { SIGNATURE_FLAG_TO_SCHEME, SIGNATURE_SCHEME_TO_FLAG } from './signature-scheme.js';
 import type { SignatureScheme } from './signature-scheme.js';
+import type { SerializedSignature } from './signature.js';
 import { toSerializedSignature } from './signature.js';
 
 export const PRIVATE_KEY_SIZE = 32;
 export const LEGACY_PRIVATE_KEY_SIZE = 64;
-export const SUI_PRIVATE_KEY_PREFIX = 'suiprivkey';
+export const BENFEN_PRIVATE_KEY_PREFIX = 'benfenprivkey';
 
 export type ParsedKeypair = {
 	schema: SignatureScheme;
 	secretKey: Uint8Array;
 };
 
+/** @deprecated use string instead. See {@link Keypair.getSecretKey} */
+export type ExportedKeypair = {
+	schema: SignatureScheme;
+	privateKey: string;
+};
+
 export interface SignatureWithBytes {
 	bytes: string;
-	signature: string;
+	signature: SerializedSignature;
 }
 
 /**
@@ -47,33 +54,34 @@ export abstract class Signer {
 
 		return {
 			signature,
-			bytes: toBase64(bytes),
+			bytes: toB64(bytes),
 		};
 	}
 	/**
-	 * Signs provided transaction by calling `signWithIntent()` with a `TransactionData` provided as intent scope
+	 * Signs provided transaction block by calling `signWithIntent()` with a `TransactionData` provided as intent scope
 	 */
-	async signTransaction(bytes: Uint8Array) {
-		return this.signWithIntent(bytes, 'TransactionData');
+	async signTransactionBlock(bytes: Uint8Array) {
+		return this.signWithIntent(bytes, IntentScope.TransactionData);
 	}
 	/**
 	 * Signs provided personal message by calling `signWithIntent()` with a `PersonalMessage` provided as intent scope
 	 */
 	async signPersonalMessage(bytes: Uint8Array) {
-		const { signature } = await this.signWithIntent(
+		return this.signWithIntent(
 			bcs.vector(bcs.u8()).serialize(bytes).toBytes(),
-			'PersonalMessage',
+			IntentScope.PersonalMessage,
 		);
-
-		return {
-			bytes: toBase64(bytes),
-			signature,
-		};
 	}
 
-	toSuiAddress(): string {
-		return this.getPublicKey().toSuiAddress();
+	toHexAddress(): string {
+		return this.getPublicKey().toHexAddress();
 	}
+
+	/**
+	 * Return the signature for the data.
+	 * Prefer the async version {@link sign}, as this method will be deprecated in a future release.
+	 */
+	abstract signData(data: Uint8Array): Uint8Array;
 
 	/**
 	 * Get the key scheme of the keypair: Secp256k1 or ED25519
@@ -91,16 +99,29 @@ export abstract class Keypair extends Signer {
 	 * This returns the Bech32 secret key string for this keypair.
 	 */
 	abstract getSecretKey(): string;
+
+	/**
+	 * @deprecated use {@link Keypair.getSecretKey} instead
+	 * This returns an exported keypair object, schema is the signature
+	 * scheme name, and the private key field is a Bech32 encoded string
+	 * of 33-byte `flag || private_key` that starts with `benfenprivkey`.
+	 */
+	export(): ExportedKeypair {
+		return {
+			schema: this.getKeyScheme(),
+			privateKey: this.getSecretKey(),
+		};
+	}
 }
 
 /**
  * This returns an ParsedKeypair object based by validating the
- * 33-byte Bech32 encoded string starting with `suiprivkey`, and
+ * 33-byte Bech32 encoded string starting with `benfenprivkey`, and
  * parse out the signature scheme and the private key in bytes.
  */
-export function decodeSuiPrivateKey(value: string): ParsedKeypair {
+export function decodeBenfenPrivateKey(value: string): ParsedKeypair {
 	const { prefix, words } = bech32.decode(value);
-	if (prefix !== SUI_PRIVATE_KEY_PREFIX) {
+	if (prefix !== BENFEN_PRIVATE_KEY_PREFIX) {
 		throw new Error('invalid private key prefix');
 	}
 	const extendedSecretKey = new Uint8Array(bech32.fromWords(words));
@@ -114,11 +135,11 @@ export function decodeSuiPrivateKey(value: string): ParsedKeypair {
 }
 
 /**
- * This returns a Bech32 encoded string starting with `suiprivkey`,
+ * This returns a Bech32 encoded string starting with `benfenprivkey`,
  * encoding 33-byte `flag || bytes` for the given the 32-byte private
  * key and its signature scheme.
  */
-export function encodeSuiPrivateKey(bytes: Uint8Array, scheme: SignatureScheme): string {
+export function encodeBenfenPrivateKey(bytes: Uint8Array, scheme: SignatureScheme): string {
 	if (bytes.length !== PRIVATE_KEY_SIZE) {
 		throw new Error('Invalid bytes length');
 	}
@@ -126,5 +147,5 @@ export function encodeSuiPrivateKey(bytes: Uint8Array, scheme: SignatureScheme):
 	const privKeyBytes = new Uint8Array(bytes.length + 1);
 	privKeyBytes.set([flag]);
 	privKeyBytes.set(bytes, 1);
-	return bech32.encode(SUI_PRIVATE_KEY_PREFIX, bech32.toWords(privKeyBytes));
+	return bech32.encode(BENFEN_PRIVATE_KEY_PREFIX, bech32.toWords(privKeyBytes));
 }

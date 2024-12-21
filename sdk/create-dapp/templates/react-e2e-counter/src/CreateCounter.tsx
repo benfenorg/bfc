@@ -1,6 +1,9 @@
-import { Transaction } from "@mysten/sui/transactions";
+import { TransactionBlock } from "@mysten/sui.js/transactions";
 import { Button, Container } from "@radix-ui/themes";
-import { useSignAndExecuteTransaction, useSuiClient } from "@mysten/dapp-kit";
+import {
+  useSignAndExecuteTransactionBlock,
+  useSuiClient,
+} from "@mysten/dapp-kit";
 import { useNetworkVariable } from "./networkConfig";
 
 export function CreateCounter({
@@ -8,20 +11,9 @@ export function CreateCounter({
 }: {
   onCreated: (id: string) => void;
 }) {
+  const client = useSuiClient();
   const counterPackageId = useNetworkVariable("counterPackageId");
-  const suiClient = useSuiClient();
-  const { mutate: signAndExecute } = useSignAndExecuteTransaction({
-    execute: async ({ bytes, signature }) =>
-      await suiClient.executeTransactionBlock({
-        transactionBlock: bytes,
-        signature,
-        options: {
-          // Raw effects are required so the effects can be reported back to the wallet
-          showRawEffects: true,
-          showEffects: true,
-        },
-      }),
-  });
+  const { mutate: signAndExecute } = useSignAndExecuteTransactionBlock();
 
   return (
     <Container>
@@ -37,23 +29,34 @@ export function CreateCounter({
   );
 
   function create() {
-    const tx = new Transaction();
+    const txb = new TransactionBlock();
 
-    tx.moveCall({
+    txb.moveCall({
       arguments: [],
       target: `${counterPackageId}::counter::create`,
     });
 
     signAndExecute(
       {
-        transaction: tx,
+        transactionBlock: txb,
+        options: {
+          showEffects: true,
+          showObjectChanges: true,
+        },
       },
       {
-        onSuccess: (result) => {
-          const objectId = result.effects?.created?.[0]?.reference?.objectId;
-          if (objectId) {
-            onCreated(objectId);
-          }
+        onSuccess: (tx) => {
+          client
+            .waitForTransactionBlock({
+              digest: tx.digest,
+            })
+            .then(() => {
+              const objectId = tx.effects?.created?.[0]?.reference?.objectId;
+
+              if (objectId) {
+                onCreated(objectId);
+              }
+            });
         },
       },
     );

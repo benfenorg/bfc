@@ -4,13 +4,12 @@
 import { API_ENV_TO_INFO } from '_app/ApiProvider';
 import { useNextMenuUrl } from '_components/menu/hooks';
 import { useAppSelector } from '_hooks';
-import { DISCORD_LINK, FAQ_LINK, ToS_LINK } from '_src/shared/constants';
+import { FAQ_LINK, ToS_LINK } from '_src/shared/constants';
 import { formatAutoLock, useAutoLockMinutes } from '_src/ui/app/hooks/useAutoLockMinutes';
 import FaucetRequestButton from '_src/ui/app/shared/faucet/FaucetRequestButton';
 import { Link } from '_src/ui/app/shared/Link';
 import { Text } from '_src/ui/app/shared/text';
 import { ArrowUpRight12, Clipboard24, Domain24, LockLocked24, More24 } from '@mysten/icons';
-import SvgAccount24 from '@mysten/icons/src/Account24';
 import Browser from 'webextension-polyfill';
 
 import Loading from '../../loading';
@@ -44,7 +43,6 @@ function MenuList() {
 					}
 				/>
 				<MenuListItem icon={<Clipboard24 />} title="FAQ" href={FAQ_LINK} />
-				<MenuListItem icon={<SvgAccount24 />} title="Support" href={DISCORD_LINK} />
 				<MenuListItem
 					icon={<More24 className="text-steel-darker" />}
 					title="More options"

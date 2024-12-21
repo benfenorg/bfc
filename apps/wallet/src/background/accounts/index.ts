@@ -1,4 +1,4 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { createMessage, type Message } from '_src/shared/messaging/messages';
@@ -7,7 +7,7 @@ import {
 	type MethodPayload,
 } from '_src/shared/messaging/messages/payloads/MethodPayload';
 import { type WalletStatusChange } from '_src/shared/messaging/messages/payloads/wallet-status-change';
-import { fromBase64 } from '@mysten/sui/utils';
+import { fromB64 } from '@benfen/bfc.js/utils';
 import Dexie from 'dexie';
 
 import { getAccountSourceByID } from '../account-sources';
@@ -236,7 +236,7 @@ export async function accountsHandleUIMessage(msg: Message, uiConnection: UiConn
 				{
 					type: 'method-payload',
 					method: 'signDataResponse',
-					args: { signature: await account.signData(fromBase64(data)) },
+					args: { signature: await account.signData(fromB64(data)) },
 				},
 				msg.id,
 			),

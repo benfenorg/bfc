@@ -1,7 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
-import { toHex } from '@mysten/bcs';
 import { mnemonicToSeedSync as bip39MnemonicToSeedSync } from '@scure/bip39';
+
+import { toHEX } from '../bcs/src/index.js';
 
 /**
  * Parse and validate a path that is compliant to SLIP-0010 in form m/44'/728'/{account_index}'/{change_index}'/{address_index}'.
@@ -9,7 +10,7 @@ import { mnemonicToSeedSync as bip39MnemonicToSeedSync } from '@scure/bip39';
  * @param path path string (e.g. `m/44'/728'/0'/0'/0'`).
  */
 export function isValidHardenedPath(path: string): boolean {
-	if (!new RegExp("^m\\/44'\\/728'\\/[0-9]+'\\/[0-9]+'\\/[0-9]+'+$").test(path)) {
+	if (!new RegExp("^m\\/44'\\/(728|784)'\\/[0-9]+'\\/[0-9]+'\\/[0-9]+'+$").test(path)) {
 		return false;
 	}
 	return true;
@@ -24,7 +25,7 @@ export function isValidHardenedPath(path: string): boolean {
  * @param path path string (e.g. `m/54'/728'/0'/0/0`).
  */
 export function isValidBIP32Path(path: string): boolean {
-	if (!new RegExp("^m\\/(54|74)'\\/728'\\/[0-9]+'\\/[0-9]+\\/[0-9]+$").test(path)) {
+	if (!new RegExp("^m\\/(54|74)'\\/(728|784)'\\/[0-9]+'\\/[0-9]+\\/[0-9]+$").test(path)) {
 		return false;
 	}
 	return true;
@@ -45,5 +46,5 @@ export function mnemonicToSeed(mnemonics: string): Uint8Array {
  * @param mnemonics 12 words string split by spaces.
  */
 export function mnemonicToSeedHex(mnemonics: string): string {
-	return toHex(mnemonicToSeed(mnemonics));
+	return toHEX(mnemonicToSeed(mnemonics));
 }

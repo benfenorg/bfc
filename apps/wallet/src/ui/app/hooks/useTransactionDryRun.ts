@@ -1,13 +1,16 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Transaction } from '@mysten/sui/transactions';
+import { type TransactionBlock } from '@benfen/bfc.js/transactions';
 import { useQuery } from '@tanstack/react-query';
 
 import { useAccountByAddress } from './useAccountByAddress';
 import { useSigner } from './useSigner';
 
-export function useTransactionDryRun(sender: string | undefined, transactionBlock: Transaction) {
+export function useTransactionDryRun(
+	sender: string | undefined,
+	transactionBlock: TransactionBlock,
+) {
 	const { data: account } = useAccountByAddress(sender);
 	const signer = useSigner(account || null);
 	const response = useQuery({

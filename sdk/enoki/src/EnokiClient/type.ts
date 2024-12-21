@@ -1,26 +1,18 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import type { PublicKey } from '@mysten/sui/cryptography';
-import type { ZkLoginSignatureInputs } from '@mysten/sui/zklogin';
+import type { PublicKey } from '@mysten/sui.js/cryptography';
+import type { ZkLoginSignatureInputs } from '@mysten/sui.js/zklogin';
 
 import type { AuthProvider } from '../EnokiFlow.js';
 
 export type EnokiNetwork = 'mainnet' | 'testnet' | 'devnet';
-export type EnokiDomainNetwork = 'mainnet' | 'testnet';
-export type EnokiSubanameStatus = 'PENDING' | 'ACTIVE';
 
 export interface GetAppApiInput {}
 export interface GetAppApiResponse {
-	allowedOrigins: string[];
 	authenticationProviders: {
 		providerType: AuthProvider;
 		clientId: string;
-	}[];
-	domains: {
-		nftId: string;
-		name: string;
-		network: EnokiDomainNetwork;
 	}[];
 }
 
@@ -54,9 +46,9 @@ export interface CreateZkLoginZkpApiInput {
 }
 export interface CreateZkLoginZkpApiResponse extends ZkLoginSignatureInputs {}
 
-export type CreateSponsoredTransactionApiInput = {
+export type CreateSponsoredTransactionBlockApiInput = {
 	network?: EnokiNetwork;
-	transactionKindBytes: string;
+	transactionBlockKindBytes: string;
 } & (
 	| {
 			jwt: string;
@@ -72,55 +64,16 @@ export type CreateSponsoredTransactionApiInput = {
 	  }
 );
 
-export interface CreateSponsoredTransactionApiResponse {
+export interface CreateSponsoredTransactionBlockApiResponse {
 	bytes: string;
 	digest: string;
 }
 
-export interface ExecuteSponsoredTransactionApiInput {
+export interface ExecuteSponsoredTransactionBlockApiInput {
 	digest: string;
 	signature: string;
 }
 
-export interface ExecuteSponsoredTransactionApiResponse {
+export interface ExecuteSponsoredTransactionBlockApiResponse {
 	digest: string;
-}
-
-export interface GetSubnamesApiInput {
-	address?: string;
-	network?: EnokiDomainNetwork;
-	domain?: string;
-}
-export interface GetSubnamesApiResponse {
-	subnames: {
-		name: string;
-		status: EnokiSubanameStatus;
-	}[];
-}
-
-export type CreateSubnameApiInput = {
-	domain: string;
-	network?: EnokiDomainNetwork;
-	subname: string;
-} & (
-	| {
-			jwt: string;
-			targetAddress?: never;
-	  }
-	| {
-			targetAddress: string;
-			jwt?: never;
-	  }
-);
-export interface CreateSubnameApiResponse {
-	name: string;
-}
-
-export interface DeleteSubnameApiInput {
-	domain: string;
-	network?: EnokiDomainNetwork;
-	subname: string;
-}
-export interface DeleteSubnameApiResponse {
-	name: string;
 }

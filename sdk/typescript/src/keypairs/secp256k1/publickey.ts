@@ -1,13 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromBase64 } from '@mysten/bcs';
 import { secp256k1 } from '@noble/curves/secp256k1';
 import { sha256 } from '@noble/hashes/sha256';
 
+import { fromB64 } from '../../bcs/src/index.js';
 import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
+import type { SerializedSignature } from '../../cryptography/signature.js';
 import { parseSerializedSignature } from '../../cryptography/signature.js';
 
 const SECP256K1_PUBLIC_KEY_SIZE = 33;
@@ -27,7 +28,7 @@ export class Secp256k1PublicKey extends PublicKey {
 		super();
 
 		if (typeof value === 'string') {
-			this.data = fromBase64(value);
+			this.data = fromB64(value);
 		} else if (value instanceof Uint8Array) {
 			this.data = value;
 		} else {
@@ -56,7 +57,7 @@ export class Secp256k1PublicKey extends PublicKey {
 	}
 
 	/**
-	 * Return the Sui address associated with this Secp256k1 public key
+	 * Return the Benfen address associated with this Secp256k1 public key
 	 */
 	flag(): number {
 		return SIGNATURE_SCHEME_TO_FLAG['Secp256k1'];
@@ -65,7 +66,7 @@ export class Secp256k1PublicKey extends PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided message
 	 */
-	async verify(message: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
+	async verify(message: Uint8Array, signature: Uint8Array | SerializedSignature): Promise<boolean> {
 		let bytes;
 		if (typeof signature === 'string') {
 			const parsed = parseSerializedSignature(signature);

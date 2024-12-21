@@ -1,10 +1,10 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { useResolveSuiNSName } from '_app/hooks/useAppResolveSuinsName';
 import { type SerializedUIAccount } from '_src/background/accounts/Account';
+import { formatAddress, hex2BfcAddress } from '@benfen/bfc.js/utils';
+import { useResolveSuiNSName } from '@mysten/core';
 import { Check12, Copy12 } from '@mysten/icons';
-import { formatAddress } from '@mysten/sui/utils';
 
 import { useCopyToClipboard } from '../hooks/useCopyToClipboard';
 import { Text } from '../shared/text';
@@ -18,10 +18,10 @@ export type AccountItemProps = {
 /** @deprecated - use AccountListItem from the `accounts` folder **/
 export function AccountListItem({ account, onAccountSelected }: AccountItemProps) {
 	const { address, type, selected } = account;
-	const copy = useCopyToClipboard(address, {
+	const copy = useCopyToClipboard(hex2BfcAddress(address), {
 		copySuccessMessage: 'Address Copied',
 	});
-	const domainName = useResolveSuiNSName(address);
+	const { data: domainName } = useResolveSuiNSName(address);
 
 	return (
 		<li>

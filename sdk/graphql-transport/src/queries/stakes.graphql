@@ -51,6 +51,5 @@ fragment RPC_STAKE_FIELDS on StakedSui {
 
 	address
 	estimatedReward
-
 	# validatorAddress?
 }

@@ -5,7 +5,8 @@
 		"module": "CommonJS",
 		"outDir": "dist/cjs",
 		"rootDir": "src",
-		"isolatedModules": true
-	},
-	"references": [{ "path": "../bcs" }]
+		"jsx": "react-jsx",
+		"isolatedModules": true,
+		"types": ["vitest/globals"]
+	}
 }

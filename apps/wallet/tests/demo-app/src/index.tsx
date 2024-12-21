@@ -1,14 +1,14 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SuiWallet } from '_src/dapp-interface/WalletStandardInterface';
-import { Transaction } from '@mysten/sui/transactions';
-import { getWallets, ReadonlyWalletAccount, type Wallet } from '@mysten/wallet-standard';
+import { TransactionBlock } from '@benfen/bfc.js/transactions';
+import { getWallets, ReadonlyWalletAccount, type Wallet } from '@benfen/bfc.js/wallet-standard';
 import { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom/client';
 
 function getDemoTransaction(address: string) {
-	const txb = new Transaction();
+	const txb = new TransactionBlock();
 	const [coin] = txb.splitCoins(txb.gas, [1]);
 	txb.transferObjects([coin], address);
 	return txb;
@@ -93,14 +93,14 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address || '0x01');
+					const txb = getDemoTransaction(accounts[0]?.address || '');
 					try {
 						await suiWallet.features[
-							'sui:signAndExecuteTransactionBlock'
-						]!.signAndExecuteTransactionBlock({
+							'bfc:signAndExecuteTransactionBlock'
+						].signAndExecuteTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
-							chain: 'sui:unknown',
+							chain: 'bfc:unknown',
 						});
 					} catch (e) {
 						setError((e as Error).message);
@@ -112,12 +112,12 @@ function App() {
 			<button
 				onClick={async () => {
 					setError(null);
-					const txb = getDemoTransaction(accounts[0]?.address || '0x01');
+					const txb = getDemoTransaction(accounts[0]?.address || '');
 					try {
-						await suiWallet.features['sui:signTransactionBlock']!.signTransactionBlock({
+						await suiWallet.features['bfc:signTransactionBlock'].signTransactionBlock({
 							transactionBlock: txb,
 							account: getAccount(accounts[0], useWrongAccounts),
-							chain: 'sui:unknown',
+							chain: 'bfc:unknown',
 						});
 					} catch (e) {
 						setError((e as Error).message);
@@ -130,7 +130,7 @@ function App() {
 				onClick={async () => {
 					setError(null);
 					try {
-						await suiWallet.features['sui:signMessage']?.signMessage({
+						await suiWallet.features['bfc:signMessage']?.signMessage({
 							account: getAccount(accounts[0], useWrongAccounts),
 							message: new TextEncoder().encode('Test message'),
 						});

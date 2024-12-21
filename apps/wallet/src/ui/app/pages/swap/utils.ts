@@ -1,17 +1,11 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 import { useActiveAccount } from '_app/hooks/useActiveAccount';
 import { useCoinsReFetchingConfig } from '_hooks';
+import { type BalanceChange } from '@benfen/bfc.js/client';
+import { useBenfenClientQuery } from '@benfen/bfc.js/dapp-kit';
 import { roundFloat, useFormatCoin } from '@mysten/core';
-import { useSuiClientQuery } from '@mysten/dapp-kit';
-import { type DeepBookClient } from '@mysten/deepbook';
-import { type BalanceChange } from '@mysten/sui/client';
 import BigNumber from 'bignumber.js';
-
-export const W_USDC_TYPE_ARG =
-	'0x5d4b302506645c37ff133b98c4b50a5ae14841659738d6d733d59d0d217a93bf::coin::COIN';
-export const USDC_TYPE_ARG =
-	'0xdba34672e30cb065b1f93e3ab55318768fd6fef66c15942c9f7cb846e2f900e7::usdc::USDC';
 
 export function useSwapData({
 	baseCoinType,
@@ -24,17 +18,18 @@ export function useSwapData({
 	const activeAccountAddress = activeAccount?.address;
 	const { staleTime, refetchInterval } = useCoinsReFetchingConfig();
 
-	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useSuiClientQuery(
+	const { data: baseCoinBalanceData, isPending: baseCoinBalanceDataLoading } = useBenfenClientQuery(
 		'getBalance',
 		{ coinType: baseCoinType, owner: activeAccountAddress! },
 		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
 	);
 
-	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } = useSuiClientQuery(
-		'getBalance',
-		{ coinType: quoteCoinType, owner: activeAccountAddress! },
-		{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
-	);
+	const { data: quoteCoinBalanceData, isPending: quoteCoinBalanceDataLoading } =
+		useBenfenClientQuery(
+			'getBalance',
+			{ coinType: quoteCoinType, owner: activeAccountAddress! },
+			{ enabled: !!activeAccountAddress, refetchInterval, staleTime },
+		);
 
 	const rawBaseBalance = baseCoinBalanceData?.totalBalance;
 	const rawQuoteBalance = quoteCoinBalanceData?.totalBalance;
@@ -75,31 +70,17 @@ export function getUSDCurrency(amount?: number | null) {
 export async function isExceedingSlippageTolerance({
 	slipPercentage,
 	poolId,
-	deepBookClient,
 	conversionRate,
 	isAsk,
 	average,
 }: {
 	slipPercentage: string;
 	poolId: string;
-	deepBookClient: DeepBookClient;
 	conversionRate: number;
 	isAsk: boolean;
 	average: string;
 }) {
-	const convertedAverage = new BigNumber(average).shiftedBy(conversionRate).toString();
-
-	const { bestBidPrice, bestAskPrice } = await deepBookClient.getMarketPrice(poolId);
-
-	if (!bestBidPrice || !bestAskPrice) {
-		return false;
-	}
-
-	const slip = new BigNumber(isAsk ? bestBidPrice.toString() : bestAskPrice.toString()).dividedBy(
-		convertedAverage,
-	);
-
-	return new BigNumber('1').minus(slip).abs().isGreaterThan(slipPercentage);
+	return false;
 }
 
 function getCoinsFromBalanceChanges(coinType: string, balanceChanges: BalanceChange[]) {

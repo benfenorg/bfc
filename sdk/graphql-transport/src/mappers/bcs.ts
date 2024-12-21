@@ -1,9 +1,9 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-import { toBase64 } from '@mysten/bcs';
+import { toB64 } from '@mysten/bcs';
 import type { BcsType } from '@mysten/bcs';
-import { bcs } from '@mysten/sui/bcs';
+import { bcs } from '@mysten/sui.js/bcs';
 
 import type { MoveTypeLayout } from './move.js';
 import { toShortTypeString } from './util.js';
@@ -57,5 +57,5 @@ export function layoutToBcs(layout: MoveTypeLayout): BcsType<any> {
 
 export function mapJsonToBcs(json: unknown, layout: MoveTypeLayout) {
 	const schema = layoutToBcs(layout);
-	return toBase64(schema.serialize(json).toBytes());
+	return toB64(schema.serialize(json).toBytes());
 }

@@ -1,9 +1,9 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import { fromBase58, toBase58 } from './b58.js';
-import { fromBase64, toBase64 } from './b64.js';
-import { fromHex, toHex } from './hex.js';
+import { toB58 } from './b58.js';
+import { toB64 } from './b64.js';
+import { toHEX } from './hex.js';
 import { BcsReader } from './reader.js';
 import { ulebEncode } from './uleb.js';
 import type { BcsWriterOptions } from './writer.js';
@@ -41,10 +41,7 @@ export class BcsType<T, Input = T> {
 		this.#serialize =
 			options.serialize ??
 			((value, options) => {
-				const writer = new BcsWriter({
-					initialSize: this.serializedSize(value) ?? undefined,
-					...options,
-				});
+				const writer = new BcsWriter({ size: this.serializedSize(value) ?? undefined, ...options });
 				this.#write(value, writer);
 				return writer.toBytes();
 			});
@@ -67,23 +64,10 @@ export class BcsType<T, Input = T> {
 		return this.read(reader);
 	}
 
-	fromHex(hex: string) {
-		return this.parse(fromHex(hex));
-	}
-
-	fromBase58(b64: string) {
-		return this.parse(fromBase58(b64));
-	}
-
-	fromBase64(b64: string) {
-		return this.parse(fromBase64(b64));
-	}
-
 	transform<T2, Input2>({
 		name,
 		input,
 		output,
-		validate,
 	}: {
 		input: (val: Input2) => Input;
 		output: (value: T) => T2;
@@ -94,15 +78,12 @@ export class BcsType<T, Input = T> {
 			write: (value, writer) => this.#write(input(value), writer),
 			serializedSize: (value) => this.serializedSize(input(value)),
 			serialize: (value, options) => this.#serialize(input(value), options),
-			validate: (value) => {
-				validate?.(value);
-				this.validate(input(value));
-			},
+			validate: (value) => this.validate(input(value)),
 		});
 	}
 }
 
-const SERIALIZED_BCS_BRAND = Symbol.for('@mysten/serialized-bcs') as never;
+const SERIALIZED_BCS_BRAND = Symbol.for('@benfen/serialized-bcs');
 export function isSerializedBcs(obj: unknown): obj is SerializedBcs<unknown> {
 	return !!obj && typeof obj === 'object' && (obj as any)[SERIALIZED_BCS_BRAND] === true;
 }
@@ -112,7 +93,7 @@ export class SerializedBcs<T, Input = T> {
 	#bytes: Uint8Array;
 
 	// Used to brand SerializedBcs so that they can be identified, even between multiple copies
-	// of the @mysten/bcs package are installed
+	// of the @benfen/bfc.js package are installed
 	get [SERIALIZED_BCS_BRAND]() {
 		return true;
 	}
@@ -127,15 +108,15 @@ export class SerializedBcs<T, Input = T> {
 	}
 
 	toHex() {
-		return toHex(this.#bytes);
+		return toHEX(this.#bytes);
 	}
 
 	toBase64() {
-		return toBase64(this.#bytes);
+		return toB64(this.#bytes);
 	}
 
 	toBase58() {
-		return toBase58(this.#bytes);
+		return toB58(this.#bytes);
 	}
 
 	parse() {

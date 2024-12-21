@@ -1,13 +1,13 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import type { SuiParsedData } from '@mysten/sui/client';
+import type { BenfenParsedData } from '@benfen/bfc.js/client';
 import { useMemo } from 'react';
 
 export const parseIpfsUrl = (ipfsUrl: string) =>
 	ipfsUrl.replace(/^ipfs:\/\//, 'https://ipfs.io/ipfs/');
 
-export default function useMediaUrl(objData: SuiParsedData | null) {
+export default function useMediaUrl(objData: BenfenParsedData | null) {
 	const { fields } =
 		((objData?.dataType === 'moveObject' && objData) as {
 			fields: { url?: string; metadata?: { fields: { url: string } } };

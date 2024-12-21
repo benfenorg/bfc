@@ -2,22 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
-	CreateSponsoredTransactionApiInput,
-	CreateSponsoredTransactionApiResponse,
-	CreateSubnameApiInput,
-	CreateSubnameApiResponse,
+	CreateSponsoredTransactionBlockApiInput,
+	CreateSponsoredTransactionBlockApiResponse,
 	CreateZkLoginNonceApiInput,
 	CreateZkLoginNonceApiResponse,
 	CreateZkLoginZkpApiInput,
 	CreateZkLoginZkpApiResponse,
-	DeleteSubnameApiInput,
-	DeleteSubnameApiResponse,
-	ExecuteSponsoredTransactionApiInput,
-	ExecuteSponsoredTransactionApiResponse,
+	ExecuteSponsoredTransactionBlockApiInput,
+	ExecuteSponsoredTransactionBlockApiResponse,
 	GetAppApiInput,
 	GetAppApiResponse,
-	GetSubnamesApiInput,
-	GetSubnamesApiResponse,
 	GetZkLoginApiInput,
 	GetZkLoginApiResponse,
 } from './type.js';
@@ -35,8 +29,6 @@ export interface EnokiClientConfig {
 
 export class EnokiClientError extends Error {
 	errors: { code: string; message: string; data: unknown }[] = [];
-	status: number;
-	code: string;
 
 	constructor(status: number, response: string) {
 		let errors;
@@ -54,8 +46,6 @@ export class EnokiClientError extends Error {
 		});
 		this.errors = errors ?? [];
 		this.name = 'EnokiClientError';
-		this.status = status;
-		this.code = errors?.[0]?.code ?? 'unknown_error';
 	}
 }
 
@@ -114,26 +104,26 @@ export class EnokiClient {
 		});
 	}
 
-	createSponsoredTransaction(input: CreateSponsoredTransactionApiInput) {
-		return this.#fetch<CreateSponsoredTransactionApiResponse>('transaction-blocks/sponsor', {
+	createSponsoredTransactionBlock(input: CreateSponsoredTransactionBlockApiInput) {
+		return this.#fetch<CreateSponsoredTransactionBlockApiResponse>('transaction-blocks/sponsor', {
 			method: 'POST',
 			headers: input.jwt
 				? {
 						[ZKLOGIN_HEADER]: input.jwt,
-					}
+				  }
 				: {},
 			body: JSON.stringify({
 				sender: input.sender,
 				network: input.network,
-				transactionBlockKindBytes: input.transactionKindBytes,
+				transactionBlockKindBytes: input.transactionBlockKindBytes,
 				allowedAddresses: input.allowedAddresses,
 				allowedMoveCallTargets: input.allowedMoveCallTargets,
 			}),
 		});
 	}
 
-	executeSponsoredTransaction(input: ExecuteSponsoredTransactionApiInput) {
-		return this.#fetch<ExecuteSponsoredTransactionApiResponse>(
+	executeSponsoredTransactionBlock(input: ExecuteSponsoredTransactionBlockApiInput) {
+		return this.#fetch<ExecuteSponsoredTransactionBlockApiResponse>(
 			`transaction-blocks/sponsor/${input.digest}`,
 			{
 				method: 'POST',
@@ -142,53 +132,6 @@ export class EnokiClient {
 				}),
 			},
 		);
-	}
-
-	getSubnames(input: GetSubnamesApiInput) {
-		const query = new URLSearchParams();
-		if (input.address) {
-			query.set('address', input.address);
-		}
-		if (input.network) {
-			query.set('network', input.network);
-		}
-		if (input.domain) {
-			query.set('domain', input.domain);
-		}
-		return this.#fetch<GetSubnamesApiResponse>(
-			'subnames' + (query.size > 0 ? `?${query.toString()}` : ''),
-			{
-				method: 'GET',
-			},
-		);
-	}
-
-	createSubname(input: CreateSubnameApiInput) {
-		return this.#fetch<CreateSubnameApiResponse>('subnames', {
-			method: 'POST',
-			headers: input.jwt
-				? {
-						[ZKLOGIN_HEADER]: input.jwt,
-					}
-				: {},
-			body: JSON.stringify({
-				network: input.network,
-				domain: input.domain,
-				subname: input.subname,
-				targetAddress: input.targetAddress,
-			}),
-		});
-	}
-
-	deleteSubname(input: DeleteSubnameApiInput) {
-		this.#fetch<DeleteSubnameApiResponse>('subnames', {
-			method: 'DELETE',
-			body: JSON.stringify({
-				network: input.network,
-				domain: input.domain,
-				subname: input.subname,
-			}),
-		});
 	}
 
 	async #fetch<T = unknown>(path: string, init: RequestInit): Promise<T> {
