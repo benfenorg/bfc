@@ -942,11 +942,6 @@ mod checked {
 
             info!("Call arguments to bfc round transaction: {:?}",param.epoch);
 
-            for ele in stable_coin_type {
-                println!("DEBUG log xx: {}, {}", bfc_round_function_name, ele);
-    
-            }
-
             builder.programmable_move_call(
                 BFC_SYSTEM_PACKAGE_ID,
                 BFC_SYSTEM_MODULE_NAME.to_owned(),

@@ -857,10 +857,8 @@ impl ObjectInner {
     }
     pub fn is_stable_gas_coin(&self) -> bool {
         if let Some(move_object) = self.data.try_as_move() {
-            println!("try_as_move is stable gas coin");
             move_object.type_().is_stable_gas_coin()
         } else {
-            println!("try_as_move :not a stable gas coin");
             false
         }
     }

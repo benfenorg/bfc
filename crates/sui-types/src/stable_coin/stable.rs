@@ -71,12 +71,8 @@ pub mod checked {
             }
 
             let t = tag.unwrap();
-            println!("[DEBUG] is_new_gas_type: {} {}", &t, other);
-
             return &t == other;
         });
-
-        println!("[DEBUG] is_new_gas_type: {} {}", r, other);
 
         r
     }
