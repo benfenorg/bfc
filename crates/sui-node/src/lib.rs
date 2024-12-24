@@ -860,12 +860,7 @@ impl SuiNode {
         let rate_map =  store.get_rate_map();
         if rate_map.is_ok() {
             update_allow_stable_gas_coins(rate_map.unwrap());
-        } else {
-            panic!("TODO delete it, just for test")
         }
-
-
-
 
         Ok(node)
     }

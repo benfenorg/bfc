@@ -89,7 +89,7 @@ mod checked {
 
     use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
-    use sui_types::stable_coin::stable::checked::is_new_gas_type;
+    use sui_types::stable_coin::stable::checked::STABLE;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
 
@@ -954,8 +954,8 @@ mod checked {
 
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
-            let mut rewards_bfc;
-            if is_new_gas_type(&type_tag) {
+            let rewards_bfc;
+            if STABLE::is_new_gas_type(&type_tag) {
                 //  withdraw bfc
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
                 let bfc_charge_arg = builder

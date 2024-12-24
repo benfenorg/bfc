@@ -12,10 +12,6 @@ pub mod checked {
         rate_map: HashMap<String, u64>,
     }
 
-    //let rate_map: HashMap<String, u64> = bfc_system_state.get_rate_map().contents
-    // .iter()
-    // .map(|entity| ((*entity.key).to_string(), entity.value))
-    // .collect();
     impl AllowStableGasCoin {
         fn new() -> Self {
             AllowStableGasCoin {
@@ -59,22 +55,6 @@ pub mod checked {
         }
 
        format!("0x{}", input)
-    }
-
-    pub fn is_new_gas_type(other: &TypeTag) -> bool {
-        let rate_map = get_allow_stable_gas_coins_rate_map();
-        let r = rate_map.iter().any(|(key, _)| {
-            let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
-            if tag.is_err() {
-                tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
-                return false;
-            }
-
-            let t = tag.unwrap();
-            return &t == other;
-        });
-
-        r
     }
 
     pub enum STABLE {
@@ -216,6 +196,22 @@ pub mod checked {
             .any(|stable_tag| &stable_tag == other)
         }
 
+        pub fn is_new_gas_type(other: &TypeTag) -> bool {
+            let rate_map = get_allow_stable_gas_coins_rate_map();
+            let r = rate_map.iter().any(|(key, _)| {
+                let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
+                if tag.is_err() {
+                    tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
+                    return false;
+                }
+    
+                let t = tag.unwrap();
+                return &t == other;
+            });
+    
+            r
+        }
+
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
                 STABLE::BAUD,
@@ -238,7 +234,7 @@ pub mod checked {
             .iter()
             .map(|stable_type| stable_type.type_tag())
             .any(|stable_tag| &stable_tag == other)
-                || is_new_gas_type(other)
+                || Self::is_new_gas_type(other)
         }
 
         pub fn is_gas_struct(other: &StructTag) -> bool {
@@ -416,14 +412,14 @@ pub mod checked {
             m.insert("0xc8::baud::BAUD".to_string(), 100);
             update_allow_stable_gas_coins(m);
 
-            let ok = is_new_gas_type(&TypeTag::from_str("0xc8::bars::BARS").unwrap());
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bars::BARS").unwrap());
             assert!(ok);
-            let ok = is_new_gas_type(&TypeTag::from_str("0xc8::baud::BAUD").unwrap());
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::baud::BAUD").unwrap());
             assert!(ok);
-            let ok = is_new_gas_type(&TypeTag::from_str("0xc8::bcad::BCAD").unwrap());
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bcad::BCAD").unwrap());
             assert!(ok);
 
-            let ok = is_new_gas_type(&TypeTag::from_str("0x00c8::bcad::BCAD").unwrap());
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0x00c8::bcad::BCAD").unwrap());
             assert!(ok);
         }
 
