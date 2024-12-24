@@ -87,11 +87,9 @@ mod checked {
         SUI_SYSTEM_PACKAGE_ID,
     };
 
-    use sui_types::bfc_system_state::{
-        BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME,
-        STABLE_COIN_TO_BFC_FUNCTION_NAME,
-    };
+    use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
+    use sui_types::stable_coin::stable::checked::is_new_gas_type;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
 
@@ -956,36 +954,55 @@ mod checked {
 
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
+            let mut rewards_bfc;
+            if is_new_gas_type(&type_tag) {
+                //  withdraw bfc
+                let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+                let bfc_charge_arg = builder
+                    .input(CallArg::Pure(
+                        bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    ))
+                    .unwrap();
+                rewards_bfc = builder.programmable_move_call(
+                    BFC_SYSTEM_PACKAGE_ID,
+                    BFC_SYSTEM_MODULE_NAME.to_owned(),
+                    WITHDRAW_BFC_FUNCTION_NAME.to_owned(),
+                    vec![type_tag.clone()],
+                    vec![system_obj, bfc_charge_arg],
+                );
 
-            let stable_charge_arg = builder
-                .input(CallArg::Pure(
-                    bcs::to_bytes(&calculate_add(
-                        calculate_reward_rate(
-                            gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate), gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
-                ))
-                .unwrap();
-            let rewards = builder.programmable_move_call(
-                SUI_FRAMEWORK_PACKAGE_ID,
-                BALANCE_MODULE_NAME.to_owned(),
-                BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
-                vec![type_tag.clone()],
-                vec![stable_charge_arg],
-            );
+            }else {
+                let stable_charge_arg = builder
+                    .input(CallArg::Pure(
+                        bcs::to_bytes(&calculate_add(
+                            calculate_reward_rate(
+                                gas_cost_summary.gas_by_stable.computation_cost, param.reward_rate), gas_cost_summary.gas_by_stable.storage_cost)).unwrap(),
+                    ))
+                    .unwrap();
+                let rewards = builder.programmable_move_call(
+                    SUI_FRAMEWORK_PACKAGE_ID,
+                    BALANCE_MODULE_NAME.to_owned(),
+                    BALANCE_CREATE_REWARDS_FUNCTION_NAME.to_owned(),
+                    vec![type_tag.clone()],
+                    vec![stable_charge_arg],
+                );
 
-            // Exchange stable coin to bfc
-            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
-            let bfc_charge_arg = builder
-                .input(CallArg::Pure(
-                    bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
-                ))
-                .unwrap();
-            let rewards_bfc = builder.programmable_move_call(
-                BFC_SYSTEM_PACKAGE_ID,
-                BFC_SYSTEM_MODULE_NAME.to_owned(),
-                STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
-                vec![type_tag.clone()],
-                vec![system_obj, rewards, bfc_charge_arg],
-            );
+                // Exchange stable coin to bfc
+                let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+                let bfc_charge_arg = builder
+                    .input(CallArg::Pure(
+                        bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
+                    ))
+                    .unwrap();
+                rewards_bfc = builder.programmable_move_call(
+                    BFC_SYSTEM_PACKAGE_ID,
+                    BFC_SYSTEM_MODULE_NAME.to_owned(),
+                    STABLE_COIN_TO_BFC_FUNCTION_NAME.to_owned(),
+                    vec![type_tag.clone()],
+                    vec![system_obj, rewards, bfc_charge_arg],
+                );
+
+            }
 
             // Destroy the rewards
             builder.programmable_move_call(

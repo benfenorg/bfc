@@ -32,6 +32,8 @@ pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas
 
 pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_stablecoin_to_bfc");
 
+pub const WITHDRAW_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_withdraw_balance");
+
 pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_pool_no_entry");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]

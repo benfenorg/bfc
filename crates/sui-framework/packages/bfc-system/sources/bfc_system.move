@@ -275,6 +275,16 @@ module bfc_system::bfc_system {
         }
     }
 
+    #[allow(unused_function)]
+    fun inner_withdraw_balance<StableCoinType>(
+        _self: &mut BfcSystemState,
+        expect: u64,
+        _ctx: &mut TxContext,
+    ): Balance<BFC> {
+        let (inner_state, ctx) = load_system_state_mut(_self, _ctx);
+        bfc_system_state_inner::withdraw_balance(inner_state, expect)
+    }
+
     #[test_only]
     public fun inner_stablecoin_to_bfc_test<StableCoinType>(
         wrapper: &mut BfcSystemState,
