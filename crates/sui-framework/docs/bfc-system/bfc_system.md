@@ -43,7 +43,6 @@ title: Module `0xc8::bfc_system`
 -  [Function `withdraw_voting`](#0xc8_bfc_system_withdraw_voting)
 -  [Function `create_voting_bfc`](#0xc8_bfc_system_create_voting_bfc)
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
--  [Function `rebalance2`](#0xc8_bfc_system_rebalance2)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
@@ -1263,32 +1262,6 @@ X treasury rebalance
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_rebalance">rebalance</a>(
     _wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     _clock: &Clock,
-    _ctx: &<b>mut</b> TxContext,
-) {
-
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_rebalance2"></a>
-
-## Function `rebalance2`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_rebalance2">rebalance2</a>(_ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_rebalance2">rebalance2</a>(
     _ctx: &<b>mut</b> TxContext,
 ) {
 
