@@ -967,11 +967,10 @@ mod checked {
                     BFC_SYSTEM_PACKAGE_ID,
                     BFC_SYSTEM_MODULE_NAME.to_owned(),
                     WITHDRAW_BFC_FUNCTION_NAME.to_owned(),
-                    vec![type_tag.clone()],
+                    vec![],
                     vec![system_obj, bfc_charge_arg],
                 );
-
-            }else {
+            } else {
                 let stable_charge_arg = builder
                     .input(CallArg::Pure(
                         bcs::to_bytes(&calculate_add(

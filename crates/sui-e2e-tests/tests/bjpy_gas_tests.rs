@@ -186,7 +186,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     }
 
 
-    println!("test new stable coin gas: transfer_sui");
+    // case 1 : transfer_sui
     let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), address).await?;
     let gas_object = objects.first().unwrap().object().unwrap();
     println!("transfer_sui gas_object: {:?}", gas_object.to_string());
@@ -199,16 +199,10 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     let resp = test_cluster.execute_transaction(tx).await;
     println!("transfer_sui resp: {:?}", resp);
     assert!(resp.status_ok().unwrap());
-    println!("end test new stable coin gas: transfer_sui");
 
-
-    // let response = stable::mint_stable_coin_with_gas(
-    //     100000000000, &test_cluster, &mut http_client, address, "0xc8::bjpy::BJPY", filter.as_str()).await;
-    // assert!(response.is_ok());
-
-
-    // let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
-    // assert!(response.is_ok());
+    // case 2 : call move function
+    let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
+    assert!(response.is_ok());
 
     Ok(())
 }

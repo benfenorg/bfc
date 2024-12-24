@@ -95,6 +95,7 @@ pub async fn mint_stable_coin_with_gas(amount: u64, test_cluster: &TestCluster, 
         .await?;
 
     println!("tx_response: {:#?}", tx_response);
+
     Ok(())
 }
 
