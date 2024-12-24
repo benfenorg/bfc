@@ -5392,6 +5392,9 @@ bfc_round_v2
 inner_stablecoin_to_bfc
 	fun
 	0xc8::bfc_system
+inner_withdraw_balance
+	fun
+	0xc8::bfc_system
 request_gas_balance
 	public fun
 	0xc8::bfc_system
