@@ -342,8 +342,6 @@ pub mod checked {
             assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 1);
         }
 
-
-
         #[test]
         fn test_singleton_thread_safety() {
             let handles: Vec<_> = (0..100)
