@@ -11,7 +11,7 @@ const header = `
 
 const config: CodegenConfig = {
 	overwrite: true,
-	schema: '../../crates/sui-graphql-rpc/schema/current_progress_schema.graphql',
+	schema: '../../crates/sui-graphql-rpc/schema.graphql',
 	documents: ['src/queries/*.graphql'],
 	ignoreNoDocuments: true,
 	generates: {

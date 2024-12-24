@@ -910,12 +910,32 @@ module sui_system::sui_system_state_inner {
         let storage_fund_balance = storage_fund::total_balance(&self.storage_fund);
         let total_stake = storage_fund_balance + total_validators_stake;
 
+        let storage_charge = storage_reward.value();
+        let computation_charge = computation_reward.value();
+        let mut stake_subsidy = balance::zero();
         let storage_charge = balance::value(&storage_reward);
         let computation_charge = balance::value(&computation_reward);
 
+        // during the transition from epoch N to epoch N + 1, ctx.epoch() will return N
+        let old_epoch = ctx.epoch();
         // Include stake subsidy in the rewards given out to validators and stakers.
         // Delay distributing any stake subsidies until after `stake_subsidy_start_epoch`.
         // And if this epoch is shorter than the regular epoch duration, don't distribute any stake subsidy.
+        if (old_epoch >= self.parameters.stake_subsidy_start_epoch  &&
+            epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
+        {
+            // special case for epoch 560 -> 561 change bug. add extra subsidies for "safe mode"
+            // where reward distribution was skipped. use distribution counter and epoch check to
+            // avoiding affecting devnet and testnet
+            if (self.stake_subsidy.get_distribution_counter() == 540 && old_epoch > 560) {
+                // safe mode was entered on the change from 560 to 561. so 560 was the first epoch without proper subsidy distribution
+                let first_safe_mode_epoch = 560;
+                let safe_mode_epoch_count = old_epoch - first_safe_mode_epoch;
+                safe_mode_epoch_count.do!(|_| {
+                    stake_subsidy.join(self.stake_subsidy.advance_epoch());
+                });
+                // done with catchup for safe mode epochs. distribution counter is now >540, we won't hit this again
+                // fall through to the normal logic, which will add subsidies for the current epoch
         let stake_subsidy =
             if (tx_context::epoch(ctx) >= self.parameters.stake_subsidy_start_epoch  &&
                 epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
@@ -924,6 +944,8 @@ module sui_system::sui_system_state_inner {
                 } else {
                 balance::zero()
             };
+            stake_subsidy.join(self.stake_subsidy.advance_epoch());
+        };
 
         let stake_subsidy_amount = balance::value(&stake_subsidy);
         balance::join(&mut computation_reward, stake_subsidy);
@@ -1207,6 +1229,21 @@ module sui_system::sui_system_state_inner {
         self.validators.request_add_validator(min_joining_stake_for_testing, ctx);
         }
 
+    #[test_only]
+    public(package) fun set_stake_subsidy_distribution_counter(self: &mut SuiSystemStateInnerV2, counter: u64) {
+        self.stake_subsidy.set_distribution_counter(counter)
+    }
+
+    #[test_only]
+    public(package) fun epoch_duration_ms(self: &SuiSystemStateInnerV2): u64 {
+        self.parameters.epoch_duration_ms
+    }
+
+    // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
+    // candidate validator - bypassing the proof of possession check and other metadata validation
+    // in the process.
+    #[test_only]
+    public(package) fun request_add_validator_candidate_for_testing(
         // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
         // candidate validator - bypassing the proof of possession check and other metadata validation
         // in the process.

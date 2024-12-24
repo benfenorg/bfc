@@ -306,6 +306,11 @@ pub enum UserInputError {
         limit
     )]
     TooManyTransactionsInSoftBundle { limit: u64 },
+    #[error(
+        "Total transactions size ({:?})bytes exceeds the maximum allowed ({:?})bytes in a Soft Bundle",
+        size, limit
+    )]
+    SoftBundleTooLarge { size: u64, limit: u64 },
     #[error("Transaction {:?} in Soft Bundle contains no shared objects", digest)]
     NoSharedObjectError { digest: TransactionDigest },
     #[error("Transaction {:?} in Soft Bundle has already been executed", digest)]
@@ -329,6 +334,9 @@ pub enum UserInputError {
 
     #[error("Invalid identifier found in the transaction: {error}")]
     InvalidIdentifier { error: String },
+
+    #[error("Object used as owned is not owned")]
+    NotOwnedObjectError,
 }
 
 #[derive(
@@ -454,8 +462,9 @@ pub enum SuiError {
     },
     #[error("Signatures in a certificate must form a quorum")]
     CertificateRequiresQuorum,
-    #[error("Transaction certificate processing failed: {err}")]
-    ErrorWhileProcessingCertificate { err: String },
+    #[allow(non_camel_case_types)]
+    #[error("DEPRECATED")]
+    DEPRECATED_ErrorWhileProcessingCertificate,
     #[error(
         "Failed to get a quorum of signed effects when processing transaction: {effects_map:?}"
     )]
@@ -485,8 +494,8 @@ pub enum SuiError {
     #[error("Invalid DKG message size")]
     InvalidDkgMessageSize,
 
-    #[error("Unexpected message.")]
-    UnexpectedMessage,
+    #[error("Unexpected message: {0}")]
+    UnexpectedMessage(String),
 
     // Move module publishing related errors
     #[error("Failed to verify the Move module, reason: {error:?}.")]
@@ -861,6 +870,7 @@ impl SuiError {
             SuiError::ValidatorHaltedAtEpochEnd => true,
             SuiError::MissingCommitteeAtEpoch(..) => true,
             SuiError::WrongEpoch { .. } => true,
+            SuiError::EpochEnded(..) => true,
 
             SuiError::UserInputError { error } => {
                 match error {

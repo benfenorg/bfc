@@ -70,12 +70,14 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
 
     // Start network without authorities
     let start = SuiCommand::Start {
+        data_ingestion_dir: None,
         config_dir: Some(config),
         force_regenesis: false,
         with_faucet: None,
         fullnode_rpc_port: 9000,
         epoch_duration_ms: None,
         no_full_node: false,
+        committee_size: None,
         indexer_feature_args: IndexerArgs::for_testing(),
     }
     .execute()
@@ -90,6 +92,7 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
         epoch_duration_ms: None,
         benchmark_ips: None,
         with_faucet: false,
+        committee_size: None,
     }
     .execute()
     .await?;
@@ -129,6 +132,7 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
         epoch_duration_ms: None,
         benchmark_ips: None,
         with_faucet: false,
+        committee_size: None,
     }
     .execute()
     .await;
@@ -2355,7 +2359,7 @@ async fn sim_test_native_transfer() -> Result<(), anyhow::Error> {
         panic!();
     };
 
-    let (gas, obj) = if mut_obj1.owner.unwrap().get_owner_address().unwrap() == address {
+    let (gas, obj) = if mut_obj1.owner.clone().unwrap().get_owner_address().unwrap() == address {
         (mut_obj1, mut_obj2)
     } else {
         (mut_obj2, mut_obj1)
@@ -3059,6 +3063,7 @@ async fn sim_test_serialize_tx() -> Result<(), anyhow::Error> {
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
             dry_run: false,
+            dev_inspect: false,
             serialize_unsigned_transaction: true,
             serialize_signed_transaction: false,
         },
@@ -3073,6 +3078,7 @@ async fn sim_test_serialize_tx() -> Result<(), anyhow::Error> {
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
             dry_run: false,
+            dev_inspect: false,
             serialize_unsigned_transaction: false,
             serialize_signed_transaction: true,
         },
@@ -3088,6 +3094,7 @@ async fn sim_test_serialize_tx() -> Result<(), anyhow::Error> {
         opts: Opts {
             gas_budget: Some(rgp * TEST_ONLY_GAS_UNIT_FOR_TRANSFER),
             dry_run: false,
+            dev_inspect: false,
             serialize_unsigned_transaction: false,
             serialize_signed_transaction: true,
         },
@@ -3263,7 +3270,7 @@ async fn sim_test_get_owned_objects_owned_by_address_and_check_pagination() -> R
 
     // assert that all the objects_returned are owned by the address
     for resp in &object_responses.data {
-        let obj_owner = resp.object().unwrap().owner.unwrap();
+        let obj_owner = resp.object().unwrap().owner.clone().unwrap();
         assert_eq!(
             obj_owner.get_owner_address().unwrap().to_string(),
             address.to_string()
@@ -3935,6 +3942,7 @@ async fn sim_test_gas_estimation() -> Result<(), anyhow::Error> {
         opts: Opts {
             gas_budget: None,
             dry_run: false,
+            dev_inspect: false,
             serialize_unsigned_transaction: false,
             serialize_signed_transaction: false,
         },

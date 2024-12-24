@@ -110,7 +110,7 @@ impl SuiObjectResponse {
 
     pub fn owner(&self) -> Option<Owner> {
         if let Some(data) = &self.data {
-            return data.owner;
+            return data.owner.clone();
         }
         None
     }
@@ -258,7 +258,7 @@ impl Display for SuiObjectData {
             format!("----- {type_} ({}[{}]) -----",
                     objects_id_to_bfc_address(self.object_id), self.version).bold()
         )?;
-        if let Some(owner) = self.owner {
+        if let Some(owner) = &self.owner {
             writeln!(writer, "{}: {}", "Owner".bold().bright_black(), owner)?;
         }
 

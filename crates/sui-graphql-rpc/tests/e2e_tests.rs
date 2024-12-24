@@ -270,6 +270,7 @@ async fn test_transaction_execution() {
     telemetry_subscribers::init_for_testing();
 
     let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
+    let cluster = start_cluster(ServiceConfig::test_defaults()).await;
 
     let addresses = cluster
         .network
@@ -736,7 +737,7 @@ async fn test_dry_run_failed_execution() {
 }
 
 #[tokio::test]
-async fn test_epoch_data() {
+async fn test_epoch_live_object_set_digest() {
     telemetry_subscribers::init_for_testing();
 
     let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
@@ -748,7 +749,9 @@ async fn test_epoch_data() {
         .await;
 
     // Wait for the epoch to be indexed
-    sleep(Duration::from_secs(10)).await;
+    cluster
+        .wait_for_epoch_catchup(0, Duration::from_secs(30))
+        .await;
 
     // Query the epoch
     let query = "

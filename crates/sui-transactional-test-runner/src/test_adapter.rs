@@ -15,15 +15,14 @@ use fastcrypto::encoding::{Base64, Encoding};
 use fastcrypto::traits::ToFromBytes;
 use move_binary_format::CompiledModule;
 use move_bytecode_utils::module_cache::GetModule;
-use move_command_line_common::{
-    address::ParsedAddress, files::verify_and_create_named_address_mapping,
-};
+use move_command_line_common::files::verify_and_create_named_address_mapping;
 use move_compiler::{
     editions::{Edition, Flavor},
     shared::{NumberFormat, NumericalAddress, PackageConfig, PackagePaths},
     Flags, FullyCompiledProgram,
 };
 use move_core_types::ident_str;
+use move_core_types::parsing::address::ParsedAddress;
 use move_core_types::{
     account_address::AccountAddress,
     identifier::IdentStr,
@@ -50,7 +49,7 @@ use sui_core::authority::test_authority_builder::TestAuthorityBuilder;
 use sui_core::authority::AuthorityState;
 use sui_framework::DEFAULT_FRAMEWORK_PATH;
 use sui_graphql_rpc::test_infra::cluster::ExecutorCluster;
-use sui_graphql_rpc::test_infra::cluster::{serve_executor, SnapshotLagConfig};
+use sui_graphql_rpc::test_infra::cluster::{serve_executor, RetentionConfig, SnapshotLagConfig};
 use sui_json_rpc_api::QUERY_MAX_RESULT_LIMIT;
 use sui_json_rpc_types::{DevInspectResults, SuiExecutionStatus, SuiGasCostSummary, SuiTransactionBlockEffectsAPI};
 use sui_protocol_config::{Chain, ProtocolConfig};
@@ -334,6 +333,11 @@ impl<'a> MoveTestAdapter<'a> for SuiTestAdapter {
             },
             cluster,
         ) = if is_simulator {
+            // TODO: (wlmyng) as of right now, we can't test per-table overrides until the pruner is
+            // updated
+            let retention_config =
+                epochs_to_keep.map(RetentionConfig::new_with_default_retention_only_for_testing);
+
             init_sim_executor(
                 rng,
                 account_names,
@@ -342,7 +346,7 @@ impl<'a> MoveTestAdapter<'a> for SuiTestAdapter {
                 custom_validator_account,
                 reference_gas_price,
                 snapshot_config,
-                epochs_to_keep,
+                retention_config,
             )
             .await
         } else {
@@ -617,7 +621,7 @@ impl<'a> MoveTestAdapter<'a> for SuiTestAdapter {
                 let latest_chk = self.executor.get_latest_checkpoint_sequence_number()?;
                 let chk = self
                     .executor
-                    .get_checkpoint_by_sequence_number(latest_chk)?
+                    .get_checkpoint_by_sequence_number(latest_chk)
                     .unwrap();
                 Ok(Some(format!("{}", chk.data())))
             }
@@ -1638,8 +1642,8 @@ impl<'a> SuiTestAdapter {
             ObjectStore::get_object(&*self.executor, id)
         };
         match obj_res {
-            Ok(Some(obj)) => Ok(obj),
-            Ok(None) | Err(_) => Err(anyhow!("INVALID TEST! Unable to find object {id}")),
+            Some(obj) => Ok(obj),
+            None => Err(anyhow!("INVALID TEST! Unable to find object {id}")),
         }
     }
 
@@ -1774,14 +1778,16 @@ impl<'a> SuiTestAdapter {
             return format!("{}", objs.len());
         }
         objs.iter()
-            .map(|id| match self.real_to_fake_object_id(id) {
-                None => "object(_)".to_string(),
-                Some(FakeID::Known(id)) => {
-                    let id: AccountAddress = id.into();
-                    format!("0x{id:x}")
-                }
-                Some(fake) => format!("object({})", fake),
-            })
+            .map(
+                |id| /*id.to_string(), */match self.real_to_fake_object_id(id) {
+                                         None => "object(_)".to_string(),
+                                         Some(FakeID::Known(id)) => {
+                                             let id: AccountAddress = id.into();
+                                             format!("0x{id:x}")
+                                         }
+                                         Some(fake) => format!("object({})", fake),
+                                     },
+            )
             .collect::<Vec<_>>()
             .join(", ")
     }
@@ -2121,7 +2127,7 @@ async fn init_sim_executor(
     custom_validator_account: bool,
     reference_gas_price: Option<u64>,
     snapshot_config: SnapshotLagConfig,
-    epochs_to_keep: Option<u64>,
+    retention_config: Option<RetentionConfig>,
 ) -> (
     Box<dyn TransactionalAdapter>,
     AccountSetup,
@@ -2193,7 +2199,7 @@ async fn init_sim_executor(
     let cluster = serve_executor(
         Arc::new(read_replica),
         Some(snapshot_config),
-        epochs_to_keep,
+        retention_config,
         data_ingestion_path,
     )
     .await;
@@ -2301,18 +2307,11 @@ async fn update_named_address_mapping(
 }
 
 impl ObjectStore for SuiTestAdapter {
-    fn get_object(
-        &self,
-        object_id: &ObjectID,
-    ) -> sui_types::storage::error::Result<Option<Object>> {
+    fn get_object(&self, object_id: &ObjectID) -> Option<Object> {
         ObjectStore::get_object(&*self.executor, object_id)
     }
 
-    fn get_object_by_key(
-        &self,
-        object_id: &ObjectID,
-        version: VersionNumber,
-    ) -> sui_types::storage::error::Result<Option<Object>> {
+    fn get_object_by_key(&self, object_id: &ObjectID, version: VersionNumber) -> Option<Object> {
         ObjectStore::get_object_by_key(&*self.executor, object_id, version)
     }
 }
@@ -2325,7 +2324,7 @@ impl ReadStore for SuiTestAdapter {
     fn get_committee(
         &self,
         epoch: sui_types::committee::EpochId,
-    ) -> sui_types::storage::error::Result<Option<Arc<sui_types::committee::Committee>>> {
+    ) -> Option<Arc<sui_types::committee::Committee>> {
         self.executor.get_committee(epoch)
     }
 
@@ -2354,14 +2353,14 @@ impl ReadStore for SuiTestAdapter {
     fn get_checkpoint_by_digest(
         &self,
         digest: &sui_types::messages_checkpoint::CheckpointDigest,
-    ) -> sui_types::storage::error::Result<Option<VerifiedCheckpoint>> {
+    ) -> Option<VerifiedCheckpoint> {
         self.executor.get_checkpoint_by_digest(digest)
     }
 
     fn get_checkpoint_by_sequence_number(
         &self,
         sequence_number: CheckpointSequenceNumber,
-    ) -> sui_types::storage::error::Result<Option<VerifiedCheckpoint>> {
+    ) -> Option<VerifiedCheckpoint> {
         self.executor
             .get_checkpoint_by_sequence_number(sequence_number)
     }
@@ -2369,45 +2368,34 @@ impl ReadStore for SuiTestAdapter {
     fn get_checkpoint_contents_by_digest(
         &self,
         digest: &CheckpointContentsDigest,
-    ) -> sui_types::storage::error::Result<Option<CheckpointContents>> {
+    ) -> Option<CheckpointContents> {
         self.executor.get_checkpoint_contents_by_digest(digest)
     }
 
     fn get_checkpoint_contents_by_sequence_number(
         &self,
         sequence_number: CheckpointSequenceNumber,
-    ) -> sui_types::storage::error::Result<Option<CheckpointContents>> {
+    ) -> Option<CheckpointContents> {
         self.executor
             .get_checkpoint_contents_by_sequence_number(sequence_number)
     }
 
-    fn get_transaction(
-        &self,
-        tx_digest: &TransactionDigest,
-    ) -> sui_types::storage::error::Result<Option<Arc<VerifiedTransaction>>> {
+    fn get_transaction(&self, tx_digest: &TransactionDigest) -> Option<Arc<VerifiedTransaction>> {
         self.executor.get_transaction(tx_digest)
     }
 
-    fn get_transaction_effects(
-        &self,
-        tx_digest: &TransactionDigest,
-    ) -> sui_types::storage::error::Result<Option<TransactionEffects>> {
+    fn get_transaction_effects(&self, tx_digest: &TransactionDigest) -> Option<TransactionEffects> {
         self.executor.get_transaction_effects(tx_digest)
     }
 
-    fn get_events(
-        &self,
-        event_digest: &TransactionEventsDigest,
-    ) -> sui_types::storage::error::Result<Option<TransactionEvents>> {
+    fn get_events(&self, event_digest: &TransactionEventsDigest) -> Option<TransactionEvents> {
         self.executor.get_events(event_digest)
     }
 
     fn get_full_checkpoint_contents_by_sequence_number(
         &self,
         sequence_number: CheckpointSequenceNumber,
-    ) -> sui_types::storage::error::Result<
-        Option<sui_types::messages_checkpoint::FullCheckpointContents>,
-    > {
+    ) -> Option<sui_types::messages_checkpoint::FullCheckpointContents> {
         self.executor
             .get_full_checkpoint_contents_by_sequence_number(sequence_number)
     }
@@ -2415,9 +2403,7 @@ impl ReadStore for SuiTestAdapter {
     fn get_full_checkpoint_contents(
         &self,
         digest: &CheckpointContentsDigest,
-    ) -> sui_types::storage::error::Result<
-        Option<sui_types::messages_checkpoint::FullCheckpointContents>,
-    > {
+    ) -> Option<sui_types::messages_checkpoint::FullCheckpointContents> {
         self.executor.get_full_checkpoint_contents(digest)
     }
 }

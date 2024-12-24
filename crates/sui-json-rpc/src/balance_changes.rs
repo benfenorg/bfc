@@ -18,7 +18,9 @@ use sui_types::gas_coin::GAS;
 use sui_types::object::{Object, Owner};
 use sui_types::storage::WriteKind;
 use sui_types::transaction::InputObjectKind;
+use tracing::instrument;
 
+#[instrument(skip_all, fields(transaction_digest = %effects.transaction_digest()))]
 pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
     object_provider: &P,
     effects: &TransactionEffects,
@@ -90,6 +92,7 @@ pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
     .await
 }
 
+#[instrument(skip_all)]
 pub async fn get_balance_changes<P: ObjectProvider<Error = E>, E>(
     object_provider: &P,
     modified_at_version: &[(ObjectID, SequenceNumber, Option<ObjectDigest>)],
@@ -130,6 +133,7 @@ pub async fn get_balance_changes<P: ObjectProvider<Error = E>, E>(
         .collect())
 }
 
+#[instrument(skip_all)]
 async fn fetch_coins<P: ObjectProvider<Error = E>, E>(
     object_provider: &P,
     objects: &[(ObjectID, SequenceNumber, Option<ObjectDigest>)],
@@ -151,10 +155,10 @@ async fn fetch_coins<P: ObjectProvider<Error = E>, E>(
                 let [coin_type]: [TypeTag; 1] =
                     type_.clone().into_type_params().try_into().unwrap();
                 all_mutated_coins.push((
-                    o.owner,
+                    o.owner.clone(),
                     coin_type,
                     // we know this is a coin, safe to unwrap
-                    Coin::extract_balance_if_coin(&o).unwrap().unwrap(),
+                    Coin::extract_balance_if_coin(&o).unwrap().unwrap().1,
                 ))
             }
         }

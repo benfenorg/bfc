@@ -97,6 +97,7 @@ export class BenfenHTTPTransport implements BenfenTransport {
 				'Client-Sdk-Type': 'typescript',
 				'Client-Sdk-Version': PACKAGE_VERSION,
 				'Client-Target-Api-Version': TARGETED_RPC_VERSION,
+				'Client-Request-Method': input.method,
 				...this.#options.rpc?.headers,
 			},
 			body: JSON.stringify({

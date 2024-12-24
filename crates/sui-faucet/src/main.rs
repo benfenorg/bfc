@@ -14,6 +14,9 @@ const PROM_PORT_ADDR: &str = "0.0.0.0:9185";
 
 const DEFAULT_AMOUNT: u64 = 1000 * 1_000_000_000;
 
+// Define the `GIT_REVISION` and `VERSION` consts
+bin_version::bin_version!();
+
 #[tokio::main]
 async fn main() -> Result<(), anyhow::Error> {
     // initialize tracing
@@ -41,6 +44,10 @@ async fn main() -> Result<(), anyhow::Error> {
     info!("Starting Prometheus HTTP endpoint at {}", prom_binding);
     let registry_service = mysten_metrics::start_prometheus_server(prom_binding);
     let prometheus_registry = registry_service.default_registry();
+    prometheus_registry
+        .register(mysten_metrics::uptime_metric("faucet", VERSION, "unknown"))
+        .unwrap();
+
     let app_state = Arc::new(AppState {
         faucet: SimpleFaucet::new(
             context,

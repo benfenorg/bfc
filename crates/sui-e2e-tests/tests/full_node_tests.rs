@@ -69,8 +69,7 @@ async fn sim_test_full_node_follows_txes() -> Result<(), anyhow::Error> {
         .state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
-        .await
-        .unwrap();
+        .await;
 
     // A small delay is needed for post processing operations following the transaction to finish.
     sleep(Duration::from_secs(1)).await;
@@ -115,8 +114,7 @@ async fn sim_test_full_node_shared_objects() -> Result<(), anyhow::Error> {
         .state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
-        .await
-        .unwrap();
+        .await;
 
     Ok(())
 }
@@ -510,8 +508,7 @@ async fn sim_test_full_node_cold_sync() -> Result<(), anyhow::Error> {
         .state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
-        .await
-        .unwrap();
+        .await;
 
     let info = fullnode
         .state()
@@ -631,8 +628,7 @@ async fn do_test_full_node_sync_flood() {
         .state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&digests)
-        .await
-        .unwrap();
+        .await;
 }
 
 
@@ -822,6 +818,7 @@ async fn sim_test_full_node_transaction_orchestrator_basic() -> Result<(), anyho
         .state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
+        .await;
         .await
         .unwrap();
     //fullnode.state().get_executed_transaction_and_effects(digest).await
@@ -1121,8 +1118,7 @@ async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Erro
     node.state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
-        .await
-        .unwrap();
+        .await;
 
     loop {
         // Ensure this full node is able to transition to the next epoch
@@ -1141,8 +1137,7 @@ async fn sim_test_full_node_bootstrap_from_snapshot() -> Result<(), anyhow::Erro
     node.state()
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest_after_restore])
-        .await
-        .unwrap();
+        .await;
     Ok(())
 }
 
@@ -1255,14 +1250,13 @@ async fn sim_test_access_old_object_pruned() {
                     .database_for_testing()
                     .prune_objects_and_compact_for_testing(
                         state.get_checkpoint_store(),
-                        state.rest_index.as_deref(),
+                        state.rpc_index.as_deref(),
                     )
                     .await;
                 // Make sure the old version of the object is already pruned.
                 assert!(state
                     .database_for_testing()
                     .get_object_by_key(&gas_object.0, gas_object.1)
-                    .unwrap()
                     .is_none());
                 let epoch_store = state.epoch_store_for_testing();
                 assert_eq!(

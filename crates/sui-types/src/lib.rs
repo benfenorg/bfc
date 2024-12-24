@@ -79,7 +79,7 @@ pub mod randomness_state;
 pub mod signature;
 pub mod signature_verification;
 pub mod storage;
-pub mod sui_sdk2_conversions;
+pub mod sui_sdk_types_conversions;
 pub mod sui_serde;
 pub mod sui_system_state;
 pub mod supported_protocol_versions;
@@ -105,7 +105,7 @@ pub mod vault;
 macro_rules! built_in_ids {
     ($($addr:ident / $id:ident = $init:expr);* $(;)?) => {
         $(
-            pub const $addr: AccountAddress = builtin_address($init);
+            pub const $addr: AccountAddress = AccountAddress::from_suffix($init);
             pub const $id: ObjectID = ObjectID::from_address($addr);
         )*
     }
@@ -154,6 +154,9 @@ pub const SUI_CLOCK_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION
 pub const BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 pub const SUI_AUTHENTICATOR_STATE_OBJECT_SHARED_VERSION: SequenceNumber = OBJECT_START_VERSION;
 
+pub fn sui_framework_address_concat_string(suffix: &str) -> String {
+    format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
+}
 
 /// 0x7: hardcoded object ID for the bfc system.
 // pub const BFC_SYSTEM_ADDRESS: AccountAddress = address_from_single_byte(200);
@@ -196,6 +199,19 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
         format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
     }
 
+/// Parses `s` as an address. Valid formats for addresses are:
+///
+/// - A 256bit number, encoded in decimal, or hexadecimal with a leading "0x" prefix.
+/// - One of a number of pre-defined named addresses: std, sui, sui_system, deepbook.
+///
+/// Parsing succeeds if and only if `s` matches one of these formats exactly, with no remaining
+/// suffix. This function is intended for use within the authority codebases.
+pub fn parse_sui_address(s: &str) -> anyhow::Result<SuiAddress> {
+    use move_core_types::parsing::address::ParsedAddress;
+    Ok(ParsedAddress::parse(s)?
+        .into_account_address(&resolve_address)?
+        .into())
+}
     /// Parses `s` as an address. Valid formats for addresses are:
     ///
     /// - A 256bit number, encoded in decimal, or hexadecimal with a leading "0x" prefix.
@@ -210,6 +226,13 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
             .into())
     }
 
+/// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
+/// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
+/// with no remaining input. This function is intended for use within the authority codebases.
+pub fn parse_sui_module_id(s: &str) -> anyhow::Result<ModuleId> {
+    use move_core_types::parsing::types::ParsedModuleId;
+    ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
+}
     /// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
     /// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
     /// with no remaining input. This function is intended for use within the authority codebases.
@@ -218,6 +241,14 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
         ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
     }
 
+/// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
+/// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
+/// format exactly, with no remaining input. This function is intended for use within the authority
+/// codebases.
+pub fn parse_sui_fq_name(s: &str) -> anyhow::Result<(ModuleId, String)> {
+    use move_core_types::parsing::types::ParsedFqName;
+    ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
+}
     /// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
     /// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
     /// format exactly, with no remaining input. This function is intended for use within the authority
@@ -227,6 +258,14 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
         ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
     }
 
+/// Parse `s` as a struct type: A fully-qualified name, optionally followed by a list of type
+/// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
+/// brackets). Parsing succeeds if and only if `s` matches this format exactly, with no remaining
+/// input. This function is intended for use within the authority codebase.
+pub fn parse_sui_struct_tag(s: &str) -> anyhow::Result<StructTag> {
+    use move_core_types::parsing::types::ParsedStructType;
+    ParsedStructType::parse(s)?.into_struct_tag(&resolve_address)
+}
     /// Parse `s` as a struct type: A fully-qualified name, optionally followed by a list of type
     /// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
     /// brackets). Parsing succeeds if and only if `s` matches this format exactly, with no remaining
@@ -236,6 +275,13 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
         ParsedStructType::parse(s)?.into_struct_tag(&resolve_address)
     }
 
+/// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
+/// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
+/// with no remaining input. This function is intended for use within the authority codebase.
+pub fn parse_sui_type_tag(s: &str) -> anyhow::Result<TypeTag> {
+    use move_core_types::parsing::types::ParsedType;
+    ParsedType::parse(s)?.into_type_tag(&resolve_address)
+}
     /// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
     /// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
     /// with no remaining input. This function is intended for use within the authority codebase.
@@ -433,6 +479,12 @@ fn is_object_struct(
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
+    #[test]
+    fn test_parse_sui_struct_tag_long_account_addr() {
+        let result = parse_sui_struct_tag(
+            "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+        )
+        .expect("should not error");
         #[test]
         fn test_parse_sui_struct_tag_long_account_addr() {
             let result = parse_sui_struct_tag(

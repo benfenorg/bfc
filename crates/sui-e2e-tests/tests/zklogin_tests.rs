@@ -241,6 +241,15 @@ async fn sim_test_create_authenticator_state_object() {
     let handles = test_cluster.all_node_handles();
 
     // no node has the authenticator state object yet
+    for h in &handles {
+        h.with(|node| {
+            assert!(node
+                .state()
+                .get_object_cache_reader()
+                .get_latest_object_ref_or_tombstone(SUI_AUTHENTICATOR_STATE_OBJECT_ID)
+                .is_none());
+        });
+    }
     // for h in &handles {
     //     h.with(|node| {
     //         assert!(node
@@ -264,7 +273,6 @@ async fn sim_test_create_authenticator_state_object() {
             node.state()
                 .get_object_cache_reader()
                 .get_latest_object_ref_or_tombstone(SUI_AUTHENTICATOR_STATE_OBJECT_ID)
-                .unwrap()
                 .expect("auth state object should exist");
         });
     }
@@ -355,7 +363,6 @@ async fn sim_test_conflicting_jwks() {
                 let tx = state
                     .get_transaction_cache_reader()
                     .get_transaction_block(&digest)
-                    .unwrap()
                     .unwrap();
                 match &tx.data().intent_message().value.kind() {
                     TransactionKind::EndOfEpochTransaction(_) => (),

@@ -15,19 +15,18 @@
 /// Overall, while it may seem simple it has pretty significant shortcomings
 /// that can be overcome with a transfer-to-object  based approach using a
 /// shared-object register for tracking authorization.
-module owned_no_tto::cash_register {
-    use common::identified_payment::{Self, IdentifiedPayment};
-    use sui::bfc::BFC;
-    use sui::coin::{Self, Coin};
-    use sui::event;
+module owned_no_tto::cash_register;
 
-    public struct PaymentProcessed has copy, drop { payment_id: u64, amount: u64 }
+use common::identified_payment::{Self, IdentifiedPayment};
+use sui::bfc::BFC;
+use sui::coin::{Self, Coin};
+use sui::event;
+public struct PaymentProcessed has copy, drop { payment_id: u64, amount: u64 }
 
-    public fun process_payment(payment: IdentifiedPayment): Coin<BFC> {
-        let (payment_id, coin) = identified_payment::unpack(payment);
-        event::emit(PaymentProcessed { payment_id, amount: coin::value(&coin)});
-        coin
-    }
-
-    // NB: Payments are performed with the `identified_payment::make_payment` function.
+public fun process_payment(payment: IdentifiedPayment): Coin<BFC> {
+    let (payment_id, coin) = identified_payment::unpack(payment);
+    event::emit(PaymentProcessed { payment_id, amount: coin::value(&coin) });
+    coin
 }
+
+// NB: Payments are performed with the `identified_payment::make_payment` function.
