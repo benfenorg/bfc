@@ -192,6 +192,30 @@ pub mod checked {
             TypeTag::Struct(Box::new(self.type_()))
         }
 
+        pub fn is_inner_gas_type(other: &TypeTag) -> bool {
+            [   STABLE::BARS,
+                STABLE::BAUD,
+                STABLE::BZAR,
+                STABLE::BUSD,
+                STABLE::BBRL,
+                STABLE::BCAD,
+                STABLE::BEUR,
+                STABLE::BGBP,
+                STABLE::BIDR,
+                STABLE::BINR,
+                STABLE::BJPY,
+                STABLE::BKRW,
+                STABLE::BMXN,
+                STABLE::BRUB,
+                STABLE::BSAR,
+                STABLE::BTRY,
+                STABLE::MGG,
+            ]
+            .iter()
+            .map(|stable_type| stable_type.type_tag())
+            .any(|stable_tag| &stable_tag == other)
+        }
+
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
                 STABLE::BAUD,

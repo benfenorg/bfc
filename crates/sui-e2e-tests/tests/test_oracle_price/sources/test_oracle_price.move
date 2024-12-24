@@ -11,6 +11,8 @@ module test_oracle_price::test_oracle {
         coin_type_b: vector<u8>,
     }
 
+    public fun empty_test(_ctx: &mut TxContext) {}
+
     public fun oracle(ctx: &mut TxContext) {
         let mut uid: UID = object::new(ctx);
 
