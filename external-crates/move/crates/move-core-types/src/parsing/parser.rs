@@ -3,19 +3,17 @@
 
 use crate::parsing::{
     address::{NumericalAddress, ParsedAddress},
-use crate::{
-    address::{convert_to_evm_address, NumericalAddress, ParsedAddress},
     types::{ParsedFqName, ParsedModuleId, ParsedStructType, ParsedType, TypeToken},
     values::{ParsableValue, ParsedValue, ValueToken},
 };
+
 use crate::{
     account_address::AccountAddress,
     u256::{U256FromStrError, U256},
 };
 use anyhow::{anyhow, bail, Result};
-use std::{fmt::Display, iter::Peekable, num::ParseIntError};
-use num_bigint::BigUint;
 use std::{borrow::Cow, fmt::Display, iter::Peekable, num::ParseIntError};
+use crate::parsing::address::convert_to_evm_address;
 
 const MAX_TYPE_DEPTH: u64 = 128;
 const MAX_TYPE_NODE_COUNT: u64 = 256;

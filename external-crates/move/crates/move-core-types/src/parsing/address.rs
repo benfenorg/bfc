@@ -5,8 +5,6 @@ use crate::account_address::AccountAddress;
 use crate::parsing::parser::{parse_address_number, NumberFormat};
 use crate::u256::U256;
 use anyhow::anyhow;
-use move_core_types::account_address::AccountAddress;
-use num_bigint::BigUint;
 use sha2::{Digest, Sha256};
 use std::{fmt, hash::Hash};
 
