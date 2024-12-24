@@ -3780,6 +3780,8 @@ dependencies = [
  "chrono",
  "diesel_derives",
  "itoa",
+ "pq-sys",
+ "r2d2",
  "serde_json",
 ]
 
@@ -6929,6 +6931,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "libaes"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "82903360c009b816f5ab72a9b68158c27c301ee2c3f20655b55c5e589e7d3bb7"
+
+[[package]]
 name = "libc"
 version = "0.2.158"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -7675,6 +7683,7 @@ dependencies = [
  "serde",
  "serde_bytes",
  "serde_with 3.9.0",
+ "sha2 0.9.9",
  "thiserror",
  "uint",
 ]
@@ -10171,6 +10180,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
+name = "pq-sys"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f6cc05d7ea95200187117196eee9edd0644424911821aeb28a18ce60ea0b8793"
+dependencies = [
+ "vcpkg",
+]
+
+[[package]]
 name = "precomputed-hash"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -10653,6 +10671,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5b9d34b8991d19d98081b46eacdd8eb58c6f2b201139f7c5f643cc155a633af"
 dependencies = [
  "proc-macro2 1.0.87",
+]
+
+[[package]]
+name = "r2d2"
+version = "0.8.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "51de85fb3fb6524929c8a2eb85e6b6d363de4e8c48f9e2c2eac4944abc181c93"
+dependencies = [
+ "log",
+ "parking_lot 0.12.1",
+ "scheduled-thread-pool",
 ]
 
 [[package]]
@@ -11742,6 +11771,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "713cfb06c7059f3588fb8044c0fad1d09e3c01d225e25b9220dbfdcf16dbb1b3"
 dependencies = [
  "windows-sys 0.42.0",
+]
+
+[[package]]
+name = "scheduled-thread-pool"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3cbc66816425a074528352f5789333ecff06ca41b36b0b0efdfbb29edc391a19"
+dependencies = [
+ "parking_lot 0.12.1",
 ]
 
 [[package]]
@@ -12966,6 +13004,7 @@ dependencies = [
  "mysten-metrics",
  "parking_lot 0.12.1",
  "serde",
+ "serde_with 3.9.0",
  "sui-macros",
  "sui-move-natives-latest",
  "sui-protocol-config",
@@ -13376,6 +13415,7 @@ dependencies = [
  "async-trait",
  "clap",
  "derive_more 1.0.0",
+ "diesel",
  "fastcrypto",
  "futures",
  "jsonrpsee",
@@ -13505,6 +13545,7 @@ dependencies = [
  "serde_json",
  "serde_with 3.9.0",
  "serde_yaml 0.8.26",
+ "sha2 0.9.9",
  "shared-crypto",
  "signature 1.6.4",
  "static_assertions",
@@ -13677,6 +13718,7 @@ dependencies = [
  "assert_cmd",
  "async-trait",
  "bcs",
+ "chrono",
  "clap",
  "coset",
  "expect-test",
@@ -13684,6 +13726,7 @@ dependencies = [
  "fastcrypto-zkp",
  "fs_extra",
  "futures",
+ "hex",
  "indexmap 2.2.6",
  "insta",
  "jsonrpsee",
@@ -13703,6 +13746,7 @@ dependencies = [
  "serde_json",
  "shared-crypto",
  "sui",
+ "sui-bridge",
  "sui-config",
  "sui-core",
  "sui-framework",
@@ -13798,6 +13842,7 @@ dependencies = [
  "sui-verifier-v0",
  "sui-verifier-v1",
  "sui-verifier-v2",
+ "tracing",
 ]
 
 [[package]]
@@ -13931,6 +13976,7 @@ dependencies = [
  "anyhow",
  "bcs",
  "camino",
+ "csv",
  "fastcrypto",
  "insta",
  "move-binary-format",
@@ -14260,6 +14306,7 @@ dependencies = [
  "eyre",
  "fastcrypto",
  "futures",
+ "hex",
  "http-body 0.4.5",
  "hyper 1.4.1",
  "indexmap 2.2.6",
@@ -14327,6 +14374,8 @@ dependencies = [
  "anyhow",
  "async-trait",
  "bcs",
+ "fastcrypto",
+ "hex",
  "hyper 1.4.1",
  "jsonrpsee",
  "move-core-types",
@@ -14393,6 +14442,7 @@ dependencies = [
  "anyhow",
  "bip32",
  "fastcrypto",
+ "libaes",
  "rand 0.8.5",
  "regex",
  "serde",
@@ -14403,6 +14453,7 @@ dependencies = [
  "sui-types",
  "tempfile",
  "tiny-bip39",
+ "tracing",
 ]
 
 [[package]]
@@ -15244,6 +15295,7 @@ dependencies = [
  "tonic 0.12.3",
  "tonic-build",
  "tower 0.4.13",
+ "tracing",
  "url",
 ]
 
@@ -15731,9 +15783,11 @@ dependencies = [
  "clap",
  "colored",
  "comfy-table",
+ "const-str",
  "eyre",
  "fastcrypto",
  "futures",
+ "git-version",
  "hex",
  "indicatif",
  "itertools 0.13.0",
@@ -15779,6 +15833,7 @@ dependencies = [
  "sui-json-rpc-types",
  "sui-protocol-config",
  "sui-types",
+ "tracing",
 ]
 
 [[package]]
