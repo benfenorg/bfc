@@ -102,6 +102,8 @@ module bfc_system::bfc_system_tests {
 
         let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
 
+        assert!(!bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"ddd")));
+
         let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
         let length = extra_fields.length();
         debug::print(&length);
@@ -115,6 +117,9 @@ module bfc_system::bfc_system_tests {
         let list = bfc_system_state_inner::get_external_stable_gas_coin_list(system_state_v2);
         debug::print(list);
         assert!(list.length() == 1);
+
+        assert!(!bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"xx")));
+        assert!(bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"ddd")));
 
         bfc_system_state_inner::delete_external_stable_gas_coin(system_state_v2, ascii::string(b"ddd"), _ctx);
         let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);

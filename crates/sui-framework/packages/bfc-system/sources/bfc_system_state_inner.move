@@ -235,8 +235,9 @@ module bfc_system::bfc_system_state_inner {
         while (i < len) {
             let stable_type_name = stable_type_name_vector[i];
             let rate_against_busd = stable_rate_vector[i];
-            // if (treasury::has_vault(&inner.treasury, stable_type_name) &&
-            if (stable_type_name != busd_vault_key && rate_against_busd > 0) {
+            if ((treasury::has_vault(&inner.treasury, stable_type_name) || 
+                inner.in_external_stable_gas_coin_list(stable_type_name)) &&
+                stable_type_name != busd_vault_key && rate_against_busd > 0) {
                 if (inner.stable_rate.contains(&stable_type_name)) {
                     inner.stable_rate.remove(&stable_type_name);
                 };
@@ -1002,6 +1003,16 @@ module bfc_system::bfc_system_state_inner {
         };
 
         abort 1
+    }
+
+    public(package) fun in_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2, value: ascii::String,): bool {
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+
+            return list.any!(|x| x == &value);
+        };
+
+        false
     }
 
     public(package) fun add_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: ascii::String, ctx: &mut TxContext) {
