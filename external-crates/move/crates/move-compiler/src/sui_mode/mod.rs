@@ -15,6 +15,7 @@ pub mod typing;
 
 pub const STD_ADDR_VALUE: AccountAddress = AccountAddress::from_suffix(0x1);
 pub const SUI_ADDR_VALUE: AccountAddress = AccountAddress::from_suffix(0x2);
+pub const BFC_SYSTEM_ADDR_VALUE : AccountAddress = AccountAddress::from_suffix(0xc8);
 pub const SUI_SYSTEM_ADDR_VALUE: AccountAddress = AccountAddress::from_suffix(0x3);
 pub const BRIDGE_ADDR_VALUE: AccountAddress = AccountAddress::from_suffix(0xb);
 

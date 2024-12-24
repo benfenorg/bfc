@@ -1023,9 +1023,6 @@ fn otw_special_cases(context: &Context) -> bool {
             .current_module()
             .value
             .is(&SUI_ADDR_VALUE, SUI_MODULE_NAME)
-        .current_module()
-        .value
-        .is(SUI_ADDR_NAME, SUI_MODULE_NAME)
         || context
         .current_module()
         .value
