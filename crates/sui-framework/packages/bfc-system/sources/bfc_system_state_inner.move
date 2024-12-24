@@ -68,6 +68,8 @@ module bfc_system::bfc_system_state_inner {
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
     const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
 
+
+    const KEY_EXTERNAL_STABLE_GAS_COIN_LIST:  vector<u8>  = b"ExternalStableCoinList";
     //spec module { pragma verify = false; }
 
     public struct BfcSystemStateInner has store {
@@ -987,5 +989,55 @@ module bfc_system::bfc_system_state_inner {
             key,
         };
         transfer::transfer(cap, recipient);
+    }
+
+    public(package) fun get_extra_fields(self: &BfcSystemStateInnerV2): &Bag {
+        &self.extra_fields
+    }
+
+    public(package) fun get_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2): &vector<ascii::String> {
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+            return list
+        };
+
+        abort 1
+    }
+
+    public(package) fun add_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: ascii::String, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
+
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+            if (list.any!(|x| x == &value)) {
+                return
+            };
+
+            list.insert(value, 0);
+            return;
+        }; 
+
+        let mut list = vector::empty<ascii::String>();
+        list.insert(value, 0);
+        self.extra_fields.add(KEY_EXTERNAL_STABLE_GAS_COIN_LIST, list);
+    }
+
+    public(package) fun delete_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: ascii::String, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
+
+        if (!self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+           return
+        }; 
+
+        let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+        let mut i = 0;
+        while (i < list.length()) {
+            if (list[i] == value) {
+                list.remove(i);
+                return
+            };
+
+            i = i + 1;
+        };
     }
 }

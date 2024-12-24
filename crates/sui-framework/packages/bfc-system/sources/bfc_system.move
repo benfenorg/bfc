@@ -442,6 +442,16 @@ module bfc_system::bfc_system {
         inner_state.get_oracle_address(_ctx)
     }
 
+    public fun add_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: ascii::String, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.add_external_stable_gas_coin(value, _ctx)
+    }
+
+    public fun delete_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: ascii::String, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.delete_external_stable_gas_coin(value, _ctx)
+    }
+
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {
         let system_state = load_system_state_mut_by_uid(&mut wrapper.id);
         bfc_system_state_inner::remove_proposal(system_state, key, proposal_id);
