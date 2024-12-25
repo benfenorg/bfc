@@ -31,6 +31,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `set_single_operation_capability`](#0xc8_bfc_system_set_single_operation_capability)
 -  [Function `set_oracle_address`](#0xc8_bfc_system_set_oracle_address)
 -  [Function `get_oracle_address`](#0xc8_bfc_system_get_oracle_address)
+-  [Function `add_external_stable_gas_coin`](#0xc8_bfc_system_add_external_stable_gas_coin)
+-  [Function `delete_external_stable_gas_coin`](#0xc8_bfc_system_delete_external_stable_gas_coin)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
 -  [Function `remove_action`](#0xc8_bfc_system_remove_action)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
@@ -932,6 +934,56 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, ctx: &<b>mut</b> TxContext): Option&lt;<b>address</b>&gt; {
     <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(_ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_add_external_stable_gas_coin"></a>
+
+## Function `add_external_stable_gas_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, value: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, value: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(value, _ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_delete_external_stable_gas_coin"></a>
+
+## Function `delete_external_stable_gas_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(value, _ctx)
 }
 </code></pre>
 
