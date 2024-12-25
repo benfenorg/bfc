@@ -62,14 +62,10 @@ use sui_types::messages_consensus::ConsensusTransactionKey;
 use sui_types::signature::GenericSignature;
 use sui_types::sui_system_state::{SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{TransactionDataAPI, TransactionKey, TransactionKind};
-use tokio::{
-    sync::{watch, Notify},
-    time::timeout,
-};
+use tokio::sync::watch;
 use tracing::{debug, error, info, warn, instrument};
 
 use tokio::{sync::Notify, task::JoinSet, time::timeout};
-use tracing::{debug, error, info, instrument, warn};
 use typed_store::traits::{TableSummary, TypedStoreDebug};
 use typed_store::DBMapUtils;
 use typed_store::Map;
@@ -1938,19 +1934,6 @@ impl CheckpointAggregator {
                 continue;
             }
 
-            match select(
-                self.exit.changed().boxed(),
-                timeout(Duration::from_secs(1), self.notify.notified()).boxed(),
-            )
-                .await
-            {
-                Either::Left(_) => {
-                    // return on exit signal
-                    info!("Shutting down CheckpointAggregator");
-                    return;
-                }
-                Either::Right(_) => {}
-            }
             let _ = timeout(Duration::from_secs(1), self.notify.notified()).await;
         }
     }

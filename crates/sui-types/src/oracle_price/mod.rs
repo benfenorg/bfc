@@ -78,7 +78,7 @@ pub fn get_oracle_price_by_id(
     id: ObjectID,
 ) -> anyhow::Result<OraclePrice, SuiError> {
     let wrapper = object_store
-        .get_object(&id)?
+        .get_object(&id)
         .ok_or_else(|| {
             SuiError::OraclePriceReadError(format!("OraclePrice object({}) not found",
                                                    &id.to_string()).to_owned())

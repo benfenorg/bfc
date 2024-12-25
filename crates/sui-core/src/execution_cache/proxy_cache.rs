@@ -8,6 +8,9 @@ use crate::authority::epoch_start_configuration::{EpochFlag, EpochStartConfigTra
 use crate::authority::AuthorityStore;
 use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
+use sui_types::bfc_system_state::BFCSystemState;
+use sui_types::collection_types::VecMap;
+use sui_types::proposal::ProposalStatus;
 use sui_types::oracle_price::OraclePrice;
 
 use futures::future::BoxFuture;
@@ -17,8 +20,6 @@ use std::sync::Arc;
 use std::time::Duration;
 use sui_protocol_config::ProtocolVersion;
 use sui_types::accumulator::Accumulator;
-use sui_types::collection_types::VecMap;
-use sui_types::proposal::ProposalStatus;
 use sui_types::base_types::VerifiedExecutionData;
 use sui_types::base_types::{EpochId, ObjectID, ObjectRef, SequenceNumber};
 use sui_types::bridge::Bridge;
@@ -27,7 +28,6 @@ use sui_types::effects::{TransactionEffects, TransactionEvents};
 use sui_types::error::SuiResult;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::Object;
-use sui_types::bfc_system_state::BFCSystemState;
 use sui_types::storage::{MarkerValue, ObjectKey, ObjectOrTombstone, PackageObject};
 use sui_types::sui_system_state::SuiSystemState;
 use sui_types::transaction::{VerifiedSignedTransaction, VerifiedTransaction};
@@ -109,7 +109,6 @@ impl ObjectCacheRead for ProxyCache {
         delegate_method!(self.force_reload_system_packages(system_package_ids))
     }
 
-    fn get_object(&self, id: &ObjectID) -> Option<Object> {
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> {
         delegate_method!(self.get_bfc_system_state_object())
     }
@@ -122,7 +121,7 @@ impl ObjectCacheRead for ProxyCache {
         delegate_method!(self.get_oracle_price_by_id(id))
     }
 
-    fn get_object(&self, id: &ObjectID) -> SuiResult<Option<Object>> {
+    fn get_object(&self, id: &ObjectID) -> Option<Object> {
         delegate_method!(self.get_object(id))
     }
 
@@ -238,7 +237,6 @@ impl TransactionCacheRead for ProxyCache {
     ) -> Vec<Option<TransactionEvents>> {
         delegate_method!(self.multi_get_events(event_digests))
     }
-
 }
 
 impl ExecutionCacheWrite for ProxyCache {

@@ -96,7 +96,6 @@ pub mod oracle_price;
 pub mod base_types_bfc;
 pub mod bfc_system_state;
 //mod bfc_base_types;
-#[cfg(any(test, feature = "test-utils"))]
 #[path = "./unit_tests/utils.rs"]
 pub mod utils;
 pub mod stable_coin;

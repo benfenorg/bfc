@@ -301,7 +301,7 @@ pub fn get_bfc_system_state_wrapper(
     object_store: &dyn ObjectStore,
 ) -> Result<BfcSystemStateWrapper, SuiError> {
     let wrapper = object_store
-        .get_object(&BFC_SYSTEM_STATE_OBJECT_ID)?
+        .get_object(&BFC_SYSTEM_STATE_OBJECT_ID)
         // Don't panic here on None because object_store is a generic store.
         .ok_or_else(|| {
             SuiError::SuiSystemStateReadError("BfcSystemStateWrapper object not found".to_owned())

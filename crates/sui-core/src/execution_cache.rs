@@ -10,8 +10,6 @@ use crate::state_accumulator::AccumulatorStore;
 use crate::transaction_outputs::TransactionOutputs;
 use mysten_common::fatal;
 use sui_types::bridge::Bridge;
-use sui_types::collection_types::VecMap;
-use sui_types::proposal::ProposalStatus;
 
 use futures::{future::BoxFuture, FutureExt};
 use prometheus::Registry;
@@ -46,10 +44,12 @@ pub mod passthrough_cache;
 pub mod proxy_cache;
 pub mod writeback_cache;
 
-use passthrough_cache::PassthroughCache;
-use writeback_cache::WritebackCache;
-use sui_types::bfc_system_state::BFCSystemState;
+pub use passthrough_cache::PassthroughCache;
 pub use proxy_cache::ProxyCache;
+pub use writeback_cache::WritebackCache;
+use sui_types::bfc_system_state::BFCSystemState;
+use sui_types::collection_types::VecMap;
+use sui_types::proposal::ProposalStatus;
 
 use metrics::ExecutionCacheMetrics;
 
@@ -197,12 +197,9 @@ pub trait ObjectCacheRead: Send + Sync {
         ret
     }
 
-    fn get_latest_object_ref_or_tombstone(&self, object_id: ObjectID) -> Option<ObjectRef>;
     fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
-    fn get_latest_object_ref_or_tombstone(
-        &self,
-        object_id: ObjectID,
-    ) -> SuiResult<Option<ObjectRef>>;
+
+    fn get_latest_object_ref_or_tombstone(&self, object_id: ObjectID) -> Option<ObjectRef>;
 
     fn get_latest_object_or_tombstone(
         &self,
@@ -212,8 +209,6 @@ pub trait ObjectCacheRead: Send + Sync {
     fn get_object_by_key(&self, object_id: &ObjectID, version: SequenceNumber) -> Option<Object>;
 
     fn multi_get_objects_by_key(&self, object_keys: &[ObjectKey]) -> Vec<Option<Object>>;
-    fn multi_get_objects_by_key(&self, object_keys: &[ObjectKey])
-                                -> SuiResult<Vec<Option<Object>>>;
 
     fn object_exists_by_key(&self, object_id: &ObjectID, version: SequenceNumber) -> bool;
 
@@ -281,8 +276,6 @@ pub trait ObjectCacheRead: Send + Sync {
                     .map(|(_, k)| ObjectKey(k.id(), k.version().unwrap()))
                     .collect::<Vec<_>>(),
             )
-            .into_iter(),
-            )?
                 .into_iter(),
         ) {
             assert!(
@@ -306,14 +299,10 @@ pub trait ObjectCacheRead: Send + Sync {
                     .map(|obj| obj.version() >= input_key.version().unwrap())
                     .unwrap_or(false)
                     || self.have_deleted_owned_object_at_version_or_after(
-                        &input_key.id(),
-                        input_key.version().unwrap(),
-                        epoch,
-                    );
                     &input_key.id(),
                     input_key.version().unwrap(),
                     epoch,
-                )?;
+                );
                 versioned_results.push((*idx, is_available));
             } else if self
                 .get_deleted_shared_object_previous_tx_digest(
@@ -370,12 +359,14 @@ pub trait ObjectCacheRead: Send + Sync {
 
     fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
 
-    fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge>;
+    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>>;
 
     fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState>;
+
+    fn get_bridge_object_unsafe(&self) -> SuiResult<Bridge>;
+
     // Marker methods
 
-    fn get_bfc_system_proposal_state_map(&self) -> SuiResult<VecMap<u64, ProposalStatus>>;
     /// Get the marker at a specific version
     fn get_marker_value(
         &self,
@@ -402,7 +393,6 @@ pub trait ObjectCacheRead: Send + Sync {
             _ => None,
         }
     }
-
 
     /// If the shared object was deleted, return deletion info for the specified version.
     fn get_deleted_shared_object_previous_tx_digest(
@@ -575,29 +565,6 @@ pub trait TransactionCacheRead: Send + Sync {
         }
             .boxed()
     }
-
-    // fn get_sui_system_state_object_unsafe(&self) -> SuiResult<SuiSystemState>;
-    // fn get_bfc_system_state_object(&self) ->SuiResult<BFCSystemState> ;
-    // fn get_bfc_system_proposal_state_map(&self) ->SuiResult<VecMap<u64, ProposalStatus>>;
-
-        // Marker methods
-
-    // fn get_marker_value(
-    //     &self,
-    //     object_id: &ObjectID,
-    //     version: SequenceNumber,
-    //     epoch_id: EpochId,
-    // ) -> SuiResult<Option<MarkerValue>>;
-    //
-    // /// Get the latest marker for a given object.
-    // fn get_latest_marker(
-    //     &self,
-    //     object_id: &ObjectID,
-    //     epoch_id: EpochId,
-    // ) -> SuiResult<Option<(SequenceNumber, MarkerValue)>>;
-
-    // fn get_oracle_price_by_id(&self, id: ObjectID) -> SuiResult<OraclePrice>;
-    // Marker methods
 }
 
 pub trait ExecutionCacheWrite: Send + Sync {

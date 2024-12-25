@@ -159,11 +159,10 @@ impl SharedObjectCongestionTracker {
         // Allow over-budget tx if it's not above the overage limit.
         if start_cost <= self.max_accumulated_txn_cost_per_object_in_commit
             && start_cost.saturating_add(tx_cost)
-                <= self
-                    .max_accumulated_txn_cost_per_object_in_commit
-                    .saturating_add(self.max_txn_cost_overage_per_object_in_commit)
+            <= self
+            .max_accumulated_txn_cost_per_object_in_commit
+            .saturating_add(self.max_txn_cost_overage_per_object_in_commit)
         {
-        if start_cost.saturating_add(tx_cost) <= max_accumulated_txn_cost_per_object_in_commit {
             return None;
         }
 
@@ -268,8 +267,8 @@ impl SharedObjectCongestionTracker {
         }
         let cap = (number_of_move_call + number_of_move_input) as u64
             * self
-                .gas_budget_based_txn_cost_cap_factor
-                .expect("cap factor must be set if TotalGasBudgetWithCap mode is used.");
+            .gas_budget_based_txn_cost_cap_factor
+            .expect("cap factor must be set if TotalGasBudgetWithCap mode is used.");
 
         // Apply absolute cap if configured.
         std::cmp::min(
@@ -450,11 +449,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_congested_objects(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap
         PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalTxCount,
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -563,11 +560,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_return_correct_deferral_key(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap
         PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalTxCount,
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -668,9 +663,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_should_defer_allow_overage(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap
+        PerObjectCongestionControlMode::TotalGasBudget,
+        PerObjectCongestionControlMode::TotalTxCount,
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -780,11 +775,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_bump_object_execution_cost(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap
         PerObjectCongestionControlMode::TotalGasBudget,
-        PerObjectCongestionControlMode::TotalTxCount
+        PerObjectCongestionControlMode::TotalTxCount,
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {
@@ -922,9 +915,9 @@ mod object_cost_tests {
     #[rstest]
     fn test_accumulated_debts(
         #[values(
-            PerObjectCongestionControlMode::TotalGasBudget,
-            PerObjectCongestionControlMode::TotalTxCount,
-            PerObjectCongestionControlMode::TotalGasBudgetWithCap
+        PerObjectCongestionControlMode::TotalGasBudget,
+        PerObjectCongestionControlMode::TotalTxCount,
+        PerObjectCongestionControlMode::TotalGasBudgetWithCap
         )]
         mode: PerObjectCongestionControlMode,
     ) {

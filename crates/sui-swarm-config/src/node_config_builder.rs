@@ -466,6 +466,11 @@ impl FullnodeConfigBuilder {
             genesis: self.genesis.unwrap_or(sui_config::node::Genesis::new(
                 network_config.genesis.clone(),
             )),
+            rpc: Some(sui_rpc_api::Config {
+                enable_unstable_apis: Some(true),
+                enable_indexing: Some(true),
+                ..Default::default()
+            }),
             grpc_load_shed: None,
             grpc_concurrency_limit: None,
             p2p_config,

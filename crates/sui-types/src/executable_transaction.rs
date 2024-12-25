@@ -27,7 +27,7 @@ pub enum CertificateProof {
 
     /// Validity was proven through consensus. Round, authority and transaction index indicate
     /// the position of the transaction in the consensus DAG for debugging.
-    Consensus(EpochId, Round, AuthorityIndex, TransactionIndex),
+    Consensus(EpochId),
 }
 
 impl CertificateProof {
@@ -43,13 +43,8 @@ impl CertificateProof {
         Self::SystemTransaction(epoch)
     }
 
-    pub fn new_from_consensus(
-        epoch: EpochId,
-        round: Round,
-        authority: AuthorityIndex,
-        transaction_index: TransactionIndex,
-    ) -> Self {
-        Self::Consensus(epoch, round, authority, transaction_index)
+    pub fn new_from_consensus(epoch: EpochId) -> Self {
+        Self::Consensus(epoch)
     }
 
 
@@ -58,7 +53,7 @@ impl CertificateProof {
             Self::Checkpoint(epoch, _)
             | Self::QuorumExecuted(epoch)
             | Self::SystemTransaction(epoch)
-            | Self::Consensus(epoch, _, _, _) => *epoch,
+            | Self::Consensus(epoch) => *epoch,
             Self::Certified(sig) => sig.epoch,
         }
     }

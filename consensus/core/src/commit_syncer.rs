@@ -429,7 +429,7 @@ impl<C: NetworkClient> CommitSyncer<C> {
                         request_timeout,
                     ),
                 )
-                .await
+                    .await
                 {
                     Ok(Ok((commits, blocks))) => {
                         info!("Finished fetching commits in {commit_range:?}",);
@@ -449,25 +449,6 @@ impl<C: NetworkClient> CommitSyncer<C> {
                             .node_metrics
                             .commit_sync_fetch_once_errors
                             .with_label_values(&[&hostname, e.name()])
-                            .inc();
-                    }
-                    Err(_) => {
-                    Ok(Err(e)) => {
-                        let hostname = inner
-                            .context
-                            .committee
-                            .authority(authority)
-                            .hostname
-                            .clone();
-                        warn!("Timed out fetching {commit_range:?} from {authority}",);
-                        warn!("Failed to fetch {commit_range:?} from {hostname}: {}", e);
-                        let error: &'static str = e.into();
-                        inner
-                            .context
-                            .metrics
-                            .node_metrics
-                            .commit_sync_fetch_once_errors
-                            .with_label_values(&[&hostname, "FetchTimeout"])
                             .inc();
                     }
                     Err(_) => {

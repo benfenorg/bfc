@@ -141,5 +141,4 @@ name = "batch_verification_bench"
 harness = false
 
 [features]
-test-utils = []
 bfc_skip_dao_update = []

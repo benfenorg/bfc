@@ -31,7 +31,6 @@ use sui_types::base_types::{
 };
 use sui_types::id::{self, ID, RESOLVED_SUI_ID};
 use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
-use sui_types::id::{ID, RESOLVED_SUI_ID};
 use sui_types::move_package::MovePackage;
 use sui_types::object::bounded_visitor::BoundedVisitor;
 use sui_types::transfer::RESOLVED_RECEIVING_STRUCT;

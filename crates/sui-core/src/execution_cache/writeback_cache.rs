@@ -436,7 +436,6 @@ impl WritebackCache {
     ) -> Self {
         let packages = MokaCache::builder()
             .max_capacity(config.package_cache_size())
-            .max_capacity(MAX_CACHE_SIZE)
             .build();
         Self {
             dirty: UncommittedData::new(),

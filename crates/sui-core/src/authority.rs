@@ -3484,7 +3484,7 @@ impl AuthorityState {
             return Ok((None, None)); //dry run /dev inspect
         }
 
-        let gas = self.get_object(&gas_ref[0].0).await?
+        let gas = self.get_object(&gas_ref[0].0).await
             .ok_or_else(|| SuiError::UserInputError { error: UserInputError::ObjectNotFound { object_id: gas_ref[0].0, version: None } })?;
 
         if gas.is_gas_coin() {
@@ -3520,7 +3520,7 @@ impl AuthorityState {
     pub async fn get_bfc_system_package_object_ref(&self) -> SuiResult<ObjectRef> {
         Ok(self
             .get_object(&BFC_SYSTEM_ADDRESS.into())
-            .await?
+            .await
             .expect("bfc framework object should always exist")
             .compute_object_reference())
     }
@@ -3771,7 +3771,6 @@ impl AuthorityState {
         limit: usize,
         one_coin_type_only: bool,
     ) -> SuiResult<impl Iterator<Item = (CoinIndexKey2, CoinInfo)> + '_> {
-    ) -> SuiResult<impl Iterator<Item=(String, ObjectID, CoinInfo)> + '_> {
         if let Some(indexes) = &self.indexes {
             indexes.get_owned_coins_iterator_with_cursor(owner, cursor, limit, one_coin_type_only)
         } else {
@@ -5281,8 +5280,6 @@ impl AuthorityState {
         let input_objects =
             self.read_objects_for_execution(&tx_lock, &executable_tx, epoch_store)?;
 
-        let input_objects = self.read_objects_for_execution(&executable_tx, epoch_store)?;
-
         let (temporary_store, proposal_map, effects, _) = self
             .prepare_certificate(&execution_guard, &executable_tx, input_objects, epoch_store).await?;
 
@@ -5612,10 +5609,6 @@ impl TransactionKeyValueStoreTrait for AuthorityState {
             summaries_by_digest.push(checkpoint);
         }
         Ok((summaries, contents, summaries_by_digest))
-    }
-
-    #[instrument(skip(self))]
-        Ok((summaries, contents, summaries_by_digest, contents_by_digest))
     }
 
     // async fn deprecated_get_transaction_checkpoint(
