@@ -618,10 +618,10 @@ impl AuthorityStore {
         for kind in objects {
             let obj = match kind {
                 InputObjectKind::MovePackage(id) | InputObjectKind::SharedMoveObject { id, .. } => {
-                    self.get_object(id)?
+                    self.get_object(id)
                 }
                 InputObjectKind::ImmOrOwnedMoveObject(objref) => {
-                    self.get_object_by_key(&objref.0, objref.1)?
+                    self.get_object_by_key(&objref.0, objref.1)
                 }
             }
             .ok_or_else(|| SuiError::from(UserInputError::BFCObjectNotFound {
@@ -1547,7 +1547,7 @@ impl AuthorityStore {
             return Ok((None, None));//dry run /dev inspect
         }
 
-        let gas = self.get_object(&gas_ref[0].0)?
+        let gas = self.get_object(&gas_ref[0].0)
             .ok_or_else(|| SuiError::UserInputError{error:UserInputError::ObjectNotFound {object_id:gas_ref[0].0,version:None}})?;
 
         if gas.is_gas_coin() {

@@ -951,7 +951,7 @@ impl<'backing> TemporaryStore<'backing> {
             })
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+            let Some(obj)= self.store.get_object_by_key(id, expected_version) else {
                 invariant_violation!(
                     "Failed looking up dynamic field {id} in SUI conservation checking"
                 );
@@ -980,7 +980,7 @@ impl<'backing> TemporaryStore<'backing> {
             Ok(obj.clone())
         } else {
             // not in input objects, must be a dynamic field
-            let Ok(Some(obj))= self.store.get_object_by_key(id, expected_version) else {
+            let Some(obj) = self.store.get_object_by_key(id, expected_version) else {
                 return Err(ExecutionError::invariant_violation(format!( "Failed looking up dynamic field {id} in SUI conservation checking")));
             };
             Ok(obj.clone())
