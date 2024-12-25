@@ -5371,9 +5371,6 @@ create_bfc_system_modify_cap
 get_extra_fields
 	public(package) fun
 	0xc8::bfc_system_state_inner
-get_external_stable_gas_coin_list
-	public(package) fun
-	0xc8::bfc_system_state_inner
 in_external_stable_gas_coin_list
 	public(package) fun
 	0xc8::bfc_system_state_inner
@@ -5381,6 +5378,12 @@ add_external_stable_gas_coin
 	public(package) fun
 	0xc8::bfc_system_state_inner
 delete_external_stable_gas_coin
+	public(package) fun
+	0xc8::bfc_system_state_inner
+clear_to_delete_external_stable_gas_coin_list
+	public(package) fun
+	0xc8::bfc_system_state_inner
+delete_from_list
 	public(package) fun
 	0xc8::bfc_system_state_inner
 BfcSystemState

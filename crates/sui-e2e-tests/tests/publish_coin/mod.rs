@@ -50,7 +50,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
     let resp = do_publish_inner(rgp, &mut context, gas_obj_id,path).await?;
 
     // Print it out to CLI/logs
-    resp.print(true);
+    // resp.print(true);
 
     match resp {
         SuiClientCommandResult::TransactionBlock(tx) => {

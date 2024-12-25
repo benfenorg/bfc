@@ -173,18 +173,25 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     println!("objects is {:?}",objects);
     assert_eq!(objects.len(), 1);
 
+
+    println!("coin_type is {:?}",coin_type);
+    let response = test_move_call_add_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", "")).await;
+    assert!(response.is_ok());
+    test_cluster.wait_for_epoch(Some(3)).await;
+
+
     let (package, _) = publish_coin::do_publish(&mut test_cluster,"tests/test_oracle_price").await?;
 
-    test_cluster.wait_for_epoch(Some(3)).await;
+    test_cluster.wait_for_epoch(Some(4)).await;
     init_oracele_with_new_test_coin(&mut test_cluster, coin_type.replace("0x", ""), package).await;
     // wait to get oracle price and call bfc_round_v2
-    test_cluster.wait_for_epoch(Some(6)).await;
+    test_cluster.wait_for_epoch(Some(10)).await;
 
     let data = get_allow_stable_gas_coins_rate_map();
-    for ele in data {
+    for ele in &data {
         println!("allow stable is {:?}",ele);
     }
-
+    assert!(data.contains_key(&coin_type.replace("0x", "")));
 
     // case 1 : transfer_sui
     let objects = get_owned_objects(filter.as_str(), &mut http_client.clone(), address).await?;
@@ -203,6 +210,13 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     // case 2 : call move function
     let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
     assert!(response.is_ok());
+
+    // delete allowed stable coin
+    let response = test_move_call_delete_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", "")).await;
+    assert!(response.is_ok());
+    // sholud fail
+    let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
+    assert!(response.is_err());
 
     Ok(())
 }
@@ -529,7 +543,10 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
-    println!("set_oracle_address tx_response: {:#?}", tx_response);
+    // println!("set_oracle_address tx_response: {:#?}", tx_response);
+
+    assert!(tx_response.status_ok().unwrap());
+
     Ok(())
 }
 
@@ -607,8 +624,91 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
             )
             .build(),
     );
+    let resp = test_cluster.wallet.execute_transaction_may_fail(tx).await;
+    if  resp.is_err() {
+        println!("test_move_call_use_new_test_coin resp: {:#?}", resp);
+        return Err(resp.unwrap_err());
+    }
+
+    Ok(())
+}
+
+async fn test_move_call_add_external_stable_gas_coin(test_cluster: &mut TestCluster,  coin_type: String) -> Result<(), Error> {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
+    .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.retain(|e| {
+        if e.coin_type.contains("BFC") {
+            gas = Some(e.object_ref());
+            false 
+        } else {
+            true
+        }
+    });
+        
+    assert!(gas.is_some());
+
+    let mut stable_coin_type: Vec<String> = vec![];
+    stable_coin_type.push(coin_type);
+
+    let tx = context.sign_transaction(
+        &TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
+            .move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                "bfc_system",
+                "add_external_stable_gas_coin",
+                vec![
+                    CallArg::BFC_SYSTEM_MUT,
+                    CallArg::Pure(bcs::to_bytes(&stable_coin_type).unwrap()),
+                ],
+            )
+            .build(),
+    );
     let resp = test_cluster.execute_transaction(tx).await;
-    println!("test_move_call_use_new_test_coin resp: {:#?}", resp);
+    // println!("test_move_call_add_external_stable_gas_coin resp: {:#?}", resp);
+
+    assert!(resp.status_ok().unwrap());
+    Ok(())
+}
+
+async fn test_move_call_delete_external_stable_gas_coin(test_cluster: &mut TestCluster,  coin_type: String) -> Result<(), Error> {
+    let context = &test_cluster.wallet;
+    let address = test_cluster.get_address_0();
+    let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
+    .await
+        .unwrap();
+
+    let mut gas: Option<ObjectRef> = None;
+    gases.data.retain(|e| {
+        if e.coin_type.contains("BFC") {
+            gas = Some(e.object_ref());
+            false 
+        } else {
+            true
+        }
+    });
+        
+    assert!(gas.is_some());
+
+    let tx = context.sign_transaction(
+        &TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
+            .move_call(
+                BFC_SYSTEM_PACKAGE_ID,
+                "bfc_system",
+                "delete_external_stable_gas_coin",
+                vec![
+                    CallArg::BFC_SYSTEM_MUT,
+                    CallArg::Pure(bcs::to_bytes(&coin_type).unwrap()),
+                ],
+            )
+            .build(),
+    );
+    let resp = test_cluster.execute_transaction(tx).await;
+    println!("test_move_call_delete_external_stable_gas_coin resp: {:#?}", resp);
 
     assert!(resp.status_ok().unwrap());
     Ok(())

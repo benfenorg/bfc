@@ -90,10 +90,11 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `remove_bfc_system_admin_cap`](#0xc8_bfc_system_state_inner_remove_bfc_system_admin_cap)
 -  [Function `create_bfc_system_modify_cap`](#0xc8_bfc_system_state_inner_create_bfc_system_modify_cap)
 -  [Function `get_extra_fields`](#0xc8_bfc_system_state_inner_get_extra_fields)
--  [Function `get_external_stable_gas_coin_list`](#0xc8_bfc_system_state_inner_get_external_stable_gas_coin_list)
 -  [Function `in_external_stable_gas_coin_list`](#0xc8_bfc_system_state_inner_in_external_stable_gas_coin_list)
 -  [Function `add_external_stable_gas_coin`](#0xc8_bfc_system_state_inner_add_external_stable_gas_coin)
 -  [Function `delete_external_stable_gas_coin`](#0xc8_bfc_system_state_inner_delete_external_stable_gas_coin)
+-  [Function `clear_to_delete_external_stable_gas_coin_list`](#0xc8_bfc_system_state_inner_clear_to_delete_external_stable_gas_coin_list)
+-  [Function `delete_from_list`](#0xc8_bfc_system_state_inner_delete_from_list)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
@@ -632,6 +633,15 @@ Errors
 
 
 
+<a name="0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; = [84, 111, 68, 101, 108, 101, 116, 101, 69, 120, 116, 101, 114, 110, 97, 108, 83, 116, 97, 98, 108, 101, 67, 111, 105, 110, 76, 105, 115, 116];
+</code></pre>
+
+
+
 <a name="0xc8_bfc_system_state_inner_create_inner_state"></a>
 
 ## Function `create_inner_state`
@@ -816,6 +826,9 @@ Errors
     <b>if</b> (<a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_type_name_vector) != <a href="../move-stdlib/vector.md#0x1_vector_length">vector::length</a>(&stable_rate_vector)) {
         <b>return</b>
     };
+
+    // delete external stable <a href="../sui-framework/coin.md#0x2_coin">coin</a> in <b>to</b> delete list
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_clear_to_delete_external_stable_gas_coin_list">clear_to_delete_external_stable_gas_coin_list</a>(inner);
 
     _ = round;
     <b>let</b> stable_rate_map = <a href="../bfc-system/treasury.md#0xc8_treasury_get_exchange_rates">treasury::get_exchange_rates</a>(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
@@ -3069,35 +3082,6 @@ deprecated
 
 </details>
 
-<a name="0xc8_bfc_system_state_inner_get_external_stable_gas_coin_list"></a>
-
-## Function `get_external_stable_gas_coin_list`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_external_stable_gas_coin_list">get_external_stable_gas_coin_list</a>(self: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_get_external_stable_gas_coin_list">get_external_stable_gas_coin_list</a>(self: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt; {
-    <b>if</b> (self.extra_fields.contains(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>)) {
-        <b>let</b> list = self.extra_fields.borrow&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
-        <b>return</b> list
-    };
-
-    <b>abort</b> 1
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xc8_bfc_system_state_inner_in_external_stable_gas_coin_list"></a>
 
 ## Function `in_external_stable_gas_coin_list`
@@ -3191,11 +3175,83 @@ deprecated
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(self: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> TxContext) {
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_admin_capability">verify_admin_capability</a>(self, sender(ctx));
 
-    <b>if</b> (!self.extra_fields.contains(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>)) {
+    // add <b>to</b> delete list, delete it from rate map after next epoch
+    <b>if</b> (!self.extra_fields.contains(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>)) {
+        <b>let</b> <b>mut</b> list = <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;();
+        list.insert(value, 0);
+        self.extra_fields.add(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>, list);
+    } <b>else</b> {
+        <b>let</b> list = self.extra_fields.borrow_mut&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
+        list.insert(value, 0);
+    };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_clear_to_delete_external_stable_gas_coin_list"></a>
+
+## Function `clear_to_delete_external_stable_gas_coin_list`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_clear_to_delete_external_stable_gas_coin_list">clear_to_delete_external_stable_gas_coin_list</a>(self: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_clear_to_delete_external_stable_gas_coin_list">clear_to_delete_external_stable_gas_coin_list</a> (self: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>) {
+    <b>if</b> (!self.extra_fields.contains(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>)) {
        <b>return</b>
     };
 
-    <b>let</b> list = self.extra_fields.borrow_mut&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
+    <b>let</b> to_delete_list = self.extra_fields.remove&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;( <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
+
+    <b>let</b> stable_gas_list: &<b>mut</b> <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;;
+    <b>if</b> (self.extra_fields.contains(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>)) {
+        stable_gas_list = self.extra_fields.borrow_mut&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
+    } <b>else</b> {
+        stable_gas_list = &<b>mut</b> <a href="../move-stdlib/vector.md#0x1_vector_empty">vector::empty</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;();
+    };
+    <b>let</b> <b>mut</b> i = 0;
+    <b>while</b> (i &lt; to_delete_list.length()) {
+        <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_delete_from_list">delete_from_list</a>(stable_gas_list, to_delete_list[i]);
+        // remove from stable rate map
+        <b>if</b> (self.stable_rate.contains(&to_delete_list[i])) {
+            self.stable_rate.remove(&to_delete_list[i]);
+        };
+
+        i = i + 1;
+    };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_delete_from_list"></a>
+
+## Function `delete_from_list`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_delete_from_list">delete_from_list</a>(list: &<b>mut</b> <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_delete_from_list">delete_from_list</a>(list:  &<b>mut</b> <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>) {
     <b>let</b> <b>mut</b> i = 0;
     <b>while</b> (i &lt; list.length()) {
         <b>if</b> (list[i] == value) {

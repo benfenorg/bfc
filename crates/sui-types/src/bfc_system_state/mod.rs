@@ -169,6 +169,13 @@ impl BFCSystemState {
     //     }
     // }
 
+    pub fn get_extra_fields(&self) -> Option<&Bag> {
+        match self {
+            BFCSystemState::V1(_) => None,
+            BFCSystemState::V2(inner) => Some(&inner.extra_fields),
+        }
+    }
+
     pub fn get_rate_map(&self) -> &VecMap<String, u64> {
         match self {
             BFCSystemState::V1(inner) => &inner.rate_map,

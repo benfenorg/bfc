@@ -1566,7 +1566,7 @@ mod checked {
         let mut stable_coin_rate_against_busd: Vec<u64> = vec![];
         let rate_result = temporary_store.get_oracle_price();
         if rate_result.is_err() {
-            tracing::error!("Failed to get oracle price, Error: {:?}", rate_result.err());
+            tracing::warn!("Failed to get oracle price, Error: {:?}", rate_result.err());
         } else {
             (stable_coin_type, stable_coin_rate_against_busd) = rate_result.unwrap().to_exchange_rate_against_busd();
         }
