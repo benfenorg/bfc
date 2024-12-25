@@ -1015,21 +1015,28 @@ module bfc_system::bfc_system_state_inner {
         false
     }
 
-    public(package) fun add_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: ascii::String, ctx: &mut TxContext) {
+    public(package) fun add_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: vector<ascii::String>, ctx: &mut TxContext) {
         verify_admin_capability(self, sender(ctx));
 
         if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
             let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
-            if (list.any!(|x| x == &value)) {
-                return
+
+            let mut allow_list = vector::empty<ascii::String>();
+            let mut i = 0;
+            while (i < value.length()) {
+                if (!list.any!(|x| x == &value[i])) {
+                   allow_list.insert(value[i], 0);
+                };
+               
+                i = i + 1;
             };
 
-            list.insert(value, 0);
+            list.append(allow_list);
             return;
         }; 
 
         let mut list = vector::empty<ascii::String>();
-        list.insert(value, 0);
+        list.append(value);
         self.extra_fields.add(KEY_EXTERNAL_STABLE_GAS_COIN_LIST, list);
     }
 

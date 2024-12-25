@@ -109,7 +109,9 @@ module bfc_system::bfc_system_tests {
         debug::print(&length);
         assert!(length == 0);
 
-        bfc_system_state_inner::add_external_stable_gas_coin(system_state_v2, ascii::string(b"ddd"), _ctx);
+        let mut list = vector::empty<ascii::String>();
+        list.insert(ascii::string(b"ddd"), 0);
+        bfc_system_state_inner::add_external_stable_gas_coin(system_state_v2, list, _ctx);
         let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
         let length = extra_fields.length();
         debug::print(&length);

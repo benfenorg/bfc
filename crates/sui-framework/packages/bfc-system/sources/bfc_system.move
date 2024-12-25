@@ -442,7 +442,7 @@ module bfc_system::bfc_system {
         inner_state.get_oracle_address(_ctx)
     }
 
-    public fun add_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: ascii::String, ctx: &mut TxContext) {
+    public fun add_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: vector<ascii::String>, ctx: &mut TxContext) {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         inner_state.add_external_stable_gas_coin(value, _ctx)
     }
