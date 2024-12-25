@@ -11,6 +11,7 @@ use crate::error::SuiResult;
 use crate::executable_transaction::CertificateProof;
 use crate::messages_checkpoint::CheckpointSequenceNumber;
 use crate::transaction::SenderSignedData;
+use crate::messages_consensus::{AuthorityIndex, Round, TransactionIndex};
 use fastcrypto::traits::KeyPair;
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
@@ -456,6 +457,9 @@ impl<T: Message> VerifiedEnvelope<T, CertificateProof> {
     pub fn new_from_consensus(
         transaction: VerifiedEnvelope<T, EmptySignInfo>,
         epoch: EpochId,
+        round: Round,
+        authority: AuthorityIndex,
+        transaction_index: TransactionIndex,
     ) -> Self {
         let inner = transaction.into_inner();
         let Envelope {
@@ -466,7 +470,12 @@ impl<T: Message> VerifiedEnvelope<T, CertificateProof> {
         VerifiedEnvelope::new_unchecked(Envelope {
             digest,
             data,
-            auth_signature: CertificateProof::new_from_consensus(epoch),
+            auth_signature: CertificateProof::new_from_consensus(
+                epoch,
+                round,
+                authority,
+                transaction_index,
+            ),
         })
     }
 

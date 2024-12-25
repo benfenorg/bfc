@@ -195,10 +195,6 @@ const fn builtin_address(suffix: u16) -> AccountAddress {
     AccountAddress::new(addr)
 }
 
-    pub fn sui_framework_address_concat_string(suffix: &str) -> String {
-        format!("{}{suffix}", SUI_FRAMEWORK_ADDRESS.to_hex_literal())
-    }
-
 /// Parses `s` as an address. Valid formats for addresses are:
 ///
 /// - A 256bit number, encoded in decimal, or hexadecimal with a leading "0x" prefix.
@@ -219,13 +215,6 @@ pub fn parse_sui_address(s: &str) -> anyhow::Result<SuiAddress> {
     ///
     /// Parsing succeeds if and only if `s` matches one of these formats exactly, with no remaining
     /// suffix. This function is intended for use within the authority codebases.
-    pub fn parse_sui_address(s: &str) -> anyhow::Result<SuiAddress> {
-        use move_command_line_common::address::ParsedAddress;
-        Ok(ParsedAddress::parse(s)?
-            .into_account_address(&resolve_address)?
-            .into())
-    }
-
 /// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
 /// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
 /// with no remaining input. This function is intended for use within the authority codebases.
@@ -233,13 +222,6 @@ pub fn parse_sui_module_id(s: &str) -> anyhow::Result<ModuleId> {
     use move_core_types::parsing::types::ParsedModuleId;
     ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
 }
-    /// Parse `s` as a Module ID: An address (see `parse_sui_address`), followed by `::`, and then a
-    /// module name (an identifier). Parsing succeeds if and only if `s` matches this format exactly,
-    /// with no remaining input. This function is intended for use within the authority codebases.
-    pub fn parse_sui_module_id(s: &str) -> anyhow::Result<ModuleId> {
-        use move_command_line_common::types::ParsedModuleId;
-        ParsedModuleId::parse(s)?.into_module_id(&resolve_address)
-    }
 
 /// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
 /// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
@@ -249,14 +231,7 @@ pub fn parse_sui_fq_name(s: &str) -> anyhow::Result<(ModuleId, String)> {
     use move_core_types::parsing::types::ParsedFqName;
     ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
 }
-    /// Parse `s` as a fully-qualified name: A Module ID (see `parse_sui_module_id`), followed by `::`,
-    /// and then an identifier (for the module member). Parsing succeeds if and only if `s` matches this
-    /// format exactly, with no remaining input. This function is intended for use within the authority
-    /// codebases.
-    pub fn parse_sui_fq_name(s: &str) -> anyhow::Result<(ModuleId, String)> {
-        use move_command_line_common::types::ParsedFqName;
-        ParsedFqName::parse(s)?.into_fq_name(&resolve_address)
-    }
+
 
 /// Parse `s` as a struct type: A fully-qualified name, optionally followed by a list of type
 /// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
@@ -270,10 +245,6 @@ pub fn parse_sui_struct_tag(s: &str) -> anyhow::Result<StructTag> {
     /// parameters (types -- see `parse_sui_type_tag`, separated by commas, surrounded by angle
     /// brackets). Parsing succeeds if and only if `s` matches this format exactly, with no remaining
     /// input. This function is intended for use within the authority codebase.
-    pub fn parse_sui_struct_tag(s: &str) -> anyhow::Result<StructTag> {
-        use move_command_line_common::types::ParsedStructType;
-        ParsedStructType::parse(s)?.into_struct_tag(&resolve_address)
-    }
 
 /// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
 /// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
@@ -282,13 +253,6 @@ pub fn parse_sui_type_tag(s: &str) -> anyhow::Result<TypeTag> {
     use move_core_types::parsing::types::ParsedType;
     ParsedType::parse(s)?.into_type_tag(&resolve_address)
 }
-    /// Parse `s` as a type: Either a struct type (see `parse_sui_struct_tag`), a primitive type, or a
-    /// vector with a type parameter. Parsing succeeds if and only if `s` matches this format exactly,
-    /// with no remaining input. This function is intended for use within the authority codebase.
-    pub fn parse_sui_type_tag(s: &str) -> anyhow::Result<TypeTag> {
-        use move_command_line_common::types::ParsedType;
-        ParsedType::parse(s)?.into_type_tag(&resolve_address)
-    }
 
     /// Resolve well-known named addresses into numeric addresses.
     pub fn resolve_address(addr: &str) -> Option<AccountAddress> {
@@ -479,12 +443,6 @@ fn is_object_struct(
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
-    #[test]
-    fn test_parse_sui_struct_tag_long_account_addr() {
-        let result = parse_sui_struct_tag(
-            "0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
-        )
-        .expect("should not error");
         #[test]
         fn test_parse_sui_struct_tag_long_account_addr() {
             let result = parse_sui_struct_tag(

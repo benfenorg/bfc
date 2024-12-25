@@ -15956,6 +15956,7 @@ dependencies = [
  "serde_json",
  "serde_with 3.9.0",
  "serde_yaml 0.8.26",
+ "sha2 0.9.9",
  "shared-crypto",
  "signature 1.6.4",
  "static_assertions",

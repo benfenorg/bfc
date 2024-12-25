@@ -167,8 +167,6 @@ impl MockCheckpointBuilder {
                 + contents.size() as u64,
             content_digest: *contents.digest(),
             previous_digest: self.previous_checkpoint.as_ref().map(|c| *c.digest()),
-            epoch_rolling_gas_cost_summary,
-            previous_digest: Some(*self.previous_checkpoint.digest()),
             epoch_rolling_bfc_gas_cost_summary: epoch_rolling_gas_cost_summary,
             epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
             end_of_epoch_data,
