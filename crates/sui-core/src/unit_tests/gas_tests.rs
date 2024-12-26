@@ -490,7 +490,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     let (authority_state, _package_object_ref) =
         init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap();
 
     authority_state.insert_genesis_object(stable_gas_object.clone()).await;
 
@@ -512,7 +512,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     let gas_object = result
         .authority_state
         .get_object(&result.gas_object_id)
-        .await?
+        .await
         .unwrap();
     let stable_gas_used =  gas_cost.net_gas_usage_improved() as u64;
     assert_eq!(
@@ -520,7 +520,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
         GAS_VALUE_FOR_TESTING - stable_gas_used
     );
 
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await.unwrap();
 
     let result = execute_transfer_with_gas_object_and_price(*MAX_GAS_BUDGET,true,gas_object,gas_object_id,
                                                             sender,recipient,sender_key,rgp,authority_state).await;
@@ -540,7 +540,7 @@ async fn test_native_transfer_sufficient_gas_stable() -> SuiResult {
     let gas_object = result
         .authority_state
         .get_object(&result.gas_object_id)
-        .await?
+        .await
         .unwrap();
     assert_eq!(
         GasCoin::try_from(&gas_object)?.value(),
@@ -915,8 +915,8 @@ async fn test_move_call_gas_stable_coin() -> SuiResult {
     let (authority_state, package_object_ref) =
         init_state_with_ids_and_objects_basics(vec![(sender, (gas_object_id,gas_object_id_stable))]).await;
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
-    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await.unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap();
 
     move_call_with_gas_object(stable_gas_object,gas_object_id_stable,sender,sender_key.copy(),rgp,package_object_ref,authority_state.clone()).await?;
     move_call_with_gas_object(gas_object,gas_object_id,sender,sender_key,rgp,package_object_ref,authority_state).await?;
@@ -941,8 +941,8 @@ async fn test_move_call_with_multiple_stable_coin() -> SuiResult {
     let (authority_state, package_object_ref) = authority_tests::publish_object_basics(state).await;
 
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await?.unwrap();
-    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await?.unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap();
+    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await.unwrap();
 
     let result = move_call_with_gas_objects(
         vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
@@ -970,8 +970,8 @@ async fn test_move_call_with_multiple_tags_stable_coin() {
     let (authority_state, package_object_ref) = authority_tests::publish_object_basics(state).await;
 
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap().unwrap();
-    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await.unwrap().unwrap();
+    let stable_gas_object = authority_state.get_object(&gas_object_id_stable).await.unwrap();
+    let stable_gas_object2 = authority_state.get_object(&gas_object_id_stable2).await.unwrap();
 
     let result = move_call_with_gas_objects(
         vec![stable_gas_object.compute_object_reference(), stable_gas_object2.compute_object_reference()],
@@ -994,7 +994,6 @@ async fn execute_transfer_with_gas_object_and_price(
     let object = authority_state
         .get_object(&object_id)
         .await
-        .unwrap()
         .unwrap();
 
 
@@ -1131,7 +1130,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     let gas_cost = effects.gas_cost_summary();
     assert!(gas_cost.storage_cost > 0);
     assert_eq!(gas_cost.storage_rebate, 0);
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await.unwrap();
     let gas_used = if !gas_object.is_stable_gas_coin() {
         gas_cost.net_gas_usage() as u64
     } else {
@@ -1210,7 +1209,7 @@ async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
     assert!(effects.status().is_ok());
     let created_object_ref = effects.created()[0].0;
 
-    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object.id()).await.unwrap();
     let response2 = send_and_confirm_transaction(
         &authority_state,
         to_sender_signed_transaction(TransactionData::new_move_call(
@@ -1232,7 +1231,7 @@ async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
     assert!(effects2.status().is_ok());
     let created_object_ref2 = effects2.created()[0].0;
 
-    let gas_object = authority_state.get_object(&gas_object.id()).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object.id()).await.unwrap();
     // Execute object deletion, and make sure we have storage rebate.
     let data = TransactionData::new_move_call(
         sender,
@@ -1647,7 +1646,7 @@ async fn test_stable_native_transfer_sufficient_gas() -> SuiResult {
     let gas_object = result
         .authority_state
         .get_object(&result.gas_object_id)
-        .await?
+        .await
         .unwrap();
     assert_eq!(
         GasCoin::try_from(&gas_object)?.value(),
@@ -1697,7 +1696,7 @@ async fn test_stable_transfer_sui_insufficient_gas() {
         ExecutionStatus::new_failure(ExecutionFailureStatus::InsufficientGas, None)
     );
     // Ensure that the owner of the object did not change if the transfer failed.
-    assert_eq!(effects.mutated()[0].1, sender);
+    assert_eq!(effects.mutated()[0].1.get_owner_address().unwrap(), sender);
 }
 
 #[tokio::test]
@@ -1871,7 +1870,6 @@ async fn test_stable_native_transfer_insufficient_gas_execution() {
         .authority_state
         .get_object(&result.gas_object_id)
         .await
-        .unwrap()
         .unwrap();
     let _gas_coin = GasCoin::try_from(&gas_object).unwrap();
     //assert_eq!(gas_coin.value(), 0);
@@ -1907,7 +1905,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
     let gas_cost = effects.gas_cost_summary();
     assert!(gas_cost.storage_cost > 0);
 
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await.unwrap();
     let gas_size = gas_object.object_size_for_gas_metering();
     let expected_gas_balance = GAS_VALUE_FOR_TESTING - gas_cost.net_gas_usage_improved() as u64;
     assert_eq!(
@@ -1945,7 +1943,7 @@ async fn test_stable_publish_gas() -> anyhow::Result<()> {
 
     assert!(gas_cost.gas_used() > 0);
 
-    let gas_object = authority_state.get_object(&gas_object_id).await?.unwrap();
+    let gas_object = authority_state.get_object(&gas_object_id).await.unwrap();
     let expected_gas_balance = expected_gas_balance - gas_cost.net_gas_usage_improved() as u64;
     assert_eq!(
         GasCoin::try_from(&gas_object)?.value(),
@@ -1989,7 +1987,6 @@ async fn execute_stable_transfer_with_price(
     let object = authority_state
         .get_object(&object_id)
         .await
-        .unwrap()
         .unwrap();
 
     let pt = {
@@ -2074,7 +2071,6 @@ async fn check_stable_oog_transaction<F>(
         let coin_ref = authority_state
             .get_object(coin_id)
             .await
-            .unwrap()
             .unwrap()
             .compute_object_reference();
         gas_coin_refs.push(coin_ref);

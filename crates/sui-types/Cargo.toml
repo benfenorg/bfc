@@ -75,7 +75,7 @@ proptest.workspace = true
 proptest-derive.workspace = true
 better_any.workspace = true
 lru.workspace = true
-
+hex.workspace = true
 sui-sdk-types.workspace = true
 
 [dev-dependencies]

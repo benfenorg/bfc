@@ -2873,7 +2873,7 @@ pub async fn build_and_try_publish_test_package_with_error(
     let all_module_bytes = compiled_package.get_package_bytes(with_unpublished_deps);
     let dependencies = compiled_package.get_dependency_storage_package_ids();
 
-    let gas_object = authority.get_object(gas_object_id).await.unwrap();
+    let gas_object = authority.get_object(gas_object_id).await;
     let gas_object_ref = gas_object.unwrap().compute_object_reference();
 
     let data = TransactionData::new_module(

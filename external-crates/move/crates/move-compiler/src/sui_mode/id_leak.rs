@@ -31,7 +31,7 @@ use move_core_types::account_address::AccountAddress;
 use move_ir_types::location::*;
 use move_symbol_pool::Symbol;
 use std::collections::BTreeMap;
-use crate::sui_mode::{BFC_SYSTEM_ADDR_NAME, BFC_SYSTEM_CREATE, BFC_SYSTEM_MODULE_NAME};
+use crate::sui_mode::{BFC_SYSTEM_CREATE, BFC_SYSTEM_MODULE_NAME};
 
 pub const FRESH_ID_FUNCTIONS: &[(AccountAddress, Symbol, Symbol)] = &[
     (SUI_ADDR_VALUE, OBJECT_MODULE_NAME, OBJECT_NEW),

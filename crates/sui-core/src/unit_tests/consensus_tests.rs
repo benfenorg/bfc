@@ -401,6 +401,7 @@ async fn submit_checkpoint_signature_to_consensus_adapter() {
         &CheckpointContents::new_with_digests_only_for_tests([ExecutionDigests::random()]),
         None,
         GasCostSummary::default(),
+        HashMap::new(),
         None,
         100,
         Vec::new(),

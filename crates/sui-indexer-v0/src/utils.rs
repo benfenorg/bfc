@@ -186,7 +186,7 @@ pub async fn get_balance_changes_from_effect<P: ObjectProvider<Error = E>, E>(
     object_provider: &P,
     effects: &SuiTransactionBlockEffects,
 ) -> Result<Vec<BalanceChange>, E> {
-    let gas_owner = effects.gas_object().owner;
+    let gas_owner = effects.gas_object().owner.clone();
     // Only charge gas when tx fails, skip all object parsing
     let gas_cost_summary: SuiGasCostSummary = effects.gas_cost_summary().clone();
     if effects.status() != &SuiExecutionStatus::Success {

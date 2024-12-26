@@ -16176,6 +16176,7 @@ dependencies = [
  "fastcrypto",
  "fastcrypto-tbls",
  "fastcrypto-zkp",
+ "hex",
  "im",
  "indexmap 2.2.6",
  "itertools 0.13.0",
