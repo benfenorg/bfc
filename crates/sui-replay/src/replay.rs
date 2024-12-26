@@ -761,6 +761,8 @@ impl LocalExec {
                 tx_info.gas_price,
                 tx_info.reference_gas_price,
                 protocol_config,
+                None,
+                None,
             )
             .expect("Failed to create gas status")
         };

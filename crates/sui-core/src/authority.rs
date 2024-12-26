@@ -734,12 +734,6 @@ impl AuthorityMetrics {
             ).unwrap(),
             limits_metrics: Arc::new(LimitsMetrics::new(registry)),
             bytecode_verifier_metrics: Arc::new(BytecodeVerifierMetrics::new(registry)),
-            authenticator_state_update_failed: register_int_counter_with_registry!(
-                "authenticator_state_update_failed",
-                "Number of failed authenticator state updates",
-                registry,
-            )
-                .unwrap(),
             zklogin_sig_count: register_int_counter_with_registry!(
                 "zklogin_sig_count",
                 "Count of zkLogin signatures",
@@ -2062,6 +2056,8 @@ impl AuthorityState {
                     gas_object,
                     &self.metrics.bytecode_verifier_metrics,
                     &self.config.verifier_signing_config,
+                    None,
+                    None,
                 )?,
                 Some(gas_object_id),
             )
@@ -2075,6 +2071,8 @@ impl AuthorityState {
                     &receiving_objects,
                     &self.metrics.bytecode_verifier_metrics,
                     &self.config.verifier_signing_config,
+                    None,
+                    None,
                 )?,
                 None,
             )
