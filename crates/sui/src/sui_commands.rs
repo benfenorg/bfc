@@ -10,7 +10,6 @@ use crate::validator_commands::SuiValidatorCommand;
 use anyhow::{anyhow, bail, ensure, Context};
 use clap::*;
 use colored::Colorize;
-use fastcrypto::traits::KeyPair;
 use fastcrypto::traits::{EncodeDecodeBase64, KeyPair};
 use move_analyzer::analyzer;
 use move_package::BuildConfig;

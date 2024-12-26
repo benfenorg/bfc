@@ -156,12 +156,14 @@ pub async fn start_network_cluster_with_long_epoch() -> NetworkCluster {
     let val_fn = start_validator_with_fullnode_with_long_epoch(data_ingestion_path.path().to_path_buf()).await;
 
     // Starts indexer
-    let (pg_store, pg_handle) = start_test_indexer_impl(
+    let (pg_store, pg_handle, _) = start_indexer_writer_for_testing(
         db_url,
-        val_fn.rpc_url().to_string(),
-        ReaderWriterConfig::writer_mode(None, None),
+        None,
+        None,
         Some(data_ingestion_path.path().to_path_buf()),
-        cancellation_token.clone(),
+        Some(cancellation_token.clone()),
+        None, /* start_checkpoint */
+        None, /* end_checkpoint */
     )
         .await;
 

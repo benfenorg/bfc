@@ -708,7 +708,7 @@ impl KeyToolCommand {
 
                         let alias = match alias {
                             Some(x) => x,
-                            None => keystore.get_alias_by_address(&key.sui_address)?,
+                            None => keystore.get_alias_by_address(&key.bfc_address)?,
                         };
 
                         key.alias = Some(alias);
@@ -727,7 +727,7 @@ impl KeyToolCommand {
 
                         let alias = match alias {
                             Some(x) => x,
-                            None => keystore.get_alias_by_address(&key.sui_address)?,
+                            None => keystore.get_alias_by_address(&key.bfc_address)?,
                         };
 
                         key.alias = Some(alias);

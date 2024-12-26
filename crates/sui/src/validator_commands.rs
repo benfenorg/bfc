@@ -13,20 +13,14 @@ use sui_genesis_builder::validator_info::GenesisValidatorInfo;
 use url::{ParseError, Url};
 
 use sui_types::{
-    base_types::{ObjectID, ObjectRef, SuiAddress},
-    crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID},
+    base_types::{ObjectID, SuiAddress},
     dynamic_field::Field,
-    multiaddr::Multiaddr,
-    object::Owner,
     sui_system_state::{
-        sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
         sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
     },
-    SUI_SYSTEM_PACKAGE_ID,
 };
-use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, BFC_SYSTEM_PACKAGE_ID, crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID}, multiaddr::Multiaddr, object::Owner, SUI_SYSTEM_PACKAGE_ID, sui_system_state::{
+use sui_types::{base_types::ObjectRef, BFC_SYSTEM_PACKAGE_ID, crypto::{AuthorityPublicKey, NetworkPublicKey, Signable, DEFAULT_EPOCH_ID}, multiaddr::Multiaddr, object::Owner, SUI_SYSTEM_PACKAGE_ID, sui_system_state::{
     sui_system_state_inner_v1::{UnverifiedValidatorOperationCapV1, ValidatorV1},
-    sui_system_state_summary::{SuiSystemStateSummary, SuiValidatorSummary},
 }};
 use tap::tap::TapOptional;
 
@@ -1551,8 +1545,6 @@ async fn get_pending_candidate_summary(
             )
         })?;
         let field = bcs::from_bytes::<Field<u64, ValidatorV1>>(bcs).map_err(|e| {
-        let val = bcs::from_bytes::<ValidatorV1>(bcs).map_err(|e| {
-
             let bfc_address = objects_id_to_bfc_address(object_id.clone());
             anyhow::anyhow!(
                 "Can't convert bcs bytes of object {} to ValidatorV1: {}",

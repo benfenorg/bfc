@@ -16,7 +16,11 @@ use sui_core::{
         QuorumDriverHandlerBuilder, QuorumDriverMetrics,
     },
 };
-use sui_json_rpc_types::{SuiGasCostSummary, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions};
+use sui_json_rpc_types::{
+    SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects,
+    SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponseOptions,
+};
+use sui_json_rpc_types::SuiGasCostSummary;
 use sui_sdk::{SuiClient, SuiClientBuilder};
 use sui_types::effects::{TransactionEffectsAPI, TransactionEvents};
 use sui_types::gas::GasCostSummary;
@@ -41,12 +45,6 @@ use sui_types::{
 };
 use tokio::time::sleep;
 use tracing::{error, info, warn};
-use sui_types::error::SuiError;
-use tokio::{
-    task::JoinSet,
-    time::{sleep, timeout},
-};
-use tracing::{error, info};
 
 pub mod bank;
 pub mod benchmark_setup;
@@ -166,8 +164,6 @@ impl ExecutionEffects {
     pub fn gas_cost_summary(&self) -> SuiGasCostSummary {
         match self {
             crate::ExecutionEffects::FinalizedTransactionEffects(a, _) => {
-                a.data().gas_cost_summary().clone()
-            crate::ExecutionEffects::CertifiedTransactionEffects(a, _) => {
                 SuiGasCostSummary::from(a.data().gas_cost_summary().clone())
             }
             crate::ExecutionEffects::SuiTransactionBlockEffects(b) => {
@@ -253,7 +249,7 @@ impl LocalValidatorAggregatorProxy {
             clients,
             committee,
         )
-        .await
+            .await
     }
 
     async fn new_impl(
@@ -280,7 +276,7 @@ impl LocalValidatorAggregatorProxy {
                     aggregator.safe_client_metrics_base.clone(),
                     aggregator.metrics.clone(),
                 )
-                .await,
+                    .await,
             );
             (Arc::new(aggregator), reconfig_observer)
         } else {
