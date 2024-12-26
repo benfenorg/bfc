@@ -464,8 +464,8 @@ impl ObjectStore for CheckpointData {
     fn get_object(
         &self,
         object_id: &ObjectID,
-    ) -> Result<Option<sui_types::object::Object>, Error> {
-        Ok(self
+    ) -> Option<sui_types::object::Object> {
+        self
             .changed_objects
             .iter()
             .find_map(|(status, o)| match status {
@@ -473,15 +473,15 @@ impl ObjectStore for CheckpointData {
                     o.clone().try_into().ok()
                 }
                 _ => None,
-            }))
+            })?
     }
 
     fn get_object_by_key(
         &self,
         object_id: &ObjectID,
         version: VersionNumber,
-    ) -> Result<Option<sui_types::object::Object>, Error> {
-        Ok(self
+    ) -> Option<sui_types::object::Object> {
+        self
             .changed_objects
             .iter()
             .find_map(|(status, o)| match status {
@@ -491,7 +491,7 @@ impl ObjectStore for CheckpointData {
                     o.clone().try_into().ok()
                 }
                 _ => None,
-            }))
+            })?
     }
 }
 

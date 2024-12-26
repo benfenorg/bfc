@@ -1353,7 +1353,7 @@ where
             });
 
             let event = epoch_event
-                .map(|e| bcs::from_bytes::<SystemEpochInfoEvent>(&e.bcs))
+                .map(|e| bcs::from_bytes::<SystemEpochInfoEvent>(&e.bcs.bytes()))
                 .transpose()?;
 
             let validators = system_state

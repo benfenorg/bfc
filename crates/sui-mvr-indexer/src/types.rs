@@ -60,9 +60,9 @@ impl IndexedCheckpoint {
         contents: &CheckpointContents,
         successful_tx_num: usize,
     ) -> Self {
-        let total_gas_cost = checkpoint.epoch_rolling_gas_cost_summary.computation_cost as i64
-            + checkpoint.epoch_rolling_gas_cost_summary.storage_cost as i64
-            - checkpoint.epoch_rolling_gas_cost_summary.storage_rebate as i64;
+        let total_gas_cost = checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost as i64
+            + checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost as i64
+            - checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate as i64;
         let tx_digests = contents.iter().map(|t| t.transaction).collect::<Vec<_>>();
         let max_tx_sequence_number = checkpoint.network_total_transactions - 1;
         // NOTE: + 1u64 first to avoid subtraction with overflow
@@ -77,11 +77,11 @@ impl IndexedCheckpoint {
             end_of_epoch_data: checkpoint.end_of_epoch_data.clone(),
             end_of_epoch: checkpoint.end_of_epoch_data.clone().is_some(),
             total_gas_cost,
-            computation_cost: checkpoint.epoch_rolling_gas_cost_summary.computation_cost,
-            storage_cost: checkpoint.epoch_rolling_gas_cost_summary.storage_cost,
-            storage_rebate: checkpoint.epoch_rolling_gas_cost_summary.storage_rebate,
+            computation_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost,
+            storage_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost,
+            storage_rebate: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
             non_refundable_storage_fee: checkpoint
-                .epoch_rolling_gas_cost_summary
+                .epoch_rolling_bfc_gas_cost_summary
                 .non_refundable_storage_fee,
             successful_tx_num,
             network_total_transactions: checkpoint.network_total_transactions,
