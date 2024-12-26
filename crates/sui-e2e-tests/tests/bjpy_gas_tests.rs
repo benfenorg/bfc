@@ -211,9 +211,22 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
     let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
     assert!(response.is_ok());
 
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in &data {
+        println!("allow stable is {:?}",ele);
+    }
+    assert!(data.contains_key(&coin_type.replace("0x", "")));
+
     // delete allowed stable coin
     let response = test_move_call_delete_external_stable_gas_coin(&mut test_cluster, coin_type.replace("0x", "")).await;
     assert!(response.is_ok());
+
+    test_cluster.wait_for_epoch(Some(12)).await;
+    let data = get_allow_stable_gas_coins_rate_map();
+    for ele in &data {
+        println!("allow stable is {:?}",ele);
+    }
+    assert!(!data.contains_key(&coin_type.replace("0x", "")));
     // sholud fail
     let response = test_move_call_use_new_test_coin(&mut test_cluster, package).await;
     assert!(response.is_err());
