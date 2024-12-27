@@ -168,7 +168,7 @@ pub enum SuiValidatorCommand {
     },
     #[clap(name = "add-stable-gas-coin")]
     AddStableGasCoin {
-        #[clap(name = "address")]
+        #[clap(name = "coin-type-list")]
         coin_type_list: Vec<String>,
         /// Gas budget for this transaction.
         #[clap(name = "gas-budget", long)]
@@ -176,7 +176,7 @@ pub enum SuiValidatorCommand {
     },
     #[clap(name = "delete-stable-gas-coin")]
     DeleteStableGasCoin {
-        #[clap(name = "address")]
+        #[clap(name = "coin-type")]
         coin_type: String,
         /// Gas budget for this transaction.
         #[clap(name = "gas-budget", long)]
