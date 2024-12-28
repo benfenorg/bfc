@@ -7,12 +7,12 @@ use move_core_types::language_storage::StructTag;
 use move_core_types::resolver::ResourceResolver;
 use mysten_metrics::monitored_scope;
 use parking_lot::RwLock;
-use std::collections::{BTreeMap, BTreeSet, HashSet};
+use sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
 use sui_types::bfc_system_state::{
-    get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate,
-    get_stable_rate_with_base_point, is_enabled_oracle,
+    get_bfc_system_proposal_state_map, get_bfc_system_state, get_oracle_price, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point, is_enabled_oracle
 };
 use sui_types::collection_types::VecMap;
 use sui_types::committee::EpochId;
@@ -167,6 +167,20 @@ impl<'backing> TemporaryStore<'backing> {
             runtime_packages_loaded_from_db: self.runtime_packages_loaded_from_db.into_inner(),
             lamport_version: self.lamport_timestamp,
             binary_config: to_binary_config(self.protocol_config),
+        }
+    }
+
+    pub fn update_allow_stable_gas_coins(&mut self) {
+        let system_obj = get_bfc_system_state(&self.execution_results.written_objects);
+        if system_obj.is_ok() {
+            let rate_map = system_obj.unwrap().get_rate_map().clone();
+            let v: HashMap<String, u64> = rate_map
+                .contents
+                .iter()
+                .map(|entity| ((*entity.key).to_string(), entity.value))
+                .collect();
+
+            update_allow_stable_gas_coins(v);
         }
     }
 

@@ -87,7 +87,7 @@ mod checked {
         SUI_SYSTEM_PACKAGE_ID,
     };
 
-    use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{get_bfc_system_state, BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
     use sui_types::stable_coin::stable::checked::STABLE;
 
@@ -1192,18 +1192,8 @@ mod checked {
         }
 
         // set rate map to global-mutable-singleton
-        let rate_result = temporary_store.get_stable_rate_map_and_reward_rate();
-        if rate_result.is_ok() {
-            let (rate_map, _) = rate_result.unwrap();
-            let v: HashMap<String, u64> = rate_map
-                .contents
-                .iter()
-                .map(|entity| ((*entity.key).to_string(), entity.value))
-                .collect();
-
-            update_allow_stable_gas_coins(v);
-        }
-
+        temporary_store.update_allow_stable_gas_coins();
+       
         if protocol_config.fresh_vm_on_framework_upgrade() {
             let new_vm = new_move_vm(
                 all_natives(/* silent */ true, protocol_config),
