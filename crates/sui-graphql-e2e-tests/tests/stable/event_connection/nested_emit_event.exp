@@ -7,13 +7,13 @@ task 1, lines 10-37:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6095200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6414400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 39:
 //# run Test::M3::yeet --sender A --args 2
 events: Event { package_id: Test, transaction_module: Identifier("M3"), sender: A, type_: StructTag { address: Test, module: Identifier("M1"), name: Identifier("EventA"), type_params: [] }, contents: [2, 0, 0, 0, 0, 0, 0, 0] }
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 988000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 1307200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 41:
 //# create-checkpoint
@@ -34,7 +34,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0x0d72d40a7520bc67f48a16f325a5f189cb79788025784c7f41bf02598d02d2d0::M1::EventA"
+              "repr": "0x8dcf1118a514209d2fa3ab468a1802ee74f42fc900f9083a887672340407aeeb::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {
@@ -62,7 +62,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0x0d72d40a7520bc67f48a16f325a5f189cb79788025784c7f41bf02598d02d2d0::M1::EventA"
+              "repr": "0x8dcf1118a514209d2fa3ab468a1802ee74f42fc900f9083a887672340407aeeb::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {
@@ -110,7 +110,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0x0d72d40a7520bc67f48a16f325a5f189cb79788025784c7f41bf02598d02d2d0::M1::EventA"
+              "repr": "0x8dcf1118a514209d2fa3ab468a1802ee74f42fc900f9083a887672340407aeeb::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {

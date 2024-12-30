@@ -7,25 +7,25 @@ task 1, lines 13-52:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 8329600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 8648800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 54:
 //# run Test::m::create_obj --sender A
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2234400,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2553600,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 56:
 //# run Test::m::add_df --sender A --args object(2,0)
 created: object(3,0), object(3,1), object(3,2)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 6536000,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 6855200,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 4, line 58:
 //# run Test::m::add_dof --sender A --args object(2,0)
 created: object(4,0), object(4,1)
 mutated: object(0,0), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 5928000,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 6247200,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 5, line 60:
 //# create-checkpoint
@@ -41,21 +41,63 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "vector<u8>"
-              },
-              "data": {
-                "Vector": []
-              },
-              "bcs": "AA=="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
                 "repr": "u64"
               },
-              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "1"
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
+                },
+                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          141,
+                          219,
+                          48,
+                          205,
+                          82,
+                          210,
+                          202,
+                          24,
+                          35,
+                          21,
+                          127,
+                          237,
+                          46,
+                          81,
+                          186,
+                          138,
+                          127,
+                          81,
+                          219,
+                          72,
+                          62,
+                          43,
+                          166,
+                          241,
+                          23,
+                          19,
+                          113,
+                          147,
+                          232,
+                          219,
+                          106,
+                          145
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -70,55 +112,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x314faae908e1e1e6f5df9f3a03a4692a27cb974776f13551472d3831f5a964d9::m::Child"
-                },
-                "bcs": "79SK5tokongSfcWj2640StZoQwIktLuTsSSR/HV6Odc=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          239,
-                          212,
-                          138,
-                          230,
-                          218,
-                          36,
-                          162,
-                          120,
-                          18,
-                          125,
-                          197,
-                          163,
-                          219,
-                          174,
-                          52,
-                          74,
-                          214,
-                          104,
-                          67,
-                          2,
-                          36,
-                          180,
-                          187,
-                          147,
-                          177,
-                          36,
-                          145,
-                          252,
-                          117,
-                          122,
-                          57,
-                          215
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -146,21 +146,21 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
+                "repr": "vector<u8>"
               },
               "data": {
-                "Number": "0"
+                "Vector": []
               },
-              "bcs": "AAAAAAAAAAA="
+              "bcs": "AA=="
             },
             "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
               },
-              "bcs": "AAAAAAAAAAA=",
+              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "0"
+                "Number": "1"
               }
             }
           }
@@ -173,21 +173,63 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "vector<u8>"
-              },
-              "data": {
-                "Vector": []
-              },
-              "bcs": "AA=="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
                 "repr": "u64"
               },
-              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "1"
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
+                },
+                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          141,
+                          219,
+                          48,
+                          205,
+                          82,
+                          210,
+                          202,
+                          24,
+                          35,
+                          21,
+                          127,
+                          237,
+                          46,
+                          81,
+                          186,
+                          138,
+                          127,
+                          81,
+                          219,
+                          72,
+                          62,
+                          43,
+                          166,
+                          241,
+                          23,
+                          19,
+                          113,
+                          147,
+                          232,
+                          219,
+                          106,
+                          145
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -202,55 +244,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x314faae908e1e1e6f5df9f3a03a4692a27cb974776f13551472d3831f5a964d9::m::Child"
-                },
-                "bcs": "79SK5tokongSfcWj2640StZoQwIktLuTsSSR/HV6Odc=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          239,
-                          212,
-                          138,
-                          230,
-                          218,
-                          36,
-                          162,
-                          120,
-                          18,
-                          125,
-                          197,
-                          163,
-                          219,
-                          174,
-                          52,
-                          74,
-                          214,
-                          104,
-                          67,
-                          2,
-                          36,
-                          180,
-                          187,
-                          147,
-                          177,
-                          36,
-                          145,
-                          252,
-                          117,
-                          122,
-                          57,
-                          215
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -278,21 +278,21 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
+                "repr": "vector<u8>"
               },
               "data": {
-                "Number": "0"
+                "Vector": []
               },
-              "bcs": "AAAAAAAAAAA="
+              "bcs": "AA=="
             },
             "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
               },
-              "bcs": "AAAAAAAAAAA=",
+              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "0"
+                "Number": "1"
               }
             }
           }
@@ -307,7 +307,7 @@ task 7, line 120:
 created: object(7,0)
 mutated: object(0,0)
 wrapped: object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2485200,  storage_rebate: 2212056, non_refundable_storage_fee: 22344
+gas summary: computation_cost: 1000000, storage_cost: 2804400,  storage_rebate: 2528064, non_refundable_storage_fee: 25536
 
 task 8, line 122:
 //# create-checkpoint
@@ -324,21 +324,63 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "vector<u8>"
-              },
-              "data": {
-                "Vector": []
-              },
-              "bcs": "AA=="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
                 "repr": "u64"
               },
-              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "1"
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
+                },
+                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          141,
+                          219,
+                          48,
+                          205,
+                          82,
+                          210,
+                          202,
+                          24,
+                          35,
+                          21,
+                          127,
+                          237,
+                          46,
+                          81,
+                          186,
+                          138,
+                          127,
+                          81,
+                          219,
+                          72,
+                          62,
+                          43,
+                          166,
+                          241,
+                          23,
+                          19,
+                          113,
+                          147,
+                          232,
+                          219,
+                          106,
+                          145
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -353,55 +395,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x314faae908e1e1e6f5df9f3a03a4692a27cb974776f13551472d3831f5a964d9::m::Child"
-                },
-                "bcs": "79SK5tokongSfcWj2640StZoQwIktLuTsSSR/HV6Odc=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          239,
-                          212,
-                          138,
-                          230,
-                          218,
-                          36,
-                          162,
-                          120,
-                          18,
-                          125,
-                          197,
-                          163,
-                          219,
-                          174,
-                          52,
-                          74,
-                          214,
-                          104,
-                          67,
-                          2,
-                          36,
-                          180,
-                          187,
-                          147,
-                          177,
-                          36,
-                          145,
-                          252,
-                          117,
-                          122,
-                          57,
-                          215
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -429,21 +429,21 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
+                "repr": "vector<u8>"
               },
               "data": {
-                "Number": "0"
+                "Vector": []
               },
-              "bcs": "AAAAAAAAAAA="
+              "bcs": "AA=="
             },
             "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
               },
-              "bcs": "AAAAAAAAAAA=",
+              "bcs": "AQAAAAAAAAA=",
               "data": {
-                "Number": "0"
+                "Number": "1"
               }
             }
           }
@@ -493,47 +493,47 @@ Response: {
           "__typename": "MoveObject",
           "contents": {
             "type": {
-              "repr": "0x314faae908e1e1e6f5df9f3a03a4692a27cb974776f13551472d3831f5a964d9::m::Child"
+              "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
             },
-            "bcs": "79SK5tokongSfcWj2640StZoQwIktLuTsSSR/HV6Odc=",
+            "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
             "data": {
               "Struct": [
                 {
                   "name": "id",
                   "value": {
                     "UID": [
-                      239,
-                      212,
-                      138,
-                      230,
-                      218,
-                      36,
-                      162,
-                      120,
-                      18,
-                      125,
-                      197,
-                      163,
+                      141,
                       219,
-                      174,
-                      52,
-                      74,
-                      214,
-                      104,
-                      67,
-                      2,
-                      36,
-                      180,
-                      187,
+                      48,
+                      205,
+                      82,
+                      210,
+                      202,
+                      24,
+                      35,
+                      21,
+                      127,
+                      237,
+                      46,
+                      81,
+                      186,
+                      138,
+                      127,
+                      81,
+                      219,
+                      72,
+                      62,
+                      43,
+                      166,
+                      241,
+                      23,
+                      19,
+                      113,
                       147,
-                      177,
-                      36,
-                      145,
-                      252,
-                      117,
-                      122,
-                      57,
-                      215
+                      232,
+                      219,
+                      106,
+                      145
                     ]
                   }
                 }

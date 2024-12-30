@@ -93,7 +93,7 @@ task 13, lines 72-75:
 //# run-graphql
 Response: {
   "data": {
-    "chainIdentifier": "084d40f2"
+    "chainIdentifier": "f75cdf6e"
   }
 }
 
@@ -112,15 +112,15 @@ Response: {
           ]
         },
         "validatorCandidatesSize": 0,
-        "inactivePoolsId": "0x514509ad914ad681508af65f278bea302598aa33653436d497faaa0dbd756f61"
+        "inactivePoolsId": "0x893c3cb8f9add1c8333558a3dbf62f9a0d4e3f84df5159f228a36e1f252d1cdc"
       },
       "totalGasFees": "2000000",
       "totalStakeRewards": "2000000",
       "totalStakeSubsidies": "0",
       "fundSize": "0",
-      "fundInflow": "7873600",
-      "fundOutflow": "978120",
-      "netInflow": "6895480",
+      "fundInflow": "8512000",
+      "fundOutflow": "1294128",
+      "netInflow": "7217872",
       "transactionBlocks": {
         "nodes": []
       }

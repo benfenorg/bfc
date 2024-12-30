@@ -7,42 +7,42 @@ task 1, lines 6-86:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 10586800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 10906000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 88-89:
 //# run P0::M::new_o
 created: object(2,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2264800,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2584000,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 3, lines 91-92:
 //# run P0::M::new_w
 created: object(3,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2257200,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2576400,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 4, lines 94-95:
 //# run P0::M::new_dof
 created: object(4,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2272400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2591600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 5, lines 97-98:
 //# run P0::M::new_dof
 created: object(5,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 2272400,  storage_rebate: 978120, non_refundable_storage_fee: 9880
+gas summary: computation_cost: 1000000, storage_cost: 2591600,  storage_rebate: 1294128, non_refundable_storage_fee: 13072
 
 task 6, lines 100-103:
 //# run P0::M::connect --args object(2,0) object(3,0) object(4,0) object(5,0)
 created: object(6,0), object(6,1)
 mutated: object(0,1), object(2,0), object(4,0), object(5,0)
 wrapped: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 9940800,  storage_rebate: 6041772, non_refundable_storage_fee: 61028
+gas summary: computation_cost: 1000000, storage_cost: 10260000,  storage_rebate: 6357780, non_refundable_storage_fee: 64220
 
 task 7, lines 105-107:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9 )
 Version: 7
 Contents: P0::M::O {
     id: sui::object::UID {
@@ -68,26 +68,26 @@ Contents: P0::M::O {
 task 8, lines 109-110:
 //# run P0::M::touch_root --args object(2,0)
 mutated: object(0,1), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2568800,  storage_rebate: 2543112, non_refundable_storage_fee: 25688
+gas summary: computation_cost: 1000000, storage_cost: 2888000,  storage_rebate: 2859120, non_refundable_storage_fee: 28880
 
 task 9, lines 112-113:
 //# run P0::M::touch_wrapped --args object(2,0)
 mutated: object(0,1), object(2,0)
-gas summary: computation_cost: 1000000, storage_cost: 2568800,  storage_rebate: 2543112, non_refundable_storage_fee: 25688
+gas summary: computation_cost: 1000000, storage_cost: 2888000,  storage_rebate: 2859120, non_refundable_storage_fee: 28880
 
 task 10, lines 115-116:
 //# run P0::M::touch_inner --args object(2,0)
 mutated: object(0,1), object(2,0), object(4,0)
-gas summary: computation_cost: 1000000, storage_cost: 3853200,  storage_rebate: 3814668, non_refundable_storage_fee: 38532
+gas summary: computation_cost: 1000000, storage_cost: 4172400,  storage_rebate: 4130676, non_refundable_storage_fee: 41724
 
 task 11, lines 118-119:
 //# run P0::M::touch_outer --args object(2,0)
 mutated: object(0,1), object(2,0), object(5,0)
-gas summary: computation_cost: 1000000, storage_cost: 3853200,  storage_rebate: 3814668, non_refundable_storage_fee: 38532
+gas summary: computation_cost: 1000000, storage_cost: 4172400,  storage_rebate: 4130676, non_refundable_storage_fee: 41724
 
 task 12, line 121:
 //# view-object 2,0
-Owner: Account Address ( _ )
+Owner: Account Address ( BFCa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a5cf9 )
 Version: 11
 Contents: P0::M::O {
     id: sui::object::UID {
@@ -124,10 +124,10 @@ Response: {
           "version": 11,
           "contents": {
             "json": {
-              "id": "0xdecc5c8f1ae3f8e6bfa4493d9e9711a033e1eb00551e07854d5f08ac6dae7588",
+              "id": "0x7ef79035132bab5a4beb929ebc3aa0da752f9dc1b2a4ec056d73a62f4a39def1",
               "count": "1",
               "wrapped": {
-                "id": "0xec73f4e0490995f1661d8248f4402b475a4f9643d309c1bb792874484cb0adbd",
+                "id": "0x275bdb0b51915e7d15f396882e7156c02d50acdc938b2c8af733bb059bf5ddf6",
                 "count": "1"
               }
             }
@@ -141,10 +141,10 @@ Response: {
           "version": 10,
           "contents": {
             "json": {
-              "id": "0xdecc5c8f1ae3f8e6bfa4493d9e9711a033e1eb00551e07854d5f08ac6dae7588",
+              "id": "0x7ef79035132bab5a4beb929ebc3aa0da752f9dc1b2a4ec056d73a62f4a39def1",
               "count": "1",
               "wrapped": {
-                "id": "0xec73f4e0490995f1661d8248f4402b475a4f9643d309c1bb792874484cb0adbd",
+                "id": "0x275bdb0b51915e7d15f396882e7156c02d50acdc938b2c8af733bb059bf5ddf6",
                 "count": "1"
               }
             }
@@ -158,10 +158,10 @@ Response: {
           "version": 8,
           "contents": {
             "json": {
-              "id": "0xdecc5c8f1ae3f8e6bfa4493d9e9711a033e1eb00551e07854d5f08ac6dae7588",
+              "id": "0x7ef79035132bab5a4beb929ebc3aa0da752f9dc1b2a4ec056d73a62f4a39def1",
               "count": "1",
               "wrapped": {
-                "id": "0xec73f4e0490995f1661d8248f4402b475a4f9643d309c1bb792874484cb0adbd",
+                "id": "0x275bdb0b51915e7d15f396882e7156c02d50acdc938b2c8af733bb059bf5ddf6",
                 "count": "0"
               }
             }
@@ -175,10 +175,10 @@ Response: {
           "version": 7,
           "contents": {
             "json": {
-              "id": "0xdecc5c8f1ae3f8e6bfa4493d9e9711a033e1eb00551e07854d5f08ac6dae7588",
+              "id": "0x7ef79035132bab5a4beb929ebc3aa0da752f9dc1b2a4ec056d73a62f4a39def1",
               "count": "0",
               "wrapped": {
-                "id": "0xec73f4e0490995f1661d8248f4402b475a4f9643d309c1bb792874484cb0adbd",
+                "id": "0x275bdb0b51915e7d15f396882e7156c02d50acdc938b2c8af733bb059bf5ddf6",
                 "count": "0"
               }
             }
@@ -199,7 +199,7 @@ Response: {
           "version": 10,
           "contents": {
             "json": {
-              "id": "0xc6648a3386f34bd5b4757713a6d5f81852df299ef5a867de257b0c28a56f07e3",
+              "id": "0x7b837065609210cfebb5cbb375b0aeb64eb03e0b9d7943db74b081dd6da95a17",
               "count": "1"
             }
           }
@@ -212,7 +212,7 @@ Response: {
           "version": 10,
           "contents": {
             "json": {
-              "id": "0xc6648a3386f34bd5b4757713a6d5f81852df299ef5a867de257b0c28a56f07e3",
+              "id": "0x7b837065609210cfebb5cbb375b0aeb64eb03e0b9d7943db74b081dd6da95a17",
               "count": "1"
             }
           }
@@ -225,7 +225,7 @@ Response: {
           "version": 10,
           "contents": {
             "json": {
-              "id": "0xc6648a3386f34bd5b4757713a6d5f81852df299ef5a867de257b0c28a56f07e3",
+              "id": "0x7b837065609210cfebb5cbb375b0aeb64eb03e0b9d7943db74b081dd6da95a17",
               "count": "1"
             }
           }
@@ -238,7 +238,7 @@ Response: {
           "version": 7,
           "contents": {
             "json": {
-              "id": "0xc6648a3386f34bd5b4757713a6d5f81852df299ef5a867de257b0c28a56f07e3",
+              "id": "0x7b837065609210cfebb5cbb375b0aeb64eb03e0b9d7943db74b081dd6da95a17",
               "count": "0"
             }
           }
@@ -251,7 +251,7 @@ Response: {
           "version": 7,
           "contents": {
             "json": {
-              "id": "0xc6648a3386f34bd5b4757713a6d5f81852df299ef5a867de257b0c28a56f07e3",
+              "id": "0x7b837065609210cfebb5cbb375b0aeb64eb03e0b9d7943db74b081dd6da95a17",
               "count": "0"
             }
           }
@@ -271,7 +271,7 @@ Response: {
           "version": 11,
           "contents": {
             "json": {
-              "id": "0x418dc1ff6ea1cdccbc2ab29974b3f233855dee9bedecfadaab0d4f906bef4295",
+              "id": "0xa3cd1e61cb1612bdd6e2de7440852ef8bdc16aacb0bad97101ca535e995ae139",
               "count": "1"
             }
           }
@@ -284,7 +284,7 @@ Response: {
           "version": 7,
           "contents": {
             "json": {
-              "id": "0x418dc1ff6ea1cdccbc2ab29974b3f233855dee9bedecfadaab0d4f906bef4295",
+              "id": "0xa3cd1e61cb1612bdd6e2de7440852ef8bdc16aacb0bad97101ca535e995ae139",
               "count": "0"
             }
           }
@@ -297,7 +297,7 @@ Response: {
           "version": 11,
           "contents": {
             "json": {
-              "id": "0x418dc1ff6ea1cdccbc2ab29974b3f233855dee9bedecfadaab0d4f906bef4295",
+              "id": "0xa3cd1e61cb1612bdd6e2de7440852ef8bdc16aacb0bad97101ca535e995ae139",
               "count": "1"
             }
           }
@@ -310,7 +310,7 @@ Response: {
           "version": 7,
           "contents": {
             "json": {
-              "id": "0x418dc1ff6ea1cdccbc2ab29974b3f233855dee9bedecfadaab0d4f906bef4295",
+              "id": "0xa3cd1e61cb1612bdd6e2de7440852ef8bdc16aacb0bad97101ca535e995ae139",
               "count": "0"
             }
           }
