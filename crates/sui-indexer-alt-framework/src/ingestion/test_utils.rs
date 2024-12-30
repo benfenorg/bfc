@@ -30,6 +30,7 @@ pub(crate) fn test_checkpoint_data(cp: u64) -> Vec<u8> {
         &contents,
         None,
         GasCostSummary::default(),
+        Default::default(),
         None,
         0,
         Vec::new(),

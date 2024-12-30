@@ -819,8 +819,6 @@ async fn sim_test_full_node_transaction_orchestrator_basic() -> Result<(), anyho
         .get_transaction_cache_reader()
         .notify_read_executed_effects(&[digest])
         .await;
-        .await
-        .unwrap();
     //fullnode.state().get_executed_transaction_and_effects(digest).await
     fullnode.state().get_executed_transaction_and_effects(digest, kv_store).await
         .unwrap_or_else(|e| panic!("Fullnode does not know about the txn {:?} that was executed with WaitForEffectsCert: {:?}", digest, e));

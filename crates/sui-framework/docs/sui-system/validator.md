@@ -1346,7 +1346,7 @@ Request to add stake to the validator's staking pool, processed at the end of th
 
     <b>let</b> sui = self.<a href="staking_pool.md#0x3_staking_pool">staking_pool</a>.<a href="validator.md#0x3_validator_redeem_fungible_staked_sui">redeem_fungible_staked_sui</a>(fungible_staked_sui, ctx);
 
-    self.next_epoch_stake = self.next_epoch_stake - <a href="../sui-framework/sui.md#0x2_sui">sui</a>.value();
+    self.next_epoch_stake = self.next_epoch_stake - sui.value();
 
     <a href="../sui-framework/event.md#0x2_event_emit">event::emit</a>(
         <a href="validator.md#0x3_validator_RedeemingFungibleStakedSuiEvent">RedeemingFungibleStakedSuiEvent</a> {

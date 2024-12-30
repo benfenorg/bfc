@@ -20,7 +20,6 @@ module sui_system::sui_system_state_inner {
     use sui::table::Table;
     use sui::bag::Bag;
     use sui::bag;
-    use sui_system::stake_subsidy;
     use sui_system::stable_pool;
     use sui_system::stable_pool::{StakedStable, PoolStableTokenExchangeRate};
 
@@ -815,24 +814,24 @@ module sui_system::sui_system_state_inner {
         /// Update a validator's public key of worker key.
         /// The change will only take effects starting from the next epoch.
         public(package) fun update_validator_next_epoch_worker_pubkey(
-            self: &mut SuiSystemStateInnerV2,
+        self: &mut SuiSystemStateInnerV2,
         worker_pubkey: vector<u8>,
         ctx: &TxContext,
         ) {
-        let validator = self.validators.get_validator_mut_with_ctx(ctx);
-        validator.update_next_epoch_worker_pubkey(worker_pubkey);
-        let validator :&Validator = validator; // Force immutability for the following call
-        self.validators.assert_no_pending_or_active_duplicates(validator);
+            let validator = self.validators.get_validator_mut_with_ctx(ctx);
+            validator.update_next_epoch_worker_pubkey(worker_pubkey);
+            let validator :&Validator = validator; // Force immutability for the following call
+            self.validators.assert_no_pending_or_active_duplicates(validator);
         }
 
         /// Update candidate validator's public key of worker key.
         public(package) fun update_candidate_validator_worker_pubkey(
             self: &mut SuiSystemStateInnerV2,
-        worker_pubkey: vector<u8>,
-        ctx: &TxContext,
-        ) {
-        let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
-        candidate.update_candidate_worker_pubkey(worker_pubkey);
+            worker_pubkey: vector<u8>,
+            ctx: &TxContext,
+         ) {
+            let candidate = self.validators.get_validator_mut_with_ctx_including_candidates(ctx);
+            candidate.update_candidate_worker_pubkey(worker_pubkey);
         }
 
         /// Update a validator's public key of network key.
@@ -913,8 +912,6 @@ module sui_system::sui_system_state_inner {
         let storage_charge = storage_reward.value();
         let computation_charge = computation_reward.value();
         let mut stake_subsidy = balance::zero();
-        let storage_charge = balance::value(&storage_reward);
-        let computation_charge = balance::value(&computation_reward);
 
         // during the transition from epoch N to epoch N + 1, ctx.epoch() will return N
         let old_epoch = ctx.epoch();
@@ -922,27 +919,20 @@ module sui_system::sui_system_state_inner {
         // Delay distributing any stake subsidies until after `stake_subsidy_start_epoch`.
         // And if this epoch is shorter than the regular epoch duration, don't distribute any stake subsidy.
         if (old_epoch >= self.parameters.stake_subsidy_start_epoch  &&
-            epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
+        epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
         {
             // special case for epoch 560 -> 561 change bug. add extra subsidies for "safe mode"
             // where reward distribution was skipped. use distribution counter and epoch check to
             // avoiding affecting devnet and testnet
             if (self.stake_subsidy.get_distribution_counter() == 540 && old_epoch > 560) {
-                // safe mode was entered on the change from 560 to 561. so 560 was the first epoch without proper subsidy distribution
-                let first_safe_mode_epoch = 560;
-                let safe_mode_epoch_count = old_epoch - first_safe_mode_epoch;
-                safe_mode_epoch_count.do!(|_| {
-                    stake_subsidy.join(self.stake_subsidy.advance_epoch());
-                });
-                // done with catchup for safe mode epochs. distribution counter is now >540, we won't hit this again
-                // fall through to the normal logic, which will add subsidies for the current epoch
-        let stake_subsidy =
-            if (tx_context::epoch(ctx) >= self.parameters.stake_subsidy_start_epoch  &&
-                epoch_start_timestamp_ms >= prev_epoch_start_timestamp + self.parameters.epoch_duration_ms)
-                {
-                    stake_subsidy::advance_epoch(&mut self.stake_subsidy)
-                } else {
-                balance::zero()
+            // safe mode was entered on the change from 560 to 561. so 560 was the first epoch without proper subsidy distribution
+            let first_safe_mode_epoch = 560;
+            let safe_mode_epoch_count = old_epoch - first_safe_mode_epoch;
+            safe_mode_epoch_count.do!(|_| {
+            stake_subsidy.join(self.stake_subsidy.advance_epoch());
+            });
+            // done with catchup for safe mode epochs. distribution counter is now >540, we won't hit this again
+            // fall through to the normal logic, which will add subsidies for the current epoch
             };
             stake_subsidy.join(self.stake_subsidy.advance_epoch());
         };
@@ -1247,8 +1237,6 @@ module sui_system::sui_system_state_inner {
         // CAUTION: THIS CODE IS ONLY FOR TESTING AND THIS MACRO MUST NEVER EVER BE REMOVED.  Creates a
         // candidate validator - bypassing the proof of possession check and other metadata validation
         // in the process.
-        #[test_only]
-        public(package) fun request_add_validator_candidate_for_testing(
         self: &mut SuiSystemStateInnerV2,
         pubkey_bytes: vector<u8>,
         network_pubkey_bytes: vector<u8>,

@@ -18,7 +18,6 @@ use serde_json::json;
 use sui_json::SuiJsonValue;
 use sui_json_rpc::error::Error;
 use sui_json_rpc_types::BcsEvent;
-use sui_json_rpc_types::DevInspectArgs;
 use sui_json_rpc_types::{
     SuiGasCostSummary, Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
     DevInspectResults, DynamicFieldPage, EventFilter, EventPage, MoveCallParams,

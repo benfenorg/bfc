@@ -26,7 +26,6 @@ use sui_test_transaction_builder::make_transfer_sui_transaction;
 use sui_types::balance::Supply;
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::SequenceNumber;
-use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::coin::{TreasuryCap, COIN_MODULE_NAME};
 use sui_types::digests::ObjectDigest;
 use sui_types::gas_coin::GAS;
