@@ -25,7 +25,7 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1",
+                    "address": "0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9",
                     "asMovePackage": {
                       "module": {
                         "enum": {
@@ -84,7 +84,7 @@ Response: {
                 },
                 {
                   "outputState": {
-                    "address": "0x732281b5d4b5bc6e8ef46e1d94e0cbe4d209b9f7db9f8b3df2b9a1daf1b307a4",
+                    "address": "0x6418026b94a0e2d57a48a571976ab72dca090afd255f6743acdc30f5c043f914",
                     "asMovePackage": null
                   }
                 },
@@ -125,19 +125,19 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x732281b5d4b5bc6e8ef46e1d94e0cbe4d209b9f7db9f8b3df2b9a1daf1b307a4",
+                    "address": "0x6418026b94a0e2d57a48a571976ab72dca090afd255f6743acdc30f5c043f914",
                     "asMovePackage": null
                   }
                 },
                 {
                   "outputState": {
-                    "address": "0x821907363c10979c93fa38135d7b657946f344fdec27d1d270a9261b228243d5",
+                    "address": "0xb73b49774d0215218f1c8e85fd82226cf903a582b50d65210db359b56c9cfdc5",
                     "asMovePackage": {
                       "module": {
                         "s": {
                           "module": {
                             "package": {
-                              "address": "0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1"
+                              "address": "0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9"
                             }
                           },
                           "name": "S",
@@ -192,7 +192,7 @@ Response: {
                         "t": {
                           "module": {
                             "package": {
-                              "address": "0x821907363c10979c93fa38135d7b657946f344fdec27d1d270a9261b228243d5"
+                              "address": "0xb73b49774d0215218f1c8e85fd82226cf903a582b50d65210db359b56c9cfdc5"
                             }
                           },
                           "name": "T",
@@ -222,12 +222,12 @@ Response: {
                                 {
                                   "name": "s",
                                   "type": {
-                                    "repr": "0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1::m::S",
+                                    "repr": "0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9::m::S",
                                     "signature": {
                                       "ref": null,
                                       "body": {
                                         "datatype": {
-                                          "package": "0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1",
+                                          "package": "0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9",
                                           "module": "m",
                                           "type": "S",
                                           "typeParameters": []
@@ -261,7 +261,7 @@ Response: {
                                 {
                                   "name": "t",
                                   "type": {
-                                    "repr": "0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1::m::T<0x16d01a20c64f565c02bbe30b6a488e0fd783365a15f43140d3df90268b5a08e1::m::S>"
+                                    "repr": "0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9::m::T<0x3d8e2485281f3f492972e39006c2cf0e2c800ed4150c591d86e59e43c8ca5fd9::m::S>"
                                   }
                                 }
                               ]

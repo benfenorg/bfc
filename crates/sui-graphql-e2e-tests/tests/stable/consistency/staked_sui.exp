@@ -109,13 +109,13 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IDq7eB4MnaUQzj23EvAMXXfRK21GHb1qK3rQvvjYM7fDBAAAAAAAAAA=",
+            "cursor": "ID4DLajk/LOSOj0xCjeXbeYtXYsg74uCUa2ffNZX6ku+BAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           },
           {
-            "cursor": "IIoYBZ/eeDURKB4PQduIblSPEP7NAyUYGpZpnUlMGxOYBAAAAAAAAAA=",
+            "cursor": "IHis1bLUejXhCsoPz5YQgOLDmww37W1uJimxNek1O0fLBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -161,7 +161,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IIoYBZ/eeDURKB4PQduIblSPEP7NAyUYGpZpnUlMGxOYAwAAAAAAAAA=",
+            "cursor": "IHis1bLUejXhCsoPz5YQgOLDmww37W1uJimxNek1O0fLAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -183,7 +183,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IDq7eB4MnaUQzj23EvAMXXfRK21GHb1qK3rQvvjYM7fDAwAAAAAAAAA=",
+            "cursor": "ID4DLajk/LOSOj0xCjeXbeYtXYsg74uCUa2ffNZX6ku+AwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
