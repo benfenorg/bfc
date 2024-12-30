@@ -1616,6 +1616,17 @@ impl SuiNode {
                 .get_sui_system_state_object_unsafe()
                 .expect("Read Sui System State object cannot fail");
 
+            // set rate map to global-mutable-singleton
+            let result =  self.state.get_object_cache_reader().get_bfc_system_state_object();
+            if result.is_ok() {
+                let bfc_system = result.unwrap();
+                let rate_map = bfc_system.get_rate_map();
+                let v: HashMap<String, u64> = rate_map.contents.iter()
+                    .map(|entity| ((*entity.key).to_string(), entity.value))
+                    .collect();
+                update_allow_stable_gas_coins(v);
+            }
+
             #[cfg(msim)]
             if !self
                 .sim_state

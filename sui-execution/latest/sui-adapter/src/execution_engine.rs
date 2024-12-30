@@ -1191,9 +1191,6 @@ mod checked {
             }
         }
 
-        // set rate map to global-mutable-singleton
-        temporary_store.update_allow_stable_gas_coins();
-       
         if protocol_config.fresh_vm_on_framework_upgrade() {
             let new_vm = new_move_vm(
                 all_natives(/* silent */ true, protocol_config),

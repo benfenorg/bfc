@@ -170,20 +170,6 @@ impl<'backing> TemporaryStore<'backing> {
         }
     }
 
-    pub fn update_allow_stable_gas_coins(&mut self) {
-        let system_obj = get_bfc_system_state(&self.execution_results.written_objects);
-        if system_obj.is_ok() {
-            let rate_map = system_obj.unwrap().get_rate_map().clone();
-            let v: HashMap<String, u64> = rate_map
-                .contents
-                .iter()
-                .map(|entity| ((*entity.key).to_string(), entity.value))
-                .collect();
-
-            update_allow_stable_gas_coins(v);
-        }
-    }
-
     /// For every object from active_inputs (i.e. all mutable objects), if they are not
     /// mutated during the transaction execution, force mutating them by incrementing the
     /// sequence number. This is required to achieve safety.
