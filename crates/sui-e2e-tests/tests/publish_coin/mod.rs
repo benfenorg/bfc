@@ -15,7 +15,7 @@ use test_cluster::TestCluster;
 
 
 
-pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<ObjectID, Error> {
+pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(ObjectID, Vec<ObjectChange>), Error> {
     let address = test_cluster.get_address_0();
 
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -39,7 +39,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<Obje
 
     // Check log output contains all object ids.
     let gas_obj = object_refs.iter().find(|r: &&SuiObjectResponse| {
-        if r.data.as_ref().unwrap().type_.as_ref().unwrap().is_coin() {
+        if r.data.as_ref().unwrap().type_.as_ref().unwrap().is_gas_coin() {
             return true;
         }
 
@@ -49,14 +49,14 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<Obje
     //step 1: publish coin
     let resp = do_publish_inner(rgp, &mut context, gas_obj_id,path).await?;
 
-    // // Print it out to CLI/logs
+    // Print it out to CLI/logs
     // resp.print(true);
 
     match resp {
         SuiClientCommandResult::TransactionBlock(tx) => {
-            for ele in tx.object_changes.unwrap() {
+            for ele in tx.object_changes.clone().unwrap() {
                 if let ObjectChange::Published { package_id, .. } = ele {
-                    return Ok(package_id);
+                    return Ok((package_id, tx.object_changes.unwrap().clone()));
                 }
             }
             Err(anyhow::anyhow!("no package found"))

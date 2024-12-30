@@ -166,6 +166,22 @@ pub enum SuiValidatorCommand {
         #[clap(name = "gas-budget", long)]
         gas_budget: Option<u64>,
     },
+    #[clap(name = "add-stable-gas-coin")]
+    AddStableGasCoin {
+        #[clap(name = "coin-type-list")]
+        coin_type_list: Vec<String>,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
+    #[clap(name = "delete-stable-gas-coin")]
+    DeleteStableGasCoin {
+        #[clap(name = "coin-type")]
+        coin_type: String,
+        /// Gas budget for this transaction.
+        #[clap(name = "gas-budget", long)]
+        gas_budget: Option<u64>,
+    },
     /// init admin capability
     #[clap(name = "init-admin-capability")]
     InitAdminCapability {
@@ -290,6 +306,8 @@ pub enum SuiValidatorCommandResponse {
     UpdateMetadata(SuiTransactionBlockResponse),
     UpdateGasPrice(SuiTransactionBlockResponse),
     SetOraclePriceAddress(SuiTransactionBlockResponse),
+    AddStableGasCoin(SuiTransactionBlockResponse),
+    DeleteStableGasCoin(SuiTransactionBlockResponse),
     AddOperationCapability(SuiTransactionBlockResponse),
     RemoveOperationCapability(SuiTransactionBlockResponse),
     SetOperationCapability(SuiTransactionBlockResponse),
@@ -530,6 +548,24 @@ impl SuiValidatorCommand {
                 let resp =
                     set_oracle_price_object_address(context, address, gas_budget).await?;
                 SuiValidatorCommandResponse::SetOraclePriceAddress(resp)
+            }
+            SuiValidatorCommand::AddStableGasCoin {
+                coin_type_list,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    add_stable_gas_coin(context, coin_type_list, gas_budget).await?;
+                SuiValidatorCommandResponse::AddStableGasCoin(resp)
+            }
+            SuiValidatorCommand::DeleteStableGasCoin {
+                coin_type,
+                gas_budget,
+            } => {
+                let gas_budget = gas_budget.unwrap_or(DEFAULT_GAS_BUDGET);
+                let resp =
+                    delete_stable_gas_coin(context, coin_type, gas_budget).await?;
+                SuiValidatorCommandResponse::DeleteStableGasCoin(resp)
             }
             SuiValidatorCommand::AddOperationCapability {
                 operation_cap_id,
@@ -942,6 +978,30 @@ async fn set_oracle_price_object_address(
     call_0xc9(context, "set_oracle_address", args, gas_budget).await
 }
 
+async fn add_stable_gas_coin(
+    context: &mut WalletContext,
+    coin_type_list: Vec<String>,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&coin_type_list).unwrap()),
+    ];
+    call_0xc9(context, "add_external_stable_gas_coin", args, gas_budget).await
+}
+
+async fn delete_stable_gas_coin(
+    context: &mut WalletContext,
+    coin_type: String,
+    gas_budget: u64,
+) -> Result<SuiTransactionBlockResponse> {
+
+    let args = vec![
+        CallArg::Pure(bcs::to_bytes(&coin_type).unwrap()),
+    ];
+    call_0xc9(context, "delete_external_stable_gas_coin", args, gas_budget).await
+}
+
 async fn operation_capability(
     context: &mut WalletContext,
     operation_cap_id: ObjectID,
@@ -1205,6 +1265,12 @@ impl Display for SuiValidatorCommandResponse {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::SetOraclePriceAddress(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::AddStableGasCoin(response) => {
+                write!(writer, "{}", write_transaction_response(response)?)?;
+            }
+            SuiValidatorCommandResponse::DeleteStableGasCoin(response) => {
                 write!(writer, "{}", write_transaction_response(response)?)?;
             }
             SuiValidatorCommandResponse::AddOperationCapability(response) => {

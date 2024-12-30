@@ -275,6 +275,16 @@ module bfc_system::bfc_system {
         }
     }
 
+    #[allow(unused_function)]
+    fun inner_withdraw_balance(
+        _self: &mut BfcSystemState,
+        expect: u64,
+        _ctx: &mut TxContext,
+    ): Balance<BFC> {
+        let (inner_state, _ctx) = load_system_state_mut(_self, _ctx);
+        bfc_system_state_inner::withdraw_balance(inner_state, expect)
+    }
+
     #[test_only]
     public fun inner_stablecoin_to_bfc_test<StableCoinType>(
         wrapper: &mut BfcSystemState,
@@ -430,6 +440,16 @@ module bfc_system::bfc_system {
     public fun get_oracle_address(wrapper: &mut BfcSystemState, ctx: &mut TxContext): Option<address> {
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
         inner_state.get_oracle_address(_ctx)
+    }
+
+    public fun add_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: vector<ascii::String>, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.add_external_stable_gas_coin(value, _ctx)
+    }
+
+    public fun delete_external_stable_gas_coin(wrapper: &mut BfcSystemState, value: ascii::String, ctx: &mut TxContext) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        inner_state.delete_external_stable_gas_coin(value, _ctx)
     }
 
     public entry fun remove_propose(wrapper: &mut BfcSystemState, key: &BFCDaoManageKey, proposal_id: u64) {

@@ -32,6 +32,8 @@ pub const BFC_REQUEST_BALANCE_FUNCTION_NAME: &IdentStr = ident_str!("request_gas
 
 pub const STABLE_COIN_TO_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_stablecoin_to_bfc");
 
+pub const WITHDRAW_BFC_FUNCTION_NAME: &IdentStr = ident_str!("inner_withdraw_balance");
+
 pub const DEPOSIT_TO_TREASURY_FUNCTION_NAME: &IdentStr = ident_str!("deposit_to_treasury_pool_no_entry");
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
@@ -166,6 +168,13 @@ impl BFCSystemState {
     //         BFCSystemState::V2(inner) => inner,
     //     }
     // }
+
+    pub fn get_extra_fields(&self) -> Option<&Bag> {
+        match self {
+            BFCSystemState::V1(_) => None,
+            BFCSystemState::V2(inner) => Some(&inner.extra_fields),
+        }
+    }
 
     pub fn get_rate_map(&self) -> &VecMap<String, u64> {
         match self {

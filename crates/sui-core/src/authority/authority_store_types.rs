@@ -225,7 +225,7 @@ pub fn get_store_object_pair(object: Object, indirect_objects_threshold: usize) 
                         .balance
                         .value(),
                 )
-            }else if move_obj.type_().is_stable_gas_coin() {
+            } else if move_obj.type_().is_inner_stable_gas_coin() {
                 StoreData::StableCoin(
                     STABLE::try_from(move_obj.type_().get_stable_gas_tag().expect("failed to get stable tag"))
                         .expect("failed to parse stable index").get_index(),

@@ -68,6 +68,9 @@ module bfc_system::bfc_system_state_inner {
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
     const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
 
+
+    const KEY_EXTERNAL_STABLE_GAS_COIN_LIST:  vector<u8>  = b"ExternalStableCoinList";
+    const KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST:  vector<u8>  = b"ToDeleteExternalStableCoinList";
     //spec module { pragma verify = false; }
 
     public struct BfcSystemStateInner has store {
@@ -213,6 +216,9 @@ module bfc_system::bfc_system_state_inner {
             return
         };
 
+        // delete external stable coin in to delete list
+        clear_to_delete_external_stable_gas_coin_list(inner);
+
         _ = round;
         let stable_rate_map = treasury::get_exchange_rates(&inner.treasury);
         let busd_vault_key = treasury::get_vault_key<BUSD>();
@@ -233,7 +239,8 @@ module bfc_system::bfc_system_state_inner {
         while (i < len) {
             let stable_type_name = stable_type_name_vector[i];
             let rate_against_busd = stable_rate_vector[i];
-            if (treasury::has_vault(&inner.treasury, stable_type_name) &&
+            if ((treasury::has_vault(&inner.treasury, stable_type_name) || 
+                inner.in_external_stable_gas_coin_list(stable_type_name)) &&
                 stable_type_name != busd_vault_key && rate_against_busd > 0) {
                 if (inner.stable_rate.contains(&stable_type_name)) {
                     inner.stable_rate.remove(&stable_type_name);
@@ -987,5 +994,115 @@ module bfc_system::bfc_system_state_inner {
             key,
         };
         transfer::transfer(cap, recipient);
+    }
+
+    public(package) fun get_extra_fields(self: &BfcSystemStateInnerV2): &Bag {
+        &self.extra_fields
+    }
+
+    #[test_only]
+    public(package) fun get_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2): &vector<ascii::String> {
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+            return list
+        };
+
+        abort 1
+    }
+
+    #[test_only]
+    public(package) fun get_to_delete_stable_gas_coin_list(self: &BfcSystemStateInnerV2): &vector<ascii::String> {
+        if (self.extra_fields.contains(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST);
+            return list
+        };
+
+        abort 1
+    }
+
+    public(package) fun in_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2, value: ascii::String,): bool {
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+
+            return list.any!(|x| x == &value);
+        };
+
+        false
+    }
+
+    public(package) fun add_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: vector<ascii::String>, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
+
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+
+            let mut allow_list = vector::empty<ascii::String>();
+            let mut i = 0;
+            while (i < value.length()) {
+                if (!list.any!(|x| x == &value[i])) {
+                   allow_list.insert(value[i], 0);
+                };
+               
+                i = i + 1;
+            };
+
+            list.append(allow_list);
+            return;
+        }; 
+
+        let mut list = vector::empty<ascii::String>();
+        list.append(value);
+        self.extra_fields.add(KEY_EXTERNAL_STABLE_GAS_COIN_LIST, list);
+    }
+
+    public(package) fun delete_external_stable_gas_coin(self: &mut BfcSystemStateInnerV2, value: ascii::String, ctx: &mut TxContext) {
+        verify_admin_capability(self, sender(ctx));
+
+        // add to delete list, delete it from rate map after next epoch
+        if (!self.extra_fields.contains(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            let mut list = vector::empty<ascii::String>();
+            list.insert(value, 0);
+            self.extra_fields.add(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST, list);
+        } else {
+            let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST);
+            list.insert(value, 0);
+        };
+    }
+
+    public(package) fun clear_to_delete_external_stable_gas_coin_list (self: &mut BfcSystemStateInnerV2) {
+        if (!self.extra_fields.contains(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+           return
+        };
+
+        let to_delete_list = self.extra_fields.remove<vector<u8>, vector<ascii::String>>( KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST);
+
+        let stable_gas_list: &mut vector<ascii::String>;
+        if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
+            stable_gas_list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
+        } else {
+            stable_gas_list = &mut vector::empty<ascii::String>();
+        };
+        let mut i = 0;
+        while (i < to_delete_list.length()) {
+            delete_from_list(stable_gas_list, to_delete_list[i]);
+            // remove from stable rate map
+            if (self.stable_rate.contains(&to_delete_list[i])) {
+                self.stable_rate.remove(&to_delete_list[i]);
+            };
+
+            i = i + 1;
+        };   
+    }
+
+    public(package) fun delete_from_list(list:  &mut vector<ascii::String>, value: ascii::String) {
+        let mut i = 0;
+        while (i < list.length()) {
+            if (list[i] == value) {
+                list.remove(i);
+                return
+            };
+
+            i = i + 1;
+        };
     }
 }

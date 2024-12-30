@@ -3,6 +3,7 @@
 
 use jsonrpsee::http_client::HttpClient;
 use serde_json::{json, Value};
+use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use std::str::FromStr;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
@@ -12,7 +13,7 @@ use test_cluster::TestClusterBuilder;
 use sui_sdk::json::{SuiJsonValue};
 use sui_types::base_types::SuiAddress;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui::validator_commands::SuiValidatorCommand;
+use sui::validator_commands::{SuiValidatorCommand, SuiValidatorCommandResponse};
 
 #[sim_test]
 async fn sim_set_oracle_price_address_by_cli_success() -> Result<(), anyhow::Error> {
@@ -54,6 +55,62 @@ async fn sim_set_oracle_price_address_by_cli_success() -> Result<(), anyhow::Err
 
     Ok(())
 }
+
+#[sim_test]
+async fn sim_add_delete_stable_gas_coin_by_cli_success() -> Result<(), anyhow::Error> {
+    let mut test_cluster = TestClusterBuilder::new()
+    .with_epoch_duration_ms(6000)
+    .with_num_validators(5)
+    .build().await;
+    
+    let coin_type = String::from_utf8(b"000::t:TEST".to_vec()).unwrap();
+    let resp: SuiValidatorCommandResponse = SuiValidatorCommand::AddStableGasCoin { 
+        coin_type_list: vec![coin_type.clone()],
+        gas_budget: None,
+    }
+    .execute(&mut test_cluster.wallet)
+    .await?;
+    match resp {
+        SuiValidatorCommandResponse::AddStableGasCoin(sui_transaction_block_response) => {
+            assert!(!sui_transaction_block_response.status_ok().unwrap());
+        }
+        _ => panic!("should be success"),
+    }
+
+    setup_auth(&test_cluster).await?;
+
+    let coin_type = String::from_utf8(b"000::t:TEST".to_vec()).unwrap();
+    let resp: SuiValidatorCommandResponse = SuiValidatorCommand::AddStableGasCoin { 
+        coin_type_list: vec![coin_type.clone()],
+        gas_budget: None,
+    }
+    .execute(&mut test_cluster.wallet)
+    .await?;
+    match resp {
+        SuiValidatorCommandResponse::AddStableGasCoin(sui_transaction_block_response) => {
+            assert!(sui_transaction_block_response.status_ok().unwrap());
+        }
+        _ => panic!("should be success"),
+    }
+
+
+    let coin_type = String::from_utf8(b"000::t:TEST".to_vec()).unwrap();
+    let resp: SuiValidatorCommandResponse = SuiValidatorCommand::DeleteStableGasCoin { 
+        coin_type: coin_type.clone(),
+        gas_budget: None,
+    }
+    .execute(&mut test_cluster.wallet)
+    .await?;
+    match resp {
+        SuiValidatorCommandResponse::DeleteStableGasCoin(sui_transaction_block_response) => {
+            assert!(sui_transaction_block_response.status_ok().unwrap());
+        }
+        _ => panic!("should be success"),
+    }
+
+    Ok(())
+}
+
 
 #[sim_test]
 async fn sim_test_mint_stable_with_unauthorized() -> Result<(), anyhow::Error> {
