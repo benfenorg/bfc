@@ -8800,7 +8800,7 @@ async fn test_stable_refusal_to_sign_consensus_commit_prologue() {
     let gas_object = Object::with_stable_id_owner_for_testing(gas_object_id, sender);
     let authority_state = init_state_with_objects(vec![gas_object.clone()]).await;
     let rgp = authority_state.reference_gas_price_for_testing().unwrap();
-    let epoch_store = authority_state.load_epoch_store_one_call_per_task();
+    let _epoch_store = authority_state.load_epoch_store_one_call_per_task();
 
     let gas_ref = gas_object.compute_object_reference();
     let tx_data = TransactionData::new(
@@ -8817,7 +8817,7 @@ async fn test_stable_refusal_to_sign_consensus_commit_prologue() {
 
     // Sender is able to sign it.
     let transaction = to_sender_signed_transaction(tx_data, &sender_key);
-    let transaction = authority_state.verify_transaction(transaction).unwrap();
+    let _transaction = authority_state.verify_transaction(transaction).unwrap();
 
     // But the authority should refuse to handle it.
     // assert!(matches!(
@@ -9368,9 +9368,9 @@ async fn test_stablestore_revert_remove_ofield() {
     assert!(add_effects.status().is_ok());
     assert_eq!(add_effects.created().len(), 1);
 
-    let field_v0 = add_effects.created()[0].0;
+    let _field_v0 = add_effects.created()[0].0;
     let outer_v1 = find_by_id(&add_effects.mutated(), outer_v0.0).unwrap();
-    let inner_v1 = find_by_id(&add_effects.mutated(), inner_v0.0).unwrap();
+    let _inner_v1 = find_by_id(&add_effects.mutated(), inner_v0.0).unwrap();
 
     let remove_ofield_txn = to_sender_signed_transaction(
         TransactionData::new_move_call(
@@ -9389,7 +9389,7 @@ async fn test_stablestore_revert_remove_ofield() {
     );
 
     let remove_ofield_cert = init_certified_transaction(remove_ofield_txn, &authority_state);
-    let remove_ofield_digest = *remove_ofield_cert.digest();
+    let _remove_ofield_digest = *remove_ofield_cert.digest();
 
     let remove_effects = authority_state
         .execute_certificate(

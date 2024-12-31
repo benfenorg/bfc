@@ -44,7 +44,7 @@ fn test_format_error_unknown_format_in_container() -> Result<(), Error>{
     Ok(())
 }
 
-
+#[allow(unused)]
 #[derive(Serialize)]
 struct TestStrucTag {
     pub address: AccountAddress,

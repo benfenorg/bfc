@@ -3,14 +3,13 @@
 
 use jsonrpsee::http_client::HttpClient;
 use serde_json::{json, Value};
-use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
+use sui_sdk::json::SuiJsonValue;
 use std::str::FromStr;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
 use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_macros::sim_test;
 use sui_types::{BFC_SYSTEM_PACKAGE_ID, parse_sui_struct_tag};
 use test_cluster::TestClusterBuilder;
-use sui_sdk::json::{SuiJsonValue};
 use sui_types::base_types::SuiAddress;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui::validator_commands::{SuiValidatorCommand, SuiValidatorCommandResponse};

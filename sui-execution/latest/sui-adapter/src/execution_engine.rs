@@ -11,7 +11,6 @@ mod checked {
 
     use move_vm_runtime::move_vm::MoveVM;
     use std::{collections::HashSet, sync::Arc};
-    //use crate::{temporary_store::TemporaryStore};
     use sui_types::gas::{calculate_add, calculate_reward_rate};
     use sui_types::gas_coin::GAS;
 
@@ -19,9 +18,6 @@ mod checked {
         BALANCE_CREATE_REWARDS_FUNCTION_NAME, BALANCE_DESTROY_REBATES_FUNCTION_NAME,
         BALANCE_MODULE_NAME,
     };
-    //use sui_types::execution_mode::{self, ExecutionMode};
-    use crate::sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
-    use std::collections::HashMap;
     use sui_types::messages_checkpoint::CheckpointTimestamp;
     use sui_types::metrics::LimitsMetrics;
     use sui_types::object::OBJECT_START_VERSION;
@@ -87,7 +83,7 @@ mod checked {
         SUI_SYSTEM_PACKAGE_ID,
     };
 
-    use sui_types::bfc_system_state::{get_bfc_system_state, BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
+    use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
     use sui_types::stable_coin::stable::checked::STABLE;
 

@@ -70,12 +70,10 @@ mod sim_only_tests {
     use sui_types::base_types::ConciseableName;
     use sui_types::base_types::{ObjectID, ObjectRef};
     use sui_types::effects::{TransactionEffects, TransactionEffectsAPI};
-    use sui_types::id::ID;
     use sui_types::object::Owner;
     use sui_types::sui_system_state::{
-        epoch_start_sui_system_state::EpochStartSystemStateTrait, get_validator_from_table,
-        SuiSystemState, SuiSystemStateTrait, SUI_SYSTEM_STATE_SIM_TEST_DEEP_V2,
-        SUI_SYSTEM_STATE_SIM_TEST_SHALLOW_V2, SUI_SYSTEM_STATE_SIM_TEST_V1,
+        epoch_start_sui_system_state::EpochStartSystemStateTrait,
+        SuiSystemState, SuiSystemStateTrait,
     };
     use sui_types::supported_protocol_versions::SupportedProtocolVersions;
     use sui_types::transaction::{
@@ -827,7 +825,7 @@ mod sim_only_tests {
 
         test_cluster.wait_for_epoch(Some(2)).await;
         test_cluster.wait_for_epoch(Some(2)).await;
-        let system_state = test_cluster.wait_for_epoch(Some(4)).await;
+        let _system_state = test_cluster.wait_for_epoch(Some(4)).await;
 
         // We are going to enter safe mode so set the expectation right.
         test_cluster.set_safe_mode_expected(true);

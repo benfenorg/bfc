@@ -7,7 +7,6 @@ mod stable;
 mod publish_coin;
 use futures::future::join_all;
 use rand::rngs::OsRng;
-use sui_types::collection_types::VecMap;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 use fastcrypto::encoding::Base64;
@@ -49,7 +48,7 @@ use tokio::time::sleep;
 use tracing::{error, info};
 use sui_sdk::json::{SuiJsonValue, type_args};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
-use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag, object};
+use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID, parse_sui_struct_tag};
 use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
@@ -60,7 +59,7 @@ use sui_json_rpc_api::ReadApiClient;
 use sui_json_rpc_api::IndexerApiClient;
 use sui_json_rpc_api::WriteApiClient;
 use sui_json_rpc_api::TransactionBuilderClient;
-use sui_move_build::{BuildConfig, SuiPackageHooks};
+use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
 use sui_types::vault::VaultInfo;
 
@@ -270,6 +269,7 @@ use sui_types::vault::VaultInfo;
 //     Ok(())
 // }
 
+#[allow(unused)]
 async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
@@ -313,6 +313,7 @@ async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
     assert!(price.value.contents.len() > 0);
 }
 
+#[allow(unused)]
 async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: String) -> Result<(), Error> {
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -407,6 +408,7 @@ async fn set_oracle_address(test_cluster: &mut TestCluster, oracle_address: Stri
 //     // Ok((cap, package.object_id()))
 // }
 
+#[allow(unused)]
 async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &ObjectID) -> Result<SuiClientCommandResult, Error> {
     let mut package_path = PathBuf::from("tests/test_oracle_price/");
     package_path.push("sources");
@@ -801,6 +803,8 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
 
     assert_eq!(protocol_version, ProtocolVersion::new(start_version));
 }
+
+#[allow(unused)]
 async fn test_expired_locks() {
     let start_version = 44u64;
     let test_cluster = TestClusterBuilder::new()
@@ -998,7 +1002,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     info!("=========create_active_proposal=======");
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
-    let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
+    let _manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
 
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
 
@@ -1014,7 +1018,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
         .with_type()
         .with_owner()
         .with_previous_transaction();
-    let objects = http_client
+    let _objects = http_client
         .get_owned_objects(
             address,
             Some(SuiObjectResponseQuery::new(
@@ -1033,7 +1037,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
     // now do the call
-    let payment = objects.get(2).unwrap().object().unwrap();
+    let _payment = objects.get(2).unwrap().object().unwrap();
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
     let manager_obj = create_stake_manager_key(http_client, gas, address, &cluster).await?;
@@ -1088,7 +1092,6 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = objects.first().unwrap().object().unwrap();
     let coin_obj = objects.get(2).unwrap().object().unwrap();
-    let coin_obj = objects.get(2).unwrap().object().unwrap();
 
     let arg = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
@@ -1106,6 +1109,7 @@ async fn create_active_proposal(http_client: &HttpClient, gas: &SuiObjectData, a
     Ok(())
 }
 
+#[allow(unused)]
 async fn state_to_v2(http_client: &HttpClient, gas: &SuiObjectData, address: SuiAddress, cluster: &TestCluster) -> Result<(), anyhow::Error> {
     let module = "bfc_system".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
@@ -1149,9 +1153,6 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
 
     let clock = SuiAddress::from_str("0x0000000000000000000000000000000000000000000000000000000000000006").unwrap();
 
-    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
-    let payment = objects.get(2).unwrap().object().unwrap();
-
     let objects = http_client
         .get_owned_objects(
             address,
@@ -1182,7 +1183,6 @@ async fn create_proposal(http_client: &HttpClient, gas: &SuiObjectData, address:
 
     let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let gas = objects.first().unwrap().object().unwrap();
-    let coin_obj = objects.get(2).unwrap().object().unwrap();
     let coin_obj = objects.last().unwrap().object().unwrap();
 
     let arg = vec![
@@ -1207,8 +1207,6 @@ async fn create_stake_manager_key(http_client: &HttpClient, gas: &SuiObjectData,
     let function = "create_stake_manager_key".to_string();
     let package_id = BFC_SYSTEM_PACKAGE_ID;
 
-    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
-    let payment = objects.get(2).unwrap().object().unwrap();
     let objects = http_client
         .get_owned_objects(
             address,

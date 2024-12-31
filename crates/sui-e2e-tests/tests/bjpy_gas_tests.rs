@@ -4,7 +4,6 @@ mod auth;
 mod stable;
 mod publish_coin;
 
-use std::any::Any;
 use std::str::FromStr;
 use std::time::Duration;
 use anyhow::Error;
@@ -17,7 +16,6 @@ use sui_macros::sim_test;
 use sui_sdk::json::{type_args, SuiJsonValue};
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
-use sui_types::coin::Coin;
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
 use sui_types::transaction::CallArg;
@@ -129,7 +127,6 @@ async fn sim_test_with_other_coin_gas() -> Result<(), anyhow::Error> {
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
     sleep(Duration::from_secs(10)).await;
     let filter=format!("{}{}{}","0x2::coin::Coin<",package,"::test_coin::TEST_COIN>");
-    let coin_type=format!("{}{}",package,"::test_coin::TEST_COIN");
 
     let objects = get_owned_objects(filter.as_str(), &mut http_client, address).await?;
     println!("objects is {:?}",objects);
@@ -460,6 +457,7 @@ async fn get_owned_objects(filter_tag: &str, http_client: &HttpClient, address: 
     Ok(objects)
 }
 
+#[allow(unused)]
 fn effect_success(effects: SuiTransactionBlockEffects) {
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
@@ -500,7 +498,7 @@ async fn check_oracle_price(test_cluster: &mut TestCluster, package: ObjectID) {
     let oracle_id = resp.object_changes.unwrap().iter()
         .find(|change| match change {
             ObjectChange::Created {
-                object_type, owner, ..
+                object_type, ..
             } => {
                 object_type.to_string().contains("dynamic_field")
             }
@@ -590,7 +588,7 @@ async fn init_oracele_with_new_test_coin(test_cluster: &mut TestCluster, test_co
     let oracle_id = resp.object_changes.unwrap().iter()
         .find(|change| match change {
             ObjectChange::Created {
-                object_type, owner, ..
+                object_type, ..
             } => {
                 object_type.to_string().contains("dynamic_field")
             }

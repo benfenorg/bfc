@@ -466,7 +466,7 @@ async fn sim_test_object_info_get_command() -> Result<(), anyhow::Error> {
 #[sim_test]
 async fn sim_test_start_cluster() -> Result<(), anyhow::Error> {
 
-    let mut test_cluster = TestClusterBuilder::new().build().await;
+    TestClusterBuilder::new().build().await;
 
     Ok(())
 }

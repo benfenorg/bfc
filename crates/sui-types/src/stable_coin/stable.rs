@@ -345,7 +345,7 @@ pub mod checked {
         #[test]
         fn test_singleton_thread_safety() {
             let handles: Vec<_> = (0..100)
-                .map(|i| {
+                .map(|_i| {
                     thread::spawn(move || {
                         let mut m = BTreeMap::new();
                         m.insert("BUSD".to_string(), 100);
@@ -364,7 +364,7 @@ pub mod checked {
         #[test]
         fn test_concurrent_read_write() {
             let write_handles: Vec<_> = (0..50)
-                .map(|i| {
+                .map(|_i| {
                     thread::spawn(move || {
                         let mut m = BTreeMap::new();
                         m.insert("BUSD".to_string(), 100);

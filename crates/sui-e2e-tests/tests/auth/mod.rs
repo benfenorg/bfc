@@ -14,6 +14,7 @@ use sui_json_rpc_api::{IndexerApiClient,  WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 
+#[allow(unused)]
 pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpClient, address: SuiAddress, auth_key: &str) -> Result<(), Error> {
     
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
@@ -52,6 +53,7 @@ pub async fn auth_setup(test_cluster: &mut TestCluster, http_client: &mut HttpCl
     Ok(())
 }
 
+#[allow(unused)]
 pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, auth_key: &str) -> Result<(), Error> {
     
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
