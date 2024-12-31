@@ -3,27 +3,27 @@ pub mod checked {
     use crate::BFC_SYSTEM_ADDRESS;
     use move_core_types::ident_str;
     use move_core_types::language_storage::{StructTag, TypeTag};
-    use std::collections::HashMap;
+    use std::collections::BTreeMap;
     use std::convert::TryFrom;
     use std::str::FromStr;
     use std::sync::{LazyLock, RwLock};
 
     struct AllowStableGasCoin {
-        rate_map: HashMap<String, u64>,
+        rate_map: BTreeMap<String, u64>,
     }
 
     impl AllowStableGasCoin {
         fn new() -> Self {
             AllowStableGasCoin {
-                rate_map: HashMap::new(),
+                rate_map: BTreeMap::new(),
             }
         }
 
-        fn set_rate_map(&mut self, value: HashMap<String, u64>) {
+        fn set_rate_map(&mut self, value: BTreeMap<String, u64>) {
             self.rate_map = value;
         }
 
-        fn get_rate_map(&self) -> &HashMap<String, u64> {
+        fn get_rate_map(&self) -> &BTreeMap<String, u64> {
             &self.rate_map
         }
     }
@@ -31,7 +31,7 @@ pub mod checked {
     static INSTANCE: LazyLock<RwLock<AllowStableGasCoin>> =
         LazyLock::new(|| RwLock::new(AllowStableGasCoin::new()));
 
-    pub fn update_allow_stable_gas_coins(value: HashMap<String, u64>) {
+    pub fn update_allow_stable_gas_coins(value: BTreeMap<String, u64>) {
         let w = INSTANCE.write();
         if w.is_err() {
             return;
@@ -40,10 +40,10 @@ pub mod checked {
         w.unwrap().set_rate_map(value);
     }
 
-    pub fn get_allow_stable_gas_coins_rate_map() -> HashMap<String, u64> {
+    pub fn get_allow_stable_gas_coins_rate_map() -> BTreeMap<String, u64> {
         let r = INSTANCE.read();
         if r.is_err() {
-            return HashMap::new();
+            return BTreeMap::new();
         }
 
         r.unwrap().get_rate_map().clone()
@@ -139,7 +139,7 @@ pub mod checked {
                         continue;
                     }
 
-                    types.push(tag);
+                    types.push(tag.clone());
                 }
             }
 
@@ -335,7 +335,7 @@ pub mod checked {
         fn test_singleton_initial_value() {
             assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 0);
 
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert("BUSD".to_string(), 100);
             update_allow_stable_gas_coins(m);
 
@@ -347,7 +347,7 @@ pub mod checked {
             let handles: Vec<_> = (0..100)
                 .map(|i| {
                     thread::spawn(move || {
-                        let mut m = HashMap::new();
+                        let mut m = BTreeMap::new();
                         m.insert("BUSD".to_string(), 100);
                         update_allow_stable_gas_coins(m);
                     })
@@ -366,7 +366,7 @@ pub mod checked {
             let write_handles: Vec<_> = (0..50)
                 .map(|i| {
                     thread::spawn(move || {
-                        let mut m = HashMap::new();
+                        let mut m = BTreeMap::new();
                         m.insert("BUSD".to_string(), 100);
                         update_allow_stable_gas_coins(m);
                     })
@@ -400,7 +400,7 @@ pub mod checked {
                 assert!(TypeTag::from_str("0x000000c8::bcad::BCAD").is_ok());
             }
 
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert(
                 "00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS"
                     .to_string(),
@@ -441,7 +441,7 @@ pub mod checked {
             let tags = STABLE::all_stable_coins_type();
             assert_eq!(tags.len(), 17);
 
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert(
                 "00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS"
                     .to_string(),
@@ -453,7 +453,7 @@ pub mod checked {
             let tags = STABLE::all_stable_coins_type();
             assert_eq!(tags.len(), 17);
 
-            let mut m = HashMap::new();
+            let mut m = BTreeMap::new();
             m.insert("0000000000000000000c8::abc::abc".to_string(), 100);
             m.insert("0xc8::fff::fff".to_string(), 100);
             update_allow_stable_gas_coins(m);

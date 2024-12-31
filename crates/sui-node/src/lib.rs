@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Duration;
 use std::fmt;
 use std::str::FromStr;
@@ -1821,7 +1821,7 @@ impl SuiNode {
             if result.is_ok() {
                 let bfc_system = result.unwrap();
                 let rate_map = bfc_system.get_rate_map();
-                let v: HashMap<String, u64> = rate_map.contents.iter()
+                let v: BTreeMap<String, u64> = rate_map.contents.iter()
                     .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
                     .collect();
                 update_allow_stable_gas_coins(v);
