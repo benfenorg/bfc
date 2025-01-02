@@ -11,7 +11,7 @@ use test_cluster::TestClusterBuilder;
 use crate::transfer_coin;
 
 #[sim_test]
-async fn list_checkpoint() {
+async fn sim_list_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
@@ -61,7 +61,7 @@ async fn list_checkpoint() {
 }
 
 #[sim_test]
-async fn get_checkpoint() {
+async fn sim_get_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
@@ -76,7 +76,7 @@ async fn get_checkpoint() {
 }
 
 #[sim_test]
-async fn get_full_checkpoint() {
+async fn sim_get_full_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;

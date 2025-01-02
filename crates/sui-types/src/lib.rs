@@ -412,9 +412,9 @@ fn is_object_struct(
 
         #[test]
         fn test_parse_sui_module_id() {
-            let result = parse_sui_module_id("0x2::sui").expect("should not error");
+            let result = parse_sui_module_id("0x2::bfc").expect("should not error");
             let expected =
-                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui"];
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::bfc"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
@@ -432,77 +432,77 @@ fn is_object_struct(
 
         #[test]
         fn test_parse_sui_struct_tag_short_account_addr() {
-            let result = parse_sui_struct_tag("0x2::sui::SUI").expect("should not error");
+            let result = parse_sui_struct_tag("0x2::bfc::BFC").expect("should not error");
 
-            let expected = expect!["0x2::sui::SUI"];
+            let expected = expect!["0x2::bfc::BFC"];
             expected.assert_eq(&result.to_string());
 
             let expected =
-                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
         #[test]
         fn test_parse_sui_struct_tag_long_account_addr() {
             let result = parse_sui_struct_tag(
-                "0x00000000000000000000000000000000000000000000000000000000000000002::sui::SUI",
+                "0x00000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
             )
                 .expect("should not error");
 
-            let expected = expect!["0x2::sui::SUI"];
+            let expected = expect!["0x2::bfc::BFC"];
             expected.assert_eq(&result.to_string());
 
             let expected =
-                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI"];
+                expect!["0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
         #[test]
         fn test_parse_sui_struct_with_type_param_short_addr() {
             let result =
-                parse_sui_struct_tag("0x2::coin::COIN<0x2::sui::SUI>").expect("should not error");
+                parse_sui_struct_tag("0x2::coin::COIN<0x2::bfc::BFC>").expect("should not error");
 
-            let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
+            let expected = expect!["0x2::coin::COIN<0x2::bfc::BFC>"];
             expected.assert_eq(&result.to_string());
 
-            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
         #[test]
         fn test_parse_sui_struct_with_type_param_long_addr() {
-            let result = parse_sui_struct_tag("0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>")
+            let result = parse_sui_struct_tag("0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>")
                 .expect("should not error");
 
-            let expected = expect!["0x2::coin::COIN<0x2::sui::SUI>"];
+            let expected = expect!["0x2::coin::COIN<0x2::bfc::BFC>"];
             expected.assert_eq(&result.to_string());
 
-            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"];
+            let expected = expect!["0x0000000000000000000000000000000000000000000000000000000000000002::coin::COIN<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
         #[test]
         fn test_complex_struct_tag_with_short_addr() {
             let result =
-                parse_sui_struct_tag("0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>")
+                parse_sui_struct_tag("0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::bfc::BFC>>>")
                     .expect("should not error");
 
-            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
+            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::bfc::BFC>>>"];
             expected.assert_eq(&result.to_string());
 
-            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
+            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>>>"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 
         #[test]
         fn test_complex_struct_tag_with_long_addr() {
-            let result = parse_sui_struct_tag("0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>")
+            let result = parse_sui_struct_tag("0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>>>")
                 .expect("should not error");
 
-            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::sui::SUI>>>"];
+            let expected = expect!["0xe7::vec_coin::VecCoin<vector<0x2::coin::Coin<0x2::bfc::BFC>>>"];
             expected.assert_eq(&result.to_string());
 
-            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>>>"];
+            let expected = expect!["0x00000000000000000000000000000000000000000000000000000000000000e7::vec_coin::VecCoin<vector<0x0000000000000000000000000000000000000000000000000000000000000002::coin::Coin<0x0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC>>>"];
             expected.assert_eq(&result.to_canonical_string(/* with_prefix */ true));
         }
 

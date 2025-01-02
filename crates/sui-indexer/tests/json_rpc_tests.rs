@@ -98,13 +98,13 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
 
     // We should get 0 coins for a non-existent coin type.
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::TestCoin".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::TestCoin".into()), None, None)
         .await?;
     assert_eq!(0, result.data.len());
 
     // We should get all the 5 coins for SUI with the right balance.
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::SUI".into()), None, None)
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, None)
         .await?;
     assert_eq!(5, result.data.len());
     assert_eq!(result.data[0].balance, DEFAULT_GAS_AMOUNT);
@@ -112,7 +112,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
 
     // When we have more than 3 coins, we should get a next page.
     let result: CoinPage = http_client
-        .get_coins(address, Some("0x2::sui::SUI".into()), None, Some(3))
+        .get_coins(address, Some("0x2::bfc::BFC".into()), None, Some(3))
         .await?;
     assert_eq!(3, result.data.len());
     assert!(result.has_next_page);
@@ -121,7 +121,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::sui::SUI".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             Some(3),
         )
@@ -133,7 +133,7 @@ async fn test_get_coins() -> Result<(), anyhow::Error> {
     let result: CoinPage = http_client
         .get_coins(
             address,
-            Some("0x2::sui::SUI".into()),
+            Some("0x2::bfc::BFC".into()),
             result.next_cursor,
             None,
         )
