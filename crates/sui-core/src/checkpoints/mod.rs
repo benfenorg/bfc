@@ -1585,11 +1585,11 @@ impl CheckpointBuilder {
             // sum only when we are within the same epoch
             let result = self.merge_map(previous_stable_gas_costs_map, current_stable_gas_costs_map);
             (GasCostSummary::new(
-                previous_bfc_gas_costs.computation_cost + current_bfc_gas_costs.computation_cost,
-                previous_bfc_gas_costs.storage_cost + current_bfc_gas_costs.storage_cost,
-                previous_bfc_gas_costs.storage_rebate + current_bfc_gas_costs.storage_rebate,
-                previous_bfc_gas_costs.non_refundable_storage_fee
-                    + current_bfc_gas_costs.non_refundable_storage_fee,
+                previous_bfc_gas_costs.computation_cost.saturating_add(current_bfc_gas_costs.computation_cost),
+                previous_bfc_gas_costs.storage_cost.saturating_add(current_bfc_gas_costs.storage_cost),
+                previous_bfc_gas_costs.storage_rebate.saturating_add(current_bfc_gas_costs.storage_rebate),
+                previous_bfc_gas_costs.non_refundable_storage_fee.saturating_add(
+                    current_bfc_gas_costs.non_refundable_storage_fee),
             ), result
             )
         } else {
@@ -1605,15 +1605,15 @@ impl CheckpointBuilder {
         for (k, v) in current {
             if result.contains_key(&k) {
                 let p = result.get_mut(&k).unwrap();
-                p.gas_by_bfc.computation_cost = p.gas_by_bfc.computation_cost + v.gas_by_bfc.computation_cost;
-                p.gas_by_bfc.storage_cost = p.gas_by_bfc.storage_cost + v.gas_by_bfc.storage_cost;
-                p.gas_by_bfc.storage_rebate = p.gas_by_bfc.storage_rebate + v.gas_by_bfc.storage_rebate;
-                p.gas_by_bfc.non_refundable_storage_fee = p.gas_by_bfc.non_refundable_storage_fee + v.gas_by_bfc.non_refundable_storage_fee;
+                p.gas_by_bfc.computation_cost = p.gas_by_bfc.computation_cost.saturating_add(v.gas_by_bfc.computation_cost);
+                p.gas_by_bfc.storage_cost = p.gas_by_bfc.storage_cost.saturating_add(v.gas_by_bfc.storage_cost);
+                p.gas_by_bfc.storage_rebate = p.gas_by_bfc.storage_rebate.saturating_add(v.gas_by_bfc.storage_rebate);
+                p.gas_by_bfc.non_refundable_storage_fee = p.gas_by_bfc.non_refundable_storage_fee.saturating_add(v.gas_by_bfc.non_refundable_storage_fee);
 
-                p.gas_by_stable.computation_cost = p.gas_by_stable.computation_cost + v.gas_by_stable.computation_cost;
-                p.gas_by_stable.storage_cost = p.gas_by_stable.storage_cost + v.gas_by_stable.storage_cost;
-                p.gas_by_stable.storage_rebate = p.gas_by_stable.storage_rebate + v.gas_by_stable.storage_rebate;
-                p.gas_by_stable.non_refundable_storage_fee = p.gas_by_stable.non_refundable_storage_fee + v.gas_by_stable.non_refundable_storage_fee;
+                p.gas_by_stable.computation_cost = p.gas_by_stable.computation_cost.saturating_add(v.gas_by_stable.computation_cost);
+                p.gas_by_stable.storage_cost = p.gas_by_stable.storage_cost.saturating_add(v.gas_by_stable.storage_cost);
+                p.gas_by_stable.storage_rebate = p.gas_by_stable.storage_rebate.saturating_add(v.gas_by_stable.storage_rebate);
+                p.gas_by_stable.non_refundable_storage_fee = p.gas_by_stable.non_refundable_storage_fee.saturating_add(v.gas_by_stable.non_refundable_storage_fee);
             } else {
                 result.insert(k.clone(), v.clone());
             }
@@ -1640,40 +1640,40 @@ impl CheckpointBuilder {
             let gas_object_id = effect.gas_object().0.0;
             let object_result = self.state.get_object(&gas_object_id).await;
             if object_result.is_err() {
-                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
-                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
-                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                bfc_gas_cost_summary.storage_cost = bfc_gas_cost_summary.storage_cost.saturating_add(effect.gas_cost_summary().storage_cost);
+                bfc_gas_cost_summary.computation_cost = bfc_gas_cost_summary.computation_cost.saturating_add(effect.gas_cost_summary().computation_cost);
+                bfc_gas_cost_summary.storage_rebate = bfc_gas_cost_summary.storage_rebate.saturating_add(effect.gas_cost_summary().storage_rebate);
+                bfc_gas_cost_summary.non_refundable_storage_fee = bfc_gas_cost_summary.non_refundable_storage_fee.saturating_add(effect.gas_cost_summary().non_refundable_storage_fee);
                 continue;
             }
             let object_op = object_result.unwrap();
             if object_op.is_none() {
-                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
-                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
-                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                bfc_gas_cost_summary.storage_cost = bfc_gas_cost_summary.storage_cost.saturating_add(effect.gas_cost_summary().storage_cost);
+                bfc_gas_cost_summary.computation_cost = bfc_gas_cost_summary.computation_cost.saturating_add(effect.gas_cost_summary().computation_cost);
+                bfc_gas_cost_summary.storage_rebate = bfc_gas_cost_summary.storage_rebate.saturating_add(effect.gas_cost_summary().storage_rebate);
+                bfc_gas_cost_summary.non_refundable_storage_fee = bfc_gas_cost_summary.non_refundable_storage_fee.saturating_add(effect.gas_cost_summary().non_refundable_storage_fee);
                 continue;
             }
             let object = object_op.unwrap();
             if object.is_gas_coin() {
-                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
-                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
-                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                bfc_gas_cost_summary.storage_cost = bfc_gas_cost_summary.storage_cost.saturating_add(effect.gas_cost_summary().storage_cost);
+                bfc_gas_cost_summary.computation_cost = bfc_gas_cost_summary.computation_cost.saturating_add(effect.gas_cost_summary().computation_cost);
+                bfc_gas_cost_summary.storage_rebate = bfc_gas_cost_summary.storage_rebate.saturating_add(effect.gas_cost_summary().storage_rebate);
+                bfc_gas_cost_summary.non_refundable_storage_fee = bfc_gas_cost_summary.non_refundable_storage_fee.saturating_add(effect.gas_cost_summary().non_refundable_storage_fee);
             }
             if object.is_stable_gas_coin() {
                 let type_tag = object.struct_tag().unwrap().type_params.get(0).unwrap().clone();
                 if stable_gas_cost_summary_map.contains_key(&type_tag) {
                     let gas_cost_summary: &mut GasCostSummaryAdjusted = stable_gas_cost_summary_map.get_mut(&type_tag).unwrap();
-                    gas_cost_summary.gas_by_bfc.storage_cost += effect.gas_cost_summary().storage_cost;
-                    gas_cost_summary.gas_by_bfc.computation_cost += effect.gas_cost_summary().computation_cost;
-                    gas_cost_summary.gas_by_bfc.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                    gas_cost_summary.gas_by_bfc.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                    gas_cost_summary.gas_by_bfc.storage_cost = gas_cost_summary.gas_by_bfc.storage_cost.saturating_add(effect.gas_cost_summary().storage_cost);
+                    gas_cost_summary.gas_by_bfc.computation_cost = gas_cost_summary.gas_by_bfc.computation_cost.saturating_add(effect.gas_cost_summary().computation_cost);
+                    gas_cost_summary.gas_by_bfc.storage_rebate = gas_cost_summary.gas_by_bfc.storage_rebate.saturating_add(effect.gas_cost_summary().storage_rebate);
+                    gas_cost_summary.gas_by_bfc.non_refundable_storage_fee = gas_cost_summary.gas_by_bfc.non_refundable_storage_fee.saturating_add(effect.gas_cost_summary().non_refundable_storage_fee);
 
-                    gas_cost_summary.gas_by_stable.storage_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    gas_cost_summary.gas_by_stable.computation_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    gas_cost_summary.gas_by_stable.storage_rebate += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    gas_cost_summary.gas_by_stable.non_refundable_storage_fee += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
+                    gas_cost_summary.gas_by_stable.storage_cost = gas_cost_summary.gas_by_stable.storage_cost.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    gas_cost_summary.gas_by_stable.computation_cost = gas_cost_summary.gas_by_stable.computation_cost.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    gas_cost_summary.gas_by_stable.storage_rebate = gas_cost_summary.gas_by_stable.storage_rebate.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    gas_cost_summary.gas_by_stable.non_refundable_storage_fee = gas_cost_summary.gas_by_stable.non_refundable_storage_fee.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
                 } else {
                     let mut gas_cost_summary = GasCostSummary {
                         base_point: effect.gas_cost_summary().base_point,
@@ -1692,15 +1692,15 @@ impl CheckpointBuilder {
                         non_refundable_storage_fee: 0,
                     };
 
-                    gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
-                    gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
-                    gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                    gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                    gas_cost_summary.storage_cost = gas_cost_summary.storage_cost.saturating_add(effect.gas_cost_summary().storage_cost);
+                    gas_cost_summary.computation_cost = gas_cost_summary.computation_cost.saturating_add(effect.gas_cost_summary().computation_cost);
+                    gas_cost_summary.storage_rebate = gas_cost_summary.storage_rebate.saturating_add(effect.gas_cost_summary().storage_rebate);
+                    gas_cost_summary.non_refundable_storage_fee = gas_cost_summary.non_refundable_storage_fee.saturating_add(effect.gas_cost_summary().non_refundable_storage_fee);
 
-                    stable_gas_cost_summary.storage_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    stable_gas_cost_summary.computation_cost += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    stable_gas_cost_summary.storage_rebate += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
-                    stable_gas_cost_summary.non_refundable_storage_fee += calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point);
+                    stable_gas_cost_summary.storage_cost = stable_gas_cost_summary.storage_cost.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    stable_gas_cost_summary.computation_cost = stable_gas_cost_summary.computation_cost.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().computation_cost, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    stable_gas_cost_summary.storage_rebate = stable_gas_cost_summary.storage_rebate.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().storage_rebate, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
+                    stable_gas_cost_summary.non_refundable_storage_fee = stable_gas_cost_summary.non_refundable_storage_fee.saturating_add(calculate_bfc_to_stable_cost_with_base_point(effect.gas_cost_summary().non_refundable_storage_fee, effect.gas_cost_summary().rate, effect.gas_cost_summary().base_point));
 
                     let gas_cost_summary_adjusted = GasCostSummaryAdjusted {
                         gas_by_bfc: gas_cost_summary.clone(),
