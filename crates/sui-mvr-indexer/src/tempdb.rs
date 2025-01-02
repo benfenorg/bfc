@@ -37,12 +37,13 @@ impl TempDb {
     /// The running `postgres` service will be serving traffic on an available, os-assigned port.
     pub fn new() -> Result<Self> {
         let dir = tempdir()?.into_path(); // 获取 PathBuf
+        info!("========sui pg temp db dir {:?} ======", dir);
+
         //let dir = tempdir()?.into_path(); // 获取 PathBuf
         let port = get_available_port();
 
         let database = LocalDatabase::new_initdb(dir.clone(), port)?;
 
-        info!("========sui pg temp db dir {:?} ======", dir);
         Ok(Self { dir, database })
     }
 
