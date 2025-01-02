@@ -11,7 +11,7 @@ use std::{
     time::{Duration, Instant},
 };
 //use clap::arg;
-//use tempfile::tempdir;
+use tempfile::tempdir;
 use tracing::trace;
 use url::Url;
 
@@ -25,7 +25,8 @@ pub struct TempDb {
     //
     // NOTE: This needs to be the last entry in this struct so that the database is dropped before
     // and has a chance to gracefully shutdown before the directory is deleted.
-    dir: tempfile::TempDir,
+    //dir: tempfile::TempDir,
+    dir: PathBuf, // 修改为 PathBuf
     //dir: PathBuf, // 修改为 PathBuf
 }
 
@@ -35,12 +36,13 @@ impl TempDb {
     /// A fresh database will be initialized in a temporary directory that will be cleandup on drop.
     /// The running `postgres` service will be serving traffic on an available, os-assigned port.
     pub fn new() -> Result<Self> {
-        let dir = tempfile::TempDir::new()?;
+        let dir = tempdir()?.into_path(); // 获取 PathBuf
         //let dir = tempdir()?.into_path(); // 获取 PathBuf
         let port = get_available_port();
 
-        let database = LocalDatabase::new_initdb(dir.path().to_owned(), port)?;
+        let database = LocalDatabase::new_initdb(dir.clone(), port)?;
 
+        info!("========sui pg temp db dir {:?} ======", dir);
         Ok(Self { dir, database })
     }
 
@@ -53,7 +55,7 @@ impl TempDb {
     }
 
     pub fn dir(&self) -> &Path {
-        self.dir.path()
+        &self.dir
     }
 }
 
