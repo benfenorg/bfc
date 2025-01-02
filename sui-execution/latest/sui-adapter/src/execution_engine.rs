@@ -1085,11 +1085,11 @@ mod checked {
                         break;
                     }
 
-                    storage_rebate += gas_cost_summary.gas_by_bfc.storage_rebate;
-                    non_refundable_storage_fee += gas_cost_summary.gas_by_bfc.non_refundable_storage_fee;
-                    computation_charge += computation_reward;
-                    deposit_computation_charge += gas_cost_summary.gas_by_bfc.computation_cost - computation_reward;
-                    storage_charge += gas_cost_summary.gas_by_bfc.storage_cost;
+                    storage_rebate = storage_rebate.saturating_add(gas_cost_summary.gas_by_bfc.storage_rebate);
+                    non_refundable_storage_fee = non_refundable_storage_fee.saturating_add(gas_cost_summary.gas_by_bfc.non_refundable_storage_fee);
+                    computation_charge = computation_charge.saturating_add(computation_reward);
+                    deposit_computation_charge = deposit_computation_charge.saturating_add(gas_cost_summary.gas_by_bfc.computation_cost - computation_reward);
+                    storage_charge = storage_charge.saturating_add(gas_cost_summary.gas_by_bfc.storage_cost);
                 }
             }
             Err(e) => {
@@ -1120,10 +1120,10 @@ mod checked {
             storage_rebate,
             current_protocol_version: protocol_config.version,
         };
-        let advance_epoch_storage_charge = change_epoch.bfc_storage_charge + storage_charge;
-        let advance_epoch_computation_charge = change_epoch.bfc_computation_charge + computation_charge;
-        let advance_epoch_storage_rebate = change_epoch.bfc_storage_rebate + storage_rebate;
-        let advance_epoch_non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee + non_refundable_storage_fee;
+        let advance_epoch_storage_charge = change_epoch.bfc_storage_charge.saturating_add(storage_charge);
+        let advance_epoch_computation_charge = change_epoch.bfc_computation_charge.saturating_add(computation_charge);
+        let advance_epoch_storage_rebate = change_epoch.bfc_storage_rebate.saturating_add(storage_rebate);
+        let advance_epoch_non_refundable_storage_fee = change_epoch.bfc_non_refundable_storage_fee.saturating_add(non_refundable_storage_fee);
         let mut params = AdvanceEpochParams {
             epoch: change_epoch.epoch,
             next_protocol_version: change_epoch.protocol_version,
