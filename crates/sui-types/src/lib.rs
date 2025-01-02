@@ -445,7 +445,7 @@ fn is_object_struct(
         #[test]
         fn test_parse_sui_struct_tag_long_account_addr() {
             let result = parse_sui_struct_tag(
-                "0x00000000000000000000000000000000000000000000000000000000000000002::bfc::BFC",
+                "0x2::bfc::BFC",
             )
                 .expect("should not error");
 
