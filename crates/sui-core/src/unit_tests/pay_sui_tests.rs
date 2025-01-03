@@ -346,8 +346,6 @@ async fn test_pay_all_sui_success_one_input_coin() -> anyhow::Result<()> {
 
     let gas_used = effects.gas_cost_summary().gas_used();
     let gas_object = res.authority_state.get_object(&object_id).await.unwrap();
-    assert_eq!(GasCoin::try_from(&gas_object)?.value(), 3000000 - gas_used,);
-    let gas_object = res.authority_state.get_object(&object_id).await.unwrap();
     assert_eq!(GasCoin::try_from(&gas_object)?.value(), 300000000 - gas_used,);
     Ok(())
 }
