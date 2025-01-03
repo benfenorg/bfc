@@ -19,7 +19,7 @@ use sui_types::gas_coin::GAS;
 use sui_types::transaction::CallArg;
 use sui_types::transaction::ObjectArg;
 use sui_types::transaction::TransactionDataAPI;
-use sui_types::DEEPBOOK_ADDRESS;
+use sui_types::{BRIDGE_PACKAGE_ID, DEEPBOOK_ADDRESS};
 use sui_types::SUI_FRAMEWORK_ADDRESS;
 use sui_types::SUI_FRAMEWORK_PACKAGE_ID;
 use tempfile::tempdir;
@@ -140,7 +140,7 @@ async fn test_graphql_client_variables() {
     let cluster = prep_executor_cluster().await;
 
     let query = r#"{obj1: object(address: $framework_addr) {address}
-            obj2: object(address: $deepbook_addr) {address}}"#;
+            obj2: object(address: $bridge_addr) {address}}"#;
     let variables = vec![
         GraphqlQueryVariable {
             name: "framework_addr".to_string(),
@@ -148,9 +148,9 @@ async fn test_graphql_client_variables() {
             value: json!("0x2"),
         },
         GraphqlQueryVariable {
-            name: "deepbook_addr".to_string(),
+            name: "bridge_addr".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
     ];
     let res = cluster
@@ -178,7 +178,7 @@ async fn test_graphql_client_variables() {
             .unwrap()
             .as_str()
             .unwrap(),
-        DEEPBOOK_ADDRESS.to_canonical_string(true)
+        BRIDGE_PACKAGE_ID.to_canonical_string(true)
     );
 
     let bad_variables = vec![
@@ -188,14 +188,14 @@ async fn test_graphql_client_variables() {
             value: json!("0x2"),
         },
         GraphqlQueryVariable {
-            name: "deepbook_addr".to_string(),
+            name: "bridge_addr".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
         GraphqlQueryVariable {
-            name: "deepbook_addr".to_string(),
+            name: "bridge_addr".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee96666666"),
+            value: json!("0xb666"),
         },
     ];
     let res = cluster
@@ -212,14 +212,14 @@ async fn test_graphql_client_variables() {
             value: json!("0x2"),
         },
         GraphqlQueryVariable {
-            name: "deepbook_addr".to_string(),
+            name: "bridge_addr".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
         GraphqlQueryVariable {
-            name: "deepbook_addr".to_string(),
+            name: "bridge_addr".to_string(),
             ty: "SuiAddressP!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
     ];
     let res = cluster
@@ -236,24 +236,24 @@ async fn test_graphql_client_variables() {
             value: json!("0x2"),
         },
         GraphqlQueryVariable {
-            name: " deepbook_addr".to_string(),
+            name: " bridge_addr".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
         GraphqlQueryVariable {
-            name: "4deepbook_addr".to_string(),
+            name: "4bridge_addr".to_string(),
             ty: "SuiAddressP!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
         GraphqlQueryVariable {
             name: "".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
         GraphqlQueryVariable {
             name: " ".to_string(),
             ty: "SuiAddress!".to_string(),
-            value: json!("0xdee9"),
+            value: json!("0xb"),
         },
     ];
 
