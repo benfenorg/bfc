@@ -166,8 +166,8 @@ public fun return_to_sender<T: key + store>(obj: Escrow<T>) {
 #[test_only] const DIANE: address = @0xD;
 
 #[test_only]
-fun test_coin(ts: &mut Scenario): Coin<SUI> {
-    coin::mint_for_testing<SUI>(42, ts::ctx(ts))
+fun test_coin(ts: &mut Scenario): Coin<BFC> {
+    coin::mint_for_testing<BFC>(42, ts::ctx(ts))
 }
 
 #[test]

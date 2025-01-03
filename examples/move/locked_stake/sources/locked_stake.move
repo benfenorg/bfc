@@ -18,7 +18,7 @@ const EStakeObjectNonExistent: u64 = 1;
 /// staking and unstaking operations when locked.
 public struct LockedStake has key {
     id: UID,
-    staked_sui: VecMap<ID, BFC>,
+    staked_sui: VecMap<ID, StakedBfc>,
     sui: Balance<BFC>,
     locked_until_epoch: EpochTimeLock,
 }

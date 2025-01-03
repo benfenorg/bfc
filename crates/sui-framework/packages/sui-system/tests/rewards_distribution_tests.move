@@ -1058,7 +1058,9 @@ module sui_system::rewards_distribution_tests {
         // perform advance epoch
         sui_system
             .inner_mut_for_testing()
-            .advance_epoch(start_epoch + 1, 65, balance::zero(), balance::zero(), 0, 0, 0, 0, epoch_start_time, ctx)
+            .advance_epoch(start_epoch + 1, 65, balance::zero(), balance::zero(), 0, 0, 0, 0,
+        vec_map::empty(),
+        epoch_start_time, ctx)
             .destroy_for_testing(); // balance returned from `advance_epoch`
         ctx.increment_epoch_number();
 
@@ -1069,7 +1071,9 @@ module sui_system::rewards_distribution_tests {
         // ensure that next epoch change only distributes one epoch's worth
         sui_system
             .inner_mut_for_testing()
-            .advance_epoch(start_epoch + 2, 65, balance::zero(), balance::zero(), 0, 0, 0, 0, epoch_start_time + epoch_duration, ctx)
+            .advance_epoch(start_epoch + 2, 65, balance::zero(), balance::zero(), 0, 0, 0, 0,
+        vec_map::empty(),
+        epoch_start_time + epoch_duration, ctx)
             .destroy_for_testing(); // balance returned from `advance_epoch`
         ctx.increment_epoch_number();
 
@@ -1106,7 +1110,9 @@ module sui_system::rewards_distribution_tests {
         // perform advance epoch
         sui_system
             .inner_mut_for_testing()
-            .advance_epoch(start_epoch + 1, 65, balance::zero(), balance::zero(), 0, 0, 0, 0, epoch_start_time, ctx)
+            .advance_epoch(start_epoch + 1, 65, balance::zero(), balance::zero(), 0, 0, 0, 0,
+        vec_map::empty(),
+        epoch_start_time, ctx)
             .destroy_for_testing(); // balance returned from `advance_epoch`
         ctx.increment_epoch_number();
 
@@ -1117,7 +1123,9 @@ module sui_system::rewards_distribution_tests {
         // ensure that next epoch change only distributes one epoch's worth
         sui_system
             .inner_mut_for_testing()
-            .advance_epoch(start_epoch + 2, 65, balance::zero(), balance::zero(), 0, 0, 0, 0, epoch_start_time + epoch_duration, ctx)
+            .advance_epoch(start_epoch + 2, 65, balance::zero(), balance::zero(), 0, 0, 0, 0,
+        vec_map::empty(),
+            epoch_start_time + epoch_duration, ctx)
             .destroy_for_testing(); // balance returned from `advance_epoch`
         ctx.increment_epoch_number();
 
@@ -1154,7 +1162,9 @@ module sui_system::rewards_distribution_tests {
         // perform advance epoch
         sui_system
             .inner_mut_for_testing()
-            .advance_epoch(541, 65, balance::zero(), balance::zero(), 0, 0, 0, 0, 100000000000, ctx)
+            .advance_epoch(541, 65, balance::zero(), balance::zero(), 0, 0, 0, 0,
+        vec_map::empty(),
+        100000000000, ctx)
             .destroy_for_testing(); // balance returned from `advance_epoch`
 
         assert_eq!(sui_system.get_stake_subsidy_distribution_counter(), 541);

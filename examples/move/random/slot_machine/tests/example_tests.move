@@ -3,7 +3,7 @@
 
 #[test_only]
 module slot_machine::tests;
-
+use slot_machine::example;
 use sui::coin::{Self, Coin};
 use sui::random::{Self, update_randomness_state_for_testing, Random};
 use sui::bfc::BFC;

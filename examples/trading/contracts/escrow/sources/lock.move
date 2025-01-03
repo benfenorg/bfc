@@ -96,7 +96,7 @@ public struct LockDestroyed has copy, drop {
 
 
 #[test_only]
-fun test_coin(ts: &mut Scenario): Coin<SUI> {
+fun test_coin(ts: &mut Scenario): Coin<BFC> {
     coin::mint_for_testing<BFC>(42, ts.ctx())
 }
 
