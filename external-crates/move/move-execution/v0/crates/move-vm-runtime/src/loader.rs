@@ -777,7 +777,8 @@ impl Loader {
             let not_verify_function
                 = vec!["receive_impl", "internal_validate", "internal_add", "internal_sub", "internal_mul", "internal_div",
                        "internal_hash_to", "internal_multi_scalar_mul", "internal_pairing", "poseidon_bn254_internal",
-                       "check_zklogin_id_internal", "check_zklogin_issuer_internal", "hash_to_input_internal", "vdf_verify_internal", "read_setting_impl", "group_ops"];
+                       "check_zklogin_id_internal", "check_zklogin_issuer_internal", "hash_to_input_internal", "vdf_verify_internal",
+                       "read_setting_impl", "internal_convert", "internal_sum"];
 
             if !cfg!(feature = "lazy_natives") {
                 for (idx, native_function) in module
