@@ -13,7 +13,6 @@ use sui_types::digests::CheckpointDigest;
 use sui_types::event::EventID;
 use sui_types::messages_checkpoint::CheckpointSequenceNumber;
 use sui_types::object::ObjectRead;
-use sui_types::storage::error::Error;
 use sui_types::storage::ObjectStore;
 use sui_types::TypeTag;
 
@@ -473,7 +472,7 @@ impl ObjectStore for CheckpointData {
                     o.clone().try_into().ok()
                 }
                 _ => None,
-            })?
+            })
     }
 
     fn get_object_by_key(
@@ -491,7 +490,7 @@ impl ObjectStore for CheckpointData {
                     o.clone().try_into().ok()
                 }
                 _ => None,
-            })?
+            })
     }
 }
 

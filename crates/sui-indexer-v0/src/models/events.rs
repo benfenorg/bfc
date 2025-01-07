@@ -8,7 +8,7 @@ use move_bytecode_utils::module_cache::GetModule;
 use move_core_types::identifier::Identifier;
 use move_core_types::annotated_value::MoveStruct;
 
-use sui_json_rpc_types::{SuiEvent, SuiMoveStruct};
+use sui_json_rpc_types::{BcsEvent, SuiEvent, SuiMoveStruct};
 use sui_types::base_types::TransactionDigest;
 use sui_types::event::EventID;
 use sui_types::object::{MoveObject};
@@ -43,7 +43,7 @@ impl From<SuiEvent> for Event {
             module: se.transaction_module.to_string(),
             event_type: se.type_.to_string(),
             event_time_ms: se.timestamp_ms.map(|t| t as i64),
-            event_bcs: se.bcs,
+            event_bcs: se.bcs.into_bytes(),
         }
     }
 }
@@ -77,7 +77,7 @@ impl Event {
             transaction_module: Identifier::from_str(&self.module)?,
             sender,
             type_,
-            bcs: self.event_bcs,
+            bcs: BcsEvent::new(self.event_bcs),
             parsed_json,
             timestamp_ms: self.event_time_ms.map(|t| t as u64),
         })

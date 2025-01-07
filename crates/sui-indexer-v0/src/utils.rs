@@ -233,7 +233,7 @@ pub async fn get_object_changes<P: ObjectProvider<Error = E>, E>(
                     obj_owner_ref.reference.version,
                     obj_owner_ref.reference.digest,
                 ),
-                obj_owner_ref.owner,
+                obj_owner_ref.owner.clone(),
                 write_kind,
             )
         })
@@ -253,7 +253,7 @@ pub async fn get_object_changes<P: ObjectProvider<Error = E>, E>(
         })
         .collect();
 
-    sui_json_rpc::get_object_changes(
+    sui_json_rpc::get_object_changes_old(
         object_provider,
         sender,
         modified_at_versions,

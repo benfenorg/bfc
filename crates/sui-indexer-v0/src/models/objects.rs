@@ -127,7 +127,7 @@ impl Object {
         o: &SuiObjectData,
     ) -> Self {
         let (owner_type, owner_address, initial_shared_version) =
-            owner_to_owner_info(&o.owner.expect("Expect the owner type to be non-empty"));
+            owner_to_owner_info(&o.owner.clone().expect("Expect the owner type to be non-empty"));
 
         let (has_public_transfer, bcs) =
             match o.bcs.clone().expect("Expect BCS data to be non-empty") {
@@ -317,6 +317,7 @@ pub fn owner_to_owner_info(owner: &Owner) -> (OwnerType, Option<String>, Option<
             Some(initial_shared_version.value() as i64),
         ),
         Owner::Immutable => (OwnerType::Immutable, None, None),
+        Owner::ConsensusV2 { .. } => todo!(),
     }
 }
 
