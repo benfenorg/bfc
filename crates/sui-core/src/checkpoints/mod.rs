@@ -1615,6 +1615,13 @@ impl CheckpointBuilder {
         for effect in transactions.into_iter() {
             let gas_object_id = effect.gas_object().0.0;
             let object_result = self.state.get_object(&gas_object_id).await;
+            if object_result.is_none() {
+                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
+                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
+                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
+                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
+                continue;
+            }
             let object = object_result.unwrap();
             if object.is_gas_coin() {
                 bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
