@@ -77,67 +77,67 @@ Response: {
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU8' (line 29), abort 'ImAU8': 0"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU8' (line 29), abort 'ImAU8': 0"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU16' (line 32), abort 'ImAU16': 1"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU16' (line 32), abort 'ImAU16': 1"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU32' (line 35), abort 'ImAU32': 2"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU32' (line 35), abort 'ImAU32': 2"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU64' (line 38), abort 'ImAU64': 3"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU64' (line 38), abort 'ImAU64': 3"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU128' (line 41), abort 'ImAU128': 4"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU128' (line 41), abort 'ImAU128': 4"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU256' (line 44), abort 'ImAU256': 5"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU256' (line 44), abort 'ImAU256': 5"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callAddress' (line 47), abort 'ImAnAddress': 0x0000000000000000000000000000000000000000000000000000000000000006"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callAddress' (line 47), abort 'ImAnAddress': 0x0000000000000000000000000000000000000000000000000000000000000006"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callString' (line 50), abort 'ImAString': This is a string"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callString' (line 50), abort 'ImAString': This is a string"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::callU64vec' (line 53), abort 'ImNotAString': BQEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAA="
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::callU64vec' (line 53), abort 'ImNotAString': BQEAAAAAAAAAAgAAAAAAAAADAAAAAAAAAAQAAAAAAAAABQAAAAAAAAA="
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::normalAbort' (instruction 1), abort code: 0"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::normalAbort' (instruction 1), abort code: 0"
           }
         },
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x48748144ff931192950b927dc199905cf50a7ca0f741ca721d3e003621b03bd4::m::assertLineNo' (line 59)"
+            "errors": "Error in 1st command, from '0x4e70cbfb980dfea1148a2831d716a0b91aa7b0bd1d03ee8563780d2da3e29283::m::assertLineNo' (line 59)"
           }
         }
       ]
@@ -248,7 +248,7 @@ Response: {
   },
   "errors": [
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -264,7 +264,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -280,7 +280,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -296,7 +296,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -312,7 +312,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -328,7 +328,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -344,7 +344,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -360,7 +360,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,
@@ -376,7 +376,7 @@ Response: {
       ]
     },
     {
-      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 8f583427d92b28069e6a8bfb154bdd31f3656bbe136046ebfa2dfaa4ef93bf26",
+      "message": "Internal error occurred while processing request: Error resolving Move location: Linkage not found for package: 379a1df52f7cc45f0be48913a45136eaec4e420ae8157d00cf58dcd44f7547ad",
       "locations": [
         {
           "line": 6,

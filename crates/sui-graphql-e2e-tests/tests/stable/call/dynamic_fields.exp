@@ -49,55 +49,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
-                },
-                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          141,
-                          219,
-                          48,
-                          205,
-                          82,
-                          210,
-                          202,
-                          24,
-                          35,
-                          21,
-                          127,
-                          237,
-                          46,
-                          81,
-                          186,
-                          138,
-                          127,
-                          81,
-                          219,
-                          72,
-                          62,
-                          43,
-                          166,
-                          241,
-                          23,
-                          19,
-                          113,
-                          147,
-                          232,
-                          219,
-                          106,
-                          145
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -112,13 +70,55 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0x2086394d4a0205bb4a593fec360b7e1f4b9ad9e77107db8bdecb28f49f477985::m::Child"
+                },
+                "bcs": "Gd6ohJ7MlwY0kSYrFzneeBYXfQoKvevV288edMJfY+I=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          25,
+                          222,
+                          168,
+                          132,
+                          158,
+                          204,
+                          151,
+                          6,
+                          52,
+                          145,
+                          38,
+                          43,
+                          23,
+                          57,
+                          222,
+                          120,
+                          22,
+                          23,
+                          125,
+                          10,
+                          10,
+                          189,
+                          235,
+                          213,
+                          219,
+                          207,
+                          30,
+                          116,
+                          194,
+                          95,
+                          99,
+                          226
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -181,55 +181,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
-                },
-                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          141,
-                          219,
-                          48,
-                          205,
-                          82,
-                          210,
-                          202,
-                          24,
-                          35,
-                          21,
-                          127,
-                          237,
-                          46,
-                          81,
-                          186,
-                          138,
-                          127,
-                          81,
-                          219,
-                          72,
-                          62,
-                          43,
-                          166,
-                          241,
-                          23,
-                          19,
-                          113,
-                          147,
-                          232,
-                          219,
-                          106,
-                          145
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -244,13 +202,55 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0x2086394d4a0205bb4a593fec360b7e1f4b9ad9e77107db8bdecb28f49f477985::m::Child"
+                },
+                "bcs": "Gd6ohJ7MlwY0kSYrFzneeBYXfQoKvevV288edMJfY+I=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          25,
+                          222,
+                          168,
+                          132,
+                          158,
+                          204,
+                          151,
+                          6,
+                          52,
+                          145,
+                          38,
+                          43,
+                          23,
+                          57,
+                          222,
+                          120,
+                          22,
+                          23,
+                          125,
+                          10,
+                          10,
+                          189,
+                          235,
+                          213,
+                          219,
+                          207,
+                          30,
+                          116,
+                          194,
+                          95,
+                          99,
+                          226
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -332,55 +332,13 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
-                },
-                "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          141,
-                          219,
-                          48,
-                          205,
-                          82,
-                          210,
-                          202,
-                          24,
-                          35,
-                          21,
-                          127,
-                          237,
-                          46,
-                          81,
-                          186,
-                          138,
-                          127,
-                          81,
-                          219,
-                          72,
-                          62,
-                          43,
-                          166,
-                          241,
-                          23,
-                          19,
-                          113,
-                          147,
-                          232,
-                          219,
-                          106,
-                          145
-                        ]
-                      }
-                    }
-                  ]
-                }
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
               }
             }
           },
@@ -395,13 +353,55 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0x2086394d4a0205bb4a593fec360b7e1f4b9ad9e77107db8bdecb28f49f477985::m::Child"
+                },
+                "bcs": "Gd6ohJ7MlwY0kSYrFzneeBYXfQoKvevV288edMJfY+I=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          25,
+                          222,
+                          168,
+                          132,
+                          158,
+                          204,
+                          151,
+                          6,
+                          52,
+                          145,
+                          38,
+                          43,
+                          23,
+                          57,
+                          222,
+                          120,
+                          22,
+                          23,
+                          125,
+                          10,
+                          10,
+                          189,
+                          235,
+                          213,
+                          219,
+                          207,
+                          30,
+                          116,
+                          194,
+                          95,
+                          99,
+                          226
+                        ]
+                      }
+                    }
+                  ]
+                }
               }
             }
           },
@@ -493,47 +493,47 @@ Response: {
           "__typename": "MoveObject",
           "contents": {
             "type": {
-              "repr": "0xbc32eaa4c4d1fc9908b8746ae88d89788874ff14427337d5c2695e92199572a2::m::Child"
+              "repr": "0x2086394d4a0205bb4a593fec360b7e1f4b9ad9e77107db8bdecb28f49f477985::m::Child"
             },
-            "bcs": "jdswzVLSyhgjFX/tLlG6in9R20g+K6bxFxNxk+jbapE=",
+            "bcs": "Gd6ohJ7MlwY0kSYrFzneeBYXfQoKvevV288edMJfY+I=",
             "data": {
               "Struct": [
                 {
                   "name": "id",
                   "value": {
                     "UID": [
-                      141,
-                      219,
-                      48,
-                      205,
-                      82,
-                      210,
-                      202,
-                      24,
-                      35,
-                      21,
-                      127,
-                      237,
-                      46,
-                      81,
-                      186,
-                      138,
-                      127,
-                      81,
-                      219,
-                      72,
-                      62,
+                      25,
+                      222,
+                      168,
+                      132,
+                      158,
+                      204,
+                      151,
+                      6,
+                      52,
+                      145,
+                      38,
                       43,
-                      166,
-                      241,
                       23,
-                      19,
-                      113,
-                      147,
-                      232,
+                      57,
+                      222,
+                      120,
+                      22,
+                      23,
+                      125,
+                      10,
+                      10,
+                      189,
+                      235,
+                      213,
                       219,
-                      106,
-                      145
+                      207,
+                      30,
+                      116,
+                      194,
+                      95,
+                      99,
+                      226
                     ]
                   }
                 }
