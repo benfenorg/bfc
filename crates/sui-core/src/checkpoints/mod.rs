@@ -977,17 +977,17 @@ impl CheckpointBuilder {
             // - minimum interval has elapsed ...
             let current_timestamp = pending.details().timestamp_ms;
             let can_build = match last_timestamp {
-                    Some(last_timestamp) => {
-                        current_timestamp >= last_timestamp + min_checkpoint_interval_ms
-                    }
-                    None => true,
+                Some(last_timestamp) => {
+                    current_timestamp >= last_timestamp + min_checkpoint_interval_ms
+                }
+                None => true,
                 // - or, next PendingCheckpoint is last-of-epoch (since the last-of-epoch checkpoint
                 //   should be written separately) ...
-                } || checkpoints_iter
-                    .peek()
-                    .is_some_and(|(_, next_pending)| next_pending.details().last_of_epoch)
+            } || checkpoints_iter
+                .peek()
+                .is_some_and(|(_, next_pending)| next_pending.details().last_of_epoch)
                 // - or, we have reached end of epoch.
-                    || pending.details().last_of_epoch;
+                || pending.details().last_of_epoch;
             grouped_pending_checkpoints.push(pending);
             if !can_build {
                 debug!(
@@ -1615,13 +1615,6 @@ impl CheckpointBuilder {
         for effect in transactions.into_iter() {
             let gas_object_id = effect.gas_object().0.0;
             let object_result = self.state.get_object(&gas_object_id).await;
-            if object_result.is_none() {
-                bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
-                bfc_gas_cost_summary.computation_cost += effect.gas_cost_summary().computation_cost;
-                bfc_gas_cost_summary.storage_rebate += effect.gas_cost_summary().storage_rebate;
-                bfc_gas_cost_summary.non_refundable_storage_fee += effect.gas_cost_summary().non_refundable_storage_fee;
-                continue;
-            }
             let object = object_result.unwrap();
             if object.is_gas_coin() {
                 bfc_gas_cost_summary.storage_cost += effect.gas_cost_summary().storage_cost;
@@ -2059,10 +2052,10 @@ impl CheckpointSignatureAggregator {
             // ignore repeated signatures
             InsertResult::Failed {
                 error:
-                    SuiError::StakeAggregatorRepeatedSigner {
-                        conflicting_sig: false,
-                        ..
-                    },
+                SuiError::StakeAggregatorRepeatedSigner {
+                    conflicting_sig: false,
+                    ..
+                },
             } => Err(()),
             InsertResult::Failed { error } => {
                 warn!(
@@ -2768,7 +2761,7 @@ mod tests {
                     .map(|d| self.get(d).expect("effects not found").clone())
                     .collect(),
             )
-            .boxed()
+                .boxed()
         }
 
         fn notify_read_executed_effects_digests(
@@ -2785,7 +2778,7 @@ mod tests {
                     })
                     .collect(),
             )
-            .boxed()
+                .boxed()
         }
 
         fn multi_get_executed_effects(
