@@ -1178,6 +1178,7 @@ async fn move_call_with_gas_object(gas_object: Object,gas_object_id: ObjectID,se
     Ok(())
 }
 
+#[allow(unused)]
 async fn move_call_heavy_storage_object(gas_object: Object, sender: SuiAddress,
                                         sender_key : AccountKeyPair,rgp:u64,package_object_ref : ObjectRef,authority_state: Arc<AuthorityState>) -> SuiResult {
     let module = ident_str!("move_random").to_owned();
@@ -2034,7 +2035,7 @@ async fn check_stable_oog_transaction<F>(
     budget: u64,
     gas_price: u64,
     coin_num: u64,
-    checker: F,
+    _checker: F,
 ) -> SuiResult
     where
         F: FnOnce(&GasCostSummary, u64, u64) -> SuiResult,
@@ -2092,7 +2093,7 @@ async fn check_stable_oog_transaction<F>(
 
     // sign and execute transaction
     let tx = to_sender_signed_transaction(data, &sender_key);
-    let effects = send_and_confirm_transaction(&authority_state, tx)
+    let _effects = send_and_confirm_transaction(&authority_state, tx)
         .await
         .unwrap()
         .1

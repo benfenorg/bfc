@@ -623,7 +623,7 @@ mod test_benfen {
     };
 
     use super::{
-        get_bfc_price_in_usd, get_mining_nft_pending_reward, timestamp_to_dt,
+        get_bfc_price_in_usd, timestamp_to_dt,
         timestamp_to_dt_string,
     };
     use jsonrpsee::http_client::{HeaderMap, HeaderValue, HttpClient, HttpClientBuilder};

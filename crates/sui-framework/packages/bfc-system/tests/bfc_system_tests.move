@@ -94,6 +94,76 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
+    fun test_external_filed() {
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_RIGHT_KEY);
+        let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
+
+        {
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
+            assert!(!bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"ddd")));
+
+            let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+            let length = extra_fields.length();
+            debug::print(&length);
+            assert!(length == 0);
+        };
+
+        {
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
+
+            let mut list = vector::empty<ascii::String>();
+            list.insert(ascii::string(b"ddd"), 0);
+            bfc_system_state_inner::add_external_stable_gas_coin(system_state_v2, list, _ctx);
+            let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+            let length = extra_fields.length();
+            debug::print(&length);
+            assert!(length == 1);
+            let list = bfc_system_state_inner::get_external_stable_gas_coin_list(system_state_v2);
+            debug::print(list);
+            assert!(list.length() == 1);
+
+            assert!(!bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"xx")));
+            assert!(bfc_system_state_inner::in_external_stable_gas_coin_list(system_state_v2, ascii::string(b"ddd")));
+        };
+
+        {
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
+
+            bfc_system_state_inner::delete_external_stable_gas_coin(system_state_v2, ascii::string(b"ddd"), _ctx);
+            let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
+            let length = extra_fields.length();
+            debug::print(extra_fields);
+            debug::print(&length);
+            assert!(length == 2);
+
+            let list = bfc_system_state_inner::get_external_stable_gas_coin_list(system_state_v2);
+            debug::print(list);
+            assert!(list.length() == 1);
+            let list = bfc_system_state_inner::get_to_delete_stable_gas_coin_list(system_state_v2);
+            debug::print(list);
+            assert!(list.length() == 1);
+        };   
+
+        let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
+        {
+            let scenario = &mut scenario_val;
+            bfc_system::bfc_round_v2_test(&mut system_state, &clock, 0, 1000000, vector::empty(), vector::empty(), test_scenario::ctx(scenario));
+        };
+
+        {
+            let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
+
+            let list = bfc_system_state_inner::get_external_stable_gas_coin_list(system_state_v2);
+            debug::print(list);
+            assert!(list.length() == 0);
+        };
+
+        clock::destroy_for_testing(clock);
+        test_scenario::return_shared(system_state);
+        test_scenario::end(scenario_val);
+    }
+
+    #[test]
     fun test_round() {
         let bfc_addr = BFC_ADDR;
         let mut scenario_val = test_scenario::begin(bfc_addr);

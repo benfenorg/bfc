@@ -1,10 +1,61 @@
 #[sui_macros::with_checked_arithmetic]
 pub mod checked {
+    use crate::BFC_SYSTEM_ADDRESS;
     use move_core_types::ident_str;
     use move_core_types::language_storage::{StructTag, TypeTag};
-    use crate::BFC_SYSTEM_ADDRESS;
-    use std::str::FromStr;
+    use std::collections::BTreeMap;
     use std::convert::TryFrom;
+    use std::str::FromStr;
+    use std::sync::{LazyLock, RwLock};
+
+    struct AllowStableGasCoin {
+        rate_map: BTreeMap<String, u64>,
+    }
+
+    impl AllowStableGasCoin {
+        fn new() -> Self {
+            AllowStableGasCoin {
+                rate_map: BTreeMap::new(),
+            }
+        }
+
+        fn set_rate_map(&mut self, value: BTreeMap<String, u64>) {
+            self.rate_map = value;
+        }
+
+        fn get_rate_map(&self) -> &BTreeMap<String, u64> {
+            &self.rate_map
+        }
+    }
+
+    static INSTANCE: LazyLock<RwLock<AllowStableGasCoin>> =
+        LazyLock::new(|| RwLock::new(AllowStableGasCoin::new()));
+
+    pub fn update_allow_stable_gas_coins(value: BTreeMap<String, u64>) {
+        let w = INSTANCE.write();
+        if w.is_err() {
+            return;
+        }
+
+        w.unwrap().set_rate_map(value);
+    }
+
+    pub fn get_allow_stable_gas_coins_rate_map() -> BTreeMap<String, u64> {
+        let r = INSTANCE.read();
+        if r.is_err() {
+            return BTreeMap::new();
+        }
+
+        r.unwrap().get_rate_map().clone()
+    }
+
+    fn convert_and_format_hex_address(input: &str) -> String {
+        if input.starts_with("0x") {
+            return input.to_string();
+        }
+
+       format!("0x{}", input)
+    }
 
     pub enum STABLE {
         BUSD,
@@ -57,7 +108,7 @@ pub mod checked {
         }
 
         pub fn all_stable_coins_type() -> Vec<TypeTag> {
-            vec![
+            let mut types: Vec<TypeTag> = vec![
                 TypeTag::from_str("0xc8::busd::BUSD").unwrap(),
                 TypeTag::from_str("0xc8::bjpy::BJPY").unwrap(),
                 TypeTag::from_str("0xc8::beur::BEUR").unwrap(),
@@ -75,7 +126,24 @@ pub mod checked {
                 TypeTag::from_str("0xc8::btry::BTRY").unwrap(),
                 TypeTag::from_str("0xc8::bzar::BZAR").unwrap(),
                 TypeTag::from_str("0xc8::mgg::MGG").unwrap(),
-            ]
+            ];
+
+            let mut keys: Vec<String> = get_allow_stable_gas_coins_rate_map().keys().cloned().collect();
+            keys.sort();
+
+            for key in keys {
+                let tag_result = TypeTag::from_str(&(convert_and_format_hex_address(&key)));
+                if tag_result.is_ok() {
+                    let tag = tag_result.unwrap();
+                    if types.contains(&tag) {
+                        continue;
+                    }
+
+                    types.push(tag.clone());
+                }
+            }
+
+            types
         }
 
         pub fn get_index(&self) -> u8 {
@@ -104,6 +172,46 @@ pub mod checked {
             TypeTag::Struct(Box::new(self.type_()))
         }
 
+        pub fn is_inner_gas_type(other: &TypeTag) -> bool {
+            [   STABLE::BARS,
+                STABLE::BAUD,
+                STABLE::BZAR,
+                STABLE::BUSD,
+                STABLE::BBRL,
+                STABLE::BCAD,
+                STABLE::BEUR,
+                STABLE::BGBP,
+                STABLE::BIDR,
+                STABLE::BINR,
+                STABLE::BJPY,
+                STABLE::BKRW,
+                STABLE::BMXN,
+                STABLE::BRUB,
+                STABLE::BSAR,
+                STABLE::BTRY,
+                STABLE::MGG,
+            ]
+            .iter()
+            .map(|stable_type| stable_type.type_tag())
+            .any(|stable_tag| &stable_tag == other)
+        }
+
+        pub fn is_new_gas_type(other: &TypeTag) -> bool {
+            let rate_map = get_allow_stable_gas_coins_rate_map();
+            let r = rate_map.iter().any(|(key, _)| {
+                let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
+                if tag.is_err() {
+                    tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
+                    return false;
+                }
+    
+                let t = tag.unwrap();
+                return &t == other;
+            });
+    
+            r
+        }
+
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
                 STABLE::BAUD,
@@ -123,9 +231,10 @@ pub mod checked {
                 STABLE::BTRY,
                 STABLE::MGG,
             ]
-                .iter()
-                .map(|stable_type| stable_type.type_tag())
-                .any(|stable_tag| &stable_tag == other)
+            .iter()
+            .map(|stable_type| stable_type.type_tag())
+            .any(|stable_tag| &stable_tag == other)
+                || Self::is_new_gas_type(other)
         }
 
         pub fn is_gas_struct(other: &StructTag) -> bool {
@@ -152,7 +261,6 @@ pub mod checked {
                 .any(|struct_tag| &struct_tag == other)
         }
     }
-
 
     impl TryFrom<u8> for STABLE {
         type Error = anyhow::Error;
@@ -215,6 +323,143 @@ pub mod checked {
                 TypeTag::Struct(s1) => STABLE::try_from(*s1),
                 _ => Err(anyhow::anyhow!("unreachable tag: {:?}", s)),
             }
+        }
+    }
+
+    #[cfg(test)]
+    mod tests {
+        use super::*;
+        use std::thread;
+
+        #[test]
+        fn test_singleton_initial_value() {
+            assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 0);
+
+            let mut m = BTreeMap::new();
+            m.insert("BUSD".to_string(), 100);
+            update_allow_stable_gas_coins(m);
+
+            assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 1);
+        }
+
+        #[test]
+        fn test_singleton_thread_safety() {
+            let handles: Vec<_> = (0..100)
+                .map(|_i| {
+                    thread::spawn(move || {
+                        let mut m = BTreeMap::new();
+                        m.insert("BUSD".to_string(), 100);
+                        update_allow_stable_gas_coins(m);
+                    })
+                })
+                .collect();
+
+            for handle in handles {
+                handle.join().unwrap();
+            }
+
+            assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 1);
+        }
+
+        #[test]
+        fn test_concurrent_read_write() {
+            let write_handles: Vec<_> = (0..50)
+                .map(|_i| {
+                    thread::spawn(move || {
+                        let mut m = BTreeMap::new();
+                        m.insert("BUSD".to_string(), 100);
+                        update_allow_stable_gas_coins(m);
+                    })
+                })
+                .collect();
+
+            let read_handles: Vec<_> = (0..50)
+                .map(|_| {
+                    thread::spawn(|| {
+                        assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 1);
+                    })
+                })
+                .collect();
+
+            for handle in write_handles {
+                handle.join().unwrap();
+            }
+
+            for handle in read_handles {
+                handle.join().unwrap();
+            }
+
+            assert_eq!(get_allow_stable_gas_coins_rate_map().len(), 1);
+        }
+
+        #[test]
+        fn test_new_gas_type() {
+            {
+                assert!(TypeTag::from_str("0xc8::bcad::BCAD").is_ok());
+                assert!(TypeTag::from_str("00000c8::bcad::BCAD").is_err());
+                assert!(TypeTag::from_str("0x000000c8::bcad::BCAD").is_ok());
+            }
+
+            let mut m = BTreeMap::new();
+            m.insert(
+                "00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS"
+                    .to_string(),
+                100,
+            );
+            m.insert("0000000000000000000c8::bcad::BCAD".to_string(), 100);
+            m.insert("0xc8::baud::BAUD".to_string(), 100);
+            update_allow_stable_gas_coins(m);
+
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bars::BARS").unwrap());
+            assert!(ok);
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::baud::BAUD").unwrap());
+            assert!(ok);
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bcad::BCAD").unwrap());
+            assert!(ok);
+
+            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0x00c8::bcad::BCAD").unwrap());
+            assert!(ok);
+        }
+
+        #[test]
+        fn test_convert_and_format_hex() {
+            let hex_str = "0x123456789abcdef";
+            let result = convert_and_format_hex_address(hex_str);
+            assert_eq!(result, "0x123456789abcdef");
+
+            let hex_str = "000000c8::bars::BARS";
+            let result = convert_and_format_hex_address(hex_str);
+            assert_eq!(result, "0x000000c8::bars::BARS");
+
+            let hex_str = "0xc8::bars::BARS";
+            let result = convert_and_format_hex_address(hex_str);
+            assert_eq!(result, "0xc8::bars::BARS");
+        }
+
+        #[test]
+        fn test_all_stable_coins_type() {
+            let tags = STABLE::all_stable_coins_type();
+            assert_eq!(tags.len(), 17);
+
+            let mut m = BTreeMap::new();
+            m.insert(
+                "00000000000000000000000000000000000000000000000000000000000000c8::bars::BARS"
+                    .to_string(),
+                100,
+            );
+            m.insert("0000000000000000000c8::bcad::BCAD".to_string(), 100);
+            m.insert("0xc8::baud::BAUD".to_string(), 100);
+            update_allow_stable_gas_coins(m);
+            let tags = STABLE::all_stable_coins_type();
+            assert_eq!(tags.len(), 17);
+
+            let mut m = BTreeMap::new();
+            m.insert("0000000000000000000c8::abc::abc".to_string(), 100);
+            m.insert("0xc8::fff::fff".to_string(), 100);
+            update_allow_stable_gas_coins(m);
+            let tags = STABLE::all_stable_coins_type();
+            println!("{:?}", tags.clone());
+            assert_eq!(tags.len(), 19);
         }
     }
 }

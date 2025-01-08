@@ -4,7 +4,7 @@ use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use serde_json::json;
 use sui_json_rpc_api::{IndexerApiClient, TransactionBuilderClient, WriteApiClient};
-use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
+use sui_json_rpc_types::{SuiExecutionStatus, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects, SuiTransactionBlockResponseOptions, SuiTypeTag, TransactionBlockBytes};
 use sui_sdk::json::SuiJsonValue;
 use sui_types::{base_types::SuiAddress, parse_sui_struct_tag, quorum_driver_types::ExecuteTransactionRequestType, BFC_SYSTEM_PACKAGE_ID};
 use test_cluster::TestCluster;
@@ -50,6 +50,7 @@ pub async fn mint_stable_coin(amount: u64, test_cluster: &TestCluster, http_clie
     Ok(())
 }
 
+#[allow(unused)]
 pub async fn mint_stable_coin_with_gas(amount: u64, test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,coint_type: &str,gas_filter: &str) -> Result<(), Error> {
     let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
     let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
@@ -63,6 +64,9 @@ pub async fn mint_stable_coin_with_gas(amount: u64, test_cluster: &TestCluster, 
     //获取 gas 对象
     let objects = get_owned_objects(gas_filter, &mut http_client.clone(), address).await?;
     let gas_object = objects.first().unwrap().object().unwrap();
+
+    println!("mint_stable_coin_with_gas gas_object: {:?}", gas_object.to_string());
+
     let gas_object_id = gas_object.object_id;
 
     let transaction_bytes: TransactionBlockBytes = http_client
@@ -90,6 +94,9 @@ pub async fn mint_stable_coin_with_gas(amount: u64, test_cluster: &TestCluster, 
             Some(ExecuteTransactionRequestType::WaitForLocalExecution),
         )
         .await?;
+
+    println!("tx_response: {:#?}", tx_response);
+
     Ok(())
 }
 

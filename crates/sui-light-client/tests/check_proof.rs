@@ -15,6 +15,7 @@ use sui_rpc_api::CheckpointData;
 use std::io::Read;
 use std::{fs, path::PathBuf};
 
+#[allow(unused)]
 async fn read_full_checkpoint(checkpoint_path: &PathBuf) -> anyhow::Result<CheckpointData> {
     println!("Reading checkpoint from {:?}", checkpoint_path);
     let mut reader = fs::File::open(checkpoint_path.clone())?;
@@ -38,7 +39,6 @@ async fn read_data_test_data(committee_seq_path1 :String, committee_seq_path2 :S
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     d.push(format!("example_config/{}", committee_seq_path1));
     let committee_checkpoint = read_full_checkpoint_from_json(&d).await.unwrap();
-    let j = serde_json::to_string(&committee_checkpoint);
 
     let prev_committee = committee_checkpoint
         .checkpoint_summary
@@ -68,6 +68,7 @@ async fn read_data_test_data(committee_seq_path1 :String, committee_seq_path2 :S
     (committee, full_checkpoint)
 }
 
+#[allow(unused)]
 async fn read_data(committee_seq: u64, seq: u64) -> (Committee, CheckpointData) {
     let mut d = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
     d.push(format!("example_config/{}.chk", committee_seq));

@@ -13,6 +13,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
 -  [Function `bfc_round_v2`](#0xc8_bfc_system_bfc_round_v2)
 -  [Function `inner_stablecoin_to_bfc`](#0xc8_bfc_system_inner_stablecoin_to_bfc)
+-  [Function `inner_withdraw_balance`](#0xc8_bfc_system_inner_withdraw_balance)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_request_gas_balance)
 -  [Function `load_system_state_by_uid`](#0xc8_bfc_system_load_system_state_by_uid)
 -  [Function `load_system_state_mut_by_uid`](#0xc8_bfc_system_load_system_state_mut_by_uid)
@@ -30,6 +31,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `set_single_operation_capability`](#0xc8_bfc_system_set_single_operation_capability)
 -  [Function `set_oracle_address`](#0xc8_bfc_system_set_oracle_address)
 -  [Function `get_oracle_address`](#0xc8_bfc_system_get_oracle_address)
+-  [Function `add_external_stable_gas_coin`](#0xc8_bfc_system_add_external_stable_gas_coin)
+-  [Function `delete_external_stable_gas_coin`](#0xc8_bfc_system_delete_external_stable_gas_coin)
 -  [Function `remove_propose`](#0xc8_bfc_system_remove_propose)
 -  [Function `remove_action`](#0xc8_bfc_system_remove_action)
 -  [Function `destroy_terminated_proposal`](#0xc8_bfc_system_destroy_terminated_proposal)
@@ -421,6 +424,35 @@ _ctx: &<b>mut</b> TxContext,
         <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_add_balance_to_vault">bfc_system_state_inner::add_balance_to_vault</a>(inner_state, _balance, ctx);
         <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_balance">bfc_system_state_inner::withdraw_balance</a>(inner_state, expect)
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_inner_withdraw_balance"></a>
+
+## Function `inner_withdraw_balance`
+
+
+
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_withdraw_balance">inner_withdraw_balance</a>(_self: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/balance.md#0x2_balance_Balance">balance::Balance</a>&lt;<a href="../sui-framework/bfc.md#0x2_bfc_BFC">bfc::BFC</a>&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_inner_withdraw_balance">inner_withdraw_balance</a>(
+    _self: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    _ctx: &<b>mut</b> TxContext,
+): Balance&lt;BFC&gt; {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(_self, _ctx);
+    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_withdraw_balance">bfc_system_state_inner::withdraw_balance</a>(inner_state, expect)
 }
 </code></pre>
 
@@ -902,6 +934,56 @@ deprecated
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, ctx: &<b>mut</b> TxContext): Option&lt;<b>address</b>&gt; {
     <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_get_oracle_address">get_oracle_address</a>(_ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_add_external_stable_gas_coin"></a>
+
+## Function `add_external_stable_gas_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, value: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, value: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_add_external_stable_gas_coin">add_external_stable_gas_coin</a>(value, _ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_delete_external_stable_gas_coin"></a>
+
+## Function `delete_external_stable_gas_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>, value: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> TxContext) {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    inner_state.<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_delete_external_stable_gas_coin">delete_external_stable_gas_coin</a>(value, _ctx)
 }
 </code></pre>
 

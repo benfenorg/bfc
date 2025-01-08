@@ -300,10 +300,20 @@ impl MoveObjectType {
             }
         }
     }
+
     pub fn is_stable_gas_coin(&self) -> bool {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => STABLE::is_gas_type(tag),
-            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+            MoveObjectType_::GasCoin(tag) | MoveObjectType_::Coin(tag) => STABLE::is_gas_type(tag),
+            MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => {
+                false
+            }
+        }
+    }
+
+    pub fn is_inner_stable_gas_coin(&self) -> bool {
+        match &self.0 {
+            MoveObjectType_::GasCoin(tag) => STABLE::is_inner_gas_type(tag),
+            MoveObjectType_::StakedSui | MoveObjectType_::Other(_) | MoveObjectType_::Coin(_) => {
                 false
             }
         }
@@ -311,15 +321,15 @@ impl MoveObjectType {
 
     pub fn get_stable_gas_tag(&self) -> anyhow::Result<TypeTag> {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => Ok(tag.clone()),
+            MoveObjectType_::GasCoin(tag) | MoveObjectType_::Coin(tag) => Ok(tag.clone()),
             _ => Err(anyhow!("not stable gas coin")),
         }
     }
 
     pub fn get_gas_coin_name(&self) -> String {
         match &self.0 {
-            MoveObjectType_::GasCoin(tag) => tag.to_canonical_string(false),
-            MoveObjectType_::StakedSui | MoveObjectType_::Coin(_) | MoveObjectType_::Other(_) => {
+            MoveObjectType_::GasCoin(tag) | MoveObjectType_::Coin(tag) => tag.to_canonical_string(false),
+            MoveObjectType_::StakedSui | MoveObjectType_::Other(_) => {
                 "".to_string()
             }
         }

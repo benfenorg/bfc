@@ -813,6 +813,7 @@ async fn assert_traffic_control_ok(mut test_cluster: TestCluster) -> Result<(), 
 /// Test that in dry-run mode, actions that would otherwise
 /// lead to request blocking (in this case, a spammy client)
 /// are allowed to proceed.
+#[allow(unused)]
 async fn assert_traffic_control_dry_run(
     mut test_cluster: TestCluster,
 ) -> Result<(), anyhow::Error> {

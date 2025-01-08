@@ -4,7 +4,7 @@ use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_api::IndexerApiClient;
-use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiTransactionBlockEffects};
+use sui_json_rpc_types::{ObjectChange, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery};
 use sui_move_build::BuildConfig;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
@@ -12,10 +12,8 @@ use sui_types::base_types::{ObjectID, ObjectRef, ObjectType, SuiAddress};
 use sui_types::transaction::{Transaction, TEST_ONLY_GAS_UNIT_FOR_PUBLISH};
 use test_cluster::TestCluster;
 
-
-
-
-pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<ObjectID, Error> {
+#[allow(unused)]
+pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(ObjectID, Vec<ObjectChange>), Error> {
     let address = test_cluster.get_address_0();
 
     let rgp = test_cluster.get_reference_gas_price().await;
@@ -39,7 +37,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<Obje
 
     // Check log output contains all object ids.
     let gas_obj = object_refs.iter().find(|r: &&SuiObjectResponse| {
-        if r.data.as_ref().unwrap().type_.as_ref().unwrap().is_coin() {
+        if r.data.as_ref().unwrap().type_.as_ref().unwrap().is_gas_coin() {
             return true;
         }
 
@@ -49,14 +47,14 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<Obje
     //step 1: publish coin
     let resp = do_publish_inner(rgp, &mut context, gas_obj_id,path).await?;
 
-    // // Print it out to CLI/logs
+    // Print it out to CLI/logs
     // resp.print(true);
 
     match resp {
         SuiClientCommandResult::TransactionBlock(tx) => {
-            for ele in tx.object_changes.unwrap() {
+            for ele in tx.object_changes.clone().unwrap() {
                 if let ObjectChange::Published { package_id, .. } = ele {
-                    return Ok(package_id);
+                    return Ok((package_id, tx.object_changes.unwrap().clone()));
                 }
             }
             Err(anyhow::anyhow!("no package found"))
@@ -84,7 +82,7 @@ async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &Ob
     Ok(resp)
 }
 
-
+#[allow(unused)]
 pub async fn do_mint(test_cluster: &mut TestCluster, package: ObjectID) {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
@@ -119,6 +117,7 @@ async fn make_mint_test_coin_transaction(
 }
 
 //默认返回第一个TreasuryCap
+#[allow(unused)]
 async fn get_cap(http_client: &HttpClient, address: SuiAddress) -> Result<SuiObjectResponse, anyhow::Error> {
     let objects = get_coin_object(http_client, address).await?;
     let cap = objects.into_iter().find(|ele| {
@@ -138,6 +137,7 @@ async fn get_cap(http_client: &HttpClient, address: SuiAddress) -> Result<SuiObj
     }
 }
 
+#[allow(unused)]
 async fn get_coin_object(http_client: &HttpClient, address: SuiAddress) -> Result<Vec<SuiObjectResponse>, anyhow::Error> {
     let data_option = SuiObjectDataOptions::new()
         .with_type()

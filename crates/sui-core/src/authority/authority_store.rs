@@ -1542,6 +1542,16 @@ impl AuthorityStore {
         get_bfc_system_state(self.perpetual_tables.as_ref())
     }
 
+    pub fn get_rate_map(&self) -> SuiResult<HashMap<String, u64>> {
+        let bfc_system_state = self.get_bfc_system_state_object()?;
+        let rate_map: HashMap<String, u64> = bfc_system_state.get_rate_map().contents
+            .iter()
+            .map(|entity| ((*entity.key).to_string(), entity.value))
+            .collect();
+
+        Ok(rate_map)
+    }
+
     pub  fn get_stable_rate_and_base_points(&self, gas_ref: &[ObjectRef]) -> SuiResult<(Option<u64>, Option<u64>)> {
         if gas_ref.is_empty() {
             return Ok((None, None));//dry run /dev inspect

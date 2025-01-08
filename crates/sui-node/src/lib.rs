@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use std::collections::HashMap;
+use std::collections::{BTreeMap, HashMap};
 use std::time::Duration;
 use std::fmt;
 use std::str::FromStr;
@@ -20,6 +20,7 @@ use fastcrypto_zkp::bn254::zk_login::OIDCProvider;
 use futures::TryFutureExt;
 use mysten_network::server::SUI_TLS_SERVER_NAME;
 use prometheus::Registry;
+use sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
 use std::collections::{BTreeSet, HashSet};
 use std::net::SocketAddr;
 use std::path::PathBuf;
@@ -509,6 +510,7 @@ impl SuiNode {
                 ),
             )))
         };
+
 
         let epoch_options = default_db_options().optimize_db_for_write_throughput(4);
         let epoch_store = AuthorityPerEpochStore::new(
@@ -1861,6 +1863,17 @@ impl SuiNode {
                     sui_core::authority::authority_store_pruner::AuthorityStorePruningMetrics::new_for_test(),
                 )
                 .await?;
+            }
+
+            // set rate map to global-mutable-singleton
+            let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
+            if result.is_ok() {
+                let bfc_system = result.unwrap();
+                let rate_map = bfc_system.get_rate_map();
+                let v: BTreeMap<String, u64> = rate_map.contents.iter()
+                    .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
+                    .collect();
+                update_allow_stable_gas_coins(v);
             }
 
             info!("Reconfiguration finished");

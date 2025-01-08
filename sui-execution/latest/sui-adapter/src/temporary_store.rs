@@ -11,8 +11,7 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
 use sui_types::bfc_system_state::{
-    get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate,
-    get_stable_rate_with_base_point, is_enabled_oracle,
+    get_bfc_system_proposal_state_map, get_oracle_price, get_stable_rate_and_reward_rate, get_stable_rate_with_base_point, is_enabled_oracle
 };
 use sui_types::collection_types::VecMap;
 use sui_types::committee::EpochId;

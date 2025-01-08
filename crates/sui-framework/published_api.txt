@@ -5395,6 +5395,24 @@ remove_bfc_system_admin_cap
 create_bfc_system_modify_cap
 	fun
 	0xc8::bfc_system_state_inner
+get_extra_fields
+	public(package) fun
+	0xc8::bfc_system_state_inner
+in_external_stable_gas_coin_list
+	public(package) fun
+	0xc8::bfc_system_state_inner
+add_external_stable_gas_coin
+	public(package) fun
+	0xc8::bfc_system_state_inner
+delete_external_stable_gas_coin
+	public(package) fun
+	0xc8::bfc_system_state_inner
+clear_to_delete_external_stable_gas_coin_list
+	public(package) fun
+	0xc8::bfc_system_state_inner
+delete_from_list
+	public(package) fun
+	0xc8::bfc_system_state_inner
 BfcSystemState
 	public struct
 	0xc8::bfc_system
@@ -5417,6 +5435,9 @@ bfc_round_v2
 	fun
 	0xc8::bfc_system
 inner_stablecoin_to_bfc
+	fun
+	0xc8::bfc_system
+inner_withdraw_balance
 	fun
 	0xc8::bfc_system
 request_gas_balance
@@ -5468,6 +5489,12 @@ set_oracle_address
 	public fun
 	0xc8::bfc_system
 get_oracle_address
+	public fun
+	0xc8::bfc_system
+add_external_stable_gas_coin
+	public fun
+	0xc8::bfc_system
+delete_external_stable_gas_coin
 	public fun
 	0xc8::bfc_system
 remove_propose

@@ -36,11 +36,11 @@ use std::collections::BTreeMap;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
-use std::time::{Duration};
+use std::time::Duration;
 use std::{collections::HashMap, fs, pin::Pin, sync::Arc};
 use std::sync::atomic::Ordering;
 use std::{
-    collections::{HashSet},
+    collections::HashSet,
     vec,
 };
 use sui_config::node::{AuthorityOverloadConfig, StateDebugDumpConfig};
@@ -336,6 +336,7 @@ const POSITIVE_INT_BUCKETS: &[f64] = &[
     7000000., 10000000.,
 ];
 
+#[allow(unused)]
 const PROPOSAL_EXECUTABLE_STATE: u8 = 6;
 
 const LATENCY_SEC_BUCKETS: &[f64] = &[
@@ -4941,6 +4942,7 @@ impl AuthorityState {
         return current_version + 1;
     }
 
+    #[allow(unused)]
     async fn get_proposal_state(&self, version_id: u64) -> bool {
         let mut proposal_result = false;
         // todo judge proposal.value
