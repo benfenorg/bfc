@@ -748,7 +748,7 @@ async fn sim_test_bfc_dao_update_system_package_blocked() {
     });
     ProtocolConfig::poison_get_for_min_version();
 
-    let start_version = 62u64;
+    let start_version = 70u64;
 
 
     let test_cluster = TestClusterBuilder::new()
@@ -3147,6 +3147,8 @@ async fn swap_bfc_to_stablecoin_with_tag(
     // println!("objects {:?}", objects);
     // panic!();
     let coin = if f {objects.last().unwrap().object().unwrap()} else {objects.first().unwrap().object().unwrap()};
+
+    info!("=======coin is {:?}",coin);
 
     let bfc_system_address: SuiAddress = BFC_SYSTEM_STATE_OBJECT_ID.into();
     let module = "bfc_system".to_string();
