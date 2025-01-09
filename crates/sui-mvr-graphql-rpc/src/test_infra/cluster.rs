@@ -18,7 +18,7 @@ pub use sui_indexer::config::RetentionConfig;
 pub use sui_indexer::config::SnapshotLagConfig;
 use sui_indexer::errors::IndexerError;
 use sui_indexer::store::PgIndexerStore;
-use sui_indexer::test_utils::start_indexer_writer_for_testing_with_mvr_mode;
+use sui_indexer::test_utils::{start_indexer_writer_for_testing, start_indexer_writer_for_testing_with_mvr_mode};
 use sui_pg_temp_db::{get_available_port, TempDb};
 use sui_swarm_config::genesis_config::{AccountConfig, DEFAULT_GAS_AMOUNT};
 use sui_types::storage::RpcStateReader;
@@ -34,6 +34,7 @@ use tracing::info;
 const VALIDATOR_COUNT: usize = 4;
 const EPOCH_DURATION_MS: u64 = 10000;
 
+const LONG_EPOCH_DURATION_MS: u64 = 65000;
 const ACCOUNT_NUM: usize = 20;
 const GAS_OBJECT_COUNT: usize = 3;
 
@@ -71,7 +72,7 @@ pub struct NetworkCluster {
 
 /// Starts a validator, fullnode, indexer, and graphql service for testing.
 pub async fn start_cluster(service_config: ServiceConfig) -> Cluster {
-    let network_cluster = start_network_cluster().await;
+    let network_cluster = start_network_cluster_with_long_epoch().await;
     let graphql_connection_config = network_cluster.graphql_connection_config.clone();
 
     let fn_rpc_url: String = network_cluster
@@ -146,6 +147,63 @@ pub async fn start_network_cluster() -> NetworkCluster {
         database,
         graphql_connection_config,
     }
+}
+
+pub async fn start_network_cluster_with_long_epoch() -> NetworkCluster {
+    let database = TempDb::new().unwrap();
+    let graphql_connection_config = ConnectionConfig {
+        port: get_available_port(),
+        host: "127.0.0.1".to_owned(),
+        db_url: database.database().url().as_str().to_owned(),
+        db_pool_size: 5,
+        prom_host: "127.0.0.1".to_owned(),
+        prom_port: get_available_port(),
+        skip_migration_consistency_check: false,
+    };
+    let data_ingestion_path = tempfile::tempdir().unwrap();
+    let db_url = graphql_connection_config.db_url.clone();
+    let cancellation_token = CancellationToken::new();
+
+    // Starts validator+fullnode
+    let val_fn = start_validator_with_fullnode_with_long_epoch(data_ingestion_path.path().to_path_buf()).await;
+
+    // Starts indexer
+    let (pg_store, pg_handle, _) = start_indexer_writer_for_testing(
+        db_url,
+        None,
+        None,
+        Some(data_ingestion_path.path().to_path_buf()),
+        Some(cancellation_token.clone()),
+        None, /* start_checkpoint */
+        None, /* end_checkpoint */
+    )
+        .await;
+
+    NetworkCluster {
+        validator_fullnode_handle: val_fn,
+        indexer_store: pg_store,
+        indexer_join_handle: pg_handle,
+        cancellation_token,
+        data_ingestion_path,
+        database,
+        graphql_connection_config,
+    }
+}
+
+async fn start_validator_with_fullnode_with_long_epoch(data_ingestion_dir: PathBuf) -> TestCluster {
+    TestClusterBuilder::new()
+        .with_num_validators(VALIDATOR_COUNT)
+        .with_epoch_duration_ms(LONG_EPOCH_DURATION_MS)
+        .with_data_ingestion_dir(data_ingestion_dir)
+        .with_accounts(vec![
+            AccountConfig {
+                address: None,
+                gas_amounts: vec![DEFAULT_GAS_AMOUNT; GAS_OBJECT_COUNT],
+            };
+            ACCOUNT_NUM
+        ])
+        .build()
+        .await
 }
 
 /// Takes in a simulated instantiation of a Sui blockchain and builds a cluster around it. This
