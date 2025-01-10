@@ -2720,7 +2720,7 @@ async fn safe_mode_reconfig_busd_staking_test() -> Result<(), anyhow::Error> {
                                            Option::Some(address),
                                            Option::Some(amount)).await;
     test_cluster.execute_transaction(tx.clone()).await.effects.unwrap();
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000, false).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000).await?;
     let _ = sleep(Duration::from_secs(10)).await;
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
     assert!(busd_response_vec.len() >= 1);
@@ -3113,7 +3113,7 @@ async fn swap_bfc_to_stablecoin(
     amount: u64,
 ) -> Result<(), anyhow::Error> {
     swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, amount,
-                                    SuiTypeTag::new("0xc8::busd::BUSD".to_string()), true).await?;
+                                    SuiTypeTag::new("0xc8::busd::BUSD".to_string())).await?;
     Ok(())
 }
 
@@ -3122,10 +3122,9 @@ async fn swap_bfc_to_stablecoin_v2(
     http_client: &HttpClient,
     address: SuiAddress,
     amount: u64,
-    f: bool, // 对应取swap_bfc_to_stablecoin_with_tag中coin的方式 true - last ；false - first。有一个单测需要拿first
 ) -> Result<(), anyhow::Error> {
     swap_bfc_to_stablecoin_with_tag(test_cluster, http_client, address, amount,
-                                    SuiTypeTag::new("0xc8::busd::BUSD".to_string()), f).await?;
+                                    SuiTypeTag::new("0xc8::busd::BUSD".to_string())).await?;
     Ok(())
 }
 
@@ -3135,18 +3134,12 @@ async fn swap_bfc_to_stablecoin_with_tag(
     address: SuiAddress,
     amount: u64,
     type_tag: SuiTypeTag,
-    f: bool,
 ) -> Result<(), anyhow::Error> {
-    let objects = http_client
-        .get_owned_objects(address, Some(SuiObjectResponseQuery::new_with_filter(
-            SuiObjectDataFilter::StructType(
-                parse_struct_tag("0x2::coin::Coin<0x2::bfc::BFC>").unwrap(),
-            )
-        )), None, None).await?.data;
+    let objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await.unwrap();
     // api ： https://docs.sui.io/sui-api-ref#suix_getownedobjects
     // println!("objects {:?}", objects);
     // panic!();
-    let coin = if f {objects.last().unwrap().object().unwrap()} else {objects.first().unwrap().object().unwrap()};
+    let coin = objects.iter().find(|obj| get_balance(obj.object().unwrap()) > amount).unwrap().object().unwrap();
 
     info!("=======coin is {:?}",coin);
 
@@ -3363,7 +3356,7 @@ async fn sim_test_bfc_treasury_swap_bfc_to_stablecoin() -> Result<(), anyhow::Er
     assert!(objects.len() == 0);
 
     rebalance(&test_cluster, http_client, address).await?;
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, amount, false).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, amount).await?;
 
     let _ = sleep(Duration::from_secs(10)).await;
 
@@ -3394,7 +3387,7 @@ async fn sim_test_bfc_treasury_swap_stablecoin_to_bfc() -> Result<(), anyhow::Er
         .unwrap();
 
     rebalance(&test_cluster, http_client, address).await?;
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000, false).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
     let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
@@ -3579,7 +3572,7 @@ async fn sim_test_swap_stable_gas() -> Result<(), anyhow::Error> {
         .effects
         .unwrap();
     rebalance(&test_cluster, http_client, address).await?;
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000, false).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000).await?;
     let _ = sleep(Duration::from_secs(10)).await;
     let mut bfc_objects = do_get_owned_objects_with_filter("0x2::coin::Coin<0x2::bfc::BFC>", http_client, address).await?;
     let swap_before_bfc_objects_length = bfc_objects.len();
@@ -3694,7 +3687,7 @@ async fn swap_bfc_to_stablecoin_and_get_data(
     amount: u64,
 ) -> Result<Vec<SuiObjectResponse>, Error> {
     swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, address, amount,
-                                    SuiTypeTag::new(token_name.clone()), true).await?;
+                                    SuiTypeTag::new(token_name.clone())).await?;
 
     let _ = sleep(Duration::from_secs(2)).await;
 
@@ -3979,7 +3972,7 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
         .unwrap();
 
     swap_bfc_to_stablecoin(&test_cluster, http_client, address, 10000000000000).await?;
-    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000, false).await?;
+    swap_bfc_to_stablecoin_v2(&test_cluster, http_client, address, 10000000000000).await?;
     let _ = sleep(Duration::from_secs(10)).await;
 
     let busd_response_vec = do_get_owned_objects_with_filter("0x2::coin::Coin<0xc8::busd::BUSD>", http_client, address).await?;
@@ -4051,7 +4044,7 @@ async fn stable_stake_and_withdraw(test_cluster: &TestCluster, validator_addr: S
                                    sender: SuiAddress, stable_name: &str, stable_coin: &str,
                                    stable_tag: TypeTag) -> Result<(), Error> {
     if stable_name == "0xc8::busd::BUSD" {
-        swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, sender, 10000000000000, SuiTypeTag::new(stable_name.to_string()), true).await?;
+        swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, sender, 10000000000000, SuiTypeTag::new(stable_name.to_string())).await?;
     } else {
         stable::mint_stable_coin(10000000000000,test_cluster, http_client, sender, stable_name).await?;
     }
