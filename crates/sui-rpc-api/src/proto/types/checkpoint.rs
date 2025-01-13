@@ -110,6 +110,8 @@ impl TryFrom<&super::CheckpointSummary> for sui_sdk_types::types::CheckpointSumm
 impl From<sui_sdk_types::types::GasCostSummary> for super::GasCostSummary {
     fn from(
         sui_sdk_types::types::GasCostSummary {
+            base_point,
+            rate,
             computation_cost,
             storage_cost,
             storage_rebate,
@@ -145,6 +147,8 @@ impl TryFrom<&super::GasCostSummary> for sui_sdk_types::types::GasCostSummary {
         let non_refundable_storage_fee = non_refundable_storage_fee
             .ok_or_else(|| TryFromProtoError::missing("non_refundable_storage_fee"))?;
         Ok(Self {
+            base_point: 0u64,
+            rate: 1_000_000_000u64,
             computation_cost,
             storage_cost,
             storage_rebate,

@@ -736,11 +736,8 @@ anemo-build = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f769
 anemo-cli = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697ed6169bf0760882a0b6c032a57e4f3b" }
 anemo-tower = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697ed6169bf0760882a0b6c032a57e4f3b" }
 
-# core-types with json format for REST api
-sui-sdk2 = { package = "sui-sdk", git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "2660359b07c28df0547fcca5967295534f1df40b", features = ["hash", "serde", "schemars"] }
-
 # sui-sdk-types = { version = "0.0.1", features = ["hash", "serde", "schemars"] }
-sui-sdk-types = { git = "https://github.com/MystenLabs/sui-rust-sdk.git", rev = "24c34933c421319e9aa1c48b3b7108c756e1422f", features = ["hash", "serde", "schemars"] }
+sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "309b4f8f30da9885213d0817048be494334ebdbd", features = ["hash", "serde", "schemars"] }
 
 ### Workspace Members ###
 anemo-benchmark = { path = "crates/anemo-benchmark" }
