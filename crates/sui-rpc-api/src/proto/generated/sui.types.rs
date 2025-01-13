@@ -252,12 +252,16 @@ pub struct GenesisObject {
 #[derive(Clone, Copy, PartialEq, ::prost::Message)]
 pub struct GasCostSummary {
     #[prost(uint64, optional, tag = "1")]
-    pub computation_cost: ::core::option::Option<u64>,
+    pub base_point: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag = "2")]
-    pub storage_cost: ::core::option::Option<u64>,
+    pub rate: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag = "3")]
-    pub storage_rebate: ::core::option::Option<u64>,
+    pub computation_cost: ::core::option::Option<u64>,
     #[prost(uint64, optional, tag = "4")]
+    pub storage_cost: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag = "5")]
+    pub storage_rebate: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag = "6")]
     pub non_refundable_storage_fee: ::core::option::Option<u64>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]

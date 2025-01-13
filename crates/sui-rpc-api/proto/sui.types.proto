@@ -193,10 +193,12 @@ message GenesisObject {
 // GasCostSummary {{{
 
 message GasCostSummary {
-  optional uint64 computation_cost = 1;
-  optional uint64 storage_cost = 2;
-  optional uint64 storage_rebate = 3;
-  optional uint64 non_refundable_storage_fee = 4;
+  optional uint64 base_point = 1;
+  optional uint64 rate = 2;
+  optional uint64 computation_cost = 3;
+  optional uint64 storage_cost = 4;
+  optional uint64 storage_rebate = 5;
+  optional uint64 non_refundable_storage_fee = 6;
 }
 
 // End GasCostSummary }}}

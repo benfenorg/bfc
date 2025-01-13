@@ -119,6 +119,8 @@ impl From<sui_sdk_types::types::GasCostSummary> for super::GasCostSummary {
         }: sui_sdk_types::types::GasCostSummary,
     ) -> Self {
         Self {
+            base_point: Some(base_point),
+            rate: Some(rate),
             computation_cost: Some(computation_cost),
             storage_cost: Some(storage_cost),
             storage_rebate: Some(storage_rebate),
@@ -132,12 +134,17 @@ impl TryFrom<&super::GasCostSummary> for sui_sdk_types::types::GasCostSummary {
 
     fn try_from(
         super::GasCostSummary {
+            base_point,
+            rate,
             computation_cost,
             storage_cost,
             storage_rebate,
             non_refundable_storage_fee,
         }: &super::GasCostSummary,
     ) -> Result<Self, Self::Error> {
+        let base_point =  base_point.ok_or_else(|| TryFromProtoError::missing("base_point"))?;
+        let rate =  rate.ok_or_else(|| TryFromProtoError::missing("rate"))?;
+
         let computation_cost =
             computation_cost.ok_or_else(|| TryFromProtoError::missing("computation_cost"))?;
         let storage_cost =
@@ -147,8 +154,8 @@ impl TryFrom<&super::GasCostSummary> for sui_sdk_types::types::GasCostSummary {
         let non_refundable_storage_fee = non_refundable_storage_fee
             .ok_or_else(|| TryFromProtoError::missing("non_refundable_storage_fee"))?;
         Ok(Self {
-            base_point: 0u64,
-            rate: 1_000_000_000u64,
+            base_point,
+            rate,
             computation_cost,
             storage_cost,
             storage_rebate,
