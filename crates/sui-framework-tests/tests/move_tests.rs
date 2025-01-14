@@ -54,8 +54,6 @@ pub(crate) fn tests(path: &Path) -> datatest_stable::Result<()> {
 
     let move_config = config.config.clone();
     // TODO: Remove this when we support per-test gas limits.
-    let mut testing_config = UnitTestingConfig::default_with_bound(Some(3_000_000));
-    let mut testing_config = UnitTestingConfig::default_with_bound(Some(1_000_000_0));
     let mut testing_config = UnitTestingConfig::default_with_bound(Some(1_000_000_00));
     testing_config.filter = std::env::var("FILTER").ok().map(|s| s.to_string());
 
