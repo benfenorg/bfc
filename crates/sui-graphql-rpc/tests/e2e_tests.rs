@@ -270,7 +270,7 @@ async fn test_transaction_execution() {
     telemetry_subscribers::init_for_testing();
 
     let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
-    let cluster = start_cluster(ServiceConfig::test_defaults()).await;
+    // let cluster = start_cluster(ServiceConfig::test_defaults()).await;
 
     let addresses = cluster
         .network
