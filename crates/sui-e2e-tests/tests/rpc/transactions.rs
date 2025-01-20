@@ -20,7 +20,7 @@ async fn sim_get_transaction() {
 }
 
 #[sim_test]
-async fn sim_list_checkpoint() {
+async fn sim_list_transactions() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
