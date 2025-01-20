@@ -6,7 +6,6 @@ use reqwest::StatusCode;
 use reqwest::Url;
 use sui_sdk_types::types::unresolved::Transaction as UnresolvedTransaction;
 use sui_sdk_types::types::Address;
-use sui_sdk_types::types::CheckpointData;
 use sui_sdk_types::types::CheckpointDigest;
 use sui_sdk_types::types::CheckpointSequenceNumber;
 use sui_sdk_types::types::EpochId;
@@ -19,7 +18,10 @@ use sui_sdk_types::types::Transaction;
 use sui_sdk_types::types::TransactionDigest;
 use sui_sdk_types::types::ValidatorCommittee;
 use sui_sdk_types::types::Version;
+
 use tap::Pipe;
+
+use crate::CheckpointData;
 
 use crate::rest::accounts::AccountOwnedObjectInfo;
 use crate::rest::accounts::ListAccountOwnedObjectsQueryParameters;

@@ -62,7 +62,6 @@ use sui_types::messages_consensus::ConsensusTransactionKey;
 use sui_types::signature::GenericSignature;
 use sui_types::sui_system_state::{SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{TransactionDataAPI, TransactionKey, TransactionKind};
-use tokio::sync::watch;
 use tracing::{debug, error, info, warn, instrument};
 
 use tokio::{sync::Notify, task::JoinSet, time::timeout};

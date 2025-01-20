@@ -2,14 +2,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod response_ext;
+
+use std::collections::HashMap;
 pub use response_ext::ResponseExt;
 
 pub mod sdk;
 use sdk::BoxError;
-
 pub use reqwest;
 use tap::Pipe;
 use tonic::metadata::MetadataMap;
+use sui_types::messages_checkpoint::CheckpointSummary;
 
 use crate::proto::node::node_client::NodeClient;
 use crate::proto::node::{
@@ -104,7 +106,7 @@ impl Client {
             .await?
             .into_parts();
 
-        certified_checkpoint_summary_try_from_proto(summary_bcs, signature)
+        certified_checkpoint_internal_summary_try_from_proto(summary_bcs, signature)
             .map_err(|e| status_from_error_with_metadata(e, metadata))
     }
 
@@ -229,14 +231,16 @@ pub struct TransactionExecutionResponse {
 }
 
 /// Attempts to parse `CertifiedCheckpointSummary` from the bcs fields in `GetCheckpointResponse`
-fn certified_checkpoint_summary_try_from_proto(
+fn certified_checkpoint_internal_summary_try_from_proto(
     summary_bcs: Option<Bcs>,
     signature: Option<crate::proto::types::ValidatorAggregatedSignature>,
 ) -> Result<CertifiedCheckpointSummary, TryFromProtoError> {
-    let summary = summary_bcs
+    let summary_result: Result<sui_sdk_types::types::CheckpointSummary,  bcs::Error>   = summary_bcs
         .ok_or_else(|| TryFromProtoError::missing("summary_bcs"))?
-        .deserialize()
-        .map_err(TryFromProtoError::from_error)?;
+        .deserialize();
+
+    let summary = summary_result
+        .map_err(TryFromProtoError::from_error).unwrap();
 
     let signature = sui_types::crypto::AuthorityStrongQuorumSignInfo::from(
         sui_sdk_types::types::ValidatorAggregatedSignature::try_from(
@@ -247,11 +251,85 @@ fn certified_checkpoint_summary_try_from_proto(
         .map_err(TryFromProtoError::from_error)?,
     );
 
+    let checkpoint_summary = CheckpointSummary {
+        epoch: summary.epoch,
+        sequence_number: summary.sequence_number,
+        network_total_transactions: summary.network_total_transactions,
+        content_digest: sui_types::digests::CheckpointContentsDigest::new(*summary.content_digest.inner()),
+        previous_digest: summary.previous_digest.map(|d | sui_types::digests::CheckpointDigest::new(*d.inner())),
+        epoch_rolling_bfc_gas_cost_summary: sui_types::gas::GasCostSummary{
+            base_point: summary.epoch_rolling_bfc_gas_cost_summary.base_point,
+            rate: summary.epoch_rolling_bfc_gas_cost_summary.rate,
+            computation_cost: summary.epoch_rolling_bfc_gas_cost_summary.computation_cost,
+            storage_cost: summary.epoch_rolling_bfc_gas_cost_summary.storage_cost,
+            storage_rebate: summary.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+            non_refundable_storage_fee: summary.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
+        },
+        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
+        timestamp_ms: summary.timestamp_ms,
+        checkpoint_commitments: summary.checkpoint_commitments.clone().into_iter().map(|c |
+            match c {
+                sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
+                sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
+                    digest: sui_types::digests::Digest::new(*digest.inner())
+                })
+            }).collect(),
+        end_of_epoch_data: summary.end_of_epoch_data.clone().map(|c | sui_types::messages_checkpoint::EndOfEpochData {
+            next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
+                (sui_types::crypto::AuthorityPublicKeyBytes(*next_epoch_committee.public_key.inner()), next_epoch_committee.stake)
+            }).collect(),
+            next_epoch_protocol_version: sui_types::committee::ProtocolVersion::new(c.next_epoch_protocol_version),
+            epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
+                match epoch_commitment {
+                    sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
+                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
+                            digest: sui_types::digests::Digest::new(*digest.inner())
+                        })
+                }).collect(),
+        }),
+        version_specific_data: summary.version_specific_data,
+    };
     Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
-        summary, signature,
+        checkpoint_summary, signature,
     ))
 }
 
+fn certified_checkpoint_summary_try_from_proto(
+    summary_bcs: Option<Bcs>,
+    signature: Option<crate::proto::types::ValidatorAggregatedSignature>,
+) -> Result<CertifiedCheckpointSummary, TryFromProtoError> {
+    let result: Result<CheckpointSummary,  bcs::Error>   = summary_bcs
+        .ok_or_else(|| TryFromProtoError::missing("summary_bcs"))?
+        .deserialize();
+    let summary = result
+        .map_err(TryFromProtoError::from_error).unwrap();
+
+    let signature = sui_types::crypto::AuthorityStrongQuorumSignInfo::from(
+        sui_sdk_types::types::ValidatorAggregatedSignature::try_from(
+            signature
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("signature"))?,
+        )
+            .map_err(TryFromProtoError::from_error)?,
+    );
+
+    let checkpoint_summary = CheckpointSummary {
+        epoch: summary.epoch,
+        sequence_number: summary.sequence_number,
+        network_total_transactions: summary.network_total_transactions,
+        content_digest: summary.content_digest,
+        previous_digest: summary.previous_digest,
+        epoch_rolling_bfc_gas_cost_summary: summary.epoch_rolling_bfc_gas_cost_summary,
+        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
+        timestamp_ms: summary.timestamp_ms,
+        checkpoint_commitments: summary.checkpoint_commitments,
+        end_of_epoch_data: summary.end_of_epoch_data,
+        version_specific_data: summary.version_specific_data,
+    };
+    Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
+        checkpoint_summary, signature,
+    ))
+}
 /// Attempts to parse `CheckpointData` from the bcs fields in `GetFullCheckpointResponse`
 fn checkpoint_data_try_from_proto(
     GetFullCheckpointResponse {
@@ -263,7 +341,6 @@ fn checkpoint_data_try_from_proto(
     }: GetFullCheckpointResponse,
 ) -> Result<CheckpointData, TryFromProtoError> {
     let checkpoint_summary = certified_checkpoint_summary_try_from_proto(summary_bcs, signature)?;
-
     let checkpoint_contents = contents_bcs
         .ok_or_else(|| TryFromProtoError::missing("contents_bcs"))?
         .deserialize::<sui_types::messages_checkpoint::CheckpointContents>()
@@ -328,7 +405,6 @@ fn checkpoint_data_try_from_proto(
             },
         )
         .collect::<Result<_, _>>()?;
-
     Ok(CheckpointData {
         checkpoint_summary,
         checkpoint_contents,

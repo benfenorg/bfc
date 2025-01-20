@@ -12,7 +12,6 @@ use crate::RpcService;
 use sui_sdk_types::types::CheckpointContents;
 use sui_sdk_types::types::CheckpointDigest;
 use sui_sdk_types::types::CheckpointSequenceNumber;
-use sui_sdk_types::types::SignedCheckpointSummary;
 use tap::Pipe;
 
 impl RpcService {
@@ -66,11 +65,6 @@ impl RpcService {
                 (None, None)
             };
 
-        let summary_bcs = options
-            .include_summary_bcs()
-            .then(|| bcs::to_bytes(&checkpoint_envelope))
-            .transpose()?;
-
         let summary = sui_sdk_types::types::CheckpointSummary {
             epoch: checkpoint_envelope.epoch,
             sequence_number: *checkpoint_envelope.sequence_number(),
@@ -109,6 +103,11 @@ impl RpcService {
             }),
             version_specific_data: checkpoint_envelope.version_specific_data.clone(),
         };
+
+        let summary_bcs = options
+            .include_summary_bcs()
+            .then(|| bcs::to_bytes(&summary))
+            .transpose()?;
 
         CheckpointResponse {
             sequence_number: checkpoint_envelope.sequence_number,
@@ -170,7 +169,6 @@ impl RpcService {
         let sequence_number = checkpoint_summary.sequence_number;
         let digest = checkpoint_summary.digest().to_owned().into();
         let (summary, signature) = checkpoint_summary.into_data_and_sig();
-
         let summary_bcs = options
             .include_summary_bcs()
             .then(|| bcs::to_bytes(&summary))
@@ -184,6 +182,7 @@ impl RpcService {
             .into_iter()
             .map(|transaction| transaction_to_checkpoint_transaction(transaction, options))
             .collect::<Result<_>>()?;
+
 
         FullCheckpointResponse {
             sequence_number,

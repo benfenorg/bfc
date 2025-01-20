@@ -11,7 +11,6 @@ use crate::error::SuiResult;
 use crate::executable_transaction::CertificateProof;
 use crate::messages_checkpoint::CheckpointSequenceNumber;
 use crate::transaction::SenderSignedData;
-use crate::messages_consensus::{AuthorityIndex, Round, TransactionIndex};
 use fastcrypto::traits::KeyPair;
 use once_cell::sync::OnceCell;
 use serde::{de::DeserializeOwned, Deserialize, Serialize};

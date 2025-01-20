@@ -3,7 +3,6 @@
 
 use crate::messages_checkpoint::CheckpointSequenceNumber;
 use crate::{committee::EpochId, crypto::AuthorityStrongQuorumSignInfo};
-use crate::messages_consensus::{AuthorityIndex, Round, TransactionIndex};
 
 use crate::message_envelope::{Envelope, TrustedEnvelope, VerifiedEnvelope};
 use crate::transaction::SenderSignedData;
