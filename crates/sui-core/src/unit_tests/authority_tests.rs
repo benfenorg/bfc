@@ -3172,7 +3172,7 @@ async fn test_transfer_sui_no_amount() {
     assert!(effects.mutated_excluding_gas().is_empty());
     assert!(gas_ref.1 < effects.gas_object().0.1);
     assert_eq!(effects.gas_object().1, Owner::AddressOwner(recipient));
-    let new_balance =
+    let _new_balance =
         sui_types::gas::get_gas_balance(&authority_state.get_object(&gas_object_id).await.unwrap())
             .unwrap();
     let new_balance = sui_types::gas::get_gas_balance(
@@ -3226,7 +3226,7 @@ async fn test_transfer_sui_with_amount() {
     assert_eq!(sui_types::gas::get_gas_balance(&new_gas).unwrap(), 500);
     assert!(gas_ref.1 < effects.gas_object().0.1);
     assert_eq!(effects.gas_object().1, Owner::AddressOwner(sender));
-    let new_balance =
+    let _new_balance =
         sui_types::gas::get_gas_balance(&authority_state.get_object(&gas_object_id).await.unwrap())
             .unwrap();
     let new_balance = sui_types::gas::get_gas_balance(
@@ -8464,7 +8464,7 @@ async fn test_stable_get_latest_parent_entry() {
     let last_index = x.len() - 1;
     // Prevent overflow
     x[last_index] = u8::MAX - x[last_index];
-    let unknown_object_id: ObjectID = x.try_into().unwrap();
+    let _unknown_object_id: ObjectID = x.try_into().unwrap();
     // assert!(authority_state
     //     .get_object_or_tombstone(unknown_object_id)
     //     .await
@@ -8504,8 +8504,8 @@ async fn test_stable_account_state_ok() {
 #[tokio::test]
 async fn test_stable_account_state_unknown_account() {
     let sender = dbg_addr(1);
-    let unknown_address = dbg_object_id(99);
-    let authority_state = init_state_with_stable_object_id(sender, ObjectID::random()).await;
+    let _unknown_address = dbg_object_id(99);
+    let _authority_state = init_state_with_stable_object_id(sender, ObjectID::random()).await;
     // assert!(authority_state
     //     .get_object(&unknown_address)
     //     .await

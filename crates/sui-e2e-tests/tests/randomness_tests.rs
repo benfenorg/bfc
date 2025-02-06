@@ -6,8 +6,8 @@ use sui_types::SUI_RANDOMNESS_STATE_OBJECT_ID;
 use test_cluster::TestClusterBuilder;
 
 use sui_macros::sim_test;
-use sui_rpc_api::rest::info;
-use tracing::info;
+//use sui_rpc_api::rest::info;
+//use tracing::info;
 #[sim_test]
 async fn sim_test_create_randomness_state_object() {
 
