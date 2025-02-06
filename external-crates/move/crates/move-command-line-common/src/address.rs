@@ -33,10 +33,6 @@ impl ParsedAddress {
         match self {
             Self::Named(n) => {
                 // Moved to parse_address_impl
-                // if n.as_str().starts_with("bfc") || n.as_str().starts_with("BFC") {
-                //     let bfc_str = convert_to_evm_address(n);
-                //     return Ok(AccountAddress::from_hex_literal(&bfc_str)?);
-                // }
                 return mapping(n.as_str())
                     .ok_or_else(|| anyhow!("Unbound named address: '{}'", n));
             }

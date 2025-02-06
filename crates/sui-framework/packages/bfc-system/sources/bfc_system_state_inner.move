@@ -1020,7 +1020,7 @@ module bfc_system::bfc_system_state_inner {
         abort 1
     }
 
-    public(package) fun in_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2, value: ascii::String,): bool {
+    public(package) fun in_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2, value: ascii::String): bool {
         if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
             let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);
 

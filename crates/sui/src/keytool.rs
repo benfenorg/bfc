@@ -881,7 +881,7 @@ impl KeyToolCommand {
             } => {
                 let evm_address = get_identity_address_from_keystore(address, keystore)?;
                 let mut evm_address_string = evm_address.to_string();
-                if evm_address_string.to_string().starts_with("bfc") || evm_address_string.to_string().starts_with("BFC") {
+                if evm_address_string.to_string().to_ascii_lowercase().starts_with("bfc")  {
                     evm_address_string = convert_to_evm_address(evm_address_string.clone());
                 }
                 let sui_address = SuiAddress::from_str(&evm_address_string.to_string()).unwrap_or_else(|_e| panic!("Incorrect bfc_address"));

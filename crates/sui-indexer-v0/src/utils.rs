@@ -637,7 +637,7 @@ pub mod stable_pool {
     }
 
     pub fn parse_pool_key(s: &str) -> Result<TypeTag, IndexerError> {
-        let tt = if s.starts_with("0x") || s.starts_with("BFC") || s.starts_with("bfc") {
+        let tt = if s.starts_with("0x") || s.to_ascii_lowercase().starts_with("bfc") {
             parse_type_tag(s)
         } else {
             parse_type_tag(&format!("0x{}", s))
