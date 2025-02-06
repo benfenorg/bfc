@@ -766,7 +766,7 @@ impl LocalExec {
             )
             .expect("Failed to create gas status")
         };
-        let (inner_store, gas_status, effects, result) = executor.execute_transaction_to_effects(
+        let (_inner_store, _gas_status, _effects, _result) = executor.execute_transaction_to_effects(
             &self,
             protocol_config,
             metrics.clone(),

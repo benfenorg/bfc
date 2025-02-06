@@ -186,6 +186,7 @@ pub fn sui_framework_address_concat_string(suffix: &str) -> String {
 /// return 0x0...dee9
 //const fn deepbook_addr() -> AccountAddress {
 
+#[allow(dead_code)]
 const fn builtin_address(suffix: u16) -> AccountAddress {
     let mut addr = [0u8; AccountAddress::LENGTH];
     let [hi, lo] = suffix.to_be_bytes();
