@@ -3182,7 +3182,9 @@ deprecated
         self.extra_fields.add(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>, list);
     } <b>else</b> {
         <b>let</b> list = self.extra_fields.borrow_mut&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST">KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST</a>);
-        list.insert(value, 0);
+        <b>if</b> (!list.any!(|x| x == &value)) {
+            list.insert(value, 0);
+        };
     };
 }
 </code></pre>
