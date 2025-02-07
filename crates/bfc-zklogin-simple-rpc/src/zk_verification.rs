@@ -52,8 +52,8 @@ impl IntoResponse for ZkVerifyResponse {
 pub async fn verify_zk_login_sig(
     sig: String, bytes: String, intent_scope: u8, cur_epoch: Option<u64>, cur_rpc_url: Option<String>, author: String, env: String
 ) -> Result<SuiResult, anyhow::Error> {
-    let mut address_string = author.to_string().to_ascii_lowercase();
-    if address_string.starts_with("bfc") {
+    let mut address_string = author.to_string();
+    if address_string.to_ascii_lowercase().starts_with("bfc") {
         address_string = convert_to_evm_address(address_string);
     }
     let author_address = SuiAddress::from_str(&address_string)?;
