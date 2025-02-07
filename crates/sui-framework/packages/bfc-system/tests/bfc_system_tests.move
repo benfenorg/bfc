@@ -130,6 +130,7 @@ module bfc_system::bfc_system_tests {
             let (system_state_v2, _ctx) = bfc_system::load_system_state_mut_for_test(&mut system_state, test_scenario::ctx(&mut scenario_val));
 
             bfc_system_state_inner::delete_external_stable_gas_coin(system_state_v2, ascii::string(b"ddd"), _ctx);
+            bfc_system_state_inner::delete_external_stable_gas_coin(system_state_v2, ascii::string(b"ddd"), _ctx);
             let extra_fields = bfc_system_state_inner::get_extra_fields(system_state_v2);
             let length = extra_fields.length();
             debug::print(extra_fields);

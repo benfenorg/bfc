@@ -1065,7 +1065,9 @@ module bfc_system::bfc_system_state_inner {
             self.extra_fields.add(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST, list);
         } else {
             let list = self.extra_fields.borrow_mut<vector<u8>, vector<ascii::String>>(KEY_TO_DELETE_EXTERNAL_STABLE_GAS_COIN_LIST);
-            list.insert(value, 0);
+            if (!list.any!(|x| x == &value)) {
+                list.insert(value, 0);
+            };            
         };
     }
 
