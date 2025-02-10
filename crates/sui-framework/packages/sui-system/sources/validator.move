@@ -89,6 +89,7 @@ module sui_system::validator {
     /// Validator trying to set gas price higher than threshold.
     const EGasPriceHigherThanThreshold: u64 = 102;
 
+    const EInvalidCoinType: u64 =103;
     // TODO: potentially move this value to onchain config.
     const MAX_COMMISSION_RATE: u64 = 2_000; // Max rate is 20%, which is 2000 base points
 
@@ -402,6 +403,7 @@ module sui_system::validator {
         staker_address: address,
         ctx: &mut TxContext,
     ) : StakedStable<STABLE> {
+        assert!(std::type_name::get<STABLE>() == std::type_name::get<BUSD>(), EInvalidCoinType);
         let stake_amount = stake.value();
         assert!(stake_amount > 0, EInvalidStakeAmount);
         let stake_epoch = tx_context::epoch(ctx) + 1;

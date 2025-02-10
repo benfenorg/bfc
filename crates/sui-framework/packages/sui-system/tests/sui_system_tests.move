@@ -1209,4 +1209,87 @@ module sui_system::sui_system_tests {
         scenario_val.end();
     }
 
+    #[test]
+    fun test_request_add_stable_stake(){
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        // Epoch duration is set to be 42 here.
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+         {
+            scenario.next_tx(@0x0);
+            let mut system_state = scenario.take_shared<SuiSystemState>();
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_stable_pool_ref<BUSD>();
+
+            assert!(staking_pool.pending_stake_amount() == 0, 0);
+            assert!(staking_pool.pending_stake_withdraw_amount() == 0, 0);
+            assert!(staking_pool.stable_balance() == 0, 0);
+            test_scenario::return_shared(system_state);
+        };
+
+        scenario.next_tx(@0x0);
+
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+
+        let staked = system_state.request_add_stable_stake_non_entry<BUSD>(
+            coin::mint_for_testing(100_000_000_000, scenario.ctx()),
+            @0x1,
+            scenario.ctx()
+        );
+        transfer::public_transfer(staked, @0x3);
+        test_scenario::return_shared(system_state);
+
+
+        scenario.next_tx(@0x1);
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+        {
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_stable_pool_ref<BUSD>();
+            assert!(staking_pool.pending_stake_amount() == 100_000_000_000, 0);
+            test_scenario::return_shared(system_state);
+            advance_epoch(scenario);
+        };
+
+        scenario.next_tx(@0x1);
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+        {
+             let staking_pool = system_state.active_validator_by_address(@0x1).get_stable_pool_ref<BUSD>();
+            assert!(staking_pool.stable_balance()== 100_000_000_000, 0);
+            assert!(staking_pool.pending_stake_amount()== 0, 0);
+        };
+        test_scenario::return_shared(system_state);
+        scenario_val.end();
+    }
+
+    #[test]
+    #[expected_failure(abort_code = validator::EInvalidCoinType)]
+   fun test_request_add_other_stable_stake(){
+        let mut scenario_val = test_scenario::begin(@0x0);
+        let scenario = &mut scenario_val;
+        // Epoch duration is set to be 42 here.
+        set_up_sui_system_state(vector[@0x1, @0x2]);
+
+         {
+            scenario.next_tx(@0x0);
+            let mut system_state = scenario.take_shared<SuiSystemState>();
+            let staking_pool = system_state.active_validator_by_address(@0x1).get_stable_pool_ref<BUSD>();
+
+            assert!(staking_pool.pending_stake_amount() == 0, 0);
+            assert!(staking_pool.pending_stake_withdraw_amount() == 0, 0);
+            assert!(staking_pool.stable_balance() == 0, 0);
+            test_scenario::return_shared(system_state);
+        };
+
+        scenario.next_tx(@0x0);
+
+        let mut system_state = scenario.take_shared<SuiSystemState>();
+
+        let staked = system_state.request_add_stable_stake_non_entry<BJPY>(
+            coin::mint_for_testing(100_000_000_000, scenario.ctx()),
+            @0x1,
+            scenario.ctx()
+        );
+        transfer::public_transfer(staked, @0x3);
+        test_scenario::return_shared(system_state);
+        scenario_val.end();
+    }
 }
