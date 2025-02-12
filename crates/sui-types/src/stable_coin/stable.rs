@@ -197,6 +197,9 @@ pub mod checked {
         }
 
         pub fn is_new_gas_type(other: &TypeTag) -> bool {
+            if Self::is_inner_gas_type(other) {
+                return false;
+            }
             let rate_map = get_allow_stable_gas_coins_rate_map();
             let r = rate_map.iter().any(|(key, _)| {
                 let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
