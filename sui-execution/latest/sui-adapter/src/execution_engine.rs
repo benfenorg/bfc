@@ -951,6 +951,8 @@ mod checked {
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
             let rewards_bfc;
+
+            tracing::error!("[DEBUG BFC_ROUND_V2_PROTOCOL_VERSION] create rewards in stable coin: {:#?}", type_tag);
             if STABLE::is_new_gas_type(&type_tag) && 
                 param.current_protocol_version.as_u64() > BFC_ROUND_V2_PROTOCOL_VERSION {
                 //  withdraw bfc
