@@ -952,9 +952,13 @@ mod checked {
             // create rewards in stable coin
             let rewards_bfc;
 
-            tracing::error!("[DEBUG BFC_ROUND_V2_PROTOCOL_VERSION] create rewards in stable coin: {:#?}", type_tag);
+            
             if STABLE::is_new_gas_type(&type_tag) && 
                 param.current_protocol_version.as_u64() > BFC_ROUND_V2_PROTOCOL_VERSION {
+
+                tracing::error!("if [DEBUG BFC_ROUND_V2_PROTOCOL_VERSION] create rewards in stable coin: {:#?}, STABLE::is_new_gas_type {:#?}", 
+                    type_tag, STABLE::is_new_gas_type(&type_tag));
+
                 //  withdraw bfc
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
                 let bfc_charge_arg = builder
@@ -970,6 +974,9 @@ mod checked {
                     vec![system_obj, bfc_charge_arg],
                 );
             } else {
+                tracing::error!("else [DEBUG BFC_ROUND_V2_PROTOCOL_VERSION] create rewards in stable coin: {:#?}, STABLE::is_new_gas_type {:#?}", 
+                    type_tag, STABLE::is_new_gas_type(&type_tag));
+
                 let stable_charge_arg = builder
                     .input(CallArg::Pure(
                         bcs::to_bytes(&calculate_add(
