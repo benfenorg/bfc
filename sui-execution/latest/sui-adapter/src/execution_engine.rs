@@ -951,7 +951,8 @@ mod checked {
         for (type_tag, gas_cost_summary) in param.stable_gas_summarys.clone().into_iter() {
             // create rewards in stable coin
             let rewards_bfc;
-            if STABLE::is_new_gas_type(&type_tag) {
+            if STABLE::is_new_gas_type(&type_tag) && 
+                param.current_protocol_version.as_u64() > BFC_ROUND_V2_PROTOCOL_VERSION {
                 //  withdraw bfc
                 let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
                 let bfc_charge_arg = builder
