@@ -1,11 +1,11 @@
 use std::str::FromStr;
 use crate::server::APPLICATION_JSON;
-use crate::types::EthAddress;
-
 use anyhow::Error;
+use ethers::types::Address;
 use serde::Deserialize;
 use std::time::Duration;
 use crate::retry_with_max_elapsed_time;
+use ethers::types::Address as EthAddress;
 
 #[derive(Deserialize, Debug)]
 struct ApiResponse {
