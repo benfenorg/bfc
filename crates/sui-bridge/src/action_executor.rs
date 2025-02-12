@@ -4,6 +4,7 @@
 //! BridgeActionExecutor receives BridgeActions (from BridgeOrchestrator),
 //! collects bridge authority signatures and submit signatures on chain.
 
+use crate::aml_checker::AMLCheckerWrapper;
 use crate::retry_with_max_elapsed_time;
 use crate::types::IsBridgePaused;
 use arc_swap::ArcSwap;
@@ -343,7 +344,7 @@ where
 
         // Only token transfer action should reach here
         match &action {
-            BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) => (),
+            BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 
@@ -646,8 +647,18 @@ pub async fn submit_to_executor(
         .map_err(|e| BridgeError::Generic(e.to_string()))
 }
 
+pub async fn submit_to_aml_checker(
+    tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
+    action: BridgeAction,
+) -> Result<(), BridgeError> {
+    tx.send(AMLCheckerWrapper(action, 0))
+        .await
+        .map_err(|e| BridgeError::Generic(e.to_string()))
+}
+
 #[cfg(test)]
 mod tests {
+    use crate::aml_checker::{AMLChecker, AMLCheckerTrait};
     use crate::events::init_all_struct_tags;
     use crate::test_utils::DUMMY_MUTALBE_BRIDGE_OBJECT_ARG;
     use crate::types::BRIDGE_PAUSED;
@@ -684,6 +695,7 @@ mod tests {
         let (
             signing_tx,
             _execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             store,
@@ -878,10 +890,87 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_aml_checker() {
+        let (
+            _signing_tx,
+            _execution_tx,
+            aml_checker_tx,
+            sui_client_mock,
+            mut tx_subscription,
+            store,
+            secrets,
+            dummy_sui_key,
+            mock0,
+            mock1,
+            mock2,
+            mock3,
+            _handles,
+            gas_object_ref,
+            sui_address,
+            sui_token_type_tags,
+            _bridge_pause_tx,
+        ) = setup().await;
+        let (action_certificate, _, _) = get_bridge_authority_approved_action(
+            vec![&mock0, &mock1, &mock2, &mock3],
+            vec![&secrets[0], &secrets[1], &secrets[2], &secrets[3]],
+            None,
+            false,
+        );
+        let action = action_certificate.data().clone();
+        let id_token_map = (*sui_token_type_tags.load().clone()).clone();
+        let tx_data = build_sui_transaction(
+            sui_address,
+            &gas_object_ref,
+            action_certificate,
+            DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            &id_token_map,
+            1000,
+        )
+        .unwrap();
+
+        let tx_digest = get_tx_digest(tx_data, &dummy_sui_key);
+
+        let gas_coin = GasCoin::new_for_testing(1_000_000_000_000); // dummy gas coin
+        sui_client_mock.add_gas_object_info(
+            gas_coin.clone(),
+            gas_object_ref,
+            Owner::AddressOwner(sui_address),
+        );
+
+        // Mock the transaction to be successfully executed
+        let mut event = SuiEvent::random_for_testing();
+        event.type_ = TokenTransferClaimed.get().unwrap().clone();
+        let events = vec![event];
+        mock_transaction_response(
+            &sui_client_mock,
+            tx_digest,
+            SuiExecutionStatus::Success,
+            Some(events),
+            true,
+        );
+
+        store.insert_pending_aml_checked_actions(&[action.clone()]).unwrap();
+        assert_eq!(
+            store.get_all_pending_actions_4_aml()[&action.digest()],
+            action.clone()
+        );
+
+        // Kick it
+        submit_to_aml_checker(&aml_checker_tx,action.clone()).await.unwrap();
+
+        // Expect to see the transaction to be requested and successfully executed hence removed from WAL
+        tx_subscription.recv().await.unwrap();
+        assert!(store.get_all_pending_actions_4_aml().is_empty());
+
+
+    }
+
+    #[tokio::test]
     async fn test_signature_aggregation_loop() {
         let (
             signing_tx,
             _execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             store,
@@ -1005,6 +1094,7 @@ mod tests {
         let (
             signing_tx,
             _execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             store,
@@ -1073,6 +1163,7 @@ mod tests {
         let (
             _signing_tx,
             execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             store,
@@ -1158,6 +1249,7 @@ mod tests {
         let (
             _signing_tx,
             execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             store,
@@ -1259,6 +1351,7 @@ mod tests {
         let (
             _signing_tx,
             execution_tx,
+            _aml_checker_tx,
             sui_client_mock,
             mut tx_subscription,
             _store,
@@ -1467,6 +1560,7 @@ mod tests {
     async fn setup() -> (
         mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
         mysten_metrics::metered_channel::Sender<CertifiedBridgeActionExecutionWrapper>,
+        mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
         SuiMockClient,
         tokio::sync::broadcast::Receiver<TransactionDigest>,
         Arc<BridgeOrchestratorTables>,
@@ -1524,21 +1618,25 @@ mod tests {
             sui_client.clone(),
             agg.clone(),
             store.clone(),
-            sui_key,
+            sui_key.copy(),
             sui_address,
             gas_object_ref.0,
             sui_token_type_tags.clone(),
             bridge_pause_rx,
-            metrics,
+            metrics.clone(),
         )
         .await;
 
         let (executor_handle, signing_tx, execution_tx) = executor.run_inner();
+        let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), sui_address, gas_object_ref.0, sui_key.copy(), metrics.clone()).await;
+        let (aml_checker_handle, aml_checker_tx) = aml_checker.run(signing_tx.clone());
         handles.extend(executor_handle);
+        handles.extend(aml_checker_handle);
 
         (
             signing_tx,
             execution_tx,
+            aml_checker_tx,
             sui_client_mock,
             tx_subscription,
             store,

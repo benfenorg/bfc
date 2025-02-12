@@ -13,6 +13,7 @@ module bridge::bridge_env {
         Bridge,
         EmergencyOpEvent,
         TokenDepositedEvent,
+        TokenSendBackEvent,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
         TokenTransferApproved,
@@ -60,6 +61,7 @@ module bridge::bridge_env {
         validator_voting_powers_for_testing,
         SuiSystemState
     };
+    use sui::hex;
 
     //
     // Token IDs
@@ -523,6 +525,8 @@ module bridge::bridge_env {
             address::to_bytes(target_address),
             token_type,
             amount,
+            hex::decode(b""),
+            0u8, // event_idx
         );
         test_scenario::return_shared(bridge);
         message
@@ -550,6 +554,8 @@ module bridge::bridge_env {
             target_address,
             token_type,
             amount,
+            hex::decode(b""),
+            0u8, // event_idx
         );
         test_scenario::return_shared(bridge);
         message
@@ -576,6 +582,8 @@ module bridge::bridge_env {
             address::to_bytes(target_address),
             token_type,
             amount,
+            hex::decode(b""),
+            0u8, // event_idx
         );
         let signatures = env.sign_message(message);
         (message, signatures)
@@ -606,6 +614,8 @@ module bridge::bridge_env {
             address::to_bytes(target_address),
             token_type,
             amount,
+            hex::decode(b""),
+            0u8, // event_idx
         );
         let signatures = env.sign_message(message);
 
@@ -828,6 +838,47 @@ module bridge::bridge_env {
         ) = deposited_events[0].unwrap_deposited_event();
         assert!(event_seq_num == seq_num);
         assert!(event_amount == coin_value);
+        assert_key(chain_id, &bridge);
+
+        // tear down
+        test_scenario::return_shared(bridge);
+        seq_num
+    }
+
+    // Send a coin (token) to the target chain
+    public fun send_back_token(
+        env: &mut BridgeEnv,
+        sender: address,
+        target_chain_id: u8,
+        eth_address: vector<u8>,
+        token_type: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+    ): u64 {
+        // set up
+        let chain_id = env.chain_id;
+        let scenario = env.scenario();
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let seq_num = bridge.get_seq_num_for(message_types::token());
+        // run send
+        bridge.send_back_token(target_chain_id, eth_address,token_type, amount, tx_hash, 0u8, scenario.ctx());
+        // verify send events
+        let send_back_events = event::events_by_type<TokenSendBackEvent>();
+        assert!(send_back_events.length() == 1);
+        let (
+            event_seq_num,
+            _event_source_chain,
+            _event_sender_address,
+            _event_target_chain,
+            _event_target_address,
+            _event_token_type,
+            event_amount,
+            event_tx_hash,
+        ) = send_back_events[0].unwrap_send_back_event();
+        assert!(event_seq_num == seq_num);
+        assert!(event_amount == 100);
+        assert!(event_tx_hash == tx_hash);
         assert_key(chain_id, &bridge);
 
         // tear down

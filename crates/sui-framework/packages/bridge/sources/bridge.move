@@ -16,12 +16,13 @@ module bridge::bridge {
     use bridge::committee::{Self, BridgeCommittee};
     use bridge::limiter::{Self, TransferLimiter};
     use bridge::message::{
-        Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
+        Self, BridgeMessage, BridgeMessageKey, RefundMessageKey, EmergencyOp, UpdateAssetPrice,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
+    use sui::hex;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -56,6 +57,7 @@ module bridge::bridge {
         token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
         limiter: TransferLimiter,
         paused: bool,
+        refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -66,6 +68,18 @@ module bridge::bridge {
         target_address: vector<u8>,
         token_type: u8,
         amount: u64,
+    }
+
+    public struct TokenSendBackEvent has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u8,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u8,
     }
 
     public struct EmergencyOpEvent has copy, drop {
@@ -98,6 +112,13 @@ module bridge::bridge {
     const EMustBeTokenMessage: u64 = 17;
     const EInvalidEvmAddress: u64 = 18;
     const ETokenValueIsZero: u64 = 19;
+
+    // const EInvalidSender: u64 = 20;
+    const EInvalidTxHash: u64 = 21;
+    const EDuplicateRefund: u64 = 22;
+
+    const EInvalidBtcAddress: u64 = 51;
+
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -139,6 +160,7 @@ module bridge::bridge {
             token_transfer_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
+            refund_records: linked_table::new(ctx),
         };
         let bridge = Bridge {
             id,
@@ -224,6 +246,8 @@ module bridge::bridge {
             target_address,
             token_id,
             token_amount,
+            hex::decode(b""),
+            0u8, // event_idx
         );
 
         // burn / escrow token, unsupported coins will fail in this step
@@ -249,6 +273,75 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
+            },
+        );
+    }
+
+    // Create bridge request to send token back to EVM, the request will be in
+    // pending state until approved
+    public fun send_back_token(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u8,
+        token_amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u8,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(tx_hash.length() >= 1, EInvalidTxHash);
+        // let members = inner.committee.committee_members();
+        // assert!(members.contains(&address::to_bytes(ctx.sender())), EInvalidSender);
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        // create bridge message
+        let message = message::create_token_bridge_message(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            target_address,
+            token_type,
+            token_amount,
+            tx_hash,
+            event_idx,
+        );
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+        //store for idempotency
+        inner.refund_records.push_back(
+            message::key_refund(tx_hash),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            TokenSendBackEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: token_type,
+                amount: token_amount,
+                tx_hash,
+                event_idx,
             },
         );
     }
@@ -421,6 +514,26 @@ module bridge::bridge {
             return TRANSFER_STATUS_APPROVED
         };
 
+        TRANSFER_STATUS_PENDING
+    }
+
+    // just for idempotent check
+    #[allow(unused_function)]
+    fun get_send_back_status(
+        bridge: &Bridge,
+        tx_hash: vector<u8>,
+    ): u8 {
+        let inner = load_inner(bridge);
+        let key = message::key_refund(tx_hash);
+
+        if (!inner.refund_records.contains(key)) {
+            return TRANSFER_STATUS_NOT_FOUND
+        };
+
+        let record = &inner.refund_records[key];
+        if (record.claimed) {
+            return TRANSFER_STATUS_CLAIMED
+        };
         TRANSFER_STATUS_PENDING
     }
 
@@ -901,6 +1014,20 @@ module bridge::bridge {
         )
     }
 
+    #[test_only]
+    public fun unwrap_send_back_event(event: TokenSendBackEvent): (u64, u8, vector<u8>, u8, vector<u8>, u8, u64, vector<u8>) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount,
+            event.tx_hash,
+        )
+
+    }
     #[test_only]
     public fun unwrap_emergency_op_event(event: EmergencyOpEvent): bool {
         event.frozen

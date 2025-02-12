@@ -182,6 +182,8 @@ pub struct EthToSuiTokenBridgeV1 {
     pub eth_address: EthAddress,
     pub token_id: u8,
     pub sui_adjusted_amount: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
 }
 
 impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
@@ -195,6 +197,8 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             eth_address: event.sender_address,
             token_id: event.token_id,
             sui_adjusted_amount: event.sui_adjusted_amount,
+            tx_hash: vec![],
+            event_idx: 0,
         })
     }
 }

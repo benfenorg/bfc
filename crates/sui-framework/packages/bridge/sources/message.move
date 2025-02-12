@@ -41,12 +41,18 @@ module bridge::message {
         bridge_seq_num: u64
     }
 
+    public struct RefundMessageKey has copy, drop, store {
+        tx_hash: vector<u8>,
+    }
+
     public struct TokenTransferPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
         token_type: u8,
-        amount: u64
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u8,
     }
 
     public struct EmergencyOp has drop {
@@ -104,7 +110,8 @@ module bridge::message {
         let target_address = bcs.peel_vec_u8();
         let token_type = bcs.peel_u8();
         let amount = peel_u64_be(&mut bcs);
-
+        let tx_hash = bcs.peel_vec_u8();
+        let event_idx = bcs.peel_u8();
         chain_ids::assert_valid_chain_id(target_chain);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
 
@@ -113,7 +120,9 @@ module bridge::message {
             target_chain,
             target_address,
             token_type,
-            amount
+            amount,
+            tx_hash,
+            event_idx
         }
     }
 
@@ -241,7 +250,9 @@ module bridge::message {
         target_chain: u8,
         target_address: vector<u8>,
         token_type: u8,
-        amount: u64
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u8,
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
         chain_ids::assert_valid_chain_id(target_chain);
@@ -260,7 +271,9 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
         assert!(vector::length(&payload) == 64, EInvalidPayloadLength);
-
+        payload.push_back((vector::length(&tx_hash) as u8));
+        payload.append(tx_hash);
+        payload.push_back(event_idx);
         BridgeMessage {
             message_type: message_types::token(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -423,6 +436,10 @@ module bridge::message {
         create_key(self.source_chain, self.message_type, self.seq_num)
     }
 
+    public fun key_refund(tx_hash: vector<u8>): RefundMessageKey {
+        RefundMessageKey { tx_hash }
+    }
+
     // BridgeMessage getters
     public fun message_version(self: &BridgeMessage): u8 {
         self.message_version
@@ -458,6 +475,14 @@ module bridge::message {
 
     public fun token_amount(self: &TokenTransferPayload): u64 {
         self.amount
+    }
+
+    public fun token_tx_hash(self: &TokenTransferPayload): vector<u8> {
+        self.tx_hash
+    }
+
+    public fun token_event_idx(self: &TokenTransferPayload): u8 {
+        self.event_idx
     }
 
     // EmergencyOpPayload getters
@@ -611,7 +636,9 @@ module bridge::message {
         target_chain: u8,
         target_address: vector<u8>,
         token_type: u8,
-        amount: u64
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u8,
     ): TokenTransferPayload {
         TokenTransferPayload {
             sender_address,
@@ -619,6 +646,8 @@ module bridge::message {
             target_address,
             token_type,
             amount,
+            tx_hash,
+            event_idx,
         }
     }
 

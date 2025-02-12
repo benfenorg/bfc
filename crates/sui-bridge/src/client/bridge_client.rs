@@ -56,6 +56,11 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::EthSendBackBridgeAction(e) => format!(
+                "sign/bridge_tx/sui/eth/send/back/{}/{}",
+                e.sui_tx_digest,
+                e.sui_tx_event_index
+            ),
             BridgeAction::EthToSuiBridgeAction(e) => format!(
                 "sign/bridge_tx/eth/sui/{}/{}",
                 Hex::encode(e.eth_tx_hash.0),
@@ -444,6 +449,8 @@ mod tests {
                 eth_address: EthAddress::random(),
                 token_id: TOKEN_ID_USDT,
                 amount_sui_adjusted: 1,
+                tx_hash: vec![],
+                event_idx: 0,
             },
         });
         assert_eq!(
@@ -467,6 +474,8 @@ mod tests {
                 sui_address: SuiAddress::random_for_testing_only(),
                 token_id: TOKEN_ID_USDT,
                 sui_adjusted_amount: 1,
+                tx_hash: vec![],
+                event_idx: 0,
             },
         });
 

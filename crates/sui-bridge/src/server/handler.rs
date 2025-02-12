@@ -8,11 +8,12 @@ use crate::error::{BridgeError, BridgeResult};
 use crate::eth_client::EthClient;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{BridgeAction, SignedBridgeAction};
+use crate::types::{BridgeAction, BridgeActionType, SignedBridgeAction};
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
-use ethers::types::TxHash;
+use ethers::types::{BigEndianHash, TxHash, U256};
+use fastcrypto::traits::KeyPair;
 use lru::LruCache;
 use std::num::NonZeroUsize;
 use std::str::FromStr;
@@ -43,6 +44,12 @@ pub trait BridgeRequestHandlerTrait {
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
 
+    async fn handle_send_back_tx_digest(
+        &self,
+        tx_digest_base58: String,
+        event_idx: u16,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError>;
+
     /// Handles a request to sign a governance action.
     async fn handle_governance_action(
         &self,
@@ -62,6 +69,11 @@ struct SuiActionVerifier<C> {
 }
 
 struct EthActionVerifier<P> {
+    eth_client: Arc<EthClient<P>>,
+}
+
+struct SendBackActionVerifier<C, P> {
+    sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
 }
 
@@ -98,6 +110,58 @@ where
             .get_finalized_bridge_action_maybe(tx_hash, event_idx)
             .await
             .tap_ok(|action| info!("Eth action found: {:?}", action))
+    }
+}
+
+#[async_trait::async_trait]
+impl<C,P> ActionVerifier<(TransactionDigest, u16)> for SendBackActionVerifier<C,P>
+where
+    C: SuiClientInner + Send + Sync + 'static,
+    P: JsonRpcClient + Send + Sync + 'static,
+{
+    fn name(&self) -> &'static str {
+        "SendBackActionVerifier"
+    }
+
+    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (tx_digest, event_idx) = key;
+        let result = self.sui_client
+            .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
+            .await
+            .tap_ok(|action| info!("Sui action found: {:?}", action));
+        if let Err(e) = result {
+            return Err(e);
+        }
+        let action_rs = result.unwrap();
+        if let BridgeAction::EthSendBackBridgeAction(ref send_back_action) = action_rs {
+            let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
+            let tx_hash = U256::from_big_endian(&tx_hash_bytes);
+            let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
+            let result = self.eth_client.get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx).await;
+            if let Err(e) = result {
+                return Err(e);
+            }
+            let action = result.unwrap();
+            if action.action_type() != BridgeActionType::TokenTransfer {
+                return Err(BridgeError::Generic(format!("Expected EthToSuiBridgeAction, got {:?}", action.action_type())));
+            }
+            // check amount, token_id, target_address
+            if let BridgeAction::EthToSuiBridgeAction(ref eth_to_sui_action) = action {
+                if eth_to_sui_action.eth_bridge_event.sui_adjusted_amount != send_back_action.sui_bridge_event.amount_sui_adjusted {
+                    return Err(BridgeError::Generic(format!("Amount mismatch: expected {}, got {}", send_back_action.sui_bridge_event.amount_sui_adjusted, eth_to_sui_action.eth_bridge_event.sui_adjusted_amount)));
+                }
+                if eth_to_sui_action.eth_bridge_event.token_id != send_back_action.sui_bridge_event.token_id{
+                    return Err(BridgeError::Generic(format!("Token ID mismatch: expected {}, got {}", send_back_action.sui_bridge_event.token_id, eth_to_sui_action.eth_bridge_event.token_id)));
+                }
+                if eth_to_sui_action.eth_bridge_event.eth_address != send_back_action.sui_bridge_event.eth_address {
+                    return Err(BridgeError::Generic(format!("Target address mismatch: expected {}, got {}", send_back_action.sui_bridge_event.eth_address, eth_to_sui_action.eth_bridge_event.eth_address)));
+                }
+            }
+            return Ok(action_rs);
+        }
+        //todo: mofei fix the error
+        Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
+
     }
 }
 
@@ -217,6 +281,10 @@ pub struct BridgeRequestHandler {
         (TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
+    send_back_signer_tx: mysten_metrics::metered_channel::Sender<(
+        (TransactionDigest, u16),
+        oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+    )>,
     eth_signer_tx: mysten_metrics::metered_channel::Sender<(
         (TxHash, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
@@ -245,6 +313,14 @@ impl BridgeRequestHandler {
                 .channel_inflight
                 .with_label_values(&["server_sui_action_signing_queue"]),
         );
+
+        let (send_back_signer_tx, send_back_rx) = mysten_metrics::metered_channel::channel(
+            1000,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["server_send_back_action_signing_queue"]),
+        );
         let (eth_signer_tx, eth_rx) = mysten_metrics::metered_channel::channel(
             1000,
             &mysten_metrics::get_metrics()
@@ -263,13 +339,13 @@ impl BridgeRequestHandler {
 
         SignerWithCache::new(
             signer.clone(),
-            SuiActionVerifier { sui_client },
+            SuiActionVerifier { sui_client: sui_client.clone() },
             metrics.clone(),
         )
         .spawn(sui_rx);
         SignerWithCache::new(
             signer.clone(),
-            EthActionVerifier { eth_client },
+            EthActionVerifier { eth_client: eth_client.clone() },
             metrics.clone(),
         )
         .spawn(eth_rx);
@@ -280,8 +356,16 @@ impl BridgeRequestHandler {
         )
         .spawn(governance_rx);
 
+        SignerWithCache::new(
+            signer.clone(),
+            SendBackActionVerifier { sui_client: sui_client.clone(), eth_client: eth_client.clone() },
+            metrics.clone(),
+        )
+        .spawn(send_back_rx);
+
         Self {
             sui_signer_tx,
+            send_back_signer_tx,
             eth_signer_tx,
             governance_signer_tx,
         }
@@ -317,6 +401,24 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.sui_signer_tx
+            .send(((tx_digest, event_idx), tx))
+            .await
+            .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
+        let signed_action = rx
+            .await
+            .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
+        Ok(Json(signed_action))
+    }
+
+    async fn handle_send_back_tx_digest(
+        &self,
+        tx_digest_base58: String,
+        event_idx: u16,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        let tx_digest = TransactionDigest::from_str(&tx_digest_base58)
+            .map_err(|_e| BridgeError::InvalidTxHash)?;
+        let (tx, rx) = oneshot::channel();
+        self.send_back_signer_tx
             .send(((tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
