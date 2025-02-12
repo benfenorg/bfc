@@ -3,6 +3,7 @@
 
 use anyhow::anyhow;
 use async_trait::async_trait;
+use ethers::utils::hex;
 use core::panic;
 use fastcrypto::traits::ToFromBytes;
 use serde::de::DeserializeOwned;
@@ -44,7 +45,8 @@ use sui_types::{
     Identifier,
 };
 use tokio::sync::OnceCell;
-use tracing::{error, warn};
+use tracing::{error, info, warn};
+use hex::encode as hex_encode;
 
 use crate::crypto::BridgeAuthorityPublicKey;
 use crate::error::{BridgeError, BridgeResult};
@@ -102,6 +104,10 @@ where
             "SuiClient is connected to chain {chain_id}, current block number: {block_number}"
         );
         Ok(())
+    }
+
+    pub async fn notify_something_done(&self){
+        self.inner.notify_something_done().await;
     }
 
     /// Get the mutable bridge object arg on chain.
@@ -326,6 +332,34 @@ where
         }
     }
 
+    // TODO: this function is very slow (seconds) in tests, we need to optimize it
+    pub async fn get_send_back_onchain_status_until_success(
+        &self,
+        tx_hash: Vec<u8>,
+    ) -> BridgeActionStatus {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(status)) = retry_with_max_elapsed_time!(
+                self.inner.get_send_back_onchain_status(
+                    bridge_object_arg,
+                    tx_hash.clone()
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_send_back_onchain_status"])
+                    .inc();
+                error!(
+                    "Failed to get send back onchain status for tx_hash: {}",
+                    hex_encode(tx_hash.clone())
+                );
+                continue;
+            };
+            return status;
+        }
+    }
+
     pub async fn get_token_transfer_action_onchain_signatures_until_success(
         &self,
         source_chain_id: u8,
@@ -396,6 +430,8 @@ pub trait SuiClientInner: Send + Sync {
         tx_digest: TransactionDigest,
     ) -> Result<Vec<SuiEvent>, Self::Error>;
 
+    async fn notify_something_done(&self);
+
     async fn get_chain_identifier(&self) -> Result<String, Self::Error>;
 
     async fn get_reference_gas_price(&self) -> Result<u64, Self::Error>;
@@ -416,6 +452,12 @@ pub trait SuiClientInner: Send + Sync {
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError>;
+
+    async fn get_send_back_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        tx_hash: Vec<u8>,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
     async fn get_token_transfer_action_onchain_signatures(
@@ -506,6 +548,25 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
+    async fn get_send_back_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        tx_hash: Vec<u8>,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        dev_inspect_send_back_bridge::<u8>(
+            self,
+            bridge_object_arg,
+            tx_hash,
+            "get_send_back_status",
+        )
+        .await
+        .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
+    }
+
+
+
+
+
     async fn get_token_transfer_action_onchain_signatures(
         &self,
         bridge_object_arg: ObjectArg,
@@ -579,6 +640,10 @@ impl SuiClientInner for SuiSdkClient {
             }
         }
     }
+
+    async fn notify_something_done(&self){
+        //do nothing,just for testing
+    }
 }
 
 /// Helper function to dev-inspect `bridge::{function_name}` function
@@ -606,6 +671,61 @@ where
             Identifier::new(function_name).unwrap(),
             vec![],
             vec![Argument::Input(0), Argument::Input(1), Argument::Input(2)],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
+async fn dev_inspect_send_back_bridge<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    tx_hash: Vec<u8>,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&tx_hash).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![Argument::Input(0), Argument::Input(1)],
         )],
     };
     let kind = TransactionKind::programmable(pt);
@@ -686,6 +806,8 @@ mod tests {
             eth_address: EthAddress::random(),
             token_id: TOKEN_ID_SUI,
             amount_sui_adjusted: 100,
+            tx_hash: vec![],
+            event_idx: 0,
         };
         let emitted_event_1 = MoveTokenDepositedEvent {
             seq_num: sanitized_event_1.nonce,

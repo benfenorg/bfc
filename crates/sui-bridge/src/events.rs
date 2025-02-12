@@ -12,6 +12,7 @@ use crate::crypto::BridgeAuthorityPublicKey;
 use crate::error::BridgeError;
 use crate::error::BridgeResult;
 use crate::types::BridgeAction;
+use crate::types::EthSendBackBridgeAction;
 use crate::types::SuiToEthBridgeAction;
 use ethers::types::Address as EthAddress;
 use fastcrypto::encoding::Encoding;
@@ -43,6 +44,19 @@ pub struct MoveTokenDepositedEvent {
     pub target_address: Vec<u8>,
     pub token_type: u8,
     pub amount_sui_adjusted: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MoveTokenSendBackEvent {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u8,
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
 }
 
 macro_rules! new_move_event {
@@ -220,6 +234,22 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
     pub token_id: u8,
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct EmittedEthTokenSendBackBridgeV1 {
+    pub nonce: u64,
+    pub sui_chain_id: BridgeChainId,
+    pub eth_chain_id: BridgeChainId,
+    pub sui_address: SuiAddress,
+    pub eth_address: EthAddress,
+    pub token_id: u8,
+    // The amount of tokens deposited with decimal points on Sui side
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
 }
 
 // Sanitized version of MoveCommitteeUpdateEvent
@@ -339,12 +369,70 @@ impl TryFrom<MoveTokenDepositedEvent> for EmittedSuiToEthTokenBridgeV1 {
             eth_address,
             token_id,
             amount_sui_adjusted: event.amount_sui_adjusted,
+            tx_hash: vec![],
+            event_idx: 0,
+        })
+    }
+}
+
+impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenSendBackEvent) -> BridgeResult<Self> {
+        if event.amount_sui_adjusted == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if eth_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address)
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenSendBackEvent to EmittedEthTokenSendBackBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
+        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            eth_chain_id,
+            sui_address,
+            eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_sui_adjusted,
+            tx_hash: event.tx_hash,
+            event_idx: event.event_idx,
         })
     }
 }
 
 crate::declare_events!(
     SuiToEthTokenBridgeV1(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEvent", MoveTokenDepositedEvent),
+    TokenSendBackEvent(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEvent", MoveTokenSendBackEvent),
     TokenTransferApproved(TokenTransferApproved) => ("bridge::TokenTransferApproved", MoveTokenTransferApproved),
     TokenTransferClaimed(TokenTransferClaimed) => ("bridge::TokenTransferClaimed", MoveTokenTransferClaimed),
     TokenTransferAlreadyApproved(TokenTransferAlreadyApproved) => ("bridge::TokenTransferAlreadyApproved", MoveTokenTransferAlreadyApproved),
@@ -415,6 +503,13 @@ impl SuiBridgeEvent {
                     sui_bridge_event: event.clone(),
                 }))
             }
+            SuiBridgeEvent::TokenSendBackEvent(event) => Some(
+                BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }),
+            ),
             SuiBridgeEvent::TokenTransferApproved(_event) => None,
             SuiBridgeEvent::TokenTransferClaimed(_event) => None,
             SuiBridgeEvent::TokenTransferAlreadyApproved(_event) => None,
@@ -436,6 +531,7 @@ impl SuiBridgeEvent {
 #[cfg(test)]
 pub mod tests {
     use std::collections::HashSet;
+    use std::io::Write;
 
     use super::*;
     use crate::crypto::BridgeAuthorityKeyPair;
@@ -448,6 +544,8 @@ pub mod tests {
     use sui_types::base_types::ObjectID;
     use sui_types::base_types::SuiAddress;
     use sui_types::bridge::BridgeChainId;
+    use sui_types::bridge::MoveTypeTokenTransferPayload;
+    use sui_types::bridge::TOKEN_ID_ETH;
     use sui_types::bridge::TOKEN_ID_SUI;
     use sui_types::crypto::get_key_pair;
     use sui_types::digests::TransactionDigest;
@@ -465,6 +563,8 @@ pub mod tests {
             eth_address: EthAddress::random(),
             token_id: TOKEN_ID_SUI,
             amount_sui_adjusted: 100,
+            tx_hash: vec![],
+            event_idx: 0,
         };
         let emitted_event = MoveTokenDepositedEvent {
             seq_num: sanitized_event.nonce,
@@ -583,5 +683,80 @@ pub mod tests {
             BridgeError::ZeroValueBridgeTransfer(_) => (),
             other => panic!("Expected Generic error, got: {:?}", other),
         }
+    }
+
+    #[test]
+    fn test_1_token_send_back_event() {
+        let emitted_event = MoveTokenSendBackEvent {
+            seq_num: 1,
+            source_chain: BridgeChainId::SuiTestnet as u8,
+            sender_address: SuiAddress::random_for_testing_only().to_vec(),
+            target_chain: BridgeChainId::EthSepolia as u8,
+            target_address: EthAddress::random().as_bytes().to_vec(),
+            token_type: TOKEN_ID_SUI,
+            amount_sui_adjusted: 100,
+            tx_hash: Hex::decode(
+                "f368c8c4c24723814adf70181bb87d4e17a1d1919cd9235f1fa362a34036c30a",
+            )
+            .unwrap(),
+            event_idx: 1,
+        };
+        let event = EmittedEthTokenSendBackBridgeV1::try_from(emitted_event).unwrap();
+        let amount_sui_adjusted = event.amount_sui_adjusted;
+        assert_eq!(amount_sui_adjusted, 100u64);
+        assert_eq!(
+            Hex::encode(&event.tx_hash).as_str(),
+            "f368c8c4c24723814adf70181bb87d4e17a1d1919cd9235f1fa362a34036c30a"
+        );
+        assert_eq!(event.event_idx, 1);
+    }
+    #[test]
+    fn test_2_token_send_back_event() {
+        let sender_bytes = vec![
+            252, 179, 60, 244, 165, 9, 80, 11, 99, 89, 142, 93, 231, 252, 145, 146, 51, 148, 218,
+            0, 195, 207, 58, 216, 53, 4, 255, 87, 174, 159, 34, 84,
+        ];
+        let target_bytes = vec![
+            20, 220, 121, 150, 77, 162, 192, 139, 35, 105, 139, 61, 60, 199, 202, 50, 25, 61, 153,
+            85,
+        ];
+        let tx_hash =
+            Hex::decode("0x805ca8353fab4ab3dd6d598ce154b6666d98e494f265223a6fa2f85e0802c355")
+                .unwrap();
+        let event_idx = 1;
+        let payload = MoveTypeTokenTransferPayload {
+            sender_address: sender_bytes,
+            target_chain: BridgeChainId::EthCustom as u8,
+            target_address: target_bytes,
+            token_type: TOKEN_ID_ETH,
+            amount: 4200000000u64,
+            tx_hash,
+            event_idx,
+        };
+
+        let mut output = Vec::new();
+        output.write_all(&payload.sender_address).unwrap();
+        output.write_all(&[payload.target_chain]).unwrap();
+        output.write_all(&payload.target_address).unwrap();
+        output.write_all(&[payload.token_type]).unwrap();
+        output.write_all(&payload.amount.to_le_bytes()).unwrap();
+        output.write_all(&payload.tx_hash).unwrap();
+        output.write_all(&[payload.event_idx]).unwrap();
+        println!("original output: {:?}", output.clone());
+        let payload_bytes1 = ethers::types::Bytes::from(output);
+        println!("ethers payload_bytes1: {:?}", payload_bytes1);
+
+        let payload_bytes = ethers::types::Bytes::from(bcs::to_bytes(&payload).unwrap());
+        println!("bcs payload_bytes: {:?}", bcs::to_bytes(&payload).unwrap());
+        println!("ethers payload_bytes2: {:?}", payload_bytes);
+
+        // 验证 amount 字段是否以小端序列化
+        // amount 在 payload 中的位置: sender_address(32) + target_chain(1) + target_address(20) + token_type(1) = 54
+        let amount_bytes = payload_bytes[56..64].to_vec();
+        println!("amount_bytes: {:?}", &amount_bytes);
+        println!("1000000000u64: {:?}", 100000u64.to_le_bytes());
+        let amount = u64::from_le_bytes(amount_bytes.try_into().unwrap());
+        assert_eq!(amount, 100000u64);
+        // assert_eq!(amount_bytes, 420u64.to_le_bytes()); // bcs 使用小端序列化 u64
     }
 }

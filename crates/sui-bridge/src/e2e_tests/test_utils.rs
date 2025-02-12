@@ -806,6 +806,7 @@ pub(crate) async fn start_bridge_cluster(
                 bridge_client_gas_object: None,
                 sui_bridge_module_last_processed_event_id_override: None,
             },
+            aml_key: "to_replace_test_key".to_string(), //todo: replace with real key
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,

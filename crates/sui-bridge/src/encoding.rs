@@ -8,6 +8,7 @@ use crate::types::BlocklistCommitteeAction;
 use crate::types::BridgeAction;
 use crate::types::BridgeActionType;
 use crate::types::EmergencyAction;
+use crate::types::EthSendBackBridgeAction;
 use crate::types::EthToSuiBridgeAction;
 use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
@@ -81,6 +82,64 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
         // Add token amount
         bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
 
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.push(e.event_idx);
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for EthSendBackBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        // Add message version
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+        // Add source chain id
+        bytes.push(e.sui_chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // Add source address length
+        bytes.push(SUI_ADDRESS_LENGTH as u8);
+        // Add source address
+        bytes.extend_from_slice(&e.sui_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.eth_chain_id as u8);
+        // Add dest address length
+        bytes.push(EthAddress::len_bytes() as u8);
+        // Add dest address
+        bytes.extend_from_slice(e.eth_address.as_bytes());
+
+        // Add token id
+        bytes.push(e.token_id);
+
+        // Add token amount
+        bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.push(e.event_idx);
+
         bytes
     }
 }
@@ -124,6 +183,13 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
 
         // Add token amount
         bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
+
+        // Add tx hash
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&e.tx_hash.to_vec());
+
+        // Add event idx
+        bytes.push(e.event_idx);
 
         bytes
     }
@@ -439,6 +505,8 @@ mod tests {
             eth_address,
             token_id,
             amount_sui_adjusted,
+            tx_hash: vec![],
+            event_idx: 0,
         };
 
         let encoded_bytes = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
@@ -518,6 +586,8 @@ mod tests {
             eth_address,
             token_id,
             amount_sui_adjusted,
+            tx_hash: vec![],
+            event_idx: 0,
         };
         let encoded_bytes = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
             sui_tx_digest,
@@ -891,6 +961,8 @@ mod tests {
             eth_address,
             token_id,
             sui_adjusted_amount,
+            tx_hash: vec![],
+            event_idx: 0,
         };
         let encoded_bytes = BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
             eth_tx_hash,

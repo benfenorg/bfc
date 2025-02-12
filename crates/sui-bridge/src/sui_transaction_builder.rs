@@ -1,8 +1,12 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use ethers::abi::AbiEncode;
+use ethers::utils::hex::ToHex;
+use fastcrypto::encoding::Hex;
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
+use std::io::Read;
 use std::{collections::HashMap, str::FromStr};
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
@@ -37,6 +41,16 @@ pub fn build_sui_transaction(
             gas_object_ref,
             action,
             true,
+            bridge_object_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
+        // TODO: mofei
+        BridgeAction::EthSendBackBridgeAction(_) => build_token_bridge_approve_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            false,
             bridge_object_arg,
             sui_token_type_tags,
             rgp,
@@ -108,7 +122,7 @@ fn build_token_bridge_approve_transaction(
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
     let mut builder = ProgrammableTransactionBuilder::new();
 
-    let (source_chain, seq_num, sender, target_chain, target, token_type, amount) =
+    let (source_chain, seq_num, sender, target_chain, target, token_type, amount,tx_hash,event_idx) =
         match bridge_action {
             BridgeAction::SuiToEthBridgeAction(a) => {
                 let bridge_event = a.sui_bridge_event;
@@ -120,6 +134,22 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.eth_address.to_fixed_bytes().to_vec(),
                     bridge_event.token_id,
                     bridge_event.amount_sui_adjusted,
+                    vec![],
+                    0
+                )
+            }
+            BridgeAction::EthSendBackBridgeAction(a) => {
+                let bridge_event = a.sui_bridge_event;
+                (
+                    bridge_event.sui_chain_id,
+                    bridge_event.nonce,
+                    bridge_event.sui_address.to_vec(),
+                    bridge_event.eth_chain_id,
+                    bridge_event.eth_address.to_fixed_bytes().to_vec(),
+                    bridge_event.token_id,
+                    bridge_event.amount_sui_adjusted,
+                    bridge_event.tx_hash,
+                    bridge_event.event_idx,
                 )
             }
             BridgeAction::EthToSuiBridgeAction(a) => {
@@ -132,11 +162,19 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.sui_address.to_vec(),
                     bridge_event.token_id,
                     bridge_event.sui_adjusted_amount,
+                    vec![],
+                    0
                 )
             }
             _ => unreachable!(),
         };
-
+    let sender_clone = sender.clone();
+    let target_clone = target.clone();
+    let sender_clone2 = sender.clone();
+    let target_clone2 = target.clone();
+    println!("bbking 21 source_chain: {:?} seq_num: {:?} sender: {:?} target_chain: {:?} target: {:?} token_type: {:?} amount: {:?} tx_hash: {:?} event_idx: {:?}", source_chain, seq_num, sender_clone.bytes(), target_chain, target_clone.bytes(), token_type, amount, Hex::encode_with_format(&tx_hash), event_idx);
+    println!("bbking 21 sender: {:?}", Hex::encode_with_format(sender_clone2));
+    println!("bbking 21 target: {:?}", Hex::encode_with_format(target_clone2));
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
     let sender = builder.pure(sender.clone()).map_err(|e| {
@@ -154,6 +192,8 @@ fn build_token_bridge_approve_transaction(
     })?;
     let arg_token_type = builder.pure(token_type).unwrap();
     let amount = builder.pure(amount).unwrap();
+    let tx_hash = builder.pure(tx_hash).unwrap();
+    let event_idx = builder.pure(event_idx).unwrap();
 
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
@@ -168,6 +208,8 @@ fn build_token_bridge_approve_transaction(
             target,
             arg_token_type,
             amount,
+            tx_hash,
+            event_idx,
         ],
     );
 
@@ -206,6 +248,70 @@ fn build_token_bridge_approve_transaction(
             vec![arg_bridge, arg_clock, source_chain, seq_num],
         );
     }
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_token_send_back_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: BridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+
+    match &action {
+        BridgeAction::EthToSuiBridgeAction(_) => (),
+        _ => unreachable!("Non token transfer action should not reach here"),
+    };
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, sender, token_type, amount,tx_hash,event_idx) =
+        match action {
+            BridgeAction::EthToSuiBridgeAction(a) => {
+                let bridge_event = a.eth_bridge_event;
+                (
+                    bridge_event.eth_chain_id,
+                    bridge_event.eth_address.to_fixed_bytes().to_vec(),
+                    bridge_event.token_id,
+                    bridge_event.sui_adjusted_amount,
+                    a.eth_tx_hash.as_bytes().to_vec(),
+                    a.eth_event_index as u8
+                )
+            }
+            _ => unreachable!(),
+        };
+
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let source_address = builder.pure(sender.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize sender: {:?}. Err: {:?}",
+            sender, e
+        ))
+    })?;
+    let arg_token_type = builder.pure(token_type).unwrap();
+    let amount = builder.pure(amount).unwrap();
+    let tx_hash = builder.pure(tx_hash.clone()).unwrap();
+    let event_idx = builder.pure(event_idx).unwrap();
+
+    // Unwrap: these should not fail
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("send_back_token").to_owned(),
+        vec![],
+        vec![arg_bridge, source_chain, source_address,arg_token_type,amount,tx_hash,event_idx],
+    );
 
     let pt = builder.finish();
 
@@ -637,6 +743,7 @@ mod tests {
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::crypto::get_key_pair;
     use sui_types::crypto::ToFromBytes;
+    use test_cluster::TestClusterBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
     async fn test_build_sui_transaction_for_token_transfer() {

@@ -242,6 +242,7 @@ pub struct BridgeInnerV1 {
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
+    pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
@@ -455,6 +456,12 @@ pub struct MoveTypeBridgeMessageKey {
     pub bridge_seq_num: u64,
 }
 
+/// Rust version of the Move message::BridgeMessageKey type.
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeRefundMessageKey {
+    pub tx_hash: Vec<u8>,
+}
+
 /// Rust version of the Move limiter::TransferLimiter type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTransferLimiter {
@@ -512,6 +519,8 @@ pub struct MoveTypeTokenTransferPayload {
     pub target_address: Vec<u8>,
     pub token_type: u8,
     pub amount: u64,
+    pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
 }
 
 /// Rust version of the Move message::ParsedTokenTransferMessage type.

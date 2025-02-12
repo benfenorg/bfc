@@ -16,6 +16,7 @@ use crate::utils::{
     get_committee_voting_power_by_name, get_eth_contract_addresses, get_validator_names_by_pub_keys,
 };
 use crate::{
+    aml_checker::AMLChecker,
     action_executor::BridgeActionExecutor,
     client::bridge_authority_aggregator::BridgeAuthorityAggregator,
     config::{BridgeClientConfig, BridgeNodeConfig},
@@ -290,7 +291,7 @@ async fn start_client_components(
         sui_client.clone(),
         bridge_auth_agg.clone(),
         store.clone(),
-        client_config.key,
+        client_config.key.copy(),
         client_config.sui_address,
         client_config.gas_object_ref.0,
         sui_token_type_tags.clone(),
@@ -298,6 +299,8 @@ async fn start_client_components(
         metrics.clone(),
     )
     .await;
+
+    let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), client_config.sui_address, client_config.gas_object_ref.0, client_config.key.copy(), metrics.clone()).await;
 
     let monitor = BridgeMonitor::new(
         sui_client.clone(),
@@ -320,7 +323,7 @@ async fn start_client_components(
         metrics,
     );
 
-    all_handles.extend(orchestrator.run(bridge_action_executor).await);
+    all_handles.extend(orchestrator.run(bridge_action_executor,aml_checker).await);
     Ok(all_handles)
 }
 
@@ -592,6 +595,7 @@ mod tests {
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
             },
+            aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: false,
             db_path: None,
@@ -659,6 +663,7 @@ mod tests {
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
             },
+            aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),
@@ -737,6 +742,7 @@ mod tests {
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: Some(0),
             },
+            aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),

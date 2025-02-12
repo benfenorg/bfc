@@ -14,7 +14,7 @@ use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::ObjectRef;
 use sui_types::bridge::{
-    BridgeCommitteeSummary, BridgeSummary, MoveTypeParsedTokenTransferMessage,
+    BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessage
 };
 use sui_types::digests::TransactionDigest;
 use sui_types::event::EventID;
@@ -152,6 +152,11 @@ impl SuiMockClient {
 impl SuiClientInner for SuiMockClient {
     type Error = sui_sdk::error::Error;
 
+    async fn notify_something_done(&self) {
+        self.requested_transactions_tx.send(TransactionDigest::random()).unwrap();
+    }
+
+
     // Unwraps in this function: We assume the responses are pre-populated
     // by the test before calling into this function.
     async fn query_events(
@@ -230,7 +235,30 @@ impl SuiClientInner for SuiMockClient {
                 .unwrap()
                 .clone()
                 .unwrap_or_default(),
-            treasury: Default::default(),
+                treasury: BridgeTreasurySummary {
+                    supported_tokens: vec![("11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::btc::BTC".to_string(), BridgeTokenMetadata{
+                        id: 1,
+                        decimal_multiplier: 100_000_000,
+                        notional_value: 50_000 ,
+                        native_token: false,
+                    }), ("12c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::eth::ETH".to_string(), BridgeTokenMetadata{
+                        id: 2,
+                        decimal_multiplier: 100_000_000,
+                        notional_value: 3_000 ,
+                        native_token: false,
+                    }), ("13c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::usdc::USDC".to_string(), BridgeTokenMetadata{
+                        id: 3,
+                        decimal_multiplier: 1_000_000,
+                        notional_value: 1,
+                        native_token: false,
+                    }), ("14c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::usdt::USDT".to_string(), BridgeTokenMetadata{
+                        id: 4,
+                        decimal_multiplier: 1_000_000,
+                        notional_value: 1,
+                        native_token: false,
+                    })],
+                    id_token_type_map: vec![(1,"11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::usdc::USDC".to_string()), (2,"12c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::eth::ETH".to_string()), (3,"13c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::usdc::USDC".to_string()), (4,"14c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::usdt::USDT".to_string())],
+                },
         })
     }
 
@@ -247,6 +275,14 @@ impl SuiClientInner for SuiMockClient {
             .get(&(source_chain_id, seq_number))
             .cloned()
             .unwrap_or(BridgeActionStatus::Pending))
+    }
+
+    async fn get_send_back_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        tx_hash: Vec<u8>,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(BridgeActionStatus::NotFound)
     }
 
     async fn get_token_transfer_action_onchain_signatures(

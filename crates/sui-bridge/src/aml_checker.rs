@@ -57,7 +57,7 @@ where
 
 impl<P> AMLChecker<P>
 where
-    P: SuiClientInner + 'static,{
+P: SuiClientInner + 'static,{
     pub async fn new(
         store: Arc<BridgeOrchestratorTables>,
         sui_client: Arc<SuiClient<P>>,
@@ -117,90 +117,90 @@ where
     }
 
     async fn send_back(action:BridgeAction,store: &Arc<BridgeOrchestratorTables>, sui_key: &SuiKeyPair, metrics: &Arc<BridgeMetrics>,sui_client: &Arc<SuiClient<P>>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg){
-        let (_gas_coin, gas_object_ref) = Self::get_gas_data_assert_ownership(sui_address, gas_object_id, &sui_client).await;
-        let rgp = sui_client.get_reference_gas_price_until_success().await;
-        println!("bbking 26 client address:{:?}", &sui_address);
-        let tx_data =match build_token_send_back_transaction(sui_address, &gas_object_ref, action.clone(), bridge_object_arg, rgp){
-            Ok(tx_data) => tx_data,
-            Err(err) => {
-                metrics.err_build_sui_transaction.inc();
-                error!(
+            let (_gas_coin, gas_object_ref) = Self::get_gas_data_assert_ownership(sui_address, gas_object_id, &sui_client).await;
+            let rgp = sui_client.get_reference_gas_price_until_success().await;
+            println!("bbking 26 client address:{:?}", &sui_address);
+            let tx_data =match build_token_send_back_transaction(sui_address, &gas_object_ref, action.clone(), bridge_object_arg, rgp){
+                Ok(tx_data) => tx_data,
+                Err(err) => {
+                    metrics.err_build_sui_transaction.inc();
+                    error!(
                         "Manual intervention is required. Failed to build transaction for action {:?}: {:?}",
                         action, err
                     );
-                // This should not happen, but in case it does, we do not want to
-                // panic, instead we log here for manual intervention.
+                    // This should not happen, but in case it does, we do not want to
+                    // panic, instead we log here for manual intervention.
+                    return;
+                }
+            };
+            let sig = Signature::new_secure(
+                &IntentMessage::new(Intent::sui_transaction(), &tx_data),
+                sui_key,
+            );
+            let signed_tx = Transaction::from_data(tx_data, vec![sig]);
+            let tx_digest = *signed_tx.digest();
+
+            // Check twice: If the action is already processed, skip it.
+            if Self::handle_already_processed_send_back_maybe(
+                &sui_client.clone(), &action, store, &metrics,
+            )
+            .await
+            {
+                info!("Action already processed, skipping");
                 return;
             }
-        };
-        let sig = Signature::new_secure(
-            &IntentMessage::new(Intent::sui_transaction(), &tx_data),
-            sui_key,
-        );
-        let signed_tx = Transaction::from_data(tx_data, vec![sig]);
-        let tx_digest = *signed_tx.digest();
 
-        // Check twice: If the action is already processed, skip it.
-        if Self::handle_already_processed_send_back_maybe(
-            &sui_client.clone(), &action, store, &metrics,
-        )
-            .await
-        {
-            info!("Action already processed, skipping");
-            return;
-        }
+            info!(?tx_digest, ?gas_object_ref, "Sending transaction to Sui");
+            match sui_client
+                .execute_transaction_block_with_effects(signed_tx)
+                .await
+            {
+                Ok(resp) => {
+                    info!("Sui transaction executed successfully resp:{:?}",resp);
+                    Self::handle_execution_effects(tx_digest, resp, store, &action, &metrics).await
+                }
 
-        info!(?tx_digest, ?gas_object_ref, "Sending transaction to Sui");
-        match sui_client
-            .execute_transaction_block_with_effects(signed_tx)
-            .await
-        {
-            Ok(resp) => {
-                info!("Sui transaction executed successfully resp:{:?}",resp);
-                Self::handle_execution_effects(tx_digest, resp, store, &action, &metrics).await
+                // If the transaction did not go through, retry up to a certain times.
+                Err(_err) => {
+                    info!("Sui transaction failed at signing err:{:?}",_err);
+                    //todo fix errors
+                    // error!(
+                    //     ?action_key,
+                    //     ?tx_digest,
+                    //     "Sui transaction failed at signing: {err:?}"
+                    // );
+                    // metrics.err_sui_transaction_submission.inc();
+                    // let metrics_clone = metrics.clone();
+                    // // Do this in a separate task so we won't deadlock here
+                    // let sender_clone = execution_queue_sender.clone();
+                    // spawn_logged_monitored_task!(async move {
+                    //     // If it fails for too many times, log and ask for manual intervention.
+                    //     if attempt_times >= MAX_EXECUTION_ATTEMPTS {
+                    //         metrics_clone
+                    //             .err_sui_transaction_submission_too_many_failures
+                    //             .inc();
+                    //         error!("Manual intervention is required. Failed to collect execute transaction for bridge action after {MAX_EXECUTION_ATTEMPTS} attempts: {:?}", err);
+                    //         return;
+                    //     }
+                    //     delay(attempt_times).await;
+                    //     sender_clone
+                    //         .send(CertifiedBridgeActionExecutionWrapper(
+                    //             certificate,
+                    //             attempt_times + 1,
+                    //         ))
+                    //         .await
+                    //         .unwrap_or_else(|e| {
+                    //             panic!("Sending to execution queue should not fail: {:?}", e);
+                    //         });
+                    //     info!("Re-enqueued certificate for execution");
+                    // }.instrument(tracing::debug_span!("reenqueue_execution_task", action_key=?action_key)));
+                }
             }
 
-            // If the transaction did not go through, retry up to a certain times.
-            Err(_err) => {
-                info!("Sui transaction failed at signing err:{:?}",_err);
-                //todo fix errors
-                // error!(
-                //     ?action_key,
-                //     ?tx_digest,
-                //     "Sui transaction failed at signing: {err:?}"
-                // );
-                // metrics.err_sui_transaction_submission.inc();
-                // let metrics_clone = metrics.clone();
-                // // Do this in a separate task so we won't deadlock here
-                // let sender_clone = execution_queue_sender.clone();
-                // spawn_logged_monitored_task!(async move {
-                //     // If it fails for too many times, log and ask for manual intervention.
-                //     if attempt_times >= MAX_EXECUTION_ATTEMPTS {
-                //         metrics_clone
-                //             .err_sui_transaction_submission_too_many_failures
-                //             .inc();
-                //         error!("Manual intervention is required. Failed to collect execute transaction for bridge action after {MAX_EXECUTION_ATTEMPTS} attempts: {:?}", err);
-                //         return;
-                //     }
-                //     delay(attempt_times).await;
-                //     sender_clone
-                //         .send(CertifiedBridgeActionExecutionWrapper(
-                //             certificate,
-                //             attempt_times + 1,
-                //         ))
-                //         .await
-                //         .unwrap_or_else(|e| {
-                //             panic!("Sending to execution queue should not fail: {:?}", e);
-                //         });
-                //     info!("Re-enqueued certificate for execution");
-                // }.instrument(tracing::debug_span!("reenqueue_execution_task", action_key=?action_key)));
-            }
-        }
 
-
-        store.remove_pending_aml_checked_actions(&[action.digest()]).unwrap_or_else(|e| {
-            panic!("Write to DB should not fail: {:?}", e);
-        });
+            store.remove_pending_aml_checked_actions(&[action.digest()]).unwrap_or_else(|e| {
+                panic!("Write to DB should not fail: {:?}", e);
+            });
     }
 
     // Checks if the action is already processed on chain.
@@ -283,13 +283,13 @@ where
                 // If the transaction is successful, there must be either
                 // TokenTransferAlreadyClaimed or TokenTransferClaimed event.
                 assert!(events
-                            .data
-                            .iter()
-                            .any(|e| {
-                                e.type_.name.as_str() == "TokenSendBackEvent"}),
-                        "Expected TokenSendBackEvent event but got: {:?}",
-                        events,
-                );
+                    .data
+                    .iter()
+                    .any(|e| {
+                        e.type_.name.as_str() == "TokenSendBackEvent"}),
+                    "Expected TokenSendBackEvent event but got: {:?}",
+                    events,
+                    );
                 info!(?tx_digest, "Sui transaction executed successfully");
                 println!("received token send back event");
                 store

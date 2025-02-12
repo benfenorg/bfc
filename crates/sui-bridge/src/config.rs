@@ -115,6 +115,8 @@ pub struct BridgeNodeConfig {
     pub sui: SuiConfig,
     /// Eth configuration
     pub eth: EthConfig,
+    /// AML key used for AML checking
+    pub aml_key: String,
     /// Network key used for metrics pushing
     #[serde(default = "default_ed25519_key_pair")]
     pub metrics_key_pair: NetworkKeyPair,
@@ -245,6 +247,7 @@ impl BridgeNodeConfig {
             sui_bridge_module_last_processed_event_id_override: self
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
+            aml_key: self.aml_key.clone(),
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -367,7 +370,7 @@ impl BridgeNodeConfig {
             "Connected to Sui chain: {}, Bridge chain id: {}",
             sui_identifier, self.sui.sui_bridge_chain_id,
         );
-
+        println!("bbking 24 client_sui_address: {:?}", &bridge_client_key.public());
         let client_sui_address = SuiAddress::from(&bridge_client_key.public());
 
         let gas_object_id = match self.sui.bridge_client_gas_object {
@@ -424,6 +427,8 @@ pub struct BridgeClientConfig {
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
+    // The following fields are used for AML checking authorization key
+    pub aml_key: String,
 }
 
 #[serde_as]

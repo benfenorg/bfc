@@ -8,8 +8,9 @@
 
 use crate::abi::EthBridgeEvent;
 use crate::action_executor::{
-    submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
+    submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
+use crate::aml_checker::{AMLChecker, AMLCheckerTrait, AMLCheckerWrapper};
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
@@ -18,6 +19,8 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::EthLog;
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
+use sui_types::base_types::{ObjectID, SuiAddress};
+use sui_types::crypto::SuiKeyPair;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
@@ -61,6 +64,7 @@ where
     pub async fn run(
         self,
         bridge_action_executor: impl BridgeActionExecutorTrait,
+        aml_checker: impl AMLCheckerTrait,
     ) -> Vec<JoinHandle<()>> {
         tracing::info!("Starting BridgeOrchestrator");
         let mut task_handles = vec![];
@@ -68,12 +72,17 @@ where
 
         // Spawn BridgeActionExecutor
         let (handles, executor_sender) = bridge_action_executor.run();
-        task_handles.extend(handles);
         let executor_sender_clone = executor_sender.clone();
+        let executor_sender_clone2 = executor_sender.clone();
+        let executor_sender_clone3 = executor_sender.clone();
+        let executor_sender_clone4 = executor_sender.clone();
+        task_handles.extend(handles);
+        let (aml_checker_handles, aml_checker_sender) = aml_checker.run(executor_sender_clone);
+        task_handles.extend(aml_checker_handles);
         let metrics_clone = self.metrics.clone();
         task_handles.push(spawn_logged_monitored_task!(Self::run_sui_watcher(
             store_clone,
-            executor_sender_clone,
+            executor_sender_clone2,
             self.sui_events_rx,
             self.sui_monitor_tx,
             metrics_clone,
@@ -86,7 +95,7 @@ where
             .into_values()
             .collect::<Vec<_>>();
         for action in actions {
-            submit_to_executor(&executor_sender, action)
+            submit_to_executor(&executor_sender_clone3, action)
                 .await
                 .expect("Submit to executor should not fail");
         }
@@ -94,7 +103,8 @@ where
         let metrics_clone = self.metrics.clone();
         task_handles.push(spawn_logged_monitored_task!(Self::run_eth_watcher(
             store_clone,
-            executor_sender,
+            executor_sender_clone4,
+            aml_checker_sender,
             self.eth_events_rx,
             self.eth_monitor_tx,
             metrics_clone,
@@ -195,7 +205,8 @@ where
 
     async fn run_eth_watcher(
         store: Arc<BridgeOrchestratorTables>,
-        executor_tx: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
+        _executor_tx: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
+        aml_checker_tx: mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
         mut eth_events_rx: mysten_metrics::metered_channel::Receiver<(
             ethers::types::Address,
             u64,
@@ -262,13 +273,11 @@ where
                     .inc_by(actions.len() as u64);
                 // Write action to pending WAL
                 store
-                    .insert_pending_actions(&actions)
-                    .expect("Store operation should not fail");
+                .insert_pending_aml_checked_actions(&actions)
+                .expect("Store operation should not fail");
                 // Execution will remove the pending actions from DB when the action is completed.
                 for action in actions {
-                    submit_to_executor(&executor_tx, action)
-                        .await
-                        .expect("Submit to executor should not fail");
+                    submit_to_aml_checker(&aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
                 }
             }
 
@@ -313,6 +322,7 @@ mod tests {
             store,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
         // start orchestrator
         let registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&registry));
@@ -325,7 +335,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor)
+        .run(executor,aml_checker)
         .await;
 
         let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
@@ -380,6 +390,7 @@ mod tests {
             store,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
         // start orchestrator
         let registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&registry));
@@ -392,7 +403,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor)
+        .run(executor,aml_checker)
         .await;
         let address = EthAddress::random();
         let (log, bridge_action) = get_test_log_and_action(address, TxHash::random(), 10);
@@ -453,7 +464,7 @@ mod tests {
             store,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
-
+        let aml_checker = MockAMLChecker::new();
         let action1 = get_test_sui_to_eth_bridge_action(
             None,
             Some(0),
@@ -481,7 +492,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor)
+        .run(executor,aml_checker)
         .await;
 
         // Executor should have received the action
@@ -604,4 +615,39 @@ mod tests {
             (vec![handles], tx)
         }
     }
+
+    struct MockAMLChecker {
+    }
+
+    impl MockAMLChecker {
+        fn new() -> Self {
+            Self {}
+        }
+    }
+
+    impl AMLCheckerTrait for MockAMLChecker {
+        fn run(self, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>) -> (
+            Vec<tokio::task::JoinHandle<()>>,
+            mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
+        ) {
+            let (tx, mut rx) =
+                mysten_metrics::metered_channel::channel::<AMLCheckerWrapper>(
+                    100,
+                    &mysten_metrics::get_metrics()
+                        .unwrap()
+                        .channel_inflight
+                        .with_label_values(&["unit_test_mock_executor"]),
+                );
+
+            let handles = tokio::spawn(async move {
+                while let Some(action) = rx.recv().await {
+                    submit_to_executor(&executor_sender, action.0)
+                    .await
+                    .unwrap();
+                }
+            });
+            (vec![handles], tx)
+        }
+    }
+
 }

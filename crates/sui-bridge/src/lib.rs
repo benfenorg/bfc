@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod abi;
+pub mod aml;
 pub mod action_executor;
 pub mod client;
 pub mod config;
@@ -34,6 +35,8 @@ pub(crate) mod sui_mock_client;
 
 #[cfg(any(feature = "test-utils", test))]
 pub mod test_utils;
+
+pub mod aml_checker;
 
 pub const BRIDGE_ENABLE_PROTOCOL_VERSION: u64 = 46;
 

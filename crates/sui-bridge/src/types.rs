@@ -8,7 +8,7 @@ use crate::crypto::{
 };
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
-use crate::events::EmittedSuiToEthTokenBridgeV1;
+use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedSuiToEthTokenBridgeV1};
 use enum_dispatch::enum_dispatch;
 use ethers::types::Address as EthAddress;
 use ethers::types::Log;
@@ -202,7 +202,7 @@ impl CommitteeTrait<BridgeAuthorityPublicKeyBytes> for BridgeCommittee {
     }
 }
 
-#[derive(Serialize, Copy, Clone, PartialEq, Eq, TryFromPrimitive, Hash, Display)]
+#[derive(Serialize, Copy, Clone, PartialEq, Eq, TryFromPrimitive, Hash, Display, Debug)]
 #[repr(u8)]
 pub enum BridgeActionType {
     TokenTransfer = 0,
@@ -248,6 +248,15 @@ pub struct SuiToEthBridgeAction {
     // The index of the event in the transaction
     pub sui_tx_event_index: u16,
     pub sui_bridge_event: EmittedSuiToEthTokenBridgeV1,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct EthSendBackBridgeAction {
+    // Digest of the transaction where the event was emitted
+    pub sui_tx_digest: TransactionDigest,
+    // The index of the event in the transaction
+    pub sui_tx_event_index: u16,
+    pub sui_bridge_event: EmittedEthTokenSendBackBridgeV1,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -368,6 +377,7 @@ pub struct AddTokensOnEvmAction {
 pub enum BridgeAction {
     /// Sui to Eth bridge action
     SuiToEthBridgeAction(SuiToEthBridgeAction),
+    EthSendBackBridgeAction(EthSendBackBridgeAction),
     /// Eth to sui bridge action
     EthToSuiBridgeAction(EthToSuiBridgeAction),
     BlocklistCommitteeAction(BlocklistCommitteeAction),
@@ -398,6 +408,7 @@ impl BridgeAction {
     pub fn chain_id(&self) -> BridgeChainId {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
+            BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
             BridgeAction::BlocklistCommitteeAction(a) => a.chain_id,
             BridgeAction::EmergencyAction(a) => a.chain_id,
@@ -426,6 +437,7 @@ impl BridgeAction {
     pub fn action_type(&self) -> BridgeActionType {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => BridgeActionType::TokenTransfer,
+            BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
@@ -441,6 +453,8 @@ impl BridgeAction {
     pub fn seq_number(&self) -> u64 {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.nonce,
+            // TODO: mofei
+            BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.nonce,
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
             BridgeAction::EmergencyAction(a) => a.nonce,
@@ -455,6 +469,7 @@ impl BridgeAction {
     pub fn approval_threshold(&self) -> u64 {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::EthSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthToSuiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::BlocklistCommitteeAction(_) => APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST,
             BridgeAction::EmergencyAction(a) => match a.action_type {

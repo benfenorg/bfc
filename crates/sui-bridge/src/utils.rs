@@ -209,6 +209,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
             eth_contracts_start_block_fallback: Some(0),
             eth_contracts_start_block_override: None,
         },
+        aml_key: "your_aml_key".to_string(),
         approved_governance_actions: vec![],
         run_client,
         db_path: None,

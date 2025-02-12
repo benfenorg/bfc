@@ -96,6 +96,8 @@ pub fn get_test_sui_to_eth_bridge_action(
             eth_address: recipient_address.unwrap_or_else(EthAddress::random),
             token_id: token_id.unwrap_or(TOKEN_ID_USDC),
             amount_sui_adjusted: amount_sui_adjusted.unwrap_or(100_000),
+            tx_hash: vec![],
+            event_idx: 0,
         },
     })
 }
@@ -117,6 +119,8 @@ pub fn get_test_eth_to_sui_bridge_action(
             sui_adjusted_amount: amount.unwrap_or(100_000),
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
+            tx_hash: vec![],
+            event_idx: 0,
         },
     })
 }
@@ -278,6 +282,8 @@ pub fn get_test_log_and_action(
             sui_adjusted_amount,
             sui_address,
             eth_address: source_address,
+            tx_hash: vec![],
+            event_idx: 0,
         },
     });
     (log, bridge_action)
