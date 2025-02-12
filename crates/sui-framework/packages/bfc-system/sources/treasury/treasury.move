@@ -154,6 +154,13 @@ module bfc_system::treasury {
         coin
     }
 
+    public fun burn_stable<StableCoinType>(treasury: &mut Treasury,token: Coin<StableCoinType>){
+          let key = get_vault_key<StableCoinType>();
+          let supply = bag::borrow_mut<String, Supply<StableCoinType>>(&mut treasury.supplies, key);
+          let balance=coin::into_balance<StableCoinType>(token);
+          balance::decrease_supply<StableCoinType>(supply,balance);
+    }
+
     #[test_only]
     public fun get_coin_a_amount<StableCoinType>(_treasury: &Treasury): u64 {
         let key = get_vault_key<StableCoinType>();

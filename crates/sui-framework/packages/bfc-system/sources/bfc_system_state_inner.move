@@ -67,6 +67,7 @@ module bfc_system::bfc_system_state_inner {
     const ERR_ADMIN_COUNT_ZERO: u64 = 1010;
     const ERR_SET_CONFIG_UNAUTHORIZED: u64 = 1011;
     const ERR_ADMIN_ALREADY_INITED: u64 = 1012;
+    const ERROR_MINT_COIN_TYPE: u64 =1013;
 
 
     const KEY_EXTERNAL_STABLE_GAS_COIN_LIST:  vector<u8>  = b"ExternalStableCoinList";
@@ -519,6 +520,7 @@ module bfc_system::bfc_system_state_inner {
         key: &String,
         ctx: &mut TxContext,
     ): Coin<StableCoinType> {
+        assert!(std::type_name::get<StableCoinType>() == std::type_name::get<BUSD>(), ERROR_MINT_COIN_TYPE);
         assert!(amount > 0, ERR_MINT_AMOUNT_ZERO);
         assert!(verify_operation_capability(inner_state, key, ctx.sender()), ERR_MINT_UNAUTHORIZED);
         let vault_key = treasury::get_vault_key<StableCoinType>();
@@ -538,6 +540,15 @@ module bfc_system::bfc_system_state_inner {
         };
 
         treasury::mint_stable<StableCoinType>(&mut inner_state.treasury, amount, ctx)
+    }
+
+    public(package) fun burn_stable<StableCoinType>(
+        inner_state: &mut BfcSystemStateInnerV2,
+        token: Coin<StableCoinType>,
+    ){
+        let vault_key = treasury::get_vault_key<StableCoinType>();
+        treasury::check_vault(&inner_state.treasury, vault_key);
+        treasury::burn_stable(&mut inner_state.treasury, token)
     }
 
     public(package) fun get_all_stable_rate(self: & BfcSystemStateInnerV2): VecMap<String, u64> {
