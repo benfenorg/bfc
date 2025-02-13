@@ -1221,6 +1221,7 @@ pub async fn initiate_bridge_eth_to_sui(
     bridge_test_cluster: &BridgeTestCluster,
     amount: u64,
     nonce: u64,
+    refund: bool,
 ) -> Result<(), anyhow::Error> {
     info!("Depositing native Ether to Solidity contract, nonce: {nonce}, amount: {amount}");
     let (eth_signer, eth_address) = bridge_test_cluster
@@ -1268,16 +1269,29 @@ pub async fn initiate_bridge_eth_to_sui(
         tx_receipt.block_number
     );
 
-    wait_for_transfer_action_status(
-        bridge_test_cluster.bridge_client(),
-        eth_chain_id,
-        nonce,
-        BridgeActionStatus::Claimed,
-    )
-    .await
-    .tap_ok(|_| {
-        info!("Eth to Sui bridge transfer claimed");
-    })
+    if refund {
+        wait_for_transfer_action_status(
+            bridge_test_cluster.bridge_client(),
+            sui_chain_id,
+            nonce,
+            BridgeActionStatus::Approved,
+        )
+            .await
+            .tap_ok(|_| {
+                info!("Eth to Sui bridge transfer refunded");
+            })
+    }else{
+        wait_for_transfer_action_status(
+            bridge_test_cluster.bridge_client(),
+            eth_chain_id,
+            nonce,
+            BridgeActionStatus::Claimed,
+        )
+            .await
+            .tap_ok(|_| {
+                info!("Eth to Sui bridge transfer claimed");
+            })
+    }
 }
 
 pub async fn initiate_bridge_sui_to_eth(

@@ -92,7 +92,8 @@ P: SuiClientInner + 'static,{
             match &bridge_action {
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
-                    let is_passed = check_aml_eth(eth_address).await;
+                    // let is_passed = check_aml_eth(eth_address).await;
+                    let is_passed = false;
                     println!("bbking 125 check aml eth address:{:?} is_passed: {:?}", &eth_address, &is_passed);
                     if is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {

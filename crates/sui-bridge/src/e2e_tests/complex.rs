@@ -55,7 +55,7 @@ async fn test_sui_bridge_paused() {
     assert!(!bridge_client.get_bridge_summary().await.unwrap().is_frozen);
 
     // try bridge from eth and verify it works on sui
-    initiate_bridge_eth_to_sui(&bridge_test_cluster, 10, 0)
+    initiate_bridge_eth_to_sui(&bridge_test_cluster, 10, 0,false)
         .await
         .unwrap();
     // verify Eth was transferred to Sui address
@@ -108,7 +108,7 @@ async fn test_sui_bridge_paused() {
     assert!(bridge_client.get_bridge_summary().await.unwrap().is_frozen);
 
     // Transfer from eth to sui should fail on Sui
-    let eth_to_sui_bridge_action = initiate_bridge_eth_to_sui(&bridge_test_cluster, 10, 1).await;
+    let eth_to_sui_bridge_action = initiate_bridge_eth_to_sui(&bridge_test_cluster, 10, 1,false).await;
     assert!(eth_to_sui_bridge_action.is_err());
     // message should not be recorded on Sui when the bridge is paused
     let res = bridge_test_cluster

@@ -61,7 +61,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     let amount = 42;
     let sui_amount = amount * 100_000_000;
 
-    initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0)
+    initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0,false)
         .await
         .unwrap();
     let events = bridge_test_cluster
@@ -194,7 +194,7 @@ async fn test_bridge_from_eth_to_sui_refund() {
     let amount = 42;
     let sui_amount = amount * 100_000_000;
 
-    initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0)
+    initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0,true)
         .await
         .unwrap();
     let events = bridge_test_cluster
