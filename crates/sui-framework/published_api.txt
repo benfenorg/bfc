@@ -5746,6 +5746,9 @@ BridgeMessage
 BridgeMessageKey
 	public struct
 	0xb::message
+RefundMessageKey
+	public struct
+	0xb::message
 TokenTransferPayload
 	public struct
 	0xb::message
@@ -5812,6 +5815,9 @@ create_key
 key
 	public fun
 	0xb::message
+key_refund
+	public fun
+	0xb::message
 message_version
 	public fun
 	0xb::message
@@ -5837,6 +5843,12 @@ token_type
 	public fun
 	0xb::message
 token_amount
+	public fun
+	0xb::message
+token_tx_hash
+	public fun
+	0xb::message
+token_event_idx
 	public fun
 	0xb::message
 emergency_op_type
@@ -5977,6 +5989,9 @@ BridgeInner
 TokenDepositedEvent
 	public struct
 	0xb::bridge
+TokenSendBackEvent
+	public struct
+	0xb::bridge
 EmergencyOpEvent
 	public struct
 	0xb::bridge
@@ -6016,6 +6031,9 @@ register_foreign_token
 send_token
 	public fun
 	0xb::bridge
+send_back_token
+	public fun
+	0xb::bridge
 approve_token_transfer
 	public fun
 	0xb::bridge
@@ -6029,6 +6047,9 @@ execute_system_message
 	public fun
 	0xb::bridge
 get_token_transfer_action_status
+	fun
+	0xb::bridge
+get_send_back_status
 	fun
 	0xb::bridge
 get_token_transfer_action_signatures
