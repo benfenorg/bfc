@@ -11,7 +11,7 @@ use crate::e2e_tests::test_utils::{
 };
 use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
-    SuiBridgeEvent, SuiToEthTokenBridgeV1, TokenTransferApproved, TokenTransferClaimed,
+    SuiBridgeEvent, SuiToEthTokenBridgeV1, TokenTransferApproved, TokenTransferClaimed,TokenSendBackEvent,
 };
 use crate::sui_transaction_builder::build_add_tokens_on_sui_transaction;
 use crate::types::{AddTokensOnEvmAction, BridgeAction};
@@ -167,6 +167,111 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     );
 }
 
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_bridge_from_eth_to_sui_refund() {
+    telemetry_subscribers::init_for_testing();
+
+    let eth_chain_id = BridgeChainId::EthCustom as u8;
+    let sui_chain_id = BridgeChainId::SuiCustom as u8;
+    let timer = std::time::Instant::now();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .build()
+        .await;
+    info!(
+        "[Timer] Bridge test cluster started in {:?}",
+        timer.elapsed()
+    );
+    let timer = std::time::Instant::now();
+    let (eth_signer, _) = bridge_test_cluster
+        .get_eth_signer_and_address()
+        .await
+        .unwrap();
+
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let amount = 42;
+    let sui_amount = amount * 100_000_000;
+
+    initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0)
+        .await
+        .unwrap();
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                TokenSendBackEvent.get().unwrap().clone(),
+                TokenTransferApproved.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await;
+    // There are exactly 1 refund and 1 approved event
+    assert_eq!(events.len(), 2);
+
+    let eth_coin = bridge_test_cluster
+        .sui_client()
+        .coin_read_api()
+        .get_all_coins(sui_address, None, None)
+        .await
+        .unwrap()
+        .data
+        .iter()
+        .find(|c| c.coin_type.contains("ETH")).is_none();
+    assert!(eth_coin == true);
+    info!(
+        "[Timer] Eth to Sui bridge transfer refunded in {:?}",
+        timer.elapsed()
+    );
+    let timer = std::time::Instant::now();
+
+    // Now let the recipient send the coin back to ETH
+    let eth_address_1 = eth_signer.address();
+    let nonce = 0;
+
+
+    // Test `get_parsed_token_transfer_message`
+    let parsed_msg = bridge_test_cluster
+        .bridge_client()
+        .get_parsed_token_transfer_message(sui_chain_id, nonce)
+        .await
+        .unwrap()
+        .unwrap();
+    assert_eq!(parsed_msg.source_chain as u8, sui_chain_id);
+    assert_eq!(parsed_msg.seq_num, nonce);
+
+    assert_eq!(
+        &parsed_msg.parsed_payload.target_address,
+        eth_address_1.as_bytes()
+    );
+    assert_eq!(parsed_msg.parsed_payload.target_chain, eth_chain_id);
+    assert_eq!(parsed_msg.parsed_payload.token_type, TOKEN_ID_ETH);
+    assert_eq!(parsed_msg.parsed_payload.amount, sui_amount);
+    let balance_before = eth_signer.get_balance(eth_address_1, None).await.unwrap() / U256::exp10(18);
+
+    let message = eth_sui_bridge::Message::from(parsed_msg);
+    let signatures = get_signatures(bridge_test_cluster.bridge_client(), nonce, sui_chain_id).await;
+
+    let eth_sui_bridge = EthSuiBridge::new(
+        bridge_test_cluster.contracts().sui_bridge,
+        eth_signer.clone().into(),
+    );
+    let call = eth_sui_bridge.transfer_bridged_tokens_with_signatures(signatures, message);
+    let eth_claim_tx_receipt = send_eth_tx_and_get_tx_receipt(call).await;
+    assert_eq!(eth_claim_tx_receipt.status.unwrap().as_u64(), 1);
+    info!(
+        "[Timer] Sui to Eth bridge transfer claimed in {:?}",
+        timer.elapsed()
+    );
+    let balance_after = eth_signer.get_balance(eth_address_1, None).await.unwrap() / U256::exp10(18);
+    info!("bbking before balance: {:?}", balance_before);
+    info!("bbking after balance: {:?}", balance_after);
+    // Assert eth_address_1 has received ETH
+    assert_eq!(
+        balance_after - balance_before,
+        U256::from(amount)
+    );
+}
 // Test add new coins on both Sui and Eth
 // Also test bridge ndoe handling `NewTokenEvent``
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
@@ -178,6 +283,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         .with_num_validators(3)
         .build()
         .await;
+
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
     // Register tokens on Sui

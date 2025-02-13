@@ -103,7 +103,9 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             recipientAddress: bridgerA,
             tokenID: BridgeUtils.ETH,
             // This is Sui amount (eth decimal 8)
-            amount: 100_000_000
+            amount: 100_000_000,
+            txHash: new bytes(0),
+            eventIdx: 0
         });
         BridgeUtils.Message memory message = BridgeUtils.Message({
             messageType: BridgeUtils.TOKEN_TRANSFER,
@@ -131,7 +133,9 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             recipientAddress: bridgerA,
             tokenID: BridgeUtils.ETH,
             // This is Sui amount (eth decimal 8)
-            amount: 100_000_000
+            amount: 100_000_000,
+            txHash: new bytes(0),
+            eventIdx: 0
         });
         BridgeUtils.Message memory message = BridgeUtils.Message({
             messageType: BridgeUtils.EMERGENCY_OP,

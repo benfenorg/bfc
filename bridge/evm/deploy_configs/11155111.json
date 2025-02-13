@@ -1,6 +1,6 @@
 {
   "committeeMemberStake": [2500, 2500, 2500, 2500],
-  "committeeMembers": ["0xf04c72634fc11f7078fc8d1e1260d105a6d9c555", "0x6b1b0fb6bb0a217a0fa8a6a880d886437fbfb9a7", "0x278b75716cfdd84612efb78f8ba99240826dca00", "0xcb5c7457b31509f3451d931dd633115451acc0b0"],
+  "committeeMembers": ["0xc861b2e82f269ba22ea11d2f53b18711640c602b", "0xbaab90bb17ce595c050dbe7a0ba3441b0deaedc9", "0xe76b6477e173f76235c86bfb40bc9bb27cb2f14d", "0x1a464f460169d7143fcb9c64b9abf578aa4a06ba"],
   "minCommitteeStakeRequired": 10000,
   "sourceChainId": 11,
   "supportedChainIds": [1, 2],

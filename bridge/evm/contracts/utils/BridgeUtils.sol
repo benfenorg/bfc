@@ -39,6 +39,8 @@ library BridgeUtils {
         address recipientAddress;
         uint8 tokenID;
         uint64 amount;
+        bytes txHash;
+        uint8 eventIdx;
     }
 
     /* ========== CONSTANTS ========== */
@@ -188,7 +190,7 @@ library BridgeUtils {
         pure
         returns (TokenTransferPayload memory)
     {
-        require(_payload.length == 64, "BridgeUtils: TokenTransferPayload must be 64 bytes");
+        require(_payload.length >= 64, "BridgeUtils: TokenTransferPayload must be 64 bytes");
 
         uint8 senderAddressLength = uint8(_payload[0]);
 
@@ -252,6 +254,21 @@ library BridgeUtils {
             amount := mload(add(_payload, add(amountLength, offset)))
         }
 
+        // move offset past the amount
+        offset = offset + amountLength;
+
+        // extract tx hash from payload
+        bytes memory txHash = new bytes(_payload.length - offset - 1); // -1 for eventIdx
+        for (uint256 i; i < _payload.length - offset - 1; i++) {
+            txHash[i] = _payload[i + offset];
+        }
+
+        // move offset past the tx hash
+        offset = offset + uint8(txHash.length);
+
+        // event idx is a single byte
+        uint8 eventIdx = uint8(_payload[offset]);
+
         return TokenTransferPayload(
             senderAddressLength,
             senderAddress,
@@ -259,7 +276,9 @@ library BridgeUtils {
             recipientAddressLength,
             recipientAddress,
             tokenID,
-            amount
+            amount,
+            txHash,
+            eventIdx
         );
     }
 

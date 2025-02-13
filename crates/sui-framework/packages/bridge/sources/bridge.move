@@ -117,9 +117,6 @@ module bridge::bridge {
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
 
-    const EInvalidBtcAddress: u64 = 51;
-
-
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
