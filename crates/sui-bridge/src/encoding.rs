@@ -496,6 +496,8 @@ mod tests {
         let eth_address = EthAddress::random();
         let token_id = TOKEN_ID_USDC;
         let amount_sui_adjusted = 1_000_000;
+        let tx_hash = vec![];
+        let event_idx = 1u8;
 
         let sui_bridge_event = EmittedSuiToEthTokenBridgeV1 {
             nonce,
@@ -505,8 +507,8 @@ mod tests {
             eth_address,
             token_id,
             amount_sui_adjusted,
-            tx_hash: vec![],
-            event_idx: 0,
+            tx_hash: tx_hash.clone(),
+            event_idx: event_idx,
         };
 
         let encoded_bytes = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
@@ -531,6 +533,9 @@ mod tests {
 
         let token_id_bytes = vec![token_id]; // len: 1
         let token_amount_bytes = amount_sui_adjusted.to_be_bytes().to_vec(); // len: 8
+        let tx_hash_length_bytes = vec![tx_hash.len() as u8]; // len: 1
+        let tx_hash_bytes = tx_hash.clone(); // len: 32
+        let event_idx_bytes = vec![event_idx]; // len: 1
 
         let mut combined_bytes = Vec::new();
         combined_bytes.extend_from_slice(&prefix_bytes);
@@ -545,14 +550,16 @@ mod tests {
         combined_bytes.extend_from_slice(&eth_address_bytes);
         combined_bytes.extend_from_slice(&token_id_bytes);
         combined_bytes.extend_from_slice(&token_amount_bytes);
-
+        combined_bytes.extend_from_slice(&tx_hash_length_bytes);
+        combined_bytes.extend_from_slice(&tx_hash_bytes);
+        combined_bytes.extend_from_slice(&event_idx_bytes);
         assert_eq!(combined_bytes, encoded_bytes);
 
         // Assert fixed length
         // TODO: for each action type add a test to assert the length
         assert_eq!(
             combined_bytes.len(),
-            18 + 1 + 1 + 8 + 1 + 1 + 32 + 1 + 20 + 1 + 1 + 8
+            18 + 1 + 1 + 8 + 1 + 1 + 32 + 1 + 20 + 1 + 1 + 8 + 1 + 1
         );
         Ok(())
     }
