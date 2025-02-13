@@ -5029,6 +5029,9 @@ vault_info
 mint_stable
 	public(package) fun
 	0xc8::treasury
+burn_stable
+	public fun
+	0xc8::treasury
 vault_set_pause
 	public(package) fun
 	0xc8::treasury
@@ -5243,6 +5246,9 @@ request_gas_balance
 	public(package) fun
 	0xc8::bfc_system_state_inner
 mint_stable
+	public(package) fun
+	0xc8::bfc_system_state_inner
+burn_stable
 	public(package) fun
 	0xc8::bfc_system_state_inner
 get_all_stable_rate
@@ -5544,6 +5550,9 @@ mint_stable_entry
 	0xc8::bfc_system
 mint_stable
 	public fun
+	0xc8::bfc_system
+burn_stable
+	public entry fun
 	0xc8::bfc_system
 init_admin_capability
 	public entry fun

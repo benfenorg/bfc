@@ -654,6 +654,15 @@ Capability code is not valid
 
 
 
+<a name="0x3_validator_EInvalidCoinType"></a>
+
+
+
+<pre><code><b>const</b> <a href="validator.md#0x3_validator_EInvalidCoinType">EInvalidCoinType</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 103;
+</code></pre>
+
+
+
 <a name="0x3_validator_EInvalidProofOfPossession"></a>
 
 Invalid proof_of_possession field in ValidatorMetadata
@@ -1244,6 +1253,7 @@ Request to add stake to the validator's staking pool, processed at the end of th
     staker_address: <b>address</b>,
     ctx: &<b>mut</b> TxContext,
 ) : StakedStable&lt;STABLE&gt; {
+    <b>assert</b>!(std::type_name::get&lt;STABLE&gt;() == std::type_name::get&lt;BUSD&gt;(), <a href="validator.md#0x3_validator_EInvalidCoinType">EInvalidCoinType</a>);
     <b>let</b> stake_amount = stake.value();
     <b>assert</b>!(stake_amount &gt; 0, <a href="validator.md#0x3_validator_EInvalidStakeAmount">EInvalidStakeAmount</a>);
     <b>let</b> stake_epoch = <a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) + 1;

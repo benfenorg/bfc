@@ -39,6 +39,7 @@ title: Module `0xc8::bfc_system_state_inner`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_state_inner_rebalance_with_one_stablecoin)
 -  [Function `request_gas_balance`](#0xc8_bfc_system_state_inner_request_gas_balance)
 -  [Function `mint_stable`](#0xc8_bfc_system_state_inner_mint_stable)
+-  [Function `burn_stable`](#0xc8_bfc_system_state_inner_burn_stable)
 -  [Function `get_all_stable_rate`](#0xc8_bfc_system_state_inner_get_all_stable_rate)
 -  [Function `vault_info`](#0xc8_bfc_system_state_inner_vault_info)
 -  [Function `vault_ticks`](#0xc8_bfc_system_state_inner_vault_ticks)
@@ -520,6 +521,15 @@ Default stable base points
 
 
 <pre><code><b>const</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_DEFAULT_TREASURY_ADMIN">DEFAULT_TREASURY_ADMIN</a>: <b>address</b> = 0;
+</code></pre>
+
+
+
+<a name="0xc8_bfc_system_state_inner_ERROR_MINT_COIN_TYPE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERROR_MINT_COIN_TYPE">ERROR_MINT_COIN_TYPE</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1013;
 </code></pre>
 
 
@@ -1584,6 +1594,7 @@ deprecated
     key: &String,
     ctx: &<b>mut</b> TxContext,
 ): Coin&lt;StableCoinType&gt; {
+    <b>assert</b>!(std::type_name::get&lt;StableCoinType&gt;() == std::type_name::get&lt;BUSD&gt;(), <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERROR_MINT_COIN_TYPE">ERROR_MINT_COIN_TYPE</a>);
     <b>assert</b>!(amount &gt; 0, <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_AMOUNT_ZERO">ERR_MINT_AMOUNT_ZERO</a>);
     <b>assert</b>!(<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_verify_operation_capability">verify_operation_capability</a>(inner_state, key, ctx.sender()), <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_ERR_MINT_UNAUTHORIZED">ERR_MINT_UNAUTHORIZED</a>);
     <b>let</b> vault_key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
@@ -1603,6 +1614,35 @@ deprecated
     };
 
     <a href="../bfc-system/treasury.md#0xc8_treasury_mint_stable">treasury::mint_stable</a>&lt;StableCoinType&gt;(&<b>mut</b> inner_state.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_state_inner_burn_stable"></a>
+
+## Function `burn_stable`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_burn_stable">burn_stable</a>&lt;StableCoinType&gt;(inner_state: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">bfc_system_state_inner::BfcSystemStateInnerV2</a>, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_burn_stable">burn_stable</a>&lt;StableCoinType&gt;(
+    inner_state: &<b>mut</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemStateInnerV2">BfcSystemStateInnerV2</a>,
+    token: Coin&lt;StableCoinType&gt;,
+){
+    <b>let</b> vault_key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">treasury::get_vault_key</a>&lt;StableCoinType&gt;();
+    <a href="../bfc-system/treasury.md#0xc8_treasury_check_vault">treasury::check_vault</a>(&inner_state.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, vault_key);
+    <a href="../bfc-system/treasury.md#0xc8_treasury_burn_stable">treasury::burn_stable</a>(&<b>mut</b> inner_state.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, token)
 }
 </code></pre>
 
