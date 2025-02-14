@@ -23,7 +23,7 @@ module bfc_system::bfc_system_tests {
     use bfc_system::treasury_pool;
     use bfc_system::treasury::{ERR_INSUFFICIENT, TreasuryPauseCap};
     use bfc_system::bfc_system_state_inner::{ERR_REBALANCE_NOT_BUSD,
-        BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,
+        BfcSystemModifyCap, ERR_ADMIN_ALREADY_INITED, ERR_ADD_ADMIN_COUNT_ZERO, ERR_ADMIN_COUNT_ZERO,ERROR_MINT_COIN_TYPE,
         BfcSystemAdminCap, ERR_SET_CONFIG_UNAUTHORIZED, ERR_MINT_AMOUNT_ZERO, ERR_MINT_UNAUTHORIZED, ERR_MINT_OPERATION_UNAUTHORIZED
     };
 
@@ -142,7 +142,7 @@ module bfc_system::bfc_system_tests {
             let list = bfc_system_state_inner::get_to_delete_stable_gas_coin_list(system_state_v2);
             debug::print(list);
             assert!(list.length() == 1);
-        };   
+        };
 
         let clock = clock::create_for_testing(test_scenario::ctx(&mut scenario_val));
         {
@@ -237,7 +237,7 @@ module bfc_system::bfc_system_tests {
             assert!(new_beur_rate != 0, 2);
             assert!(new_beur_rate == beur_rate, 2);
         };
-        
+
         test_scenario::return_shared(system_state);
         test_scenario::return_shared(t);
         clock::destroy_for_testing(clock);
@@ -293,7 +293,7 @@ module bfc_system::bfc_system_tests {
         let stable_rate = bfc_system_state_inner::get_rate_map(system_state_v2);
         let beur_rate = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::beur::BEUR"));
         assert!(beur_rate == busd_rate, 5);
-                
+
         // should abort
         let _ = vec_map::get(&stable_rate, &ascii::string(b"00000000000000000000000000000000000000000000000000000000000000c8::unkonw::unkonw"));
 
@@ -343,7 +343,7 @@ module bfc_system::bfc_system_tests {
         let (_, overflowing) = math_u64::overflowing_mul(1, 1);
         assert!(!overflowing, 3);
     }
- 
+
     #[test]
     fun test_round_v2_overflowing() {
        let bfc_addr = BFC_ADDR;
@@ -1191,7 +1191,8 @@ module bfc_system::bfc_system_tests {
     }
 
     #[test]
-    fun test_mint_bjpy_success() {
+    #[expected_failure(abort_code = ERROR_MINT_COIN_TYPE)]
+    fun test_mint_not_busd() {
         let mut scenario_val = setup_no_skip_init_vault(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
@@ -1215,27 +1216,16 @@ module bfc_system::bfc_system_tests {
         test_scenario::return_shared(system_state);
         tearDown(scenario_val);
     }
-
     #[test]
-    fun test_mint_bjpy_success_v2() {
-        let mut scenario_val = setup_no_skip_init_vault(BFC_AMOUNT, MINT_OTHER_STABLECOIN_RIGHT_KEY);
+    fun test_burn_token(){
+        let mut scenario_val = setup(BFC_AMOUNT, MINT_BUSD_WRONG_KEY);
         let mut system_state = test_scenario::take_shared<BfcSystemState>(&mut scenario_val);
         let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario_val);
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
-
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let (system_state_v2, _) = bfc_system::load_system_state_mut_for_test(&mut system_state, ctx);
-
-        let (treasury, _) = bfc_system_state_inner::get_treasury_and_treasury_pool(system_state_v2);
-        let coin_a_amount_before = treasury::get_coin_a_amount<BJPY>(treasury);
-        debug::print(&std::ascii::string(b"coin_a_amount_before"));
-        debug::print(&coin_a_amount_before);
-        assert!(coin_a_amount_before == 37707208591093079, 1);
-
-        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 40000000000000000, &modify_cap, ctx);
-        assert!(coin.value() == 40000000000000000, 1);
-        coin::burn_for_testing(coin);
-
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 200, &modify_cap, ctx);
+        assert!(coin.value() == 200, 1);
+        bfc_system::burn_stable<BUSD>(&mut system_state,coin,ctx);
         test_scenario::return_to_sender(&scenario_val, modify_cap);
         test_scenario::return_to_sender(&scenario_val, admin_cap);
         test_scenario::return_shared(system_state);
@@ -1325,7 +1315,7 @@ module bfc_system::bfc_system_tests {
         let admin_cap = test_scenario::take_from_sender<BfcSystemAdminCap>(&scenario_val);
 
         let ctx = test_scenario::ctx(&mut scenario_val);
-        let coin = bfc_system::mint_stable<BJPY>(&mut system_state, 100, &modify_cap, ctx);
+        let coin = bfc_system::mint_stable<BUSD>(&mut system_state, 100, &modify_cap, ctx);
         coin::burn_for_testing(coin);
 
         test_scenario::return_to_sender(&scenario_val, modify_cap);

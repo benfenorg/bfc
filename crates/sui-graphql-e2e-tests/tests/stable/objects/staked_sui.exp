@@ -60,7 +60,7 @@ Response: {
     "objects": {
       "edges": [
         {
-          "cursor": "IG4IkepWQzHzZeynat39FN0Xh5oz2szMiSmiXE7KJBYoAgAAAAAAAAA=",
+          "cursor": "IHFs+SoWOVhlNHxqaAvQXM1yN7/WtyEYaDEApLjUYkpSAgAAAAAAAAA=",
           "node": {
             "asMoveObject": {
               "asStakedSui": {
@@ -98,7 +98,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IG4IkepWQzHzZeynat39FN0Xh5oz2szMiSmiXE7KJBYoAgAAAAAAAAA=",
+            "cursor": "IHFs+SoWOVhlNHxqaAvQXM1yN7/WtyEYaDEApLjUYkpSAgAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }

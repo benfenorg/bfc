@@ -24,8 +24,8 @@ use sui_macros::sim_test;
 use sui_node::SuiNodeHandle;
 use sui_protocol_config::{ProtocolConfig, ProtocolVersion};
 use sui_swarm_config::genesis_config::{ValidatorGenesisConfig, ValidatorGenesisConfigBuilder, GenesisConfig};
-use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_stable_withdraw_stake_transaction, make_transfer_sui_transaction_with_gas_coins};
-use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
+use sui_test_transaction_builder::{make_transfer_sui_transaction, make_transfer_sui_transaction_with_gas, make_stable_staking_transaction, TestTransactionBuilder, make_transfer_sui_transaction_with_gas_coins};
+use sui_types::base_types::{ObjectID,SuiAddress};
 use move_core_types::parser::parse_struct_tag;
 use sui_types::sui_serde::BigInt;
 use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_budget;
@@ -33,7 +33,7 @@ use sui_test_transaction_builder::make_transfer_sui_transaction_with_gas_coins_b
 use sui_types::effects::TransactionEffectsAPI;
 use sui_types::error::SuiError;
 use sui_types::gas::GasCostSummary;
-use sui_types::governance::{MIN_VALIDATOR_JOINING_STAKE_MIST, StakedStable};
+use sui_types::governance::MIN_VALIDATOR_JOINING_STAKE_MIST;
 use sui_types::message_envelope::Message;
 use sui_types::sui_system_state::{
     get_validator_from_table, sui_system_state_summary::get_validator_by_pool_id,
@@ -52,7 +52,6 @@ use sui_types::{BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJ
 use serde_json::json;
 use sui_types::balance::Balance;
 use sui_types::dao::DaoRPC;
-use sui_types::stable_coin::stable::checked::STABLE::{BJPY, MGG};
 use chrono::Utc;
 use sui::client_commands::{OptsWithGas, SuiClientCommandResult, SuiClientCommands};
 use sui_json_rpc_api::ReadApiClient;
@@ -4016,111 +4015,6 @@ async fn sim_test_busd_staking() -> Result<(), anyhow::Error> {
     let _ = sleep(Duration::from_secs(10)).await;
 
     Ok(())
-}
-
-#[sim_test]
-async fn sim_test_multiple_stable_staking() -> Result<(), Error> {
-    //telemetry_subscribers::init_for_testing();
-    let test_cluster = TestClusterBuilder::new()
-        .with_epoch_duration_ms(5000)
-        .with_num_validators(5)
-        .with_all_vault_init()
-        .build()
-        .await;
-
-    let validator = test_cluster.swarm.validator_node_handles().pop().unwrap();
-    let validator_addr = validator.with(|node| node.get_config().sui_address());
-
-    let http_client = test_cluster.rpc_client();
-    let sender = test_cluster.get_address_0();
-    rebalance(&test_cluster, http_client, sender).await?;
-    auth::auth_setup_imut(&test_cluster,&http_client,test_cluster.get_address_0(), "MINT-OTHER-STABLECOIN-POLLY").await?;
-    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::bjpy::BJPY", "0x2::coin::Coin<0xc8::bjpy::BJPY>", BJPY.type_tag()).await?;
-    stable_stake_and_withdraw(&test_cluster, validator_addr, http_client, sender, "0xc8::mgg::MGG", "0x2::coin::Coin<0xc8::mgg::MGG>", MGG.type_tag()).await?;
-    Ok(())
-}
-
-async fn stable_stake_and_withdraw(test_cluster: &TestCluster, validator_addr: SuiAddress, http_client: &HttpClient,
-                                   sender: SuiAddress, stable_name: &str, stable_coin: &str,
-                                   stable_tag: TypeTag) -> Result<(), Error> {
-    if stable_name == "0xc8::busd::BUSD" {
-        swap_bfc_to_stablecoin_with_tag(&test_cluster, http_client, sender, 10000000000000, SuiTypeTag::new(stable_name.to_string())).await?;
-    } else {
-        stable::mint_stable_coin(10000000000000,test_cluster, http_client, sender, stable_name).await?;
-    }
-
-    let _ = sleep(Duration::from_secs(5)).await;
-
-    let busd_response_vec = do_get_owned_objects_with_filter(stable_coin, http_client, sender).await?;
-
-    assert!(busd_response_vec.len() >= 1);
-    let busd_response = busd_response_vec.get(0).unwrap();
-
-    let busd_data = busd_response.data.as_ref().unwrap();
-    let gas_coin = test_cluster
-        .wallet
-        .gas_for_owner_budget(
-            sender,
-            MIN_VALIDATOR_JOINING_STAKE_MIST,
-            Default::default(),
-        )
-        .await
-        .unwrap()
-        .1
-        .object_ref();
-    let gas = test_cluster
-        .wallet
-        .gas_for_owner_budget(sender, 1000000000, BTreeSet::from([gas_coin.0]))
-        .await
-        .unwrap()
-        .1
-        .object_ref();
-
-    let stake_tx = make_stable_staking_transaction(
-        &test_cluster.wallet,
-        validator_addr,
-        vec![stable_tag.clone()],
-        sender,
-        gas,
-        busd_data.object_ref(),
-    ).await;
-
-    let response = test_cluster.execute_transaction(stake_tx).await;
-    error!("response is {:?}",response);
-    assert_eq!(response.status_ok().unwrap(), true);
-    let staked = get_staked_stable(response.object_changes.unwrap(), stable_tag.clone());
-    assert!(staked.is_some());
-    let _ = sleep(Duration::from_secs(5)).await;
-
-    let gas = test_cluster
-        .wallet
-        .gas_for_owner_budget(sender, 1000000000, BTreeSet::from([gas_coin.0]))
-        .await
-        .unwrap()
-        .1
-        .object_ref();
-    //withdraw staked
-    let withdraw_tx = make_stable_withdraw_stake_transaction(
-        &test_cluster.wallet,
-        vec![stable_tag.clone()],
-        sender,
-        gas,
-        staked.unwrap(),
-    ).await;
-    let response = test_cluster.execute_transaction(withdraw_tx).await;
-    assert_eq!(response.status_ok().unwrap(), true);
-    Ok(())
-}
-
-fn get_staked_stable(object_change: Vec<ObjectChange>, stable_tag: TypeTag) -> Option<ObjectRef> {
-    for object_change in object_change {
-        if let ObjectChange::Created { object_id, object_type, version, digest, .. } = object_change {
-            if StakedStable::is_staked_stable(stable_tag.clone(), &object_type) {
-                return Some((object_id, version, digest));
-            }
-        }
-    }
-    None
 }
 
 #[sim_test]

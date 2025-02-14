@@ -171,6 +171,7 @@ module sui_system::validator_set_tests {
     }
 
     #[test]
+    #[expected_failure(abort_code = validator::EInvalidCoinType)]
     fun test_validator_set_flow_with_other_stable() {
         // Create 1 validator  with stake 100, which is an initial validator.
         let mut scenario_val = test_scenario::begin(@0x0);

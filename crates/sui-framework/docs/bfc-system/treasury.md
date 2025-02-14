@@ -18,6 +18,7 @@ title: Module `0xc8::treasury`
 -  [Function `borrow_mut_vault`](#0xc8_treasury_borrow_mut_vault)
 -  [Function `vault_info`](#0xc8_treasury_vault_info)
 -  [Function `mint_stable`](#0xc8_treasury_mint_stable)
+-  [Function `burn_stable`](#0xc8_treasury_burn_stable)
 -  [Function `vault_set_pause`](#0xc8_treasury_vault_set_pause)
 -  [Function `fetch_ticks`](#0xc8_treasury_fetch_ticks)
 -  [Function `fetch_positions`](#0xc8_treasury_fetch_positions)
@@ -543,6 +544,33 @@ title: Module `0xc8::treasury`
     <b>let</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a> = <a href="../sui-framework/balance.md#0x2_balance_increase_supply">balance::increase_supply</a>(supply, amount);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = sui::coin::from_balance(<a href="../sui-framework/balance.md#0x2_balance">balance</a>, ctx);
     <a href="../sui-framework/coin.md#0x2_coin">coin</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_treasury_burn_stable"></a>
+
+## Function `burn_stable`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_burn_stable">burn_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">treasury::Treasury</a>, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/treasury.md#0xc8_treasury_burn_stable">burn_stable</a>&lt;StableCoinType&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury_Treasury">Treasury</a>,token: Coin&lt;StableCoinType&gt;){
+      <b>let</b> key = <a href="../bfc-system/treasury.md#0xc8_treasury_get_vault_key">get_vault_key</a>&lt;StableCoinType&gt;();
+      <b>let</b> supply = <a href="../sui-framework/bag.md#0x2_bag_borrow_mut">bag::borrow_mut</a>&lt;String, Supply&lt;StableCoinType&gt;&gt;(&<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.supplies, key);
+      <b>let</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a>=<a href="../sui-framework/coin.md#0x2_coin_into_balance">coin::into_balance</a>&lt;StableCoinType&gt;(token);
+      <a href="../sui-framework/balance.md#0x2_balance_decrease_supply">balance::decrease_supply</a>&lt;StableCoinType&gt;(supply,<a href="../sui-framework/balance.md#0x2_balance">balance</a>);
 }
 </code></pre>
 
