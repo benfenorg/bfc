@@ -318,7 +318,11 @@ impl<'a> ObjectRuntime<'a> {
             SUI_BRIDGE_OBJECT_ID,
         ]
         .contains(&id);
-        let transfer_result = if self.state.new_ids.contains(&id) {
+
+        // bfc develop_v1.22.0 fullnode compatibility with old version(Epoch:89, SequenceNumber:9177613)
+        let is_sui_framework_obje_data_compatibility_array = [SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_DENY_LIST_OBJECT_ID].contains(&id);
+
+        let transfer_result = if self.state.new_ids.contains(&id) || is_sui_framework_obje_data_compatibility_array {
             TransferResult::New
         } else if is_framework_obj {
             // framework objects are always created when they are transferred, but the id is
