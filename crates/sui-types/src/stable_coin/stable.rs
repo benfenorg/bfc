@@ -8,6 +8,8 @@ pub mod checked {
     use std::str::FromStr;
     use std::sync::{LazyLock, RwLock};
 
+    const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
+
     struct AllowStableGasCoin {
         rate_map: BTreeMap<String, u64>,
     }
@@ -197,9 +199,6 @@ pub mod checked {
         }
 
         pub fn is_new_gas_type(other: &TypeTag) -> bool {
-            if Self::is_inner_gas_type(other) {
-                return false;
-            }
             let rate_map = get_allow_stable_gas_coins_rate_map();
             let r = rate_map.iter().any(|(key, _)| {
                 let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
@@ -214,6 +213,30 @@ pub mod checked {
     
             r
         }
+
+        pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
+            if version > BFC_ROUND_V2_PROTOCOL_VERSION {
+                if &(STABLE::BUSD.type_tag()) == other {
+                    return false; // inner gas type ,after 45 protocol version only busd
+                }
+            }else if Self::is_inner_gas_type(other) {
+                return false;// inner gas type,have 18 stable coins before 45 protocol version
+            }
+            let rate_map = get_allow_stable_gas_coins_rate_map();
+            let r = rate_map.iter().any(|(key, _)| {
+                let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
+                if tag.is_err() {
+                    tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
+                    return false;
+                }
+
+                let t = tag.unwrap();
+                return &t == other;
+            });
+
+            r
+        }
+
 
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
