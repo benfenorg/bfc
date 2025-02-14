@@ -429,7 +429,7 @@ mod tests {
         );
         let start = std::time::Instant::now();
         loop {
-            let actions = store.get_all_pending_actions();
+            let actions = store.get_all_pending_actions_4_aml();
             if actions.is_empty() {
                 if start.elapsed().as_secs() > 5 {
                     panic!("Timed out waiting for action to be written to WAL");
