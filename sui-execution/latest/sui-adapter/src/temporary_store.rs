@@ -8,6 +8,7 @@ use move_core_types::resolver::ResourceResolver;
 use mysten_metrics::monitored_scope;
 use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
+use std::str::FromStr;
 use sui_protocol_config::ProtocolConfig;
 use sui_types::base_types::VersionDigest;
 use sui_types::bfc_system_state::{
@@ -47,7 +48,7 @@ use sui_types::{
     effects::EffectsObjectChange,
     //storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     //transaction::InputObjects,
-    SUI_DENY_LIST_OBJECT_ID,
+    SUI_DENY_LIST_OBJECT_ID,SUI_AUTHENTICATOR_STATE_OBJECT_ID
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 
@@ -225,6 +226,10 @@ impl<'backing> TemporaryStore<'backing> {
         epoch: EpochId,
     ) -> (InnerTemporaryStore, TransactionEffects) {
         self.update_object_version_and_prev_tx();
+        if &TransactionDigest::from_str("2S6hDCMLxeL38oyQ7qTRRhP26Rs39d96uQKGR16WjNPj").unwrap()==transaction_digest {
+            self.execution_results.created_object_ids.remove(&SUI_AUTHENTICATOR_STATE_OBJECT_ID);
+            self.execution_results.created_object_ids.remove(&SUI_SYSTEM_STATE_OBJECT_ID);
+        }
 
         // Regardless of execution status (including aborts), we insert the previous transaction
         // for any successfully received objects during the transaction.
