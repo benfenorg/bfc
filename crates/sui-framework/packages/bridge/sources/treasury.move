@@ -220,6 +220,9 @@ module bridge::treasury {
         let admins = self.external_coin_admin_address.get_mut(&coin_type_name);
         if (admins.contains(&address)) {
             admins.remove(&address);
+            if (admins.size() == 0) {
+                self.external_coin_admin_address.remove(&coin_type_name);
+            }
         }
     }
 
@@ -328,6 +331,11 @@ module bridge::treasury {
     #[test_only]
     public fun treasuries(treasury: &BridgeTreasury): &ObjectBag {
         &treasury.treasuries
+    }
+
+    #[test_only]
+    public fun external_coin_admin_address(treasury: &BridgeTreasury): &VecMap<String, VecSet<String>> {
+        &treasury.external_coin_admin_address
     }
 
     #[test_only]

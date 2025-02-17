@@ -20,7 +20,6 @@ module bridge::bridge_env {
         TokenTransferLimitExceed,
         ExternalDepositedEvent,
         ExternalWithdrawEvent,
-        ExternalBridgeMessageKey,
         ExternalBridgeRecord,
     };
     use std::ascii;
@@ -34,6 +33,8 @@ module bridge::bridge_env {
         Self,
         BridgeMessage,
         create_add_tokens_on_sui_message,
+        create_add_external_coin_admin_message,
+        create_remove_external_coin_admin_message,
         create_blocklist_message,
         emergency_op_pause,
         emergency_op_unpause
@@ -452,6 +453,68 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
+    public fun add_external_coin_admin(
+        env: &mut BridgeEnv, 
+        coin_type_name: String,
+        address: String,
+    ) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+
+        let add_message = create_add_external_coin_admin_message(
+            env.chain_id,
+            bridge.get_seq_num_for(message_types::add_external_coin_admin()),
+            coin_type_name,
+            address,
+        );
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message(add_message, signatures);
+
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_admin_address();
+        std::debug::print( admin_cap);
+        let admins = admin_cap.try_get(&coin_type_name);
+        assert!(admins.is_some());
+        let admins = admins.destroy_some();
+        assert!(admins.contains(&address));
+
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun remove_external_coin_admin(
+        env: &mut BridgeEnv,
+        coin_type_name: String,
+        address: String,
+    )    {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let remove_message = create_remove_external_coin_admin_message(
+            env.chain_id,
+            bridge.get_seq_num_for(message_types::remove_external_coin_admin()),
+            coin_type_name,
+            address,
+        );
+        let signatures = env.sign_message(remove_message);
+        bridge.execute_system_message(remove_message, signatures);
+
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_admin_address();
+        std::debug::print( admin_cap);
+        let admins = admin_cap.try_get(&coin_type_name);
+        if (admins.is_some()) {
+            let admins = admins.destroy_some();
+            assert!(!admins.contains(&address));
+        };
+
+        test_scenario::return_shared(bridge);
+    }
+
     //
     // Utility functions for custom behavior
     //
@@ -797,40 +860,9 @@ module bridge::bridge_env {
         claim_status
     }
 
-    public fun add_external_coin_admin_for_testing<T>(
-        env: &mut BridgeEnv,
-        sender: address,
-     ) {
-        let scenario = &mut env.scenario;
-        scenario.next_tx(sender);
-        let mut bridge = scenario.take_shared<Bridge>();
-
-        let type_name = type_name::get<T>();
-        let coin_type = type_name.into_string();
-        bridge.add_external_coin_admin_for_testing(coin_type, sender.to_ascii_string());
-        
-        test_scenario::return_shared(bridge);
-    }
-
-    public fun remove_external_coin_admin_for_testing<T>(
-        env: &mut BridgeEnv,
-        sender: address,
-     ) {
-        let scenario = &mut env.scenario;
-        scenario.next_tx(sender);
-        let mut bridge = scenario.take_shared<Bridge>();
-
-        let type_name = type_name::get<T>();
-        let coin_type = type_name.into_string();
-        bridge.remove_external_coin_admin_for_testing(coin_type, sender.to_ascii_string());
-        
-        test_scenario::return_shared(bridge);
-    }
-
     public fun deposit_external_coin_for_testing<T>(
         bridge: &mut Bridge,
         source_chain: u8,
-        target_chain: u8,
         source_address:vector<u8>,
         target_address: vector<u8>,
         amount: u64,
@@ -839,7 +871,6 @@ module bridge::bridge_env {
      ) {
         bridge.deposit_external_coin<T>(
             source_chain, 
-            target_chain, 
             source_address, 
             target_address, 
             amount, tx_hash, 
@@ -850,17 +881,13 @@ module bridge::bridge_env {
     public fun withdraw_external_coin_for_testing<T>(
         bridge: &mut Bridge,
         target_chain: u8,
-        source_address:vector<u8>,
         target_address: vector<u8>,
-        tx_hash: ascii::String,
         token: Coin<T>,
         ctx: &mut TxContext
      ) {
         bridge.withdraw_external_coin<T>(
             target_chain,
-            source_address,
             target_address,
-            tx_hash,
             token,
             ctx,
         );
@@ -886,7 +913,6 @@ module bridge::bridge_env {
         deposit_external_coin_for_testing<T>(
             &mut bridge,
             source_chain, 
-            target_chain, 
             source_address, 
             target_address, 
             amount, tx_hash, 
@@ -922,35 +948,29 @@ module bridge::bridge_env {
         );
 
         // withdraw coin
-        let withdraw_tx_hash = ascii::string(b"xxx");
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
-            target_address,
             source_address,
-            withdraw_tx_hash,
             token,
-             scenario.ctx(),
+            scenario.ctx(),
         );
 
         let withdraw = event::events_by_type<ExternalWithdrawEvent>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
-            event_tx_hash,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
             event_amount,
         ) = withdraw[0].unwrap_external_withdrawn_event();
-        assert!(event_tx_hash == withdraw_tx_hash);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
-        assert!(event_source_address == target_address );
+        assert!(event_source_address == target_address);
         assert!(event_target_address == source_address);
         assert!(event_amount == amount);
-        assert_external_records(&bridge,  target_chain, source_chain,  target_address, source_address, amount, withdraw_tx_hash);
         assert!(
             total_supply_before == get_total_supply<T>(&bridge),
         );
