@@ -60,7 +60,7 @@ pub fn get_identity_address_from_keystore(
     match input {
         KeyIdentity::Address(x) => Ok(x),
         KeyIdentity::Alias(x) => {
-            if x.len()>40 && (x.starts_with("BFC") || x.starts_with("bfc")){
+            if x.len()>40 && (x.to_ascii_lowercase().starts_with("bfc")){
                 let evm_str = convert_to_evm_address(x);
                 Ok(SuiAddress::from_str(&evm_str)?)
             }

@@ -137,7 +137,7 @@ impl<'de> DeserializeAs<'de, [u8; 32]> for HexBFCAddress {
         D: Deserializer<'de>,
     {
         let mut s = String::deserialize(deserializer)?;
-        if s.starts_with("bfc") || s.starts_with("BFC") {
+        if s.to_ascii_lowercase().starts_with("bfc") {
             let sui = convert_to_evm_address(s.clone());
             if !sui.is_empty() {
                 s = sui;
@@ -193,7 +193,7 @@ impl<'de> DeserializeAs<'de, AccountAddress> for HexAccountAddress {
         let mut s = String::deserialize(deserializer)?;
 
         //bfcAddress convert to suiAddress format...
-        if s.starts_with("bfc") || s.starts_with("BFC") {
+        if s.to_ascii_lowercase().starts_with("bfc")  {
             let sui = convert_to_evm_address(s.clone());
             if !sui.is_empty() {
                 s = sui;

@@ -1912,7 +1912,7 @@ fn convert_string_from_sui_call_arg(input: SuiCallArg) -> Result<String, anyhow:
                         //
                         // write!(writer, "value: {:?} ", json_value)?;
                         let address = json_value.as_str().unwrap();
-                        if address.starts_with("bfc") || address.starts_with("BFC"){
+                        if address.to_ascii_lowercase().as_str().starts_with("bfc") {
                             write!(writer, "value: {} ", address)?;
                         }else{
                             let sui_address = SuiAddress::from_str(json_value.as_str().unwrap()).unwrap();

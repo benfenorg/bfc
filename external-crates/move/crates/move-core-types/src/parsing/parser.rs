@@ -364,8 +364,8 @@ impl<'a, I: Iterator<Item = (ValueToken, &'a str)>> Parser<'a, ValueToken, I> {
 }
 
 pub fn parse_address_impl(mut tok: ValueToken, contents: &str) -> Result<ParsedAddress> {
-    let contents = if (contents.starts_with("bfc") && !contents.starts_with("bfc_"))
-        || contents.starts_with("BFC")
+    let contents = if contents.to_ascii_lowercase().starts_with("bfc")
+        && !contents.to_ascii_lowercase().starts_with("bfc_")
     {
         // We should change the implementation of ValueToken in values.rs,
         // but that could be very complicated and hard to make it right.
