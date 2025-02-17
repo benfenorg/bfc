@@ -863,7 +863,6 @@ module bridge::bridge_env {
     public fun deposit_external_coin_for_testing<T>(
         bridge: &mut Bridge,
         source_chain: u8,
-        target_chain: u8,
         source_address:vector<u8>,
         target_address: vector<u8>,
         amount: u64,
@@ -872,7 +871,6 @@ module bridge::bridge_env {
      ) {
         bridge.deposit_external_coin<T>(
             source_chain, 
-            target_chain, 
             source_address, 
             target_address, 
             amount, tx_hash, 
@@ -915,7 +913,6 @@ module bridge::bridge_env {
         deposit_external_coin_for_testing<T>(
             &mut bridge,
             source_chain, 
-            target_chain, 
             source_address, 
             target_address, 
             amount, tx_hash, 

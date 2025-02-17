@@ -437,7 +437,6 @@ module bridge::bridge {
     public fun deposit_external_coin<T>(
         bridge: &mut Bridge,
         source_chain: u8,
-        target_chain: u8,
         source_address:vector<u8>,
         target_address: vector<u8>,
         amount: u64,
@@ -449,7 +448,7 @@ module bridge::bridge {
 
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
-        assert!(chain_ids::is_valid_route(source_chain, target_chain), EInvalidBridgeRoute);
+        assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
             abort EUnknownExternalCoinOrSender
         };
@@ -467,7 +466,7 @@ module bridge::bridge {
             key,
             ExternalBridgeRecord {
                 source_chain,
-                target_chain,
+                target_chain: inner.chain_id,
                 source_address,
                 target_address,
                 amount,
@@ -478,7 +477,7 @@ module bridge::bridge {
             ExternalDepositedEvent {
                 tx_hash,
                 source_chain,
-                target_chain,
+                target_chain: inner.chain_id,
                 source_address,
                 target_address,
                 amount,

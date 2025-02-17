@@ -404,7 +404,6 @@ fun test_btc_bridge_deposit_external_btc_without_admin_cap() {
     deposit_external_coin_for_testing<BTC>(
          bridge,
         chain_ids::btc_testnet(),
-        chain_ids::sui_testnet(), 
         source_address, 
         target_address, 
         100, 
