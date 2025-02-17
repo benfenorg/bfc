@@ -10,6 +10,10 @@ module bridge::message_types {
     const UPDATE_ASSET_PRICE: u8 = 4;
     const ADD_TOKENS_ON_SUI: u8 = 6;
 
+    // for external coins
+    const ADD_EXTERNAL_COIN_ADMIN: u8 = 11;
+    const REMOVE_EXTERNAL_COIN_ADMIN: u8 = 12;
+
     public fun token(): u8 { TOKEN }
 
     public fun committee_blocklist(): u8 { COMMITTEE_BLOCKLIST }
@@ -21,4 +25,10 @@ module bridge::message_types {
     public fun update_asset_price(): u8 { UPDATE_ASSET_PRICE }
 
     public fun add_tokens_on_sui(): u8 { ADD_TOKENS_ON_SUI }
+
+
+    // for external coins
+    public fun add_external_coin_admin(): u8 { ADD_EXTERNAL_COIN_ADMIN }
+
+    public fun remove_external_coin_admin(): u8 { REMOVE_EXTERNAL_COIN_ADMIN }
 }

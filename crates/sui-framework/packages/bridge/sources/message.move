@@ -73,6 +73,16 @@ module bridge::message {
         new_price: u64
     }
 
+    public struct AddExternalCoinAdmin has drop {
+        coin_type: String,
+        admin_address: String,
+    }
+
+    public struct RemoveExternalCoinAdmin has drop {
+        coin_type: String,
+        admin_address: String,
+    }
+
     public struct AddTokenOnSui has drop {
         native_token: bool,
         token_ids: vector<u8>,
@@ -163,6 +173,30 @@ module bridge::message {
             receiving_chain: message.source_chain,
             sending_chain,
             limit
+        }
+    }
+
+    public fun extract_add_external_coin_admin(message: &BridgeMessage): AddExternalCoinAdmin {
+        let mut bcs = bcs::new(message.payload);
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let admin_address = ascii::string(bcs.peel_vec_u8());
+
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        AddExternalCoinAdmin {
+            coin_type,
+            admin_address
+        }
+    }
+
+    public fun extract_remove_external_coin_admin(message: &BridgeMessage): RemoveExternalCoinAdmin {
+        let mut bcs = bcs::new(message.payload);
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let admin_address = ascii::string(bcs.peel_vec_u8());
+
+        RemoveExternalCoinAdmin {
+            coin_type,
+            admin_address
         }
     }
 
@@ -384,6 +418,44 @@ module bridge::message {
         }
     }
 
+    public fun create_add_external_coin_admin_message(
+        source_chain: u8,
+        seq_num: u64,
+        coin_type: String,
+        admin_address: String,
+    )   : BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+        let mut payload = bcs::to_bytes(&coin_type);
+        payload.append(bcs::to_bytes(&admin_address));
+
+        BridgeMessage {
+            message_type: message_types::add_external_coin_admin(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+    public fun create_remove_external_coin_admin_message(
+        source_chain: u8,
+        seq_num: u64,
+        coin_type: String,
+        admin_address: String,
+    )   : BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+        let mut payload = bcs::to_bytes(&coin_type);
+        payload.append(bcs::to_bytes(&admin_address));
+
+        BridgeMessage {
+            message_type: message_types::remove_external_coin_admin(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
     /// Update Sui token message
     /// [message_type:u8]
     /// [version:u8]
@@ -491,6 +563,22 @@ module bridge::message {
 
     public fun update_asset_price_payload_new_price(self: &UpdateAssetPrice): u64 {
         self.new_price
+    }
+
+    public fun add_external_coin_admin_payload_coin_type(self: &AddExternalCoinAdmin): String {
+        self.coin_type
+    }
+    
+    public fun add_external_coin_admin_payload_admin_address(self: &AddExternalCoinAdmin): String {
+        self.admin_address
+    }
+
+    public fun remove_external_coin_admin_payload_coin_type(self: &RemoveExternalCoinAdmin): String {
+        self.coin_type
+    }
+
+    public fun remove_external_coin_admin_payload_admin_address(self: &RemoveExternalCoinAdmin): String {
+        self.admin_address
     }
 
     public fun is_native(self: &AddTokenOnSui): bool {

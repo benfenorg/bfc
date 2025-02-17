@@ -213,6 +213,9 @@ pub enum BridgeActionType {
     EvmContractUpgrade = 5,
     AddTokensOnSui = 6,
     AddTokensOnEvm = 7,
+
+    AddExternalCoinAdmin = 11,
+    RemoveExternalCoinAdmin = 12,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -331,6 +334,22 @@ pub struct AssetPriceUpdateAction {
     pub new_usd_price: u64,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddExternalCoinAdminAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub admin_address: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RemoveExternalCoinAdminAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub admin_address: String,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct EvmContractUpgradeAction {
     pub nonce: u64,
@@ -375,6 +394,8 @@ pub enum BridgeAction {
     LimitUpdateAction(LimitUpdateAction),
     AssetPriceUpdateAction(AssetPriceUpdateAction),
     EvmContractUpgradeAction(EvmContractUpgradeAction),
+    AddExternalCoinAdminAction(AddExternalCoinAdminAction),
+    RemoveExternalCoinAdminAction(RemoveExternalCoinAdminAction),
     AddTokensOnSuiAction(AddTokensOnSuiAction),
     AddTokensOnEvmAction(AddTokensOnEvmAction),
 }
@@ -404,6 +425,8 @@ impl BridgeAction {
             BridgeAction::LimitUpdateAction(a) => a.chain_id,
             BridgeAction::AssetPriceUpdateAction(a) => a.chain_id,
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
+            BridgeAction::AddExternalCoinAdminAction(a) => a.chain_id,
+            BridgeAction::RemoveExternalCoinAdminAction(a) => a.chain_id,
             BridgeAction::AddTokensOnSuiAction(a) => a.chain_id,
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
         }
@@ -417,6 +440,8 @@ impl BridgeAction {
             BridgeActionType::LimitUpdate => true,
             BridgeActionType::AssetPriceUpdate => true,
             BridgeActionType::EvmContractUpgrade => true,
+            BridgeActionType::AddExternalCoinAdmin => true,
+            BridgeActionType::RemoveExternalCoinAdmin => true,
             BridgeActionType::AddTokensOnSui => true,
             BridgeActionType::AddTokensOnEvm => true,
         }
@@ -432,6 +457,8 @@ impl BridgeAction {
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
             BridgeAction::AssetPriceUpdateAction(_) => BridgeActionType::AssetPriceUpdate,
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
+            BridgeAction::AddExternalCoinAdminAction(_) => BridgeActionType::AddExternalCoinAdmin,
+            BridgeAction::RemoveExternalCoinAdminAction(_) => BridgeActionType::RemoveExternalCoinAdmin,
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
         }
@@ -447,6 +474,8 @@ impl BridgeAction {
             BridgeAction::LimitUpdateAction(a) => a.nonce,
             BridgeAction::AssetPriceUpdateAction(a) => a.nonce,
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
+            BridgeAction::AddExternalCoinAdminAction(a) => a.nonce,
+            BridgeAction::RemoveExternalCoinAdminAction(a) => a.nonce,
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
         }
@@ -464,6 +493,8 @@ impl BridgeAction {
             BridgeAction::LimitUpdateAction(_) => APPROVAL_THRESHOLD_LIMIT_UPDATE,
             BridgeAction::AssetPriceUpdateAction(_) => APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
+            BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::RemoveExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
         }
