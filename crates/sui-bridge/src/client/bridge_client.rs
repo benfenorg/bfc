@@ -78,6 +78,13 @@ impl BridgeClient {
                     .join(",");
                 format!("sign/update_committee_blocklist/{chain_id}/{nonce}/{type_}/{keys}")
             }
+            BridgeAction::RefundAdminAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let op_type = (a.op_type as u8).to_string();
+                let key = a.sui_address.to_string();
+                format!("sign/update_refund_admin/{chain_id}/{nonce}/{op_type}/{key}")
+            }
             BridgeAction::EmergencyAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

@@ -26,9 +26,7 @@ use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
 use sui_types::bridge::{
-    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
-    APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER,
-    BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER,
+    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER
 };
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
@@ -213,6 +211,7 @@ pub enum BridgeActionType {
     EvmContractUpgrade = 5,
     AddTokensOnSui = 6,
     AddTokensOnEvm = 7,
+    RefundAdmin = 8,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -292,6 +291,14 @@ pub struct BlocklistCommitteeAction {
     pub chain_id: BridgeChainId,
     pub blocklist_type: BlocklistType,
     pub members_to_update: Vec<BridgeAuthorityPublicKeyBytes>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RefundAdminAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub op_type: u8,
+    pub sui_address: String,
 }
 
 #[derive(
@@ -381,6 +388,7 @@ pub enum BridgeAction {
     /// Eth to sui bridge action
     EthToSuiBridgeAction(EthToSuiBridgeAction),
     BlocklistCommitteeAction(BlocklistCommitteeAction),
+    RefundAdminAction(RefundAdminAction),
     EmergencyAction(EmergencyAction),
     LimitUpdateAction(LimitUpdateAction),
     AssetPriceUpdateAction(AssetPriceUpdateAction),
@@ -417,6 +425,7 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
             BridgeAction::AddTokensOnSuiAction(a) => a.chain_id,
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
+            BridgeAction::RefundAdminAction(a) => a.chain_id,
         }
     }
 
@@ -430,6 +439,7 @@ impl BridgeAction {
             BridgeActionType::EvmContractUpgrade => true,
             BridgeActionType::AddTokensOnSui => true,
             BridgeActionType::AddTokensOnEvm => true,
+            BridgeActionType::RefundAdmin => true,
         }
     }
 
@@ -446,6 +456,7 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
+            BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
         }
     }
 
@@ -453,7 +464,6 @@ impl BridgeAction {
     pub fn seq_number(&self) -> u64 {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.nonce,
-            // TODO: mofei
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.nonce,
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
@@ -463,6 +473,7 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
+            BridgeAction::RefundAdminAction(a) => a.nonce,
         }
     }
 
@@ -481,6 +492,7 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
+            BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
         }
     }
 }

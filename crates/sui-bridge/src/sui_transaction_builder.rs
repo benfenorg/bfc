@@ -106,6 +106,9 @@ pub fn build_sui_transaction(
         BridgeAction::AddTokensOnEvmAction(_) => {
             // It does not need a Sui tranaction to add tokens on EVM
             unreachable!()
+        },
+        BridgeAction::RefundAdminAction(_) => {
+            build_refund_admin_operate_transaction(client_address, gas_object_ref, action, bridge_object_arg, rgp)
         }
     }
 }
@@ -419,6 +422,69 @@ fn build_committee_blocklist_approve_transaction(
         ident_str!("create_blocklist_message").to_owned(),
         vec![],
         vec![source_chain, seq_num, blocklist_type, members_to_update],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_refund_admin_operate_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)   -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, op_type, admin_address) = match bridge_action {
+        BridgeAction::RefundAdminAction(a) => {
+            (a.chain_id, a.nonce, a.op_type, a.sui_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let op_type = builder.pure(op_type).unwrap();
+    let admin_address = builder.pure(admin_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_refund_admin_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, op_type, admin_address],
     );
 
     let mut sig_bytes = vec![];

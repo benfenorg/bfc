@@ -9,6 +9,7 @@ module bridge::message_types {
     const UPDATE_BRIDGE_LIMIT: u8 = 3;
     const UPDATE_ASSET_PRICE: u8 = 4;
     const ADD_TOKENS_ON_SUI: u8 = 6;
+    const REFUND_ADMIN_OPERATE: u8 = 8;
 
     public fun token(): u8 { TOKEN }
 
@@ -21,4 +22,6 @@ module bridge::message_types {
     public fun update_asset_price(): u8 { UPDATE_ASSET_PRICE }
 
     public fun add_tokens_on_sui(): u8 { ADD_TOKENS_ON_SUI }
+
+    public fun refund_admin_operate(): u8 { REFUND_ADMIN_OPERATE }
 }

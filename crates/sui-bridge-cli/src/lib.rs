@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
+use sui_bridge::types::RefundAdminAction;
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -151,6 +152,15 @@ pub enum GovernanceClientCommands {
         #[clap(name = "pubkey-hex", use_value_delimiter = true, long)]
         pubkeys_hex: Vec<BridgeAuthorityPublicKeyBytes>,
     },
+    #[clap(name = "update-refund-admin")]
+    UpdateRefundAdmin {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "op-type", long)]
+        op_type: u8,
+        #[clap(name = "sui-address", long)]
+        sui_address: String,
+    },
     #[clap(name = "update-limit")]
     UpdateLimit {
         #[clap(name = "nonce", long)]
@@ -229,6 +239,16 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             chain_id,
             blocklist_type: *blocklist_type,
             members_to_update: pubkeys_hex.clone(),
+        }),
+        GovernanceClientCommands::UpdateRefundAdmin {
+            nonce,
+            op_type,
+            sui_address,
+        } => BridgeAction::RefundAdminAction(RefundAdminAction {
+            nonce: *nonce,
+            chain_id,
+            op_type: *op_type,
+            sui_address: sui_address.clone(),
         }),
         GovernanceClientCommands::UpdateLimit {
             nonce,

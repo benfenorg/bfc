@@ -18,10 +18,13 @@ module bridge::message {
     const EInvalidEmergencyOpType: u64 = 4;
     const EInvalidPayloadLength: u64 = 5;
     const EMustBeTokenMessage: u64 = 6;
-
+    const EInvalidOperationType: u64 = 7;
     // Emergency Op types
     const PAUSE: u8 = 0;
     const UNPAUSE: u8 = 1;
+
+    const ADD: u8 =0;
+    const REMOVE: u8 = 1;
 
     //////////////////////////////////////////////////////
     // Types
@@ -62,6 +65,11 @@ module bridge::message {
     public struct Blocklist has drop {
         blocklist_type: u8,
         validator_eth_addresses: vector<vector<u8>>
+    }
+
+    public struct RefundAdmin has drop {
+        op_type: u8,
+        sui_address: String
     }
 
     // Update the limit for route from sending_chain to receiving_chain
@@ -157,6 +165,23 @@ module bridge::message {
         Blocklist {
             blocklist_type,
             validator_eth_addresses
+        }
+    }
+
+    public fun extract_refund_admin_payload(message: &BridgeMessage): RefundAdmin {
+        // blocklist payload should consist of one byte blocklist type, and list of 20 bytes evm addresses
+        // derived from ECDSA public keys
+        let mut bcs = bcs::new(message.payload);
+        let op_type = bcs.peel_u8();
+        let sui_address = ascii::string(bcs.peel_vec_u8());
+
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        assert!(op_type == ADD || op_type == REMOVE, EInvalidOperationType);
+
+        RefundAdmin {
+            op_type,
+            sui_address
         }
     }
 
@@ -343,6 +368,34 @@ module bridge::message {
         }
     }
 
+    /// Blocklist Message Format:
+    /// [message_type: u8]
+    /// [version:u8]
+    /// [nonce:u64]
+    /// [chain_id: u8]
+    /// [op_type: u8]
+    /// [address_admin: byte[][]]
+    public fun create_refund_admin_message(
+        source_chain: u8,
+        seq_num: u64,
+        // 0: add, 1: del
+        op_type: u8,
+        admin_address: String,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+
+        let mut payload = vector[op_type];
+        payload.append(bcs::to_bytes(&admin_address));
+
+        BridgeMessage {
+            message_type: message_types::refund_admin_operate(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
     /// Update bridge limit Message Format:
     /// [message_type: u8]
     /// [version:u8]
@@ -496,6 +549,22 @@ module bridge::message {
 
     public fun blocklist_validator_addresses(self: &Blocklist): &vector<vector<u8>> {
         &self.validator_eth_addresses
+    }
+
+    public fun refund_admin_op_type(self: &RefundAdmin): u8 {
+        self.op_type
+    }
+
+    public fun refund_admin_add(): u8 {
+        ADD
+    }
+
+    public fun refund_admin_remove(): u8 {
+        REMOVE
+    }
+
+    public fun refund_admin_sui_address(self: &RefundAdmin): &String {
+        &self.sui_address
     }
 
     public fun update_bridge_limit_payload_sending_chain(self: &UpdateBridgeLimit): u8 {

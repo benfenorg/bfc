@@ -23,6 +23,8 @@ module bridge::bridge {
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
+    use sui::vec_set::VecSet;
+    use std::ascii::String;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -58,6 +60,7 @@ module bridge::bridge {
         limiter: TransferLimiter,
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
+        refund_admins:VecSet<String>,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -90,6 +93,11 @@ module bridge::bridge {
         message: BridgeMessage,
         verified_signatures: Option<vector<vector<u8>>>,
         claimed: bool,
+    }
+
+    public struct RefundAdminRecord has store, drop {
+        message: BridgeMessage,
+        verified_signatures: Option<vector<vector<u8>>>,
     }
 
     const EUnexpectedMessageType: u64 = 0;
@@ -158,6 +166,7 @@ module bridge::bridge {
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
+            refund_admins: vec_set::empty(),
         };
         let bridge = Bridge {
             id,
@@ -476,6 +485,9 @@ module bridge::bridge {
         } else if (message_type == message_types::add_tokens_on_sui()) {
             let payload = message.extract_add_tokens_on_sui();
             inner.execute_add_tokens_on_sui(payload);
+        } else if (message_type == message_types::refund_admin_operate()) {
+            let payload = message.extract_refund_admin_payload();
+            inner.execute_refund_admin_operate(payload);
         } else {
             abort EUnexpectedMessageType
         };
@@ -671,6 +683,23 @@ module bridge::bridge {
         };
     }
 
+    fun execute_refund_admin_operate(inner: &mut BridgeInner, payload: message::RefundAdmin) {
+        let op = payload.refund_admin_op_type();
+        if (op == message::refund_admin_add()) {
+            let sui_address = payload.refund_admin_sui_address();
+            if (!inner.refund_admins.contains(sui_address)) {
+                inner.refund_admins.insert(*sui_address);
+            }
+        } else if (op == message::refund_admin_remove()) {
+            let sui_address = payload.refund_admin_sui_address();
+            if (inner.refund_admins.contains(sui_address)) {
+                inner.refund_admins.remove(sui_address);
+            }
+        } else {
+            abort EUnexpectedOperation
+        };
+    }
+    
     fun execute_update_bridge_limit(inner: &mut BridgeInner, payload: UpdateBridgeLimit) {
         let receiving_chain = payload.update_bridge_limit_payload_receiving_chain();
         assert!(receiving_chain == inner.chain_id, EUnexpectedChainID);

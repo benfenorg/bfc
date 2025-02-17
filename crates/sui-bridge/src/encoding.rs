@@ -12,13 +12,17 @@ use crate::types::EthSendBackBridgeAction;
 use crate::types::EthToSuiBridgeAction;
 use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
+use crate::types::RefundAdminAction;
 use crate::types::SuiToEthBridgeAction;
 use enum_dispatch::enum_dispatch;
+use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
 use sui_types::base_types::SUI_ADDRESS_LENGTH;
+use sui_types::crypto::ToFromBytes;
 
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
+pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const EMERGENCY_BUTTON_MESSAGE_VERSION: u8 = 1;
 pub const LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -232,6 +236,34 @@ impl BridgeMessageEncoding for BlocklistCommitteeAction {
         for members_bytes in members_bytes {
             bytes.extend_from_slice(&members_bytes);
         }
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for RefundAdminAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::RefundAdmin as u8);
+        // Add message version
+        bytes.push(REFUND_ADMIN_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.op_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.sui_address).unwrap());
 
         bytes
     }
