@@ -33,6 +33,8 @@ module bridge::bridge_env {
         Self,
         BridgeMessage,
         create_add_tokens_on_sui_message,
+        create_add_external_coin_admin_message,
+        create_remove_external_coin_admin_message,
         create_blocklist_message,
         emergency_op_pause,
         emergency_op_unpause
@@ -451,6 +453,68 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
+    public fun add_external_coin_admin(
+        env: &mut BridgeEnv, 
+        coin_type_name: String,
+        address: String,
+    ) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+
+        let add_message = create_add_external_coin_admin_message(
+            env.chain_id,
+            bridge.get_seq_num_for(message_types::add_external_coin_admin()),
+            coin_type_name,
+            address,
+        );
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message(add_message, signatures);
+
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_admin_address();
+        std::debug::print( admin_cap);
+        let admins = admin_cap.try_get(&coin_type_name);
+        assert!(admins.is_some());
+        let admins = admins.destroy_some();
+        assert!(admins.contains(&address));
+
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun remove_external_coin_admin(
+        env: &mut BridgeEnv,
+        coin_type_name: String,
+        address: String,
+    )    {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let remove_message = create_remove_external_coin_admin_message(
+            env.chain_id,
+            bridge.get_seq_num_for(message_types::remove_external_coin_admin()),
+            coin_type_name,
+            address,
+        );
+        let signatures = env.sign_message(remove_message);
+        bridge.execute_system_message(remove_message, signatures);
+
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_admin_address();
+        std::debug::print( admin_cap);
+        let admins = admin_cap.try_get(&coin_type_name);
+        if (admins.is_some()) {
+            let admins = admins.destroy_some();
+            assert!(!admins.contains(&address));
+        };
+
+        test_scenario::return_shared(bridge);
+    }
+
     //
     // Utility functions for custom behavior
     //
@@ -794,36 +858,6 @@ module bridge::bridge_env {
         // tear down
         test_scenario::return_shared(bridge);
         claim_status
-    }
-
-    public fun add_external_coin_admin_for_testing<T>(
-        env: &mut BridgeEnv,
-        sender: address,
-     ) {
-        let scenario = &mut env.scenario;
-        scenario.next_tx(sender);
-        let mut bridge = scenario.take_shared<Bridge>();
-
-        let type_name = type_name::get<T>();
-        let coin_type = type_name.into_string();
-        bridge.add_external_coin_admin_for_testing(coin_type, sender.to_ascii_string());
-        
-        test_scenario::return_shared(bridge);
-    }
-
-    public fun remove_external_coin_admin_for_testing<T>(
-        env: &mut BridgeEnv,
-        sender: address,
-     ) {
-        let scenario = &mut env.scenario;
-        scenario.next_tx(sender);
-        let mut bridge = scenario.take_shared<Bridge>();
-
-        let type_name = type_name::get<T>();
-        let coin_type = type_name.into_string();
-        bridge.remove_external_coin_admin_for_testing(coin_type, sender.to_ascii_string());
-        
-        test_scenario::return_shared(bridge);
     }
 
     public fun deposit_external_coin_for_testing<T>(

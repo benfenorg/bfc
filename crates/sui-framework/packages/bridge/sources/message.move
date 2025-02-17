@@ -628,6 +628,10 @@ module bridge::message {
             5001
         } else if (message_type == message_types::add_tokens_on_sui()) {
             5001
+        } else if (message_type == message_types::add_external_coin_admin()) {
+            5001
+        } else if (message_type == message_types::remove_external_coin_admin()) {
+            5001
         } else {
             abort EInvalidMessageType
         }
