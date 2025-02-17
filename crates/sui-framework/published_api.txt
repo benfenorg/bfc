@@ -5680,6 +5680,15 @@ add_new_token
 create
 	public(package) fun
 	0xb::treasury
+is_external_coin_admin
+	public(package) fun
+	0xb::treasury
+add_external_coin_admin
+	public(package) fun
+	0xb::treasury
+remove_external_coin_admin
+	public(package) fun
+	0xb::treasury
 burn
 	public(package) fun
 	0xb::treasury
@@ -5710,6 +5719,12 @@ update_asset_price
 add_tokens_on_sui
 	public fun
 	0xb::message_types
+add_external_coin_admin
+	public fun
+	0xb::message_types
+remove_external_coin_admin
+	public fun
+	0xb::message_types
 BridgeRoute
 	public struct
 	0xb::chain_ids
@@ -5729,6 +5744,12 @@ eth_sepolia
 	public fun
 	0xb::chain_ids
 eth_custom
+	public fun
+	0xb::chain_ids
+btc_mainnet
+	public fun
+	0xb::chain_ids
+btc_testnet
 	public fun
 	0xb::chain_ids
 route_source
@@ -5770,6 +5791,12 @@ UpdateBridgeLimit
 UpdateAssetPrice
 	public struct
 	0xb::message
+AddExternalCoinAdmin
+	public struct
+	0xb::message
+RemoveExternalCoinAdmin
+	public struct
+	0xb::message
 AddTokenOnSui
 	public struct
 	0xb::message
@@ -5786,6 +5813,12 @@ extract_blocklist_payload
 	public fun
 	0xb::message
 extract_update_bridge_limit
+	public fun
+	0xb::message
+extract_add_external_coin_admin
+	public fun
+	0xb::message
+extract_remove_external_coin_admin
 	public fun
 	0xb::message
 extract_update_asset_price
@@ -5810,6 +5843,12 @@ create_update_bridge_limit_message
 	public fun
 	0xb::message
 create_update_asset_price_message
+	public fun
+	0xb::message
+create_add_external_coin_admin_message
+	public fun
+	0xb::message
+create_remove_external_coin_admin_message
 	public fun
 	0xb::message
 create_add_tokens_on_sui_message
@@ -5870,6 +5909,18 @@ update_asset_price_payload_token_id
 	public fun
 	0xb::message
 update_asset_price_payload_new_price
+	public fun
+	0xb::message
+add_external_coin_admin_payload_coin_type
+	public fun
+	0xb::message
+add_external_coin_admin_payload_admin_address
+	public fun
+	0xb::message
+remove_external_coin_admin_payload_coin_type
+	public fun
+	0xb::message
+remove_external_coin_admin_payload_admin_address
 	public fun
 	0xb::message
 is_native
@@ -6007,6 +6058,18 @@ TokenTransferAlreadyClaimed
 TokenTransferLimitExceed
 	public struct
 	0xb::bridge
+ExternalDepositedEvent
+	public struct
+	0xb::bridge
+ExternalWithdrawEvent
+	public struct
+	0xb::bridge
+ExternalBridgeMessageKey
+	public struct
+	0xb::bridge
+ExternalBridgeRecord
+	public struct
+	0xb::bridge
 create
 	fun
 	0xb::bridge
@@ -6037,6 +6100,12 @@ claim_and_transfer_token
 execute_system_message
 	public fun
 	0xb::bridge
+deposit_external_coin
+	public fun
+	0xb::bridge
+withdraw_external_coin
+	public fun
+	0xb::bridge
 get_token_transfer_action_status
 	fun
 	0xb::bridge
@@ -6059,6 +6128,12 @@ execute_update_bridge_limit
 	fun
 	0xb::bridge
 execute_update_asset_price
+	fun
+	0xb::bridge
+execute_add_external_coin_admin
+	fun
+	0xb::bridge
+execute_remove_external_coin_admin
 	fun
 	0xb::bridge
 execute_add_tokens_on_sui

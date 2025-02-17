@@ -17,6 +17,9 @@ title: Module `0xb::treasury`
 -  [Function `register_foreign_token`](#0xb_treasury_register_foreign_token)
 -  [Function `add_new_token`](#0xb_treasury_add_new_token)
 -  [Function `create`](#0xb_treasury_create)
+-  [Function `is_external_coin_admin`](#0xb_treasury_is_external_coin_admin)
+-  [Function `add_external_coin_admin`](#0xb_treasury_add_external_coin_admin)
+-  [Function `remove_external_coin_admin`](#0xb_treasury_remove_external_coin_admin)
 -  [Function `burn`](#0xb_treasury_burn)
 -  [Function `mint`](#0xb_treasury_mint)
 -  [Function `update_asset_notional_price`](#0xb_treasury_update_asset_notional_price)
@@ -38,6 +41,7 @@ title: Module `0xb::treasury`
 <b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
+<b>use</b> <a href="../sui-framework/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
 </code></pre>
 
 
@@ -58,6 +62,12 @@ title: Module `0xb::treasury`
 
 
 <dl>
+<dt>
+<code>external_coin_admin_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;</code>
+</dt>
+<dd>
+
+</dd>
 <dt>
 <code>treasuries: <a href="../sui-framework/object_bag.md#0x2_object_bag_ObjectBag">object_bag::ObjectBag</a></code>
 </dt>
@@ -540,10 +550,117 @@ title: Module `0xb::treasury`
 
 <pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_create">create</a>(ctx: &<b>mut</b> TxContext): <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a> {
     <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a> {
+        external_coin_admin_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         treasuries: <a href="../sui-framework/object_bag.md#0x2_object_bag_new">object_bag::new</a>(ctx),
         supported_tokens: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         id_token_type_map: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         waiting_room: <a href="../sui-framework/bag.md#0x2_bag_new">bag::new</a>(ctx),
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_treasury_is_external_coin_admin"></a>
+
+## Function `is_external_coin_admin`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_admin">is_external_coin_admin</a>(self: &treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_admin">is_external_coin_admin</a>(
+    self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
+    coin_type_name: String,
+    <b>address</b>: String,
+): bool {
+    <b>let</b> admins = self.external_coin_admin_address.try_get(&coin_type_name);
+    <b>if</b> (admins.is_none()) {
+        <b>return</b> <b>false</b>
+    };
+    <b>let</b> admins = admins.destroy_some();
+    admins.contains(&<b>address</b>)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_treasury_add_external_coin_admin"></a>
+
+## Function `add_external_coin_admin`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_admin">add_external_coin_admin</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_admin">add_external_coin_admin</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
+    coin_type_name: String,
+    <b>address</b>: String,
+) {
+    <b>let</b> admins = self.external_coin_admin_address.try_get(&coin_type_name);
+    <b>if</b> (admins.is_none()) {
+        self.external_coin_admin_address.insert(coin_type_name, <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>());
+    };
+    <b>let</b> admins = self.external_coin_admin_address.get_mut(&coin_type_name);
+    <b>if</b> (!admins.contains(&<b>address</b>)) {
+        admins.insert(<b>address</b>);
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_treasury_remove_external_coin_admin"></a>
+
+## Function `remove_external_coin_admin`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
+    coin_type_name: String,
+    <b>address</b>: String,
+) {
+    <b>let</b> admins = self.external_coin_admin_address.try_get(&coin_type_name);
+    <b>if</b> (admins.is_none()) {
+        <b>return</b>
+    };
+    <b>let</b> admins = self.external_coin_admin_address.get_mut(&coin_type_name);
+    <b>if</b> (admins.contains(&<b>address</b>)) {
+        admins.remove(&<b>address</b>);
+        <b>if</b> (admins.size() == 0) {
+            self.external_coin_admin_address.remove(&coin_type_name);
+        }
     }
 }
 </code></pre>

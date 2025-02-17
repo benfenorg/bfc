@@ -11,6 +11,8 @@ title: Module `0xb::message`
 -  [Struct `Blocklist`](#0xb_message_Blocklist)
 -  [Struct `UpdateBridgeLimit`](#0xb_message_UpdateBridgeLimit)
 -  [Struct `UpdateAssetPrice`](#0xb_message_UpdateAssetPrice)
+-  [Struct `AddExternalCoinAdmin`](#0xb_message_AddExternalCoinAdmin)
+-  [Struct `RemoveExternalCoinAdmin`](#0xb_message_RemoveExternalCoinAdmin)
 -  [Struct `AddTokenOnSui`](#0xb_message_AddTokenOnSui)
 -  [Struct `ParsedTokenTransferMessage`](#0xb_message_ParsedTokenTransferMessage)
 -  [Constants](#@Constants_0)
@@ -18,6 +20,8 @@ title: Module `0xb::message`
 -  [Function `extract_emergency_op_payload`](#0xb_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#0xb_message_extract_blocklist_payload)
 -  [Function `extract_update_bridge_limit`](#0xb_message_extract_update_bridge_limit)
+-  [Function `extract_add_external_coin_admin`](#0xb_message_extract_add_external_coin_admin)
+-  [Function `extract_remove_external_coin_admin`](#0xb_message_extract_remove_external_coin_admin)
 -  [Function `extract_update_asset_price`](#0xb_message_extract_update_asset_price)
 -  [Function `extract_add_tokens_on_sui`](#0xb_message_extract_add_tokens_on_sui)
 -  [Function `serialize_message`](#0xb_message_serialize_message)
@@ -26,6 +30,8 @@ title: Module `0xb::message`
 -  [Function `create_blocklist_message`](#0xb_message_create_blocklist_message)
 -  [Function `create_update_bridge_limit_message`](#0xb_message_create_update_bridge_limit_message)
 -  [Function `create_update_asset_price_message`](#0xb_message_create_update_asset_price_message)
+-  [Function `create_add_external_coin_admin_message`](#0xb_message_create_add_external_coin_admin_message)
+-  [Function `create_remove_external_coin_admin_message`](#0xb_message_create_remove_external_coin_admin_message)
 -  [Function `create_add_tokens_on_sui_message`](#0xb_message_create_add_tokens_on_sui_message)
 -  [Function `create_key`](#0xb_message_create_key)
 -  [Function `key`](#0xb_message_key)
@@ -46,6 +52,10 @@ title: Module `0xb::message`
 -  [Function `update_bridge_limit_payload_limit`](#0xb_message_update_bridge_limit_payload_limit)
 -  [Function `update_asset_price_payload_token_id`](#0xb_message_update_asset_price_payload_token_id)
 -  [Function `update_asset_price_payload_new_price`](#0xb_message_update_asset_price_payload_new_price)
+-  [Function `add_external_coin_admin_payload_coin_type`](#0xb_message_add_external_coin_admin_payload_coin_type)
+-  [Function `add_external_coin_admin_payload_admin_address`](#0xb_message_add_external_coin_admin_payload_admin_address)
+-  [Function `remove_external_coin_admin_payload_coin_type`](#0xb_message_remove_external_coin_admin_payload_coin_type)
+-  [Function `remove_external_coin_admin_payload_admin_address`](#0xb_message_remove_external_coin_admin_payload_admin_address)
 -  [Function `is_native`](#0xb_message_is_native)
 -  [Function `token_ids`](#0xb_message_token_ids)
 -  [Function `token_type_names`](#0xb_message_token_type_names)
@@ -331,6 +341,72 @@ title: Module `0xb::message`
 </dd>
 <dt>
 <code>new_price: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_AddExternalCoinAdmin"></a>
+
+## Struct `AddExternalCoinAdmin`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_AddExternalCoinAdmin">AddExternalCoinAdmin</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>admin_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_RemoveExternalCoinAdmin"></a>
+
+## Struct `RemoveExternalCoinAdmin`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>admin_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -681,6 +757,70 @@ Emergency op payload is just a single byte
         receiving_chain: <a href="message.md#0xb_message">message</a>.source_chain,
         sending_chain,
         limit
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_add_external_coin_admin"></a>
+
+## Function `extract_add_external_coin_admin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_external_coin_admin">extract_add_external_coin_admin</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinAdmin">message::AddExternalCoinAdmin</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_external_coin_admin">extract_add_external_coin_admin</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinAdmin">AddExternalCoinAdmin</a> {
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+    <b>let</b> admin_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
+
+    <a href="message.md#0xb_message_AddExternalCoinAdmin">AddExternalCoinAdmin</a> {
+        coin_type,
+        admin_address
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_remove_external_coin_admin"></a>
+
+## Function `extract_remove_external_coin_admin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_external_coin_admin">extract_remove_external_coin_admin</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinAdmin">message::RemoveExternalCoinAdmin</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_external_coin_admin">extract_remove_external_coin_admin</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a> {
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+    <b>let</b> admin_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+
+    <a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a> {
+        coin_type,
+        admin_address
     }
 }
 </code></pre>
@@ -1055,6 +1195,84 @@ Update asset price message
     payload.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&new_price)));
     <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
         message_type: <a href="message_types.md#0xb_message_types_update_asset_price">message_types::update_asset_price</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_add_external_coin_admin_message"></a>
+
+## Function `create_add_external_coin_admin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_admin_message">create_add_external_coin_admin_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, admin_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_admin_message">create_add_external_coin_admin_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    coin_type: String,
+    admin_address: String,
+)   : <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+    payload.append(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&admin_address));
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_add_external_coin_admin">message_types::add_external_coin_admin</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_remove_external_coin_admin_message"></a>
+
+## Function `create_remove_external_coin_admin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_admin_message">create_remove_external_coin_admin_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, admin_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_admin_message">create_remove_external_coin_admin_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    coin_type: String,
+    admin_address: String,
+)   : <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+    payload.append(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&admin_address));
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>(),
         message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
         seq_num,
         source_chain,
@@ -1574,6 +1792,102 @@ Update Sui token message
 
 </details>
 
+<a name="0xb_message_add_external_coin_admin_payload_coin_type"></a>
+
+## Function `add_external_coin_admin_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_admin_payload_coin_type">add_external_coin_admin_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinAdmin">message::AddExternalCoinAdmin</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_admin_payload_coin_type">add_external_coin_admin_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinAdmin">AddExternalCoinAdmin</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_external_coin_admin_payload_admin_address"></a>
+
+## Function `add_external_coin_admin_payload_admin_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_admin_payload_admin_address">add_external_coin_admin_payload_admin_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinAdmin">message::AddExternalCoinAdmin</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_admin_payload_admin_address">add_external_coin_admin_payload_admin_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinAdmin">AddExternalCoinAdmin</a>): String {
+    self.admin_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_admin_payload_coin_type"></a>
+
+## Function `remove_external_coin_admin_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_admin_payload_coin_type">remove_external_coin_admin_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinAdmin">message::RemoveExternalCoinAdmin</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_admin_payload_coin_type">remove_external_coin_admin_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_admin_payload_admin_address"></a>
+
+## Function `remove_external_coin_admin_payload_admin_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_admin_payload_admin_address">remove_external_coin_admin_payload_admin_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinAdmin">message::RemoveExternalCoinAdmin</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_admin_payload_admin_address">remove_external_coin_admin_payload_admin_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a>): String {
+    self.admin_address
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_message_is_native"></a>
 
 ## Function `is_native`
@@ -1755,6 +2069,10 @@ Return the required signature threshold for the message, values are voting power
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_update_bridge_limit">message_types::update_bridge_limit</a>()) {
         5001
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_tokens_on_sui">message_types::add_tokens_on_sui</a>()) {
+        5001
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_admin">message_types::add_external_coin_admin</a>()) {
+        5001
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>()) {
         5001
     } <b>else</b> {
         <b>abort</b> <a href="message.md#0xb_message_EInvalidMessageType">EInvalidMessageType</a>
