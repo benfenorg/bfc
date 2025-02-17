@@ -20,7 +20,6 @@ module bridge::bridge_env {
         TokenTransferLimitExceed,
         ExternalDepositedEvent,
         ExternalWithdrawEvent,
-        ExternalBridgeMessageKey,
         ExternalBridgeRecord,
     };
     use std::ascii;
@@ -850,17 +849,13 @@ module bridge::bridge_env {
     public fun withdraw_external_coin_for_testing<T>(
         bridge: &mut Bridge,
         target_chain: u8,
-        source_address:vector<u8>,
         target_address: vector<u8>,
-        tx_hash: ascii::String,
         token: Coin<T>,
         ctx: &mut TxContext
      ) {
         bridge.withdraw_external_coin<T>(
             target_chain,
-            source_address,
             target_address,
-            tx_hash,
             token,
             ctx,
         );
@@ -922,35 +917,29 @@ module bridge::bridge_env {
         );
 
         // withdraw coin
-        let withdraw_tx_hash = ascii::string(b"xxx");
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
             source_chain,
-            target_address,
             source_address,
-            withdraw_tx_hash,
             token,
-             scenario.ctx(),
+            scenario.ctx(),
         );
 
         let withdraw = event::events_by_type<ExternalWithdrawEvent>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
-            event_tx_hash,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
             event_amount,
         ) = withdraw[0].unwrap_external_withdrawn_event();
-        assert!(event_tx_hash == withdraw_tx_hash);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
-        assert!(event_source_address == target_address );
+        assert!(event_source_address == target_address);
         assert!(event_target_address == source_address);
         assert!(event_amount == amount);
-        assert_external_records(&bridge,  target_chain, source_chain,  target_address, source_address, amount, withdraw_tx_hash);
         assert!(
             total_supply_before == get_total_supply<T>(&bridge),
         );

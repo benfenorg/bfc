@@ -138,10 +138,9 @@ module bridge::bridge {
     }
 
     public struct ExternalWithdrawEvent has copy, drop {
-        tx_hash: ascii::String,
         source_chain: u8,
         target_chain: u8,
-        source_address:vector<u8>,
+        source_address: vector<u8>,
         target_address: vector<u8>,
         amount: u64,
     }
@@ -490,52 +489,25 @@ module bridge::bridge {
     public fun withdraw_external_coin<T>(
         bridge: &mut Bridge,
         target_chain: u8,
-        source_address:vector<u8>,
         target_address: vector<u8>,
-        tx_hash: ascii::String,
         token: Coin<T>,
         ctx: &mut TxContext
     ) {
-        let sender = ctx.sender();
-        let coin_type = type_name::into_string(type_name::get<T>());
-
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
-        if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
-            abort EUnknownExternalCoinOrSender
-        };
-
-         // check records
-        let key = ExternalBridgeMessageKey{tx_hash};
-        if (inner.external_bridge_records.contains(key)) {
-            abort EDuplicatedMessage
-        };
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
 
-        // burn / escrow token, unsupported coins will fail in this step
         inner.treasury.burn(token);
-
-        inner.external_bridge_records.push_back(
-            key,
-            ExternalBridgeRecord {
-                source_chain: inner.chain_id,
-                target_chain,
-                source_address,
-                target_address,
-                amount,
-            },
-        );
 
         // emit event
         emit(
             ExternalWithdrawEvent {
-                tx_hash,
                 source_chain: inner.chain_id,
                 target_chain,
-                source_address,
+                source_address: address::to_bytes(ctx.sender()),
                 target_address,
                 amount,
             },
@@ -1105,9 +1077,8 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun unwrap_external_withdrawn_event(event: ExternalWithdrawEvent): (ascii::String, u8, u8, vector<u8>, vector<u8>, u64) {
+    public fun unwrap_external_withdrawn_event(event: ExternalWithdrawEvent): (u8, u8, vector<u8>, vector<u8>, u64) {
         (
-            event.tx_hash,
             event.source_chain,
             event.target_chain,
             event.source_address,
