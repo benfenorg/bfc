@@ -402,7 +402,6 @@ fun test_withdraw_external_btc_without_admin_cap() {
     withdraw_external_coin_for_testing<BTC>(
         bridge,
         chain_ids::btc_testnet(),
-        chain_ids::sui_testnet(), 
         source_address, 
         target_address, 
         ascii::string(b"ddd"),

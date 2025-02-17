@@ -849,7 +849,6 @@ module bridge::bridge_env {
 
     public fun withdraw_external_coin_for_testing<T>(
         bridge: &mut Bridge,
-        source_chain: u8,
         target_chain: u8,
         source_address:vector<u8>,
         target_address: vector<u8>,
@@ -858,7 +857,6 @@ module bridge::bridge_env {
         ctx: &mut TxContext
      ) {
         bridge.withdraw_external_coin<T>(
-            source_chain,
             target_chain,
             source_address,
             target_address,
@@ -927,7 +925,6 @@ module bridge::bridge_env {
         let withdraw_tx_hash = ascii::string(b"xxx");
         withdraw_external_coin_for_testing<T>(
             &mut bridge,
-            target_chain,
             source_chain,
             target_address,
             source_address,

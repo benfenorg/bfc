@@ -489,7 +489,6 @@ module bridge::bridge {
 
     public fun withdraw_external_coin<T>(
         bridge: &mut Bridge,
-        source_chain: u8,
         target_chain: u8,
         source_address:vector<u8>,
         target_address: vector<u8>,
@@ -522,7 +521,7 @@ module bridge::bridge {
         inner.external_bridge_records.push_back(
             key,
             ExternalBridgeRecord {
-                source_chain,
+                source_chain: inner.chain_id,
                 target_chain,
                 source_address,
                 target_address,
@@ -534,7 +533,7 @@ module bridge::bridge {
         emit(
             ExternalWithdrawEvent {
                 tx_hash,
-                source_chain,
+                source_chain: inner.chain_id,
                 target_chain,
                 source_address,
                 target_address,
