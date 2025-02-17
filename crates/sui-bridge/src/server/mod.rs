@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::inconsistent_digit_grouping)]
+use crate::types::RefundAdminAction;
 use crate::with_metrics;
 use crate::{
     crypto::BridgeAuthorityPublicKeyBytes,
@@ -60,6 +61,9 @@ pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
     "/sign/add_tokens_on_evm/:chain_id/:nonce/:native/:token_ids/:token_addresses/:token_sui_decimals/:token_prices";
+
+pub const UPDATE_REFUND_ADMIN_PATH: &str =
+    "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
@@ -132,6 +136,7 @@ pub(crate) fn make_router(
         )
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
+        .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
         .with_state((handler, metrics, metadata))
 }
 
@@ -608,6 +613,45 @@ async fn handle_add_tokens_on_evm(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_add_tokens_on_evm", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, op_type=op_type, sui_address=sui_address))]
+async fn handle_update_refund_admin(
+    Path((chain_id, nonce, op_type, sui_address)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_update_refund_admin only expects Sui chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::RefundAdminAction(RefundAdminAction {
+            nonce,
+            op_type: op_type.parse::<u8>().map_err(|err| {
+                BridgeError::InvalidBridgeClientRequest(format!("Invalid op type: {:?}", err))
+            })?,
+            chain_id,
+            sui_address,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_update_refund_admin", future).await
 }
 
 #[macro_export]
