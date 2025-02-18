@@ -390,6 +390,7 @@ pub fn select_contract_address(
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
     }
 }
 

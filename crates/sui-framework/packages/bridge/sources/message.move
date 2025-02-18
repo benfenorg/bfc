@@ -383,8 +383,7 @@ module bridge::message {
         admin_address: String,
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
-
-        let mut payload = vector[op_type];
+        let mut payload = bcs::to_bytes(&op_type);
         payload.append(bcs::to_bytes(&admin_address));
 
         BridgeMessage {

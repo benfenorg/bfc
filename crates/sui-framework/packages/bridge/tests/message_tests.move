@@ -277,9 +277,8 @@ module bridge::message_tests {
         );
         // Test message serialization
         let message = serialize_message(refund_admin_message);
-
         let expected_msg = hex::decode(
-            b"0101000000000000000a010002b14d3c4f5fbfbcfb98af2d330000d49c95b93aa7f7e93cc543d97af6632c9b8864417379dba4bf15",
+            b"0801000000000000000a01004033343238663264616465333830383537326161376365396164333564666339306661336339353065306439346336613133333131326430313964396134653132",
         );
 
         assert!(message == expected_msg);

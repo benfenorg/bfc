@@ -23,6 +23,7 @@ module bridge::bridge {
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
+    use sui::vec_set;
     use sui::vec_set::VecSet;
     use std::ascii::String;
 
@@ -93,11 +94,6 @@ module bridge::bridge {
         message: BridgeMessage,
         verified_signatures: Option<vector<vector<u8>>>,
         claimed: bool,
-    }
-
-    public struct RefundAdminRecord has store, drop {
-        message: BridgeMessage,
-        verified_signatures: Option<vector<vector<u8>>>,
     }
 
     const EUnexpectedMessageType: u64 = 0;
@@ -798,6 +794,8 @@ module bridge::bridge {
             token_transfer_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
+            refund_records: linked_table::new(ctx),
+            refund_admins: vec_set::empty(),
         };
         let mut bridge = Bridge {
             id,
