@@ -283,7 +283,7 @@ fun test_execute_send_back_token() {
     let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
     let btc_id = 1;
     let btc_amount = 100;
-    env.send_back_token(@0x0, chain_ids::eth_sepolia(), eth_address, btc_id, btc_amount, tx_hash);
+    env.send_back_token(@0xABCD, chain_ids::eth_sepolia(), eth_address, btc_id, btc_amount, tx_hash);
     env.destroy_env();
 }
 

@@ -117,7 +117,7 @@ module bridge::bridge {
     const EInvalidEvmAddress: u64 = 18;
     const ETokenValueIsZero: u64 = 19;
 
-    // const EInvalidSender: u64 = 20;
+    const EInvalidSender: u64 = 20;
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
 
@@ -298,8 +298,7 @@ module bridge::bridge {
         assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
-        // let members = inner.committee.committee_members();
-        // assert!(members.contains(&address::to_bytes(ctx.sender())), EInvalidSender);
+        assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         // create bridge message
         let message = message::create_token_bridge_message(
@@ -346,6 +345,10 @@ module bridge::bridge {
                 event_idx,
             },
         );
+    }
+
+    fun is_refund_admin(inner: &BridgeInner, address: String): bool {
+        inner.refund_admins.contains(&address)
     }
 
     // Record bridge message approvals in Sui, called by the bridge client
