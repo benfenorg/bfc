@@ -658,5 +658,27 @@ mod tests {
             BridgeClient::bridge_action_to_path(&action),
             "sign/add_tokens_on_evm/12/0/1/99,100,101/0x0101010101010101010101010101010101010101,0x0202020202020202020202020202020202020202,0x0303030303030303030303030303030303030303/5,6,7/1000000000,2000000000,3000000000",
         );
+
+        let action = BridgeAction::AddExternalCoinAdminAction(crate::types::AddExternalCoinAdminAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            coin_type:  "test".to_string(),
+            admin_address: "0x0101010101010101010101010101010101010101".to_string(),
+        });
+        assert_eq!(
+            BridgeClient::bridge_action_to_path(&action),
+            "sign/add_external_coin_admin/2/0/test/0x0101010101010101010101010101010101010101",
+        );
+
+        let action = BridgeAction::RemoveExternalCoinAdminAction(crate::types::RemoveExternalCoinAdminAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            coin_type:  "test".to_string(),
+            admin_address: "0x0101010101010101010101010101010101010101".to_string(),
+        });
+        assert_eq!(
+            BridgeClient::bridge_action_to_path(&action),
+            "sign/remove_external_coin_admin/2/0/test/0x0101010101010101010101010101010101010101",
+        );
     }
 }

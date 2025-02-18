@@ -71,7 +71,7 @@ async fn test_indexing_transfer() {
     assert_eq!(8, data.len());
 
     // transfer eth to sui
-    initiate_bridge_eth_to_sui(&cluster, 1000, 0).await.unwrap();
+    initiate_bridge_eth_to_sui(&cluster, 1000, 0, false).await.unwrap();
 
     let current_block_height = cluster
         .sui_client()
