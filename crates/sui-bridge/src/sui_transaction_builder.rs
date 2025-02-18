@@ -96,6 +96,20 @@ pub fn build_sui_transaction(
             // It does not need a Sui tranaction to execute EVM contract upgrade
             unreachable!()
         }
+        BridgeAction::AddExternalCoinAdminAction(_) => build_add_external_coin_admin_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::RemoveExternalCoinAdminAction(_) => build_remove_external_coin_admin_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
         BridgeAction::AddTokensOnSuiAction(_) => build_add_tokens_on_sui_transaction(
             client_address,
             gas_object_ref,
@@ -611,6 +625,132 @@ fn build_asset_price_update_approve_transaction(
         ident_str!("create_update_asset_price_message").to_owned(),
         vec![],
         vec![token_id, source_chain, seq_num, new_price],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_add_external_coin_admin_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)   -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, admin_address) = match bridge_action {
+        BridgeAction::AddExternalCoinAdminAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.admin_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let admin_address = builder.pure(admin_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_add_external_coin_admin_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, admin_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_remove_external_coin_admin_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, admin_address) = match bridge_action {
+        BridgeAction::RemoveExternalCoinAdminAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.admin_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let admin_address = builder.pure(admin_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_remove_external_coin_admin_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, admin_address],
     );
 
     let mut sig_bytes = vec![];

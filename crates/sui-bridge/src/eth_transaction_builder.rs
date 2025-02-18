@@ -71,6 +71,12 @@ pub async fn build_eth_transaction(
         BridgeAction::EvmContractUpgradeAction(action) => {
             build_evm_upgrade_transaction(signer, action.clone(), sigs).await
         }
+        BridgeAction::AddExternalCoinAdminAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::RemoveExternalCoinAdminAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AddTokensOnSuiAction(_) => {
             unreachable!();
         }

@@ -120,6 +120,26 @@ impl BridgeClient {
                     format!("{}/{}", path, call_data)
                 }
             }
+            BridgeAction::AddExternalCoinAdminAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let coin_type = a.coin_type.clone();
+                let admin_address = a.admin_address.clone();
+                
+                format!(
+                    "sign/add_external_coin_admin/{chain_id}/{nonce}/{coin_type}/{admin_address}"
+                )
+            }
+            BridgeAction::RemoveExternalCoinAdminAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let coin_type = a.coin_type.clone();
+                let admin_address = a.admin_address.clone();
+
+                format!(
+                    "sign/remove_external_coin_admin/{chain_id}/{nonce}/{coin_type}/{admin_address}"
+                )
+            }
             BridgeAction::AddTokensOnSuiAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

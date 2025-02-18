@@ -12,6 +12,8 @@ title: Module `0xb::chain_ids`
 -  [Function `eth_mainnet`](#0xb_chain_ids_eth_mainnet)
 -  [Function `eth_sepolia`](#0xb_chain_ids_eth_sepolia)
 -  [Function `eth_custom`](#0xb_chain_ids_eth_custom)
+-  [Function `btc_mainnet`](#0xb_chain_ids_btc_mainnet)
+-  [Function `btc_testnet`](#0xb_chain_ids_btc_testnet)
 -  [Function `route_source`](#0xb_chain_ids_route_source)
 -  [Function `route_destination`](#0xb_chain_ids_route_destination)
 -  [Function `assert_valid_chain_id`](#0xb_chain_ids_assert_valid_chain_id)
@@ -61,6 +63,24 @@ title: Module `0xb::chain_ids`
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0xb_chain_ids_BtcMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_BtcMainnet">BtcMainnet</a>: u8 = 20;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_BtcTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a>: u8 = 21;
+</code></pre>
+
 
 
 <a name="0xb_chain_ids_EInvalidBridgeRoute"></a>
@@ -258,6 +278,50 @@ title: Module `0xb::chain_ids`
 
 </details>
 
+<a name="0xb_chain_ids_btc_mainnet"></a>
+
+## Function `btc_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_btc_mainnet">btc_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_btc_mainnet">btc_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_BtcMainnet">BtcMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_btc_testnet"></a>
+
+## Function `btc_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_btc_testnet">btc_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_btc_testnet">btc_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_chain_ids_route_source"></a>
 
 ## Function `route_source`
@@ -355,6 +419,14 @@ title: Module `0xb::chain_ids`
 
 <pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_valid_routes">valid_routes</a>(): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a>&gt; {
     <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BtcMainnet">BtcMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BtcMainnet">BtcMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BtcTestnet">BtcTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_EthMainnet">EthMainnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_EthMainnet">EthMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
 

@@ -12,6 +12,9 @@ module bridge::chain_ids {
     const EthSepolia: u8 = 11;
     const EthCustom: u8 = 12;
 
+    const BtcMainnet: u8 = 20;
+    const BtcTestnet: u8 = 21;
+
     const EInvalidBridgeRoute: u64 = 0;
 
     //////////////////////////////////////////////////////
@@ -34,6 +37,9 @@ module bridge::chain_ids {
     public fun eth_mainnet(): u8 { EthMainnet }
     public fun eth_sepolia(): u8 { EthSepolia }
     public fun eth_custom(): u8 { EthCustom }
+
+    public fun btc_mainnet(): u8 { BtcMainnet }
+    public fun btc_testnet(): u8 { BtcTestnet }
 
     public use fun route_source as BridgeRoute.source;
     public fun route_source(route: &BridgeRoute): &u8 {
@@ -59,6 +65,14 @@ module bridge::chain_ids {
 
     public fun valid_routes(): vector<BridgeRoute> {
         vector[
+            BridgeRoute { source: SuiMainnet, destination: BtcMainnet },
+            BridgeRoute { source: BtcMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: BtcTestnet },
+            BridgeRoute { source: BtcTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiCustom, destination: BtcTestnet },
+            BridgeRoute { source: BtcTestnet, destination: SuiCustom },
+
             BridgeRoute { source: SuiMainnet, destination: EthMainnet },
             BridgeRoute { source: EthMainnet, destination: SuiMainnet },
 

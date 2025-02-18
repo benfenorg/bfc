@@ -18,6 +18,8 @@ module bridge::treasury {
     use sui::package::UpgradeCap;
     use sui::vec_map;
     use sui::vec_map::VecMap;
+    use sui::vec_set;
+    use sui::vec_set::VecSet;
 
     const EUnsupportedTokenType: u64 = 1;
     const EInvalidUpgradeCap: u64 = 2;
@@ -32,6 +34,9 @@ module bridge::treasury {
     //
 
     public struct BridgeTreasury has store {
+        // “0x00::btc::BTC”:Set<address>
+        external_coin_admin_address: VecMap<String, VecSet<String>>,
+
         // token treasuries, values are TreasuryCaps for native bridge V1.
         treasuries: ObjectBag,
         supported_tokens: VecMap<TypeName, BridgeTokenMetadata>,
@@ -167,10 +172,57 @@ module bridge::treasury {
 
     public(package) fun create(ctx: &mut TxContext): BridgeTreasury {
         BridgeTreasury {
+            external_coin_admin_address: vec_map::empty(),
             treasuries: object_bag::new(ctx),
             supported_tokens: vec_map::empty(),
             id_token_type_map: vec_map::empty(),
             waiting_room: bag::new(ctx),
+        }
+    }
+
+    public(package) fun is_external_coin_admin(
+        self: &BridgeTreasury,
+        coin_type_name: String,
+        address: String,
+    ): bool {
+        let admins = self.external_coin_admin_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            return false
+        };
+        let admins = admins.destroy_some();
+        admins.contains(&address)
+    }
+
+    public(package) fun add_external_coin_admin(
+        self: &mut BridgeTreasury,
+        coin_type_name: String,
+        address: String,
+    ) {
+        let admins = self.external_coin_admin_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            self.external_coin_admin_address.insert(coin_type_name, vec_set::empty());
+        };
+        let admins = self.external_coin_admin_address.get_mut(&coin_type_name);
+        if (!admins.contains(&address)) {
+            admins.insert(address);
+        }
+    }
+
+    public(package) fun remove_external_coin_admin(
+        self: &mut BridgeTreasury,
+        coin_type_name: String,
+        address: String,
+    ) {
+        let admins = self.external_coin_admin_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            return
+        };
+        let admins = self.external_coin_admin_address.get_mut(&coin_type_name);
+        if (admins.contains(&address)) {
+            admins.remove(&address);
+            if (admins.size() == 0) {
+                self.external_coin_admin_address.remove(&coin_type_name);
+            }
         }
     }
 
@@ -279,6 +331,11 @@ module bridge::treasury {
     #[test_only]
     public fun treasuries(treasury: &BridgeTreasury): &ObjectBag {
         &treasury.treasuries
+    }
+
+    #[test_only]
+    public fun external_coin_admin_address(treasury: &BridgeTreasury): &VecMap<String, VecSet<String>> {
+        &treasury.external_coin_admin_address
     }
 
     #[test_only]

@@ -767,7 +767,7 @@ impl FromStr for SuiAddress {
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         //todo, convert BFC address to sui address
-        if s.starts_with("bfc") || s.starts_with("BFC") {
+        if s.to_ascii_lowercase().as_str().starts_with("bfc")  {
             let evm_str = convert_to_evm_address(s.to_string());
             decode_bytes_hex(evm_str.as_str()).map_err(|e| anyhow!(e))
 
@@ -1288,7 +1288,7 @@ impl ObjectID {
     /// Convert from hex string to ObjectID where the string is prefixed with 0x
     /// Padding 0s if the string is too short.
     pub fn from_hex_literal(literal: &str) -> Result<Self, ObjectIDParseError> {
-        if literal.starts_with("bfc") || literal.starts_with("BFC") {
+        if literal.to_ascii_lowercase().as_str().starts_with("bfc")  {
             let bfc_str = convert_to_evm_address(literal.to_string());
             return Self::from_hex_literal(bfc_str.as_str());
         }

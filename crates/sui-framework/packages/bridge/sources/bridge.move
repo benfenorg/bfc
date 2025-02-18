@@ -3,6 +3,8 @@
 
 module bridge::bridge {
     use sui::address;
+    use std::ascii;
+    use std::type_name;
     use sui::clock::Clock;
     use sui::coin::{Coin, TreasuryCap, CoinMetadata};
     use sui::event::emit;
@@ -16,7 +18,8 @@ module bridge::bridge {
     use bridge::committee::{Self, BridgeCommittee};
     use bridge::limiter::{Self, TransferLimiter};
     use bridge::message::{
-        Self, BridgeMessage, BridgeMessageKey, RefundMessageKey, EmergencyOp, UpdateAssetPrice,
+        Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
+        AddExternalCoinAdmin, RemoveExternalCoinAdmin,RefundMessageKey,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
@@ -58,6 +61,7 @@ module bridge::bridge {
         // Bridge treasury for mint/burn bridged tokens
         treasury: BridgeTreasury,
         token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
+        external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
         limiter: TransferLimiter,
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
@@ -121,6 +125,9 @@ module bridge::bridge {
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
 
+    const EDuplicatedMessage: u64 = 30;
+    const EUnknownExternalCoinOrSender: u64 = 31;
+
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -143,6 +150,35 @@ module bridge::bridge {
         message_key: BridgeMessageKey,
     }
 
+    public struct ExternalDepositedEvent has copy, drop {
+        tx_hash: ascii::String,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
+    public struct ExternalWithdrawEvent has copy, drop {
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
+    public struct ExternalBridgeMessageKey has copy, drop, store {
+        tx_hash: ascii::String,
+    }
+
+    public struct ExternalBridgeRecord has store, drop {
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
     //////////////////////////////////////////////////////
     // Internal initialization functions
     //
@@ -159,6 +195,7 @@ module bridge::bridge {
             committee: committee::create(ctx),
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
+            external_bridge_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
@@ -481,6 +518,12 @@ module bridge::bridge {
         } else if (message_type == message_types::update_asset_price()) {
             let payload = message.extract_update_asset_price();
             inner.execute_update_asset_price(payload);
+        } else if (message_type == message_types::add_external_coin_admin()) {
+            let payload = message.extract_add_external_coin_admin();
+            inner.execute_add_external_coin_admin(payload);
+        } else if (message_type == message_types::remove_external_coin_admin()) {
+            let payload = message.extract_remove_external_coin_admin();
+            inner.execute_remove_external_coin_admin(payload);
         } else if (message_type == message_types::add_tokens_on_sui()) {
             let payload = message.extract_add_tokens_on_sui();
             inner.execute_add_tokens_on_sui(payload);
@@ -490,6 +533,85 @@ module bridge::bridge {
         } else {
             abort EUnexpectedMessageType
         };
+    }
+
+    public fun deposit_external_coin<T>(
+        bridge: &mut Bridge,
+        source_chain: u8,
+        source_address:vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+        ctx: &mut TxContext
+    ) {
+        let sender = ctx.sender();
+        let coin_type = type_name::into_string(type_name::get<T>());
+
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
+        if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+            abort EUnknownExternalCoinOrSender
+        };
+
+        // check records
+        let key = ExternalBridgeMessageKey{tx_hash};
+        if (inner.external_bridge_records.contains(key)) {
+            abort EDuplicatedMessage
+        };
+
+        let token = inner.treasury.mint<T>(amount, ctx);
+        transfer::public_transfer(token, address::from_bytes(target_address));
+
+        inner.external_bridge_records.push_back(
+            key,
+            ExternalBridgeRecord {
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+            },
+        );
+
+        emit(
+            ExternalDepositedEvent {
+                tx_hash,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+            },
+        )
+    }
+
+    public fun withdraw_external_coin<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token: Coin<T>,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+
+        inner.treasury.burn(token);
+
+        // emit event
+        emit(
+            ExternalWithdrawEvent {
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount,
+            },
+        );
     }
 
     //////////////////////////////////////////////////////
@@ -728,6 +850,20 @@ module bridge::bridge {
         )
     }
 
+    fun execute_add_external_coin_admin(inner: &mut BridgeInner, payload: AddExternalCoinAdmin) {
+        inner.treasury.add_external_coin_admin(
+            payload.add_external_coin_admin_payload_coin_type(),
+            payload.add_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_admin(inner: &mut BridgeInner, payload: RemoveExternalCoinAdmin) {
+        inner.treasury.remove_external_coin_admin(
+            payload.remove_external_coin_admin_payload_coin_type(),
+            payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
     fun execute_add_tokens_on_sui(inner: &mut BridgeInner, payload: AddTokenOnSui) {
         // FIXME: assert native_token to be false and add test
         let native_token = payload.is_native();
@@ -788,6 +924,44 @@ module bridge::bridge {
     //
 
     #[test_only]
+    public fun add_external_coin_admin_for_testing(
+        bridge: &mut Bridge,
+        coin_type: ascii::String,
+        admin_address: ascii::String,
+    ) {
+        bridge.load_inner_mut().treasury.add_external_coin_admin(coin_type, admin_address)
+    }
+
+    #[test_only]
+    public fun remove_external_coin_admin_for_testing(
+        bridge: &mut Bridge,
+        coin_type: ascii::String,
+        admin_address: ascii::String,
+    ) {
+        bridge.load_inner_mut().treasury.remove_external_coin_admin(coin_type, admin_address)
+    }
+
+    #[test_only]
+    public fun find_external_bridge_record(
+        bridge: &Bridge,
+        tx_hash: ascii::String,
+    )   : Option<ExternalBridgeRecord> {
+        let key = ExternalBridgeMessageKey{tx_hash};
+        let inner = load_inner(bridge)  ;
+        if (!inner.external_bridge_records.contains(key)) {
+            return option::none()
+        };
+        let record = &inner.external_bridge_records[key];
+        return option::some(ExternalBridgeRecord{
+            source_chain: record.source_chain,
+            target_chain: record.target_chain,
+            source_address: record.source_address,
+            target_address: record.target_address,
+            amount: record.amount,
+        })
+    }
+
+    #[test_only]
     public fun create_bridge_for_testing(id: UID, chain_id: u8, ctx: &mut TxContext) {
         create(id, chain_id, ctx);
     }
@@ -803,6 +977,7 @@ module bridge::bridge {
             committee: committee::create(ctx),
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
+            external_bridge_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
@@ -1043,6 +1218,40 @@ module bridge::bridge {
     }
 
     #[test_only]
+    public fun unwrap_external_deposited_event(event: ExternalDepositedEvent):  (ascii::String, u8, u8, vector<u8>, vector<u8>, u64)  {
+        (
+            event.tx_hash,
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_external_withdrawn_event(event: ExternalWithdrawEvent): (u8, u8, vector<u8>, vector<u8>, u64) {
+        (
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_external_bridge_record(record: ExternalBridgeRecord): (u8, u8, vector<u8>, vector<u8>, u64) {
+        (
+            record.source_chain,
+            record.target_chain,
+            record.source_address,
+            record.target_address,
+            record.amount,
+        )
+    }
+
+    #[test_only]
     public fun unwrap_deposited_event(event: TokenDepositedEvent): (u64, u8, vector<u8>, u8, vector<u8>, u8, u64) {
         (
             event.seq_num,
@@ -1068,7 +1277,6 @@ module bridge::bridge {
             event.tx_hash,
         )
 
-    }
     #[test_only]
     public fun unwrap_emergency_op_event(event: EmergencyOpEvent): bool {
         event.frozen

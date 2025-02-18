@@ -8,6 +8,8 @@ pub mod checked {
     use std::str::FromStr;
     use std::sync::{LazyLock, RwLock};
 
+    const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
+
     struct AllowStableGasCoin {
         rate_map: BTreeMap<String, u64>,
     }
@@ -196,7 +198,7 @@ pub mod checked {
             .any(|stable_tag| &stable_tag == other)
         }
 
-        pub fn is_new_gas_type(other: &TypeTag) -> bool {
+        pub fn is_configurable_gas_type(other: &TypeTag) -> bool {
             let rate_map = get_allow_stable_gas_coins_rate_map();
             let r = rate_map.iter().any(|(key, _)| {
                 let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
@@ -210,6 +212,17 @@ pub mod checked {
             });
     
             r
+        }
+
+        pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
+            if version > BFC_ROUND_V2_PROTOCOL_VERSION {
+                if &(STABLE::BUSD.type_tag()) == other {
+                    return false; // inner gas type ,after 45 protocol version only busd
+                }
+            }else if Self::is_inner_gas_type(other) {
+                return false;// inner gas type,have 18 stable coins before 45 protocol version
+            }
+            Self::is_configurable_gas_type(other)
         }
 
         pub fn is_gas_type(other: &TypeTag) -> bool {
@@ -234,7 +247,7 @@ pub mod checked {
             .iter()
             .map(|stable_type| stable_type.type_tag())
             .any(|stable_tag| &stable_tag == other)
-                || Self::is_new_gas_type(other)
+                || Self::is_configurable_gas_type(other)
         }
 
         pub fn is_gas_struct(other: &StructTag) -> bool {
@@ -410,14 +423,14 @@ pub mod checked {
             m.insert("0xc8::baud::BAUD".to_string(), 100);
             update_allow_stable_gas_coins(m);
 
-            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bars::BARS").unwrap());
+            let ok = STABLE::is_configurable_gas_type(&TypeTag::from_str("0xc8::bars::BARS").unwrap());
             assert!(ok);
-            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::baud::BAUD").unwrap());
+            let ok = STABLE::is_configurable_gas_type(&TypeTag::from_str("0xc8::baud::BAUD").unwrap());
             assert!(ok);
-            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0xc8::bcad::BCAD").unwrap());
+            let ok = STABLE::is_configurable_gas_type(&TypeTag::from_str("0xc8::bcad::BCAD").unwrap());
             assert!(ok);
 
-            let ok = STABLE::is_new_gas_type(&TypeTag::from_str("0x00c8::bcad::BCAD").unwrap());
+            let ok = STABLE::is_configurable_gas_type(&TypeTag::from_str("0x00c8::bcad::BCAD").unwrap());
             assert!(ok);
         }
 

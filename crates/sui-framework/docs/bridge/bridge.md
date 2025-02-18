@@ -7,7 +7,6 @@ title: Module `0xb::bridge`
 -  [Resource `Bridge`](#0xb_bridge_Bridge)
 -  [Struct `BridgeInner`](#0xb_bridge_BridgeInner)
 -  [Struct `TokenDepositedEvent`](#0xb_bridge_TokenDepositedEvent)
--  [Struct `TokenSendBackEvent`](#0xb_bridge_TokenSendBackEvent)
 -  [Struct `EmergencyOpEvent`](#0xb_bridge_EmergencyOpEvent)
 -  [Struct `BridgeRecord`](#0xb_bridge_BridgeRecord)
 -  [Struct `TokenTransferApproved`](#0xb_bridge_TokenTransferApproved)
@@ -15,6 +14,10 @@ title: Module `0xb::bridge`
 -  [Struct `TokenTransferAlreadyApproved`](#0xb_bridge_TokenTransferAlreadyApproved)
 -  [Struct `TokenTransferAlreadyClaimed`](#0xb_bridge_TokenTransferAlreadyClaimed)
 -  [Struct `TokenTransferLimitExceed`](#0xb_bridge_TokenTransferLimitExceed)
+-  [Struct `ExternalDepositedEvent`](#0xb_bridge_ExternalDepositedEvent)
+-  [Struct `ExternalWithdrawEvent`](#0xb_bridge_ExternalWithdrawEvent)
+-  [Struct `ExternalBridgeMessageKey`](#0xb_bridge_ExternalBridgeMessageKey)
+-  [Struct `ExternalBridgeRecord`](#0xb_bridge_ExternalBridgeRecord)
 -  [Constants](#@Constants_0)
 -  [Function `create`](#0xb_bridge_create)
 -  [Function `init_bridge_committee`](#0xb_bridge_init_bridge_committee)
@@ -22,13 +25,13 @@ title: Module `0xb::bridge`
 -  [Function `update_node_url`](#0xb_bridge_update_node_url)
 -  [Function `register_foreign_token`](#0xb_bridge_register_foreign_token)
 -  [Function `send_token`](#0xb_bridge_send_token)
--  [Function `send_back_token`](#0xb_bridge_send_back_token)
 -  [Function `approve_token_transfer`](#0xb_bridge_approve_token_transfer)
 -  [Function `claim_token`](#0xb_bridge_claim_token)
 -  [Function `claim_and_transfer_token`](#0xb_bridge_claim_and_transfer_token)
 -  [Function `execute_system_message`](#0xb_bridge_execute_system_message)
+-  [Function `deposit_external_coin`](#0xb_bridge_deposit_external_coin)
+-  [Function `withdraw_external_coin`](#0xb_bridge_withdraw_external_coin)
 -  [Function `get_token_transfer_action_status`](#0xb_bridge_get_token_transfer_action_status)
--  [Function `get_send_back_status`](#0xb_bridge_get_send_back_status)
 -  [Function `get_token_transfer_action_signatures`](#0xb_bridge_get_token_transfer_action_signatures)
 -  [Function `load_inner`](#0xb_bridge_load_inner)
 -  [Function `load_inner_mut`](#0xb_bridge_load_inner_mut)
@@ -36,6 +39,8 @@ title: Module `0xb::bridge`
 -  [Function `execute_emergency_op`](#0xb_bridge_execute_emergency_op)
 -  [Function `execute_update_bridge_limit`](#0xb_bridge_execute_update_bridge_limit)
 -  [Function `execute_update_asset_price`](#0xb_bridge_execute_update_asset_price)
+-  [Function `execute_add_external_coin_admin`](#0xb_bridge_execute_add_external_coin_admin)
+-  [Function `execute_remove_external_coin_admin`](#0xb_bridge_execute_remove_external_coin_admin)
 -  [Function `execute_add_tokens_on_sui`](#0xb_bridge_execute_add_tokens_on_sui)
 -  [Function `get_current_seq_num_and_increment`](#0xb_bridge_get_current_seq_num_and_increment)
 -  [Function `get_parsed_token_transfer_message`](#0xb_bridge_get_parsed_token_transfer_message)
@@ -43,12 +48,12 @@ title: Module `0xb::bridge`
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
+<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../sui-framework/address.md#0x2_address">0x2::address</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
-<b>use</b> <a href="../sui-framework/hex.md#0x2_hex">0x2::hex</a>;
 <b>use</b> <a href="../sui-framework/linked_table.md#0x2_linked_table">0x2::linked_table</a>;
 <b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../sui-framework/package.md#0x2_package">0x2::package</a>;
@@ -159,6 +164,12 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
+<code>external_bridge_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;<a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">bridge::ExternalBridgeMessageKey</a>, <a href="bridge.md#0xb_bridge_ExternalBridgeRecord">bridge::ExternalBridgeRecord</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code><a href="limiter.md#0xb_limiter">limiter</a>: <a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a></code>
 </dt>
 <dd>
@@ -166,12 +177,6 @@ title: Module `0xb::bridge`
 </dd>
 <dt>
 <code>paused: bool</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>refund_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;<a href="message.md#0xb_message_RefundMessageKey">message::RefundMessageKey</a>, <a href="bridge.md#0xb_bridge_BridgeRecord">bridge::BridgeRecord</a>&gt;</code>
 </dt>
 <dd>
 
@@ -235,81 +240,6 @@ title: Module `0xb::bridge`
 </dd>
 <dt>
 <code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
-</dt>
-<dd>
-
-</dd>
-</dl>
-
-
-</details>
-
-<a name="0xb_bridge_TokenSendBackEvent"></a>
-
-## Struct `TokenSendBackEvent`
-
-
-
-<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_TokenSendBackEvent">TokenSendBackEvent</a> <b>has</b> <b>copy</b>, drop
-</code></pre>
-
-
-
-<details>
-<summary>Fields</summary>
-
-
-<dl>
-<dt>
-<code>seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>source_chain: u8</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>sender_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>target_chain: u8</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>token_type: u8</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-<code>event_idx: u8</code>
 </dt>
 <dd>
 
@@ -520,6 +450,192 @@ title: Module `0xb::bridge`
 
 </details>
 
+<a name="0xb_bridge_ExternalDepositedEvent"></a>
+
+## Struct `ExternalDepositedEvent`
+
+
+
+<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_bridge_ExternalWithdrawEvent"></a>
+
+## Struct `ExternalWithdrawEvent`
+
+
+
+<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_ExternalWithdrawEvent">ExternalWithdrawEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_bridge_ExternalBridgeMessageKey"></a>
+
+## Struct `ExternalBridgeMessageKey`
+
+
+
+<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_bridge_ExternalBridgeRecord"></a>
+
+## Struct `ExternalBridgeRecord`
+
+
+
+<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_ExternalBridgeRecord">ExternalBridgeRecord</a> <b>has</b> drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -597,11 +713,11 @@ title: Module `0xb::bridge`
 
 
 
-<a name="0xb_bridge_EDuplicateRefund"></a>
+<a name="0xb_bridge_EDuplicatedMessage"></a>
 
 
 
-<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EDuplicateRefund">EDuplicateRefund</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 22;
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EDuplicatedMessage">EDuplicatedMessage</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 30;
 </code></pre>
 
 
@@ -611,15 +727,6 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 18;
-</code></pre>
-
-
-
-<a name="0xb_bridge_EInvalidTxHash"></a>
-
-
-
-<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidTxHash">EInvalidTxHash</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 21;
 </code></pre>
 
 
@@ -732,6 +839,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EUnknownExternalCoinOrSender"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnknownExternalCoinOrSender">EUnknownExternalCoinOrSender</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 31;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EVM_ADDRESS_LENGTH"></a>
 
 
@@ -811,9 +927,9 @@ title: Module `0xb::bridge`
         <a href="committee.md#0xb_committee">committee</a>: <a href="committee.md#0xb_committee_create">committee::create</a>(ctx),
         <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: treasury::create(ctx),
         token_transfer_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
+        external_bridge_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
         <a href="limiter.md#0xb_limiter">limiter</a>: <a href="limiter.md#0xb_limiter_new">limiter::new</a>(),
         paused: <b>false</b>,
-        refund_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
     };
     <b>let</b> <a href="bridge.md#0xb_bridge">bridge</a> = <a href="bridge.md#0xb_bridge_Bridge">Bridge</a> {
         id,
@@ -992,8 +1108,6 @@ title: Module `0xb::bridge`
         target_address,
         token_id,
         token_amount,
-        <a href="../sui-framework/hex.md#0x2_hex_decode">hex::decode</a>(b""),
-        0u8, // event_idx
     );
 
     // burn / escrow token, unsupported coins will fail in this step
@@ -1019,93 +1133,6 @@ title: Module `0xb::bridge`
             target_address,
             token_type: token_id,
             amount: token_amount,
-        },
-    );
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xb_bridge_send_back_token"></a>
-
-## Function `send_back_token`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_back_token">send_back_token</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token_type: u8, token_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, event_idx: u8, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_back_token">send_back_token</a>(
-    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
-    target_chain: u8,
-    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    token_type: u8,
-    token_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    event_idx: u8,
-    ctx: &<b>mut</b> TxContext
-) {
-    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
-    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
-    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
-    <b>assert</b>!(!inner.refund_records.contains(<a href="message.md#0xb_message_key_refund">message::key_refund</a>(tx_hash)), <a href="bridge.md#0xb_bridge_EDuplicateRefund">EDuplicateRefund</a>);
-    <b>assert</b>!(target_address.length() == <a href="bridge.md#0xb_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="bridge.md#0xb_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
-    <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
-    <b>assert</b>!(tx_hash.length() &gt;= 1, <a href="bridge.md#0xb_bridge_EInvalidTxHash">EInvalidTxHash</a>);
-    // <b>let</b> members = inner.<a href="committee.md#0xb_committee">committee</a>.committee_members();
-    // <b>assert</b>!(members.contains(&address::to_bytes(ctx.sender())), EInvalidSender);
-    <b>let</b> bridge_seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="message_types.md#0xb_message_types_token">message_types::token</a>());
-    // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
-    <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
-        inner.chain_id,
-        bridge_seq_num,
-        address::to_bytes(ctx.sender()),
-        target_chain,
-        target_address,
-        token_type,
-        token_amount,
-        tx_hash,
-        event_idx,
-    );
-    // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
-    inner.token_transfer_records.push_back(
-        <a href="message.md#0xb_message">message</a>.key(),
-        <a href="bridge.md#0xb_bridge_BridgeRecord">BridgeRecord</a> {
-            <a href="message.md#0xb_message">message</a>,
-            verified_signatures: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
-            claimed: <b>false</b>,
-        },
-    );
-    //store for idempotency
-    inner.refund_records.push_back(
-        <a href="message.md#0xb_message_key_refund">message::key_refund</a>(tx_hash),
-        <a href="bridge.md#0xb_bridge_BridgeRecord">BridgeRecord</a> {
-            <a href="message.md#0xb_message">message</a>,
-            verified_signatures: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
-            claimed: <b>false</b>,
-        },
-    );
-
-    // emit <a href="../sui-framework/event.md#0x2_event">event</a>
-    emit(
-        <a href="bridge.md#0xb_bridge_TokenSendBackEvent">TokenSendBackEvent</a> {
-            seq_num: bridge_seq_num,
-            source_chain: inner.chain_id,
-            sender_address: address::to_bytes(ctx.sender()),
-            target_chain,
-            target_address,
-            token_type: token_type,
-            amount: token_amount,
-            tx_hash,
-            event_idx,
         },
     );
 }
@@ -1313,12 +1340,137 @@ title: Module `0xb::bridge`
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_update_asset_price">message_types::update_asset_price</a>()) {
         <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_update_asset_price();
         inner.<a href="bridge.md#0xb_bridge_execute_update_asset_price">execute_update_asset_price</a>(payload);
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_admin">message_types::add_external_coin_admin</a>()) {
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_add_external_coin_admin();
+        inner.<a href="bridge.md#0xb_bridge_execute_add_external_coin_admin">execute_add_external_coin_admin</a>(payload);
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>()) {
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_remove_external_coin_admin();
+        inner.<a href="bridge.md#0xb_bridge_execute_remove_external_coin_admin">execute_remove_external_coin_admin</a>(payload);
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_tokens_on_sui">message_types::add_tokens_on_sui</a>()) {
         <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_add_tokens_on_sui();
         inner.<a href="bridge.md#0xb_bridge_execute_add_tokens_on_sui">execute_add_tokens_on_sui</a>(payload);
     } <b>else</b> {
         <b>abort</b> <a href="bridge.md#0xb_bridge_EUnexpectedMessageType">EUnexpectedMessageType</a>
     };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_deposit_external_coin"></a>
+
+## Function `deposit_external_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin">deposit_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin">deposit_external_coin</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    source_address:<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> sender = ctx.sender();
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
+
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(source_chain, inner.chain_id), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EUnknownExternalCoinOrSender">EUnknownExternalCoinOrSender</a>
+    };
+
+    // check records
+    <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{tx_hash};
+    <b>if</b> (inner.external_bridge_records.contains(key)) {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EDuplicatedMessage">EDuplicatedMessage</a>
+    };
+
+    <b>let</b> token = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(token, address::from_bytes(target_address));
+
+    inner.external_bridge_records.push_back(
+        key,
+        <a href="bridge.md#0xb_bridge_ExternalBridgeRecord">ExternalBridgeRecord</a> {
+            source_chain,
+            target_chain: inner.chain_id,
+            source_address,
+            target_address,
+            amount,
+        },
+    );
+
+    emit(
+        <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
+            tx_hash,
+            source_chain,
+            target_chain: inner.chain_id,
+            source_address,
+            target_address,
+            amount,
+        },
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_withdraw_external_coin"></a>
+
+## Function `withdraw_external_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_coin">withdraw_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_coin">withdraw_external_coin</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    token: Coin&lt;T&gt;,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+
+    <b>let</b> amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
+    <b>assert</b>!(amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
+
+    // emit <a href="../sui-framework/event.md#0x2_event">event</a>
+    emit(
+        <a href="bridge.md#0xb_bridge_ExternalWithdrawEvent">ExternalWithdrawEvent</a> {
+            source_chain: inner.chain_id,
+            target_chain,
+            source_address: address::to_bytes(ctx.sender()),
+            target_address,
+            amount,
+        },
+    );
 }
 </code></pre>
 
@@ -1366,44 +1518,6 @@ title: Module `0xb::bridge`
         <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_APPROVED">TRANSFER_STATUS_APPROVED</a>
     };
 
-    <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_PENDING">TRANSFER_STATUS_PENDING</a>
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xb_bridge_get_send_back_status"></a>
-
-## Function `get_send_back_status`
-
-
-
-<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_get_send_back_status">get_send_back_status</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): u8
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_get_send_back_status">get_send_back_status</a>(
-    <a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
-    tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-): u8 {
-    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner">load_inner</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
-    <b>let</b> key = <a href="message.md#0xb_message_key_refund">message::key_refund</a>(tx_hash);
-
-    <b>if</b> (!inner.refund_records.contains(key)) {
-        <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_NOT_FOUND">TRANSFER_STATUS_NOT_FOUND</a>
-    };
-
-    <b>let</b> record = &inner.refund_records[key];
-    <b>if</b> (record.claimed) {
-        <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_CLAIMED">TRANSFER_STATUS_CLAIMED</a>
-    };
     <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_PENDING">TRANSFER_STATUS_PENDING</a>
 }
 </code></pre>
@@ -1695,6 +1809,60 @@ title: Module `0xb::bridge`
     inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.update_asset_notional_price(
         payload.update_asset_price_payload_token_id(),
         payload.update_asset_price_payload_new_price()
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_add_external_coin_admin"></a>
+
+## Function `execute_add_external_coin_admin`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_admin">execute_add_external_coin_admin</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_AddExternalCoinAdmin">message::AddExternalCoinAdmin</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_admin">execute_add_external_coin_admin</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: AddExternalCoinAdmin) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.add_external_coin_admin(
+        payload.add_external_coin_admin_payload_coin_type(),
+        payload.add_external_coin_admin_payload_admin_address(),
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_remove_external_coin_admin"></a>
+
+## Function `execute_remove_external_coin_admin`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_admin">execute_remove_external_coin_admin</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_RemoveExternalCoinAdmin">message::RemoveExternalCoinAdmin</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_admin">execute_remove_external_coin_admin</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: RemoveExternalCoinAdmin) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.remove_external_coin_admin(
+        payload.remove_external_coin_admin_payload_coin_type(),
+        payload.remove_external_coin_admin_payload_admin_address(),
     )
 }
 </code></pre>

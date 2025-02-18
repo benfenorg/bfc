@@ -3,6 +3,8 @@
 
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
+use crate::types::AddExternalCoinAdminAction;
+use crate::types::RemoveExternalCoinAdminAction;
 use crate::types::AssetPriceUpdateAction;
 use crate::types::BlocklistCommitteeAction;
 use crate::types::BridgeAction;
@@ -372,6 +374,58 @@ impl BridgeMessageEncoding for EvmContractUpgradeAction {
             ethers::abi::Token::Address(self.new_impl_address),
             ethers::abi::Token::Bytes(self.call_data.clone()),
         ])
+    }
+}
+
+impl BridgeMessageEncoding for AddExternalCoinAdminAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddExternalCoinAdmin as u8);
+        // Add message version
+        bytes.push(ADD_TOKENS_ON_SUI_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.admin_address).unwrap());
+      
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for RemoveExternalCoinAdminAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::RemoveExternalCoinAdmin as u8);
+        // Add message version
+        bytes.push(ADD_TOKENS_ON_SUI_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.admin_address).unwrap());
+      
+        bytes
     }
 }
 
