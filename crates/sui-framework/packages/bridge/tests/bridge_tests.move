@@ -287,18 +287,18 @@ fun test_execute_send_back_token() {
     env.destroy_env();
 }
 
-// #[test]
-// #[expected_failure(abort_code = bridge::bridge::EInvalidSender)]
-// fun test_execute_send_back_token_invalid_sender() {
-//     let mut env = create_env(chain_ids::sui_testnet());
-//     env.create_bridge_default();
-//     let eth_address = x"0000000000000000000000000000000000000000";
-//     let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
-//     let btc_id = 1;
-//     let btc_amount = 100;
-//     env.send_back_token(@0xabcd, chain_ids::eth_sepolia(), eth_address, btc_id, btc_amount, tx_hash);
-//     env.destroy_env();
-// }
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EInvalidSender)]
+fun test_execute_send_back_token_should_fail_if_not_refund_admin() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let eth_address = x"0000000000000000000000000000000000000000";
+    let tx_hash = hex::decode(b"56335bb5461b430c3ccf94efe91494e64f21e12e9b8b007b0e1c56c7d1e8de3b");
+    let btc_id = 1;
+    let btc_amount = 100;
+    env.send_back_token(@0xABC, chain_ids::eth_sepolia(), eth_address, btc_id, btc_amount, tx_hash);
+    env.destroy_env();
+}
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidTxHash)]

@@ -686,19 +686,27 @@ module bridge::bridge {
         let op = payload.refund_admin_op_type();
         if (op == message::refund_admin_add()) {
             let sui_address = payload.refund_admin_sui_address();
-            if (!inner.refund_admins.contains(sui_address)) {
-                inner.refund_admins.insert(*sui_address);
-            }
+            inner.add_refund_admin(sui_address);
         } else if (op == message::refund_admin_remove()) {
             let sui_address = payload.refund_admin_sui_address();
-            if (inner.refund_admins.contains(sui_address)) {
-                inner.refund_admins.remove(sui_address);
-            }
+            inner.remove_refund_admin(sui_address);
         } else {
             abort EUnexpectedOperation
         };
     }
-    
+
+    fun add_refund_admin(inner: &mut BridgeInner, address: &String) {
+        if (!inner.refund_admins.contains(address)) {
+            inner.refund_admins.insert(*address);
+        }
+    }
+
+    fun remove_refund_admin(inner: &mut BridgeInner, address: &String) {
+        if (inner.refund_admins.contains(address)) {
+            inner.refund_admins.remove(address);
+        }
+    }
+
     fun execute_update_bridge_limit(inner: &mut BridgeInner, payload: UpdateBridgeLimit) {
         let receiving_chain = payload.update_bridge_limit_payload_receiving_chain();
         assert!(receiving_chain == inner.chain_id, EUnexpectedChainID);
@@ -806,6 +814,12 @@ module bridge::bridge {
         };
         bridge.setup_treasury_for_testing();
         bridge
+    }
+
+    #[test_only]
+    public fun setup_refund_admin_for_testing(bridge: &mut Bridge, address: String) {
+        let inner = load_inner_mut(bridge);
+        inner.add_refund_admin(&address);
     }
 
     #[test_only]

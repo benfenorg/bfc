@@ -304,6 +304,7 @@ module bridge::bridge_env {
         env.register_committee();
         env.init_committee(sender);
         env.setup_treasury(sender);
+        env.add_refund_admin(@0xABCD)
     }
 
     // Create a bridge and set up a treasury.
@@ -420,6 +421,14 @@ module bridge::bridge_env {
         );
         destroy(metadata);
 
+        test_scenario::return_shared(bridge);
+    }
+
+    fun add_refund_admin(env: &mut BridgeEnv, sender: address) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        bridge.setup_refund_admin_for_testing(sender.to_ascii_string());
         test_scenario::return_shared(bridge);
     }
 
