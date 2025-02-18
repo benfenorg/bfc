@@ -459,7 +459,7 @@ mod tests {
         test_utils::{
             get_test_log_and_action, get_test_sui_to_eth_bridge_action, mock_last_finalized_block,
         },
-        types::{EmergencyAction, EmergencyActionType, LimitUpdateAction},
+        types::{EmergencyAction, EmergencyActionType, LimitUpdateAction, RefundAdminAction},
     };
     use ethers::types::{Address as EthAddress, TransactionReceipt};
     use sui_json_rpc_types::{BcsEvent, SuiEvent};
@@ -746,6 +746,42 @@ mod tests {
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
             BridgeError::ActionIsNotGovernanceAction { .. }
         ));
+    }
+    
+    #[tokio::test]
+    async fn test_refund_admin_action() {
+        let action_1 = BridgeAction::RefundAdminAction(RefundAdminAction {
+            chain_id: BridgeChainId::SuiCustom,
+            nonce: 1,
+            op_type: 0,
+            sui_address: SuiAddress::random_for_testing_only().to_string(),
+        });
+        let verifier = GovernanceVerifier::new(vec![action_1.clone()]).unwrap();
+        assert_eq!(
+            verifier.verify(action_1.clone()).await.unwrap(),
+            action_1.clone()
+        );
+        let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+        let signer = Arc::new(kp);
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let mut signer_with_cache = SignerWithCache::new(signer.clone(), verifier, metrics.clone());
+
+        // action_1 is signable
+        signer_with_cache.sign(action_1.clone()).await.unwrap();
+        // signed action is cached
+        let entry_ = signer_with_cache.get_testing_only(action_1.clone()).await;
+        assert_eq!(
+            entry_
+                .unwrap()
+                .lock()
+                .await
+                .clone()
+                .unwrap()
+                .unwrap()
+                .data(),
+            &action_1
+        );
+
     }
     // TODO: add tests for BridgeRequestHandler (need to hook up local eth node)
 }
