@@ -10,6 +10,7 @@ title: Module `0xb::message`
 -  [Struct `TokenTransferPayload`](#0xb_message_TokenTransferPayload)
 -  [Struct `EmergencyOp`](#0xb_message_EmergencyOp)
 -  [Struct `Blocklist`](#0xb_message_Blocklist)
+-  [Struct `RefundAdmin`](#0xb_message_RefundAdmin)
 -  [Struct `UpdateBridgeLimit`](#0xb_message_UpdateBridgeLimit)
 -  [Struct `UpdateAssetPrice`](#0xb_message_UpdateAssetPrice)
 -  [Struct `AddExternalCoinAdmin`](#0xb_message_AddExternalCoinAdmin)
@@ -20,6 +21,7 @@ title: Module `0xb::message`
 -  [Function `extract_token_bridge_payload`](#0xb_message_extract_token_bridge_payload)
 -  [Function `extract_emergency_op_payload`](#0xb_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#0xb_message_extract_blocklist_payload)
+-  [Function `extract_refund_admin_payload`](#0xb_message_extract_refund_admin_payload)
 -  [Function `extract_update_bridge_limit`](#0xb_message_extract_update_bridge_limit)
 -  [Function `extract_add_external_coin_admin`](#0xb_message_extract_add_external_coin_admin)
 -  [Function `extract_remove_external_coin_admin`](#0xb_message_extract_remove_external_coin_admin)
@@ -29,6 +31,7 @@ title: Module `0xb::message`
 -  [Function `create_token_bridge_message`](#0xb_message_create_token_bridge_message)
 -  [Function `create_emergency_op_message`](#0xb_message_create_emergency_op_message)
 -  [Function `create_blocklist_message`](#0xb_message_create_blocklist_message)
+-  [Function `create_refund_admin_message`](#0xb_message_create_refund_admin_message)
 -  [Function `create_update_bridge_limit_message`](#0xb_message_create_update_bridge_limit_message)
 -  [Function `create_update_asset_price_message`](#0xb_message_create_update_asset_price_message)
 -  [Function `create_add_external_coin_admin_message`](#0xb_message_create_add_external_coin_admin_message)
@@ -51,6 +54,10 @@ title: Module `0xb::message`
 -  [Function `emergency_op_type`](#0xb_message_emergency_op_type)
 -  [Function `blocklist_type`](#0xb_message_blocklist_type)
 -  [Function `blocklist_validator_addresses`](#0xb_message_blocklist_validator_addresses)
+-  [Function `refund_admin_op_type`](#0xb_message_refund_admin_op_type)
+-  [Function `refund_admin_add`](#0xb_message_refund_admin_add)
+-  [Function `refund_admin_remove`](#0xb_message_refund_admin_remove)
+-  [Function `refund_admin_sui_address`](#0xb_message_refund_admin_sui_address)
 -  [Function `update_bridge_limit_payload_sending_chain`](#0xb_message_update_bridge_limit_payload_sending_chain)
 -  [Function `update_bridge_limit_payload_receiving_chain`](#0xb_message_update_bridge_limit_payload_receiving_chain)
 -  [Function `update_bridge_limit_payload_limit`](#0xb_message_update_bridge_limit_payload_limit)
@@ -321,6 +328,39 @@ title: Module `0xb::message`
 
 </details>
 
+<a name="0xb_message_RefundAdmin"></a>
+
+## Struct `RefundAdmin`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_RefundAdmin">RefundAdmin</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>op_type: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>sui_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xb_message_UpdateBridgeLimit"></a>
 
 ## Struct `UpdateBridgeLimit`
@@ -560,6 +600,15 @@ title: Module `0xb::message`
 ## Constants
 
 
+<a name="0xb_message_ADD"></a>
+
+
+
+<pre><code><b>const</b> <a href="message.md#0xb_message_ADD">ADD</a>: u8 = 0;
+</code></pre>
+
+
+
 <a name="0xb_message_CURRENT_MESSAGE_VERSION"></a>
 
 
@@ -614,6 +663,15 @@ title: Module `0xb::message`
 
 
 
+<a name="0xb_message_EInvalidOperationType"></a>
+
+
+
+<pre><code><b>const</b> <a href="message.md#0xb_message_EInvalidOperationType">EInvalidOperationType</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 7;
+</code></pre>
+
+
+
 <a name="0xb_message_EInvalidPayloadLength"></a>
 
 
@@ -646,6 +704,15 @@ title: Module `0xb::message`
 
 
 <pre><code><b>const</b> <a href="message.md#0xb_message_PAUSE">PAUSE</a>: u8 = 0;
+</code></pre>
+
+
+
+<a name="0xb_message_REMOVE"></a>
+
+
+
+<pre><code><b>const</b> <a href="message.md#0xb_message_REMOVE">REMOVE</a>: u8 = 1;
 </code></pre>
 
 
@@ -768,6 +835,43 @@ Emergency op payload is just a single byte
     <a href="message.md#0xb_message_Blocklist">Blocklist</a> {
         blocklist_type,
         validator_eth_addresses
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_refund_admin_payload"></a>
+
+## Function `extract_refund_admin_payload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_refund_admin_payload">extract_refund_admin_payload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_RefundAdmin">message::RefundAdmin</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_refund_admin_payload">extract_refund_admin_payload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_RefundAdmin">RefundAdmin</a> {
+    // blocklist payload should consist of one byte blocklist type, and list of 20 bytes evm addresses
+    // derived from ECDSA <b>public</b> keys
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> op_type = <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+    <b>let</b> sui_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
+
+    <b>assert</b>!(op_type == <a href="message.md#0xb_message_ADD">ADD</a> || op_type == <a href="message.md#0xb_message_REMOVE">REMOVE</a>, <a href="message.md#0xb_message_EInvalidOperationType">EInvalidOperationType</a>);
+
+    <a href="message.md#0xb_message_RefundAdmin">RefundAdmin</a> {
+        op_type,
+        sui_address
     }
 }
 </code></pre>
@@ -1151,6 +1255,53 @@ Blocklist Message Format:
 
     <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
         message_type: <a href="message_types.md#0xb_message_types_committee_blocklist">message_types::committee_blocklist</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_refund_admin_message"></a>
+
+## Function `create_refund_admin_message`
+
+Blocklist Message Format:
+[message_type: u8]
+[version:u8]
+[nonce:u64]
+[chain_id: u8]
+[op_type: u8]
+[address_admin: byte[][]]
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_refund_admin_message">create_refund_admin_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, op_type: u8, admin_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_refund_admin_message">create_refund_admin_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    // 0: add, 1: del
+    op_type: u8,
+    admin_address: String,
+): <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&op_type);
+    payload.append(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&admin_address));
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_refund_admin_operate">message_types::refund_admin_operate</a>(),
         message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
         seq_num,
         source_chain,
@@ -1787,6 +1938,102 @@ Update Sui token message
 
 <pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_blocklist_validator_addresses">blocklist_validator_addresses</a>(self: &<a href="message.md#0xb_message_Blocklist">Blocklist</a>): &<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt; {
     &self.validator_eth_addresses
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_refund_admin_op_type"></a>
+
+## Function `refund_admin_op_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_op_type">refund_admin_op_type</a>(self: &<a href="message.md#0xb_message_RefundAdmin">message::RefundAdmin</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_op_type">refund_admin_op_type</a>(self: &<a href="message.md#0xb_message_RefundAdmin">RefundAdmin</a>): u8 {
+    self.op_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_refund_admin_add"></a>
+
+## Function `refund_admin_add`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_add">refund_admin_add</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_add">refund_admin_add</a>(): u8 {
+    <a href="message.md#0xb_message_ADD">ADD</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_refund_admin_remove"></a>
+
+## Function `refund_admin_remove`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_remove">refund_admin_remove</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_remove">refund_admin_remove</a>(): u8 {
+    <a href="message.md#0xb_message_REMOVE">REMOVE</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_refund_admin_sui_address"></a>
+
+## Function `refund_admin_sui_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_sui_address">refund_admin_sui_address</a>(self: &<a href="message.md#0xb_message_RefundAdmin">message::RefundAdmin</a>): &<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_refund_admin_sui_address">refund_admin_sui_address</a>(self: &<a href="message.md#0xb_message_RefundAdmin">RefundAdmin</a>): &String {
+    &self.sui_address
 }
 </code></pre>
 

@@ -13,6 +13,7 @@ title: Module `0xb::message_types`
 -  [Function `add_tokens_on_sui`](#0xb_message_types_add_tokens_on_sui)
 -  [Function `add_external_coin_admin`](#0xb_message_types_add_external_coin_admin)
 -  [Function `remove_external_coin_admin`](#0xb_message_types_remove_external_coin_admin)
+-  [Function `refund_admin_operate`](#0xb_message_types_refund_admin_operate)
 
 
 <pre><code></code></pre>
@@ -56,6 +57,15 @@ title: Module `0xb::message_types`
 
 
 <pre><code><b>const</b> <a href="message_types.md#0xb_message_types_EMERGENCY_OP">EMERGENCY_OP</a>: u8 = 2;
+</code></pre>
+
+
+
+<a name="0xb_message_types_REFUND_ADMIN_OPERATE"></a>
+
+
+
+<pre><code><b>const</b> <a href="message_types.md#0xb_message_types_REFUND_ADMIN_OPERATE">REFUND_ADMIN_OPERATE</a>: u8 = 8;
 </code></pre>
 
 
@@ -266,6 +276,28 @@ title: Module `0xb::message_types`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_remove_external_coin_admin">remove_external_coin_admin</a>(): u8 { <a href="message_types.md#0xb_message_types_REMOVE_EXTERNAL_COIN_ADMIN">REMOVE_EXTERNAL_COIN_ADMIN</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_types_refund_admin_operate"></a>
+
+## Function `refund_admin_operate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_refund_admin_operate">refund_admin_operate</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_refund_admin_operate">refund_admin_operate</a>(): u8 { <a href="message_types.md#0xb_message_types_REFUND_ADMIN_OPERATE">REFUND_ADMIN_OPERATE</a> }
 </code></pre>
 
 

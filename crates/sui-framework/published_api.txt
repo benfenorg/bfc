@@ -5725,6 +5725,9 @@ add_external_coin_admin
 remove_external_coin_admin
 	public fun
 	0xb::message_types
+refund_admin_operate
+	public fun
+	0xb::message_types
 BridgeRoute
 	public struct
 	0xb::chain_ids
@@ -5788,6 +5791,9 @@ EmergencyOp
 Blocklist
 	public struct
 	0xb::message
+RefundAdmin
+	public struct
+	0xb::message
 UpdateBridgeLimit
 	public struct
 	0xb::message
@@ -5815,6 +5821,9 @@ extract_emergency_op_payload
 extract_blocklist_payload
 	public fun
 	0xb::message
+extract_refund_admin_payload
+	public fun
+	0xb::message
 extract_update_bridge_limit
 	public fun
 	0xb::message
@@ -5840,6 +5849,9 @@ create_emergency_op_message
 	public fun
 	0xb::message
 create_blocklist_message
+	public fun
+	0xb::message
+create_refund_admin_message
 	public fun
 	0xb::message
 create_update_bridge_limit_message
@@ -5906,6 +5918,18 @@ blocklist_type
 	public fun
 	0xb::message
 blocklist_validator_addresses
+	public fun
+	0xb::message
+refund_admin_op_type
+	public fun
+	0xb::message
+refund_admin_add
+	public fun
+	0xb::message
+refund_admin_remove
+	public fun
+	0xb::message
+refund_admin_sui_address
 	public fun
 	0xb::message
 update_bridge_limit_payload_sending_chain
@@ -6106,6 +6130,9 @@ send_token
 send_back_token
 	public fun
 	0xb::bridge
+is_refund_admin
+	fun
+	0xb::bridge
 approve_token_transfer
 	public fun
 	0xb::bridge
@@ -6143,6 +6170,15 @@ claim_token_internal
 	fun
 	0xb::bridge
 execute_emergency_op
+	fun
+	0xb::bridge
+execute_refund_admin_operate
+	fun
+	0xb::bridge
+add_refund_admin
+	fun
+	0xb::bridge
+remove_refund_admin
 	fun
 	0xb::bridge
 execute_update_bridge_limit
