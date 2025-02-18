@@ -1276,6 +1276,7 @@ module bridge::bridge {
             event.amount,
             event.tx_hash,
         )
+    }
 
     #[test_only]
     public fun unwrap_emergency_op_event(event: EmergencyOpEvent): bool {
