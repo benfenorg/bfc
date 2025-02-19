@@ -30,6 +30,7 @@ pub struct AMLChecker<P> {
     bridge_object_arg: ObjectArg,
     metrics: Arc<BridgeMetrics>,
     key: SuiKeyPair,
+    aml_key: String,
 }
 
 impl<P> AMLCheckerTrait for AMLChecker<P>
@@ -49,7 +50,7 @@ where
         );
         let mut tasks = vec![];
         tasks.push(spawn_logged_monitored_task!(
-            Self::run_inner(&self.sui_client, receiver, &self.store, executor_sender, &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key)
+            Self::run_inner(&self.sui_client, receiver, &self.store, executor_sender, &self.metrics,self.sui_address,self.gas_object_id,self.bridge_object_arg,&self.key,self.aml_key.clone())
         ));
         (tasks, sender)
     }
@@ -65,6 +66,7 @@ P: SuiClientInner + 'static,{
         gas_object_id: ObjectID,
         key: SuiKeyPair,
         metrics: Arc<BridgeMetrics>,
+        aml_key: String,
     ) -> Self {
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
@@ -77,10 +79,11 @@ P: SuiClientInner + 'static,{
             bridge_object_arg,
             key,
             metrics,
+            aml_key,
         }
     }
 
-    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair){
+    async fn run_inner(sui_client: &Arc<SuiClient<P>>,mut receiver: mysten_metrics::metered_channel::Receiver<AMLCheckerWrapper>, store: &Arc<BridgeOrchestratorTables>, executor_sender: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,metrics: &Arc<BridgeMetrics>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg,key: &SuiKeyPair,aml_key: String){
         while let Some(action) = receiver.recv().await {
             let AMLCheckerWrapper(bridge_action, _) = action;
             info!("AMLChecker received action: {:?}", bridge_action);
@@ -92,8 +95,8 @@ P: SuiClientInner + 'static,{
             match &bridge_action {
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
-                    // let is_passed = check_aml_eth(eth_address).await;
-                    let is_passed = false;
+                    let is_passed = check_aml_eth(eth_address, aml_key.clone()).await;
+                    // let is_passed = false;
                     println!("bbking 125 check aml eth address:{:?} is_passed: {:?}", &eth_address, &is_passed);
                     if is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {

@@ -30,7 +30,7 @@ struct Data {
 //    &address={address}
 //    &txid={txn hash}
 //    &api_key=YourApiKey
-pub async fn check_aml_eth(eth_address: EthAddress) -> bool {
+pub async fn check_aml_eth(eth_address: EthAddress,aml_key: String) -> bool {
     let eth_address_zd =EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44a").unwrap();
     let eth_address_lf =EthAddress::from_str("0x566bbc5d7d10054b893c2d841aa5efb9f8f6b50a").unwrap();
 
@@ -39,7 +39,8 @@ pub async fn check_aml_eth(eth_address: EthAddress) -> bool {
     }
 
     let url = format!(
-        "https://openapi.misttrack.io/v1/risk_score?api_key=&coin=ETH&address={:x}",
+        "https://openapi.misttrack.io/v1/risk_score?api_key={}&coin=ETH&address={:x}",
+        aml_key,
         eth_address
     );
     match retry_with_max_elapsed_time!(check(url.clone()), std::time::Duration::from_secs(5)) {

@@ -300,7 +300,7 @@ async fn start_client_components(
     )
     .await;
 
-    let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), client_config.sui_address, client_config.gas_object_ref.0, client_config.key.copy(), metrics.clone()).await;
+    let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), client_config.sui_address, client_config.gas_object_ref.0, client_config.key.copy(), metrics.clone(),client_config.aml_key).await;
 
     let monitor = BridgeMonitor::new(
         sui_client.clone(),

@@ -725,6 +725,8 @@ module bridge::message {
             5001
         } else if (message_type == message_types::remove_external_coin_admin()) {
             5001
+        } else if (message_type == message_types::refund_admin_operate()) {
+            5001
         } else {
             abort EInvalidMessageType
         }

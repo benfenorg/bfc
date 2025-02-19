@@ -1628,7 +1628,8 @@ mod tests {
         .await;
 
         let (executor_handle, signing_tx, execution_tx) = executor.run_inner();
-        let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), sui_address, gas_object_ref.0, sui_key.copy(), metrics.clone()).await;
+        let aml_key = "".to_string();
+        let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), sui_address, gas_object_ref.0, sui_key.copy(), metrics.clone(),aml_key).await;
         let (aml_checker_handle, aml_checker_tx) = aml_checker.run(signing_tx.clone());
         handles.extend(executor_handle);
         handles.extend(aml_checker_handle);
