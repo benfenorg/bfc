@@ -93,7 +93,7 @@ task 13, lines 72-75:
 //# run-graphql
 Response: {
   "data": {
-    "chainIdentifier": "a755bcde"
+    "chainIdentifier": "c0196ee9"
   }
 }
 
@@ -112,7 +112,7 @@ Response: {
           ]
         },
         "validatorCandidatesSize": 0,
-        "inactivePoolsId": "0x893c3cb8f9add1c8333558a3dbf62f9a0d4e3f84df5159f228a36e1f252d1cdc"
+        "inactivePoolsId": "0x2a8ea3650b9ed5504f7140651dea18a7d97ea0be29ae8366891f53b559aecb23"
       },
       "totalGasFees": "2000000",
       "totalStakeRewards": "2000000",
