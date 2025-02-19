@@ -179,8 +179,8 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.sui_address.to_vec(),
                     bridge_event.token_id,
                     bridge_event.sui_adjusted_amount,
-                    vec![],
-                    0
+                    a.eth_tx_hash.as_bytes().to_vec(),
+                    a.eth_event_index as u8
                 )
             }
             _ => unreachable!(),

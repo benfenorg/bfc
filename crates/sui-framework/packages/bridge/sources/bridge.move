@@ -408,7 +408,7 @@ module bridge::bridge {
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
         );
-
+        
         let message_key = message.key();
         // retrieve pending message if source chain is Sui, the initial message
         // must exist on chain
@@ -431,6 +431,12 @@ module bridge::bridge {
             // it's already approved because we only add a message to token_transfer_records
             // after verifying the signatures
             if (inner.token_transfer_records.contains(message_key)) {
+                emit(TokenTransferAlreadyApproved { message_key });
+                return
+            };
+            //idempotency for SendBack and ETHToSui
+            let tx_hash = token_payload.token_tx_hash();
+            if (inner.refund_records.contains(message::key_refund(tx_hash))) {
                 emit(TokenTransferAlreadyApproved { message_key });
                 return
             };
