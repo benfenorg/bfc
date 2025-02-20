@@ -1625,7 +1625,7 @@
         "required": [
           "content_digest",
           "epoch",
-          "epoch_rolling_gas_cost_summary",
+          "epoch_rolling_bfc_gas_cost_summary",
           "network_total_transactions",
           "sequence_number",
           "timestamp_ms"
@@ -1654,7 +1654,7 @@
             "type": "string",
             "format": "u64"
           },
-          "epoch_rolling_gas_cost_summary": {
+          "epoch_rolling_bfc_gas_cost_summary": {
             "description": "The running total gas costs of all transactions included in the current epoch so far until this checkpoint.",
             "allOf": [
               {
@@ -3406,9 +3406,9 @@
         ],
         "properties": {
           "base_point": {
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
+            "description": "Radix-10 encoded 64-bit unsigned integer",
+            "type": "string",
+            "format": "u64"
           },
           "computation_cost": {
             "description": "Cost of computation/execution",
@@ -3421,9 +3421,9 @@
             "format": "u64"
           },
           "rate": {
-            "type": "integer",
-            "format": "uint64",
-            "minimum": 0.0
+            "description": "Radix-10 encoded 64-bit unsigned integer",
+            "type": "string",
+            "format": "u64"
           },
           "storage_cost": {
             "description": "Storage cost, it's the sum of all storage cost for all objects created or mutated.",
