@@ -2443,6 +2443,8 @@ Return the required signature threshold for the message, values are voting power
         5001
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>()) {
         5001
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_refund_admin_operate">message_types::refund_admin_operate</a>()) {
+        5001
     } <b>else</b> {
         <b>abort</b> <a href="message.md#0xb_message_EInvalidMessageType">EInvalidMessageType</a>
     }
