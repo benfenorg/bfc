@@ -139,11 +139,11 @@ pub(crate) fn make_router(
             EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA,
             get(handle_evm_contract_upgrade_with_calldata),
         )
+        .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
         .route(ADD_EXTERNAL_COIN_ADMIN, get(handle_add_external_coin_admin))
         .route(REMOVE_EXTERNAL_COIN_ADMIN, get(handle_remove_external_coin_admin))
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
-        .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
         .with_state((handler, metrics, metadata))
 }
 

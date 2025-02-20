@@ -82,8 +82,8 @@ impl BridgeClient {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
                 let op_type = (a.op_type as u8).to_string();
-                let key = a.sui_address.to_string();
-                format!("sign/update_refund_admin/{chain_id}/{nonce}/{op_type}/{key}")
+                let sui_address = a.sui_address.to_string();
+                format!("sign/update_refund_admin/{chain_id}/{nonce}/{op_type}/{sui_address}")
             }
             BridgeAction::EmergencyAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
@@ -231,12 +231,14 @@ impl BridgeClient {
             .clone()
             .unwrap()
             .join(&Self::bridge_action_to_path(&action))?;
+        println!("bbking url: {}", url);
         let resp = self
             .inner
             .get(url)
             .header(reqwest::header::ACCEPT, APPLICATION_JSON)
             .send()
             .await?;
+        println!("bbking resp: {:?}", resp);
         if !resp.status().is_success() {
             let error_status = format!("{:?}", resp.error_for_status_ref());
             let resp_text = resp.text().await?;
