@@ -17,10 +17,10 @@ use crate::types::LimitUpdateAction;
 use crate::types::RefundAdminAction;
 use crate::types::SuiToEthBridgeAction;
 use enum_dispatch::enum_dispatch;
-use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
+// use ethers::core::k256::elliptic_curve::ff::derive::bitvec::view::AsBits;
 use ethers::types::Address as EthAddress;
 use sui_types::base_types::SUI_ADDRESS_LENGTH;
-use sui_types::crypto::ToFromBytes;
+// use sui_types::crypto::ToFromBytes;
 
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;

@@ -45,7 +45,7 @@ use sui_types::{
     Identifier,
 };
 use tokio::sync::OnceCell;
-use tracing::{error, info, warn};
+use tracing::{error, warn};
 use hex::encode as hex_encode;
 
 use crate::crypto::BridgeAuthorityPublicKey;

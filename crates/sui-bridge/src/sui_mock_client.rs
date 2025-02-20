@@ -279,8 +279,8 @@ impl SuiClientInner for SuiMockClient {
 
     async fn get_send_back_onchain_status(
         &self,
-        bridge_object_arg: ObjectArg,
-        tx_hash: Vec<u8>,
+        _bridge_object_arg: ObjectArg,
+        _tx_hash: Vec<u8>,
     ) -> Result<BridgeActionStatus, BridgeError> {
         Ok(BridgeActionStatus::NotFound)
     }

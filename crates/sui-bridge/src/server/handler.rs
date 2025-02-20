@@ -13,7 +13,6 @@ use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
 use ethers::types::{BigEndianHash, TxHash, U256};
-use fastcrypto::traits::KeyPair;
 use lru::LruCache;
 use std::num::NonZeroUsize;
 use std::str::FromStr;
