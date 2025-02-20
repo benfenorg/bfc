@@ -927,7 +927,8 @@ module bridge::bridge_env {
         scenario.next_tx(sender);
         let mut bridge = scenario.take_shared<Bridge>();
         let total_supply_before = get_total_supply<T>(&bridge);
-    
+        let coin_type = type_name::into_string(type_name::get<T>());
+
         // deposit coin
         deposit_external_coin_for_testing<T>(
             &mut bridge,
@@ -943,6 +944,7 @@ module bridge::bridge_env {
         debug::print(&deposited);
         let (
             event_tx_hash,
+            event_coin_type,
             event_source_chain,
             event_target_chain,
             event_source_address,
@@ -950,6 +952,7 @@ module bridge::bridge_env {
             event_amount,
         ) = deposited[0].unwrap_external_deposited_event();
         assert!(event_tx_hash == tx_hash);
+        assert!(event_coin_type == coin_type);
         assert!(event_source_chain == source_chain);
         assert!(event_target_chain == target_chain);
         assert!(event_source_address == source_address);
@@ -979,12 +982,14 @@ module bridge::bridge_env {
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
+            event_coin_type,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
             event_amount,
         ) = withdraw[0].unwrap_external_withdrawn_event();
+        assert!(event_coin_type == coin_type);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
         assert!(event_source_address == target_address);

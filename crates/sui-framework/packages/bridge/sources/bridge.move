@@ -152,6 +152,7 @@ module bridge::bridge {
 
     public struct ExternalDepositedEvent has copy, drop {
         tx_hash: ascii::String,
+        coin_type: ascii::String,
         source_chain: u8,
         target_chain: u8,
         source_address: vector<u8>,
@@ -160,6 +161,7 @@ module bridge::bridge {
     }
 
     public struct ExternalWithdrawEvent has copy, drop {
+        coin_type: ascii::String,
         source_chain: u8,
         target_chain: u8,
         source_address: vector<u8>,
@@ -583,6 +585,7 @@ module bridge::bridge {
         emit(
             ExternalDepositedEvent {
                 tx_hash,
+                coin_type,
                 source_chain,
                 target_chain: inner.chain_id,
                 source_address,
@@ -603,6 +606,7 @@ module bridge::bridge {
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
 
+        let coin_type = type_name::into_string(type_name::get<T>());
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
 
@@ -611,6 +615,7 @@ module bridge::bridge {
         // emit event
         emit(
             ExternalWithdrawEvent {
+                coin_type,
                 source_chain: inner.chain_id,
                 target_chain,
                 source_address: address::to_bytes(ctx.sender()),
@@ -1224,9 +1229,10 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun unwrap_external_deposited_event(event: ExternalDepositedEvent):  (ascii::String, u8, u8, vector<u8>, vector<u8>, u64)  {
+    public fun unwrap_external_deposited_event(event: ExternalDepositedEvent):  (ascii::String, ascii::String, u8, u8, vector<u8>, vector<u8>, u64)  {
         (
             event.tx_hash,
+            event.coin_type,
             event.source_chain,
             event.target_chain,
             event.source_address,
@@ -1236,8 +1242,9 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun unwrap_external_withdrawn_event(event: ExternalWithdrawEvent): (u8, u8, vector<u8>, vector<u8>, u64) {
+    public fun unwrap_external_withdrawn_event(event: ExternalWithdrawEvent): (ascii::String, u8, u8, vector<u8>, vector<u8>, u64) {
         (
+            event.coin_type,
             event.source_chain,
             event.target_chain,
             event.source_address,
