@@ -41,13 +41,13 @@ module bridge::treasury {
         treasuries: ObjectBag,
         supported_tokens: VecMap<TypeName, BridgeTokenMetadata>,
         // Mapping token id to type name
-        id_token_type_map: VecMap<u8, TypeName>,
+        id_token_type_map: VecMap<u64, TypeName>,
         // Bag for storing potential new token waiting to be approved
         waiting_room: Bag
     }
 
     public struct BridgeTokenMetadata has store, copy, drop {
-        id: u8,
+        id: u64,
         decimal_multiplier: u64,
         notional_value: u64,
         native_token: bool
@@ -60,12 +60,12 @@ module bridge::treasury {
     }
 
     public struct UpdateTokenPriceEvent has copy, drop {
-        token_id: u8,
+        token_id: u64,
         new_price: u64,
     }
 
     public struct NewTokenEvent has copy, drop {
-        token_id: u8,
+        token_id: u64,
         type_name: TypeName,
         native_token: bool,
         decimal_multiplier: u64,
@@ -78,7 +78,7 @@ module bridge::treasury {
         native_token: bool
     }
 
-    public fun token_id<T>(self: &BridgeTreasury): u8 {
+    public fun token_id<T>(self: &BridgeTreasury): u64 {
         let metadata = self.get_token_metadata<T>();
         metadata.id
     }
@@ -132,7 +132,7 @@ module bridge::treasury {
     public(package) fun add_new_token(
         self: &mut BridgeTreasury,
         token_name: String,
-        token_id: u8,
+        token_id: u64,
         native_token: bool,
         notional_value: u64,
     ) {
@@ -242,7 +242,7 @@ module bridge::treasury {
 
     public(package) fun update_asset_notional_price(
         self: &mut BridgeTreasury,
-        token_id: u8,
+        token_id: u64,
         new_usd_price: u64,
     ) {
         let type_name = self.id_token_type_map.try_get(&token_id);
@@ -339,12 +339,12 @@ module bridge::treasury {
     }
 
     #[test_only]
-    public fun unwrap_update_event(event: UpdateTokenPriceEvent): (u8, u64) {
+    public fun unwrap_update_event(event: UpdateTokenPriceEvent): (u64, u64) {
         (event.token_id, event.new_price)
     }
 
     #[test_only]
-    public fun unwrap_new_token_event(event: NewTokenEvent): (u8, TypeName, bool, u64, u64) {
+    public fun unwrap_new_token_event(event: NewTokenEvent): (u64, TypeName, bool, u64, u64) {
         (event.token_id, event.type_name, event.native_token, event.decimal_multiplier, event.notional_value)
     }
 

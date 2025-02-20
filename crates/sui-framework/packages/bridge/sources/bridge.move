@@ -74,7 +74,7 @@ module bridge::bridge {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
     }
 
@@ -84,7 +84,7 @@ module bridge::bridge {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
@@ -324,7 +324,7 @@ module bridge::bridge {
         bridge: &mut Bridge,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         token_amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
@@ -1265,7 +1265,7 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun unwrap_deposited_event(event: TokenDepositedEvent): (u64, u8, vector<u8>, u8, vector<u8>, u8, u64) {
+    public fun unwrap_deposited_event(event: TokenDepositedEvent): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64) {
         (
             event.seq_num,
             event.source_chain,
@@ -1278,7 +1278,7 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun unwrap_send_back_event(event: TokenSendBackEvent): (u64, u8, vector<u8>, u8, vector<u8>, u8, u64, vector<u8>) {
+    public fun unwrap_send_back_event(event: TokenSendBackEvent): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
         (
             event.seq_num,
             event.source_chain,

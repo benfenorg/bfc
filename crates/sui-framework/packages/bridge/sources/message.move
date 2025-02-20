@@ -52,7 +52,7 @@ module bridge::message {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
@@ -83,7 +83,7 @@ module bridge::message {
     }
 
     public struct UpdateAssetPrice has drop {
-        token_id: u8,
+        token_id: u64,
         new_price: u64
     }
 
@@ -99,7 +99,7 @@ module bridge::message {
 
     public struct AddTokenOnSui has drop {
         native_token: bool,
-        token_ids: vector<u8>,
+        token_ids: vector<u64>,
         token_type_names: vector<String>,
         token_prices: vector<u64>
     }
@@ -126,7 +126,7 @@ module bridge::message {
         let sender_address = bcs.peel_vec_u8();
         let target_chain = bcs.peel_u8();
         let target_address = bcs.peel_vec_u8();
-        let token_type = bcs.peel_u8();
+        let token_type = bcs.peel_u64();
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
         let event_idx = bcs.peel_u8();
@@ -236,7 +236,7 @@ module bridge::message {
 
     public fun extract_update_asset_price(message: &BridgeMessage): UpdateAssetPrice {
         let mut bcs = bcs::new(message.payload);
-        let token_id = bcs.peel_u8();
+        let token_id = bcs.peel_u64();
         let new_price = peel_u64_be(&mut bcs);
 
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
@@ -250,7 +250,7 @@ module bridge::message {
     public fun extract_add_tokens_on_sui(message: &BridgeMessage): AddTokenOnSui {
         let mut bcs = bcs::new(message.payload);
         let native_token = bcs.peel_bool();
-        let token_ids = bcs.peel_vec_u8();
+        let token_ids = bcs.peel_vec_u64();
         let token_type_names_bytes = bcs.peel_vec_vec_u8();
         let token_prices = bcs.peel_vec_u64();
 
@@ -308,7 +308,7 @@ module bridge::message {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
@@ -325,8 +325,8 @@ module bridge::message {
         // target address should be less than 255 bytes so can fit into u8
         payload.push_back((vector::length(&target_address) as u8));
         payload.append(target_address);
-        payload.push_back(token_type);
         // bcs serialzies u64 as 8 bytes
+        payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
         assert!(vector::length(&payload) == 64, EInvalidPayloadLength);
@@ -462,17 +462,17 @@ module bridge::message {
     /// [version:u8]
     /// [nonce:u64]
     /// [chain_id: u8]
-    /// [token_id: u8]
+    /// [token_id: u64]
     /// [new_price:u64]
     public fun create_update_asset_price_message(
-        token_id: u8,
+        token_id: u64,
         source_chain: u8,
         seq_num: u64,
         new_price: u64,
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
 
-        let mut payload = vector[token_id];
+        let mut payload = bcs::to_bytes(&token_id);
         payload.append(reverse_bytes(bcs::to_bytes(&new_price)));
         BridgeMessage {
             message_type: message_types::update_asset_price(),
@@ -527,14 +527,14 @@ module bridge::message {
     /// [nonce:u64]
     /// [chain_id: u8]
     /// [native_token:bool]
-    /// [token_ids:vector<u8>]
+    /// [token_ids:vector<u64>]
     /// [token_type_name:vector<String>]
     /// [token_prices:vector<u64>]
     public fun create_add_tokens_on_sui_message(
         source_chain: u8,
         seq_num: u64,
         native_token: bool,
-        token_ids: vector<u8>,
+        token_ids: vector<u64>,
         type_names: vector<String>,
         token_prices: vector<u64>,
     ): BridgeMessage {
@@ -593,7 +593,7 @@ module bridge::message {
         self.target_address
     }
 
-    public fun token_type(self: &TokenTransferPayload): u8 {
+    public fun token_type(self: &TokenTransferPayload): u64 {
         self.token_type
     }
 
@@ -650,7 +650,7 @@ module bridge::message {
         self.limit
     }
 
-    public fun update_asset_price_payload_token_id(self: &UpdateAssetPrice): u8 {
+    public fun update_asset_price_payload_token_id(self: &UpdateAssetPrice): u64 {
         self.token_id
     }
 
@@ -678,7 +678,7 @@ module bridge::message {
         self.native_token
     }
 
-    public fun token_ids(self: &AddTokenOnSui): vector<u8> {
+    public fun token_ids(self: &AddTokenOnSui): vector<u64> {
         self.token_ids
     }
 
@@ -797,7 +797,7 @@ module bridge::message {
         sender_address: vector<u8>,
         target_chain: u8,
         target_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
@@ -843,7 +843,7 @@ module bridge::message {
     #[test_only]
     public(package) fun make_add_token_on_sui(
         native_token: bool,
-        token_ids: vector<u8>,
+        token_ids: vector<u64>,
         token_type_names: vector<String>,
         token_prices: vector<u64>,
     ): AddTokenOnSui {
