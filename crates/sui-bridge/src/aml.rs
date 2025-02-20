@@ -115,7 +115,7 @@ mod tests {
     #[tokio::test]
     async fn test_check_aml() {
         let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44b").unwrap();
-        let result = check_aml_eth(eth_address).await;
+        let result = check_aml_eth(eth_address, "".to_string()).await;
         assert_eq!(result, true);
     }
 }
