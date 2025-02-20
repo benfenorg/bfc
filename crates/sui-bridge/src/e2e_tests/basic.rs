@@ -14,7 +14,8 @@ use crate::events::{
     SuiBridgeEvent, SuiToEthTokenBridgeV1, TokenTransferApproved, TokenTransferClaimed,TokenSendBackEvent,
 };
 use crate::sui_transaction_builder::build_add_tokens_on_sui_transaction;
-use crate::types::{AddTokensOnEvmAction, BridgeAction};
+use crate::sui_transaction_builder::build_add_external_coin_admin_transaction;
+use crate::types::{AddTokensOnEvmAction, BridgeAction, AddExternalCoinAdminAction, RemoveExternalCoinAdminAction};
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use ethers::prelude::*;
@@ -272,6 +273,101 @@ async fn test_bridge_from_eth_to_sui_refund() {
         U256::from(amount)
     );
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_add_remove_external_admin() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let add_admin_action = BridgeAction::AddExternalCoinAdminAction(AddExternalCoinAdminAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        admin_address: "0x1234567890123456789012345678901234567890".to_string(),
+    });
+
+    let remove_admin_action = BridgeAction::RemoveExternalCoinAdminAction(RemoveExternalCoinAdminAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        admin_address: "0x1234567890123456789012345678901234567890".to_string(),
+    });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_admin_action.clone(), remove_admin_action.clone()],
+        vec![add_admin_action.clone()],
+        vec![remove_admin_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action1 = agg
+        .request_committee_signatures(add_admin_action)
+        .await
+        .expect("Failed to request committee signatures for AddExternalCoinAdminAction");
+
+    let tx = build_add_external_coin_admin_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+            certified_action1,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+
+    let certified_action2 = agg
+    .request_committee_signatures(remove_admin_action.clone())
+    .await
+    .expect("Failed to request committee signatures for RemoveExternalCoinAdminAction");
+    let tx = build_add_external_coin_admin_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+            certified_action2,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
 // Test add new coins on both Sui and Eth
 // Also test bridge ndoe handling `NewTokenEvent``
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
