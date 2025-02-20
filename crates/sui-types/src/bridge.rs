@@ -66,11 +66,11 @@ pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REFUND_ADMIN: u64 = 5001;
 
 // const for initial token ids for convenience
-pub const TOKEN_ID_SUI: u8 = 0;
-pub const TOKEN_ID_BTC: u8 = 1;
-pub const TOKEN_ID_ETH: u8 = 2;
-pub const TOKEN_ID_USDC: u8 = 3;
-pub const TOKEN_ID_USDT: u8 = 4;
+pub const TOKEN_ID_SUI: u64 = 0;
+pub const TOKEN_ID_BTC: u64 = 1;
+pub const TOKEN_ID_ETH: u64 = 2;
+pub const TOKEN_ID_USDC: u64 = 3;
+pub const TOKEN_ID_USDT: u64 = 4;
 
 #[derive(
     Debug,
@@ -388,7 +388,7 @@ pub struct MoveTypeBridgeTreasury {
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
-    pub id_token_type_map: VecMap<u8, String>,
+    pub id_token_type_map: VecMap<u64, String>,
     // Bag for storing potential new token waiting to be approved
     pub waiting_room: Bag,
 }
@@ -396,7 +396,7 @@ pub struct MoveTypeBridgeTreasury {
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Default, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct BridgeTokenMetadata {
-    pub id: u8,
+    pub id: u64,
     pub decimal_multiplier: u64,
     pub notional_value: u64,
     pub native_token: bool,
@@ -442,7 +442,7 @@ pub struct BridgeLimiterSummary {
 #[serde(rename_all = "camelCase")]
 pub struct BridgeTreasurySummary {
     pub supported_tokens: Vec<(String, BridgeTokenMetadata)>,
-    pub id_token_type_map: Vec<(u8, String)>,
+    pub id_token_type_map: Vec<(u64, String)>,
 }
 
 /// Rust version of the Move committee::CommitteeMember type.
@@ -531,7 +531,7 @@ pub struct MoveTypeTokenTransferPayload {
     pub sender_address: Vec<u8>,
     pub target_chain: u8,
     pub target_address: Vec<u8>,
-    pub token_type: u8,
+    pub token_type: u64,
     pub amount: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,

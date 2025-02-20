@@ -89,9 +89,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "indexed": false,
@@ -120,9 +120,9 @@
     "inputs": [
       {
         "indexed": false,
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "indexed": false,
@@ -145,9 +145,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "indexed": false,
@@ -170,9 +170,9 @@
       },
       {
         "indexed": false,
-        "internalType": "uint8[]",
+        "internalType": "uint64[]",
         "name": "tokenIDs",
-        "type": "uint8[]"
+        "type": "uint64[]"
       },
       {
         "indexed": false,
@@ -364,9 +364,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "isTokenSupported",
@@ -434,9 +434,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "supportedTokens",
@@ -463,9 +463,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "tokenAddressOf",
@@ -482,9 +482,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "tokenPriceOf",
@@ -501,9 +501,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "tokenPrices",
@@ -520,9 +520,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       }
     ],
     "name": "tokenSuiDecimalOf",

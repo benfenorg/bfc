@@ -29,7 +29,7 @@ pub fn build_sui_transaction(
     gas_object_ref: &ObjectRef,
     action: VerifiedCertifiedBridgeAction,
     bridge_object_arg: ObjectArg,
-    sui_token_type_tags: &HashMap<u8, TypeTag>,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
     // TODO: Check chain id?
@@ -131,7 +131,7 @@ fn build_token_bridge_approve_transaction(
     action: VerifiedCertifiedBridgeAction,
     claim: bool,
     bridge_object_arg: ObjectArg,
-    sui_token_type_tags: &HashMap<u8, TypeTag>,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();

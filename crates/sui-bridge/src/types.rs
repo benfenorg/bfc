@@ -346,7 +346,7 @@ pub struct LimitUpdateAction {
 pub struct AssetPriceUpdateAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
-    pub token_id: u8,
+    pub token_id: u64,
     pub new_usd_price: u64,
 }
 
@@ -380,7 +380,7 @@ pub struct AddTokensOnSuiAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
     pub native: bool,
-    pub token_ids: Vec<u8>,
+    pub token_ids: Vec<u64>,
     pub token_type_names: Vec<TypeTag>,
     pub token_prices: Vec<u64>,
 }
@@ -390,7 +390,7 @@ pub struct AddTokensOnEvmAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
     pub native: bool,
-    pub token_ids: Vec<u8>,
+    pub token_ids: Vec<u64>,
     pub token_addresses: Vec<EthAddress>,
     pub token_sui_decimals: Vec<u8>,
     pub token_prices: Vec<u64>,

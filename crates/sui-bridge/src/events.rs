@@ -42,7 +42,7 @@ pub struct MoveTokenDepositedEvent {
     pub sender_address: Vec<u8>,
     pub target_chain: u8,
     pub target_address: Vec<u8>,
-    pub token_type: u8,
+    pub token_type: u64,
     pub amount_sui_adjusted: u64,
 }
 
@@ -53,7 +53,7 @@ pub struct MoveTokenSendBackEvent {
     pub sender_address: Vec<u8>,
     pub target_chain: u8,
     pub target_address: Vec<u8>,
-    pub token_type: u8,
+    pub token_type: u64,
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,
@@ -178,7 +178,7 @@ impl TryFrom<MoveTokenRegistrationEvent> for TokenRegistrationEvent {
 // `NewTokenEvent` emitted in treasury.move
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveNewTokenEvent {
-    pub token_id: u8,
+    pub token_id: u64,
     pub type_name: String,
     pub native_token: bool,
     pub decimal_multiplier: u64,
@@ -188,7 +188,7 @@ pub struct MoveNewTokenEvent {
 // Sanitized version of MoveNewTokenEvent
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct NewTokenEvent {
-    pub token_id: u8,
+    pub token_id: u64,
     pub type_name: TypeTag,
     pub native_token: bool,
     pub decimal_multiplier: u64,
@@ -219,7 +219,7 @@ impl TryFrom<MoveNewTokenEvent> for NewTokenEvent {
 // `UpdateTokenPriceEvent` emitted in treasury.move
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq)]
 pub struct UpdateTokenPriceEvent {
-    pub token_id: u8,
+    pub token_id: u64,
     pub new_price: u64,
 }
 
@@ -231,7 +231,7 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
     pub eth_chain_id: BridgeChainId,
     pub sui_address: SuiAddress,
     pub eth_address: EthAddress,
-    pub token_id: u8,
+    pub token_id: u64,
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
@@ -245,7 +245,7 @@ pub struct EmittedEthTokenSendBackBridgeV1 {
     pub eth_chain_id: BridgeChainId,
     pub sui_address: SuiAddress,
     pub eth_address: EthAddress,
-    pub token_id: u8,
+    pub token_id: u64,
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
@@ -738,7 +738,7 @@ pub mod tests {
         output.write_all(&payload.sender_address).unwrap();
         output.write_all(&[payload.target_chain]).unwrap();
         output.write_all(&payload.target_address).unwrap();
-        output.write_all(&[payload.token_type]).unwrap();
+        output.write_all(&payload.token_type.to_le_bytes()).unwrap();
         output.write_all(&payload.amount.to_le_bytes()).unwrap();
         output.write_all(&payload.tx_hash).unwrap();
         output.write_all(&[payload.event_idx]).unwrap();

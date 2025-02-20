@@ -233,9 +233,9 @@
   {
     "inputs": [
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "internalType": "uint256",
@@ -456,9 +456,9 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "internalType": "uint256",
@@ -607,9 +607,9 @@
         "type": "uint8"
       },
       {
-        "internalType": "uint8",
+        "internalType": "uint64",
         "name": "tokenID",
-        "type": "uint8"
+        "type": "uint64"
       },
       {
         "internalType": "uint256",

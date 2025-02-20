@@ -83,7 +83,7 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
         bytes.extend_from_slice(e.eth_address.as_bytes());
 
         // Add token id
-        bytes.push(e.token_id);
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
 
         // Add token amount
         bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
@@ -134,7 +134,7 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
         bytes.extend_from_slice(e.eth_address.as_bytes());
 
         // Add token id
-        bytes.push(e.token_id);
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
 
         // Add token amount
         bytes.extend_from_slice(&e.amount_sui_adjusted.to_be_bytes());
@@ -185,7 +185,7 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         bytes.extend_from_slice(&e.sui_address.to_vec());
 
         // Add token id
-        bytes.push(e.token_id);
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
 
         // Add token amount
         bytes.extend_from_slice(&e.sui_adjusted_amount.to_be_bytes());
@@ -343,7 +343,7 @@ impl BridgeMessageEncoding for AssetPriceUpdateAction {
     fn as_payload_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
         // Add token id
-        bytes.push(self.token_id);
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
         // Add new usd limit
         bytes.extend_from_slice(&self.new_usd_price.to_be_bytes());
         bytes
@@ -502,7 +502,7 @@ impl BridgeMessageEncoding for AddTokensOnEvmAction {
         // Unwrap: bcs serialization should not fail
         bytes.push(u8::try_from(self.token_ids.len()).unwrap());
         for token_id in &self.token_ids {
-            bytes.push(*token_id);
+            bytes.extend_from_slice(&token_id.to_be_bytes());
         }
 
         // Add token addresses
@@ -617,7 +617,7 @@ mod tests {
         let eth_address_length_bytes = vec![EthAddress::len_bytes() as u8]; // len: 1
         let eth_address_bytes = eth_address.as_bytes().to_vec(); // len: 20
 
-        let token_id_bytes = vec![token_id]; // len: 1
+        let token_id_bytes = token_id.to_be_bytes().to_vec();
         let token_amount_bytes = amount_sui_adjusted.to_be_bytes().to_vec(); // len: 8
         let tx_hash_length_bytes = vec![tx_hash.len() as u8]; // len: 1
         let tx_hash_bytes = tx_hash.clone(); // len: 32
