@@ -51,7 +51,7 @@ module bridge::message_tests {
             address::to_bytes(sender_address),
             chain_ids::eth_sepolia(),
             hex::decode(b"00000000000000000000000000000000000000c8"),
-            3u8,
+            3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
             0u8,
@@ -91,7 +91,7 @@ module bridge::message_tests {
             hex::decode(b"00000000000000000000000000000000000000c8"), // eth sender address
             chain_ids::sui_testnet(), // target_chain
             address::to_bytes(address_1), // target address
-            3u8, // token_type
+            3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
             0u8, // event_idx
@@ -102,7 +102,7 @@ module bridge::message_tests {
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::sui_testnet(),
             address::to_bytes(address_1),
-            3u8,
+            3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
             0u8, // event_idx
@@ -137,7 +137,7 @@ module bridge::message_tests {
             address::to_bytes(address_1), // eth sender address
             chain_ids::eth_custom(), // target_chain
             hex::decode(b"14dc79964da2c08b23698b3d3cc7ca32193d9955"), // target address
-            3u8, // token_type
+            3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
             0u8, // event_idx
@@ -148,7 +148,7 @@ module bridge::message_tests {
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::eth_custom(),
             address::to_bytes(address_1),
-            2u8,
+            2u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
             0u8, // event_idx
@@ -175,7 +175,7 @@ module bridge::message_tests {
             hex::decode(b"00000000000000000000000000000000000000c8"), // eth sender address
             chain_ids::sui_testnet(), // target_chain
             address::to_bytes(address_1), // target address
-            3u8, // token_type
+            3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
             0u8, // event_idx
@@ -186,7 +186,7 @@ module bridge::message_tests {
             hex::decode(b"00000000000000000000000000000000000000c8"),
             chain_ids::sui_testnet(),
             address::to_bytes(address_1),
-            3u8,
+            3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
             0u8, // event_idx
@@ -603,7 +603,7 @@ module bridge::message_tests {
             chain_ids::eth_sepolia(), // target_chain
             // Eth address is 20 bytes long
             hex::decode(b"00000000000000000000000000000000000000c8"), // target_address
-            3u8, // token_type
+            3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
             0u8, // event_idx
@@ -737,7 +737,7 @@ module bridge::message_tests {
             chain_ids::eth_sepolia(), // target_chain
             // Eth address is 20 bytes long
             hex::decode(b"00000000000000000000000000000000000000c8"), // target_address
-            3u8, // token_type
+            3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
             0u8, // event_idx
@@ -848,7 +848,7 @@ module bridge::message_tests {
             target_chain,
             // Eth address is 20 bytes long
             hex::decode(b"00000000000000000000000000000000000000c8"),
-            3u8, // token_type
+            3u64, // token_type
             balance::value<T>(coin::balance(coin)), // amount: u64
             hex::decode(b""), // tx_hash
             0u8, // event_idx

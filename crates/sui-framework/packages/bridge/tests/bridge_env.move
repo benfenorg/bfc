@@ -73,29 +73,29 @@ module bridge::bridge_env {
     //
     // Token IDs
     //
-    const BTC_ID: u8 = 1;
-    const ETH_ID: u8 = 2;
-    const USDC_ID: u8 = 3;
-    const USDT_ID: u8 = 4;
-    const TEST_TOKEN_ID: u8 = 5;
+    const BTC_ID: u64 = 1;
+    const ETH_ID: u64 = 2;
+    const USDC_ID: u64 = 3;
+    const USDT_ID: u64 = 4;
+    const TEST_TOKEN_ID: u64 = 5;
 
-    public fun btc_id(): u8 {
+    public fun btc_id(): u64 {
         BTC_ID
     }
 
-    public fun eth_id(): u8 {
+    public fun eth_id(): u64 {
         ETH_ID
     }
 
-    public fun usdc_id(): u8 {
+    public fun usdc_id(): u64 {
         USDC_ID
     }
 
-    public fun usdt_id(): u8 {
+    public fun usdt_id(): u64 {
         USDT_ID
     }
 
-    public fun test_token_id(): u8 {
+    public fun test_token_id(): u64 {
         TEST_TOKEN_ID
     }
 
@@ -530,7 +530,7 @@ module bridge::bridge_env {
     // Utility functions for custom behavior
     //
 
-    public fun token_type<T>(env: &mut BridgeEnv): u8 {
+    public fun token_type<T>(env: &mut BridgeEnv): u64 {
         env.scenario.next_tx(@0x0);
         let bridge = env.scenario.take_shared<Bridge>();
         let inner = bridge.test_load_inner();
@@ -1053,7 +1053,7 @@ module bridge::bridge_env {
         sender: address,
         target_chain_id: u8,
         eth_address: vector<u8>,
-        token_type: u8,
+        token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
     ): u64 {
@@ -1131,7 +1131,7 @@ module bridge::bridge_env {
     public fun update_asset_price(
         env: &mut BridgeEnv,
         sender: address,
-        token_id: u8,
+        token_id: u64,
         value: u64,
     ) {
         // set up
@@ -1204,7 +1204,7 @@ module bridge::bridge_env {
         env: &mut BridgeEnv,
         sender: address,
         native_token: bool,
-        token_ids: vector<u8>,
+        token_ids: vector<u64>,
         type_names: vector<String>,
         token_prices: vector<u64>,
     ) {
