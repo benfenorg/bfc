@@ -1,7 +1,6 @@
 use std::str::FromStr;
 use crate::server::APPLICATION_JSON;
 use anyhow::Error;
-use ethers::types::Address;
 use serde::Deserialize;
 use std::time::Duration;
 use crate::retry_with_max_elapsed_time;
@@ -14,6 +13,7 @@ struct ApiResponse {
     data: Data,
 }
 
+#[allow(unused)]
 #[derive(Deserialize, Debug)]
 struct Data {
     score: u32,

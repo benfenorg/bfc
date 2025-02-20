@@ -1,13 +1,11 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use ethers::abi::AbiEncode;
-use ethers::utils::hex::ToHex;
-use fastcrypto::encoding::Hex;
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
 use std::io::Read;
 use std::{collections::HashMap, str::FromStr};
+use fastcrypto::encoding::Hex;
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,
@@ -949,7 +947,6 @@ mod tests {
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::crypto::get_key_pair;
     use sui_types::crypto::ToFromBytes;
-    use test_cluster::TestClusterBuilder;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
     async fn test_build_sui_transaction_for_token_transfer() {

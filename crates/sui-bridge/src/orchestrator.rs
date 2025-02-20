@@ -10,7 +10,7 @@ use crate::abi::EthBridgeEvent;
 use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
-use crate::aml_checker::{AMLChecker, AMLCheckerTrait, AMLCheckerWrapper};
+use crate::aml_checker::{AMLCheckerTrait, AMLCheckerWrapper};
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
@@ -19,8 +19,6 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::EthLog;
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
-use sui_types::base_types::{ObjectID, SuiAddress};
-use sui_types::crypto::SuiKeyPair;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;

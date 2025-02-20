@@ -84,7 +84,7 @@ pub async fn build_eth_transaction(
             build_add_tokens_on_evm_transaction(contract_address, signer, action.clone(), sigs)
                 .await
         }
-        BridgeAction::RefundAdminAction(action) => {
+        BridgeAction::RefundAdminAction(_action) => {
             unreachable!();
         }
     }
