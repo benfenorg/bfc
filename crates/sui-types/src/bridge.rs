@@ -246,6 +246,7 @@ pub struct BridgeInnerV1 {
     pub committee: MoveTypeBridgeCommittee,
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
+    pub external_bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
@@ -383,6 +384,7 @@ impl BridgeTrait for BridgeInnerV1 {
 /// Rust version of the Move treasury::BridgeTreasury type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTreasury {
+    pub external_coin_admin_address: VecMap<String, VecSet<String>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
