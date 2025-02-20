@@ -246,7 +246,7 @@ pub struct BridgeInnerV1 {
     pub committee: MoveTypeBridgeCommittee,
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
-    pub external_bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
+    pub external_bridge_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
@@ -463,6 +463,11 @@ pub struct MoveTypeBridgeMessageKey {
     pub source_chain: u8,
     pub message_type: u8,
     pub bridge_seq_num: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeExternalBridgeMessageKey {
+    pub tx_hash: String,
 }
 
 /// Rust version of the Move message::BridgeMessageKey type.
