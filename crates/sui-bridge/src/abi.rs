@@ -105,13 +105,15 @@ impl EthBridgeEvent {
                 match event {
                     EthSuiBridgeEvents::TokensDepositedFilter(event) => {
                         let bridge_event = match EthToSuiTokenBridgeV1::try_from(&event) {
-                            Ok(bridge_event) => {
+                            Ok(mut bridge_event) => {
                                 if bridge_event.sui_adjusted_amount == 0 {
                                     return Err(BridgeError::ZeroValueBridgeTransfer(format!(
                                         "Manual intervention is required: {}",
                                         eth_tx_hash
                                     )));
                                 }
+                                bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
+                                bridge_event.set_event_idx(eth_event_index as u8);
                                 bridge_event
                             }
                             // This only happens when solidity code does not align with rust code.
@@ -184,6 +186,16 @@ pub struct EthToSuiTokenBridgeV1 {
     pub sui_adjusted_amount: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,
+}
+
+impl EthToSuiTokenBridgeV1 {
+    pub fn set_tx_hash(&mut self, tx_hash: Vec<u8>) {
+        self.tx_hash = tx_hash;
+    }
+
+    pub fn set_event_idx(&mut self, event_idx: u8) {
+        self.event_idx = event_idx;
+    }
 }
 
 impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
