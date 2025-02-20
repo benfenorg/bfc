@@ -1438,6 +1438,12 @@ title: Module `0xb::bridge`
             emit(<a href="bridge.md#0xb_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
             <b>return</b>
         };
+        //idempotency for SendBack and ETHToSui
+        <b>let</b> tx_hash = token_payload.token_tx_hash();
+        <b>if</b> (inner.refund_records.contains(<a href="message.md#0xb_message_key_refund">message::key_refund</a>(tx_hash))) {
+            emit(<a href="bridge.md#0xb_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+            <b>return</b>
+        };
         // Store <a href="message.md#0xb_message">message</a> and approval
         inner.token_transfer_records.push_back(
             message_key,

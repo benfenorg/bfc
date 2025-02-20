@@ -4,6 +4,7 @@
 use crate::base_types::ObjectID;
 use crate::base_types::SequenceNumber;
 use crate::collection_types::LinkedTableNode;
+use crate::collection_types::VecSet;
 use crate::dynamic_field::{get_dynamic_field_from_store, Field};
 use crate::error::SuiResult;
 use crate::object::Owner;
@@ -245,9 +246,11 @@ pub struct BridgeInnerV1 {
     pub committee: MoveTypeBridgeCommittee,
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
+    pub external_bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
+    pub refund_admins: VecSet<String>,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
@@ -381,6 +384,7 @@ impl BridgeTrait for BridgeInnerV1 {
 /// Rust version of the Move treasury::BridgeTreasury type.
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTreasury {
+    pub external_coin_admin_address: VecMap<String, VecSet<String>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
