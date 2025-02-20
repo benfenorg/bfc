@@ -92,7 +92,7 @@ pub struct TokenTransferData {
     sender_address: Vec<u8>,
     destination_chain: u8,
     recipient_address: Vec<u8>,
-    token_id: u8,
+    token_id: u64,
     amount: u64,
     is_finalized: bool,
 }

@@ -191,7 +191,7 @@ where
         Ok(self.get_bridge_summary().await?.treasury)
     }
 
-    pub async fn get_token_id_map(&self) -> BridgeResult<HashMap<u8, TypeTag>> {
+    pub async fn get_token_id_map(&self) -> BridgeResult<HashMap<u64, TypeTag>> {
         self.get_bridge_summary()
             .await?
             .treasury
@@ -209,7 +209,7 @@ where
             .collect()
     }
 
-    pub async fn get_notional_values(&self) -> BridgeResult<HashMap<u8, u64>> {
+    pub async fn get_notional_values(&self) -> BridgeResult<HashMap<u64, u64>> {
         let bridge_summary = self.get_bridge_summary().await?;
         bridge_summary
             .treasury

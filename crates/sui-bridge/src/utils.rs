@@ -248,7 +248,7 @@ pub async fn publish_and_register_coins_return_add_coins_on_sui_action(
     wallet_context: &WalletContext,
     bridge_arg: ObjectArg,
     token_packages_dir: Vec<PathBuf>,
-    token_ids: Vec<u8>,
+    token_ids: Vec<u64>,
     token_prices: Vec<u64>,
     nonce: u64,
 ) -> BridgeAction {

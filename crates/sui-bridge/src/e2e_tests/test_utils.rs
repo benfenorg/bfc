@@ -731,7 +731,7 @@ impl EthBridgeEnvironment {
         EthBridgeConfig::new(self.contracts().bridge_config, provider.clone())
     }
 
-    pub async fn get_supported_token(&self, token_id: u8) -> (EthAddress, u8, u64) {
+    pub async fn get_supported_token(&self, token_id: u64) -> (EthAddress, u8, u64) {
         let config = self.get_bridge_config();
         let token_address = config.token_address_of(token_id).call().await.unwrap();
         let token_sui_decimal = config.token_sui_decimal_of(token_id).call().await.unwrap();
@@ -1431,7 +1431,7 @@ async fn deposit_eth_to_sui_package(
     target_address: EthAddress,
     token: ObjectRef,
     bridge_object_arg: ObjectArg,
-    sui_token_type_tags: &HashMap<u8, TypeTag>,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_target_chain = builder.pure(target_chain as u8).unwrap();
@@ -1472,7 +1472,7 @@ pub async fn initiate_bridge_erc20_to_sui(
     bridge_test_cluster: &BridgeTestCluster,
     amount_u64: u64,
     token_address: EthAddress,
-    token_id: u8,
+    token_id: u64,
     nonce: u64,
 ) -> Result<(), anyhow::Error> {
     let (eth_signer, eth_address) = bridge_test_cluster

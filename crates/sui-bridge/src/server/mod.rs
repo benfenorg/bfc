@@ -349,7 +349,7 @@ async fn handle_limit_update_action(
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, token_id=token_id, new_usd_price=new_usd_price))]
 async fn handle_asset_price_update_action(
-    Path((chain_id, nonce, token_id, new_usd_price)): Path<(u8, u64, u8, u64)>,
+    Path((chain_id, nonce, token_id, new_usd_price)): Path<(u8, u64, u64, u64)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -563,7 +563,7 @@ async fn handle_add_tokens_on_sui(
         let token_ids = token_ids
             .split(',')
             .map(|s| {
-                s.parse::<u8>().map_err(|err| {
+                s.parse::<u64>().map_err(|err| {
                     BridgeError::InvalidBridgeClientRequest(format!("Invalid token id: {:?}", err))
                 })
             })
@@ -644,7 +644,7 @@ async fn handle_add_tokens_on_evm(
         let token_ids = token_ids
             .split(',')
             .map(|s| {
-                s.parse::<u8>().map_err(|err| {
+                s.parse::<u64>().map_err(|err| {
                     BridgeError::InvalidBridgeClientRequest(format!("Invalid token id: {:?}", err))
                 })
             })

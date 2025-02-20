@@ -31,7 +31,7 @@ pub struct BridgeMonitor<C> {
     eth_monitor_rx: mysten_metrics::metered_channel::Receiver<EthBridgeEvent>,
     bridge_auth_agg: Arc<ArcSwap<BridgeAuthorityAggregator>>,
     bridge_paused_watch_tx: tokio::sync::watch::Sender<IsBridgePaused>,
-    sui_token_type_tags: Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+    sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
     bridge_metrics: Arc<BridgeMetrics>,
 }
 
@@ -45,7 +45,7 @@ where
         eth_monitor_rx: mysten_metrics::metered_channel::Receiver<EthBridgeEvent>,
         bridge_auth_agg: Arc<ArcSwap<BridgeAuthorityAggregator>>,
         bridge_paused_watch_tx: tokio::sync::watch::Sender<IsBridgePaused>,
-        sui_token_type_tags: Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+        sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_metrics: Arc<BridgeMetrics>,
     ) -> Self {
         Self {
@@ -106,9 +106,9 @@ where
         sui_client: &Arc<SuiClient<C>>,
         bridge_auth_agg: &Arc<ArcSwap<BridgeAuthorityAggregator>>,
         bridge_paused_watch_tx: &tokio::sync::watch::Sender<IsBridgePaused>,
-        sui_token_type_tags: &Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+        sui_token_type_tags: &Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_metrics: &Arc<BridgeMetrics>,
-        latest_token_config: &mut HashMap<u8, TypeTag>,
+        latest_token_config: &mut HashMap<u64, TypeTag>,
     ) {
         info!("Received SuiBridgeEvent: {:?}", event);
         macro_rules! bump_sui_counter {

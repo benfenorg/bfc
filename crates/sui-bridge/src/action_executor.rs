@@ -79,7 +79,7 @@ pub struct BridgeActionExecutor<C> {
     gas_object_id: ObjectID,
     store: Arc<BridgeOrchestratorTables>,
     bridge_object_arg: ObjectArg,
-    sui_token_type_tags: Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+    sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
     bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
     metrics: Arc<BridgeMetrics>,
 }
@@ -110,7 +110,7 @@ where
         key: SuiKeyPair,
         sui_address: SuiAddress,
         gas_object_id: ObjectID,
-        sui_token_type_tags: Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+        sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
     ) -> Self {
@@ -409,7 +409,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: ObjectArg,
-        sui_token_type_tags: Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+        sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
     ) {
@@ -454,7 +454,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: &ObjectArg,
-        sui_token_type_tags: &ArcSwap<HashMap<u8, TypeTag>>,
+        sui_token_type_tags: &ArcSwap<HashMap<u64, TypeTag>>,
         metrics: &Arc<BridgeMetrics>,
     ) {
         metrics
@@ -1265,7 +1265,7 @@ mod tests {
             sui_token_type_tags,
             bridge_pause_tx,
         ) = setup().await;
-        let id_token_map: HashMap<u8, TypeTag> = (*sui_token_type_tags.load().clone()).clone();
+        let id_token_map: HashMap<u64, TypeTag> = (*sui_token_type_tags.load().clone()).clone();
         let (action_certificate, _, _) = get_bridge_authority_approved_action(
             vec![&mock0, &mock1, &mock2, &mock3],
             vec![&secrets[0], &secrets[1], &secrets[2], &secrets[3]],
@@ -1346,7 +1346,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_action_executor_handle_new_token() {
-        let new_token_id = 255u8; // token id that does not exist
+        let new_token_id = 255u64; // token id that does not exist
         let new_type_tag = TypeTag::from_str("0xbeef::beef::BEEF").unwrap();
         let (
             _signing_tx,
@@ -1367,7 +1367,7 @@ mod tests {
             sui_token_type_tags,
             _bridge_pause_tx,
         ) = setup().await;
-        let mut id_token_map: HashMap<u8, TypeTag> = (*sui_token_type_tags.load().clone()).clone();
+        let mut id_token_map: HashMap<u64, TypeTag> = (*sui_token_type_tags.load().clone()).clone();
         let (action_certificate, _, _) = get_bridge_authority_approved_action(
             vec![&mock0, &mock1, &mock2, &mock3],
             vec![&secrets[0], &secrets[1], &secrets[2], &secrets[3]],
@@ -1479,7 +1479,7 @@ mod tests {
     fn get_bridge_authority_approved_action(
         mocks: Vec<&BridgeRequestMockHandler>,
         secrets: Vec<&BridgeAuthorityKeyPair>,
-        token_id: Option<u8>,
+        token_id: Option<u64>,
         sui_to_eth: bool,
     ) -> (VerifiedCertifiedBridgeAction, TransactionDigest, u16) {
         let sui_tx_digest = TransactionDigest::random();
@@ -1573,7 +1573,7 @@ mod tests {
         Vec<tokio::task::JoinHandle<()>>,
         ObjectRef,
         SuiAddress,
-        Arc<ArcSwap<HashMap<u8, TypeTag>>>,
+        Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         tokio::sync::watch::Sender<IsBridgePaused>,
     ) {
         telemetry_subscribers::init_for_testing();

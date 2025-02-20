@@ -83,7 +83,7 @@ pub fn get_test_sui_to_eth_bridge_action(
     amount_sui_adjusted: Option<u64>,
     sender_address: Option<SuiAddress>,
     recipient_address: Option<EthAddress>,
-    token_id: Option<u8>,
+    token_id: Option<u64>,
 ) -> BridgeAction {
     BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
         sui_tx_digest: sui_tx_digest.unwrap_or_else(TransactionDigest::random),
@@ -106,7 +106,7 @@ pub fn get_test_eth_to_sui_bridge_action(
     nonce: Option<u64>,
     amount: Option<u64>,
     sui_address: Option<SuiAddress>,
-    token_id: Option<u8>,
+    token_id: Option<u64>,
 ) -> BridgeAction {
     BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
         eth_tx_hash: TxHash::random(),
@@ -229,7 +229,7 @@ pub fn get_test_log_and_action(
     tx_hash: TxHash,
     event_index: u16,
 ) -> (Log, BridgeAction) {
-    let token_id = 3u8;
+    let token_id = 3u64;
     let sui_adjusted_amount = 10000000u64;
     let source_address = EthAddress::random();
     let sui_address: SuiAddress = SuiAddress::random_for_testing_only();
@@ -364,7 +364,7 @@ pub async fn approve_action_with_validator_secrets(
     validator_secrets: &Vec<BridgeAuthorityKeyPair>,
     // Only relevant for eth -> sui transfers when token will be dropped to the recipient
     expected_token_receiver: Option<SuiAddress>,
-    id_token_map: &HashMap<u8, TypeTag>,
+    id_token_map: &HashMap<u64, TypeTag>,
 ) -> Option<ObjectRef> {
     let action_certificate = get_certified_action_with_validator_secrets(action, validator_secrets);
     let rgp = wallet_context.get_reference_gas_price().await.unwrap();

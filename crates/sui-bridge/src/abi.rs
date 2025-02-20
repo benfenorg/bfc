@@ -182,7 +182,7 @@ pub struct EthToSuiTokenBridgeV1 {
     pub eth_chain_id: BridgeChainId,
     pub sui_address: SuiAddress,
     pub eth_address: EthAddress,
-    pub token_id: u8,
+    pub token_id: u64,
     pub sui_adjusted_amount: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,

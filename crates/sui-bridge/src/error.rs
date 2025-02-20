@@ -34,7 +34,7 @@ pub enum BridgeError {
     // Ethereum provider error
     ProviderError(String),
     // TokenId is unknown
-    UnknownTokenId(u8),
+    UnknownTokenId(u64),
     // Invalid BridgeCommittee
     InvalidBridgeCommittee(String),
     // Invalid Bridge authority signature

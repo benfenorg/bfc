@@ -175,7 +175,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "token-id", long)]
-        token_id: u8,
+        token_id: u64,
         #[clap(name = "new-usd-price", long)]
         new_usd_price: u64,
     },
@@ -202,7 +202,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "token-ids", use_value_delimiter = true, long)]
-        token_ids: Vec<u8>,
+        token_ids: Vec<u64>,
         #[clap(name = "token-type-names", use_value_delimiter = true, long)]
         token_type_names: Vec<TypeTag>,
         #[clap(name = "token-prices", use_value_delimiter = true, long)]
@@ -213,7 +213,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "nonce", long)]
         nonce: u64,
         #[clap(name = "token-ids", use_value_delimiter = true, long)]
-        token_ids: Vec<u8>,
+        token_ids: Vec<u64>,
         #[clap(name = "token-type-names", use_value_delimiter = true, long)]
         token_addresses: Vec<EthAddress>,
         #[clap(name = "token-prices", use_value_delimiter = true, long)]
