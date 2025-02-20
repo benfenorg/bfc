@@ -4,6 +4,7 @@
 use crate::base_types::ObjectID;
 use crate::base_types::SequenceNumber;
 use crate::collection_types::LinkedTableNode;
+use crate::collection_types::VecSet;
 use crate::dynamic_field::{get_dynamic_field_from_store, Field};
 use crate::error::SuiResult;
 use crate::object::Owner;
@@ -248,6 +249,7 @@ pub struct BridgeInnerV1 {
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
+    pub refund_admins: VecSet<String>,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
