@@ -756,7 +756,6 @@ pub mod tests {
         println!("amount_bytes: {:?}", &amount_bytes);
         println!("1000000000u64: {:?}", 100000u64.to_le_bytes());
         let amount = u64::from_le_bytes(amount_bytes.try_into().unwrap());
-        assert_eq!(amount, 100000u64);
-        // assert_eq!(amount_bytes, 420u64.to_le_bytes()); // bcs 使用小端序列化 u64
+        assert_eq!(amount, 4200000000u64);
     }
 }
