@@ -12,9 +12,9 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     /* ========== STATE VARIABLES ========== */
 
     uint8 public chainID;
-    mapping(uint8 tokenID => Token) public supportedTokens;
+    mapping(uint64 tokenID => Token) public supportedTokens;
     // price in USD (8 decimal precision) (e.g. 1 ETH = 2000 USD => 2000_00000000)
-    mapping(uint8 tokenID => uint64 tokenPrice) public tokenPrices;
+    mapping(uint64 tokenID => uint64 tokenPrice) public tokenPrices;
     mapping(uint8 chainId => bool isSupported) public supportedChains;
 
     /* ========== INITIALIZER ========== */
@@ -69,28 +69,28 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     /// @notice Returns the address of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return address of the provided token.
-    function tokenAddressOf(uint8 tokenID) public view override returns (address) {
+    function tokenAddressOf(uint64 tokenID) public view override returns (address) {
         return supportedTokens[tokenID].tokenAddress;
     }
 
     /// @notice Returns the sui decimal places of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return amount of sui decimal places of the provided token.
-    function tokenSuiDecimalOf(uint8 tokenID) public view override returns (uint8) {
+    function tokenSuiDecimalOf(uint64 tokenID) public view override returns (uint8) {
         return supportedTokens[tokenID].suiDecimal;
     }
 
     /// @notice Returns the price of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return price of the provided token.
-    function tokenPriceOf(uint8 tokenID) public view override returns (uint64) {
+    function tokenPriceOf(uint64 tokenID) public view override returns (uint64) {
         return tokenPrices[tokenID];
     }
 
     /// @notice Returns whether a token is supported in SuiBridge with the given ID.
     /// @param tokenID The ID of the token.
     /// @return true if the token is supported, false otherwise.
-    function isTokenSupported(uint8 tokenID) public view override returns (bool) {
+    function isTokenSupported(uint64 tokenID) public view override returns (bool) {
         return supportedTokens[tokenID].tokenAddress != address(0);
     }
 

@@ -254,7 +254,7 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
-<code>token_type: u8</code>
+<code>token_type: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -317,7 +317,7 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
-<code>token_type: u8</code>
+<code>token_type: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -569,6 +569,12 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>source_chain: u8</code>
 </dt>
 <dd>
@@ -619,6 +625,12 @@ title: Module `0xb::bridge`
 
 
 <dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
 <dt>
 <code>source_chain: u8</code>
 </dt>
@@ -1275,7 +1287,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_back_token">send_back_token</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token_type: u8, token_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, event_idx: u8, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_back_token">send_back_token</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token_type: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, event_idx: u8, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1288,7 +1300,7 @@ title: Module `0xb::bridge`
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     target_chain: u8,
     target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    token_type: u8,
+    token_type: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     token_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     event_idx: u8,
@@ -1662,6 +1674,7 @@ title: Module `0xb::bridge`
     emit(
         <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
             tx_hash,
+            coin_type,
             source_chain,
             target_chain: inner.chain_id,
             source_address,
@@ -1702,6 +1715,7 @@ title: Module `0xb::bridge`
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
 
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
     <b>let</b> amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
 
@@ -1710,6 +1724,7 @@ title: Module `0xb::bridge`
     // emit <a href="../sui-framework/event.md#0x2_event">event</a>
     emit(
         <a href="bridge.md#0xb_bridge_ExternalWithdrawEvent">ExternalWithdrawEvent</a> {
+            coin_type,
             source_chain: inner.chain_id,
             target_chain,
             source_address: address::to_bytes(ctx.sender()),

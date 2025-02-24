@@ -434,7 +434,7 @@ library BridgeUtils {
 
         // Calculate the starting index for each token ID
         uint8 offset = 2;
-        tokenIDs = new uint8[](tokenCount);
+        tokenIDs = new uint64[](tokenCount);
         for (uint8 i; i < tokenCount; i++) {
             uint64 tokenID;
             assembly {

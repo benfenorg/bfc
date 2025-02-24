@@ -23,7 +23,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint8 targetChain = chainID;
         uint8 recipientAddressLength = 20;
         address recipientAddress = bridgerA;
-        uint8 tokenID = BridgeUtils.ETH;
+        uint64 tokenID = BridgeUtils.ETH;
         uint64 amount = 1_000_000 * USD_VALUE_MULTIPLIER;
         bytes memory payload = abi.encodePacked(
             senderAddressLength,
@@ -61,7 +61,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint8 targetChain = 0;
         uint8 recipientAddressLength = 20;
         address recipientAddress = bridgerA;
-        uint8 tokenID = BridgeUtils.ETH;
+        uint64 tokenID = BridgeUtils.ETH;
         uint64 amount = 10000;
         bytes memory payload = abi.encodePacked(
             senderAddressLength,
@@ -165,7 +165,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint8 targetChain = chainID;
         uint8 recipientAddressLength = 20;
         address recipientAddress = bridgerA;
-        uint8 tokenID = BridgeUtils.ETH;
+        uint64 tokenID = BridgeUtils.ETH;
         uint64 amount = 100000000; // 1 ether in sui decimals
         bytes memory payload = abi.encodePacked(
             senderAddressLength,
@@ -217,7 +217,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         uint8 targetChain = chainID;
         uint8 recipientAddressLength = 20;
         address recipientAddress = bridgerA;
-        uint8 tokenID = BridgeUtils.USDC;
+        uint64 tokenID = BridgeUtils.USDC;
         uint64 amount = 1_000_000;
         bytes memory payload = abi.encodePacked(
             senderAddressLength,

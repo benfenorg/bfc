@@ -250,7 +250,7 @@ contract BridgeConfigTest is BridgeBaseTest {
 
     function testUpdateTokenPriceWithSignatures() public {
         // Create update tokens payload
-        uint8 tokenID = BridgeUtils.ETH;
+        uint64 tokenID = BridgeUtils.ETH;
         uint64 price = 100_000 * USD_VALUE_MULTIPLIER;
 
         bytes memory payload = abi.encodePacked(tokenID, price);
@@ -501,7 +501,7 @@ contract BridgeConfigTest is BridgeBaseTest {
 
         (
             bool native,
-            uint8[] memory tokenIDs,
+            uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
             uint64[] memory tokenPrices
