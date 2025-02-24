@@ -10,7 +10,7 @@ interface IBridgeLimiter {
     /// @param chainID The ID of the chain to record the transfer for.
     /// @param tokenID The ID of the token.
     /// @param amount The amount of tokens to be transferred.
-    function recordBridgeTransfers(uint8 chainID, uint8 tokenID, uint256 amount) external;
+    function recordBridgeTransfers(uint8 chainID, uint64 tokenID, uint256 amount) external;
 
     /// @notice Returns whether the total amount, including the given token amount, will exceed the totalLimit.
     /// @dev The function will calculate the given token amount in USD.
@@ -18,7 +18,7 @@ interface IBridgeLimiter {
     /// @param tokenID The ID of the token.
     /// @param amount The amount of the token.
     /// @return boolean indicating whether the total amount will exceed the limit.
-    function willAmountExceedLimit(uint8 chainID, uint8 tokenID, uint256 amount)
+    function willAmountExceedLimit(uint8 chainID, uint64 tokenID, uint256 amount)
         external
         view
         returns (bool);

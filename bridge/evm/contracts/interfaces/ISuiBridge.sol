@@ -16,7 +16,7 @@ interface ISuiBridge {
         uint8 indexed sourceChainID,
         uint64 indexed nonce,
         uint8 indexed destinationChainID,
-        uint8 tokenID,
+        uint64 tokenID,
         uint64 suiAdjustedAmount,
         address senderAddress,
         bytes recipientAddress
@@ -35,7 +35,7 @@ interface ISuiBridge {
         uint8 indexed sourceChainID,
         uint64 indexed nonce,
         uint8 indexed destinationChainID,
-        uint8 tokenID,
+        uint64 tokenID,
         uint256 erc20AdjustedAmount,
         bytes senderAddress,
         address recipientAddress

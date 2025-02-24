@@ -133,7 +133,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// @param recipientAddress The address on the Sui chain where the tokens will be sent.
     /// @param destinationChainID The ID of the destination chain.
     function bridgeERC20(
-        uint8 tokenID,
+        uint64 tokenID,
         uint256 amount,
         bytes memory recipientAddress,
         uint8 destinationChainID
@@ -243,7 +243,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// @param amount The amount of tokens being transferred.
     function _transferTokensFromVault(
         uint8 sendingChainID,
-        uint8 tokenID,
+        uint64 tokenID,
         address recipientAddress,
         uint256 amount
     ) private whenNotPaused limitNotExceeded(sendingChainID, tokenID, amount) {
@@ -270,7 +270,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// the last 24 hours.
     /// @param tokenID The ID of the token being transferred.
     /// @param amount The amount of tokens being transferred.
-    modifier limitNotExceeded(uint8 chainID, uint8 tokenID, uint256 amount) {
+    modifier limitNotExceeded(uint8 chainID, uint64 tokenID, uint256 amount) {
         require(
             !limiter.willAmountExceedLimit(chainID, tokenID, amount),
             "SuiBridge: Amount exceeds bridge limit"

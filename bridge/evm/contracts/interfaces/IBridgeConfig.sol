@@ -18,22 +18,22 @@ interface IBridgeConfig {
     /// @notice Returns the address of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return address of the provided token.
-    function tokenAddressOf(uint8 tokenID) external view returns (address);
+    function tokenAddressOf(uint64 tokenID) external view returns (address);
 
     /// @notice Returns the sui decimal places of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return amount of sui decimal places of the provided token.
-    function tokenSuiDecimalOf(uint8 tokenID) external view returns (uint8);
+    function tokenSuiDecimalOf(uint64 tokenID) external view returns (uint8);
 
     /// @notice Returns the price of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return price of the provided token.
-    function tokenPriceOf(uint8 tokenID) external view returns (uint64);
+    function tokenPriceOf(uint64 tokenID) external view returns (uint64);
 
     /// @notice Returns the supported status of the token with the given ID.
     /// @param tokenID The ID of the token.
     /// @return true if the token is supported, false otherwise.
-    function isTokenSupported(uint8 tokenID) external view returns (bool);
+    function isTokenSupported(uint64 tokenID) external view returns (bool);
 
     /// @notice Returns whether a chain is supported in SuiBridge with the given ID.
     /// @param chainId The ID of the chain.
@@ -51,21 +51,21 @@ interface IBridgeConfig {
     /// @param tokenPrices The prices of the tokens added in USD.
     event TokensAddedV2(
         uint64 nonce,
-        uint8[] tokenIDs,
+        uint64[] tokenIDs,
         address[] tokenAddresses,
         uint8[] suiDecimals,
         uint64[] tokenPrices
     );
 
     /// @dev (deprecated in favor of TokensAddedV2)
-    event TokenAdded(uint8 tokenID, address tokenAddress, uint8 suiDecimal, uint64 tokenPrice);
+    event TokenAdded(uint64 tokenID, address tokenAddress, uint8 suiDecimal, uint64 tokenPrice);
 
     /// @notice Event for the price update of a token.
     /// @param nonce The governance action nonce.
     /// @param tokenID The ID of the token updated.
     /// @param tokenPrice The new price of the token in USD.
-    event TokenPriceUpdatedV2(uint64 nonce, uint8 tokenID, uint64 tokenPrice);
+    event TokenPriceUpdatedV2(uint64 nonce, uint64 tokenID, uint64 tokenPrice);
 
     /// @dev (deprecated in favor of TokenPriceUpdatedV2)
-    event TokenPriceUpdated(uint8 tokenID, uint64 tokenPrice);
+    event TokenPriceUpdated(uint64 tokenID, uint64 tokenPrice);
 }

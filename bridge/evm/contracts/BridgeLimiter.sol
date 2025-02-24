@@ -59,7 +59,7 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     /// @param tokenID The ID of the token.
     /// @param amount The amount of the token.
     /// @return boolean indicating whether the total amount will exceed the limit.
-    function willAmountExceedLimit(uint8 chainID, uint8 tokenID, uint256 amount)
+    function willAmountExceedLimit(uint8 chainID, uint64 tokenID, uint256 amount)
         external
         view
         override
@@ -94,7 +94,7 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     /// @param tokenID The ID of the token.
     /// @param amount The amount of tokens.
     /// @return amount in USD (8 decimal precision).
-    function calculateAmountInUSD(uint8 tokenID, uint256 amount) public view returns (uint256) {
+    function calculateAmountInUSD(uint64 tokenID, uint256 amount) public view returns (uint256) {
         // get the token address
         address tokenAddress = committee.config().tokenAddressOf(tokenID);
         // get the decimals
@@ -129,7 +129,7 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     /// @param chainID The ID of the chain to record the transfer for.
     /// @param tokenID The ID of the token.
     /// @param amount The amount of tokens to be transferred.
-    function recordBridgeTransfers(uint8 chainID, uint8 tokenID, uint256 amount)
+    function recordBridgeTransfers(uint8 chainID, uint64 tokenID, uint256 amount)
         external
         override
         onlyOwner
