@@ -115,7 +115,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         verifyMessageAndSignatures(message, signatures, BridgeUtils.UPDATE_TOKEN_PRICE)
     {
         // decode the update token payload
-        (uint8 tokenID, uint64 price) = BridgeUtils.decodeUpdateTokenPricePayload(message.payload);
+        (uint64 tokenID, uint64 price) = BridgeUtils.decodeUpdateTokenPricePayload(message.payload);
 
         _updateTokenPrice(tokenID, price);
 
@@ -130,7 +130,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         // decode the update token payload
         (
             bool native,
-            uint8[] memory tokenIDs,
+            uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
             uint64[] memory _tokenPrices
@@ -149,7 +149,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     /// @notice Updates the price of the token with the provided ID.
     /// @param tokenID The ID of the token to update.
     /// @param tokenPrice The price of the token.
-    function _updateTokenPrice(uint8 tokenID, uint64 tokenPrice) private {
+    function _updateTokenPrice(uint64 tokenID, uint64 tokenPrice) private {
         require(isTokenSupported(tokenID), "BridgeConfig: Unsupported token");
         require(tokenPrice > 0, "BridgeConfig: Invalid token price");
 
@@ -163,7 +163,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
     /// @param tokenPrice The price of the token.
     /// @param native Whether the token is native to the chain.
     function _addToken(
-        uint8 tokenID,
+        uint64 tokenID,
         address tokenAddress,
         uint8 suiDecimal,
         uint64 tokenPrice,
@@ -184,7 +184,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
 
     /// @notice Requires the given token to be supported.
     /// @param tokenID The ID of the token to check.
-    modifier tokenSupported(uint8 tokenID) {
+    modifier tokenSupported(uint64 tokenID) {
         require(isTokenSupported(tokenID), "BridgeConfig: Unsupported token");
         _;
     }

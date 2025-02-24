@@ -37,7 +37,7 @@ library BridgeUtils {
         uint8 targetChain;
         uint8 recipientAddressLength;
         address recipientAddress;
-        uint8 tokenID;
+        uint64 tokenID;
         uint64 amount;
         bytes txHash;
         uint8 eventIdx;
@@ -65,11 +65,11 @@ library BridgeUtils {
     uint32 public constant ADD_EVM_TOKENS_STAKE_REQUIRED = 5001;
 
     // token Ids
-    uint8 public constant SUI = 0;
-    uint8 public constant BTC = 1;
-    uint8 public constant ETH = 2;
-    uint8 public constant USDC = 3;
-    uint8 public constant USDT = 4;
+    uint64 public constant SUI = 0;
+    uint64 public constant BTC = 1;
+    uint64 public constant ETH = 2;
+    uint64 public constant USDC = 3;
+    uint64 public constant USDT = 4;
 
     string public constant MESSAGE_PREFIX = "SUI_BRIDGE_MESSAGE";
 
@@ -237,8 +237,12 @@ library BridgeUtils {
         // move offset past the target address length
         offset += recipientAddressLength;
 
-        // token id is a single byte
-        uint8 tokenID = uint8(_payload[offset++]);
+        // token id 
+        offset += 8;
+        uint64 tokenID;
+        assembly {
+            tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+        }
 
         // extract amount from payload
         uint64 amount;
@@ -373,23 +377,25 @@ library BridgeUtils {
     /// @notice Decodes an update token price payload from bytes to a token ID and a new price.
     /// @dev The function will revert if the payload length is invalid.
     ///     Update token price payload is 9 bytes.
-    ///     byte 0       : token ID
-    ///     bytes 1-8    : new price
+    ///     byte 0-7       : token ID
+    ///     bytes 8-15    : new price
     /// @param _payload The payload to be decoded.
     /// @return tokenID the token ID to update the price of.
     /// @return tokenPrice the new price of the token.
     function decodeUpdateTokenPricePayload(bytes memory _payload)
         internal
         pure
-        returns (uint8 tokenID, uint64 tokenPrice)
+        returns (uint64 tokenID, uint64 tokenPrice)
     {
-        require(_payload.length == 9, "BridgeMessage: Invalid payload length");
-        tokenID = uint8(_payload[0]);
+        require(_payload.length == 16, "BridgeMessage: Invalid payload length");
+        assembly {
+            tokenID := shr(192, mload(add(add(_payload, 0x20), 0)))
+        }
 
         // Extracts the uint64 value by loading 32 bytes starting just after the first byte.
         // Position uint64 to the least significant bits by shifting it 192 bits to the right.
         assembly {
-            tokenPrice := shr(192, mload(add(add(_payload, 0x20), 1)))
+            tokenPrice := shr(192, mload(add(add(_payload, 0x20), 8)))
         }
     }
 
@@ -416,7 +422,7 @@ library BridgeUtils {
         pure
         returns (
             bool native,
-            uint8[] memory tokenIDs,
+            uint64[] memory tokenIDs,
             address[] memory tokenAddresses,
             uint8[] memory suiDecimals,
             uint64[] memory tokenPrices
@@ -430,7 +436,13 @@ library BridgeUtils {
         uint8 offset = 2;
         tokenIDs = new uint8[](tokenCount);
         for (uint8 i; i < tokenCount; i++) {
-            tokenIDs[i] = uint8(_payload[offset++]);
+            uint64 tokenID;
+            assembly {
+                tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
+            }
+            offset += 8;
+
+            tokenIDs[i] = tokenID;
         }
 
         uint8 addressCount = uint8(_payload[offset++]);
