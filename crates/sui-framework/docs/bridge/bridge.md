@@ -569,6 +569,12 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
 <code>source_chain: u8</code>
 </dt>
 <dd>
@@ -619,6 +625,12 @@ title: Module `0xb::bridge`
 
 
 <dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
 <dt>
 <code>source_chain: u8</code>
 </dt>
@@ -958,15 +970,6 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 3;
-</code></pre>
-
-
-
-<a name="0xb_bridge_EUnknownExternalCoinOrSender"></a>
-
-
-
-<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnknownExternalCoinOrSender">EUnknownExternalCoinOrSender</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 31;
 </code></pre>
 
 
@@ -1629,15 +1632,15 @@ title: Module `0xb::bridge`
     tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> sender = ctx.sender();
+    <b>let</b> _sender = ctx.sender();
     <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
 
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(source_chain, inner.chain_id), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
-    <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
-        <b>abort</b> <a href="bridge.md#0xb_bridge_EUnknownExternalCoinOrSender">EUnknownExternalCoinOrSender</a>
-    };
+    // <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+    //     <b>abort</b> EUnknownExternalCoinOrSender
+    // };
 
     // check records
     <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{tx_hash};
@@ -1662,6 +1665,7 @@ title: Module `0xb::bridge`
     emit(
         <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
             tx_hash,
+            coin_type,
             source_chain,
             target_chain: inner.chain_id,
             source_address,
@@ -1702,6 +1706,7 @@ title: Module `0xb::bridge`
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
 
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
     <b>let</b> amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
 
@@ -1710,6 +1715,7 @@ title: Module `0xb::bridge`
     // emit <a href="../sui-framework/event.md#0x2_event">event</a>
     emit(
         <a href="bridge.md#0xb_bridge_ExternalWithdrawEvent">ExternalWithdrawEvent</a> {
+            coin_type,
             source_chain: inner.chain_id,
             target_chain,
             source_address: address::to_bytes(ctx.sender()),
