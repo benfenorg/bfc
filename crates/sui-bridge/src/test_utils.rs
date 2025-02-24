@@ -283,7 +283,7 @@ pub fn get_test_log_and_action(
             sui_adjusted_amount,
             sui_address,
             eth_address: source_address,
-            tx_hash: vec![],
+            tx_hash: tx_hash.as_bytes().to_vec(),
             event_idx: 0,
         },
     });
