@@ -126,7 +126,7 @@ module bridge::message {
         let sender_address = bcs.peel_vec_u8();
         let target_chain = bcs.peel_u8();
         let target_address = bcs.peel_vec_u8();
-        let token_type = bcs.peel_u64();
+        let token_type = peel_u64_be(&mut bcs);
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
         let event_idx = bcs.peel_u8();
@@ -329,7 +329,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
-        assert!(vector::length(&payload) == 64, EInvalidPayloadLength);
+        assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
         payload.push_back(event_idx);
