@@ -445,7 +445,7 @@ mod tests {
                 version: ASSET_PRICE_UPDATE_MESSAGE_VERSION,
                 nonce: 2,
                 chain_id: BridgeChainId::EthSepolia as u8,
-                payload: Hex::decode("020000000004c4b400").unwrap().into(),
+                payload: Hex::decode("00000000000000020000000004c4b400").unwrap().into(),
             }
         );
         Ok(())
@@ -474,7 +474,7 @@ mod tests {
                 version: ADD_TOKENS_ON_EVM_MESSAGE_VERSION,
                 nonce: 5,
                 chain_id: BridgeChainId::EthCustom as u8,
-                payload: Hex::decode("0103636465030101010101010101010101010101010101010101020202020202020202020202020202020202020203030303030303030303030303030303030303030305060703000000003b9aca00000000007735940000000000b2d05e00").unwrap().into(),
+                payload: Hex::decode("0103000000000000006300000000000000640000000000000065030101010101010101010101010101010101010101020202020202020202020202020202020202020203030303030303030303030303030303030303030305060703000000003b9aca00000000007735940000000000b2d05e00").unwrap().into(),
             }
         );
         Ok(())
