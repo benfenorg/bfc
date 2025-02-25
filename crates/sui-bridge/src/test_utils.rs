@@ -108,8 +108,9 @@ pub fn get_test_eth_to_sui_bridge_action(
     sui_address: Option<SuiAddress>,
     token_id: Option<u64>,
 ) -> BridgeAction {
+    let tx_hash = TxHash::random();
     BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
-        eth_tx_hash: TxHash::random(),
+        eth_tx_hash: tx_hash,
         eth_event_index: 0,
         eth_bridge_event: EthToSuiTokenBridgeV1 {
             eth_chain_id: BridgeChainId::EthCustom,
@@ -119,7 +120,7 @@ pub fn get_test_eth_to_sui_bridge_action(
             sui_adjusted_amount: amount.unwrap_or(100_000),
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
-            tx_hash: vec![],
+            tx_hash: tx_hash.as_bytes().to_vec(),
             event_idx: 0,
         },
     })
@@ -282,8 +283,8 @@ pub fn get_test_log_and_action(
             sui_adjusted_amount,
             sui_address,
             eth_address: source_address,
-            tx_hash: vec![],
-            event_idx: 0,
+            tx_hash: tx_hash.as_bytes().to_vec(),
+            event_idx: event_index as u8,
         },
     });
     (log, bridge_action)
@@ -341,10 +342,12 @@ pub fn get_certified_action_with_validator_secrets(
         let signed_action = sign_action_with_key(&action, secret);
         sigs.insert(secret.public().into(), signed_action.into_sig().signature);
     }
+    println!("bbking inner action: {:?}", action);
     let certified_action = CertifiedBridgeAction::new_from_data_and_sig(
         action,
         BridgeCommitteeValiditySignInfo { signatures: sigs },
     );
+    println!("bbking inner certified_action: {:?}", certified_action);
     VerifiedCertifiedBridgeAction::new_from_verified(certified_action)
 }
 
@@ -367,6 +370,7 @@ pub async fn approve_action_with_validator_secrets(
     id_token_map: &HashMap<u64, TypeTag>,
 ) -> Option<ObjectRef> {
     let action_certificate = get_certified_action_with_validator_secrets(action, validator_secrets);
+    println!("bbking action_certificate: {:?}", action_certificate);
     let rgp = wallet_context.get_reference_gas_price().await.unwrap();
     let sui_address = wallet_context.active_address().unwrap();
     let gas_obj_ref = wallet_context
