@@ -126,7 +126,7 @@ module bridge::bridge {
     const EDuplicateRefund: u64 = 22;
 
     const EDuplicatedMessage: u64 = 30;
-    const EUnknownExternalCoinOrSender: u64 = 31;
+    // const EUnknownExternalCoinOrSender: u64 = 31;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -552,15 +552,15 @@ module bridge::bridge {
         tx_hash: ascii::String,
         ctx: &mut TxContext
     ) {
-        let sender = ctx.sender();
+        let _sender = ctx.sender();
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
-        if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
-            abort EUnknownExternalCoinOrSender
-        };
+        // if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+        //     abort EUnknownExternalCoinOrSender
+        // };
 
         // check records
         let key = ExternalBridgeMessageKey{tx_hash};
