@@ -238,12 +238,12 @@ library BridgeUtils {
         offset += recipientAddressLength;
 
         // token id 
-        offset += 8;
+        uint8 tokenIDLength = 8;
         uint64 tokenID;
         assembly {
             tokenID := shr(192, mload(add(add(_payload, 0x20), offset)))
         }
-
+        offset += tokenIDLength;
         // extract amount from payload
         uint64 amount;
         uint8 amountLength = 8; // uint64 = 8 bits
