@@ -351,7 +351,7 @@ async fn test_add_external_admin() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
 async fn test_add_refund_admin() {
     telemetry_subscribers::init_for_testing();
-    let bridge_test_cluster = BridgeTestClusterBuilder::new()
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
         .with_eth_env(true)
         .with_bridge_cluster(false)
         .with_num_validators(3)
@@ -360,14 +360,27 @@ async fn test_add_refund_admin() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
-    let add_admin_action = BridgeAction::RefundAdminAction(RefundAdminAction {
+
+    let add_refund_action = BridgeAction::RefundAdminAction(RefundAdminAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         op_type: 0,
-        sui_address: "0x1234567890123456789012345678901234567890".to_string(),
+        sui_address: sender.to_string(),
     });
 
     info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_refund_action.clone()],
+        vec![add_refund_action.clone()],
+        vec![add_refund_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
     let bridge_committee = Arc::new(
         bridge_test_cluster
             .bridge_client()
@@ -377,7 +390,7 @@ async fn test_add_refund_admin() {
     );
     let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
     let certified_action1 = agg
-        .request_committee_signatures(add_admin_action)
+        .request_committee_signatures(add_refund_action)
         .await
         .expect("Failed to request committee signatures for AddExternalCoinAdminAction");
 
@@ -397,7 +410,9 @@ async fn test_add_refund_admin() {
 
     let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
     let effects = response.effects.unwrap();
+    println!("bbking effects: {:?}", effects);
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+
 }
 
 
