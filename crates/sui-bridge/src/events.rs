@@ -752,7 +752,7 @@ pub mod tests {
 
         // 验证 amount 字段是否以小端序列化
         // amount 在 payload 中的位置: sender_address(32) + target_chain(1) + target_address(20) + token_type(1) = 54
-        let amount_bytes = payload_bytes[56..64].to_vec();
+        let amount_bytes = payload_bytes[63..71].to_vec();
         println!("amount_bytes: {:?}", &amount_bytes);
         println!("1000000000u64: {:?}", 100000u64.to_le_bytes());
         let amount = u64::from_le_bytes(amount_bytes.try_into().unwrap());
