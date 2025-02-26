@@ -18,8 +18,8 @@
     "inputs": [
       {
         "name": "tokenID",
-        "type": "uint8",
-        "internalType": "uint8"
+        "type": "uint64",
+        "internalType": "uint64"
       },
       {
         "name": "amount",
@@ -494,9 +494,9 @@
       },
       {
         "name": "tokenID",
-        "type": "uint8",
+        "type": "uint64",
         "indexed": false,
-        "internalType": "uint8"
+        "internalType": "uint64"
       },
       {
         "name": "erc20AdjustedAmount",
@@ -543,9 +543,9 @@
       },
       {
         "name": "tokenID",
-        "type": "uint8",
+        "type": "uint64",
         "indexed": false,
-        "internalType": "uint8"
+        "internalType": "uint64"
       },
       {
         "name": "suiAdjustedAmount",
