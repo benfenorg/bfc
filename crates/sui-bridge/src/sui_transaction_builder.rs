@@ -1262,8 +1262,9 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
     async fn test_build_sui_transaction_for_price_update() {
         telemetry_subscribers::init_for_testing();
+        let num_valdiator = 2;
         let mut bridge_keys = vec![];
-        for _ in 0..=3 {
+        for _ in 0..num_valdiator {
             let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
             bridge_keys.push(kp);
         }

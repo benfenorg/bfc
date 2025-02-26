@@ -236,7 +236,7 @@ module bridge::message {
 
     public fun extract_update_asset_price(message: &BridgeMessage): UpdateAssetPrice {
         let mut bcs = bcs::new(message.payload);
-        let token_id = bcs.peel_u64();
+        let token_id = peel_u64_be(&mut bcs);
         let new_price = peel_u64_be(&mut bcs);
 
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
@@ -472,7 +472,7 @@ module bridge::message {
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
 
-        let mut payload = bcs::to_bytes(&token_id);
+        let mut payload = reverse_bytes(bcs::to_bytes(&token_id));
         payload.append(reverse_bytes(bcs::to_bytes(&new_price)));
         BridgeMessage {
             message_type: message_types::update_asset_price(),

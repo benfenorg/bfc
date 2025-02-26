@@ -405,7 +405,7 @@ module bridge::message_tests {
 
         // Test message serialization
         let message = serialize_message(asset_price_message);
-        let expected_msg = hex::decode(b"0401000000000000000a0102000000000000000000000000003039");
+        let expected_msg = hex::decode(b"0401000000000000000a0100000000000000020000000000003039");
         assert_eq(message, expected_msg);
         assert!(asset_price_message == deserialize_message_test_only(message));
 
@@ -415,9 +415,9 @@ module bridge::message_tests {
         let ctx = test_scenario::ctx(&mut scenario);
         let treasury = treasury::mock_for_test(ctx);
 
-        assert!(
-            asset_price.update_asset_price_payload_token_id()
-                == treasury::token_id<ETH>(&treasury),
+        assert_eq(
+            asset_price.update_asset_price_payload_token_id(),
+            treasury::token_id<ETH>(&treasury),
         );
         assert!(asset_price.update_asset_price_payload_new_price() == 12345);
 
@@ -441,7 +441,7 @@ module bridge::message_tests {
 
         // Test message serialization
         let message = serialize_message(asset_price_message);
-        let expected_msg = hex::decode(b"0401000000000000010a020100000000000000000000003b9aca00");
+        let expected_msg = hex::decode(b"0401000000000000010a020000000000000001000000003b9aca00");
         assert_eq(expected_msg, message);
         assert!(asset_price_message == deserialize_message_test_only(message));
 
@@ -569,7 +569,7 @@ module bridge::message_tests {
             0,
         );
 
-        assert_eq(pubkey, x"025a8c385af9a76aa506c395e240735839cb06531301f9b396e5f9ef8eeb0d8879");
+        assert_eq(pubkey, x"032c8acb57071f1ac0599713be5f118c57a52f8bba9338ac5d0014e8d2392623c7");
         destroy(treasury);
         test_scenario::end(scenario);
     }
