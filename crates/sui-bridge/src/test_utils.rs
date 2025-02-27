@@ -252,7 +252,7 @@ pub fn get_test_log_and_action(
                     ParamType::Uint(8),
                     ParamType::Uint(64),
                     ParamType::Uint(8),
-                    ParamType::Uint(8),
+                    ParamType::Uint(64),
                     ParamType::Uint(64),
                     ParamType::Address,
                     ParamType::Bytes,
@@ -269,6 +269,7 @@ pub fn get_test_log_and_action(
         log_index: Some(0.into()),
         ..Default::default()
     };
+    println!("bbking log: {:?}", log);
     let topic_1: [u8; 32] = log.topics[1].into();
     let topic_3: [u8; 32] = log.topics[3].into();
 

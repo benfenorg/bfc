@@ -491,19 +491,19 @@ mod tests {
             log: Log {
                 address: EthAddress::repeat_byte(1),
                 topics: vec![
-                    hex!("a0f1d54820817ede8517e70a3d0a9197c015471c5360d2119b759f0359858ce6").into(),
-                    hex!("000000000000000000000000000000000000000000000000000000000000000c").into(),
-                    hex!("0000000000000000000000000000000000000000000000000000000000000000").into(),
-                    hex!("0000000000000000000000000000000000000000000000000000000000000002").into(),
+                    hex!("5aeed19d0207dbc2897bec15241a138fed03931a5b2d8dfe2364b7c2ae33431b").into(),
+                    hex!("0000000000000000000000000000000000000000000000000000000000000001").into(),
+                    hex!("0000000000000000000000000000000000000000000000000000000000000010").into(),
+                    hex!("000000000000000000000000000000000000000000000000000000000000000b").into(),
                 ],
                 data: ethers::types::Bytes::from(
-                    Hex::decode("0x000000000000000000000000000000000000000000000000000000000000000200000000000000000000000000000000000000000000000000000000fa56ea0000000000000000000000000014dc79964da2c08b23698b3d3cc7ca32193d9955000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000203b1eb23133e94d08d0da9303cfd38e7d4f8f6951f235daa62cd64ea5b6d96d77").unwrap(),
+                    Hex::decode("0x0000000000000000000000000000000000000000000000000000000000000003000000000000000000000000000000000000000000000000000000000098968000000000000000000000000058ac1eab83ae5ad29e0f1f566770d57c64cd7229000000000000000000000000000000000000000000000000000000000000008000000000000000000000000000000000000000000000000000000000000000208f7c7cafbc956fe578a44b1034eb42a8d974c9098889125cab8b86be9bcdcf63").unwrap(),
                 ),
                 block_hash: None,
                 block_number: None,
                 transaction_hash: Some(tx_hash),
                 transaction_index: Some(ethers::types::U64::from(0)),
-                log_index: Some(ethers::types::U256::from(1)),
+                log_index: Some(ethers::types::U256::from(0)),
                 transaction_log_index: None,
                 log_type: None,
                 removed: Some(false),
@@ -514,18 +514,18 @@ mod tests {
             event,
             EthBridgeEvent::EthSuiBridgeEvents(EthSuiBridgeEvents::TokensDepositedFilter(
                 TokensDepositedFilter {
-                    source_chain_id: 12,
-                    nonce: 0,
-                    destination_chain_id: 2,
-                    token_id: 2,
-                    sui_adjusted_amount: 4200000000,
+                    source_chain_id: 1,
+                    nonce: 16,
+                    destination_chain_id: 11,
+                    token_id: 3,
+                    sui_adjusted_amount: 10000000u64,
                     sender_address: EthAddress::from_str(
-                        "0x14dc79964da2c08b23698b3d3cc7ca32193d9955"
+                        "0x58ac1eab83ae5ad29e0f1f566770d57c64cd7229"
                     )
                     .unwrap(),
                     recipient_address: ethers::types::Bytes::from(
                         Hex::decode(
-                            "0x3b1eb23133e94d08d0da9303cfd38e7d4f8f6951f235daa62cd64ea5b6d96d77"
+                            "0x8f7c7cafbc956fe578a44b1034eb42a8d974c9098889125cab8b86be9bcdcf63"
                         )
                         .unwrap(),
                     ),
