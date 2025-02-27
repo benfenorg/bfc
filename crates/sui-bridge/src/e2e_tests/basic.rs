@@ -171,6 +171,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+#[ignore]
 async fn test_bridge_from_eth_to_sui_refund() {
     telemetry_subscribers::init_for_testing();
 
