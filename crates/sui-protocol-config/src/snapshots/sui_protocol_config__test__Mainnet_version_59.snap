@@ -34,7 +34,6 @@ feature_flags:
   loaded_child_object_format_type: true
   receive_objects: true
   random_beacon: true
-  bridge: true
   enable_effects_v2: true
   narwhal_certificate_v2: true
   verify_legacy_zklogin_address: true
@@ -323,5 +322,6 @@ max_deferral_rounds_for_congestion_control: 10
 min_checkpoint_interval_ms: 200
 checkpoint_summary_version_specific_data: 1
 max_soft_bundle_size: 5
-bridge_should_try_to_finalize_committee: true
+bridge_should_try_to_finalize_committee: false
 max_accumulated_txn_cost_per_object_in_mysticeti_commit: 10
+
