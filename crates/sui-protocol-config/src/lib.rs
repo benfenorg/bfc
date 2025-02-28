@@ -3117,6 +3117,12 @@ impl ProtocolConfig {
                     cfg.group_ops_bls12381_uncompressed_g1_sum_max_terms = Some(1200);
 
                     cfg.validator_validate_metadata_cost_base = Some(20000);
+
+                    if chain == Chain::Mainnet {
+                        cfg.feature_flags.bridge = true;
+                        cfg.bridge_should_try_to_finalize_committee = Some(true);
+                    }
+
                 }
                 // Use this template when making changes:
                 //
