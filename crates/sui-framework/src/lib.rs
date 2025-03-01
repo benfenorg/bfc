@@ -236,10 +236,9 @@ pub async fn compare_system_package<S: ObjectStore>(
         }
     };
     let mut new_normalized = new_pkg.normalize(binary_config).ok()?;
-
     for (name, cur_module) in cur_normalized {
         let new_module = new_normalized.remove(&name)?;
-        if id == &BRIDGE_PACKAGE_ID {
+        if id == &BRIDGE_PACKAGE_ID && new_pkg.version() == OBJECT_START_VERSION {
             continue;
         }
         if let Err(e) = compatibility.check(&cur_module, &new_module) {
