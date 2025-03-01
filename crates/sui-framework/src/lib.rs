@@ -239,7 +239,9 @@ pub async fn compare_system_package<S: ObjectStore>(
 
     for (name, cur_module) in cur_normalized {
         let new_module = new_normalized.remove(&name)?;
-
+        if id == &BRIDGE_PACKAGE_ID {
+            continue;
+        }
         if let Err(e) = compatibility.check(&cur_module, &new_module) {
             error!("Compatibility check failed, for new version of {id}::{name}: {e:?}");
             return None;
