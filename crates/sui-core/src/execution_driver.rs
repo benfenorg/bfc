@@ -120,6 +120,7 @@ pub async fn execution_process(
                 let res = authority
                     .try_execute_immediately(&certificate, expected_effects_digest, &epoch_store)
                     .await;
+                error!("certificate is {:?},expected_effects_digest is {:?}", certificate, expected_effects_digest);
                 if let Err(e) = res {
                     if attempts == EXECUTION_MAX_ATTEMPTS {
                         panic!("Failed to execute certified transaction {digest:?} after {attempts} attempts! error={e} certificate={certificate:?}");
