@@ -33,6 +33,7 @@ use sui_types::bridge::{
     APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST, APPROVAL_THRESHOLD_EMERGENCY_PAUSE,
     APPROVAL_THRESHOLD_EMERGENCY_UNPAUSE, APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
     APPROVAL_THRESHOLD_LIMIT_UPDATE, APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+    APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
 };
 use sui_types::committee::CommitteeTrait;
 use sui_types::committee::StakeUnit;
@@ -519,8 +520,8 @@ impl BridgeAction {
             BridgeAction::LimitUpdateAction(_) => APPROVAL_THRESHOLD_LIMIT_UPDATE,
             BridgeAction::AssetPriceUpdateAction(_) => APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
-            BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
-            BridgeAction::RemoveExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
+            BridgeAction::RemoveExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
