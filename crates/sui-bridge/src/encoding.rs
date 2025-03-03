@@ -25,6 +25,8 @@ use sui_types::base_types::SUI_ADDRESS_LENGTH;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
+pub const ADD_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
+pub const REMOVE_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const EMERGENCY_BUTTON_MESSAGE_VERSION: u8 = 1;
 pub const LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -383,7 +385,7 @@ impl BridgeMessageEncoding for AddExternalCoinAdminAction {
         // Add message type
         bytes.push(BridgeActionType::AddExternalCoinAdmin as u8);
         // Add message version
-        bytes.push(ADD_TOKENS_ON_SUI_MESSAGE_VERSION);
+        bytes.push(ADD_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION);
         // Add nonce
         bytes.extend_from_slice(&self.nonce.to_be_bytes());
         // Add chain id
@@ -409,7 +411,7 @@ impl BridgeMessageEncoding for RemoveExternalCoinAdminAction {
         // Add message type
         bytes.push(BridgeActionType::RemoveExternalCoinAdmin as u8);
         // Add message version
-        bytes.push(ADD_TOKENS_ON_SUI_MESSAGE_VERSION);
+        bytes.push(REMOVE_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION);
         // Add nonce
         bytes.extend_from_slice(&self.nonce.to_be_bytes());
         // Add chain id
