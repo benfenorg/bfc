@@ -1446,7 +1446,6 @@ impl AuthorityState {
             Ok(res) => res,
         };
 
-        tracing::error!("effect is {:?}", effects);
         if let Some(expected_effects_digest) = expected_effects_digest {
             if effects.digest() != expected_effects_digest {
                 // We dont want to mask the original error, so we log it and continue.
