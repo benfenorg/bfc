@@ -1536,6 +1536,21 @@ impl SuiNode {
         let checkpoint_executor_metrics =
             CheckpointExecutorMetrics::new(&self.registry_service.default_registry());
 
+        // set rate map to global-mutable-singleton
+        let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
+        tracing::info!("[init] Set rate map to global-mutable-singleton, get_bfc_system_state_object result {:#?}", &result);
+        if result.is_ok() {
+            let bfc_system = result.unwrap();
+            let rate_map = bfc_system.get_rate_map();
+            let v: BTreeMap<String, u64> = rate_map.contents.iter()
+                .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
+                .collect();
+
+                tracing::info!("[init] Set rate map to global-mutable-singleton, bfc_system.get_rate_map is {:#?}", v.clone());
+
+            update_allow_stable_gas_coins(v);
+        }
+
         loop {
             let mut accumulator_guard = self.accumulator.lock().await;
             let accumulator = accumulator_guard.take().unwrap();
@@ -1818,12 +1833,16 @@ impl SuiNode {
 
             // set rate map to global-mutable-singleton
             let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
+            tracing::info!("Set rate map to global-mutable-singleton, get_bfc_system_state_object result {:#?}", &result);
             if result.is_ok() {
                 let bfc_system = result.unwrap();
                 let rate_map = bfc_system.get_rate_map();
                 let v: BTreeMap<String, u64> = rate_map.contents.iter()
                     .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
                     .collect();
+
+                tracing::info!("Set rate map to global-mutable-singleton, bfc_system.get_rate_map is {:#?}", v.clone());
+
                 update_allow_stable_gas_coins(v);
             }
 

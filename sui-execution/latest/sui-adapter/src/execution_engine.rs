@@ -463,6 +463,7 @@ mod checked {
                         }
                     })
             };
+            // TODO: check it
             if let Err(conservation_err) = conservation_result {
                 // conservation violated. try to avoid panic by dumping all writes, charging for gas, re-checking
                 // conservation, and surfacing an aborted transaction with an invariant violation if all of that works

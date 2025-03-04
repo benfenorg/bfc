@@ -2805,18 +2805,18 @@ impl ProtocolConfig {
                     cfg.feature_flags.rethrow_serialization_type_layout_errors = true;
                 }
                 56 => {
-                    if chain == Chain::Mainnet {
-                        cfg.feature_flags.bridge = true;
-                    }
+                    // if chain == Chain::Mainnet {
+                    //     cfg.feature_flags.bridge = true;
+                    // }
                 }
                 57 => {
                     // Reduce minimum number of random beacon shares.
                     cfg.random_beacon_reduction_lower_bound = Some(800);
                 }
                 58 => {
-                    if chain == Chain::Mainnet {
-                        cfg.bridge_should_try_to_finalize_committee = Some(true);
-                    }
+                    // if chain == Chain::Mainnet {
+                    //     cfg.bridge_should_try_to_finalize_committee = Some(true);
+                    // }
 
                     if chain != Chain::Mainnet && chain != Chain::Testnet {
                         // Enable distributed vote scoring for devnet
