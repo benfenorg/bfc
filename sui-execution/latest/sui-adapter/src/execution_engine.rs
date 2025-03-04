@@ -961,7 +961,6 @@ mod checked {
                         bcs::to_bytes(&calculate_add(calculate_reward_rate(gas_cost_summary.gas_by_bfc.computation_cost, param.reward_rate), gas_cost_summary.gas_by_bfc.storage_cost)).unwrap(),
                     ))
                     .unwrap();
-                tracing::error!("out gas type tag is {:?},gas_cost_summary is {:?}",type_tag, gas_cost_summary);
                 rewards_bfc = builder.programmable_move_call(
                     BFC_SYSTEM_PACKAGE_ID,
                     BFC_SYSTEM_MODULE_NAME.to_owned(),
@@ -970,7 +969,6 @@ mod checked {
                     vec![system_obj, bfc_charge_arg],
                 );
             } else {
-                tracing::error!("innner type tag is {:?},gas_cost_summary is {:?}",type_tag, gas_cost_summary);
                 let stable_charge_arg = builder
                     .input(CallArg::Pure(
                         bcs::to_bytes(&calculate_add(

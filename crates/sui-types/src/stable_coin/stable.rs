@@ -200,8 +200,6 @@ pub mod checked {
 
         pub fn is_configurable_gas_type(other: &TypeTag) -> bool {
             let rate_map = get_allow_stable_gas_coins_rate_map();
-            tracing::error!("get_allow_stable_gas_coins_rate_map is {:#?}", rate_map.clone());
-
             let r = rate_map.iter().any(|(key, _)| {
                 tracing::error!("key is {:?}",key);
                 let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
@@ -218,14 +216,6 @@ pub mod checked {
         }
 
         pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
-            tracing::error!("[DEBUG] is_outer_gas_type:{:#?} , {:#?} , {:#?} , {:#?} , {:#?}", 
-                other, 
-                version, 
-                Self::is_configurable_gas_type(other), 
-                &(STABLE::BUSD.type_tag()) == other, 
-                Self::is_inner_gas_type(other),
-            );
-
             if version > BFC_ROUND_V2_PROTOCOL_VERSION {
                 if &(STABLE::BUSD.type_tag()) == other {
                     return false; // inner gas type ,after 45 protocol version only busd
