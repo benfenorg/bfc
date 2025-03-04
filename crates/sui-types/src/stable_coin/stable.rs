@@ -216,6 +216,14 @@ pub mod checked {
         }
 
         pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
+            tracing::error!("[DEBUG] is_outer_gas_type:{:#?} , {:#?} , {:#?} , {:#?} , {:#?}", 
+                other, 
+                version, 
+                Self::is_configurable_gas_type(other), 
+                &(STABLE::BUSD.type_tag()) == other, 
+                Self::is_inner_gas_type(other),
+            );
+
             if version > BFC_ROUND_V2_PROTOCOL_VERSION {
                 if &(STABLE::BUSD.type_tag()) == other {
                     return false; // inner gas type ,after 45 protocol version only busd
