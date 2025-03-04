@@ -1536,11 +1536,9 @@ impl SuiNode {
         let checkpoint_executor_metrics =
             CheckpointExecutorMetrics::new(&self.registry_service.default_registry());
 
-        tracing::error!("monitor_reconfiguration start");
-
         // set rate map to global-mutable-singleton
         let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
-        tracing::error!(" 1 self.state.get_object_cache_reader().get_bfc_system_state_object(); is {:#?}", &result);
+        tracing::info!("[init] Set rate map to global-mutable-singleton, get_bfc_system_state_object result {:#?}", &result);
         if result.is_ok() {
             let bfc_system = result.unwrap();
             let rate_map = bfc_system.get_rate_map();
@@ -1548,15 +1546,12 @@ impl SuiNode {
                 .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
                 .collect();
 
-            tracing::error!("1 bfc_system.get_rate_map(); is {:#?}", v.clone());
-            
+                tracing::info!("[init] Set rate map to global-mutable-singleton, bfc_system.get_rate_map is {:#?}", v.clone());
 
             update_allow_stable_gas_coins(v);
         }
 
         loop {
-            tracing::error!("monitor_reconfiguration loop start");
-
             let mut accumulator_guard = self.accumulator.lock().await;
             let accumulator = accumulator_guard.take().unwrap();
             let mut checkpoint_executor = CheckpointExecutor::new(
@@ -1571,8 +1566,6 @@ impl SuiNode {
             let run_with_range = self.config.run_with_range;
 
             let cur_epoch_store = self.state.load_epoch_store_one_call_per_task();
-            tracing::error!("monitor_reconfiguration load_epoch_store_one_call_per_task");
-
 
             // Advertise capabilities to committee, if we are a validator.
             if let Some(components) = &*self.validator_components.lock().await {
@@ -1613,15 +1606,10 @@ impl SuiNode {
                     .submit(transaction, None, &cur_epoch_store)?;
             }
 
-            tracing::error!("monitor_reconfiguration validator_components");
-
             let stop_condition = checkpoint_executor
                 .run_epoch(cur_epoch_store.clone(), run_with_range)
                 .await;
             drop(checkpoint_executor);
-
-            tracing::error!("monitor_reconfiguration stop_condition");
-
 
             if stop_condition == StopReason::RunWithRangeCondition {
                 SuiNode::shutdown(&self).await;
@@ -1631,18 +1619,12 @@ impl SuiNode {
                 return Ok(());
             }
 
-            tracing::error!("monitor_reconfiguration stop_condition end");
-
-
             // Safe to call because we are in the middle of reconfiguration.
             let latest_system_state = self
                 .state
                 .get_object_cache_reader()
                 .get_sui_system_state_object_unsafe()
                 .expect("Read Sui System State object cannot fail");
-
-            tracing::error!("monitor_reconfiguration latest_system_state");
-
 
             #[cfg(msim)]
             if !self
@@ -1656,8 +1638,6 @@ impl SuiNode {
             #[cfg(not(msim))]
             debug_assert!(!latest_system_state.safe_mode());
 
-            tracing::error!("monitor_reconfiguration end_of_epoch_channel");
-
             if let Err(err) = self.end_of_epoch_channel.send(latest_system_state.clone()) {
                 if self.state.is_fullnode(&cur_epoch_store) {
                     warn!(
@@ -1667,14 +1647,8 @@ impl SuiNode {
                 }
             }
 
-            tracing::error!("monitor_reconfiguration end_of_epoch_channel end");
-
-
             cur_epoch_store.record_is_safe_mode_metric(latest_system_state.safe_mode());
             let new_epoch_start_state = latest_system_state.into_epoch_start_state();
-
-            tracing::error!("monitor_reconfiguration cur_epoch_store.record_is_safe_mode_metric");
-
 
             self.auth_agg.store(Arc::new(
                 self.auth_agg
@@ -1682,15 +1656,9 @@ impl SuiNode {
                     .recreate_with_new_epoch_start_state(&new_epoch_start_state),
             ));
 
-            tracing::error!("monitor_reconfiguration auth_agg");
-
-
             let next_epoch_committee = new_epoch_start_state.get_sui_committee();
             let next_epoch = next_epoch_committee.epoch();
             assert_eq!(cur_epoch_store.epoch() + 1, next_epoch);
-
-            tracing::error!("monitor_reconfiguration assert_eq!(cur_epoch_store.epoch() + 1, next_epoch)");
-
 
             info!(
                 next_epoch,
@@ -1715,8 +1683,6 @@ impl SuiNode {
                 &self.trusted_peer_change_tx,
                 &new_epoch_start_state,
             );
-
-            tracing::error!("monitor_reconfiguration send_trusted_peer_change");
 
             // The following code handles 4 different cases, depending on whether the node
             // was a validator in the previous epoch, and whether the node is a validator
@@ -1845,14 +1811,9 @@ impl SuiNode {
             };
             *self.validator_components.lock().await = new_validator_components;
 
-            tracing::error!("monitor_reconfiguration new_validator_components end");
-
             // Force releasing current epoch store DB handle, because the
             // Arc<AuthorityPerEpochStore> may linger.
             cur_epoch_store.release_db_handles();
-
-            tracing::error!("monitor_reconfiguration release_db_handles");
-
 
             if cfg!(msim)
                 && !matches!(
@@ -1870,12 +1831,9 @@ impl SuiNode {
                 .await?;
             }
 
-            tracing::error!("monitor_reconfiguration prune_checkpoints_for_eligible_epochs_for_testing");
-
-
             // set rate map to global-mutable-singleton
             let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
-            tracing::error!("self.state.get_object_cache_reader().get_bfc_system_state_object(); is {:#?}", &result);
+            tracing::info!("Set rate map to global-mutable-singleton, get_bfc_system_state_object result {:#?}", &result);
             if result.is_ok() {
                 let bfc_system = result.unwrap();
                 let rate_map = bfc_system.get_rate_map();
@@ -1883,8 +1841,7 @@ impl SuiNode {
                     .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
                     .collect();
 
-                tracing::error!("bfc_system.get_rate_map(); is {:#?}", v.clone());
-                
+                tracing::info!("Set rate map to global-mutable-singleton, bfc_system.get_rate_map is {:#?}", v.clone());
 
                 update_allow_stable_gas_coins(v);
             }
