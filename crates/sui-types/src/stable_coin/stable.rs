@@ -201,7 +201,6 @@ pub mod checked {
         pub fn is_configurable_gas_type(other: &TypeTag) -> bool {
             let rate_map = get_allow_stable_gas_coins_rate_map();
             let r = rate_map.iter().any(|(key, _)| {
-                tracing::error!("key is {:?}",key);
                 let tag = TypeTag::from_str(&(convert_and_format_hex_address(key)));
                 if tag.is_err() {
                     tracing::error!("[ERROR] convert_and_format_hex_address: {}", key);
