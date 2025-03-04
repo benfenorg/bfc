@@ -1538,6 +1538,22 @@ impl SuiNode {
 
         tracing::error!("monitor_reconfiguration start");
 
+        // set rate map to global-mutable-singleton
+        let result = self.state.get_object_cache_reader().get_bfc_system_state_object();
+        tracing::error!(" 1 self.state.get_object_cache_reader().get_bfc_system_state_object(); is {:#?}", &result);
+        if result.is_ok() {
+            let bfc_system = result.unwrap();
+            let rate_map = bfc_system.get_rate_map();
+            let v: BTreeMap<String, u64> = rate_map.contents.iter()
+                .map(|entity| ((*entity.key).to_string().clone(), entity.value.clone()))
+                .collect();
+
+            tracing::error!("1 bfc_system.get_rate_map(); is {:#?}", v.clone());
+            
+
+            update_allow_stable_gas_coins(v);
+        }
+
         loop {
             tracing::error!("monitor_reconfiguration loop start");
 
