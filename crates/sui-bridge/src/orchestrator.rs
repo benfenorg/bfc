@@ -98,6 +98,18 @@ where
                 .expect("Submit to executor should not fail");
         }
 
+        // Re-submit pending actions to executor
+        let actions4aml = store_clone
+            .get_all_pending_actions_4_aml()
+            .into_values()
+            .collect::<Vec<_>>();
+        for action in actions4aml {
+            let aml_checker_sender_clone = aml_checker_sender.clone();
+            submit_to_aml_checker(&aml_checker_sender_clone,action)
+                .await
+                .expect("Submit to aml checker should not fail");
+        }
+
         let metrics_clone = self.metrics.clone();
         task_handles.push(spawn_logged_monitored_task!(Self::run_eth_watcher(
             store_clone,

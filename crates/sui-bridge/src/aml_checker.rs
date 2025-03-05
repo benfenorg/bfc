@@ -151,6 +151,9 @@ P: SuiClientInner + 'static,{
             .await
             {
                 info!("Action already processed, skipping");
+                store.remove_pending_aml_checked_actions(&[action.digest()]).unwrap_or_else(|e| {
+                    panic!("remove from DB should not fail: {:?}", e);
+                });
                 return;
             }
 
@@ -294,8 +297,7 @@ P: SuiClientInner + 'static,{
                     "Expected TokenSendBackEvent event but got: {:?}",
                     events,
                     );
-                info!(?tx_digest, "Sui transaction executed successfully");
-                println!("received token send back event");
+                info!(?tx_digest, "send back transaction executed successfully");
                 store
                     .remove_pending_aml_checked_actions(&[action.digest()])
                     .unwrap_or_else(|e| {
