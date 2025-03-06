@@ -6,12 +6,8 @@ use std::collections::HashMap;
 
 use super::execution::SimulateTransactionQueryParameters;
 use super::TransactionSimulationResponse;
+use super::{ApiEndpoint, RouteHandler};
 use crate::reader::StateReader;
-use crate::rest::openapi::ApiEndpoint;
-use crate::rest::openapi::OperationBuilder;
-use crate::rest::openapi::RequestBodyBuilder;
-use crate::rest::openapi::ResponseBuilder;
-use crate::rest::openapi::RouteHandler;
 use crate::service::objects::ObjectNotFoundError;
 use crate::Result;
 use crate::RpcService;
@@ -21,13 +17,12 @@ use axum::extract::State;
 use axum::Json;
 use itertools::Itertools;
 use move_binary_format::normalized;
-use schemars::JsonSchema;
 use sui_protocol_config::ProtocolConfig;
-use sui_sdk_types::types::unresolved;
-use sui_sdk_types::types::Argument;
-use sui_sdk_types::types::Command;
-use sui_sdk_types::types::ObjectId;
-use sui_sdk_types::types::Transaction;
+use sui_sdk_transaction_builder::unresolved;
+use sui_sdk_types::Argument;
+use sui_sdk_types::Command;
+use sui_sdk_types::ObjectId;
+use sui_sdk_types::Transaction;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SuiAddress;
@@ -56,28 +51,6 @@ impl ApiEndpoint<RpcService> for ResolveTransaction {
         "/transactions/resolve"
     }
 
-    fn operation(
-        &self,
-        generator: &mut schemars::gen::SchemaGenerator,
-    ) -> openapiv3::v3_1::Operation {
-        OperationBuilder::new()
-            .tag("Transactions")
-            .operation_id("ResolveTransaction")
-            .query_parameters::<ResolveTransactionQueryParameters>(generator)
-            .request_body(
-                RequestBodyBuilder::new()
-                    .json_content::<unresolved::Transaction>(generator)
-                    .build(),
-            )
-            .response(
-                200,
-                ResponseBuilder::new()
-                    .json_content::<ResolveTransactionResponse>(generator)
-                    .build(),
-            )
-            .build()
-    }
-
     fn handler(&self) -> RouteHandler<RpcService> {
         RouteHandler::new(self.method(), resolve_transaction)
     }
@@ -101,12 +74,12 @@ async fn resolve_transaction(
             current_protocol_version.into(),
             state.reader.inner().get_chain_identifier()?.chain(),
         )
-        .ok_or_else(|| {
-            RpcServiceError::new(
-                axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-                "unable to get current protocol config",
-            )
-        })?;
+            .ok_or_else(|| {
+                RpcServiceError::new(
+                    axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+                    "unable to get current protocol config",
+                )
+            })?;
 
         (system_state.reference_gas_price, protocol_config)
     };
@@ -179,12 +152,12 @@ async fn resolve_transaction(
         transaction: resolved_transaction.try_into()?,
         simulation,
     }
-    .pipe(Json)
-    .pipe(Ok)
+        .pipe(Json)
+        .pipe(Ok)
 }
 
 /// Query parameters for the resolve transaction endpoint
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize, JsonSchema)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct ResolveTransactionQueryParameters {
     /// Request that the fully resolved transaction be simulated and have its results sent back in
     /// the response.
@@ -298,7 +271,7 @@ fn resolve_unresolved_transaction(
 }
 
 /// Response type for the execute transaction endpoint
-#[derive(Debug, serde::Serialize, serde::Deserialize, JsonSchema)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct ResolveTransactionResponse {
     pub transaction: Transaction,
     pub simulation: Option<TransactionSimulationResponse>,
@@ -397,7 +370,7 @@ fn resolve_ptb(
             .map(TryInto::try_into)
             .collect::<Result<_, _>>()?,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 fn resolve_arg(
@@ -409,7 +382,7 @@ fn resolve_arg(
 ) -> Result<CallArg> {
     use fastcrypto::encoding::Base64;
     use fastcrypto::encoding::Encoding;
-    use sui_sdk_types::types::unresolved::InputKind::*;
+    use sui_sdk_transaction_builder::unresolved::InputKind::*;
 
     let unresolved::Input {
         kind,
@@ -426,7 +399,7 @@ fn resolve_arg(
             let value = Base64::decode(&v).map_err(|e| {
                 RpcServiceError::new(
                     axum::http::StatusCode::BAD_REQUEST,
-                    format!("argument is an invalid pure arguement: {e}"),
+                    format!("argument is an invalid pure argument: {e}"),
                 )
             })?;
             CallArg::Pure(value)
@@ -436,7 +409,7 @@ fn resolve_arg(
             let value = serde_json::from_value(serde_json::Value::from(array)).map_err(|e| {
                 RpcServiceError::new(
                     axum::http::StatusCode::BAD_REQUEST,
-                    format!("argument is an invalid pure arguement: {e}"),
+                    format!("argument is an invalid pure argument: {e}"),
                 )
             })?;
             CallArg::Pure(value)
@@ -499,7 +472,7 @@ fn resolve_arg(
             ))
         }
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 fn resolve_object(
@@ -508,8 +481,8 @@ fn resolve_object(
     commands: &[Command],
     arg_idx: usize,
     object_id: ObjectId,
-    version: Option<sui_sdk_types::types::Version>,
-    digest: Option<sui_sdk_types::types::ObjectDigest>,
+    version: Option<sui_sdk_types::Version>,
+    digest: Option<sui_sdk_types::ObjectDigest>,
     _mutable: Option<bool>,
 ) -> Result<ObjectArg> {
     let id = object_id.into();
@@ -527,7 +500,7 @@ fn resolve_object(
                 digest,
             },
         )
-        .map(ObjectArg::ImmOrOwnedObject),
+            .map(ObjectArg::ImmOrOwnedObject),
 
         sui_types::object::Owner::AddressOwner(_) => {
             let object_ref = resolve_object_reference_with_object(
@@ -544,7 +517,7 @@ fn resolve_object(
             } else {
                 ObjectArg::ImmOrOwnedObject(object_ref)
             }
-            .pipe(Ok)
+                .pipe(Ok)
         }
         sui_types::object::Owner::Shared { .. } | sui_types::object::Owner::ConsensusV2 { .. } => {
             resolve_shared_input_with_object(called_packages, commands, arg_idx, object)
@@ -571,7 +544,7 @@ fn resolve_shared_input(
     resolve_shared_input_with_object(called_packages, commands, arg_idx, object)
 }
 
-// Checks if the provided input argument is used as a recieving object
+// Checks if the provided input argument is used as a receiving object
 fn is_input_argument_receiving(
     called_packages: &HashMap<ObjectId, NormalizedPackage>,
     commands: &[Command],
@@ -614,7 +587,7 @@ fn is_input_argument_receiving(
 // real type needs to be lookedup from the provided type args in the MoveCall itself
 fn arg_type_of_move_call_input<'a>(
     called_packages: &'a HashMap<ObjectId, NormalizedPackage>,
-    move_call: &sui_sdk_types::types::MoveCall,
+    move_call: &sui_sdk_types::MoveCall,
     idx: usize,
 ) -> Result<&'a move_binary_format::normalized::Type> {
     let function = called_packages
@@ -757,7 +730,7 @@ fn find_arg_uses(
                 .map(Some),
             Command::Upgrade(upgrade) => matches_input_arg(upgrade.ticket, arg_idx).then_some(None),
         }
-        .map(|x| (command, x))
+            .map(|x| (command, x))
     })
 }
 

@@ -384,6 +384,7 @@ async fn test_zklogin_sig_verify() {
     let cluster = start_cluster_with_long_epoch(ServiceConfig::test_defaults()).await;
 
     let test_cluster = &cluster.network.validator_fullnode_handle;
+    test_cluster.trigger_reconfiguration().await;
     test_cluster.wait_for_epoch_all_nodes(1).await;
     test_cluster.wait_for_authenticator_state_update().await;
 

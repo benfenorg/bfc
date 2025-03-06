@@ -5,8 +5,8 @@ use crate::types::GetObjectOptions;
 use crate::types::ObjectResponse;
 use crate::Result;
 use crate::RpcService;
-use sui_sdk_types::types::ObjectId;
-use sui_sdk_types::types::Version;
+use sui_sdk_types::ObjectId;
+use sui_sdk_types::Version;
 use tap::Pipe;
 
 impl RpcService {
@@ -38,7 +38,7 @@ impl RpcService {
             object: options.include_object().then_some(object),
             object_bcs,
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 

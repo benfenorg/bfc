@@ -22,8 +22,8 @@ use crate::{
 pub struct Bcs<T>(pub T);
 
 impl<T> axum::response::IntoResponse for Bcs<T>
-where
-    T: serde::Serialize,
+    where
+        T: serde::Serialize,
 {
     fn into_response(self) -> axum::response::Response {
         match bcs::to_bytes(&self.0) {
@@ -50,9 +50,9 @@ where
 
 #[axum::async_trait]
 impl<T, S> axum::extract::FromRequest<S> for Bcs<T>
-where
-    T: serde::de::DeserializeOwned,
-    S: Send + Sync,
+    where
+        T: serde::de::DeserializeOwned,
+        S: Send + Sync,
 {
     type Rejection = BcsRejection;
 
@@ -104,25 +104,6 @@ impl axum::response::IntoResponse for BcsRejection {
             )
                 .into_response(),
             BcsRejection::BytesRejection(bytes_rejection) => bytes_rejection.into_response(),
-        }
-    }
-}
-
-#[derive(Debug)]
-pub enum ResponseContent<T, J = T> {
-    Bcs(T),
-    Json(J),
-}
-
-impl<T, J> axum::response::IntoResponse for ResponseContent<T, J>
-where
-    T: serde::Serialize,
-    J: serde::Serialize,
-{
-    fn into_response(self) -> axum::response::Response {
-        match self {
-            ResponseContent::Bcs(inner) => Bcs(inner).into_response(),
-            ResponseContent::Json(inner) => axum::Json(inner).into_response(),
         }
     }
 }

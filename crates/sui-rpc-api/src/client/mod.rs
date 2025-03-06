@@ -8,6 +8,13 @@ pub use response_ext::ResponseExt;
 
 pub mod sdk;
 use sdk::BoxError;
+
+pub use reqwest;
+use tap::Pipe;
+use tonic::metadata::MetadataMap;
+
+use crate::proto::node::v2::node_service_client::NodeServiceClient;
+use crate::proto::node::v2::{
 pub use reqwest;
 use tap::Pipe;
 use tonic::metadata::MetadataMap;
@@ -37,6 +44,7 @@ pub struct Client {
     #[allow(unused)]
     uri: http::Uri,
     channel: tonic::transport::Channel,
+    auth: AuthInterceptor,
 }
 
 impl Client {
@@ -63,6 +71,24 @@ impl Client {
 
     pub fn raw_client(&self) -> NodeClient<tonic::transport::Channel> {
         NodeClient::new(self.channel.clone())
+        Ok(Self {
+            uri,
+            channel,
+            auth: Default::default(),
+        })
+    }
+
+    pub fn with_auth(mut self, auth: AuthInterceptor) -> Self {
+        self.auth = auth;
+        self
+    }
+
+    pub fn raw_client(
+        &self,
+    ) -> NodeServiceClient<
+        tonic::service::interceptor::InterceptedService<tonic::transport::Channel, AuthInterceptor>,
+    > {
+        NodeServiceClient::with_interceptor(self.channel.clone(), self.auth.clone())
     }
 
     pub async fn get_latest_checkpoint(&self) -> Result<CertifiedCheckpointSummary> {
@@ -80,10 +106,10 @@ impl Client {
         &self,
         sequence_number: Option<CheckpointSequenceNumber>,
     ) -> Result<CertifiedCheckpointSummary> {
-        let request = crate::proto::node::GetCheckpointRequest {
+        let request = crate::proto::node::v2::GetCheckpointRequest {
             sequence_number,
             digest: None,
-            options: Some(crate::proto::node::GetCheckpointOptions {
+            options: Some(crate::proto::node::v2::GetCheckpointOptions {
                 summary: Some(false),
                 summary_bcs: Some(true),
                 signature: Some(true),
@@ -106,7 +132,7 @@ impl Client {
             .await?
             .into_parts();
 
-        certified_checkpoint_internal_summary_try_from_proto(summary_bcs, signature)
+        certified_checkpoint_summary_try_from_proto(summary_bcs, signature)
             .map_err(|e| status_from_error_with_metadata(e, metadata))
     }
 
@@ -114,10 +140,10 @@ impl Client {
         &self,
         sequence_number: CheckpointSequenceNumber,
     ) -> Result<CheckpointData> {
-        let request = crate::proto::node::GetFullCheckpointRequest {
+        let request = crate::proto::node::v2::GetFullCheckpointRequest {
             sequence_number: Some(sequence_number),
             digest: None,
-            options: Some(crate::proto::node::GetFullCheckpointOptions {
+            options: Some(crate::proto::node::v2::GetFullCheckpointOptions {
                 summary: Some(false),
                 summary_bcs: Some(true),
                 signature: Some(true),
@@ -138,6 +164,7 @@ impl Client {
 
         let (metadata, response, _extentions) = self
             .raw_client()
+            .max_decoding_message_size(64 * 1024 * 1024)
             .get_full_checkpoint(request)
             .await?
             .into_parts();
@@ -164,10 +191,10 @@ impl Client {
         object_id: ObjectID,
         version: Option<u64>,
     ) -> Result<Object> {
-        let request = crate::proto::node::GetObjectRequest {
-            object_id: Some(sui_sdk_types::types::ObjectId::from(object_id).into()),
+        let request = crate::proto::node::v2::GetObjectRequest {
+            object_id: Some(sui_sdk_types::ObjectId::from(object_id).into()),
             version,
-            options: Some(crate::proto::node::GetObjectOptions {
+            options: Some(crate::proto::node::v2::GetObjectOptions {
                 object: Some(false),
                 object_bcs: Some(true),
             }),
@@ -187,21 +214,20 @@ impl Client {
         let signatures = transaction
             .inner()
             .tx_signatures
-            .clone()
-            .into_iter()
-            .map(sui_sdk_types::types::UserSignature::try_from)
-            .collect::<Result<Vec<_>, _>>()
-            .map_err(|e| Status::from_error(e.into()))?;
+            .iter()
+            .map(|signature| signature.as_ref().to_vec().into())
+            .collect();
 
-        let request = crate::proto::node::ExecuteTransactionRequest {
+        let request = crate::proto::node::v2::ExecuteTransactionRequest {
             transaction: None,
             transaction_bcs: Some(
                 crate::proto::types::Bcs::serialize(&transaction.inner().intent_message.value)
                     .map_err(|e| Status::from_error(e.into()))?,
             ),
-            signatures: signatures.into_iter().map(Into::into).collect(),
+            signatures: None,
+            signatures_bytes: Some(crate::proto::node::v2::UserSignaturesBytes { signatures }),
 
-            options: Some(crate::proto::node::ExecuteTransactionOptions {
+            options: Some(crate::proto::node::v2::ExecuteTransactionOptions {
                 effects: Some(false),
                 effects_bcs: Some(true),
                 events: Some(false),
@@ -227,23 +253,21 @@ pub struct TransactionExecutionResponse {
 
     pub effects: TransactionEffects,
     pub events: Option<TransactionEvents>,
-    pub balance_changes: Option<Vec<sui_sdk_types::types::BalanceChange>>,
+    pub balance_changes: Option<Vec<sui_sdk_types::BalanceChange>>,
 }
 
 /// Attempts to parse `CertifiedCheckpointSummary` from the bcs fields in `GetCheckpointResponse`
-fn certified_checkpoint_internal_summary_try_from_proto(
+fn certified_checkpoint_summary_try_from_proto(
     summary_bcs: Option<Bcs>,
     signature: Option<crate::proto::types::ValidatorAggregatedSignature>,
 ) -> Result<CertifiedCheckpointSummary, TryFromProtoError> {
-    let summary_result: Result<sui_sdk_types::types::CheckpointSummary,  bcs::Error>   = summary_bcs
+    let summary = summary_bcs
         .ok_or_else(|| TryFromProtoError::missing("summary_bcs"))?
-        .deserialize();
-
-    let summary = summary_result
-        .map_err(TryFromProtoError::from_error).unwrap();
+        .deserialize()
+        .map_err(TryFromProtoError::from_error)?;
 
     let signature = sui_types::crypto::AuthorityStrongQuorumSignInfo::from(
-        sui_sdk_types::types::ValidatorAggregatedSignature::try_from(
+        sui_sdk_types::ValidatorAggregatedSignature::try_from(
             signature
                 .as_ref()
                 .ok_or_else(|| TryFromProtoError::missing("signature"))?,
@@ -251,85 +275,11 @@ fn certified_checkpoint_internal_summary_try_from_proto(
         .map_err(TryFromProtoError::from_error)?,
     );
 
-    let checkpoint_summary = CheckpointSummary {
-        epoch: summary.epoch,
-        sequence_number: summary.sequence_number,
-        network_total_transactions: summary.network_total_transactions,
-        content_digest: sui_types::digests::CheckpointContentsDigest::new(*summary.content_digest.inner()),
-        previous_digest: summary.previous_digest.map(|d | sui_types::digests::CheckpointDigest::new(*d.inner())),
-        epoch_rolling_bfc_gas_cost_summary: sui_types::gas::GasCostSummary{
-            base_point: summary.epoch_rolling_bfc_gas_cost_summary.base_point,
-            rate: summary.epoch_rolling_bfc_gas_cost_summary.rate,
-            computation_cost: summary.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-            storage_cost: summary.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-            storage_rebate: summary.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee: summary.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-        },
-        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
-        timestamp_ms: summary.timestamp_ms,
-        checkpoint_commitments: summary.checkpoint_commitments.clone().into_iter().map(|c |
-            match c {
-                sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
-                    digest: sui_types::digests::Digest::new(*digest.inner())
-                })
-            }).collect(),
-        end_of_epoch_data: summary.end_of_epoch_data.clone().map(|c | sui_types::messages_checkpoint::EndOfEpochData {
-            next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                (sui_types::crypto::AuthorityPublicKeyBytes(*next_epoch_committee.public_key.inner()), next_epoch_committee.stake)
-            }).collect(),
-            next_epoch_protocol_version: sui_types::committee::ProtocolVersion::new(c.next_epoch_protocol_version),
-            epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                match epoch_commitment {
-                    sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
-                            digest: sui_types::digests::Digest::new(*digest.inner())
-                        })
-                }).collect(),
-        }),
-        version_specific_data: summary.version_specific_data,
-    };
     Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
-        checkpoint_summary, signature,
+        summary, signature,
     ))
 }
 
-fn certified_checkpoint_summary_try_from_proto(
-    summary_bcs: Option<Bcs>,
-    signature: Option<crate::proto::types::ValidatorAggregatedSignature>,
-) -> Result<CertifiedCheckpointSummary, TryFromProtoError> {
-    let result: Result<CheckpointSummary,  bcs::Error>   = summary_bcs
-        .ok_or_else(|| TryFromProtoError::missing("summary_bcs"))?
-        .deserialize();
-    let summary = result
-        .map_err(TryFromProtoError::from_error).unwrap();
-
-    let signature = sui_types::crypto::AuthorityStrongQuorumSignInfo::from(
-        sui_sdk_types::types::ValidatorAggregatedSignature::try_from(
-            signature
-                .as_ref()
-                .ok_or_else(|| TryFromProtoError::missing("signature"))?,
-        )
-            .map_err(TryFromProtoError::from_error)?,
-    );
-
-    let checkpoint_summary = CheckpointSummary {
-        epoch: summary.epoch,
-        sequence_number: summary.sequence_number,
-        network_total_transactions: summary.network_total_transactions,
-        content_digest: summary.content_digest,
-        previous_digest: summary.previous_digest,
-        epoch_rolling_bfc_gas_cost_summary: summary.epoch_rolling_bfc_gas_cost_summary,
-        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
-        timestamp_ms: summary.timestamp_ms,
-        checkpoint_commitments: summary.checkpoint_commitments,
-        end_of_epoch_data: summary.end_of_epoch_data,
-        version_specific_data: summary.version_specific_data,
-    };
-    Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
-        checkpoint_summary, signature,
-    ))
-}
 /// Attempts to parse `CheckpointData` from the bcs fields in `GetFullCheckpointResponse`
 fn checkpoint_data_try_from_proto(
     GetFullCheckpointResponse {
@@ -341,6 +291,7 @@ fn checkpoint_data_try_from_proto(
     }: GetFullCheckpointResponse,
 ) -> Result<CheckpointData, TryFromProtoError> {
     let checkpoint_summary = certified_checkpoint_summary_try_from_proto(summary_bcs, signature)?;
+
     let checkpoint_contents = contents_bcs
         .ok_or_else(|| TryFromProtoError::missing("contents_bcs"))?
         .deserialize::<sui_types::messages_checkpoint::CheckpointContents>()
@@ -356,7 +307,7 @@ fn checkpoint_data_try_from_proto(
         )
         .map(
             |(
-                crate::proto::node::FullCheckpointTransaction {
+                crate::proto::node::v2::FullCheckpointTransaction {
                     transaction_bcs,
                     effects_bcs,
                     events_bcs,
@@ -405,6 +356,7 @@ fn checkpoint_data_try_from_proto(
             },
         )
         .collect::<Result<_, _>>()?;
+
     Ok(CheckpointData {
         checkpoint_summary,
         checkpoint_contents,
@@ -468,4 +420,63 @@ fn status_from_error_with_metadata<T: Into<BoxError>>(err: T, metadata: Metadata
     let mut status = Status::from_error(err.into());
     *status.metadata_mut() = metadata;
     status
+}
+
+#[derive(Clone, Debug, Default)]
+pub struct AuthInterceptor {
+    auth: Option<tonic::metadata::MetadataValue<tonic::metadata::Ascii>>,
+}
+
+impl AuthInterceptor {
+    /// Enable HTTP basic authentication with a username and optional password.
+    pub fn basic<U, P>(username: U, password: Option<P>) -> Self
+    where
+        U: std::fmt::Display,
+        P: std::fmt::Display,
+    {
+        use base64::prelude::BASE64_STANDARD;
+        use base64::write::EncoderWriter;
+        use std::io::Write;
+
+        let mut buf = b"Basic ".to_vec();
+        {
+            let mut encoder = EncoderWriter::new(&mut buf, &BASE64_STANDARD);
+            let _ = write!(encoder, "{username}:");
+            if let Some(password) = password {
+                let _ = write!(encoder, "{password}");
+            }
+        }
+        let mut header = tonic::metadata::MetadataValue::try_from(buf)
+            .expect("base64 is always valid HeaderValue");
+        header.set_sensitive(true);
+
+        Self { auth: Some(header) }
+    }
+
+    /// Enable HTTP bearer authentication.
+    pub fn bearer<T>(token: T) -> Self
+    where
+        T: std::fmt::Display,
+    {
+        let header_value = format!("Bearer {token}");
+        let mut header = tonic::metadata::MetadataValue::try_from(header_value)
+            .expect("token is always valid HeaderValue");
+        header.set_sensitive(true);
+
+        Self { auth: Some(header) }
+    }
+}
+
+impl tonic::service::Interceptor for AuthInterceptor {
+    fn call(
+        &mut self,
+        mut request: tonic::Request<()>,
+    ) -> std::result::Result<tonic::Request<()>, Status> {
+        if let Some(auth) = self.auth.clone() {
+            request
+                .metadata_mut()
+                .insert(http::header::AUTHORIZATION.as_str(), auth);
+        }
+        Ok(request)
+    }
 }

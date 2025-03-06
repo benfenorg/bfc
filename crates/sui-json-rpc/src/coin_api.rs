@@ -420,7 +420,6 @@ mod tests {
     use super::*;
     use crate::authority_state::{MockStateRead, StateReadError};
     use expect_test::expect;
-    use jsonrpsee::types::ErrorObjectOwned;
     use mockall::mock;
     use mockall::predicate;
     use move_core_types::account_address::AccountAddress;
@@ -433,7 +432,7 @@ mod tests {
     use sui_types::balance::Supply;
     use sui_types::base_types::{ObjectID, SequenceNumber, SuiAddress};
     use sui_types::coin::TreasuryCap;
-    use sui_types::digests::{ObjectDigest, TransactionDigest, TransactionEventsDigest};
+    use sui_types::digests::{ObjectDigest, TransactionDigest};
     use sui_types::effects::{TransactionEffects, TransactionEvents};
     use sui_types::error::{SuiError, SuiResult};
     use sui_types::gas_coin::GAS;
@@ -453,7 +452,6 @@ mod tests {
                 &self,
                 transactions: &[TransactionDigest],
                 effects: &[TransactionDigest],
-                events: &[TransactionEventsDigest],
             ) -> SuiResult<KVStoreTransactionData>;
 
             async fn multi_get_checkpoints(
@@ -594,7 +592,6 @@ mod tests {
     mod get_coins_tests {
         use super::super::*;
         use super::*;
-        use jsonrpsee::types::ErrorObjectOwned;
 
         // Success scenarios
         #[tokio::test]
@@ -774,8 +771,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             let expected = expect!["-32602"];
             expected.assert_eq(&error_object.code().to_string());
             let expected = expect!["Invalid struct type: 0x2::invalid::struct::tag. Got error: Expected end of token stream. Got: ::"];
@@ -793,8 +789,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             let expected = expect!["-32602"];
             expected.assert_eq(&error_object.code().to_string());
             let expected =
@@ -821,8 +816,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(
                 error_object.code(),
                 jsonrpsee::types::error::INVALID_PARAMS_CODE
@@ -847,8 +841,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(
                 error_object.code(),
                 jsonrpsee::types::error::INTERNAL_ERROR_CODE
@@ -959,8 +952,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(error_object.code(), -32602);
             let expected = expect!["-32602"];
             expected.assert_eq(&error_object.code().to_string());
@@ -981,8 +973,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             let expected = expect!["-32602"];
             expected.assert_eq(&error_object.code().to_string());
             let expected = expect!["cursor not found"];
@@ -993,7 +984,6 @@ mod tests {
     mod get_balance_tests {
         use super::super::*;
         use super::*;
-        use jsonrpsee::types::ErrorObjectOwned;
         // Success scenarios
         #[tokio::test]
         async fn test_gas_coin() {
@@ -1077,8 +1067,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             let expected = expect!["-32602"];
             expected.assert_eq(&error_object.code().to_string());
             let expected = expect!["Invalid struct type: 0x2::invalid::struct::tag. Got error: Expected end of token stream. Got: ::"];
@@ -1102,8 +1091,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(
                 error_object.code(),
                 jsonrpsee::types::error::INVALID_PARAMS_CODE
@@ -1127,8 +1115,7 @@ mod tests {
                 .await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
 
             assert_eq!(
                 error_object.code(),
@@ -1142,7 +1129,6 @@ mod tests {
     mod get_all_balances_tests {
         use super::super::*;
         use super::*;
-        use jsonrpsee::types::ErrorObjectOwned;
 
         // Success scenarios
         #[tokio::test]
@@ -1218,8 +1204,7 @@ mod tests {
             let response = coin_read_api.get_all_balances(owner).await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(
                 error_object.code(),
                 jsonrpsee::types::error::INVALID_PARAMS_CODE
@@ -1397,17 +1382,18 @@ mod tests {
                 .return_once(move |_| Ok(transaction_digest));
             mock_state
                 .expect_multi_get()
-                .return_once(move |_, _, _| Ok((vec![], vec![Some(transaction_effects)], vec![])));
+                .return_once(move |_, _| Ok((vec![], vec![Some(transaction_effects)])));
 
             let coin_read_api = CoinReadApi::new_for_tests(Arc::new(mock_state), None);
             let response = coin_read_api.get_total_supply(coin_name.clone()).await;
 
             assert!(response.is_err());
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             let expected = expect!["-32000"];
             expected.assert_eq(&error_object.code().to_string());
-            let expected = expect!["task 1 panicked"];
+            let expected = expect![[
+                r#"task 1 panicked with message "MockKeyValueStore::multi_get(?, ?): No matching expectation found""#
+            ]];
             expected.assert_eq(error_object.message());
         }
 
@@ -1443,8 +1429,7 @@ mod tests {
             };
 
             let response = coin_read_api.get_total_supply(coin_name.clone()).await;
-            let error_result = response.unwrap_err();
-            let error_object: ErrorObjectOwned = error_result.into();
+            let error_object = response.unwrap_err();
             assert_eq!(
                 error_object.code(),
                 jsonrpsee::types::error::CALL_EXECUTION_FAILED_CODE

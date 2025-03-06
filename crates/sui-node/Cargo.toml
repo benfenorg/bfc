@@ -49,13 +49,13 @@ sui-types.workspace = true
 mysten-metrics.workspace = true
 mysten-service.workspace = true
 mysten-common.workspace = true
-narwhal-network.workspace = true
 typed-store.workspace = true
 mysten-network.workspace = true
 telemetry-subscribers.workspace = true
 fastcrypto.workspace = true
 fastcrypto-zkp.workspace = true
 move-vm-profiler.workspace = true
+sui-http.workspace = true
 
 [target.'cfg(msim)'.dependencies]
 sui-simulator.workspace = true

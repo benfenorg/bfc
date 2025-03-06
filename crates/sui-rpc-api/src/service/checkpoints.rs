@@ -12,6 +12,10 @@ use crate::RpcService;
 use sui_sdk_types::types::CheckpointContents;
 use sui_sdk_types::types::CheckpointDigest;
 use sui_sdk_types::types::CheckpointSequenceNumber;
+use sui_sdk_types::CheckpointContents;
+use sui_sdk_types::CheckpointDigest;
+use sui_sdk_types::CheckpointSequenceNumber;
+use sui_sdk_types::SignedCheckpointSummary;
 use tap::Pipe;
 
 impl RpcService {
@@ -21,6 +25,10 @@ impl RpcService {
         options: GetCheckpointOptions,
     ) -> Result<CheckpointResponse> {
         let checkpoint_envelope = match checkpoint {
+        let SignedCheckpointSummary {
+            checkpoint,
+            signature,
+        } = match checkpoint {
             Some(checkpoint_id @ CheckpointId::SequenceNumber(s)) => {
                 let oldest_checkpoint = self.reader.inner().get_lowest_available_checkpoint()?;
                 if s < oldest_checkpoint {
@@ -42,7 +50,8 @@ impl RpcService {
                 .ok_or(CheckpointNotFoundError(checkpoint_id))?,
             None => self.reader.inner().get_latest_checkpoint()?,
         }
-        .into_inner();
+        .into_inner()
+        .try_into()?;
 
         let (contents, contents_bcs) =
             if options.include_contents() || options.include_contents_bcs() {
@@ -51,7 +60,7 @@ impl RpcService {
                     .inner()
                     .get_checkpoint_contents_by_sequence_number(checkpoint_envelope.sequence_number)
                     .ok_or(CheckpointNotFoundError(CheckpointId::SequenceNumber(
-                        checkpoint_envelope.sequence_number,
+                        checkpoint.sequence_number,
                     )))?
                     .try_into()?;
 
@@ -162,9 +171,59 @@ impl RpcService {
             checkpoint_contents,
             transactions,
         } = self
+        let checkpoint = self
             .reader
             .inner()
             .get_checkpoint_data(verified_summary, checkpoint_contents)?;
+
+        checkpoint_data_to_full_checkpoint_response(checkpoint, options)
+    }
+}
+
+pub(crate) fn checkpoint_data_to_full_checkpoint_response(
+    sui_types::full_checkpoint_content::CheckpointData {
+        checkpoint_summary,
+        checkpoint_contents,
+        transactions,
+    }: sui_types::full_checkpoint_content::CheckpointData,
+    options: &GetFullCheckpointOptions,
+) -> Result<FullCheckpointResponse> {
+    let sequence_number = checkpoint_summary.sequence_number;
+    let digest = checkpoint_summary.digest().to_owned().into();
+    let (summary, signature) = checkpoint_summary.into_data_and_sig();
+
+    let summary_bcs = options
+        .include_summary_bcs()
+        .then(|| bcs::to_bytes(&summary))
+        .transpose()?;
+    let contents_bcs = options
+        .include_contents_bcs()
+        .then(|| bcs::to_bytes(&checkpoint_contents))
+        .transpose()?;
+
+    let transactions = transactions
+        .into_iter()
+        .map(|transaction| transaction_to_checkpoint_transaction(transaction, options))
+        .collect::<Result<_>>()?;
+
+    FullCheckpointResponse {
+        sequence_number,
+        digest,
+        summary: options
+            .include_summary()
+            .then(|| summary.try_into())
+            .transpose()?,
+        summary_bcs,
+        signature: options.include_signature().then(|| signature.into()),
+        contents: options
+            .include_contents()
+            .then(|| checkpoint_contents.try_into())
+            .transpose()?,
+        contents_bcs,
+        transactions,
+    }
+    .pipe(Ok)
+}
 
         let sequence_number = checkpoint_summary.sequence_number;
         let digest = checkpoint_summary.digest().to_owned().into();
@@ -313,6 +372,10 @@ pub enum CheckpointId {
     /// Sequence number or height of a Checkpoint
     SequenceNumber(#[schemars(with = "crate::rest::_schemars::U64")] CheckpointSequenceNumber),
     #[schemars(title = "Digest", example = "example_digest")]
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+pub enum CheckpointId {
+    /// Sequence number or height of a Checkpoint
+    SequenceNumber(CheckpointSequenceNumber),
     /// Base58 encoded 32-byte digest of a Checkpoint
     Digest(CheckpointDigest),
 }

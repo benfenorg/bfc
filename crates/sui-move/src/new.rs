@@ -10,7 +10,7 @@ const SUI_PKG_NAME: &str = "Sui";
 
 // Use testnet by default. Probably want to add options to make this configurable later
 // const SUI_PKG_PATH: &str = "{ git = \"https://github.com/MystenLabs/sui.git\", subdir = \"crates/sui-framework/packages/sui-framework\", rev = \"framework/testnet\" }";
-const SUI_PKG_PATH: &str = "{ git = \"https://github.com/benfenorg/bfc.git\", subdir = \"crates/sui-framework/packages/sui-framework\", rev = \"framework/devnet\" }";
+const SUI_PKG_PATH: &str = "{ git = \"https://github.com/benfenorg/bfc.git\", subdir = \"crates/sui-framework/packages/sui-framework\", rev = \"framework/devnet\" , override = true}";
 
 #[derive(Parser)]
 #[group(id = "sui-move-new")]

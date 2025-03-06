@@ -4,24 +4,21 @@
 use reqwest::header::HeaderValue;
 use reqwest::StatusCode;
 use reqwest::Url;
-use sui_sdk_types::types::unresolved::Transaction as UnresolvedTransaction;
-use sui_sdk_types::types::Address;
-use sui_sdk_types::types::CheckpointDigest;
-use sui_sdk_types::types::CheckpointSequenceNumber;
-use sui_sdk_types::types::EpochId;
-use sui_sdk_types::types::Object;
-use sui_sdk_types::types::ObjectId;
-use sui_sdk_types::types::SignedCheckpointSummary;
-use sui_sdk_types::types::SignedTransaction;
-use sui_sdk_types::types::StructTag;
-use sui_sdk_types::types::Transaction;
-use sui_sdk_types::types::TransactionDigest;
-use sui_sdk_types::types::ValidatorCommittee;
-use sui_sdk_types::types::Version;
-
+use sui_sdk_transaction_builder::unresolved::Transaction as UnresolvedTransaction;
+use sui_sdk_types::Address;
+use sui_sdk_types::CheckpointDigest;
+use sui_sdk_types::CheckpointSequenceNumber;
+use sui_sdk_types::EpochId;
+use sui_sdk_types::Object;
+use sui_sdk_types::ObjectId;
+use sui_sdk_types::SignedCheckpointSummary;
+use sui_sdk_types::SignedTransaction;
+use sui_sdk_types::StructTag;
+use sui_sdk_types::Transaction;
+use sui_sdk_types::TransactionDigest;
+use sui_sdk_types::ValidatorCommittee;
+use sui_sdk_types::Version;
 use tap::Pipe;
-
-use crate::CheckpointData;
 
 use crate::rest::accounts::AccountOwnedObjectInfo;
 use crate::rest::accounts::ListAccountOwnedObjectsQueryParameters;
@@ -82,7 +79,7 @@ impl Client {
             inner,
             url: Box::new(url),
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 
     pub fn url(&self) -> &Url {
@@ -129,7 +126,10 @@ impl Client {
     pub async fn get_object(&self, object_id: ObjectId) -> Result<Response<Object>> {
         let url = self.url().join(&format!("objects/{object_id}"))?;
 
-        let request = self.inner.get(url);
+        let request = self.inner.get(url).query(&crate::types::GetObjectOptions {
+            object: Some(true),
+            object_bcs: None,
+        });
 
         self.json::<crate::ObjectResponse>(request)
             .await?
@@ -145,7 +145,10 @@ impl Client {
             .url()
             .join(&format!("objects/{object_id}/version/{version}"))?;
 
-        let request = self.inner.get(url);
+        let request = self.inner.get(url).query(&crate::types::GetObjectOptions {
+            object: Some(true),
+            object_bcs: None,
+        });
 
         self.json::<crate::ObjectResponse>(request)
             .await?
@@ -268,19 +271,6 @@ impl Client {
         self.json(request).await
     }
 
-    pub async fn get_full_checkpoint(
-        &self,
-        checkpoint_sequence_number: CheckpointSequenceNumber,
-    ) -> Result<Response<CheckpointData>> {
-        let url = self
-            .url()
-            .join(&format!("checkpoints/{checkpoint_sequence_number}/full"))?;
-
-        let request = self.inner.get(url);
-
-        self.bcs(request).await
-    }
-
     pub async fn get_transaction(
         &self,
         transaction: &TransactionDigest,
@@ -377,7 +367,7 @@ impl Client {
                 Ok(body) => Error::new_message(body),
                 Err(e) => Error::from_error(e),
             }
-            .pipe(|e| e.with_parts(parts));
+                .pipe(|e| e.with_parts(parts));
 
             return Err(error);
         }
@@ -403,24 +393,6 @@ impl Client {
 
         let json = response.json().await?;
         Ok(Response::new(json, parts))
-    }
-
-    pub(super) async fn bcs<T: serde::de::DeserializeOwned>(
-        &self,
-        request: reqwest::RequestBuilder,
-    ) -> Result<Response<T>> {
-        let response = request
-            .header(reqwest::header::ACCEPT, crate::rest::APPLICATION_BCS)
-            .send()
-            .await?;
-
-        let (response, parts) = self.check_response(response).await?;
-
-        let bytes = response.bytes().await?;
-        match bcs::from_bytes(&bytes) {
-            Ok(bcs) => Ok(Response::new(bcs, parts)),
-            Err(e) => Err(Error::from_error(e).with_parts(parts)),
-        }
     }
 }
 
@@ -529,17 +501,17 @@ impl<T> Response<T> {
     }
 
     pub fn map<U, F>(self, f: F) -> Response<U>
-    where
-        F: FnOnce(T) -> U,
+        where
+            F: FnOnce(T) -> U,
     {
         let (inner, parts) = self.into_parts();
         Response::new(f(inner), parts)
     }
 
     pub fn try_map<U, F, E>(self, f: F) -> Result<Response<U>>
-    where
-        F: FnOnce(T) -> Result<U, E>,
-        E: Into<BoxError>,
+        where
+            F: FnOnce(T) -> Result<U, E>,
+            E: Into<BoxError>,
     {
         let (inner, parts) = self.into_parts();
         match f(inner) {

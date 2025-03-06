@@ -4,21 +4,16 @@
 use axum::extract::Query;
 use axum::extract::{Path, State};
 use axum::Json;
-use sui_sdk_types::types::{CheckpointSequenceNumber, SignedCheckpointSummary};
+use sui_sdk_types::{CheckpointSequenceNumber, SignedCheckpointSummary};
 use sui_types::storage::ReadStore;
-use tap::Pipe;
 
+use super::{ApiEndpoint, RouteHandler};
 use crate::reader::StateReader;
-use crate::response::{Bcs, ResponseContent};
-use crate::rest::openapi::{ApiEndpoint, OperationBuilder, ResponseBuilder, RouteHandler};
 use crate::rest::PageCursor;
-use crate::service::checkpoints::{CheckpointId, CheckpointNotFoundError};
+use crate::service::checkpoints::CheckpointId;
 use crate::types::{CheckpointResponse, GetCheckpointOptions};
+use crate::Result;
 use crate::{Direction, RpcService};
-use crate::{Result, RpcServiceError};
-use documented::Documented;
-
-use super::accept::AcceptFormat;
 
 /// Fetch a Checkpoint
 ///
@@ -26,7 +21,6 @@ use super::accept::AcceptFormat;
 /// `CheckpointDigest` and optionally request its contents.
 ///
 /// If the checkpoint has been pruned and is not available, a 410 will be returned.
-#[derive(Documented)]
 pub struct GetCheckpoint;
 
 impl ApiEndpoint<RpcService> for GetCheckpoint {
@@ -36,32 +30,6 @@ impl ApiEndpoint<RpcService> for GetCheckpoint {
 
     fn path(&self) -> &'static str {
         "/checkpoints/{checkpoint}"
-    }
-
-    fn stable(&self) -> bool {
-        true
-    }
-
-    fn operation(
-        &self,
-        generator: &mut schemars::gen::SchemaGenerator,
-    ) -> openapiv3::v3_1::Operation {
-        OperationBuilder::new()
-            .tag("Checkpoint")
-            .operation_id("Get Checkpoint")
-            .description(Self::DOCS)
-            .path_parameter::<CheckpointId>("checkpoint", generator)
-            .query_parameters::<GetCheckpointOptions>(generator)
-            .response(
-                200,
-                ResponseBuilder::new()
-                    .json_content::<CheckpointResponse>(generator)
-                    .build(),
-            )
-            .response(404, ResponseBuilder::new().build())
-            .response(410, ResponseBuilder::new().build())
-            .response(500, ResponseBuilder::new().build())
-            .build()
     }
 
     fn handler(&self) -> RouteHandler<RpcService> {
@@ -78,7 +46,7 @@ async fn get_checkpoint(
 }
 
 /// Query parameters for the GetCheckpoint endpoint
-#[derive(Debug, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct GetCheckpointQueryParameters {
     /// Request `CheckpointContents` be included in the response
     #[serde(default)]
@@ -92,7 +60,6 @@ pub struct GetCheckpointQueryParameters {
 ///
 /// If the requested page is below the Node's `lowest_available_checkpoint`, a 410 will be
 /// returned.
-#[derive(Documented)]
 pub struct ListCheckpoints;
 
 impl ApiEndpoint<RpcService> for ListCheckpoints {
@@ -104,35 +71,6 @@ impl ApiEndpoint<RpcService> for ListCheckpoints {
         "/checkpoints"
     }
 
-    fn stable(&self) -> bool {
-        // Before making this api stable we'll need to properly handle the options that can be
-        // provided as inputs.
-        false
-    }
-
-    fn operation(
-        &self,
-        generator: &mut schemars::gen::SchemaGenerator,
-    ) -> openapiv3::v3_1::Operation {
-        OperationBuilder::new()
-            .tag("Checkpoint")
-            .operation_id("List Checkpoints")
-            .description(Self::DOCS)
-            .query_parameters::<ListCheckpointsPaginationParameters>(generator)
-            .query_parameters::<GetCheckpointOptions>(generator)
-            .response(
-                200,
-                ResponseBuilder::new()
-                    .json_content::<Vec<CheckpointResponse>>(generator)
-                    .bcs_content()
-                    .header::<String>(crate::types::X_SUI_CURSOR, generator)
-                    .build(),
-            )
-            .response(410, ResponseBuilder::new().build())
-            .response(500, ResponseBuilder::new().build())
-            .build()
-    }
-
     fn handler(&self) -> RouteHandler<RpcService> {
         RouteHandler::new(self.method(), list_checkpoints)
     }
@@ -141,11 +79,10 @@ impl ApiEndpoint<RpcService> for ListCheckpoints {
 async fn list_checkpoints(
     Query(parameters): Query<ListCheckpointsPaginationParameters>,
     Query(options): Query<GetCheckpointOptions>,
-    accept: AcceptFormat,
     State(state): State<StateReader>,
 ) -> Result<(
     PageCursor<CheckpointSequenceNumber>,
-    ResponseContent<Vec<SignedCheckpointSummary>, Vec<CheckpointResponse>>,
+    Json<Vec<CheckpointResponse>>,
 )> {
     let latest_checkpoint = state.inner().get_latest_checkpoint()?.sequence_number;
     let oldest_checkpoint = state.inner().get_lowest_available_checkpoint()?;
@@ -167,56 +104,20 @@ async fn list_checkpoints(
             result
                 .map_err(Into::into)
                 .and_then(|(checkpoint, contents)| {
-
-
-
+                    let SignedCheckpointSummary {
+                        checkpoint,
+                        signature,
+                    } = checkpoint.try_into()?;
                     let contents = if options.include_contents() {
                         Some(contents.try_into()?)
                     } else {
                         None
                     };
                     Ok(CheckpointResponse {
-                        sequence_number: *checkpoint.sequence_number(),
-                        digest: (*checkpoint.digest()).into(),
-                        summary: Some(sui_sdk_types::types::CheckpointSummary {
-                            epoch: checkpoint.epoch,
-                            sequence_number: *checkpoint.sequence_number(),
-                            network_total_transactions: checkpoint.network_total_transactions,
-                            content_digest: sui_sdk_types::types::CheckpointContentsDigest::new(*checkpoint.content_digest.inner()),
-                            previous_digest: checkpoint.previous_digest.map(|d | sui_sdk_types::types::CheckpointDigest::new(*d.inner())),
-                            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::types::GasCostSummary {
-                                base_point: checkpoint.epoch_rolling_bfc_gas_cost_summary.base_point,
-                                rate: checkpoint.epoch_rolling_bfc_gas_cost_summary.rate,
-                                computation_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-                                storage_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-                                storage_rebate: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-                                non_refundable_storage_fee: checkpoint.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-                            },
-                            timestamp_ms: checkpoint.timestamp_ms,
-                            checkpoint_commitments: checkpoint.checkpoint_commitments.clone().into_iter().map(|c |
-                                sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
-                                    sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                                        sui_sdk_types::types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                                        ),
-                                }}).collect(),
-                            end_of_epoch_data: checkpoint.end_of_epoch_data.clone().map(|c | sui_sdk_types::types::EndOfEpochData {
-                                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                                    sui_sdk_types::types::ValidatorCommitteeMember {
-                                        public_key: sui_sdk_types::types::Bls12381PublicKey::new(next_epoch_committee.0.0),
-                                        stake: next_epoch_committee.1,
-                                    }
-                                }).collect(),
-                                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
-                                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                                    sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
-                                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                                            sui_sdk_types::types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                                            ),
-                                    }}).collect(),
-                            }),
-                            version_specific_data: checkpoint.version_specific_data.clone(),
-                        }),
-                        signature: Some(checkpoint.into_sig().into()),
+                        sequence_number: checkpoint.sequence_number,
+                        digest: checkpoint.digest(),
+                        summary: Some(checkpoint),
+                        signature: Some(signature),
                         contents,
                         summary_bcs: None,
                         contents_bcs: None,
@@ -238,26 +139,10 @@ async fn list_checkpoints(
         }
     });
 
-    match accept {
-        AcceptFormat::Json => ResponseContent::Json(checkpoints),
-        // In order to work around compatibility issues with existing clients, keep the BCS form as
-        // the old format without contents
-        AcceptFormat::Bcs => {
-            let checkpoints = checkpoints
-                .into_iter()
-                .map(|c| SignedCheckpointSummary {
-                    checkpoint: c.summary.unwrap(),
-                    signature: c.signature.unwrap(),
-                })
-                .collect();
-            ResponseContent::Bcs(checkpoints)
-        }
-    }
-    .pipe(|entries| (PageCursor(cursor), entries))
-    .pipe(Ok)
+    Ok((PageCursor(cursor), Json(checkpoints)))
 }
 
-#[derive(Debug, Default, serde::Serialize, serde::Deserialize, schemars::JsonSchema)]
+#[derive(Debug, Default, serde::Serialize, serde::Deserialize)]
 pub struct ListCheckpointsPaginationParameters {
     /// Page size limit for the response.
     ///
@@ -287,99 +172,4 @@ impl ListCheckpointsPaginationParameters {
     pub fn direction(&self) -> Direction {
         self.direction.unwrap_or(Direction::Descending)
     }
-}
-
-/// Fetch a Full Checkpoint
-///
-/// Request a checkpoint and all data associated with it including:
-/// - CheckpointSummary
-/// - Validator Signature
-/// - CheckpointContents
-/// - Transactions, Effects, Events, as well as all input and output objects
-///
-/// If the requested checkpoint is below the Node's `lowest_available_checkpoint_objects`, a 410
-/// will be returned.
-#[derive(Documented)]
-pub struct GetFullCheckpoint;
-
-impl ApiEndpoint<RpcService> for GetFullCheckpoint {
-    fn method(&self) -> axum::http::Method {
-        axum::http::Method::GET
-    }
-
-    fn path(&self) -> &'static str {
-        "/checkpoints/{checkpoint}/full"
-    }
-
-    fn stable(&self) -> bool {
-        // TODO transactions are serialized with an intent message, do we want to change this
-        // format to remove it (and remove user signature duplication) prior to stabalizing the
-        // format?
-        false
-    }
-
-    fn operation(
-        &self,
-        generator: &mut schemars::gen::SchemaGenerator,
-    ) -> openapiv3::v3_1::Operation {
-        OperationBuilder::new()
-            .tag("Checkpoint")
-            .operation_id("Get Full Checkpoint")
-            .description(Self::DOCS)
-            .path_parameter::<CheckpointId>("checkpoint", generator)
-            .response(200, ResponseBuilder::new().bcs_content().build())
-            .response(404, ResponseBuilder::new().build())
-            .response(410, ResponseBuilder::new().build())
-            .response(500, ResponseBuilder::new().build())
-            .build()
-    }
-
-    fn handler(&self) -> RouteHandler<RpcService> {
-        RouteHandler::new(self.method(), get_full_checkpoint)
-    }
-}
-
-async fn get_full_checkpoint(
-    Path(checkpoint_id): Path<CheckpointId>,
-    accept: AcceptFormat,
-    State(state): State<StateReader>,
-) -> Result<Bcs<sui_types::full_checkpoint_content::CheckpointData>> {
-    match accept {
-        AcceptFormat::Bcs => {}
-        _ => {
-            return Err(RpcServiceError::new(
-                axum::http::StatusCode::BAD_REQUEST,
-                "invalid accept type; only 'application/bcs' is supported",
-            ))
-        }
-    }
-
-    let verified_summary = match checkpoint_id {
-        CheckpointId::SequenceNumber(s) => {
-            // Since we need object contents we need to check for the lowest available checkpoint
-            // with objects that hasn't been pruned
-            let oldest_checkpoint = state.inner().get_lowest_available_checkpoint_objects()?;
-            if s < oldest_checkpoint {
-                return Err(crate::RpcServiceError::new(
-                    axum::http::StatusCode::GONE,
-                    "Old checkpoints have been pruned",
-                ));
-            }
-
-            state.inner().get_checkpoint_by_sequence_number(s)
-        }
-        CheckpointId::Digest(d) => state.inner().get_checkpoint_by_digest(&d.into()),
-    }
-    .ok_or(CheckpointNotFoundError(checkpoint_id))?;
-
-    let checkpoint_contents = state
-        .inner()
-        .get_checkpoint_contents_by_digest(&verified_summary.content_digest)
-        .ok_or(CheckpointNotFoundError(checkpoint_id))?;
-
-    let checkpoint_data = state
-        .inner()
-        .get_checkpoint_data(verified_summary, checkpoint_contents)?;
-
-    Ok(Bcs(checkpoint_data))
 }

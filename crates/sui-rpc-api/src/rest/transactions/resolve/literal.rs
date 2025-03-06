@@ -7,9 +7,9 @@ use super::NormalizedPackage;
 use crate::Result;
 use crate::RpcServiceError;
 use move_binary_format::normalized::Type;
-use sui_sdk_types::types::unresolved::Value;
-use sui_sdk_types::types::Command;
-use sui_sdk_types::types::ObjectId;
+use sui_sdk_transaction_builder::unresolved::Value;
+use sui_sdk_types::Command;
+use sui_sdk_types::ObjectId;
 use sui_types::base_types::ObjectID;
 use sui_types::base_types::STD_ASCII_MODULE_NAME;
 use sui_types::base_types::STD_ASCII_STRUCT_NAME;
@@ -134,16 +134,16 @@ fn resolve_literal_to_type(buf: &mut Vec<u8>, type_: &Type, value: &Value) -> Re
             name,
             type_arguments,
         } if address == &MOVE_STDLIB_ADDRESS
-                // 0x1::ascii::String
+            // 0x1::ascii::String
             && ((module.as_ref() == STD_ASCII_MODULE_NAME
-                && name.as_ref() == STD_ASCII_STRUCT_NAME)
-                // 0x1::string::String
-                || (module.as_ref() == STD_UTF8_MODULE_NAME
-                    && name.as_ref() == STD_UTF8_STRUCT_NAME))
+            && name.as_ref() == STD_ASCII_STRUCT_NAME)
+            // 0x1::string::String
+            || (module.as_ref() == STD_UTF8_MODULE_NAME
+            && name.as_ref() == STD_UTF8_STRUCT_NAME))
             && type_arguments.is_empty() =>
-        {
-            resolve_as_string(buf, value)
-        }
+            {
+                resolve_as_string(buf, value)
+            }
 
         // Option<T>
         Type::Struct {
@@ -155,13 +155,13 @@ fn resolve_literal_to_type(buf: &mut Vec<u8>, type_: &Type, value: &Value) -> Re
             && module.as_ref() == STD_OPTION_MODULE_NAME
             && name.as_ref() == STD_OPTION_STRUCT_NAME
             && type_arguments.len() == 1 =>
-        {
-            let ty = type_arguments
-                .first()
-                .expect("length of type_arguments is 1");
+            {
+                let ty = type_arguments
+                    .first()
+                    .expect("length of type_arguments is 1");
 
-            resolve_as_option(buf, ty, value)
-        }
+                resolve_as_option(buf, ty, value)
+            }
 
         // Vec<T>
         Type::Vector(ty) => resolve_as_vector(buf, ty, value),
@@ -200,10 +200,10 @@ fn resolve_as_bool(buf: &mut Vec<u8>, value: &Value) -> Result<()> {
 }
 
 fn resolve_as_number<T>(buf: &mut Vec<u8>, value: &Value) -> Result<()>
-where
-    T: std::str::FromStr + TryFrom<u64> + serde::Serialize,
-    <T as std::str::FromStr>::Err: std::fmt::Display,
-    <T as TryFrom<u64>>::Error: std::fmt::Display,
+    where
+        T: std::str::FromStr + TryFrom<u64> + serde::Serialize,
+        <T as std::str::FromStr>::Err: std::fmt::Display,
+        <T as TryFrom<u64>>::Error: std::fmt::Display,
 {
     let n: T = match value {
         Value::Number(n) => T::try_from(*n).map_err(|e| {

@@ -1081,6 +1081,7 @@ fn create_genesis_transaction(
         let input_objects = CheckedInputObjects::new_for_genesis(vec![]);
         //let transaction_dependencies = BTreeMap::new();
         let (inner_temp_store, _, effects, _execution_error) = executor
+        let (inner_temp_store, _, effects, _timings, _execution_error) = executor
             .execute_transaction_to_effects(
                 &InMemoryStorage::new(Vec::new()),
                 protocol_config,

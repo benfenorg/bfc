@@ -28,13 +28,11 @@ module.exports = {
 		'build',
 		'dist',
 		'coverage',
-		'apps/icons/src',
 		'next-env.d.ts',
 		'doc/book',
 		'external-crates',
 		'storybook-static',
 		'.next',
-		'sdk/docs/public/typedoc',
 	],
 	rules: {
 		'no-case-declarations': 'off',
@@ -256,14 +254,6 @@ module.exports = {
 			},
 		},
 		{
-			files: ['sdk/ledgerjs-hw-app-sui/**/*', 'apps/wallet/**/*'],
-			rules: {
-				// ledgerjs-hw-app-sui and wallet use Buffer
-				'no-restricted-globals': ['off'],
-				'@typescript-eslint/ban-types': ['off'],
-			},
-		},
-		{
 			files: ['*.test.*', '*.spec.*'],
 			rules: {
 				// Tests can violate extension rules:
@@ -281,13 +271,6 @@ module.exports = {
 			rules: {
 				// Story files have render functions that this rule incorrectly warns on:
 				'react-hooks/rules-of-hooks': 'off',
-			},
-		},
-		{
-			files: ['sdk/create-dapp/templates/**/*'],
-			rules: {
-				'header/header': 'off',
-				'require-extensions/require-extensions': 'off',
 			},
 		},
 	],

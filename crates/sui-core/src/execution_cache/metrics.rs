@@ -16,6 +16,8 @@ pub struct ExecutionCacheMetrics {
     pub(crate) cache_misses: IntCounterVec,
     pub(crate) cache_writes: IntCounterVec,
     pub(crate) expired_tickets: IntCounter,
+    pub(crate) backpressure_status: IntGauge,
+    pub(crate) backpressure_toggles: IntCounter,
 }
 
 impl ExecutionCacheMetrics {
@@ -26,7 +28,7 @@ impl ExecutionCacheMetrics {
                 "Pending notify read requests",
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
             // `request_type` is "object_by_version", "object_latest", "transaction", etc
             // level in these metrics may be "uncommitted", "committed", "package_cache" or "db"
             cache_requests: register_int_counter_vec_with_registry!(
@@ -35,28 +37,28 @@ impl ExecutionCacheMetrics {
                 &["request_type", "level"],
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
             cache_hits: register_int_counter_vec_with_registry!(
                 "execution_cache_hits",
                 "Execution cache hits",
                 &["request_type", "level"],
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
             cache_negative_hits: register_int_counter_vec_with_registry!(
                 "execution_cache_negative_hits",
                 "Execution cache negative hits",
                 &["request_type", "level"],
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
             cache_misses: register_int_counter_vec_with_registry!(
                 "execution_cache_misses",
                 "Execution cache misses",
                 &["request_type", "level"],
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
 
             // `collection` should be "object", "marker", "transaction_effects", etc
             cache_writes: register_int_counter_vec_with_registry!(
@@ -65,14 +67,26 @@ impl ExecutionCacheMetrics {
                 &["collection"],
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
 
             expired_tickets: register_int_counter_with_registry!(
                 "execution_cache_expired_tickets",
                 "Failed inserts to monotonic caches because of expired tickets",
                 registry,
             )
-            .unwrap(),
+                .unwrap(),
+            backpressure_status: register_int_gauge_with_registry!(
+                "execution_cache_backpressure_status",
+                "Backpressure status (1 = on, 0 = off)",
+                registry,
+            )
+                .unwrap(),
+            backpressure_toggles: register_int_counter_with_registry!(
+                "execution_cache_backpressure_toggles",
+                "Number of times backpressure was turned on or off",
+                registry,
+            )
+                .unwrap(),
         }
     }
 

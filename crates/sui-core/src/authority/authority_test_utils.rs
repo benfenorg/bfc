@@ -7,14 +7,8 @@ use crate::consensus_handler::SequencedConsensusTransaction;
 use core::default::Default;
 use fastcrypto::hash::MultisetHash;
 use fastcrypto::traits::KeyPair;
-use move_core_types::account_address::AccountAddress;
-use move_symbol_pool::Symbol;
-use sui_move_build::{BuildConfig, CompiledPackage};
-use sui_types::crypto::Signature;
 use sui_types::crypto::{AccountKeyPair, AuthorityKeyPair};
 use sui_types::messages_consensus::ConsensusTransaction;
-use sui_types::move_package::UpgradePolicy;
-use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
 use sui_types::utils::to_sender_signed_transaction;
 
 use super::test_authority_builder::TestAuthorityBuilder;
@@ -92,8 +86,7 @@ pub async fn execute_certificate_with_execution_error(
     // for testing and regression detection.
     // We must do this before sending to consensus, otherwise consensus may already
     // lead to transaction execution and state change.
-    let state_acc =
-        StateAccumulator::new_for_tests(authority.get_accumulator_store().clone(), &epoch_store);
+    let state_acc = StateAccumulator::new_for_tests(authority.get_accumulator_store().clone());
     let include_wrapped_tombstone = !authority
         .epoch_store_for_testing()
         .protocol_config()
@@ -243,7 +236,11 @@ pub async fn init_state_with_ids_and_versions<
 ) -> Arc<AuthorityState> {
     let state = TestAuthorityBuilder::new().build().await;
     for (address, object_id, version) in objects {
-        let obj = Object::with_id_owner_version_for_testing(object_id, version, address);
+        let obj = Object::with_id_owner_version_for_testing(
+            object_id,
+            version,
+            Owner::AddressOwner(address),
+        );
         state.insert_genesis_object(obj).await;
     }
     state

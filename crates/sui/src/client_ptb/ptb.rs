@@ -174,6 +174,10 @@ impl PTB {
                 return Ok(());
             }
             SuiClientCommandResult::TransactionBlock(response) => response,
+            SuiClientCommandResult::DevInspect(response) => {
+                println!("{}", Pretty(&response));
+                return Ok(());
+            }
             _ => anyhow::bail!("Internal error, unexpected response from PTB execution."),
         };
 

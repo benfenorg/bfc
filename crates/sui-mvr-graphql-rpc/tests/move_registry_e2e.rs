@@ -17,6 +17,7 @@ use sui_mvr_graphql_rpc::{
 };
 use sui_mvr_graphql_rpc::test_infra::cluster::start_network_cluster_with_long_epoch;
 use sui_pg_temp_db::get_available_port;
+use sui_pg_db::temp::get_available_port;
 use sui_types::{
     base_types::{ObjectID, SequenceNumber},
     digests::ObjectDigest,

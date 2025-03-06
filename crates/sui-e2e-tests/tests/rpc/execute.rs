@@ -4,7 +4,7 @@
 use sui_macros::sim_test;
 use sui_rpc_api::types::ExecuteTransactionOptions;
 use sui_rpc_api::Client;
-use sui_sdk_types::types::BalanceChange;
+use sui_sdk_types::BalanceChange;
 use sui_test_transaction_builder::make_transfer_sui_transaction;
 use sui_types::base_types::SuiAddress;
 use sui_types::effects::TransactionEffectsAPI;
@@ -12,7 +12,7 @@ use sui_types::transaction::TransactionDataAPI;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn sim_execute_transaction_transfer() {
+async fn execute_transaction_transfer() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
@@ -35,7 +35,7 @@ async fn sim_execute_transaction_transfer() {
     let coin_type = sui_types::sui_sdk_types_conversions::type_tag_core_to_sdk(
         sui_types::gas_coin::GAS::type_tag(),
     )
-    .unwrap();
+        .unwrap();
     let mut expected = vec![
         BalanceChange {
             address: sender.into(),
