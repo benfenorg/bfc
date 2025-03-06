@@ -269,7 +269,6 @@ pub fn get_test_log_and_action(
         log_index: Some(0.into()),
         ..Default::default()
     };
-    println!("bbking log: {:?}", log);
     let topic_1: [u8; 32] = log.topics[1].into();
     let topic_3: [u8; 32] = log.topics[3].into();
 
@@ -343,12 +342,10 @@ pub fn get_certified_action_with_validator_secrets(
         let signed_action = sign_action_with_key(&action, secret);
         sigs.insert(secret.public().into(), signed_action.into_sig().signature);
     }
-    println!("bbking inner action: {:?}", action);
     let certified_action = CertifiedBridgeAction::new_from_data_and_sig(
         action,
         BridgeCommitteeValiditySignInfo { signatures: sigs },
     );
-    println!("bbking inner certified_action: {:?}", certified_action);
     VerifiedCertifiedBridgeAction::new_from_verified(certified_action)
 }
 
@@ -371,7 +368,6 @@ pub async fn approve_action_with_validator_secrets(
     id_token_map: &HashMap<u64, TypeTag>,
 ) -> Option<ObjectRef> {
     let action_certificate = get_certified_action_with_validator_secrets(action, validator_secrets);
-    println!("bbking action_certificate: {:?}", action_certificate);
     let rgp = wallet_context.get_reference_gas_price().await.unwrap();
     let sui_address = wallet_context.active_address().unwrap();
     let gas_obj_ref = wallet_context

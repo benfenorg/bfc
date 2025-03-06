@@ -187,9 +187,6 @@ fn build_token_bridge_approve_transaction(
     let target_clone = target.clone();
     let sender_clone2 = sender.clone();
     let target_clone2 = target.clone();
-    println!("bbking 21 source_chain: {:?} seq_num: {:?} sender: {:?} target_chain: {:?} target: {:?} token_type: {:?} amount: {:?} tx_hash: {:?} event_idx: {:?}", source_chain, seq_num, sender_clone.bytes(), target_chain, target_clone.bytes(), token_type, amount, Hex::encode_with_format(&tx_hash), event_idx);
-    println!("bbking 21 sender: {:?}", Hex::encode_with_format(sender_clone2));
-    println!("bbking 21 target: {:?}", Hex::encode_with_format(target_clone2));
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
     let sender = builder.pure(sender.clone()).map_err(|e| {

@@ -268,8 +268,8 @@ async fn test_bridge_from_eth_to_sui_refund() {
         timer.elapsed()
     );
     let balance_after = eth_signer.get_balance(eth_address_1, None).await.unwrap() / U256::exp10(18);
-    info!("bbking before balance: {:?}", balance_before);
-    info!("bbking after balance: {:?}", balance_after);
+    info!("before balance: {:?}", balance_before);
+    info!("after balance: {:?}", balance_after);
     // Assert eth_address_1 has received ETH
     assert_eq!(
         balance_after - balance_before,
@@ -411,9 +411,7 @@ async fn test_add_refund_admin() {
 
     let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
     let effects = response.effects.unwrap();
-    println!("bbking effects: {:?}", effects);
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
-
 }
 
 
