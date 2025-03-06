@@ -3,9 +3,7 @@
 
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
-use std::io::Read;
 use std::{collections::HashMap, str::FromStr};
-use fastcrypto::encoding::Hex;
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,
@@ -183,10 +181,6 @@ fn build_token_bridge_approve_transaction(
             }
             _ => unreachable!(),
         };
-    let sender_clone = sender.clone();
-    let target_clone = target.clone();
-    let sender_clone2 = sender.clone();
-    let target_clone2 = target.clone();
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
     let sender = builder.pure(sender.clone()).map_err(|e| {
