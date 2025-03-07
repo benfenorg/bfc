@@ -162,15 +162,35 @@ impl ProgrammableTransactionBuilder {
 
     pub fn split_coins(
         &mut self,
-        amounts: Vec<u64>,
-    ) -> anyhow::Result<()> {
-        //let coin_arg = self.obj(ObjectArg::ImmOrOwnedObject(coin_id))?;
-        let mut split_commands = Vec::new();
-        for amount in amounts {
-            split_commands.push(Command::SplitCoins(Argument::GasCoin, vec![self.pure(amount)?]));
-        }
-        Ok(self.commands.extend(split_commands))
+        amount: u64,
+    ) -> Argument{
+        self.command(Command::SplitCoins(Argument::GasCoin, vec![self.pure(amount).unwrap()]))
     }
+
+    pub fn move_call_with_args(
+        &mut self,
+        package: ObjectID,
+        module: Identifier,
+        function: Identifier,
+        type_arguments: Vec<TypeTag>,
+        call_args: Vec<CallArg>,
+        mut args:Vec<Argument>,
+    ) -> anyhow::Result<()> {
+        let mut arguments = call_args
+            .into_iter()
+            .map(|a| self.input(a))
+            .collect::<Result<_, _>>()?;
+        args.append(&mut arguments);
+        self.command(Command::move_call(
+            package,
+            module,
+            function,
+            type_arguments,
+            args,
+        ));
+        Ok(())
+    }
+
 
     pub fn programmable_move_call(
         &mut self,

@@ -1911,8 +1911,8 @@ impl TransactionData {
     ) -> anyhow::Result<Self> {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
-            builder.split_coins(vec![gas_budget])?;
-            builder.move_call(package, module, function, type_arguments, arguments)?;
+            let arg= builder.split_coins(gas_budget);
+            builder.move_call_with_args(package, module, function, type_arguments, arguments,vec![arg])?;
             builder.finish()
         };
         tracing::error!("pt is {:?}",pt);
