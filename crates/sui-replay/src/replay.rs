@@ -766,47 +766,6 @@ impl LocalExec {
             )
             .expect("Failed to create gas status")
         };
-        let (_inner_store, _gas_status, _effects, _result) = executor.execute_transaction_to_effects(
-            &self,
-            protocol_config,
-            metrics.clone(),
-            expensive_checks,
-            &certificate_deny_set,
-            &tx_info.executed_epoch,
-            tx_info.epoch_start_timestamp,
-            CheckedInputObjects::new_for_replay(input_objects.clone()),
-            tx_info.gas.clone(),
-            gas_status,
-            transaction_kind.clone(),
-            tx_info.sender,
-            *tx_digest,
-        );
-        let (inner_store, gas_status, effects, result) = if let Ok(gas_status) = SuiGasStatus::new(
-            tx_info.gas_budget,
-            tx_info.gas_price,
-            tx_info.reference_gas_price,
-            protocol_config,
-            None,
-            None,
-        ) {
-            executor.execute_transaction_to_effects(
-                &self,
-                protocol_config,
-                metrics.clone(),
-                expensive_checks,
-                &certificate_deny_set,
-                &tx_info.executed_epoch,
-                tx_info.epoch_start_timestamp,
-                CheckedInputObjects::new_for_replay(input_objects.clone()),
-                tx_info.gas.clone(),
-                gas_status,
-                transaction_kind.clone(),
-                tx_info.sender,
-                *tx_digest,
-            )
-        } else {
-            unreachable!("Transaction was valid so gas status must be valid");
-        };
         let (inner_store, gas_status, effects, _timings, result) = executor
             .execute_transaction_to_effects(
                 &self,

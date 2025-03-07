@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::fmt::{self,Debug, Display, Formatter, Write};
-use std::sync::Arc;
 
 use enum_dispatch::enum_dispatch;
 use schemars::JsonSchema;

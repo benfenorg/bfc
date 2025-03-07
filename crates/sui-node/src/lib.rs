@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::collections::{BTreeMap, HashMap};
-use std::time::Duration;
 use std::fmt;
 use std::str::FromStr;
 
@@ -24,15 +23,11 @@ use mysten_network::server::SUI_TLS_SERVER_NAME;
 use prometheus::Registry;
 use sui_types::stable_coin::stable::checked::update_allow_stable_gas_coins;
 use std::collections::{BTreeSet, HashSet};
-use std::net::SocketAddr;
-use std::collections::{BTreeSet, HashMap, HashSet};
-use std::fmt;
 use std::future::Future;
 use std::path::PathBuf;
 #[cfg(msim)]
 use std::sync::atomic::Ordering;
 use std::sync::{Arc, Weak};
-use sui_core::authority::authority_store_tables::AuthorityPerpetualTablesOptions;
 use std::time::Duration;
 use sui_core::authority::authority_store_tables::{
     AuthorityPerpetualTablesOptions, AuthorityPrunerTables,
@@ -52,7 +47,6 @@ use sui_json_rpc_api::JsonRpcMetrics;
 use sui_network::randomness;
 use sui_rpc_api::RpcMetrics;
 use sui_rpc_api::subscription::SubscriptionService;
-use sui_rpc_api::RpcMetrics;
 use sui_types::base_types::ConciseableName;
 use sui_types::crypto::RandomnessRound;
 use sui_types::digests::ChainIdentifier;
@@ -631,12 +625,6 @@ impl SuiNode {
             None
         };
 
-        let rpc_index = if is_full_node
-            && config.enable_experimental_rest_api
-            && config.rpc.as_ref().is_some_and(|rpc| rpc.enable_indexing())
-        {
-            Some(Arc::new(RpcIndexStore::new(
-                &config.db_path(),
         let rpc_index = if is_full_node && config.rpc().is_some_and(|rpc| rpc.enable_indexing()) {
             Some(Arc::new(RpcIndexStore::new(
                 &config.db_path(),
@@ -2282,8 +2270,6 @@ pub async fn build_http_server(
 
     router = router.merge(json_rpc_router);
 
-    if config.enable_experimental_rest_api {
-        let mut rest_service = sui_rpc_api::RpcService::new(
     let (subscription_service_checkpoint_sender, subscription_service_handle) =
         SubscriptionService::build(prometheus_registry);
     let rpc_router = {
@@ -2296,28 +2282,12 @@ pub async fn build_http_server(
             rpc_service.with_config(config);
         }
 
-        rest_service.with_metrics(RpcMetrics::new(prometheus_registry));
         rpc_service.with_metrics(RpcMetrics::new(prometheus_registry));
         rpc_service.with_subscription_service(subscription_service_handle);
 
         if let Some(transaction_orchestrator) = transaction_orchestrator {
             rpc_service.with_executor(transaction_orchestrator.clone())
         }
-
-        router = router.merge(rest_service.into_router());
-    }
-    // TODO: Remove this health check when experimental REST API becomes default
-    // This is a copy of the health check in crates/sui-rpc-api/src/health.rs
-    router = router
-        .route("/health", axum::routing::get(health_check_handler))
-        .route_layer(axum::Extension(state));
-
-    let listener = tokio::net::TcpListener::bind(&config.json_rpc_address)
-        .await
-        .unwrap();
-    let addr = listener.local_addr().unwrap();
-
-    router = router.layer(axum::middleware::from_fn(server_timing_middleware));
 
         rpc_service.into_router().await
     };
