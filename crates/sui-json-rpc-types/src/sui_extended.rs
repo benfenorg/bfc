@@ -158,7 +158,7 @@ pub struct NetworkOverview {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema, Default)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Default, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct StakeMetrics {
     pub apy: f64,
@@ -188,7 +188,7 @@ pub struct StakeMetrics {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct StakeCoin {
     #[schemars(with = "String")]
@@ -205,7 +205,7 @@ pub struct StakeCoin {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct IndexedStake {
     pub staked_object_id: ObjectID,
@@ -250,7 +250,7 @@ pub struct IndexedStake {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveCallMetrics {
     #[schemars(with = "Vec<(MoveFunctionName, BigInt<usize>)>")]
@@ -278,7 +278,7 @@ pub struct MoveFunctionName {
 }
 
 #[serde_as]
-#[derive(Serialize, Deserialize, Debug, JsonSchema)]
+#[derive(Serialize, Deserialize, Debug, JsonSchema, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct AddressMetrics {
     pub checkpoint: u64,
