@@ -175,5 +175,4 @@ pub struct SystemEpochInfoEvent {
     pub total_gas_fees: u64,
     pub total_stake_rewards_distributed: u64,
     pub leftover_storage_fund_inflow: u64,
-    pub stable_rate: VecMap<Vec<u8>, u64>,
 }

@@ -486,6 +486,7 @@ impl TestCheckpointDataBuilder {
             &contents,
             None,
             Default::default(),
+            Default::default(),
             None,
             0,
             vec![],
@@ -518,6 +519,8 @@ impl TestCheckpointDataBuilder {
             Default::default(),
             Default::default(),
             Default::default(),
+            Default::default(),
+            0,
             Default::default(),
         );
 

@@ -17,6 +17,7 @@ use sui_types::{
     sui_serde::BigInt,
 };
 
+
 #[open_rpc(namespace = "bfcx", tag = "Extended API")]
 #[rpc(server, client, namespace = "bfcx")]
 pub trait ExtendedApi {

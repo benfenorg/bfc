@@ -87,7 +87,7 @@ bcs_convert_impl!(crate::effects::TransactionEvents, TransactionEvents);
 bcs_convert_impl!(crate::transaction::Command, Command);
 
 impl<const T: bool> From<crate::crypto::AuthorityQuorumSignInfo<T>>
-    for ValidatorAggregatedSignature
+for ValidatorAggregatedSignature
 {
     fn from(value: crate::crypto::AuthorityQuorumSignInfo<T>) -> Self {
         let crate::crypto::AuthorityQuorumSignInfo {
@@ -105,7 +105,7 @@ impl<const T: bool> From<crate::crypto::AuthorityQuorumSignInfo<T>>
 }
 
 impl<const T: bool> From<ValidatorAggregatedSignature>
-    for crate::crypto::AuthorityQuorumSignInfo<T>
+for crate::crypto::AuthorityQuorumSignInfo<T>
 {
     fn from(value: ValidatorAggregatedSignature) -> Self {
         let ValidatorAggregatedSignature {
@@ -206,7 +206,7 @@ impl TryFrom<crate::transaction::SenderSignedData> for SignedTransaction {
                 .map(TryInto::try_into)
                 .collect::<Result<_, _>>()?,
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -226,7 +226,7 @@ impl TryFrom<SignedTransaction> for crate::transaction::SenderSignedData {
                 .map(TryInto::try_into)
                 .collect::<Result<_, _>>()?,
         )
-        .pipe(Ok)
+            .pipe(Ok)
     }
 }
 
@@ -266,7 +266,7 @@ pub fn type_tag_core_to_sdk(
         move_core_types::language_storage::TypeTag::U32 => TypeTag::U32,
         move_core_types::language_storage::TypeTag::U256 => TypeTag::U256,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 pub fn struct_tag_core_to_sdk(
@@ -292,7 +292,7 @@ pub fn struct_tag_core_to_sdk(
         name,
         type_params,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 pub fn type_tag_sdk_to_core(
@@ -315,7 +315,7 @@ pub fn type_tag_sdk_to_core(
         TypeTag::U32 => move_core_types::language_storage::TypeTag::U32,
         TypeTag::U256 => move_core_types::language_storage::TypeTag::U256,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 pub fn struct_tag_sdk_to_core(
@@ -341,7 +341,7 @@ pub fn struct_tag_sdk_to_core(
         name,
         type_params,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 impl From<crate::messages_checkpoint::CheckpointDigest> for CheckpointDigest {

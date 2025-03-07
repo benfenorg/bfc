@@ -117,6 +117,8 @@ impl From<sui_sdk_types::GasCostSummary> for super::GasCostSummary {
         }: sui_sdk_types::GasCostSummary,
     ) -> Self {
         Self {
+            base_point: Some(0u64),
+            rate: Some(1_000_000_000u64),
             computation_cost: Some(computation_cost),
             storage_cost: Some(storage_cost),
             storage_rebate: Some(storage_rebate),
@@ -130,6 +132,8 @@ impl TryFrom<&super::GasCostSummary> for sui_sdk_types::GasCostSummary {
 
     fn try_from(
         super::GasCostSummary {
+            base_point,
+            rate,
             computation_cost,
             storage_cost,
             storage_rebate,

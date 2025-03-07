@@ -21,7 +21,6 @@ use crate::{
         SUI_ADDR_NAME, TX_CONTEXT_MODULE_NAME,
         TX_CONTEXT_TYPE_NAME, UTF_MODULE_NAME, UTF_TYPE_NAME,
     },
-    parser::ast::{Ability_, DatatypeName, FunctionName},
     parser::ast::{Ability_, DatatypeName, DocComment, FunctionName, TargetKind},
     shared::{program_info::TypingProgramInfo, CompilationEnv, Identifier},
     sui_mode::*,

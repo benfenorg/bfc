@@ -661,8 +661,6 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                    .expect("ConsensusCommitPrologue cannot fail");
-                Ok(Mode::empty_results())
                 .expect("ConsensusCommitPrologue cannot fail");
                 Ok((Mode::empty_results(), vec![]))
             }
@@ -676,8 +674,6 @@ mod checked {
                     protocol_config,
                     metrics,
                 )
-                    .expect("ConsensusCommitPrologueV2 cannot fail");
-                Ok(Mode::empty_results())
                 .expect("ConsensusCommitPrologueV2 cannot fail");
                 Ok((Mode::empty_results(), vec![]))
             }

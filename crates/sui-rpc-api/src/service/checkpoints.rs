@@ -9,9 +9,6 @@ use crate::types::GetCheckpointOptions;
 use crate::types::GetFullCheckpointOptions;
 use crate::Result;
 use crate::RpcService;
-use sui_sdk_types::types::CheckpointContents;
-use sui_sdk_types::types::CheckpointDigest;
-use sui_sdk_types::types::CheckpointSequenceNumber;
 use sui_sdk_types::CheckpointContents;
 use sui_sdk_types::CheckpointDigest;
 use sui_sdk_types::CheckpointSequenceNumber;
@@ -24,7 +21,6 @@ impl RpcService {
         checkpoint: Option<CheckpointId>,
         options: GetCheckpointOptions,
     ) -> Result<CheckpointResponse> {
-        let checkpoint_envelope = match checkpoint {
         let SignedCheckpointSummary {
             checkpoint,
             signature,
@@ -50,15 +46,15 @@ impl RpcService {
                 .ok_or(CheckpointNotFoundError(checkpoint_id))?,
             None => self.reader.inner().get_latest_checkpoint()?,
         }
-        .into_inner()
-        .try_into()?;
+            .into_inner()
+            .try_into()?;
 
         let (contents, contents_bcs) =
             if options.include_contents() || options.include_contents_bcs() {
                 let contents: CheckpointContents = self
                     .reader
                     .inner()
-                    .get_checkpoint_contents_by_sequence_number(checkpoint_envelope.sequence_number)
+                    .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)
                     .ok_or(CheckpointNotFoundError(CheckpointId::SequenceNumber(
                         checkpoint.sequence_number,
                     )))?
@@ -74,60 +70,21 @@ impl RpcService {
                 (None, None)
             };
 
-        let summary = sui_sdk_types::types::CheckpointSummary {
-            epoch: checkpoint_envelope.epoch,
-            sequence_number: *checkpoint_envelope.sequence_number(),
-            network_total_transactions: checkpoint_envelope.network_total_transactions,
-            content_digest: sui_sdk_types::types::CheckpointContentsDigest::new(*checkpoint_envelope.content_digest.inner()),
-            previous_digest: checkpoint_envelope.previous_digest.map(|d | sui_sdk_types::types::CheckpointDigest::new(*d.inner())),
-            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::types::GasCostSummary {
-                base_point: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.base_point,
-                rate: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.rate,
-                computation_cost: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-                storage_cost: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-                storage_rebate: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-                non_refundable_storage_fee: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-            },
-            timestamp_ms: checkpoint_envelope.timestamp_ms,
-            checkpoint_commitments: checkpoint_envelope.checkpoint_commitments.clone().into_iter().map(|c |
-                sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
-                    sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                        sui_sdk_types::types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                        ),
-                }}).collect(),
-            end_of_epoch_data: checkpoint_envelope.end_of_epoch_data.clone().map(|c | sui_sdk_types::types::EndOfEpochData {
-                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                    sui_sdk_types::types::ValidatorCommitteeMember {
-                        public_key: sui_sdk_types::types::Bls12381PublicKey::new(next_epoch_committee.0.0),
-                        stake: next_epoch_committee.1,
-                    }
-                }).collect(),
-                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
-                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                    sui_sdk_types::types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
-                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                            sui_sdk_types::types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                            ),
-                    }}).collect(),
-            }),
-            version_specific_data: checkpoint_envelope.version_specific_data.clone(),
-        };
-
         let summary_bcs = options
             .include_summary_bcs()
-            .then(|| bcs::to_bytes(&summary))
+            .then(|| bcs::to_bytes(&checkpoint))
             .transpose()?;
 
         CheckpointResponse {
-            sequence_number: checkpoint_envelope.sequence_number,
-            digest: (*checkpoint_envelope.digest()).into(),
-            summary: options.include_summary().then_some(summary),
+            sequence_number: checkpoint.sequence_number,
+            digest: checkpoint.digest(),
+            summary: options.include_summary().then_some(checkpoint),
             summary_bcs,
-            signature: options.include_signature().then_some(checkpoint_envelope.into_sig().into()),
+            signature: options.include_signature().then_some(signature),
             contents,
             contents_bcs,
         }
-        .pipe(Ok)
+            .pipe(Ok)
     }
 
     pub fn get_full_checkpoint(
@@ -166,11 +123,6 @@ impl RpcService {
             .get_checkpoint_contents_by_digest(&verified_summary.content_digest)
             .ok_or(CheckpointNotFoundError(checkpoint))?;
 
-        let sui_types::full_checkpoint_content::CheckpointData {
-            checkpoint_summary,
-            checkpoint_contents,
-            transactions,
-        } = self
         let checkpoint = self
             .reader
             .inner()
@@ -222,45 +174,7 @@ pub(crate) fn checkpoint_data_to_full_checkpoint_response(
         contents_bcs,
         transactions,
     }
-    .pipe(Ok)
-}
-
-        let sequence_number = checkpoint_summary.sequence_number;
-        let digest = checkpoint_summary.digest().to_owned().into();
-        let (summary, signature) = checkpoint_summary.into_data_and_sig();
-        let summary_bcs = options
-            .include_summary_bcs()
-            .then(|| bcs::to_bytes(&summary))
-            .transpose()?;
-        let contents_bcs = options
-            .include_contents_bcs()
-            .then(|| bcs::to_bytes(&checkpoint_contents))
-            .transpose()?;
-
-        let transactions = transactions
-            .into_iter()
-            .map(|transaction| transaction_to_checkpoint_transaction(transaction, options))
-            .collect::<Result<_>>()?;
-
-
-        FullCheckpointResponse {
-            sequence_number,
-            digest,
-            summary: options
-                .include_summary()
-                .then(|| summary.try_into())
-                .transpose()?,
-            summary_bcs,
-            signature: options.include_signature().then(|| signature.into()),
-            contents: options
-                .include_contents()
-                .then(|| checkpoint_contents.try_into())
-                .transpose()?,
-            contents_bcs,
-            transactions,
-        }
         .pipe(Ok)
-    }
 }
 
 fn transaction_to_checkpoint_transaction(
@@ -332,7 +246,7 @@ fn transaction_to_checkpoint_transaction(
         input_objects,
         output_objects,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 fn object_to_object_response(
@@ -359,19 +273,9 @@ fn object_to_object_response(
         object,
         object_bcs,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
-#[derive(Debug, Copy, Clone, Eq, PartialEq, schemars::JsonSchema)]
-#[schemars(untagged)]
-pub enum CheckpointId {
-    #[schemars(
-        title = "SequenceNumber",
-        example = "CheckpointSequenceNumber::default"
-    )]
-    /// Sequence number or height of a Checkpoint
-    SequenceNumber(#[schemars(with = "crate::rest::_schemars::U64")] CheckpointSequenceNumber),
-    #[schemars(title = "Digest", example = "example_digest")]
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
 pub enum CheckpointId {
     /// Sequence number or height of a Checkpoint
@@ -380,16 +284,10 @@ pub enum CheckpointId {
     Digest(CheckpointDigest),
 }
 
-fn example_digest() -> CheckpointDigest {
-    "4btiuiMPvEENsttpZC7CZ53DruC3MAgfznDbASZ7DR6S"
-        .parse()
-        .unwrap()
-}
-
 impl<'de> serde::Deserialize<'de> for CheckpointId {
     fn deserialize<D>(deserializer: D) -> std::result::Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
+        where
+            D: serde::Deserializer<'de>,
     {
         let raw = String::deserialize(deserializer)?;
 
@@ -407,8 +305,8 @@ impl<'de> serde::Deserialize<'de> for CheckpointId {
 
 impl serde::Serialize for CheckpointId {
     fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
+        where
+            S: serde::Serializer,
     {
         match self {
             CheckpointId::SequenceNumber(s) => serializer.serialize_str(&s.to_string()),

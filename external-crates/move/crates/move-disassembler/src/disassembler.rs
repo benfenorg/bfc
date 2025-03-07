@@ -153,9 +153,9 @@ fn delimited_list<T, F, W>(
     buf: &mut W,
     mut printer: F,
 ) -> Result<()>
-where
-    W: Write + ByteLength,
-    F: FnMut(&mut W, T) -> Result<()>,
+    where
+        W: Write + ByteLength,
+        F: FnMut(&mut W, T) -> Result<()>,
 {
     let mut first = prefix;
     let mut last = "";
@@ -239,7 +239,7 @@ impl<'a> Disassembler<'a> {
                 },
                 bcode_map_gen,
             )
-            .map_err(|e| anyhow::anyhow!("{e}: Module exceeded max allowed disassembly size"))?;
+                .map_err(|e| anyhow::anyhow!("{e}: Module exceeded max allowed disassembly size"))?;
         } else {
             self.print_module(&mut buffer, bcode_map_gen)?;
         };
@@ -259,7 +259,7 @@ impl<'a> Disassembler<'a> {
                 },
                 bcode_map_gen,
             )
-            .map_err(|e| anyhow::anyhow!("{e}: Module exceeded max allowed disassembly size"))?
+                .map_err(|e| anyhow::anyhow!("{e}: Module exceeded max allowed disassembly size"))?
         } else {
             self.print_module(&mut buffer, bcode_map_gen)?
         };
@@ -542,9 +542,6 @@ impl<'a> Disassembler<'a> {
                     .bytecode
                     .identifier_at(variant.variant_name);
 
-                any_write!(buffer, "\n\t{variant_name} {{ ")?;
-
-
                 any_write!(buffer, "\n\t")?;
                 let variant_start_offset = buffer.byte_len();
                 any_write!(buffer, "{variant_name} {{ ")?;
@@ -574,8 +571,6 @@ impl<'a> Disassembler<'a> {
                         )
                     },
                 )?;
-
-                any_write!(buffer, " }}")
 
                 any_write!(buffer, " }}")?;
                 // perhaps surprisingly, but the location is of the whole variant
@@ -810,19 +805,6 @@ impl<'a> Disassembler<'a> {
         }
 
         let signature = self.source_mapper.bytecode.signature_at(locals_idx);
-        for (local_idx, (name, _)) in function_source_map
-            .locals
-            .iter()
-            .skip(parameter_len)
-            .enumerate()
-        {
-            any_write!(buffer, "L{local_idx}:\t{name}: ")?;
-            self.disassemble_type_for_local(
-                buffer,
-                function_source_map,
-                parameter_len + local_idx,
-                signature,
-            )?;
         for (local_idx, (name, _)) in function_source_map.locals.iter().enumerate() {
             any_write!(buffer, "L{}:\t", local_idx + parameter_len)?;
             let name_loc = any_write!(buffer, "{name}")?;
@@ -971,7 +953,7 @@ impl<'a> Disassembler<'a> {
             } else {
                 any_writeln!(buffer, "use {}::{};", module_id.address(), module_id.name())
             }
-            .map(|_| ())
+                .map(|_| ())
         }
     }
 
@@ -1333,7 +1315,7 @@ impl<'a> Disassembler<'a> {
                         .name,
                 )
             )
-            .map(|_| ()),
+                .map(|_| ()),
             SignatureToken::DatatypeInstantiation(struct_inst) => {
                 let (struct_handle_idx, instantiation) = &**struct_inst;
                 let name = self.source_mapper.bytecode.identifier_at(
@@ -1585,7 +1567,7 @@ impl<'a> Disassembler<'a> {
             self.disassemble_sig_tok(buffer, &constant.type_, None, &[])?;
             any_writeln!(buffer, ": {data_str}")
         }
-        .map(|_| ())
+            .map(|_| ())
     }
 
     fn disassemble_struct_field_access(
@@ -1605,7 +1587,7 @@ impl<'a> Disassembler<'a> {
                     "ERROR[Attempt to access field on a native struct {}]",
                     field_idx
                 )
-                .map(|_| ());
+                    .map(|_| ());
             }
             StructFieldInformation::Declared(fields) => {
                 let Some(fields) = fields.get(field_handle.field as usize) else {
@@ -1657,7 +1639,7 @@ impl<'a> Disassembler<'a> {
                 .unwrap_or_else(|| module_id.name().to_string());
             any_write!(buffer, "{module_name}::{function_name}")
         }
-        .map(|_| ())
+            .map(|_| ())
     }
 }
 
@@ -1673,7 +1655,7 @@ impl<'a> Disassembler<'a> {
             Ability::Store => "store",
             Ability::Key => "key",
         }
-        .to_string()
+            .to_string()
     }
 
     fn format_name_for_parameter_or_local(

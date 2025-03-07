@@ -2,8 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod response_ext;
-
-use std::collections::HashMap;
 pub use response_ext::ResponseExt;
 
 pub mod sdk;
@@ -15,13 +13,6 @@ use tonic::metadata::MetadataMap;
 
 use crate::proto::node::v2::node_service_client::NodeServiceClient;
 use crate::proto::node::v2::{
-pub use reqwest;
-use tap::Pipe;
-use tonic::metadata::MetadataMap;
-use sui_types::messages_checkpoint::CheckpointSummary;
-
-use crate::proto::node::node_client::NodeClient;
-use crate::proto::node::{
     ExecuteTransactionResponse, GetCheckpointResponse, GetFullCheckpointResponse, GetObjectResponse,
 };
 use crate::proto::types::Bcs;
@@ -49,9 +40,9 @@ pub struct Client {
 
 impl Client {
     pub fn new<T>(uri: T) -> Result<Self>
-    where
-        T: TryInto<http::Uri>,
-        T::Error: Into<BoxError>,
+        where
+            T: TryInto<http::Uri>,
+            T::Error: Into<BoxError>,
     {
         let uri = uri
             .try_into()
@@ -66,11 +57,6 @@ impl Client {
         }
         let channel = endpoint.connect_lazy();
 
-        Ok(Self { uri, channel })
-    }
-
-    pub fn raw_client(&self) -> NodeClient<tonic::transport::Channel> {
-        NodeClient::new(self.channel.clone())
         Ok(Self {
             uri,
             channel,
@@ -272,7 +258,7 @@ fn certified_checkpoint_summary_try_from_proto(
                 .as_ref()
                 .ok_or_else(|| TryFromProtoError::missing("signature"))?,
         )
-        .map_err(TryFromProtoError::from_error)?,
+            .map_err(TryFromProtoError::from_error)?,
     );
 
     Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
@@ -307,16 +293,16 @@ fn checkpoint_data_try_from_proto(
         )
         .map(
             |(
-                crate::proto::node::v2::FullCheckpointTransaction {
-                    transaction_bcs,
-                    effects_bcs,
-                    events_bcs,
-                    input_objects,
-                    output_objects,
-                    ..
-                },
-                signatures,
-            )| {
+                 crate::proto::node::v2::FullCheckpointTransaction {
+                     transaction_bcs,
+                     effects_bcs,
+                     events_bcs,
+                     input_objects,
+                     output_objects,
+                     ..
+                 },
+                 signatures,
+             )| {
                 let transaction = transaction_bcs
                     .ok_or_else(|| TryFromProtoError::missing("transaction_bcs"))?
                     .deserialize()
@@ -413,7 +399,7 @@ fn execute_transaction_response_try_from_proto(
         events,
         balance_changes,
     }
-    .pipe(Ok)
+        .pipe(Ok)
 }
 
 fn status_from_error_with_metadata<T: Into<BoxError>>(err: T, metadata: MetadataMap) -> Status {
@@ -430,9 +416,9 @@ pub struct AuthInterceptor {
 impl AuthInterceptor {
     /// Enable HTTP basic authentication with a username and optional password.
     pub fn basic<U, P>(username: U, password: Option<P>) -> Self
-    where
-        U: std::fmt::Display,
-        P: std::fmt::Display,
+        where
+            U: std::fmt::Display,
+            P: std::fmt::Display,
     {
         use base64::prelude::BASE64_STANDARD;
         use base64::write::EncoderWriter;
@@ -455,8 +441,8 @@ impl AuthInterceptor {
 
     /// Enable HTTP bearer authentication.
     pub fn bearer<T>(token: T) -> Self
-    where
-        T: std::fmt::Display,
+        where
+            T: std::fmt::Display,
     {
         let header_value = format!("Bearer {token}");
         let mut header = tonic::metadata::MetadataValue::try_from(header_value)
