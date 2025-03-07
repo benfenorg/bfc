@@ -197,7 +197,7 @@ impl ValidatorConfigBuilder {
             p2p_config,
             authority_store_pruning_config: pruning_config,
             end_of_epoch_broadcast_channel_capacity:
-                default_end_of_epoch_broadcast_channel_capacity(),
+            default_end_of_epoch_broadcast_channel_capacity(),
             checkpoint_executor_config,
             metrics: None,
             supported_protocol_versions: self.supported_protocol_versions,
@@ -217,10 +217,6 @@ impl ValidatorConfigBuilder {
             indexer_max_subscriptions: Default::default(),
             transaction_kv_store_read_config: Default::default(),
             transaction_kv_store_write_config: None,
-            enable_experimental_rest_api: true,
-            rpc: Some(sui_rpc_api::Config {
-                enable_unstable_apis: Some(true),
-                enable_indexing: Some(true),
             rpc: Some(sui_rpc_api::Config {
                 enable_experimental_rest_api: Some(true),
                 ..Default::default()
@@ -454,7 +450,7 @@ impl FullnodeConfigBuilder {
                 network_config.genesis.clone(),
             )),
             rpc: Some(sui_rpc_api::Config {
-                enable_unstable_apis: Some(true),
+                enable_experimental_rest_api: Some(true),
                 enable_indexing: Some(true),
                 ..Default::default()
             }),
@@ -484,7 +480,6 @@ impl FullnodeConfigBuilder {
             indexer_max_subscriptions: Default::default(),
             transaction_kv_store_read_config: Default::default(),
             transaction_kv_store_write_config: Default::default(),
-            enable_experimental_rest_api: true,
             // note: not used by fullnodes.
             jwk_fetch_interval_seconds: 3600,
             zklogin_oauth_providers: default_zklogin_oauth_providers(),
@@ -632,7 +627,7 @@ impl FullnodeConfigBuilder {
             p2p_config,
             authority_store_pruning_config: pruning_config,
             end_of_epoch_broadcast_channel_capacity:
-                default_end_of_epoch_broadcast_channel_capacity(),
+            default_end_of_epoch_broadcast_channel_capacity(),
             checkpoint_executor_config,
             metrics: None,
             supported_protocol_versions: self.supported_protocol_versions,
@@ -653,10 +648,6 @@ impl FullnodeConfigBuilder {
             indexer_max_subscriptions: Default::default(),
             transaction_kv_store_read_config: Default::default(),
             transaction_kv_store_write_config: Default::default(),
-            enable_experimental_rest_api: true,
-            rpc: Some(sui_rpc_api::Config {
-                enable_unstable_apis: Some(true),
-                enable_indexing: Some(true),
             rpc: Some(sui_rpc_api::Config {
                 enable_experimental_rest_api: Some(true),
                 enable_indexing: Some(true),

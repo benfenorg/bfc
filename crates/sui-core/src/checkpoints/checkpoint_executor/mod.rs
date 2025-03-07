@@ -1428,14 +1428,6 @@ async fn finalize_checkpoint(
     let checkpoint_acc =
         accumulator.accumulate_checkpoint(effects, checkpoint.sequence_number, epoch_store)?;
 
-    if data_ingestion_dir.is_some() || state.rpc_index.is_some() {
-        let checkpoint_data = load_checkpoint_data(
-            checkpoint,
-            object_cache_reader,
-            transaction_cache_reader,
-            checkpoint_store,
-            tx_digests,
-        )?;
     let checkpoint_data = load_checkpoint_data(
         checkpoint,
         object_cache_reader,
@@ -1444,9 +1436,6 @@ async fn finalize_checkpoint(
         tx_digests,
     )?;
 
-        // TODO(bmwill) discuss with team a better location for this indexing so that it isn't on
-        // the critical path and the writes to the DB are done in checkpoint order
-        if let Some(rpc_index) = &state.rpc_index {
     if state.rpc_index.is_some() || data_ingestion_dir.is_some() {
         // Index the checkpoint. this is done out of order and is not written and committed to the
         // DB until later (committing must be done in-order)

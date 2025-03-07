@@ -42,7 +42,6 @@ use std::io::Write;
 use std::path::Path;
 use std::sync::Arc;
 use std::sync::Weak;
-use std::time::Duration;
 use move_core_types::language_storage::TypeTag;
 use std::time::{Duration, SystemTime};
 use sui_protocol_config::ProtocolVersion;
@@ -65,8 +64,6 @@ use sui_types::messages_consensus::ConsensusTransactionKey;
 use sui_types::signature::GenericSignature;
 use sui_types::sui_system_state::{SuiSystemState, SuiSystemStateTrait};
 use sui_types::transaction::{TransactionDataAPI, TransactionKey, TransactionKind};
-use tracing::{debug, error, info, warn, instrument};
-
 use tokio::{sync::Notify, task::JoinSet, time::timeout};
 use tracing::{debug, error, info, instrument, trace, warn};
 use typed_store::traits::{TableSummary, TypedStoreDebug};
