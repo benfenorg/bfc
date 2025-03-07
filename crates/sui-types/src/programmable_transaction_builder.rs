@@ -162,13 +162,12 @@ impl ProgrammableTransactionBuilder {
 
     pub fn split_coins(
         &mut self,
-        coin_id: ObjectRef,
         amounts: Vec<u64>,
     ) -> anyhow::Result<()> {
-        let coin_arg = self.obj(ObjectArg::ImmOrOwnedObject(coin_id))?;
+        //let coin_arg = self.obj(ObjectArg::ImmOrOwnedObject(coin_id))?;
         let mut split_commands = Vec::new();
         for amount in amounts {
-            split_commands.push(Command::SplitCoins(coin_arg, vec![self.pure(amount)?]));
+            split_commands.push(Command::SplitCoins(Argument::GasCoin, vec![self.pure(amount)?]));
         }
         Ok(self.commands.extend(split_commands))
     }

@@ -1911,7 +1911,7 @@ impl TransactionData {
     ) -> anyhow::Result<Self> {
         let pt = {
             let mut builder = ProgrammableTransactionBuilder::new();
-            builder.split_coins(gas_payment[0],vec![gas_budget])?;
+            builder.split_coins(vec![gas_budget])?;
             builder.move_call(package, module, function, type_arguments, arguments)?;
             builder.finish()
         };

@@ -686,17 +686,19 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
         
     assert!(gas.is_some());
 
-    let tx = context.sign_transaction(
-        &TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
-            .move_call_with_split_gas_coins(
-                package,
-                "test_oracle",
-                "empty_test",
-                vec![],
-            )
-            .build(),
-    );
+    let txn_data = TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
+        .move_call_with_split_gas_coins(
+            package,
+            "test_oracle",
+            "empty_test",
+            vec![],
+        )
+        .build();
+    tracing::error!("txn_data is {:?}",txn_data);
+    let tx = context.sign_transaction(&txn_data);
     let resp = test_cluster.wallet.execute_transaction_may_fail(tx).await;
+    tracing::error!("test_move_call_use_new_test_coin resp: {:#?}", resp);
+
     if  resp.is_err() {
         println!("test_move_call_use_new_test_coin resp: {:#?}", resp);
         return Err(resp.unwrap_err());
