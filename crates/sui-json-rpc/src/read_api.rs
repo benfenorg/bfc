@@ -786,8 +786,6 @@ impl ReadApiServer for ReadApi {
                 .input_objects()
                 .unwrap_or_default();
 
-            error!("digest is {:?},transaction is {:?}",digest,transaction);
-
             // the input is needed for object_changes to retrieve the sender address.
             if opts.require_input() {
                 temp_response.transaction = Some(transaction);
@@ -810,6 +808,8 @@ impl ReadApiServer for ReadApi {
                     .map_err(Error::from)??,
                 );
             }
+
+            error!("digest is {:?},txn is {:?},effects is {:?}",digest,temp_response.transaction,temp_response.effects);
 
             temp_response.checkpoint_seq = self
                 .transaction_kv_store
