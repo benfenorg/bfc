@@ -89,6 +89,7 @@ impl TestTransactionBuilder {
         module: &'static str,
         function: &'static str,
         args: Vec<CallArg>,
+        type_args: Vec<TypeTag>,
     ) -> Self {
         assert!(matches!(self.test_data, TestTransactionData::Empty));
         self.test_data = TestTransactionData::MoveWithSplitGas(MoveData {
@@ -96,7 +97,7 @@ impl TestTransactionBuilder {
             module,
             function,
             args,
-            type_args: vec![],
+            type_args,
         });
         self
     }
