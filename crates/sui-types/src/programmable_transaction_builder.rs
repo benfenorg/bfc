@@ -164,7 +164,8 @@ impl ProgrammableTransactionBuilder {
         &mut self,
         amount: u64,
     ) -> Argument{
-        self.command(Command::SplitCoins(Argument::GasCoin, vec![self.pure(amount).unwrap()]))
+        let args =  vec![self.pure(amount).unwrap()];
+        self.command(Command::SplitCoins(Argument::GasCoin,args))
     }
 
     pub fn move_call_with_args(
