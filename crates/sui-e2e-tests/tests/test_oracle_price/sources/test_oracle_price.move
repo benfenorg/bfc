@@ -20,7 +20,7 @@ module test_oracle_price::test_oracle {
         b_balance: Balance<B>,
     }
 
-    public fun new_pool<A>(
+    public fun new_pool<A, B>(
         coin_a: Coin<A>,
         ctx: &mut TxContext
     ) {
