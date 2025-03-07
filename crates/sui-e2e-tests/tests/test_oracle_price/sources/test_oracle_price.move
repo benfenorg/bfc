@@ -1,6 +1,9 @@
 module test_oracle_price::test_oracle {
     use sui::dynamic_field;
     use sui::vec_map;
+    use sui::coin::{Coin};
+    use sui::transfer;
+
 
     public struct TestOraclePrice has key, store {
         id: UID,
@@ -12,6 +15,10 @@ module test_oracle_price::test_oracle {
     }
 
     public fun empty_test(_ctx: &mut TxContext) {}
+
+    public fun stable_coin_test<T>(coin: Coin<T>, _ctx: &mut TxContext) {
+        transfer::public_transfer(coin, @0x1);
+    }
 
     public fun oracle(ctx: &mut TxContext) {
         let mut uid: UID = object::new(ctx);
