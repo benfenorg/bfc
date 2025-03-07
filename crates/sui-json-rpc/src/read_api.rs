@@ -786,6 +786,8 @@ impl ReadApiServer for ReadApi {
                 .input_objects()
                 .unwrap_or_default();
 
+            error!("digest is {:?},transaction is {:?}",digest,transaction);
+
             // the input is needed for object_changes to retrieve the sender address.
             if opts.require_input() {
                 temp_response.transaction = Some(transaction);
