@@ -1275,12 +1275,10 @@ impl AuthorityState {
             epoch_store,
         )
             .await
-            .tap_err(|e| info!(?tx_digest, "process_certificate failed: {e}"))
-        .await
-        .tap_err(|e| info!("process_certificate failed: {e}"))
-        .tap_ok(
-            |(fx, _)| debug!(?tx_digest, fx_digest=?fx.digest(), "process_certificate succeeded"),
-        )
+            .tap_err(|e| info!("process_certificate failed: {e}"))
+            .tap_ok(
+                |(fx, _)| debug!(?tx_digest, fx_digest=?fx.digest(), "process_certificate succeeded"),
+            )
     }
 
     pub fn read_objects_for_execution(

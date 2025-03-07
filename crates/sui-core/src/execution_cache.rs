@@ -297,17 +297,12 @@ pub trait ObjectCacheRead: Send + Sync {
                     .get_object(&input_key.id().id())
                     .map(|obj| obj.version() >= input_key.version().unwrap())
                     .unwrap_or(false)
-                    || self.have_deleted_owned_object_at_version_or_after(
-                    &input_key.id(),
+                    || self.have_deleted_fastpath_object_at_version_or_after(
+                    input_key.id().id(),
                     input_key.version().unwrap(),
                     epoch,
+                    use_object_per_epoch_marker_table_v2,
                 );
-                    || self.have_deleted_fastpath_object_at_version_or_after(
-                        input_key.id().id(),
-                        input_key.version().unwrap(),
-                        epoch,
-                        use_object_per_epoch_marker_table_v2,
-                    );
                 versioned_results.push((*idx, is_available));
             } else if self
                 .get_deleted_shared_object_previous_tx_digest(

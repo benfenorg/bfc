@@ -201,8 +201,6 @@ impl JsonRpcServerBuilder {
             .clone()
             .map(|policy| policy.client_id_source);
 
-
-        let middleware = tower::ServiceBuilder::new()
         let metrics_clone = metrics.clone();
         let middleware = ServiceBuilder::new()
             .layer(Self::trace_layer())

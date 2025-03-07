@@ -996,22 +996,6 @@ impl ReadApiServer for ReadApi {
     }
 
     #[instrument(skip(self))]
-    async fn get_checkpoints_deprecated_limit(
-        &self,
-        cursor: Option<BigInt<u64>>,
-        limit: Option<BigInt<u64>>,
-        descending_order: bool,
-    ) -> RpcResult<CheckpointPage> {
-        with_tracing!(async move {
-            self.get_checkpoints(cursor, limit.map(|l| *l as usize), descending_order)
-                .await
-                .map_err(Error::from)
-        })
-    }
-
-
-
-    #[instrument(skip(self))]
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
         let inner_system_state = self.state.get_bfc_system_state()
             .expect("Reading bfc system state object cannot fail");

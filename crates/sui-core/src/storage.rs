@@ -471,20 +471,6 @@ impl RpcStateReader for RestReadStore {
     }
 }
 
-impl RpcIndexes for RpcIndexStore {
-    fn get_transaction_checkpoint(
-        &self,
-        digest: &TransactionDigest,
-    ) -> sui_types::storage::error::Result<Option<CheckpointSequenceNumber>> {
-        self.get_transaction_info(digest)
-            .map(|maybe_info| maybe_info.map(|info| info.checkpoint))
-            .map_err(StorageError::custom)
-    }
-
-    fn indexes(&self) -> Option<&dyn RpcIndexes> {
-        self.index().ok().map(|index| index as _)
-    }
-}
 
 impl RpcIndexes for RpcIndexStore {
     fn get_transaction_checkpoint(
