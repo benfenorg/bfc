@@ -6,7 +6,7 @@ mod publish_coin;
 
 use std::str::FromStr;
 use std::time::Duration;
-use anyhow::Error;
+use anyhow::{anyhow, Error};
 use chrono::Utc;
 use jsonrpsee::http_client::HttpClient;
 use move_core_types::language_storage::TypeTag;
@@ -28,6 +28,7 @@ use sui_json_rpc_api::{CoinReadApiClient, IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 use tracing::error;
+use sui_network::tonic::codegen::StdError;
 
 #[sim_test]
 async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
@@ -163,7 +164,6 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
 
     publish_coin::do_mint(&mut test_cluster, package).await;
     publish_coin::do_mint(&mut test_cluster, package).await;
-    publish_coin::do_mint(&mut test_cluster, package).await;
     auth::auth_setup(&mut test_cluster, &mut http_client, address, "MINT-OTHER-STABLECOIN-POLLY").await?;
 
     test_cluster.wait_for_epoch(Some(2)).await;
@@ -171,7 +171,7 @@ async fn sim_test_with_new_stable_coin_gas() -> Result<(), anyhow::Error> {
 
     let objects = get_owned_objects(filter.as_str(), &mut http_client, address).await?;
     println!("objects is {:?}",objects);
-    assert_eq!(objects.len(), 3);
+    assert_eq!(objects.len(), 2);
 
 
     println!("coin_type is {:?}",coin_type);
@@ -632,6 +632,15 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 
     assert!(gas.is_some());
 
+    //get busd
+    let busd_response_vec = do_get_owned_objects_with_filter(
+        "0x2::coin::Coin<0xc8::busd::BUSD>",
+        test_cluster.rpc_client(),
+        address,
+    ).await?;
+    let busd_coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
+    println!("busd_coin_id is {:?}",busd_coin_id);
+
     let txn_data = TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
         .move_call_with_split_gas_coins(
             package,
@@ -639,6 +648,7 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
             "stable_coin_test_swap",
             vec![
                 CallArg::Pure(bcs::to_bytes(&pool_id)?),
+                CallArg::Pure(bcs::to_bytes(&busd_coin_id)?),
             ],
             type_args,
         )
@@ -665,29 +675,25 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
         .unwrap();
 
     let mut gas: Option<ObjectRef> = None;
-    gases.data.retain(|e| {
+    gases.data.iter().for_each(|e| {
+        println!("1 e.coin_type is {}", &e.coin_type);
+
         if e.coin_type.contains("BFC") {
             gas = Some(e.object_ref());
-            false
-        } else {
-            true
         }
     });
 
     assert!(gas.is_some());
-
 
     let mut coin: Option<ObjectRef> = None;
-    gases.data.retain(|e| {
+    gases.data.iter().for_each(|e| {
+        println!("2 e.coin_type is {}", &e.coin_type);
         if e.coin_type.contains("test_coin::TEST_COIN") {
-            gas = Some(e.object_ref());
-            false
-        } else {
-            true
+            coin = Some(e.object_ref());
         }
     });
 
-    assert!(gas.is_some());
+    assert!(coin.is_some());
 
     let txn_data = TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
         .move_call_with_tag(
@@ -718,7 +724,7 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
         }
     }
 
-    Err("test_move_call_use_new_test_coin resp: {:#?}".into());
+    Err(anyhow!("not found"))
 }
 
 

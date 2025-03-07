@@ -2,8 +2,10 @@ module test_oracle_price::test_oracle {
     use sui::dynamic_field;
     use sui::vec_map;
     use sui::coin::{Coin};
+    use sui::coin;
     use sui::transfer;
     use sui::balance::Balance;
+    use sui::balance;
 
     public struct TestOraclePrice has key, store {
         id: UID,
@@ -24,21 +26,19 @@ module test_oracle_price::test_oracle {
         coin_a: Coin<A>,
         ctx: &mut TxContext
     ) {
-        transfer::public_transfer(
-            Pool{
-                id: object::new(ctx),
-                a_balance: coin_a.into_balance(),
-                b_balance: balance::zero(),
-            },
-            tx_context::sender(ctx)
-        );
+        let pool = Pool<A, B>{
+            id: object::new(ctx),
+            a_balance: coin_a.into_balance(),
+            b_balance: balance::zero<B>(),
+        };
+        transfer::public_transfer(pool, ctx.sender());
     }
 
     public fun empty_test(_ctx: &mut TxContext) {}
 
     public fun stable_coin_test_swap<A, B>(p: &mut Pool<A, B>, coin_b: Coin<B>, ctx: &mut TxContext) {
         p.b_balance.join(coin_b.into_balance());
-        let coin = p.a_balance.take(1);
+        let coin = coin::from_balance(p.a_balance.split(1), ctx);
 
         transfer::public_transfer(coin, ctx.sender());
     }
