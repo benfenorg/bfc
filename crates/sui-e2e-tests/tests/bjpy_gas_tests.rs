@@ -688,7 +688,7 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 
     let tx = context.sign_transaction(
         &TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
-            .move_call(
+            .move_call_with_split_gas_coins(
                 package,
                 "test_oracle",
                 "empty_test",

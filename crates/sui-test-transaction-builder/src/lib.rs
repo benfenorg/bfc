@@ -83,6 +83,24 @@ impl TestTransactionBuilder {
         self
     }
 
+    pub fn move_call_with_split_gas_coins(
+        mut self,
+        package_id: ObjectID,
+        module: &'static str,
+        function: &'static str,
+        args: Vec<CallArg>,
+    ) -> Self {
+        assert!(matches!(self.test_data, TestTransactionData::Empty));
+        self.test_data = TestTransactionData::MoveWithSplitGas(MoveData {
+            package_id,
+            module,
+            function,
+            args,
+            type_args: vec![],
+        });
+        self
+    }
+
     pub fn with_type_args(mut self, type_args: Vec<TypeTag>) -> Self {
         if let TestTransactionData::Move(data) = &mut self.test_data {
             assert!(data.type_args.is_empty());
@@ -378,6 +396,19 @@ impl TestTransactionBuilder {
                 self.gas_price,
             )
                 .unwrap(),
+            TestTransactionData::MoveWithSplitGas(data) => TransactionData::new_move_call_with_split_gas_coins(
+                self.sender,
+                data.package_id,
+                ident_str!(data.module).to_owned(),
+                ident_str!(data.function).to_owned(),
+                data.type_args,
+                self.gas_objects,
+                data.args,
+                self.gas_budget
+                    .unwrap_or(self.gas_price * TEST_ONLY_GAS_UNIT_FOR_HEAVY_COMPUTATION_STORAGE),
+                self.gas_price,
+            )
+                .unwrap(),
             TestTransactionData::Transfer(data) => TransactionData::new_transfer(
                 data.recipient,
                 data.object,
@@ -491,6 +522,7 @@ impl TestTransactionBuilder {
 
 enum TestTransactionData {
     Move(MoveData),
+    MoveWithSplitGas(MoveData),
     Transfer(TransferData),
     TransferSui(TransferSuiData),
     Publish(PublishData),
