@@ -809,8 +809,6 @@ impl ReadApiServer for ReadApi {
                 );
             }
 
-            error!("digest is {:?},txn is {:?},effects is {:?}",digest,temp_response.transaction,temp_response.effects);
-
             temp_response.checkpoint_seq = self
                 .transaction_kv_store
                 .deprecated_get_transaction_checkpoint(digest)

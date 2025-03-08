@@ -1915,7 +1915,6 @@ impl TransactionData {
             builder.move_call_with_args(package, module, function, type_arguments, arguments,vec![arg])?;
             builder.finish()
         };
-        tracing::error!("pt is {:?}",pt);
         Ok(Self::new_programmable(
             sender,
             gas_payment,

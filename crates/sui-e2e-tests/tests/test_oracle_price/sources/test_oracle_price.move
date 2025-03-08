@@ -36,9 +36,9 @@ module test_oracle_price::test_oracle {
 
     public fun empty_test(_ctx: &mut TxContext) {}
 
-    public fun stable_coin_test_swap<A, B>(p: &mut Pool<A, B>, coin_b: Coin<B>, ctx: &mut TxContext) {
+    public fun stable_coin_test_swap<A, B>( coin_b: Coin<B>,p: &mut Pool<A, B>, ctx: &mut TxContext) {
         p.b_balance.join(coin_b.into_balance());
-        let coin = coin::from_balance(p.a_balance.split(1), ctx);
+        let coin = coin::from_balance(p.a_balance.split(100103), ctx);
 
         transfer::public_transfer(coin, ctx.sender());
     }

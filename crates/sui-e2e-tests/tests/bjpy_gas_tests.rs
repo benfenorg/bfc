@@ -19,7 +19,7 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
-use sui_types::transaction::{CallArg, ObjectArg};
+use sui_types::transaction::{Argument, CallArg, ObjectArg};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
@@ -613,7 +613,7 @@ async fn init_oracele_with_new_test_coin(test_cluster: &mut TestCluster, test_co
     assert!(price.value.contents.len() > 0);
 }
 
-async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, package: ObjectID, type_args: Vec<TypeTag>, pool_id: ObjectID) -> Result<(), Error> {
+async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>, pool_id: ObjectRef) -> Result<(), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
     let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
@@ -632,14 +632,16 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 
     assert!(gas.is_some());
 
-    //get busd
-    let busd_response_vec = do_get_owned_objects_with_filter(
-        "0x2::coin::Coin<0xc8::busd::BUSD>",
-        test_cluster.rpc_client(),
-        address,
-    ).await?;
-    let busd_coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
-    println!("busd_coin_id is {:?}",busd_coin_id);
+    // //get busd
+    // let busd_response_vec = do_get_owned_objects_with_filter(
+    //     "0x2::coin::Coin<0xc8::busd::BUSD>",
+    //     test_cluster.rpc_client(),
+    //     address,
+    // ).await?;
+    // let busd_coin_id = busd_response_vec.first().unwrap().data.as_ref().unwrap().object_id;
+    // println!("busd_coin_id is {:?}",busd_coin_id);
+
+    type_args.insert(0,TypeTag::from_str("0xc8::busd::BUSD")?);
 
     let txn_data = TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
         .move_call_with_split_gas_coins(
@@ -647,8 +649,7 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
             "test_oracle",
             "stable_coin_test_swap",
             vec![
-                CallArg::Pure(bcs::to_bytes(&pool_id)?),
-                CallArg::Pure(bcs::to_bytes(&busd_coin_id)?),
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(pool_id)),
             ],
             type_args,
         )
@@ -667,17 +668,19 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 }
 
 
-async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, package: ObjectID, type_args: Vec<TypeTag>,) -> Result<(ObjectID), Error> {
+async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>,) -> Result<(ObjectRef), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
+
+    let mut  http_client = test_cluster.rpc_client().clone();
+    swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
+
     let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
         .await
         .unwrap();
 
     let mut gas: Option<ObjectRef> = None;
     gases.data.iter().for_each(|e| {
-        println!("1 e.coin_type is {}", &e.coin_type);
-
         if e.coin_type.contains("BFC") {
             gas = Some(e.object_ref());
         }
@@ -687,13 +690,14 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
 
     let mut coin: Option<ObjectRef> = None;
     gases.data.iter().for_each(|e| {
-        println!("2 e.coin_type is {}", &e.coin_type);
-        if e.coin_type.contains("test_coin::TEST_COIN") {
+        if e.coin_type.contains("BUSD") {
             coin = Some(e.object_ref());
         }
     });
 
     assert!(coin.is_some());
+
+    type_args.insert(0,TypeTag::from_str("0xc8::busd::BUSD")?);
 
     let txn_data = TestTransactionBuilder::new(address, gas.unwrap(), context.get_reference_gas_price().await.unwrap())
         .move_call_with_tag(
@@ -702,7 +706,7 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
             "new_pool",
             type_args,
             vec![
-                CallArg::Object(ObjectArg::ImmOrOwnedObject( coin.unwrap())),
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(coin.unwrap())),
             ],
         )
         .build();
@@ -719,8 +723,8 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
 
 
     for ele in  resp?.object_changes.unwrap() {
-        if let ObjectChange::Created { object_id, .. } = ele {
-            return Ok(object_id);
+        if let ObjectChange::Created { object_id, version,digest,.. } = ele {
+            return Ok((object_id,version,digest));
         }
     }
 
