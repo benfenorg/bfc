@@ -6,9 +6,11 @@ mod publish_coin;
 
 use std::str::FromStr;
 use std::time::Duration;
+use std::vec;
 use anyhow::{anyhow, Error};
 use chrono::Utc;
 use jsonrpsee::http_client::HttpClient;
+use move_core_types::identifier::Identifier;
 use move_core_types::language_storage::TypeTag;
 use move_core_types::parser::parse_struct_tag;
 use sui_json_rpc_types::{ObjectChange, SuiExecutionStatus, SuiMoveStruct, SuiMoveValue, SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData, SuiTransactionBlockEffects};
@@ -613,7 +615,7 @@ async fn init_oracele_with_new_test_coin(test_cluster: &mut TestCluster, test_co
     assert!(price.value.contents.len() > 0);
 }
 
-async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>, pool_id: ObjectRef) -> Result<(), Error> {
+async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>, pool_id: (ObjectRef,ObjectRef)) -> Result<(), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
     let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
@@ -649,7 +651,12 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
             "test_oracle",
             "stable_coin_test_swap",
             vec![
-                CallArg::Object(ObjectArg::ImmOrOwnedObject(pool_id)),
+                CallArg::Object(ObjectArg::SharedObject{
+                    id:pool_id.0.0,
+                    initial_shared_version:pool_id.0.1,
+                    mutable:true}
+                ),
+                CallArg::Object(ObjectArg::ImmOrOwnedObject(pool_id.1))
             ],
             type_args,
         )
@@ -668,7 +675,7 @@ async fn test_move_call_use_new_test_coin(test_cluster: &mut TestCluster, packag
 }
 
 
-async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>,) -> Result<(ObjectRef), Error> {
+async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, package: ObjectID, mut type_args: Vec<TypeTag>,) -> Result<(ObjectRef,ObjectRef), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
 
@@ -720,15 +727,23 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
         return Err(resp.unwrap_err());
     }
 
-
-
+    let mut result_vec =  Vec::with_capacity(2);
     for ele in  resp?.object_changes.unwrap() {
-        if let ObjectChange::Created { object_id, version,digest,.. } = ele {
-            return Ok((object_id,version,digest));
+        if let ObjectChange::Created { object_id, version,digest,object_type,.. } = ele {
+            if object_type.name == Identifier::from_str("TestOraclePrice").unwrap(){
+                result_vec.insert(0,(object_id,version,digest));
+            }
+            if object_type.name == Identifier::from_str("Global").unwrap(){
+                result_vec.insert(1,(object_id,version,digest));
+            }
         }
     }
+    if result_vec.len() != 2 {
+        Err(anyhow!("not found"))
+    }else {
+        return Ok((result_vec[0],result_vec[1]));
+    }
 
-    Err(anyhow!("not found"))
 }
 
 
