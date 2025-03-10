@@ -43,17 +43,12 @@ use shared_crypto::intent::Intent;
 use sui_json::SuiJsonValue;
 use sui_json_rpc_types::{
     Coin, DevInspectArgs, DevInspectResults, DynamicFieldInfo, SuiObjectData,
-    SuiProtocolConfigValue, SuiTransactionBlockEffectsAPI,
-    DryRunTransactionBlockResponse, DynamicFieldPage, SuiCoinMetadata, SuiData,
-    SuiExecutionStatus, SuiObjectDataOptions, SuiObjectResponse,
-    SuiObjectResponseQuery, SuiParsedData, SuiRawData,
+    SuiExecutionStatus, SuiObjectDataOptions, DryRunTransactionBlockResponse,
     SuiTransactionBlockEffects, SuiTransactionBlockResponse,
-    SuiTransactionBlockResponseOptions, SuiGasCostSummary
-    Coin, DevInspectArgs, DevInspectResults, DryRunTransactionBlockResponse, DynamicFieldInfo,
-    DynamicFieldPage, SuiCoinMetadata, SuiData, SuiExecutionStatus, SuiObjectData,
-    SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData,
-    SuiProtocolConfigValue, SuiRawData, SuiTransactionBlockEffects, SuiTransactionBlockEffectsAPI,
-    SuiTransactionBlockResponse, SuiTransactionBlockResponseOptions,
+    SuiTransactionBlockResponseOptions, SuiGasCostSummary,
+    DynamicFieldPage, SuiCoinMetadata, SuiData,
+    SuiObjectResponse, SuiObjectResponseQuery, SuiParsedData,
+    SuiProtocolConfigValue, SuiRawData, SuiTransactionBlockEffectsAPI,
 };
 use sui_types::base_types_bfc::bfc_address_util::{convert_to_bfc_address, sui_address_to_bfc_address};
 use sui_keys::keystore::AccountKeystore;
@@ -67,7 +62,7 @@ use sui_sdk::{
     apis::ReadApi,
     sui_client_config::{SuiClientConfig, SuiEnv},
     wallet_context::WalletContext,
-    SuiClient, SUI_COIN_TYPE, SUI_DEVNET_URL, SUI_LOCAL_NETWORK_URL,
+    SuiClient, SUI_COIN_TYPE, SUI_DEVNET_URL, SUI_LOCAL_NETWORK_URL, SUI_LOCAL_NETWORK_URL_0,
     SUI_TESTNET_URL,
 };
 use sui_types::{
@@ -1523,9 +1518,6 @@ impl SuiClientCommands {
                     if let Ok(env) = active_env {
                         let network = match env.rpc.as_str() {
                             SUI_DEVNET_URL => "https://faucet.devnet.sui.io/v1/gas",
-                            SUI_TESTNET_URL => "https://faucet.testnet.sui.io/v1/gas",
-                            // TODO when using sui-test-validator, and 5003 when using bfc start
-                            SUI_LOCAL_NETWORK_URL => "http://127.0.0.1:9123/gas",
                             SUI_TESTNET_URL => {
                                 bail!("For testnet tokens, please use the Web UI: https://faucet.sui.io/?address={address}");
                             }
@@ -2879,18 +2871,6 @@ pub async fn estimate_gas_budget(
     sponsor: Option<SuiAddress>,
 ) -> Result<u64, anyhow::Error> {
     let client = context.get_client().await?;
-    let Ok(SuiClientCommandResult::DryRun(dry_run)) =
-        execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await
-        else {
-            bail!("Could not automatically determine the gas budget. Please supply one using the --gas-budget flag.")
-        };
-
-    let rgp = client.read_api().get_reference_gas_price().await?;
-
-    Ok(estimate_gas_budget_from_gas_cost(
-        dry_run.effects.gas_cost_summary(),
-        rgp,
-    ))
     let dry_run =
         execute_dry_run(context, signer, kind, None, gas_price, gas_payment, sponsor).await;
     if let Ok(SuiClientCommandResult::DryRun(dry_run)) = dry_run {

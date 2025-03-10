@@ -4655,8 +4655,6 @@ async fn make_test_transaction(
 
     unreachable!("couldn't form cert")
 }
-
-async fn prepare_authority_and_shared_object_cert() -> (Arc<AuthorityState>, VerifiedCertificate, ObjectID) {
 async fn prepare_authority_and_shared_object_cert() -> (
     Arc<AuthorityState>,
     VerifiedCertificate,
@@ -5870,15 +5868,6 @@ async fn prepare_authority_and_shared_stable_object_cert() -> (Arc<AuthorityStat
     )
         .await;
     (authority, certificate, shared_object_id)
-}
-
-#[tokio::test(flavor = "current_thread", start_paused = true)]
-#[should_panic]
-async fn test_shared_object_transaction_shared_locks_not_set() {
-    let (authority, certificate, _) = prepare_authority_and_shared_object_cert().await;
-
-    // Executing the certificate now panics since it was not sequenced and shared locks are not set
-    let _ = authority.try_execute_for_test(&certificate).await;
 }
 
 // tests using a gas coin with version MAX - 1
@@ -9535,6 +9524,15 @@ async fn test_stable_consensus_message_processed() {
         };
         Object::new_move(obj, owner, TransactionDigest::genesis_marker())
     };
+
+    let init_shared_version = match shared_object.owner {
+        Owner::Shared {
+            initial_shared_version,
+            ..
+        } => initial_shared_version,
+        _ => panic!("expected shared object"),
+    };
+
     let initial_shared_version = shared_object.version();
 
     let dir = tempfile::TempDir::new().unwrap();
@@ -9648,10 +9646,10 @@ async fn test_stable_consensus_message_processed() {
     assert_eq!(
         authority1
             .epoch_store_for_testing()
-            .get_next_object_version(&shared_object_id),
+            .get_next_object_version(&shared_object_id, init_shared_version),
         authority2
             .epoch_store_for_testing()
-            .get_next_object_version(&shared_object_id),
+            .get_next_object_version(&shared_object_id, init_shared_version),
     );
 }
 

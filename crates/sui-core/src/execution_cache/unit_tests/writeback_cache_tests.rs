@@ -1350,7 +1350,6 @@ async fn latest_object_cache_race_test() {
     reader.join().unwrap();
     checker.join().unwrap();
     invalidator.join().unwrap();
-    invalidator.join().unwrap();
 }
 
 #[tokio::test]
