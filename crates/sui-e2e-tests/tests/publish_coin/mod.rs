@@ -76,6 +76,7 @@ async fn do_publish_inner(rgp: u64, context: &mut WalletContext, gas_obj_id: &Ob
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
         opts: OptsWithGas::for_testing(Some(*gas_obj_id), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+        verify_deps: true,
     }
         .execute(context)
         .await?;

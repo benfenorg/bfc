@@ -861,6 +861,7 @@ async fn sim_test_stable_gas_execute_command()  -> Result<(), anyhow::Error> {
         skip_dependency_verification: false,
         with_unpublished_dependencies: false,
         opts: OptsWithGas::for_testing(Some(gas_object.id()), rgp * TEST_ONLY_GAS_UNIT_FOR_PUBLISH),
+        verify_deps: true,
         //serialize_unsigned_transaction: false,
         //serialize_signed_transaction: false,
         //lint: false,

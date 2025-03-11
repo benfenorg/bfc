@@ -18,7 +18,6 @@ use serde_json::json;
 use sui_json::SuiJsonValue;
 use sui_json_rpc::error::Error;
 use sui_json_rpc_types::BcsEvent;
-use sui_json_rpc_types::BcsEvent;
 use sui_json_rpc_types::DevInspectArgs;
 use sui_json_rpc_types::{
     SuiGasCostSummary, Balance, Checkpoint, CheckpointId, CheckpointPage, Coin, CoinPage, DelegatedStake,
@@ -36,7 +35,7 @@ use sui_json_rpc_types::{
     SuiTransactionBlockResponseQuery, TransactionBlockBytes, TransactionBlocksPage,
     TransactionFilter, TransferObjectParams,
 };
-use sui_json_rpc_types::{DevInspectArgs, SuiTypeTag, ValidatorApy, ValidatorApys};
+use sui_json_rpc_types::{SuiTypeTag, ValidatorApy, ValidatorApys};
 use sui_open_rpc::ExamplePairing;
 use sui_protocol_config::Chain;
 use sui_protocol_config::ProtocolConfig;

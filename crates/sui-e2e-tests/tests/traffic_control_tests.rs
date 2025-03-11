@@ -810,43 +810,43 @@ async fn assert_traffic_control_ok(mut test_cluster: TestCluster) -> Result<(), 
 /// Test that in dry-run mode, actions that would otherwise
 /// lead to request blocking (in this case, a spammy client)
 /// are allowed to proceed.
-#[allow(unused)]
-async fn assert_traffic_control_dry_run(
-    mut test_cluster: TestCluster,
-) -> Result<(), anyhow::Error> {
-    let context = &mut test_cluster.wallet;
-    let jsonrpc_client = &test_cluster.fullnode_handle.rpc_client;
-
-    let txn_count = 4;
-    let mut txns = batch_make_transfer_transactions(context, txn_count).await;
-    assert!(
-        txns.len() >= txn_count,
-        "Expect at least {} txns. Do we generate enough gas objects during genesis?",
-        txn_count,
-    );
-
-    let txn = txns.swap_remove(0);
-    let (tx_bytes, signatures) = txn.to_tx_bytes_and_signatures();
-    let params = rpc_params![
-        tx_bytes,
-        signatures,
-        SuiTransactionBlockResponseOptions::new(),
-        ExecuteTransactionRequestType::WaitForLocalExecution
-    ];
-
-    // it should take no more than 4 requests to be added to the blocklist
-    for _ in 0..txn_count {
-        let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
-            .request("bfc_executeTransactionBlock", params.clone())
-            .await;
-        println!("response={:?}", response);
-        assert!(
-            response.is_ok(),
-            "Expected request to succeed in dry-run mode"
-        );
-    }
-    Ok(())
-}
+// #[allow(unused)]
+// async fn assert_traffic_control_dry_run(
+//     mut test_cluster: TestCluster,
+// ) -> Result<(), anyhow::Error> {
+//     let context = &mut test_cluster.wallet;
+//     let jsonrpc_client = &test_cluster.fullnode_handle.rpc_client;
+//
+//     let txn_count = 4;
+//     let mut txns = batch_make_transfer_transactions(context, txn_count).await;
+//     assert!(
+//         txns.len() >= txn_count,
+//         "Expect at least {} txns. Do we generate enough gas objects during genesis?",
+//         txn_count,
+//     );
+//
+//     let txn = txns.swap_remove(0);
+//     let (tx_bytes, signatures) = txn.to_tx_bytes_and_signatures();
+//     let params = rpc_params![
+//         tx_bytes,
+//         signatures,
+//         SuiTransactionBlockResponseOptions::new(),
+//         ExecuteTransactionRequestType::WaitForLocalExecution
+//     ];
+//
+//     // it should take no more than 4 requests to be added to the blocklist
+//     for _ in 0..txn_count {
+//         let response: RpcResult<SuiTransactionBlockResponse> = jsonrpc_client
+//             .request("bfc_executeTransactionBlock", params.clone())
+//             .await;
+//         println!("response={:?}", response);
+//         assert!(
+//             response.is_ok(),
+//             "Expected request to succeed in dry-run mode"
+//         );
+//     }
+//     Ok(())
+// }
 
 /// Test that in dry-run mode, actions that would otherwise
 /// lead to request blocking (in this case, a spammy client)
