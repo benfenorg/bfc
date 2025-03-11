@@ -4127,7 +4127,7 @@ pub async fn init_state_with_ids_and_objects_basics<
     let state = TestAuthorityBuilder::new().build().await;
     for (address, (object_id, stable_id)) in objects {
         let obj = Object::with_id_owner_for_testing(object_id, address);
-        let stable_obj = Object::with_id_owner_version_for_testing(stable_id, SequenceNumber::new(), address);
+        let stable_obj = Object::with_id_owner_version_for_testing(stable_id, SequenceNumber::new(),  Owner::AddressOwner(address));
 
         state.insert_genesis_object(obj).await;
         state.insert_genesis_object(stable_obj).await;
@@ -4692,8 +4692,6 @@ async fn prepare_authority_and_shared_object_cert() -> (
         None,
     )
         .await;
-    (authority, certificate, shared_object_id)
-    .await;
     (
         authority,
         certificate,

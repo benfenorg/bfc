@@ -200,10 +200,6 @@ fn build_packages_with_move_config(
         &mut files_to_write,
     );
     relocate_docs(
-        &deepbook_pkg.package.compiled_docs.unwrap(),
-        &mut files_to_write,
-    );
-    relocate_docs(
         &system_pkg.package.compiled_docs.unwrap(),
         &mut files_to_write,
     );
