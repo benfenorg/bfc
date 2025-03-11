@@ -6,7 +6,7 @@ use futures::future::join_all;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
-
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json_rpc_api::{ReadApiClient, ReadApiServer};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::{
@@ -133,10 +133,7 @@ where
         _: ObjectID,
         _: SequenceNumber,
     ) -> RpcResult<SuiPastObjectResponse> {
-        Err(jsonrpsee::types::error::CallError::Custom(
-            jsonrpsee::types::error::ErrorCode::MethodNotFound.into(),
-        )
-            .into())
+        Err(jsonrpsee::types::error::ErrorCode::MethodNotFound.into())
     }
 
     async fn get_object(
@@ -152,7 +149,13 @@ where
                 .start_timer();
             let obj_resp = self.fullnode.get_object(object_id, options.clone()).await;
             obj_guard.stop_and_record();
-            return object_deal(options.clone(), obj_resp);
+            return object_deal(options.clone(), obj_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                )
+            }));
         }
         object_deal(options.clone(), Ok(self.get_object_internal(object_id, options.clone()).await?))
     }
@@ -169,7 +172,13 @@ where
             .start_timer();
         let objs_resp = self.fullnode.multi_get_objects(object_ids, options).await;
         objs_guard.stop_and_record();
-        objs_resp
+        objs_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_total_transaction_blocks(&self) -> RpcResult<BigInt<u64>> {
@@ -184,7 +193,13 @@ where
                 .start_timer();
             let total_tx_resp = self.fullnode.get_total_transaction_blocks().await;
             total_tx_guard.stop_and_record();
-            return total_tx_resp;
+            return total_tx_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>
+                )
+            });
         }
         Ok(self.get_total_transaction_blocks_internal().await?.into())
     }
@@ -205,12 +220,26 @@ where
                 .start_timer();
             let tx_resp = self.fullnode.get_transaction_block(digest, options).await;
             tx_guard.stop_and_record();
-            return tx_resp;
+            return tx_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>
+                )
+            });
         }
         let r = self.get_transaction_block_internal(&digest, options.clone()).await;
         match r {
             Ok(res) => {Ok(res)}
-            Err(_) => {self.fullnode.get_transaction_block(digest, options).await}
+            Err(_) => {
+                self.fullnode.get_transaction_block(digest, options).await.map_err(|e| {
+                    ErrorObject::owned(
+                        ErrorCode::InternalError.code(),
+                        format!("Client error: {}", e),
+                        None::<()>,
+                    )
+                })
+            }
         }
     }
 
@@ -243,7 +272,13 @@ where
             .multi_get_transaction_blocks(digests, options_v1)
             .await;
         multi_tx_guard.stop_and_record();
-        return multi_tx_resp;
+        return multi_tx_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        });
     }
 
     async fn try_get_past_object(
@@ -262,7 +297,13 @@ where
             .try_get_past_object(object_id, version, options)
             .await;
         past_obj_guard.stop_and_record();
-        past_obj_resp
+        past_obj_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn try_multi_get_past_objects(
@@ -280,7 +321,13 @@ where
             .try_multi_get_past_objects(past_objects, options)
             .await;
         multi_past_obj_guard.stop_and_record();
-        multi_past_obj_resp
+        multi_past_obj_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_latest_checkpoint_sequence_number(&self) -> RpcResult<BigInt<u64>> {
@@ -295,7 +342,13 @@ where
                 .start_timer();
             let latest_cp_resp = self.fullnode.get_latest_checkpoint_sequence_number().await;
             latest_cp_guard.stop_and_record();
-            return latest_cp_resp;
+            return latest_cp_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>
+                )
+            });
         }
         Ok(self
             .get_latest_checkpoint_sequence_number_internal()
@@ -315,7 +368,13 @@ where
                 .start_timer();
             let cp_resp = self.fullnode.get_checkpoint(id).await;
             cp_guard.stop_and_record();
-            return cp_resp;
+            return cp_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>
+                )
+            });
         }
         Ok(self.state.get_checkpoint(id).await?)
     }
@@ -336,17 +395,13 @@ where
             .get_checkpoints(cursor, limit, descending_order)
             .await;
         cps_guard.stop_and_record();
-        cps_resp
-    }
-
-    async fn get_checkpoints_deprecated_limit(
-        &self,
-        cursor: Option<BigInt<u64>>,
-        limit: Option<BigInt<u64>>,
-        descending_order: bool,
-    ) -> RpcResult<CheckpointPage> {
-        self.get_checkpoints(cursor, limit.map(|l| *l as usize), descending_order)
-            .await
+        cps_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_events(&self, transaction_digest: TransactionDigest) -> RpcResult<Vec<SuiEvent>> {
@@ -357,7 +412,13 @@ where
             .start_timer();
         let events_resp = self.fullnode.get_events(transaction_digest).await;
         events_guard.stop_and_record();
-        events_resp
+        events_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_protocol_config(
@@ -371,7 +432,13 @@ where
             .start_timer();
         let protocol_config_resp = self.fullnode.get_protocol_config(version).await;
         protocol_config_guard.stop_and_record();
-        protocol_config_resp
+        protocol_config_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_chain_identifier(&self) -> RpcResult<String> {
@@ -384,7 +451,13 @@ where
     }
 
     async fn get_inner_dao_info(&self) -> RpcResult<DaoRPC> {
-        self.fullnode.get_inner_dao_info().await
+        self.fullnode.get_inner_dao_info().await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 }
 

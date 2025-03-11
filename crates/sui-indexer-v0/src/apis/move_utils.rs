@@ -7,7 +7,7 @@ use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
-
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json_rpc_api::MoveUtilsClient;
 use sui_json_rpc_api::MoveUtilsServer;
 use sui_json_rpc::SuiRpcModule;
@@ -48,7 +48,13 @@ impl MoveUtilsServer for MoveUtilsApi {
     ) -> RpcResult<BTreeMap<String, SuiMoveNormalizedModule>> {
         self.fullnode
             .get_normalized_move_modules_by_package(package)
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_normalized_move_module(
@@ -58,7 +64,13 @@ impl MoveUtilsServer for MoveUtilsApi {
     ) -> RpcResult<SuiMoveNormalizedModule> {
         self.fullnode
             .get_normalized_move_module(package, module_name)
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_normalized_move_struct(
@@ -69,7 +81,13 @@ impl MoveUtilsServer for MoveUtilsApi {
     ) -> RpcResult<SuiMoveNormalizedStruct> {
         self.fullnode
             .get_normalized_move_struct(package, module_name, struct_name)
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_normalized_move_function(
@@ -80,7 +98,13 @@ impl MoveUtilsServer for MoveUtilsApi {
     ) -> RpcResult<SuiMoveNormalizedFunction> {
         self.fullnode
             .get_normalized_move_function(package, module_name, function_name)
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_move_function_arg_types(
@@ -91,6 +115,12 @@ impl MoveUtilsServer for MoveUtilsApi {
     ) -> RpcResult<Vec<MoveFunctionArgType>> {
         self.fullnode
             .get_move_function_arg_types(package, module, function)
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 }

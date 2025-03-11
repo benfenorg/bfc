@@ -640,7 +640,7 @@ mod test_benfen {
         let mut headers = HeaderMap::new();
         headers.insert(CLIENT_SDK_TYPE_HEADER, HeaderValue::from_static("indexer"));
         HttpClientBuilder::default()
-            .max_request_body_size(2 << 30)
+            .max_request_size(2 << 30)
             .max_concurrent_requests(usize::MAX)
             .set_headers(headers.clone())
             .build(rpc_client_url)

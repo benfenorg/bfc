@@ -5,6 +5,7 @@ use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json_rpc_api::CoinReadApiClient;
 use sui_json_rpc_api::CoinReadApiServer;
 use sui_json_rpc::SuiRpcModule;
@@ -36,7 +37,13 @@ impl CoinReadApiServer for CoinReadApi {
     ) -> RpcResult<CoinPage> {
         self.fullnode
             .get_coins(owner, coin_type, cursor, limit)
-            .await
+            .await.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                )
+        })
     }
 
     async fn get_all_coins(
@@ -45,7 +52,13 @@ impl CoinReadApiServer for CoinReadApi {
         cursor: Option<ObjectID>,
         limit: Option<usize>,
     ) -> RpcResult<CoinPage> {
-        self.fullnode.get_all_coins(owner, cursor, limit).await
+        self.fullnode.get_all_coins(owner, cursor, limit).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_balance(
@@ -53,19 +66,43 @@ impl CoinReadApiServer for CoinReadApi {
         owner: SuiAddress,
         coin_type: Option<String>,
     ) -> RpcResult<Balance> {
-        self.fullnode.get_balance(owner, coin_type).await
+        self.fullnode.get_balance(owner, coin_type).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_all_balances(&self, owner: SuiAddress) -> RpcResult<Vec<Balance>> {
-        self.fullnode.get_all_balances(owner).await
+        self.fullnode.get_all_balances(owner).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_coin_metadata(&self, coin_type: String) -> RpcResult<Option<SuiCoinMetadata>> {
-        self.fullnode.get_coin_metadata(coin_type).await
+        self.fullnode.get_coin_metadata(coin_type).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_total_supply(&self, coin_type: String) -> RpcResult<Supply> {
-        self.fullnode.get_total_supply(coin_type).await
+        self.fullnode.get_total_supply(coin_type).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 }
 

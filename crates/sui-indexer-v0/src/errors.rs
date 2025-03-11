@@ -2,8 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use fastcrypto::error::FastCryptoError;
-use jsonrpsee::core::Error as RpcError;
-use jsonrpsee::types::error::CallError;
+use jsonrpsee::types::{ErrorObject, ErrorObjectOwned as RpcError};
 use thiserror::Error;
 
 use sui_types::base_types::ObjectIDParseError;
@@ -102,7 +101,11 @@ impl<T> Context<T> for Result<T, IndexerError> {
 
 impl From<IndexerError> for RpcError {
     fn from(e: IndexerError) -> Self {
-        RpcError::Call(CallError::Failed(e.into()))
+        ErrorObject::owned(
+            jsonrpsee::types::error::CALL_EXECUTION_FAILED_CODE,
+            e.to_string(),
+            None::<()>,
+        )
     }
 }
 

@@ -5,7 +5,7 @@ use async_trait::async_trait;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
-
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json_rpc_api::{GovernanceReadApiClient, GovernanceReadApiServer};
 use sui_json_rpc::SuiRpcModule;
 use sui_json_rpc_types::SuiCommittee;
@@ -34,33 +34,81 @@ impl GovernanceReadApiServer for GovernanceReadApi {
         &self,
         staked_sui_ids: Vec<ObjectID>,
     ) -> RpcResult<Vec<DelegatedStake>> {
-        self.fullnode.get_stakes_by_ids(staked_sui_ids).await
+        self.fullnode.get_stakes_by_ids(staked_sui_ids).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
     async fn get_stakes(&self, owner: SuiAddress) -> RpcResult<Vec<DelegatedStake>> {
-        self.fullnode.get_stakes(owner).await
+        self.fullnode.get_stakes(owner).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_committee_info(&self, epoch: Option<BigInt<u64>>) -> RpcResult<SuiCommittee> {
-        self.fullnode.get_committee_info(epoch).await
+        self.fullnode.get_committee_info(epoch).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_latest_sui_system_state(&self) -> RpcResult<SuiSystemStateSummary> {
-        self.fullnode.get_latest_sui_system_state().await
+        self.fullnode.get_latest_sui_system_state().await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_reference_gas_price(&self) -> RpcResult<BigInt<u64>> {
-        self.fullnode.get_reference_gas_price().await
+        self.fullnode.get_reference_gas_price().await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_stable_rate(&self, tag: String) -> RpcResult<BigInt<u64>> {
-        self.fullnode.get_stable_rate(tag).await
+        self.fullnode.get_stable_rate(tag).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
     async fn get_validators_apy(&self) -> RpcResult<ValidatorApys> {
-        self.fullnode.get_validators_apy().await
+        self.fullnode.get_validators_apy().await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn get_proposal(&self, owner: SuiAddress) -> RpcResult<Proposal> {
-        self.fullnode.get_proposal(owner).await
+        self.fullnode.get_proposal(owner).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 }
 

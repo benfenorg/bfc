@@ -6,7 +6,7 @@ use fastcrypto::encoding::Base64;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
 use jsonrpsee::RpcModule;
-
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json::SuiJsonValue;
 use sui_json_rpc_api::{TransactionBuilderClient, TransactionBuilderServer};
 use sui_json_rpc::SuiRpcModule;
@@ -39,9 +39,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas_budget: BigInt<u64>,
         recipient: SuiAddress,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .transfer_object(signer, object_id, gas, gas_budget, recipient)
-            .await
+        self.fullnode.transfer_object(signer, object_id, gas, gas_budget, recipient).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn transfer_sui(
@@ -52,9 +56,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         recipient: SuiAddress,
         amount: Option<BigInt<u64>>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .transfer_sui(signer, sui_object_id, gas_budget, recipient, amount)
-            .await
+        self.fullnode.transfer_sui(signer, sui_object_id, gas_budget, recipient, amount).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn pay(
@@ -66,9 +74,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .pay(signer, input_coins, recipients, amounts, gas, gas_budget)
-            .await
+        self.fullnode.pay(signer, input_coins, recipients, amounts, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn pay_sui(
@@ -79,9 +91,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         amounts: Vec<BigInt<u64>>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .pay_sui(signer, input_coins, recipients, amounts, gas_budget)
-            .await
+        self.fullnode.pay_sui(signer, input_coins, recipients, amounts, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn pay_all_sui(
@@ -91,9 +107,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         recipient: SuiAddress,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .pay_all_sui(signer, input_coins, recipient, gas_budget)
-            .await
+        self.fullnode.pay_all_sui(signer, input_coins, recipient, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn publish(
@@ -104,9 +124,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .publish(sender, compiled_modules, dep_ids, gas, gas_budget)
-            .await
+        self.fullnode.publish(sender, compiled_modules, dep_ids, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn split_coin(
@@ -117,9 +141,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .split_coin(signer, coin_object_id, split_amounts, gas, gas_budget)
-            .await
+        self.fullnode.split_coin(signer, coin_object_id, split_amounts, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn split_coin_equal(
@@ -130,9 +158,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .split_coin_equal(signer, coin_object_id, split_count, gas, gas_budget)
-            .await
+        self.fullnode.split_coin_equal(signer, coin_object_id, split_count, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn merge_coin(
@@ -143,9 +175,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .merge_coin(signer, primary_coin, coin_to_merge, gas, gas_budget)
-            .await
+        self.fullnode.merge_coin(signer, primary_coin, coin_to_merge, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn move_call(
@@ -172,7 +208,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
                 gas_budget,
                 tx_builder_mode,
             )
-            .await
+            .await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn batch_transaction(
@@ -183,9 +225,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas_budget: BigInt<u64>,
         tx_builder_mode: Option<SuiTransactionBlockBuilderMode>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .batch_transaction(signer, params, gas, gas_budget, tx_builder_mode)
-            .await
+        self.fullnode.batch_transaction(signer, params, gas, gas_budget, tx_builder_mode).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn request_add_stake(
@@ -197,9 +243,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .request_add_stake(signer, coins, amount, validator, gas, gas_budget)
-            .await
+        self.fullnode.request_add_stake(signer, coins, amount, validator, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>
+            )
+        })
     }
 
     async fn request_withdraw_stake(
@@ -209,9 +259,13 @@ impl TransactionBuilderServer for TransactionBuilderApi {
         gas: Option<ObjectID>,
         gas_budget: BigInt<u64>,
     ) -> RpcResult<TransactionBlockBytes> {
-        self.fullnode
-            .request_withdraw_stake(signer, staked_sui, gas, gas_budget)
-            .await
+        self.fullnode.request_withdraw_stake(signer, staked_sui, gas, gas_budget).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("{}", e),
+                None::<()>
+            )
+        })
     }
 }
 

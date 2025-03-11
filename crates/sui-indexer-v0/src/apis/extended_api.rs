@@ -7,6 +7,7 @@ use jsonrpsee::core::RpcResult;
 use jsonrpsee::RpcModule;
 
 use jsonrpsee::http_client::HttpClient;
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use sui_json_rpc_api::{
     validate_limit, ExtendedApiServer, QUERY_MAX_RESULT_LIMIT, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS,
 };
@@ -29,7 +30,7 @@ use crate::errors::IndexerError;
 use crate::models::address_stake::native_coin;
 use crate::store::IndexerStore;
 use crate::{benfen, IndexerConfig};
-use crate::handlers::pending_reward_handler::{PendingReward};
+use crate::handlers::pending_reward_handler::{MiningConfig, PendingReward};
 
 pub(crate) struct ExtendedApi<S> {
     state: S,
@@ -113,7 +114,18 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         limit: Option<usize>,
         descending_order: Option<bool>,
     ) -> RpcResult<EpochPage> {
-        let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
+        let temp = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS);
+        let limit;
+        match temp {
+            Ok(r) => {limit = r;}
+            Err(e) => {
+                return Err(ErrorObject::owned(
+                    ErrorCode::InvalidParams.code(),
+                    format!("{}", e),
+                    None::<()>,
+                ));
+            }
+        }
         let mut epochs = self
             .state
             .get_epochs(cursor.map(|c| *c), limit + 1, descending_order)
@@ -258,7 +270,18 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         limit: Option<usize>,
         filter: Option<SuiOwnedMiningNFTFilter>,
     ) -> RpcResult<ClassicPage<SuiMiningNFT>> {
-        let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
+        let temp = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS);
+        let limit;
+        match temp {
+            Ok(r) => {limit = r;}
+            Err(e) => {
+                return Err(ErrorObject::owned(
+                    ErrorCode::InvalidParams.code(),
+                    format!("{}", e),
+                    None::<()>,
+                ));
+            }
+        }
         let page = page.map(|x| if x <= 0 { 1 } else { x }).unwrap_or(1);
         let mining_nfts = self
             .state
@@ -273,7 +296,18 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         page: Option<usize>,
         limit: Option<usize>
     ) -> RpcResult<ClassicPage<StakeRewardHistory>> {
-        let limit = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS)?;
+        let temp = validate_limit(limit, QUERY_MAX_RESULT_LIMIT_CHECKPOINTS);
+        let limit;
+        match temp {
+            Ok(r) => {limit = r;}
+            Err(e) => {
+                return Err(ErrorObject::owned(
+                    ErrorCode::InvalidParams.code(),
+                    format!("{}", e),
+                    None::<()>,
+                ));
+            }
+        }
         let page = page.map(|x| if x <= 0 { 1 } else { x }).unwrap_or(1);
         let r = self
             .state
@@ -333,7 +367,18 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         let bfc_now_price = self.pending_reward.get_bfc_price().await;
         r.bfc_usd_price = bfc_now_price;
         let pending_items = self.state.query_stake_pending_item_by_owner(address).await?;
-        let pending_config = self.pending_reward.get_config_from_cache().await?.unwrap();
+        let pending_config: MiningConfig;
+        let pending_reward = self.pending_reward.get_config_from_cache().await;
+        match pending_reward {
+            Ok(r) => {pending_config = r.unwrap();}
+            Err(e) => {
+                return Err(ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                ));
+            }
+        }
         for item in pending_items {
             let reward = self.pending_reward.pending_reward(&item, &pending_config).await?;
             r.total_reward += reward;
@@ -388,12 +433,21 @@ impl<S: IndexerStore + Sync + Send + 'static> ExtendedApiServer for ExtendedApi<
         address: SuiAddress,
     ) -> RpcResult<SuiOwnedTicketList> {
         let items = self.state.query_stake_pending_item_by_owner(address).await?;
-
-
         let mut list: Vec<SuiOwnedTicket> = Vec::new();
         let mut all_pending = 0;
         let mut id = 1;
-        let pending_config = self.pending_reward.get_config_from_cache().await?.unwrap();
+        let pending_config: MiningConfig;
+        let pending_reward = self.pending_reward.get_config_from_cache().await;
+        match pending_reward {
+            Ok(r) => {pending_config = r.unwrap();}
+            Err(e) => {
+                return Err(ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                ));
+            }
+        }
         for chunked in items
             .chunks(200)
             .map(|chunk| chunk.to_vec())

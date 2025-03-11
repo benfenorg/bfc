@@ -3,14 +3,13 @@
 
 use std::sync::Arc;
 
-use anyhow::anyhow;
 use async_trait::async_trait;
 use futures::future::join_all;
 use jsonrpsee::core::RpcResult;
 use jsonrpsee::http_client::HttpClient;
-use jsonrpsee::types::SubscriptionResult;
-use jsonrpsee::{RpcModule, SubscriptionSink};
-
+use jsonrpsee::core::SubscriptionResult;
+use jsonrpsee::{PendingSubscriptionSink, RpcModule};
+use jsonrpsee::types::{ErrorCode, ErrorObject};
 use move_core_types::identifier::Identifier;
 use sui_core::subscription_handler::SubscriptionHandler;
 use sui_json_rpc_api::{cap_page_limit, IndexerApiClient, IndexerApiServer};
@@ -299,8 +298,10 @@ impl<S: IndexerStore> IndexerApi<S> {
                 options,
             }) => match filter {
                 SuiObjectDataFilter::AddressOwner(_) => Ok((address, options)),
-                _ => Err(anyhow!(
-                    "Only address filter is supported on indexer for now."
+                _ => Err(ErrorObject::owned(
+                    ErrorCode::InvalidRequest.code(),
+                    "Only address filter is supported on indexer for now.",
+                    None::<()>
                 )),
             },
             Some(SuiObjectResponseQuery { filter: _, options }) => Ok((address, options)),
@@ -320,17 +321,23 @@ impl<S: IndexerStore> IndexerApi<S> {
         let next_cursor = objects
             .last()
             .map_or(cursor, |o_read| Some(o_read.object_id()));
-
-        let data: Vec<SuiObjectResponse> = objects
+        let res: Result<Vec<SuiObjectResponse>, anyhow::Error> = objects
             .into_iter()
             .map(|o| (o, options.clone()).try_into())
-            .collect::<Result<Vec<_>, _>>()?;
-
-        Ok(Page {
-            data,
-            next_cursor,
-            has_next_page,
-        })
+            .collect::<Result<Vec<_>, _>>();
+        match res {
+            Ok(data) => Ok
+                (Page {
+                    data,
+                    next_cursor,
+                    has_next_page,
+                }),
+            Err(e) => Err(ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )),
+        }
     }
 }
 
@@ -360,7 +367,13 @@ where
                 .get_owned_objects(address, query.clone(), cursor, limit)
                 .await;
             owned_obj_guard.stop_and_record();
-            return object_deal_list(query.clone(), owned_obj_resp);
+            return object_deal_list(query.clone(), owned_obj_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                )
+            }));
         }
         return object_deal_list(query.clone(), self.get_owned_objects_internal(address, query.clone(), cursor, limit).await);
     }
@@ -386,7 +399,13 @@ where
                 .query_transaction_blocks(query, cursor, limit, descending_order)
                 .await;
             query_tx_guard.stop_and_record();
-            return query_tx_resp;
+            return query_tx_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                )
+            });
         }
         Ok(self
             .query_transaction_blocks_internal(query, cursor, limit, descending_order)
@@ -412,7 +431,13 @@ where
                 .query_events(query, cursor, limit, descending_order)
                 .await;
             query_events_guard.stop_and_record();
-            return query_events_resp;
+            return query_events_resp.map_err(|e| {
+                ErrorObject::owned(
+                    ErrorCode::InternalError.code(),
+                    format!("Client error: {}", e),
+                    None::<()>,
+                )
+            });
         }
         Ok(self
             .query_events_internal(query, cursor, limit, descending_order)
@@ -435,7 +460,13 @@ where
             .get_dynamic_fields(parent_object_id, cursor, limit)
             .await;
         df_guard.stop_and_record();
-        df_resp
+        df_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn get_dynamic_field_object(
@@ -453,10 +484,16 @@ where
             .get_dynamic_field_object(parent_object_id, name)
             .await;
         df_obj_guard.stop_and_record();
-        df_obj_resp
+        df_obj_resp.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
-    fn subscribe_event(&self, sink: SubscriptionSink, filter: EventFilter) -> SubscriptionResult {
+    fn subscribe_event(&self, sink: PendingSubscriptionSink, filter: EventFilter) -> SubscriptionResult {
         spawn_subscription(
             sink,
             self.subscription_handler.subscribe_events(filter),
@@ -467,7 +504,7 @@ where
 
     fn subscribe_transaction(
         &self,
-        sink: SubscriptionSink,
+        sink: PendingSubscriptionSink,
         filter: TransactionFilter,
     ) -> SubscriptionResult {
         spawn_subscription(
@@ -479,7 +516,13 @@ where
     }
 
     async fn resolve_name_service_address(&self, name: String) -> RpcResult<Option<SuiAddress>> {
-        self.fullnode.resolve_name_service_address(name).await
+        self.fullnode.resolve_name_service_address(name).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 
     async fn resolve_name_service_names(
@@ -488,9 +531,13 @@ where
         cursor: Option<ObjectID>,
         limit: Option<usize>,
     ) -> RpcResult<Page<String, ObjectID>> {
-        self.fullnode
-            .resolve_name_service_names(address, cursor, limit)
-            .await
+        self.fullnode.resolve_name_service_names(address, cursor, limit).await.map_err(|e| {
+            ErrorObject::owned(
+                ErrorCode::InternalError.code(),
+                format!("Client error: {}", e),
+                None::<()>,
+            )
+        })
     }
 }
 
