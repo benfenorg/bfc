@@ -1102,8 +1102,6 @@ async fn test_dry_run_with_stable_gas_coin() {
         gas_object_id,
         SequenceNumber::from_u64(1),
         sender,
-        SequenceNumber::from_u64(SequenceNumber::MAX.value() - 1),
-        Owner::AddressOwner(sender),
     );
     let gas_object_ref = gas_object.compute_object_reference();
     validator.insert_genesis_object(gas_object.clone()).await;
@@ -9601,7 +9599,7 @@ async fn test_stable_consensus_message_processed() {
         } else {
             let epoch_store = authority2.epoch_store_for_testing();
             epoch_store
-                .acquire_shared_locks_from_effects(
+                .acquire_shared_version_assignments_from_effects(
                     &VerifiedExecutableTransaction::new_from_certificate(certificate.clone()),
                     &effects1,
                     authority2.get_object_cache_reader().as_ref(),
