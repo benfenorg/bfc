@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # check that sui move new followed by sui move test succeeds
-sui move new example
+bfc move new example
 
 # we mangle the generated toml file to replace the framework dependency with a local dependency
 FRAMEWORK_DIR=$(echo $CARGO_MANIFEST_DIR | sed 's#/crates/sui##g')
@@ -14,4 +14,4 @@ cat example/Move.toml \
   > Move.toml
 mv Move.toml example/Move.toml
 
-cd example && sui move test
+cd example && bfc move test

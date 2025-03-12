@@ -4,4 +4,4 @@
 # simple test just to make sure the test runner works
 echo "dummy test"
 cat data/data.txt
-sui move new dummy
+bfc move new dummy

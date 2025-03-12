@@ -6,7 +6,7 @@ mkdir example
 echo "ignore1" >> example/.gitignore
 echo "build/*" >> example/.gitignore
 echo "ignore2" >> example/.gitignore
-sui move new example
+bfc move new example
 cat example/.gitignore
 echo
 echo ==== files in example/ ====

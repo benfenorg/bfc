@@ -15,4 +15,4 @@ cat example/Move.toml \
   > Move.toml
 mv Move.toml example/Move.toml
 
-cd example && sui move build
+cd example && bfc move build
