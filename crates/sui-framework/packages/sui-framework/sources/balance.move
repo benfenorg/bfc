@@ -17,8 +17,8 @@ const EOverflow: u64 = 1;
 const ENotEnough: u64 = 2;
 /// Sender is not @0x0 the system address.
 const ENotSystemAddress: u64 = 3;
-/// System operation performed for a coin other than SUI
-//const ENotSUI: u64 = 4;
+
+// const ENotSUI: u64 = 4;
 
 
 /// A Supply of T. Used for minting and burning.
