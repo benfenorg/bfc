@@ -241,50 +241,12 @@ module sui::coin {
         )
     }
 
-/// This creates a new currency, via `create_currency`, but with an extra capability that
-/// allows for specific addresses to have their coins frozen. When an address is added to the
-/// deny list, it is immediately unable to interact with the currency's coin as input objects.
-/// Additionally at the start of the next epoch, they will be unable to receive the currency's
-/// coin.
-/// The `allow_global_pause` flag enables an additional API that will cause all addresses to
-/// be denied. Note however, that this doesn't affect per-address entries of the deny list and
-/// will not change the result of the "contains" APIs.
-public fun create_regulated_currency_v2<T: drop>(
-    witness: T,
-    decimals: u8,
-    symbol: vector<u8>,
-    name: vector<u8>,
-    description: vector<u8>,
-    icon_url: Option<Url>,
-    allow_global_pause: bool,
-    ctx: &mut TxContext,
-): (TreasuryCap<T>, DenyCapV2<T>, CoinMetadata<T>) {
-    let (treasury_cap, metadata) = create_currency(
-        witness,
-        decimals,
-        symbol,
-        name,
-        description,
-        icon_url,
-        ctx,
-    );
-    let deny_cap = DenyCapV2 {
-        id: object::new(ctx),
-        allow_global_pause,
-    };
-    transfer::freeze_object(RegulatedCoinMetadata<T> {
-        id: object::new(ctx),
-        coin_metadata_object: object::id(&metadata),
-        deny_cap_object: object::id(&deny_cap),
-    });
-    (treasury_cap, deny_cap, metadata)
-}
     /// This creates a new currency, via `create_currency`, but with an extra capability that
     /// allows for specific addresses to have their coins frozen. When an address is added to the
     /// deny list, it is immediately unable to interact with the currency's coin as input objects.
     /// Additionally at the start of the next epoch, they will be unable to receive the currency's
     /// coin.
-    /// The `allow_global_pause` flag enables an additional API that will cause all addresses to be
+    /// The `allow_global_pause` flag enables an additional API that will cause all addresses to
     /// be denied. Note however, that this doesn't affect per-address entries of the deny list and
     /// will not change the result of the "contains" APIs.
     public fun create_regulated_currency_v2<T: drop>(
@@ -304,7 +266,7 @@ public fun create_regulated_currency_v2<T: drop>(
             name,
             description,
             icon_url,
-            ctx
+            ctx,
         );
         let deny_cap = DenyCapV2 {
             id: object::new(ctx),
@@ -317,6 +279,7 @@ public fun create_regulated_currency_v2<T: drop>(
         });
         (treasury_cap, deny_cap, metadata)
     }
+
 
     /// Given the `DenyCap` for a regulated currency, migrate it to the new `DenyCapV2` type.
     /// All entries in the deny list will be migrated to the new format.
