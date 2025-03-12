@@ -11,6 +11,9 @@ title: Module `bridge::message_types`
 -  [Function `update_bridge_limit`](#bridge_message_types_update_bridge_limit)
 -  [Function `update_asset_price`](#bridge_message_types_update_asset_price)
 -  [Function `add_tokens_on_sui`](#bridge_message_types_add_tokens_on_sui)
+-  [Function `add_external_coin_admin`](#bridge_message_types_add_external_coin_admin)
+-  [Function `remove_external_coin_admin`](#bridge_message_types_remove_external_coin_admin)
+-  [Function `refund_admin_operate`](#bridge_message_types_refund_admin_operate)
 
 
 <pre><code></code></pre>
@@ -20,6 +23,15 @@ title: Module `bridge::message_types`
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="bridge_message_types_ADD_EXTERNAL_COIN_ADMIN"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_ADMIN">ADD_EXTERNAL_COIN_ADMIN</a>: u8 = 11;
+</code></pre>
+
 
 
 <a name="bridge_message_types_ADD_TOKENS_ON_SUI"></a>
@@ -45,6 +57,24 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_EMERGENCY_OP">EMERGENCY_OP</a>: u8 = 2;
+</code></pre>
+
+
+
+<a name="bridge_message_types_REFUND_ADMIN_OPERATE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REFUND_ADMIN_OPERATE">REFUND_ADMIN_OPERATE</a>: u8 = 8;
+</code></pre>
+
+
+
+<a name="bridge_message_types_REMOVE_EXTERNAL_COIN_ADMIN"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_ADMIN">REMOVE_EXTERNAL_COIN_ADMIN</a>: u8 = 12;
 </code></pre>
 
 
@@ -202,6 +232,72 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_tokens_on_sui">add_tokens_on_sui</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_ADD_TOKENS_ON_SUI">ADD_TOKENS_ON_SUI</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_add_external_coin_admin"></a>
+
+## Function `add_external_coin_admin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_admin">add_external_coin_admin</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_admin">add_external_coin_admin</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_ADMIN">ADD_EXTERNAL_COIN_ADMIN</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_remove_external_coin_admin"></a>
+
+## Function `remove_external_coin_admin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_admin">remove_external_coin_admin</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_admin">remove_external_coin_admin</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_ADMIN">REMOVE_EXTERNAL_COIN_ADMIN</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_refund_admin_operate"></a>
+
+## Function `refund_admin_operate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_refund_admin_operate">refund_admin_operate</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_refund_admin_operate">refund_admin_operate</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_REFUND_ADMIN_OPERATE">REFUND_ADMIN_OPERATE</a> }
 </code></pre>
 
 
