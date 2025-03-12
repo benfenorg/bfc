@@ -3,7 +3,7 @@
 
 # tests that sui move new followed by sui move build succeeds
 
-sui move new example
+bfc move new example
 
 # we mangle the generated toml file to replace the framework dependency with a local dependency
 FRAMEWORK_DIR=$(echo $CARGO_MANIFEST_DIR | sed 's#/crates/sui##g')
