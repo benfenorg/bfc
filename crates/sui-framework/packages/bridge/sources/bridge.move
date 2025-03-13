@@ -63,7 +63,7 @@ module bridge::bridge {
         token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
         external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
         // tx hash : [signature addresses]
-        pre_deposit_multi_signature_records: VecMap<String, VecSet<String>>,
+        pre_deposit_multi_signature_records: VecMap<ExternalBridgeMessageKey, VecSet<String>>,
         limiter: TransferLimiter,
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
@@ -205,6 +205,10 @@ module bridge::bridge {
     }
 
     public struct ExternalBridgeMessageKey has copy, drop, store {
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
         tx_hash: ascii::String,
     }
 
@@ -604,15 +608,40 @@ module bridge::bridge {
         };
 
         // check then add to pre_deposit_multi_signature_records
-        let records = inner.pre_deposit_multi_signature_records.try_get(&tx_hash);
-        if (records.is_none()) {
-            inner.pre_deposit_multi_signature_records.insert(tx_hash, vec_set::empty());
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
         };
-        let records = inner.pre_deposit_multi_signature_records.get_mut(&tx_hash);
-        if (!records.contains(&sender_str)) {
-            records.insert(sender_str);
+        let records = inner.pre_deposit_multi_signature_records.try_get(&key);
+        if (records.is_none()) {
+            inner.pre_deposit_multi_signature_records.insert(key, vec_set::empty());
+        };
+        let records = inner.pre_deposit_multi_signature_records.get_mut(&key);
+        if (records.contains(&sender_str)) {
+            return
+        };
+        
+        records.insert(sender_str);
+        emit(
+            ExternalPreDepositedEvent {
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+                sender,
+                signatures,
+            }
+        );
+
+        if (inner.multi_signature_passed(key, coin_type)) {
             emit(
-                ExternalPreDepositedEvent {
+                ExternalPreDepositedDoneEvent {
                     tx_hash,
                     coin_type,
                     source_chain,
@@ -620,31 +649,15 @@ module bridge::bridge {
                     source_address,
                     target_address,
                     amount,
-                    sender,
-                    signatures,
-                }
-            );
-
-            if (inner.multi_signature_passed(tx_hash, coin_type)) {
-                emit(
-                    ExternalPreDepositedDoneEvent {
-                        tx_hash,
-                        coin_type,
-                        source_chain,
-                        target_chain: inner.chain_id,
-                        source_address,
-                        target_address,
-                        amount,
-                    },
-                )
-            }
+                },
+            )
         }
     }
 
     public fun deposit_external_coin<T>(
         bridge: &mut Bridge,
         source_chain: u8,
-        source_address:vector<u8>,
+        source_address: vector<u8>,
         target_address: vector<u8>,
         amount: u64,
         tx_hash: ascii::String,
@@ -660,12 +673,26 @@ module bridge::bridge {
         if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
             abort EUnknownExternalCoinOrSender
         };
-        if (!inner.multi_signature_passed(tx_hash, coin_type)) {
+
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (!inner.multi_signature_passed(key, coin_type)) {
             abort EUnpassedMultiSignature
         };
 
         // check records
-        let key = ExternalBridgeMessageKey{tx_hash};
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+            };
         if (inner.external_bridge_records.contains(key)) {
             abort EDuplicatedMessage
         };
@@ -809,11 +836,11 @@ module bridge::bridge {
     //
     fun multi_signature_passed(
         inner: & BridgeInner,
-        tx_hash: ascii::String,
+        key: ExternalBridgeMessageKey,
         coin_type: String,
     ): bool {
         // check then add to pre_deposit_multi_signature_records
-        let records = inner.pre_deposit_multi_signature_records.try_get(&tx_hash);
+        let records = inner.pre_deposit_multi_signature_records.try_get(&key);
         if (records.is_some()) {
             // if pre_deposit_multi_signature_records > 50% 
             let signed = records.destroy_some().size();
@@ -1078,9 +1105,19 @@ module bridge::bridge {
     #[test_only]
     public fun find_external_bridge_record(
         bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
         tx_hash: ascii::String,
     )   : Option<ExternalBridgeRecord> {
-        let key = ExternalBridgeMessageKey{tx_hash};
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
         let inner = load_inner(bridge)  ;
         if (!inner.external_bridge_records.contains(key)) {
             return option::none()
