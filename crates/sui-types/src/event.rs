@@ -16,7 +16,7 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use serde_with::serde_as;
 use serde_with::Bytes;
-
+use crate::collection_types::VecMap;
 use crate::base_types::{ObjectID, SuiAddress, TransactionDigest};
 use crate::error::{SuiError, SuiResult};
 use crate::object::bounded_visitor::BoundedVisitor;
@@ -160,7 +160,7 @@ impl Event {
 }
 
 // Event emitted in move code `fun advance_epoch`
-#[derive(Serialize, Deserialize, Default)]
+#[derive(Serialize, Deserialize)]
 pub struct SystemEpochInfoEvent {
     pub epoch: u64,
     pub protocol_version: u64,
@@ -174,4 +174,25 @@ pub struct SystemEpochInfoEvent {
     pub total_gas_fees: u64,
     pub total_stake_rewards_distributed: u64,
     pub leftover_storage_fund_inflow: u64,
+    pub stable_rate: VecMap<Vec<u8>, u64>,
+}
+
+impl Default for SystemEpochInfoEvent {
+    fn default() -> Self {
+        Self {
+            epoch: 0,
+            protocol_version: 0,
+            reference_gas_price: 0,
+            total_stake: 0,
+            storage_fund_reinvestment: 0,
+            storage_charge: 0,
+            storage_rebate: 0,
+            storage_fund_balance: 0,
+            stake_subsidy_amount: 0,
+            total_gas_fees: 0,
+            total_stake_rewards_distributed: 0,
+            leftover_storage_fund_inflow: 0,
+            stable_rate: VecMap { contents: vec![] },
+        }
+    }
 }
