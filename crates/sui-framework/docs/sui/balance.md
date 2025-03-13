@@ -25,12 +25,7 @@ custom coins with <code><a href="../sui/balance.md#sui_balance_Supply">Supply</a
 -  [Function `destroy_supply`](#sui_balance_destroy_supply)
 
 
-<pre><code><b>use</b> <a href="../std/address.md#std_address">std::address</a>;
-<b>use</b> <a href="../std/ascii.md#std_ascii">std::ascii</a>;
-<b>use</b> <a href="../std/option.md#std_option">std::option</a>;
-<b>use</b> <a href="../std/type_name.md#std_type_name">std::type_name</a>;
-<b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
-<b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
+<pre><code><b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
 </code></pre>
 
 
@@ -43,7 +38,7 @@ A Supply of T. Used for minting and burning.
 Wrapped into a <code>TreasuryCap</code> in the <code>Coin</code> module.
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../sui/balance.md#sui_balance_Supply">Supply</a>&lt;<b>phantom</b> T&gt; <b>has</b> store
+<pre><code><b>public</b> <b>struct</b> <a href="../sui/balance.md#sui_balance_Supply">Supply</a>&lt;<b>phantom</b> T&gt; <b>has</b> drop, store
 </code></pre>
 
 
@@ -116,16 +111,6 @@ For when trying to withdraw more than there is.
 
 
 
-<a name="sui_balance_ENotSUI"></a>
-
-System operation performed for a coin other than SUI
-
-
-<pre><code><b>const</b> <a href="../sui/balance.md#sui_balance_ENotSUI">ENotSUI</a>: u64 = 4;
-</code></pre>
-
-
-
 <a name="sui_balance_ENotSystemAddress"></a>
 
 Sender is not @0x0 the system address.
@@ -150,7 +135,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>const</b> <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>: vector&lt;u8&gt; = vector[48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 50, 58, 58, 115, 117, 105, 58, 58, 83, 85, 73];
+<pre><code><b>const</b> <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>: vector&lt;u8&gt; = vector[48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 48, 50, 58, 58, 98, 102, 99, 58, 58, 66, 70, 67];
 </code></pre>
 
 
@@ -436,7 +421,7 @@ and nowhere else.
 
 <pre><code><b>fun</b> <a href="../sui/balance.md#sui_balance_create_staking_rewards">create_staking_rewards</a>&lt;T&gt;(<a href="../sui/balance.md#sui_balance_value">value</a>: u64, ctx: &TxContext): <a href="../sui/balance.md#sui_balance_Balance">Balance</a>&lt;T&gt; {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui/balance.md#sui_balance_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(<a href="../std/type_name.md#std_type_name_get">std::type_name::get</a>&lt;T&gt;().into_string().into_bytes() == <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui/balance.md#sui_balance_ENotSUI">ENotSUI</a>);
+    //<b>assert</b>!(<a href="../std/type_name.md#std_type_name_get">std::type_name::get</a>&lt;T&gt;().into_string().into_bytes() == <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, ENotSUI);
     <a href="../sui/balance.md#sui_balance_Balance">Balance</a> { <a href="../sui/balance.md#sui_balance_value">value</a> }
 }
 </code></pre>
@@ -465,7 +450,7 @@ and nowhere else.
 
 <pre><code><b>fun</b> <a href="../sui/balance.md#sui_balance_destroy_storage_rebates">destroy_storage_rebates</a>&lt;T&gt;(self: <a href="../sui/balance.md#sui_balance_Balance">Balance</a>&lt;T&gt;, ctx: &TxContext) {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="../sui/balance.md#sui_balance_ENotSystemAddress">ENotSystemAddress</a>);
-    <b>assert</b>!(<a href="../std/type_name.md#std_type_name_get">std::type_name::get</a>&lt;T&gt;().into_string().into_bytes() == <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, <a href="../sui/balance.md#sui_balance_ENotSUI">ENotSUI</a>);
+    //<b>assert</b>!(<a href="../std/type_name.md#std_type_name_get">std::type_name::get</a>&lt;T&gt;().into_string().into_bytes() == <a href="../sui/balance.md#sui_balance_SUI_TYPE_NAME">SUI_TYPE_NAME</a>, ENotSUI);
     <b>let</b> <a href="../sui/balance.md#sui_balance_Balance">Balance</a> { <a href="../sui/balance.md#sui_balance_value">value</a>: _ } = self;
 }
 </code></pre>
