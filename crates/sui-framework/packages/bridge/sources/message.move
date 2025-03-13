@@ -585,6 +585,10 @@ module bridge::message {
         self.payload
     }
 
+    public fun token_sender_address(self: &TokenTransferPayload): vector<u8> {
+        self.sender_address
+    }
+
     public fun token_target_chain(self: &TokenTransferPayload): u8 {
         self.target_chain
     }
