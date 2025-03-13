@@ -456,7 +456,7 @@ mod checked {
                                 cost_summary,
                                 advance_epoch_gas_summary,
                                 &mut layout_resolver,
-                                gas_charger.is_pay_with_stable_coin(temporary_store),
+                                gas_charger.is_pay_with_stable_coin(temporary_store)
                             )
                         } else {
                             Ok(())
@@ -485,7 +485,7 @@ mod checked {
                                         cost_summary,
                                         advance_epoch_gas_summary,
                                         &mut layout_resolver,
-                                        gas_charger.is_pay_with_stable_coin(temporary_store),
+                                        gas_charger.is_pay_with_stable_coin(temporary_store)
                                     )
                                 } else {
                                     Ok(())
