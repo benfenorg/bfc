@@ -136,7 +136,7 @@ task 2, lines 52-56:
 //# publish --upgradeable --sender A
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5213600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5532800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 58:
 //# create-checkpoint
@@ -147,7 +147,7 @@ task 4, lines 60-91:
 Response: {
   "data": {
     "object": {
-      "address": "0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301",
+      "address": "0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089",
       "asMovePackage": {
         "module": {
           "struct": {
@@ -180,7 +180,7 @@ task 5, lines 93-99:
 //# upgrade --package P0 --upgrade-capability 2,1 --sender A
 created: object(5,0)
 mutated: object(0,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 6049600,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 6916000,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 6, line 101:
 //# create-checkpoint
@@ -191,13 +191,13 @@ task 7, lines 103-150:
 Response: {
   "data": {
     "object": {
-      "address": "0x8f225fe07ab4384f0078020cc6a83a00bf6fb186745fda4dcee2091e470a8fe0",
+      "address": "0xc7962ca0935432af9094155af416bae0667d4db5c1ce705081ccdb277ebc9444",
       "asMovePackage": {
         "module": {
           "s": {
             "module": {
               "package": {
-                "address": "0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301"
+                "address": "0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089"
               }
             },
             "name": "S",
@@ -222,7 +222,7 @@ Response: {
           "t": {
             "module": {
               "package": {
-                "address": "0x8f225fe07ab4384f0078020cc6a83a00bf6fb186745fda4dcee2091e470a8fe0"
+                "address": "0xc7962ca0935432af9094155af416bae0667d4db5c1ce705081ccdb277ebc9444"
               }
             },
             "name": "T",
@@ -249,12 +249,12 @@ Response: {
               {
                 "name": "s",
                 "type": {
-                  "repr": "0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301::m::S",
+                  "repr": "0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089::m::S",
                   "signature": {
                     "ref": null,
                     "body": {
                       "datatype": {
-                        "package": "0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301",
+                        "package": "0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089",
                         "module": "m",
                         "type": "S",
                         "typeParameters": []
@@ -283,7 +283,7 @@ Response: {
               {
                 "name": "t",
                 "type": {
-                  "repr": "0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301::m::T<0x0516a97c38ac8f8e7ec1fec2e1aa8a64a416adc4fc47815ab3fb51f0fa5d7301::m::S>"
+                  "repr": "0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089::m::T<0x8940f7fac31482ea2f5ae018f83503bac8d4440592d75577a0904fa725cbd089::m::S>"
                 }
               }
             ]
@@ -409,6 +409,23 @@ Response: {
                 ]
               },
               {
+                "name": "DenyCapV2",
+                "fields": [
+                  {
+                    "name": "id",
+                    "type": {
+                      "repr": "0x0000000000000000000000000000000000000000000000000000000000000002::object::UID"
+                    }
+                  },
+                  {
+                    "name": "allow_global_pause",
+                    "type": {
+                      "repr": "bool"
+                    }
+                  }
+                ]
+              },
+              {
                 "name": "RegulatedCoinMetadata",
                 "fields": [
                   {
@@ -475,6 +492,12 @@ Response: {
                 }
               },
               {
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
+                "node": {
+                  "name": "DenyCapV2"
+                }
+              },
+              {
                 "cursor": "eyJuIjoiUmVndWxhdGVkQ29pbk1ldGFkYXRhIiwiYyI6Mn0",
                 "node": {
                   "name": "RegulatedCoinMetadata"
@@ -516,6 +539,12 @@ Response: {
                 "cursor": "eyJuIjoiRGVueUNhcCIsImMiOjJ9",
                 "node": {
                   "name": "DenyCap"
+                }
+              },
+              {
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
+                "node": {
+                  "name": "DenyCapV2"
                 }
               },
               {
@@ -610,6 +639,12 @@ Response: {
                 }
               },
               {
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
+                "node": {
+                  "name": "DenyCapV2"
+                }
+              },
+              {
                 "cursor": "eyJuIjoiUmVndWxhdGVkQ29pbk1ldGFkYXRhIiwiYyI6Mn0",
                 "node": {
                   "name": "RegulatedCoinMetadata"
@@ -630,9 +665,9 @@ Response: {
           "suffix": {
             "edges": [
               {
-                "cursor": "eyJuIjoiRGVueUNhcCIsImMiOjJ9",
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
                 "node": {
-                  "name": "DenyCap"
+                  "name": "DenyCapV2"
                 }
               },
               {
@@ -650,15 +685,15 @@ Response: {
           "suffixAll": {
             "edges": [
               {
-                "cursor": "eyJuIjoiQ3VycmVuY3lDcmVhdGVkIiwiYyI6Mn0",
-                "node": {
-                  "name": "CurrencyCreated"
-                }
-              },
-              {
                 "cursor": "eyJuIjoiRGVueUNhcCIsImMiOjJ9",
                 "node": {
                   "name": "DenyCap"
+                }
+              },
+              {
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
+                "node": {
+                  "name": "DenyCapV2"
                 }
               },
               {
@@ -697,6 +732,12 @@ Response: {
                 "cursor": "eyJuIjoiRGVueUNhcCIsImMiOjJ9",
                 "node": {
                   "name": "DenyCap"
+                }
+              },
+              {
+                "cursor": "eyJuIjoiRGVueUNhcFYyIiwiYyI6Mn0",
+                "node": {
+                  "name": "DenyCapV2"
                 }
               },
               {
