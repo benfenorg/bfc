@@ -57,7 +57,7 @@ module deepbook::custodian_v2 {
         }
     }
 
-    /// Destroy the given `account_cap` object
+    // Destroy the given `account_cap` object
     // fun delete_account_cap(account_cap: AccountCap) {
     //     let AccountCap { id, owner: _ } = account_cap;
     //     object::delete(id)

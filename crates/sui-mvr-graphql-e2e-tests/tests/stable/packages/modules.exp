@@ -2,9 +2,19 @@ processed 6 tasks
 
 task 1, lines 6-31:
 //# publish
-created: object(1,0)
-mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 6004000,  storage_rebate: 0, non_refundable_storage_fee: 0
+Error: error[E03002]: unbound module
+  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpnAK2Ng:9:9
+  │
+9 │     use sui::sui::SUI;
+  │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
+
+error[E03004]: unbound type
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpnAK2Ng:13:29
+   │
+13 │     public fun bar(c: &Coin<SUI>): u64 {
+   │                             ^^^ Unbound type 'SUI' in current scope
+
+
 
 task 2, line 33:
 //# create-checkpoint
@@ -12,219 +22,70 @@ Checkpoint created: 1
 
 task 3, lines 35-55:
 //# run-graphql
-Response: {
-  "data": {
-    "object": {
-      "address": "0x90a54cf41ae1d22964b70cd0b3fa8a838341889a3610c2e797e0ff5de895cc11",
-      "asMovePackage": {
-        "module": {
-          "name": "m",
-          "package": {
-            "address": "0x90a54cf41ae1d22964b70cd0b3fa8a838341889a3610c2e797e0ff5de895cc11"
-          },
-          "fileFormatVersion": 6,
-          "bytes": "oRzrCwYAAAAIAQAGAgYKAxARBCEEBSUfB0QiCGZADKYBMAAFAQMBBgEADAEAAQIBAgAABAABAQIAAgIBAAEHBQEBAAIEAAYCAwYLAAEJAAEDAQYLAAEIAQABCQABBgsAAQkAAQgBBENvaW4DU1VJA2JhcgRjb2luA2ZvbwFtA3N1aQV2YWx1ZZClTPQa4dIpZLcM0LP6ioODQYiaNhDC55fg/13olcwRAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIAAQAAAwULATgACwAWAgEBAAADCAYqAAAAAAAAAAoAOAEGKwAAAAAAAAALADgBGAIA",
-          "disassembly": "// Move bytecode v6\nmodule 90a54cf41ae1d22964b70cd0b3fa8a838341889a3610c2e797e0ff5de895cc11.m {\nuse 0000000000000000000000000000000000000000000000000000000000000002::coin;\nuse 0000000000000000000000000000000000000000000000000000000000000002::sui;\n\npublic foo<Ty0: drop>(Arg0: u64, Arg1: &Coin<Ty0>): u64 {\nB0:\n\t0: MoveLoc[1](Arg1: &Coin<Ty0>)\n\t1: Call coin::value<Ty0>(&Coin<Ty0>): u64\n\t2: MoveLoc[0](Arg0: u64)\n\t3: Add\n\t4: Ret\n}\n\npublic bar(Arg0: &Coin<SUI>): u64 {\nB0:\n\t0: LdU64(42)\n\t1: CopyLoc[0](Arg0: &Coin<SUI>)\n\t2: Call foo<SUI>(u64, &Coin<SUI>): u64\n\t3: LdU64(43)\n\t4: MoveLoc[0](Arg0: &Coin<SUI>)\n\t5: Call foo<SUI>(u64, &Coin<SUI>): u64\n\t6: Mul\n\t7: Ret\n}\n\n}\n"
-        }
-      }
-    }
-  }
+Error: Unknown variable: obj_1_0
+Allowed variable mappings are {
+    "bfc_system": "0xc8",
+    "bfc_system_opt": "0xc8",
+    "bridge": "0xb",
+    "bridge_opt": "0xb",
+    "obj_0_0": "object(0,0)",
+    "obj_0_0_opt": "object(0,0)",
+    "pkg": "0x0",
+    "pkg_opt": "0x0",
+    "std": "0x1",
+    "std_opt": "0x1",
+    "sui": "0x2",
+    "sui_opt": "0x2",
+    "sui_system": "0x3",
+    "sui_system_opt": "0x3",
+    "validator_0": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
+    "validator_0_opt": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
 }
 
 task 4, lines 57-84:
 //# run-graphql --cursors {"n":"m","c":1} {"n":"o","c":1}
-Response: {
-  "data": {
-    "object": {
-      "address": "0x90a54cf41ae1d22964b70cd0b3fa8a838341889a3610c2e797e0ff5de895cc11",
-      "asMovePackage": {
-        "all": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibSIsImMiOjF9",
-              "node": {
-                "name": "m"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibyIsImMiOjF9",
-              "node": {
-                "name": "o"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": false,
-            "hasPreviousPage": false
-          }
-        },
-        "after": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibyIsImMiOjF9",
-              "node": {
-                "name": "o"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": false,
-            "hasPreviousPage": true
-          }
-        },
-        "before": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibSIsImMiOjF9",
-              "node": {
-                "name": "m"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": true,
-            "hasPreviousPage": false
-          }
-        }
-      }
-    }
-  }
+Error: Unknown variable: obj_1_0
+Allowed variable mappings are {
+    "bfc_system": "0xc8",
+    "bfc_system_opt": "0xc8",
+    "bridge": "0xb",
+    "bridge_opt": "0xb",
+    "cursor_0": "eyJuIjoibSIsImMiOjF9",
+    "cursor_1": "eyJuIjoibyIsImMiOjF9",
+    "obj_0_0": "object(0,0)",
+    "obj_0_0_opt": "object(0,0)",
+    "pkg": "0x0",
+    "pkg_opt": "0x0",
+    "std": "0x1",
+    "std_opt": "0x1",
+    "sui": "0x2",
+    "sui_opt": "0x2",
+    "sui_system": "0x3",
+    "sui_system_opt": "0x3",
+    "validator_0": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
+    "validator_0_opt": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
 }
 
 task 5, lines 87-117:
 //# run-graphql --cursors {"n":"m","c":1} {"n":"o","c":1}
-Response: {
-  "data": {
-    "object": {
-      "address": "0x90a54cf41ae1d22964b70cd0b3fa8a838341889a3610c2e797e0ff5de895cc11",
-      "asMovePackage": {
-        "prefix": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": true,
-            "hasPreviousPage": true
-          }
-        },
-        "prefixAll": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibyIsImMiOjF9",
-              "node": {
-                "name": "o"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": false,
-            "hasPreviousPage": true
-          }
-        },
-        "prefixExcess": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibyIsImMiOjF9",
-              "node": {
-                "name": "o"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": false,
-            "hasPreviousPage": true
-          }
-        },
-        "suffix": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": true,
-            "hasPreviousPage": true
-          }
-        },
-        "suffixAll": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibSIsImMiOjF9",
-              "node": {
-                "name": "m"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": true,
-            "hasPreviousPage": false
-          }
-        },
-        "suffixExcess": {
-          "edges": [
-            {
-              "cursor": "eyJuIjoibSIsImMiOjF9",
-              "node": {
-                "name": "m"
-              }
-            },
-            {
-              "cursor": "eyJuIjoibiIsImMiOjF9",
-              "node": {
-                "name": "n"
-              }
-            }
-          ],
-          "pageInfo": {
-            "hasNextPage": true,
-            "hasPreviousPage": false
-          }
-        }
-      }
-    }
-  }
+Error: Unknown variable: obj_1_0
+Allowed variable mappings are {
+    "bfc_system": "0xc8",
+    "bfc_system_opt": "0xc8",
+    "bridge": "0xb",
+    "bridge_opt": "0xb",
+    "cursor_0": "eyJuIjoibSIsImMiOjF9",
+    "cursor_1": "eyJuIjoibyIsImMiOjF9",
+    "obj_0_0": "object(0,0)",
+    "obj_0_0_opt": "object(0,0)",
+    "pkg": "0x0",
+    "pkg_opt": "0x0",
+    "std": "0x1",
+    "std_opt": "0x1",
+    "sui": "0x2",
+    "sui_opt": "0x2",
+    "sui_system": "0x3",
+    "sui_system_opt": "0x3",
+    "validator_0": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
+    "validator_0_opt": "0xa7b032703878aa74c3126935789fd1d4d7e111d5911b09247d6963061c312b5a",
 }

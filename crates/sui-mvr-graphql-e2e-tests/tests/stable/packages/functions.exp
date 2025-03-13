@@ -50,24 +50,7 @@ Response: {
             "return": []
           }
         },
-        "sui": {
-          "new": {
-            "name": "new",
-            "visibility": "PRIVATE",
-            "isEntry": false,
-            "typeParameters": [],
-            "parameters": [
-              {
-                "repr": "&mut 0x0000000000000000000000000000000000000000000000000000000000000002::tx_context::TxContext"
-              }
-            ],
-            "return": [
-              {
-                "repr": "0x0000000000000000000000000000000000000000000000000000000000000002::balance::Balance<0x0000000000000000000000000000000000000000000000000000000000000002::sui::SUI>"
-              }
-            ]
-          }
-        }
+        "sui": null
       }
     }
   }
@@ -77,7 +60,7 @@ task 2, lines 40-44:
 //# publish --upgradeable --sender A
 created: object(2,0), object(2,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5183200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5502400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, line 46:
 //# create-checkpoint
@@ -88,13 +71,13 @@ task 4, lines 48-76:
 Response: {
   "data": {
     "object": {
-      "address": "0x3b0214c71a45ce74c853ec2b17a64ccbe92c09daaf2bc21a7f4a15a972a1e0e2",
+      "address": "0xd516359536ea956fc8f382623a2d168199fb25530b89cd1ebff7c0c125de3793",
       "asMovePackage": {
         "module": {
           "function": {
             "module": {
               "package": {
-                "address": "0x3b0214c71a45ce74c853ec2b17a64ccbe92c09daaf2bc21a7f4a15a972a1e0e2"
+                "address": "0xd516359536ea956fc8f382623a2d168199fb25530b89cd1ebff7c0c125de3793"
               }
             },
             "name": "f",
@@ -131,7 +114,7 @@ task 5, lines 79-84:
 //# upgrade --package P0 --upgrade-capability 2,1 --sender A
 created: object(5,0)
 mutated: object(0,0), object(2,1)
-gas summary: computation_cost: 1000000, storage_cost: 5418800,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 6285200,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 6, line 86:
 //# create-checkpoint
@@ -142,13 +125,13 @@ task 7, lines 88-117:
 Response: {
   "data": {
     "object": {
-      "address": "0x76ebf19f8ea6bfa546ad4517196f912bc1eaf5652752eeceb48d03a35340e49e",
+      "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f",
       "asMovePackage": {
         "module": {
           "f": {
             "module": {
               "package": {
-                "address": "0x76ebf19f8ea6bfa546ad4517196f912bc1eaf5652752eeceb48d03a35340e49e"
+                "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f"
               }
             },
             "name": "f",
@@ -178,7 +161,7 @@ Response: {
           "g": {
             "module": {
               "package": {
-                "address": "0x76ebf19f8ea6bfa546ad4517196f912bc1eaf5652752eeceb48d03a35340e49e"
+                "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f"
               }
             },
             "name": "g",

@@ -9,7 +9,7 @@ task 1, lines 7-9:
 //> TransferObjects([Result(0)], Input(1))
 created: object(1,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 1976000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2614400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 11:
 //# create-checkpoint
@@ -24,7 +24,7 @@ Response: {
     },
     "coin": {
       "asObject": {
-        "digest": "B7KFVrNkesXXKghMbvKQAwbfYzapa8FCkSQJV9ZxrYHT"
+        "digest": "7EWubkQHsmEFubgjFaTryQGSUjgwYiovdcnqvuoWy3rt"
       }
     }
   }

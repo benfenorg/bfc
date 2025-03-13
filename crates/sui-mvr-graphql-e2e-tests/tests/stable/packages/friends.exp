@@ -7,7 +7,7 @@ task 1, lines 6-14:
 //# publish --upgradeable --sender A
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 7379600,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 7698800,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, line 16:
 //# create-checkpoint
@@ -209,7 +209,7 @@ task 6, lines 143-152:
 //# upgrade --package P0 --upgrade-capability 1,1 --sender A
 created: object(6,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 8139600,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 9006000,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 7, line 154:
 //# create-checkpoint
