@@ -7,7 +7,7 @@ task 1, lines 8-27:
 //# publish
 created: object(1,0)
 mutated: object(0,1)
-gas summary: computation_cost: 1000000, storage_cost: 6118000,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 6437200,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 29-31:
 //# programmable --sender A --inputs @A
@@ -15,7 +15,7 @@ task 2, lines 29-31:
 //> 1: TransferObjects([Result(0)], Input(0))
 created: object(2,0)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 2447200,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 2766400,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 3, lines 33-35:
 //# programmable --sender A --inputs object(2,0) @A
@@ -23,7 +23,7 @@ task 3, lines 33-35:
 //> 1: TransferObjects([Result(0)], Input(1))
 mutated: object(0,0), object(2,0)
 unwrapped: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 3412400,  storage_rebate: 2422728, non_refundable_storage_fee: 24472
+gas summary: computation_cost: 1000000, storage_cost: 3731600,  storage_rebate: 2738736, non_refundable_storage_fee: 27664
 
 task 4, line 37:
 //# create-checkpoint
@@ -35,31 +35,31 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "JBHReYdBYTUoFhGZgCVG3jFUoHQSYTz7Sgt7yW6TPzFz",
+    "digest": "5WLrr7vDuYMU1i4qBfXcEYrGLzyNUwM8ToU7modNoA81",
     "objectChanges": [
       {
         "type": "mutated",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
         "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::sui::SUI>",
-        "objectId": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCa44c016594d73d678c6dd13ee8603d1cbcf71c2767cafcbd41e7f18e71e0da61acf3",
         "version": "3",
         "previousVersion": "2",
-        "digest": "7jod7CYtkuwxrc8HcBNj5HYy3D32kQ45MxTZhvCzzfb8"
+        "digest": "9DFQ5a3oKgeaLLzWs43rEAjpiwowx3ryJ9yJAupEnDqB"
       },
       {
         "type": "mutated",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
         "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x54c05d65095bba68361751ed13055e1330ab7d78ac032dfbc03eb5eb0b43b6d3::M::O",
-        "objectId": "0xc1e6b79d26aafd5940fe4fcfcb5f83ae4101388c849e1d9bbd4f1048f4fe10ee",
+        "objectType": "0xd3ef7aa49b3766f52d6575a3ada369e238605a218c45449106fb10db53ff0e4d::M::O",
+        "objectId": "BFCcc0908e909143a8050cca8369c98b5e8c6ddc0a69e4688f4cd76911854ff1e1b0d64",
         "version": "3",
         "previousVersion": "2",
-        "digest": "Htp48aPEeYX141zEKbAQW9bB2jyUsL2MKVDDT9B3PXcw"
+        "digest": "8TuLfdmUxfUWNf5Gp4rpob7caHNdKRNAmzoF5XZ1g3QA"
       }
     ]
   }

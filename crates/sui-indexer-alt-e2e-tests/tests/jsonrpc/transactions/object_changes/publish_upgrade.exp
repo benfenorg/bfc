@@ -7,13 +7,13 @@ task 1, lines 9-12:
 //# publish --upgradeable --sender A
 created: object(1,0), object(1,1)
 mutated: object(0,0)
-gas summary: computation_cost: 1000000, storage_cost: 5076800,  storage_rebate: 0, non_refundable_storage_fee: 0
+gas summary: computation_cost: 1000000, storage_cost: 5396000,  storage_rebate: 0, non_refundable_storage_fee: 0
 
 task 2, lines 14-21:
 //# upgrade --package P0 --upgrade-capability 1,1 --sender A
 created: object(2,0)
 mutated: object(0,0), object(1,1)
-gas summary: computation_cost: 1000000, storage_cost: 5768400,  storage_rebate: 2595780, non_refundable_storage_fee: 26220
+gas summary: computation_cost: 1000000, storage_cost: 6634800,  storage_rebate: 2911788, non_refundable_storage_fee: 29412
 
 task 3, line 23:
 //# create-checkpoint
@@ -25,39 +25,39 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "BfhUDo5S1qaoTNPZNbUWPTwievt5NJzyKN2AxmDEH6wz",
+    "digest": "9tnv1XAfKhSpV5VxPGfiCmKov2eFQhGzrvGcTqoPLQ1g",
     "objectChanges": [
       {
+        "type": "created",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::package::UpgradeCap",
+        "objectId": "BFC0a93d215800c0e0dfdd89e746b00e571a31f2e6dff1df88278ac3ce0b515bc1a2705",
+        "version": "2",
+        "digest": "2CncNF2YpWTCR1x48zEyKTNuvCHczCyb3mSqpmy8MGDh"
+      },
+      {
         "type": "published",
-        "packageId": "0x7670061a5a8ace811e66a06a1358363b9bd7b8f2f9ee8a0ea262bc0e33b148c0",
+        "packageId": "BFC68f40a5d3a1e5dc3117a302899383718a5dcba1ede69bbd92c0c1370600215b3e774",
         "version": "1",
-        "digest": "FpCHKBbpdgVNCiqX5xe13rVGDqd2HYyGuCJ8hdj9Pv8L",
+        "digest": "9SDPBe76AzD317WYLDJsdFa7KJx2Xt651bc1X7BPnW6p",
         "modules": [
           "M"
         ]
       },
       {
-        "type": "created",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
-        "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
-        },
-        "objectType": "0x2::package::UpgradeCap",
-        "objectId": "0xa3a64bd1bbfc45f234b17702cf453fa3660a94d11b5bf18efd69262ab49b9d9f",
-        "version": "2",
-        "digest": "5xPHPaX3axjkrFYdE3RmQZA6grnUDDE69TypXwJCd1va"
-      },
-      {
         "type": "mutated",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
         "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::sui::SUI>",
-        "objectId": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCa44c016594d73d678c6dd13ee8603d1cbcf71c2767cafcbd41e7f18e71e0da61acf3",
         "version": "2",
         "previousVersion": "1",
-        "digest": "BRwz4gsomJX3ka2jqYBp7Ud2XSmL4We8weumCPsMSYSm"
+        "digest": "CrqphwkrUPh2WGYvQWpmX9jFi1V5DNrDrPC9dm3oqnF8"
       }
     ]
   }
@@ -69,41 +69,41 @@ Response: {
   "jsonrpc": "2.0",
   "id": 1,
   "result": {
-    "digest": "875EAzb9SBt8rhxjhYFD2bnuisUXhJN1m7si8BH8QuDF",
+    "digest": "475pMyfLe9beY3cmbJXX2aswZ5Ud8VkwJzn25oYmLJFu",
     "objectChanges": [
       {
-        "type": "mutated",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
-        "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
-        },
-        "objectType": "0x2::package::UpgradeCap",
-        "objectId": "0xa3a64bd1bbfc45f234b17702cf453fa3660a94d11b5bf18efd69262ab49b9d9f",
-        "version": "3",
-        "previousVersion": "2",
-        "digest": "WSZ1LFNowwaMYKfqNajHYdp6DZGYdyisW9zSD36iP3m"
-      },
-      {
-        "type": "mutated",
-        "sender": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e",
-        "owner": {
-          "AddressOwner": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
-        },
-        "objectType": "0x2::coin::Coin<0x2::sui::SUI>",
-        "objectId": "0xbff5e96a4a5c0f7348259c7abfdfd999405c02b9e9c0d0d59ec669a53b104c7a",
-        "version": "3",
-        "previousVersion": "2",
-        "digest": "GehBiyivz5iaQDd3K5A38oNTfZLLcVgsgXhNo2vnYwXv"
-      },
-      {
         "type": "published",
-        "packageId": "0xead19ea504f857a14578d1547ae33f531f0dd612637e1aec30b9f00ae335d747",
+        "packageId": "BFC02f43ee433fcb4ed0bd7a518b843c86f5c6ba388d3478e0d79b813bdbfd89e1cd1cd",
         "version": "2",
-        "digest": "Ftbo2Y9txgidKvz8UNdE7Z3phjtH8n4D3Dfs5WX8E3dP",
+        "digest": "6ZENJ8xFme7Un9MEU4MHrGnL3F6TUbtaFBeGH5vYFGin",
         "modules": [
           "M",
           "N"
         ]
+      },
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::package::UpgradeCap",
+        "objectId": "BFC0a93d215800c0e0dfdd89e746b00e571a31f2e6dff1df88278ac3ce0b515bc1a2705",
+        "version": "3",
+        "previousVersion": "2",
+        "digest": "DkCzN6n1378wZtAWRabXA21qvLAte72nToop1sitHEFV"
+      },
+      {
+        "type": "mutated",
+        "sender": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7",
+        "owner": {
+          "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
+        },
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFCa44c016594d73d678c6dd13ee8603d1cbcf71c2767cafcbd41e7f18e71e0da61acf3",
+        "version": "3",
+        "previousVersion": "2",
+        "digest": "AbqJ6xic6qDzP68as15NXQVSgRz2gjRAyFCxkfLweUxn"
       }
     ]
   }

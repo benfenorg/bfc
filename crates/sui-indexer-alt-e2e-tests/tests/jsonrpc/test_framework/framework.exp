@@ -20,11 +20,11 @@ task 5, lines 37-41:
 //# run-jsonrpc --show-headers
 Headers: {
     "content-type": "application/json; charset=utf-8",
-    "content-length": "40",
+    "content-length": "39",
 }
 
 Response: {
   "jsonrpc": "2.0",
   "id": 0,
-  "result": "1000"
+  "result": "100"
 }
