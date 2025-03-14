@@ -1121,7 +1121,7 @@ impl<'backing> TemporaryStore<'backing> {
         }
 
         if pay_with_stable_gas {
-            if total_input_sui+gas_summary.storage_cost-gas_summary.storage_rebate-gas_summary.non_refundable_storage_fee != total_output_sui {
+            if total_input_sui+gas_summary.storage_cost != total_output_sui + gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee{
                 return Err(ExecutionError::invariant_violation(
                     format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
                             total_input_sui,
