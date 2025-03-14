@@ -29,7 +29,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "0"
           }
         }
@@ -57,7 +57,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "1"
           }
         }
@@ -69,7 +69,7 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "0"
           }
         }
@@ -93,18 +93,14 @@ task 10, lines 111-137:
 //# run-graphql
 Response: {
   "data": {
-    "latest_wrapped": {
-      "status": "WRAPPED_OR_DELETED",
-      "version": 5,
-      "asMoveObject": null
-    },
+    "latest_wrapped": null,
     "previous_version": {
       "status": "INDEXED",
       "version": 4,
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "1"
           }
         }
@@ -134,24 +130,20 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "1"
           }
         }
       }
     },
-    "previous_version": {
-      "status": "WRAPPED_OR_DELETED",
-      "version": 5,
-      "asMoveObject": null
-    },
+    "previous_version": null,
     "first_version": {
       "status": "INDEXED",
       "version": 3,
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "0"
           }
         }
@@ -174,16 +166,8 @@ task 16, lines 187-213:
 //# run-graphql
 Response: {
   "data": {
-    "latest_deleted": {
-      "status": "WRAPPED_OR_DELETED",
-      "version": 7,
-      "asMoveObject": null
-    },
-    "version_specified": {
-      "status": "WRAPPED_OR_DELETED",
-      "version": 7,
-      "asMoveObject": null
-    }
+    "latest_deleted": null,
+    "version_specified": null
   }
 }
 
@@ -269,24 +253,20 @@ Response: {
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "1"
           }
         }
       }
     },
-    "wrapped_or_deleted_object": {
-      "status": "WRAPPED_OR_DELETED",
-      "version": 5,
-      "asMoveObject": null
-    },
+    "wrapped_or_deleted_object": null,
     "object_not_in_snapshot": {
       "status": "INDEXED",
       "version": 3,
       "asMoveObject": {
         "contents": {
           "json": {
-            "id": "0x86acb8c610167a1896384887a381869f3bae100f8ffdf541b5b0fb60c6c8f517",
+            "id": "0x883963484f85de03566b25ca46198a0435b0c397b8386887cc119469a285efea",
             "value": "0"
           }
         }
