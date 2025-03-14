@@ -225,6 +225,18 @@ pub mod checked {
             Self::is_configurable_gas_type(other)
         }
 
+
+        pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
+            if version > BFC_ROUND_V2_PROTOCOL_VERSION {
+                if &(STABLE::BUSD.type_tag()) == other {
+                    return false; // inner gas type ,after 45 protocol version only busd
+                }
+            }else if Self::is_inner_gas_type(other) {
+                return false;// inner gas type,have 18 stable coins before 45 protocol version
+            }
+            Self::is_configurable_gas_type(other)
+        }
+
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
                 STABLE::BAUD,

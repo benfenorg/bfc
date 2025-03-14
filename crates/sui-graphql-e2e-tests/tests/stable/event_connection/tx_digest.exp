@@ -37,26 +37,26 @@ Response: {
     "transactionBlocks": {
       "nodes": [
         {
-          "digest": "CGuy2NZL8J2rUrgXfUBSo4SjXjpA29JEUtgHuzuNGEse"
+          "digest": "83GWRBY697Mwwqq6AqijTVFqCCszfagf55V4GLtG2JNj"
         },
         {
-          "digest": "GGLiqPuVKtXHfWx7zTtnaxXMvTqiTgb1LXyUiDDUMH1a"
+          "digest": "4ZrbrgZgR3q2VHMkkBWGZBhcJy1eAeY9DpeFYo5db23k"
         },
         {
-          "digest": "GBgHQq4zEFrGCWgN4Ptwjt5GwRmaZM2W4MvLZrmmFKQZ"
+          "digest": "47z2Wim8gA2nLEAhDQY2Wtk2JxH8NWMo8ByHS627unYg"
         },
         {
-          "digest": "DyyvBbVRFvS2vpeuHPkbNcMScNDpUqhbKP5hoK8dnTaR"
+          "digest": "7HtVEFJyFCcX7F6zsQoQav41FrJSRFWC62FKAV9DbhHG"
         },
         {
-          "digest": "7GHLxHBdV2uUFSQrYjQS6YF1PbEBWuyCxEnToPcEnsiv"
+          "digest": "1DaC7gs18dfJNT6Me6LouXNviBxWerZY82QZZN6tH1q"
         }
       ]
     }
   }
 }
 
-task 7, lines 45-57:
+task 7, lines 45-55:
 //# run-graphql
 Response: {
   "data": {
@@ -66,7 +66,7 @@ Response: {
   }
 }
 
-task 8, lines 59-72:
+task 8, lines 57-68:
 //# run-graphql --cursors {"tx":3,"e":1,"c":1}
 Response: {
   "data": {
@@ -76,7 +76,7 @@ Response: {
   }
 }
 
-task 9, lines 74-89:
+task 9, lines 70-83:
 //# run-graphql --cursors {"tx":1,"e":1,"c":1}
 Response: {
   "data": {
@@ -86,7 +86,7 @@ Response: {
   }
 }
 
-task 10, lines 92-104:
+task 10, lines 86-96:
 //# run-graphql
 Response: {
   "data": {
@@ -96,7 +96,7 @@ Response: {
   }
 }
 
-task 11, lines 106-118:
+task 11, lines 98-108:
 //# run-graphql --cursors {"tx":4,"e":0,"c":1}
 Response: {
   "data": {
@@ -106,7 +106,7 @@ Response: {
   }
 }
 
-task 12, lines 121-133:
+task 12, lines 111-121:
 //# run-graphql
 Response: {
   "data": {
@@ -116,7 +116,7 @@ Response: {
   }
 }
 
-task 13, lines 135-148:
+task 13, lines 123-134:
 //# run-graphql --cursors {"tx":3,"e":1,"c":1}
 Response: {
   "data": {
@@ -126,7 +126,7 @@ Response: {
   }
 }
 
-task 14, lines 150-165:
+task 14, lines 136-149:
 //# run-graphql --cursors {"tx":4,"e":1,"c":1}
 Response: {
   "data": {
@@ -136,7 +136,7 @@ Response: {
   }
 }
 
-task 15, lines 168-180:
+task 15, lines 152-162:
 //# run-graphql
 Response: {
   "data": {
@@ -146,24 +146,17 @@ Response: {
   }
 }
 
-task 16, lines 182-195:
+task 16, lines 164-174:
 //# run-graphql --cursors {"tx":4,"e":1,"c":1}
 Response: {
-  "data": null,
-  "errors": [
-    {
-      "message": "Unknown field \"json\" on type \"Event\".",
-      "locations": [
-        {
-          "line": 9,
-          "column": 17
-        }
-      ]
+  "data": {
+    "events": {
+      "edges": []
     }
-  ]
+  }
 }
 
-task 17, lines 197-210:
+task 17, lines 176-187:
 //# run-graphql
 Response: {
   "data": {
@@ -173,7 +166,7 @@ Response: {
   }
 }
 
-task 18, lines 212-225:
+task 18, lines 189-200:
 //# run-graphql
 Response: {
   "data": {
@@ -183,7 +176,7 @@ Response: {
   }
 }
 
-task 19, lines 227-240:
+task 19, lines 202-213:
 //# run-graphql
 Response: {
   "data": {
@@ -193,7 +186,7 @@ Response: {
   }
 }
 
-task 20, lines 242-255:
+task 20, lines 215-226:
 //# run-graphql
 Response: {
   "data": {

@@ -38,88 +38,80 @@ Response: {
     "transactionBlocks": {
       "nodes": [
         {
-          "digest": "CGuy2NZL8J2rUrgXfUBSo4SjXjpA29JEUtgHuzuNGEse"
+          "digest": "83GWRBY697Mwwqq6AqijTVFqCCszfagf55V4GLtG2JNj"
         },
         {
-          "digest": "9XJRSMz6qMBaAgnZXZvdeEtsYDK98W6yGtJkNC8gdrNu"
+          "digest": "57isgGBrXgv6Gf96APvKjcC8Etf7JQtqatjKLLYg29ME"
         },
         {
-          "digest": "6HRD1Jaxsz2QiZ3M8m35eD7tn7e1Zx6mBd2PA2Hgz9Pp"
+          "digest": "ASPtNgwHQkGoM2d37JBTX6uKuv6cGVSniza5iUYL2Y5Q"
         },
         {
-          "digest": "GDEzs5aYatAUWGz4FrE8Yh6qAWnYDxnMW2mF7djCHUd6"
+          "digest": "CUyaja4i4fWL64GJtZnebsyPq9EESVNTGv4wxrn26zB2"
         },
         {
-          "digest": "7zHmD5LhTnvL84dbLRtaDGtCfcw3Ja6kte2Gkvp2hhuM"
+          "digest": "Axwi1SZgQGSS94EAN2M9CBryiFuRM89PLs9DP5SVk5Cp"
         }
       ]
     }
   }
 }
 
-task 7, lines 49-64:
+task 7, lines 49-62:
 //# run-graphql
 Response: {
   "data": {
     "events": {
       "nodes": [
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T1>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T1>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         },
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T2>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T2>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         },
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T1>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T1>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         },
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T2>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T2>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         }
@@ -128,39 +120,35 @@ Response: {
   }
 }
 
-task 8, lines 66-81:
+task 8, lines 64-77:
 //# run-graphql
 Response: {
   "data": {
     "events": {
       "nodes": [
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T1>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T1>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         },
         {
+          "type": {
+            "repr": "0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::EventA<0xac8fe6fb56e956c6695afe2c0ff7238c3483e0c4d84f050a21eb7b371b8d2562::M1::T1>"
+          },
           "sender": {
             "address": "0xfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e"
           },
-          "contents": {
-            "type": {
-              "repr": "0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::EventA<0x5a4d250f1a1bd36a2f35b094e458ca1695c064d31076982393d02d9cc79fde73::M1::T1>"
-            },
-            "json": {
-              "value": {
-                "dummy_field": false
-              }
+          "json": {
+            "value": {
+              "dummy_field": false
             }
           }
         }
@@ -169,7 +157,7 @@ Response: {
   }
 }
 
-task 9, lines 83-98:
+task 9, lines 79-92:
 //# run-graphql
 Response: {
   "data": {

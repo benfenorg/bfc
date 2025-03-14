@@ -44,9 +44,11 @@ task 6, lines 46-54:
 Response: {
   "data": {
     "object1": {
-      "digest": "6iHQBvjr99ote45fDmc3Dpka9i3W4mneQj8jM4hA65V6"
+      "digest": "8QYFwcRgVsttRHbEf1BNei7S4zLK13kVFKYhMWSkKPdV"
     },
-    "object2": null
+    "object2": {
+      "digest": null
+    }
   }
 }
 
@@ -75,9 +77,11 @@ task 10, lines 66-74:
 //# run-graphql
 Response: {
   "data": {
-    "object1": null,
+    "object1": {
+      "digest": null
+    },
     "object2": {
-      "digest": "7EPsiJqnsFK3jEPtj7EsQexcj5apTTRyjpWqLjij9Ewj"
+      "digest": "638x9aXNLMo37ZaKWQxuKy1H1uHLRY67nr9DbDXUmJmJ"
     }
   }
 }
@@ -100,8 +104,10 @@ task 13, lines 82-90:
 Response: {
   "data": {
     "object1": {
-      "digest": "DTjJz1bh41MHJsewDcLA3faCsZSqxtKfQEskpfKutvby"
+      "digest": "5PeK5op8MG2gbbBR1PknfR6LnBjWdq9tqYAGGpFs5w9g"
     },
-    "object2": null
+    "object2": {
+      "digest": null
+    }
   }
 }
