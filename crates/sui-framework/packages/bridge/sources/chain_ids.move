@@ -53,6 +53,8 @@ module bridge::chain_ids {
 
     public fun assert_valid_chain_id(id: u8) {
         assert!(
+            id == BtcMainnet ||
+            id == BtcTestnet ||
             id == SuiMainnet ||
             id == SuiTestnet ||
             id == SuiCustom ||

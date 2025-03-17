@@ -280,6 +280,26 @@ fun test_execute_send_token() {
 }
 
 #[test]
+fun test_btc_bridge_v2() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let source_address = b"bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh";
+    let sender = @0xA;
+    let target_address = address::to_bytes(sender);
+
+    env.bridge_external_coin_v2<BTC>(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        ascii::string(b"ddd"),
+        100,
+    );
+
+    env.destroy_env();
+}
+
+#[test]
 fun test_btc_bridge_add_remove_external_coin_admin() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();

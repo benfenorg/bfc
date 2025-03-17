@@ -329,7 +329,8 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&token_type)));
         payload.append(reverse_bytes(bcs::to_bytes(&amount)));
 
-        assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
+        // btc address len is different from eth address len, so we can't assert palyload length
+        // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
         payload.push_back(event_idx);

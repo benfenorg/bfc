@@ -22,6 +22,7 @@ module bridge::bridge_env {
         ExternalDepositedEvent,
         ExternalWithdrawEvent,
         ExternalBridgeRecord,
+        ExternalDepositedApprovedEvent,
     };
     use std::ascii;
     use std::debug;
@@ -722,6 +723,136 @@ module bridge::bridge_env {
         // tear down
         test_scenario::return_shared(bridge);
         seq_num
+    }
+
+     public fun bridge_external_coin_v2<T>(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        tx_hash: ascii::String,
+        amount: u64,
+    ) {
+        // setup
+        let token_type = env.token_type<T>();
+        env.scenario.next_tx(@0x0);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let total_supply_before = get_total_supply<T>(&bridge);
+
+        let message = message::create_token_bridge_message(
+            source_chain,
+            0,
+            source_address,
+            env.chain_id,
+            target_address,
+            token_type,
+            amount,
+            *tx_hash.as_bytes(),
+            0u8, // event_idx
+        );
+
+        let signatures = env.sign_message(message);
+
+        bridge.approval_and_claimed_external_coin<T>(message, signatures, env.scenario.ctx());
+        let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        assert!(approved.length() == 0 && deposited.length() == 1);
+        {
+            let (
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain,
+                source_address,
+                target_address,
+                amount,
+            ) = deposited[0].unwrap_external_deposited_event();
+            assert!(
+                tx_hash == tx_hash &&
+                coin_type == type_name::get<T>().into_string() &&
+                source_chain == source_chain &&
+                target_chain == env.chain_id &&
+                source_address == source_address &&
+                target_address == target_address &&
+                amount == amount,
+            );
+        };
+
+        env.scenario.next_tx(@0x0);
+        let token = env.scenario.take_from_address<Coin<T>>(address::from_bytes(target_address));
+        // verify value change and claim events
+        let token_value = token.value();
+        assert!(token.balance().value() == amount);
+        assert!(
+            total_supply_before + token_value == get_total_supply<T>(&bridge),
+        );
+
+        // withdraw coin
+        env.scenario.next_tx(address::from_bytes(target_address));
+        withdraw_external_coin_for_testing<T>(
+            &mut bridge,
+            source_chain,
+            source_address,
+            token,
+            env.scenario.ctx(),
+        );
+
+        let withdraw = event::events_by_type<ExternalWithdrawEvent>();
+        assert!(withdraw.length() == 1);
+        {
+            debug::print(&withdraw);
+            let (
+                event_coin_type,
+                event_source_chain,
+                event_target_chain,
+                event_source_address,
+                event_target_address,
+                event_amount,
+            ) = withdraw[0].unwrap_external_withdrawn_event();
+            assert!(event_coin_type == type_name::get<T>().into_string());
+            assert!(event_source_chain == env.chain_id );
+            assert!(event_target_chain == source_chain);
+            assert!(event_source_address == target_address);
+            assert!(event_target_address == source_address);
+            assert!(event_amount == amount);
+            assert!(
+                total_supply_before == get_total_supply<T>(&bridge),
+            );
+        };
+
+        env.scenario.next_tx(@0x0);
+        bridge.approval_and_claimed_external_coin<T>(message, signatures, env.scenario.ctx());
+        let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        assert!(approved.length() == 1 && deposited.length() == 0);
+        {
+            let (
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain,
+                source_address,
+                target_address,
+                amount,
+            ) = approved[0].unwrap_external_deposited_approved_event();
+            assert!(
+                tx_hash == tx_hash &&
+                coin_type == type_name::get<T>().into_string() &&
+                source_chain == source_chain &&
+                target_chain == env.chain_id &&
+                source_address == source_address &&
+                target_address == target_address &&
+                amount == amount,
+            );
+        };
+
+        env.scenario.next_tx(@0x0);
+        assert!(
+            total_supply_before == get_total_supply<T>(&bridge),
+        );
+
+        // tear down
+        test_scenario::return_shared(bridge);
     }
 
     // Approves a token transer
