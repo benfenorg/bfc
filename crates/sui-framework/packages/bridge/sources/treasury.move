@@ -193,6 +193,18 @@ module bridge::treasury {
         admins.contains(&address)
     }
 
+    public(package) fun external_coin_admin_count(
+        self: &BridgeTreasury,
+        coin_type_name: String,
+    ): u64 {
+        let admins = self.external_coin_admin_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            return 0
+        };
+        let admins = admins.destroy_some();
+        return admins.size()
+    }
+
     public(package) fun add_external_coin_admin(
         self: &mut BridgeTreasury,
         coin_type_name: String,

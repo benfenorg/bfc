@@ -370,7 +370,6 @@ impl BridgeNodeConfig {
             "Connected to Sui chain: {}, Bridge chain id: {}",
             sui_identifier, self.sui.sui_bridge_chain_id,
         );
-        println!("bbking 24 client_sui_address: {:?}", &bridge_client_key.public());
         let client_sui_address = SuiAddress::from(&bridge_client_key.public());
 
         let gas_object_id = match self.sui.bridge_client_gas_object {

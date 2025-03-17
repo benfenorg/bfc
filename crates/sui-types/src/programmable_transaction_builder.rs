@@ -160,6 +160,39 @@ impl ProgrammableTransactionBuilder {
         Ok(())
     }
 
+    pub fn split_coins(
+        &mut self,
+        amount: u64,
+    ) -> Argument{
+        let args =  vec![self.pure(amount).unwrap()];
+        self.command(Command::SplitCoins(Argument::GasCoin,args))
+    }
+
+    pub fn move_call_with_args(
+        &mut self,
+        package: ObjectID,
+        module: Identifier,
+        function: Identifier,
+        type_arguments: Vec<TypeTag>,
+        call_args: Vec<CallArg>,
+        mut args:Vec<Argument>,
+    ) -> anyhow::Result<()> {
+        let mut arguments = call_args
+            .into_iter()
+            .map(|a| self.input(a))
+            .collect::<Result<_, _>>()?;
+        args.append(&mut arguments);
+        self.command(Command::move_call(
+            package,
+            module,
+            function,
+            type_arguments,
+            args,
+        ));
+        Ok(())
+    }
+
+
     pub fn programmable_move_call(
         &mut self,
         package: ObjectID,

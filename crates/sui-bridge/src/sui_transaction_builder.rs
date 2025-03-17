@@ -3,9 +3,7 @@
 
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
-use std::io::Read;
 use std::{collections::HashMap, str::FromStr};
-use fastcrypto::encoding::Hex;
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,
@@ -183,13 +181,6 @@ fn build_token_bridge_approve_transaction(
             }
             _ => unreachable!(),
         };
-    let sender_clone = sender.clone();
-    let target_clone = target.clone();
-    let sender_clone2 = sender.clone();
-    let target_clone2 = target.clone();
-    println!("bbking 21 source_chain: {:?} seq_num: {:?} sender: {:?} target_chain: {:?} target: {:?} token_type: {:?} amount: {:?} tx_hash: {:?} event_idx: {:?}", source_chain, seq_num, sender_clone.bytes(), target_chain, target_clone.bytes(), token_type, amount, Hex::encode_with_format(&tx_hash), event_idx);
-    println!("bbking 21 sender: {:?}", Hex::encode_with_format(sender_clone2));
-    println!("bbking 21 target: {:?}", Hex::encode_with_format(target_clone2));
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
     let sender = builder.pure(sender.clone()).map_err(|e| {

@@ -13,7 +13,7 @@ use sui_test_transaction_builder::make_transfer_sui_transaction;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn basic_checkpoints_integration_test() {
+async fn sim_basic_checkpoints_integration_test() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let tx = make_transfer_sui_transaction(&test_cluster.wallet, None, None).await;
     let digest = *tx.digest();

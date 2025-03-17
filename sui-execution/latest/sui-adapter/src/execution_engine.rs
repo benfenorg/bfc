@@ -456,13 +456,14 @@ mod checked {
                                 cost_summary,
                                 advance_epoch_gas_summary,
                                 &mut layout_resolver,
-                                gas_charger.is_pay_with_stable_coin(temporary_store),
+                                gas_charger.is_pay_with_stable_coin(temporary_store)
                             )
                         } else {
                             Ok(())
                         }
                     })
             };
+            // TODO: check it
             if let Err(conservation_err) = conservation_result {
                 // conservation violated. try to avoid panic by dumping all writes, charging for gas, re-checking
                 // conservation, and surfacing an aborted transaction with an invariant violation if all of that works
@@ -484,7 +485,7 @@ mod checked {
                                         cost_summary,
                                         advance_epoch_gas_summary,
                                         &mut layout_resolver,
-                                        gas_charger.is_pay_with_stable_coin(temporary_store),
+                                        gas_charger.is_pay_with_stable_coin(temporary_store)
                                     )
                                 } else {
                                     Ok(())

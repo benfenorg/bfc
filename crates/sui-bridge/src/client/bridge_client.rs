@@ -231,14 +231,12 @@ impl BridgeClient {
             .clone()
             .unwrap()
             .join(&Self::bridge_action_to_path(&action))?;
-        println!("bbking url: {}", url);
         let resp = self
             .inner
             .get(url)
             .header(reqwest::header::ACCEPT, APPLICATION_JSON)
             .send()
             .await?;
-        println!("bbking resp: {:?}", resp);
         if !resp.status().is_success() {
             let error_status = format!("{:?}", resp.error_for_status_ref());
             let resp_text = resp.text().await?;

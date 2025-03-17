@@ -879,6 +879,31 @@ module bridge::bridge_env {
         claim_status
     }
 
+    public fun pre_deposit_external_coin_for_testing<T>(
+        env: &mut BridgeEnv,
+        sender: address,
+        source_chain: u8,
+        source_address:vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+     ) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+
+        bridge.pre_deposit_external_coin<T>(
+            source_chain, 
+            source_address, 
+            target_address, 
+            amount, tx_hash, 
+            vector::empty(),
+            scenario.ctx(),
+        );
+
+        test_scenario::return_shared(bridge);
+    }
+
     public fun deposit_external_coin_for_testing<T>(
         bridge: &mut Bridge,
         source_chain: u8,
@@ -893,6 +918,7 @@ module bridge::bridge_env {
             source_address, 
             target_address, 
             amount, tx_hash, 
+            vector::empty(),
             ctx,
         );
     }
@@ -908,6 +934,7 @@ module bridge::bridge_env {
             target_chain,
             target_address,
             token,
+            vector::empty(),
             ctx,
         );
      }
@@ -1452,7 +1479,13 @@ module bridge::bridge_env {
         amount: u64,
         tx_hash: ascii::String,
     ) {
-        let record = bridge.find_external_bridge_record(tx_hash);
+        let record = bridge.find_external_bridge_record(
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        );
         assert!(record.is_some());
         let r: ExternalBridgeRecord = record.destroy_some();
         let (

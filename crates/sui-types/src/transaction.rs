@@ -1897,6 +1897,32 @@ impl TransactionData {
         ))
     }
 
+    pub fn new_move_call_with_split_gas_coins(
+        sender: SuiAddress,
+        package: ObjectID,
+        module: Identifier,
+        function: Identifier,
+        type_arguments: Vec<TypeTag>,
+        gas_payment: Vec<ObjectRef>,
+        arguments: Vec<CallArg>,
+        gas_budget: u64,
+        gas_price: u64,
+    ) -> anyhow::Result<Self> {
+        let pt = {
+            let mut builder = ProgrammableTransactionBuilder::new();
+            let arg= builder.split_coins(gas_budget);
+            builder.move_call_with_args(package, module, function, type_arguments, arguments,vec![arg])?;
+            builder.finish()
+        };
+        Ok(Self::new_programmable(
+            sender,
+            gas_payment,
+            pt,
+            gas_budget,
+            gas_price,
+        ))
+    }
+
     pub fn new_transfer(
         recipient: SuiAddress,
         object_ref: ObjectRef,

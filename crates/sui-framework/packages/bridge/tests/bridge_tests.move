@@ -23,6 +23,7 @@ use bridge::bridge::{
     Bridge
 };
 use bridge::bridge_env::{
+    pre_deposit_external_coin_for_testing,
     deposit_external_coin_for_testing,
     withdraw_external_coin_for_testing,
     btc_id,
@@ -303,6 +304,141 @@ fun test_btc_bridge_add_remove_external_coin_admin() {
 }
 
 #[test]
+#[expected_failure(abort_code = bridge::bridge::EUnpassedMultiSignature)]
+fun test_btc_bridge_deposit_without_multi_signature() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let sender = @0xABCD;
+    let source_address = x"000000000000000000000000000000000000000000000000000000000000000b";
+    let target_address = address::to_bytes(sender);
+
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EUnpassedMultiSignature)]
+fun test_btc_bridge_deposit_with_insufficient_multi_signature() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let sender1 = @0xA;
+    let sender2 = @0xB;
+    let sender3 = @0xC;
+    let source_address = x"000000000000000000000000000000000000000000000000000000000000000b";
+    let target_address = address::to_bytes(sender1);
+
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_admin( coin_type, sender1.to_ascii_string());
+    env.add_external_coin_admin( coin_type, sender2.to_ascii_string());
+    env.add_external_coin_admin( coin_type, sender3.to_ascii_string());
+
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.destroy_env();
+}
+
+#[test]
+fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let sender1 = @0xA;
+    let sender2 = @0xB;
+    let sender3 = @0xC;
+    let source_address = x"000000000000000000000000000000000000000000000000000000000000000b";
+    let target_address = address::to_bytes(sender1);
+
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_admin( coin_type, sender1.to_ascii_string());
+    env.add_external_coin_admin( coin_type, sender2.to_ascii_string());
+    env.add_external_coin_admin( coin_type, sender3.to_ascii_string());
+
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender2,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender1,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.destroy_env();
+}
+
+#[test]
 fun test_btc_bridge_deposit_and_withdraw_external_btc() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
@@ -314,6 +450,59 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc() {
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
     env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+
+    env.destroy_env();
+}
+
+#[test]
+#[expected_failure(abort_code = bridge::bridge::EDuplicatedMessage)]
+fun test_btc_bridge_recall_deposit_and_withdraw_external_btc() {
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+
+    let sender = @0xABCD;
+    let source_address = x"000000000000000000000000000000000000000000000000000000000000000b";
+    let target_address = address::to_bytes(sender);
+
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
 
     env.deposit_and_withdraw_external_coin<BTC>(
         sender,
@@ -341,6 +530,15 @@ fun test_btc_bridge_deposit_and_withdraw_external_btc_after_remove_admin_cap() {
     let type_name = type_name::get<BTC>();
     let coin_type = type_name.into_string();
     env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        100,
+        ascii::string(b"ddd"),
+    );
 
     env.deposit_and_withdraw_external_coin<BTC>(
         sender,

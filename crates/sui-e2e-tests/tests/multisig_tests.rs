@@ -848,7 +848,7 @@ async fn sim_test_random_zklogin_in_multisig() {
     let _ = context.execute_transaction_must_succeed(tx).await;
 }
 #[sim_test]
-async fn test_multisig_legacy_works() {
+async fn sim_test_multisig_legacy_works() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let rgp = test_cluster.get_reference_gas_price().await;
 
