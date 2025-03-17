@@ -8,7 +8,7 @@ description: tests/shell_tests/new_tests/new_then_build.sh
 
 # tests that sui move new followed by sui move build succeeds
 
-sui move new example
+bfc move new example
 
 # we mangle the generated toml file to replace the framework dependency with a local dependency
 FRAMEWORK_DIR=$(echo $CARGO_MANIFEST_DIR | sed 's#/crates/sui##g')
@@ -20,7 +20,7 @@ cat example/Move.toml \
   > Move.toml
 mv Move.toml example/Move.toml
 
-cd example && sui move build
+cd example && bfc move build
 
 ----- results -----
 success: true
