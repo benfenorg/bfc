@@ -4,6 +4,7 @@
 pub mod abi;
 pub mod aml;
 pub mod action_executor;
+pub mod btc_query;
 pub mod client;
 pub mod config;
 pub mod crypto;
