@@ -8,7 +8,7 @@ use sui_rpc_api::proto::node::v2::GetCommitteeRequest;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn get_committee() {
+async fn sim_get_committee() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();

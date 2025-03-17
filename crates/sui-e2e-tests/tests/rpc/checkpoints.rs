@@ -15,7 +15,7 @@ use test_cluster::TestClusterBuilder;
 use crate::{stake_with_validator, transfer_coin};
 
 #[sim_test]
-async fn list_checkpoint() {
+async fn sim_list_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
@@ -37,7 +37,7 @@ async fn list_checkpoint() {
 }
 
 #[sim_test]
-async fn get_checkpoint() {
+async fn sim_get_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
@@ -163,7 +163,7 @@ async fn get_checkpoint() {
 }
 
 #[sim_test]
-async fn get_full_checkpoint() {
+async fn sim_get_full_checkpoint() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let transaction_digest = stake_with_validator(&test_cluster).await;
@@ -419,7 +419,7 @@ async fn get_full_checkpoint() {
 }
 
 #[sim_test]
-async fn subscribe_checkpoint() {
+async fn sim_subscribe_checkpoint() {
     use sui_rpc_api::proto::node::v2alpha::subscription_service_client::SubscriptionServiceClient;
     use sui_rpc_api::proto::node::v2alpha::SubscribeCheckpointsRequest;
     use tokio_stream::StreamExt;

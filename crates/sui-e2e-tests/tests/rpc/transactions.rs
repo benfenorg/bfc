@@ -13,7 +13,7 @@ use test_cluster::TestClusterBuilder;
 use crate::{stake_with_validator, transfer_coin};
 
 #[sim_test]
-async fn get_transaction() {
+async fn sim_get_transaction() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let transaction_digest = stake_with_validator(&test_cluster).await;
@@ -132,7 +132,7 @@ async fn get_transaction() {
 }
 
 #[sim_test]
-async fn list_transactions() {
+async fn sim_list_transactions() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;

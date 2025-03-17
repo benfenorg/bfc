@@ -81,7 +81,7 @@ async fn test_shell_snapshot(path: &Path) -> datatest_stable::Result<()> {
 
 /// return the path to the `sui` binary that is currently under test
 fn get_sui_bin_path() -> String {
-    get_cargo_bin("sui")
+    get_cargo_bin("bfc")
         .parent()
         .unwrap()
         .to_str()

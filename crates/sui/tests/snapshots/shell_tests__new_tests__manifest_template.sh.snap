@@ -6,7 +6,7 @@ description: tests/shell_tests/new_tests/manifest_template.sh
 # Copyright (c) Mysten Labs, Inc.
 # SPDX-License-Identifier: Apache-2.0
 
-sui move new example
+bfc move new example
 cat example/Move.toml
 
 ----- results -----
@@ -20,7 +20,7 @@ edition = "2024.beta" # edition = "legacy" to use legacy (pre-2024) Move
 # authors = ["..."]      # e.g., ["Joe Smith (joesmith@noemail.com)", "John Snow (johnsnow@noemail.com)"]
 
 [dependencies]
-Sui = { git = "https://github.com/MystenLabs/sui.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/testnet", override = true }
+Sui = { git = "https://github.com/benfenorg/bfc.git", subdir = "crates/sui-framework/packages/sui-framework", rev = "framework/devnet" , override = true}
 
 # For remote import, use the `{ git = "...", subdir = "...", rev = "..." }`.
 # Revision can be a branch, a tag, and a commit hash.

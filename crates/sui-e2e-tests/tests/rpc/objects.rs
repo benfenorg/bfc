@@ -12,7 +12,7 @@ use sui_sdk_types::ObjectId;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn get_object() {
+async fn sim_get_object() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let id: ObjectId = "0x5".parse().unwrap();

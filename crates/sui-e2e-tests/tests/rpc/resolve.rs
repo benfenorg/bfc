@@ -17,7 +17,7 @@ use sui_types::effects::TransactionEffectsAPI;
 use test_cluster::TestClusterBuilder;
 
 #[sim_test]
-async fn resolve_transaction_simple_transfer() {
+async fn sim_resolve_transaction_simple_transfer() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
@@ -79,7 +79,7 @@ async fn resolve_transaction_simple_transfer() {
 }
 
 #[sim_test]
-async fn resolve_transaction_transfer_with_sponsor() {
+async fn sim_resolve_transaction_transfer_with_sponsor() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
@@ -161,7 +161,7 @@ async fn resolve_transaction_transfer_with_sponsor() {
 }
 
 #[sim_test]
-async fn resolve_transaction_borrowed_shared_object() {
+async fn sim_resolve_transaction_borrowed_shared_object() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
@@ -213,7 +213,7 @@ async fn resolve_transaction_borrowed_shared_object() {
 }
 
 #[sim_test]
-async fn resolve_transaction_mutable_shared_object() {
+async fn sim_resolve_transaction_mutable_shared_object() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
@@ -290,7 +290,7 @@ async fn resolve_transaction_mutable_shared_object() {
 }
 
 #[sim_test]
-async fn resolve_transaction_insufficient_gas() {
+async fn sim_resolve_transaction_insufficient_gas() {
     let test_cluster = TestClusterBuilder::new().build().await;
     let rest_client = RestClient::new(test_cluster.rpc_url()).unwrap();
 
@@ -333,7 +333,7 @@ fn assert_contains(haystack: &str, needle: &str) {
 }
 
 #[sim_test]
-async fn resolve_transaction_with_raw_json() {
+async fn sim_resolve_transaction_with_raw_json() {
     let test_cluster = TestClusterBuilder::new().build().await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
