@@ -67,7 +67,7 @@ use crate::handlers::pending_reward_handler::PendingReward;
 use crate::models::pending_reward::StakePendingItem;
 use crate::models::stake_reward::{StakeRewardDetail};
 
-const MAX_PARALLEL_DOWNLOADS: usize = 12;
+const MAX_PARALLEL_DOWNLOADS: usize = 180;
 const DOWNLOAD_RETRY_INTERVAL_IN_SECS: u64 = 10;
 const DB_COMMIT_RETRY_INTERVAL_IN_MILLIS: u64 = 100;
 const MULTI_GET_CHUNK_SIZE: usize = 50;
