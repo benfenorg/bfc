@@ -21,10 +21,7 @@ impl RpcService {
         checkpoint: Option<CheckpointId>,
         options: GetCheckpointOptions,
     ) -> Result<CheckpointResponse> {
-        let SignedCheckpointSummary {
-            checkpoint,
-            signature,
-        } = match checkpoint {
+        let checkpoint_envelope = match checkpoint {
             Some(checkpoint_id @ CheckpointId::SequenceNumber(s)) => {
                 let oldest_checkpoint = self.reader.inner().get_lowest_available_checkpoint()?;
                 if s < oldest_checkpoint {
@@ -46,17 +43,16 @@ impl RpcService {
                 .ok_or(CheckpointNotFoundError(checkpoint_id))?,
             None => self.reader.inner().get_latest_checkpoint()?,
         }
-            .into_inner()
-            .try_into()?;
+            .into_inner();
 
         let (contents, contents_bcs) =
             if options.include_contents() || options.include_contents_bcs() {
                 let contents: CheckpointContents = self
                     .reader
                     .inner()
-                    .get_checkpoint_contents_by_sequence_number(checkpoint.sequence_number)
+                    .get_checkpoint_contents_by_sequence_number(checkpoint_envelope.sequence_number)
                     .ok_or(CheckpointNotFoundError(CheckpointId::SequenceNumber(
-                        checkpoint.sequence_number,
+                        checkpoint_envelope.sequence_number,
                     )))?
                     .try_into()?;
 
@@ -72,15 +68,54 @@ impl RpcService {
 
         let summary_bcs = options
             .include_summary_bcs()
-            .then(|| bcs::to_bytes(&checkpoint))
+            .then(|| bcs::to_bytes(&checkpoint_envelope))
             .transpose()?;
 
+        let summary = sui_sdk_types::CheckpointSummary {
+            epoch: checkpoint_envelope.epoch,
+            sequence_number: *checkpoint_envelope.sequence_number(),
+            network_total_transactions: checkpoint_envelope.network_total_transactions,
+            content_digest: sui_sdk_types::CheckpointContentsDigest::new(*checkpoint_envelope.content_digest.inner()),
+            previous_digest: checkpoint_envelope.previous_digest.map(|d | sui_sdk_types::CheckpointDigest::new(*d.inner())),
+            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::GasCostSummary {
+                base_point: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.base_point,
+                rate: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.rate,
+                computation_cost: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.computation_cost,
+                storage_cost: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.storage_cost,
+                storage_rebate: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
+                non_refundable_storage_fee: checkpoint_envelope.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
+            },
+            timestamp_ms: checkpoint_envelope.timestamp_ms,
+            checkpoint_commitments: checkpoint_envelope.checkpoint_commitments.clone().into_iter().map(|c |
+                sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
+                    sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
+                        sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
+                        ),
+                }}).collect(),
+            end_of_epoch_data: checkpoint_envelope.end_of_epoch_data.clone().map(|c | sui_sdk_types::EndOfEpochData {
+                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
+                    sui_sdk_types::ValidatorCommitteeMember {
+                        public_key: sui_sdk_types::Bls12381PublicKey::new(next_epoch_committee.0.0),
+                        stake: next_epoch_committee.1,
+                    }
+                }).collect(),
+                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
+                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
+                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
+                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
+                            sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
+                            ),
+                    }}).collect(),
+            }),
+            version_specific_data: checkpoint_envelope.version_specific_data.clone(),
+        };
+
         CheckpointResponse {
-            sequence_number: checkpoint.sequence_number,
-            digest: checkpoint.digest(),
-            summary: options.include_summary().then_some(checkpoint),
+            sequence_number: checkpoint_envelope.sequence_number,
+            digest: (*checkpoint_envelope.digest()).into(),
+            summary: options.include_summary().then_some(summary),
             summary_bcs,
-            signature: options.include_signature().then_some(signature),
+            signature: options.include_signature().then_some(checkpoint_envelope.into_sig().into()),
             contents,
             contents_bcs,
         }
