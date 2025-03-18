@@ -16,7 +16,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::BridgeOrchestratorTables;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::EthLog;
+use crate::types::{BridgeAction, EthLog, EthToSuiBridgeAction};
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
@@ -264,6 +264,20 @@ where
 
                 match bridge_event.try_into_bridge_action(log.tx_hash, log.log_index_in_tx) {
                     Ok(Some(action)) => {
+                        if action.is_stable_coin() {
+                            match action {
+                                BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                                    action_inner.eth_bridge_event.stable_coin_convertor();
+                                    let action = EthToSuiBridgeAction{
+                                        eth_tx_hash: action_inner.eth_tx_hash,
+                                        eth_event_index: action_inner.eth_event_index,
+                                        eth_bridge_event: action_inner.eth_bridge_event,
+                                    };
+                                    actions.push(action);
+                                },
+                                _ => {}
+                            }
+                        }
                         metrics.last_observed_actions_seq_num.with_label_values(&[
                             action.chain_id().to_string().as_str(),
                             action.action_type().to_string().as_str(),

@@ -72,6 +72,7 @@ pub const TOKEN_ID_BTC: u64 = 1;
 pub const TOKEN_ID_ETH: u64 = 2;
 pub const TOKEN_ID_USDC: u64 = 3;
 pub const TOKEN_ID_USDT: u64 = 4;
+pub const TOKEN_ID_BUSD: u64 = 5;
 
 #[derive(
     Debug,
