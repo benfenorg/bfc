@@ -26,7 +26,7 @@ use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
 use sui_types::bridge::{
-    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER
+    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT
 };
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
@@ -525,6 +525,13 @@ impl BridgeAction {
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
+        }
+    }
+
+    pub fn is_stable_coin(&self) -> bool {
+        match self {
+            BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.token_id ==TOKEN_ID_USDC || a.eth_bridge_event.token_id ==TOKEN_ID_USDT,
+            _ => false,
         }
     }
 }

@@ -24,7 +24,7 @@ use ethers::{
 };
 use serde::{Deserialize, Serialize};
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::BridgeChainId;
+use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD};
 
 macro_rules! gen_eth_events {
     ($($contract:ident, $contract_event:ident, $abi_path:literal),* $(,)?) => {
@@ -195,6 +195,11 @@ impl EthToSuiTokenBridgeV1 {
 
     pub fn set_event_idx(&mut self, event_idx: u8) {
         self.event_idx = event_idx;
+    }
+
+    pub fn stable_coin_convertor(&mut self) {
+        self.token_id = TOKEN_ID_BUSD;
+        self.sui_adjusted_amount = self.sui_adjusted_amount * 1000;
     }
 }
 
