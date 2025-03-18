@@ -729,8 +729,8 @@ anemo-cli = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697e
 anemo-tower = { git = "https://github.com/mystenlabs/anemo.git", rev = "e609f7697ed6169bf0760882a0b6c032a57e4f3b" }
 
 # sui-sdk-types = { version = "0.0.1", features = ["hash", "serde", "schemars"] }
-sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "3542ac167c758a4100abe506bbd57e7116195fff", features = ["hash", "serde"] }
-sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "3542ac167c758a4100abe506bbd57e7116195fff", package = "sui-transaction-builder" }
+sui-sdk-types = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "e00b66d51721d3100d00e8a52061254e2d91910a", features = ["hash", "serde"] }
+sui-sdk-transaction-builder = { git = "https://github.com/hellokittyboy-code/bfc-rust-sdk.git", rev = "e00b66d51721d3100d00e8a52061254e2d91910a", package = "sui-transaction-builder" }
 
 ### Workspace Members ###
 anemo-benchmark = { path = "crates/anemo-benchmark" }

@@ -66,11 +66,6 @@ impl RpcService {
                 (None, None)
             };
 
-        let summary_bcs = options
-            .include_summary_bcs()
-            .then(|| bcs::to_bytes(&checkpoint_envelope))
-            .transpose()?;
-
         let summary = sui_sdk_types::CheckpointSummary {
             epoch: checkpoint_envelope.epoch,
             sequence_number: *checkpoint_envelope.sequence_number(),
@@ -109,6 +104,11 @@ impl RpcService {
             }),
             version_specific_data: checkpoint_envelope.version_specific_data.clone(),
         };
+
+        let summary_bcs = options
+            .include_summary_bcs()
+            .then(|| bcs::to_bytes(&summary))
+            .transpose()?;
 
         CheckpointResponse {
             sequence_number: checkpoint_envelope.sequence_number,
