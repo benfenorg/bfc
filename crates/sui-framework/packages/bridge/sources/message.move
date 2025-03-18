@@ -16,7 +16,7 @@ module bridge::message {
     const EEmptyList: u64 = 2;
     const EInvalidMessageType: u64 = 3;
     const EInvalidEmergencyOpType: u64 = 4;
-    const EInvalidPayloadLength: u64 = 5;
+    // const EInvalidPayloadLength: u64 = 5;
     const EMustBeTokenMessage: u64 = 6;
     const EInvalidOperationType: u64 = 7;
     // Emergency Op types
