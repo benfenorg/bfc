@@ -248,6 +248,7 @@ pub struct BridgeInnerV1 {
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub external_bridge_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
+    pub pre_deposit_multi_signature_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,

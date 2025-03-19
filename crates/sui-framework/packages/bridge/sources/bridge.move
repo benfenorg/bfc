@@ -63,7 +63,7 @@ module bridge::bridge {
         token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
         external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
         // tx hash : [signature addresses]
-        pre_deposit_multi_signature_records: VecMap<ExternalBridgeMessageKey, VecSet<String>>,
+        pre_deposit_multi_signature_records: LinkedTable<ExternalBridgeMessageKey, VecSet<String>>,
         limiter: TransferLimiter,
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
@@ -240,7 +240,7 @@ module bridge::bridge {
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
             external_bridge_records: linked_table::new(ctx),
-            pre_deposit_multi_signature_records: vec_map::empty(),
+            pre_deposit_multi_signature_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
@@ -615,16 +615,19 @@ module bridge::bridge {
             amount,
             tx_hash,
         };
-        let records = inner.pre_deposit_multi_signature_records.try_get(&key);
-        if (records.is_none()) {
-            inner.pre_deposit_multi_signature_records.insert(key, vec_set::empty());
-        };
-        let records = inner.pre_deposit_multi_signature_records.get_mut(&key);
-        if (records.contains(&sender_str)) {
-            return
+        if (inner.pre_deposit_multi_signature_records.contains(key)) {
+            let records = &mut inner.pre_deposit_multi_signature_records[key];
+            if (records.contains(&sender_str)) {
+                return
+            };
+
+            records.insert(sender_str);
+        } else {
+            let mut records = vec_set::empty();
+            records.insert(sender_str);
+            inner.pre_deposit_multi_signature_records.push_back(key, records);
         };
         
-        records.insert(sender_str);
         emit(
             ExternalPreDepositedEvent {
                 tx_hash,
@@ -920,10 +923,10 @@ module bridge::bridge {
         coin_type: String,
     ): bool {
         // check then add to pre_deposit_multi_signature_records
-        let records = inner.pre_deposit_multi_signature_records.try_get(&key);
-        if (records.is_some()) {
+        if (inner.pre_deposit_multi_signature_records.contains(key)) {
+            let records = inner.pre_deposit_multi_signature_records[key];
             // if pre_deposit_multi_signature_records > 50% 
-            let signed = records.destroy_some().size();
+            let signed = records.size();
             let len = inner.treasury.external_coin_admin_count(coin_type);
             if (signed * 2 > len) {
                 return true
@@ -1231,7 +1234,7 @@ module bridge::bridge {
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
             external_bridge_records: linked_table::new(ctx),
-            pre_deposit_multi_signature_records: vec_map::empty(),
+            pre_deposit_multi_signature_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
