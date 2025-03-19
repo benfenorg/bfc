@@ -146,9 +146,9 @@ contract DeployBridge is Script {
         }
 
         // convert Token Id from uint256 to uint8
-        uint8[] memory tokenIds = new uint8[](deployConfig.tokenIds.length);
+        uint64[] memory tokenIds = new uint64[](deployConfig.tokenIds.length);
         for (uint256 i; i < deployConfig.tokenIds.length; i++) {
-            tokenIds[i] = uint8(deployConfig.tokenIds[i]);
+            tokenIds[i] = uint64(deployConfig.tokenIds[i]);
         }
 
         address bridgeConfig = Upgrades.deployUUPSProxy(
