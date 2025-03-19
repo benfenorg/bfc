@@ -185,7 +185,7 @@ title: Module `0xb::bridge`
 
 </dd>
 <dt>
-<code>pre_deposit_multi_signature_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">bridge::ExternalBridgeMessageKey</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;</code>
+<code>pre_deposit_multi_signature_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_LinkedTable">linked_table::LinkedTable</a>&lt;<a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">bridge::ExternalBridgeMessageKey</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;</code>
 </dt>
 <dd>
 
@@ -1321,7 +1321,7 @@ title: Module `0xb::bridge`
         <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: treasury::create(ctx),
         token_transfer_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
         external_bridge_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
-        pre_deposit_multi_signature_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        pre_deposit_multi_signature_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
         <a href="limiter.md#0xb_limiter">limiter</a>: <a href="limiter.md#0xb_limiter_new">limiter::new</a>(),
         paused: <b>false</b>,
         refund_records: <a href="../sui-framework/linked_table.md#0x2_linked_table_new">linked_table::new</a>(ctx),
@@ -1920,16 +1920,19 @@ title: Module `0xb::bridge`
         amount,
         tx_hash,
     };
-    <b>let</b> records = inner.pre_deposit_multi_signature_records.try_get(&key);
-    <b>if</b> (records.is_none()) {
-        inner.pre_deposit_multi_signature_records.insert(key, <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>());
-    };
-    <b>let</b> records = inner.pre_deposit_multi_signature_records.get_mut(&key);
-    <b>if</b> (records.contains(&sender_str)) {
-        <b>return</b>
+    <b>if</b> (inner.pre_deposit_multi_signature_records.contains(key)) {
+        <b>let</b> records = &<b>mut</b> inner.pre_deposit_multi_signature_records[key];
+        <b>if</b> (records.contains(&sender_str)) {
+            <b>return</b>
+        };
+
+        records.insert(sender_str);
+    } <b>else</b> {
+        <b>let</b> <b>mut</b> records = <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>();
+        records.insert(sender_str);
+        inner.pre_deposit_multi_signature_records.push_back(key, records);
     };
 
-    records.insert(sender_str);
     emit(
         <a href="bridge.md#0xb_bridge_ExternalPreDepositedEvent">ExternalPreDepositedEvent</a> {
             tx_hash,
@@ -2353,10 +2356,10 @@ title: Module `0xb::bridge`
     coin_type: String,
 ): bool {
     // check then add <b>to</b> pre_deposit_multi_signature_records
-    <b>let</b> records = inner.pre_deposit_multi_signature_records.try_get(&key);
-    <b>if</b> (records.is_some()) {
+    <b>if</b> (inner.pre_deposit_multi_signature_records.contains(key)) {
+        <b>let</b> records = inner.pre_deposit_multi_signature_records[key];
         // <b>if</b> pre_deposit_multi_signature_records &gt; 50%
-        <b>let</b> signed = records.destroy_some().size();
+        <b>let</b> signed = records.size();
         <b>let</b> len = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.external_coin_admin_count(coin_type);
         <b>if</b> (signed * 2 &gt; len) {
             <b>return</b> <b>true</b>
