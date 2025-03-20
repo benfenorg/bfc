@@ -6,7 +6,7 @@
 //! 2. updates WAL table and cursor tables
 //! 2. hands actions to `BridgeExecutor` for execution
 
-use crate::abi::EthBridgeEvent;
+use crate::abi::{EthBridgeEvent, EthToSuiTokenBridgeV1};
 use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
@@ -19,6 +19,7 @@ use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, EthLog, EthToSuiBridgeAction};
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
+use sui_types::bridge::TOKEN_ID_BUSD;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
@@ -264,25 +265,39 @@ where
 
                 match bridge_event.try_into_bridge_action(log.tx_hash, log.log_index_in_tx) {
                     Ok(Some(action)) => {
-                        if action.is_stable_coin() {
-                            match action {
-                                BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                                    action_inner.eth_bridge_event.stable_coin_convertor();
-                                    let action = EthToSuiBridgeAction{
-                                        eth_tx_hash: action_inner.eth_tx_hash,
-                                        eth_event_index: action_inner.eth_event_index,
-                                        eth_bridge_event: action_inner.eth_bridge_event,
-                                    };
-                                    actions.push(action);
-                                },
-                                _ => {}
-                            }
-                        }
                         metrics.last_observed_actions_seq_num.with_label_values(&[
                             action.chain_id().to_string().as_str(),
                             action.action_type().to_string().as_str(),
                         ]);
-                        actions.push(action)
+                        let (token_id, sui_adjusted_amount) = Self::get_stable_coin_convertor(&action).await;
+                        if token_id == TOKEN_ID_BUSD {
+                            match action {
+                                BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                                    let action = EthToSuiBridgeAction{
+                                        eth_tx_hash: action_inner.eth_tx_hash,
+                                        eth_event_index: action_inner.eth_event_index,
+                                        eth_bridge_event: EthToSuiTokenBridgeV1{
+                                            nonce: action_inner.eth_bridge_event.nonce,
+                                            sui_chain_id: action_inner.eth_bridge_event.sui_chain_id,
+                                            eth_chain_id: action_inner.eth_bridge_event.eth_chain_id,
+                                            sui_address: action_inner.eth_bridge_event.sui_address,
+                                            eth_address: action_inner.eth_bridge_event.eth_address,
+                                            token_id: token_id,
+                                            sui_adjusted_amount: sui_adjusted_amount,
+                                            tx_hash: action_inner.eth_bridge_event.tx_hash,
+                                            event_idx: action_inner.eth_bridge_event.event_idx,
+                                        },
+                                    };
+                                    tracing::info!("bbking action: {:?}", action);
+                                    println!("bbking action: {:?}", action);
+                                    actions.push(BridgeAction::EthToSuiBridgeAction(action));
+                                },
+                                _ => {}
+                            }
+                            
+                        }else{
+                            actions.push(action);
+                        }
                     }
                     Ok(None) => {}
                     Err(e) => {
@@ -310,6 +325,21 @@ where
                 .expect("Store operation should not fail");
         }
         panic!("Eth event channel was closed");
+    }
+
+    pub async fn get_stable_coin_convertor(action: &BridgeAction) -> (u64, u64) {
+        if !action.is_stable_coin() {
+            return (0, 0);
+        }
+        let (token_id, sui_adjusted_amount) = match action {
+            BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                action_inner.eth_bridge_event.stable_coin_convertor()
+            }
+            _ => {
+                (0, 0)
+            }
+        };
+        (token_id, sui_adjusted_amount)
     }
 }
 

@@ -197,9 +197,8 @@ impl EthToSuiTokenBridgeV1 {
         self.event_idx = event_idx;
     }
 
-    pub fn stable_coin_convertor(&mut self) {
-        self.token_id = TOKEN_ID_BUSD;
-        self.sui_adjusted_amount = self.sui_adjusted_amount * 1000;
+    pub fn stable_coin_convertor(&self) -> (u64, u64) {
+        (TOKEN_ID_BUSD, self.sui_adjusted_amount * 1000)
     }
 }
 
