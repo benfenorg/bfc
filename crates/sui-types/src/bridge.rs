@@ -388,6 +388,7 @@ impl BridgeTrait for BridgeInnerV1 {
 pub struct MoveTypeBridgeTreasury {
     pub external_coin_admin_address: VecMap<String, VecSet<String>>,
     pub external_coin_target_address: VecMap<String, VecSet<String>>,
+    pub external_coin_witness_address: VecMap<String, VecSet<Vec<u8>>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
