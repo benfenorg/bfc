@@ -249,6 +249,7 @@ pub struct BridgeInnerV1 {
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub external_bridge_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
+    pub pre_deposit_multi_signature_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
@@ -387,6 +388,7 @@ impl BridgeTrait for BridgeInnerV1 {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTreasury {
     pub external_coin_admin_address: VecMap<String, VecSet<String>>,
+    pub external_coin_target_address: VecMap<String, VecSet<String>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name

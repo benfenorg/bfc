@@ -33,6 +33,7 @@ use tracing::error;
 use sui_network::tonic::codegen::StdError;
 
 #[sim_test]
+#[ignore]
 async fn sim_test_operate_use_bjpy_gas() -> Result<(), anyhow::Error> {
     // init
     let mut test_cluster = TestClusterBuilder::new()

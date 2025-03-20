@@ -36,6 +36,7 @@ module bridge::treasury {
     public struct BridgeTreasury has store {
         // “0x00::btc::BTC”:Set<address>
         external_coin_admin_address: VecMap<String, VecSet<String>>,
+        external_coin_target_address: VecMap<String, VecSet<String>>,
 
         // token treasuries, values are TreasuryCaps for native bridge V1.
         treasuries: ObjectBag,
@@ -173,6 +174,7 @@ module bridge::treasury {
     public(package) fun create(ctx: &mut TxContext): BridgeTreasury {
         BridgeTreasury {
             external_coin_admin_address: vec_map::empty(),
+            external_coin_target_address: vec_map::empty(),
             treasuries: object_bag::new(ctx),
             supported_tokens: vec_map::empty(),
             id_token_type_map: vec_map::empty(),
