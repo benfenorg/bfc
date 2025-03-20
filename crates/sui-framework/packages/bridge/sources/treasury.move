@@ -285,7 +285,7 @@ module bridge::treasury {
     ):bool{
         let coin_type = type_name::into_string(type_name::get<T>());
 
-        let bitcoin_message=message::new_bitcoin_message(
+        let bitcoin_message=message::create_bitcoin_message(
             source_chain,
             source_address,
             target_address,

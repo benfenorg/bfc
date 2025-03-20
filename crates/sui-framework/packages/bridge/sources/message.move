@@ -357,7 +357,7 @@ module bridge::message {
         message
     }
 
-    public fun new_bitcoin_message (
+    public fun create_bitcoin_message (
         source_chain: u8,
         source_address: vector<u8>,
         target_address: vector<u8>,
