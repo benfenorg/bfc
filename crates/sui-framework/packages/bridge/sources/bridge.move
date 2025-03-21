@@ -20,6 +20,7 @@ module bridge::bridge {
     use bridge::message::{
         Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
         AddExternalCoinAdmin, RemoveExternalCoinAdmin,RefundMessageKey,
+        AddExternalCoinWitness,RemoveExternalCoinWitness,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
@@ -130,6 +131,7 @@ module bridge::bridge {
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
+    const EUnpassedWitnessSignature: u64=33;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -581,7 +583,15 @@ module bridge::bridge {
         } else if (message_type == message_types::refund_admin_operate()) {
             let payload = message.extract_refund_admin_payload();
             inner.execute_refund_admin_operate(payload);
-        } else {
+        } else if  (message_type == message_types::add_bitcoin_witness()){
+            let payload = message.extract_add_witness_poyload();
+            inner.execute_add_external_coin_witness(payload);
+
+        }else if  (message_type == message_types::remove_bitcoin_witness()){
+            let payload = message.extract_remove_witness_poyload();
+            inner.execute_remove_external_coin_witness(payload);
+
+        }else {
             abort EUnexpectedMessageType
         };
     }
@@ -601,6 +611,7 @@ module bridge::bridge {
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender_str)) {
@@ -664,13 +675,15 @@ module bridge::bridge {
         target_address: vector<u8>,
         amount: u64,
         tx_hash: ascii::String,
-        _signatures: vector<u8>,
+        signatures: vector<u8>,
         ctx: &mut TxContext
     ) {
         let sender = ctx.sender();
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
+
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
@@ -1105,6 +1118,20 @@ module bridge::bridge {
         inner.treasury.remove_external_coin_admin(
             payload.remove_external_coin_admin_payload_coin_type(),
             payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_add_external_coin_witness(inner: &mut BridgeInner, payload: AddExternalCoinWitness) {
+        inner.treasury.add_external_coin_witness(
+            payload.add_external_coin_witness_payload_coin_type(),
+            payload.add_external_coin_witness_payload_witness_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_witness(inner: &mut BridgeInner, payload: RemoveExternalCoinWitness) {
+        inner.treasury.remove_external_coin_witness(
+            payload.remove_external_coin_witness_payload_coin_type(),
+            payload.remove_external_coin_witness_payload_witness_address(),
         )
     }
 
