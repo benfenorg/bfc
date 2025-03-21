@@ -27,6 +27,7 @@ pub fn build_sui_transaction(
     gas_object_ref: &ObjectRef,
     action: VerifiedCertifiedBridgeAction,
     bridge_object_arg: ObjectArg,
+    admin_cap_arg: Option<ObjectArg>,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
@@ -38,6 +39,7 @@ pub fn build_sui_transaction(
             action,
             true,
             bridge_object_arg,
+            admin_cap_arg.unwrap(),
             sui_token_type_tags,
             rgp,
         ),
@@ -48,6 +50,7 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
+            admin_cap_arg.unwrap(),
             sui_token_type_tags,
             rgp,
         ),
@@ -57,6 +60,7 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
+            admin_cap_arg.unwrap(),
             sui_token_type_tags,
             rgp,
         ),
@@ -129,6 +133,7 @@ fn build_token_bridge_approve_transaction(
     action: VerifiedCertifiedBridgeAction,
     claim: bool,
     bridge_object_arg: ObjectArg,
+    admin_cap_arg: ObjectArg,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
@@ -222,7 +227,7 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
-    // let admin_cap = builder.obj(admin_cap_arg).unwrap();
+    let admin_cap = builder.obj(admin_cap_arg).unwrap();
 
     let mut sig_bytes = vec![];
     for (_, sig) in sigs.signatures {

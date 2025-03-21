@@ -191,6 +191,7 @@ where
                 execution_tx_clone,
                 execution_rx,
                 self.bridge_object_arg,
+                self.admin_cap,
                 self.sui_token_type_tags,
                 self.bridge_pause_rx,
                 metrics,
@@ -415,6 +416,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: ObjectArg,
+        admin_cap_arg: ObjectArg,
         sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
@@ -440,6 +442,7 @@ where
                 &store,
                 &execution_queue_sender,
                 &bridge_object_arg,
+                &admin_cap_arg,
                 &sui_token_type_tags,
                 &metrics,
             )
@@ -460,6 +463,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: &ObjectArg,
+        admin_cap_arg: &ObjectArg,
         sui_token_type_tags: &ArcSwap<HashMap<u64, TypeTag>>,
         metrics: &Arc<BridgeMetrics>,
     ) {
@@ -496,6 +500,7 @@ where
             &gas_object_ref,
             ceriticate_clone,
             *bridge_object_arg,
+            Some(*admin_cap_arg),
             sui_token_type_tags.load().as_ref(),
             rgp,
         ) {
@@ -730,6 +735,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -789,6 +795,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -843,6 +850,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -929,6 +937,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1070,6 +1079,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1200,6 +1210,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &id_token_map,
             1000,
         )
@@ -1388,6 +1399,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &maplit::hashmap! {
                 new_token_id => new_type_tag.clone()
             },
