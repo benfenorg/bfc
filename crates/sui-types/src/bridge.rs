@@ -471,6 +471,10 @@ pub struct MoveTypeBridgeMessageKey {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeExternalBridgeMessageKey {
+    pub source_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
     pub tx_hash: String,
 }
 
