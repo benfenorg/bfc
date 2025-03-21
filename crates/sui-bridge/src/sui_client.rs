@@ -12,7 +12,7 @@ use std::str::from_utf8;
 use std::sync::Arc;
 use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
-use sui_json_rpc_types::DevInspectResults;
+use sui_json_rpc_types::{DevInspectResults, SuiObjectData, SuiObjectDataFilter, SuiObjectResponseQuery};
 use sui_json_rpc_types::{EventFilter, Page, SuiEvent};
 use sui_json_rpc_types::{
     EventPage, SuiObjectDataOptions, SuiTransactionBlockResponse,
@@ -27,7 +27,7 @@ use sui_types::bridge::MoveTypeCommitteeMember;
 use sui_types::bridge::MoveTypeParsedTokenTransferMessage;
 use sui_types::gas_coin::GasCoin;
 use sui_types::object::Owner;
-use sui_types::parse_sui_type_tag;
+use sui_types::{parse_sui_struct_tag, parse_sui_type_tag};
 use sui_types::transaction::Argument;
 use sui_types::transaction::CallArg;
 use sui_types::transaction::Command;
@@ -108,6 +108,24 @@ where
 
     pub async fn notify_something_done(&self){
         self.inner.notify_something_done().await;
+    }
+
+    pub async fn get_object_for_cap_must_succeed(&self,address: SuiAddress, filter_tag: &str) -> ObjectArg {
+        static ARG: OnceCell<ObjectArg> = OnceCell::const_new();
+        *ARG.get_or_init(|| async move {
+            let Ok(Ok(object_cap_admin)) = retry_with_max_elapsed_time!(
+                self.inner.get_object_for_cap(address, filter_tag),
+                Duration::from_secs(30)
+            ) else {
+                panic!("Failed to get bridge object arg after retries");
+            };
+            ObjectArg::SharedObject {
+                id: object_cap_admin.object_id,
+                initial_shared_version: object_cap_admin.version,
+                mutable: true,
+            }
+        })
+        .await
     }
 
     /// Get the mutable bridge object arg on chain.
@@ -440,6 +458,8 @@ pub trait SuiClientInner: Send + Sync {
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error>;
 
+    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error>;
+
     async fn get_bridge_summary(&self) -> Result<BridgeSummary, Self::Error>;
 
     async fn execute_transaction_block_with_effects(
@@ -563,10 +583,6 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
-
-
-
-
     async fn get_token_transfer_action_onchain_signatures(
         &self,
         bridge_object_arg: ObjectArg,
@@ -643,6 +659,28 @@ impl SuiClientInner for SuiSdkClient {
 
     async fn notify_something_done(&self){
         //do nothing,just for testing
+    }
+
+    async fn get_object_for_cap(&self,address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error> {
+        let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
+        let data_option = SuiObjectDataOptions::new()
+            .with_type()
+            .with_owner()
+            .with_previous_transaction()
+            .with_content();
+        let objects = self.read_api().get_owned_objects(address, Some(SuiObjectResponseQuery::new(
+            Some(filter),
+            Some(data_option),
+        )), None, None).await?.data;
+        println!("objects: {:?}", objects);
+        if objects.is_empty() {
+            Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap")))
+        } else {
+            match objects.get(0).and_then(|obj| obj.data.as_ref()) {
+                Some(data) => Ok(data.clone()),
+                None => Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap index 0 is None"))),
+            }
+        }
     }
 }
 

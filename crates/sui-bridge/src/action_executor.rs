@@ -13,6 +13,7 @@ use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{
     SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse,
 };
+use sui_types::object::Object;
 use sui_types::transaction::ObjectArg;
 use sui_types::TypeTag;
 use sui_types::{
@@ -79,6 +80,7 @@ pub struct BridgeActionExecutor<C> {
     gas_object_id: ObjectID,
     store: Arc<BridgeOrchestratorTables>,
     bridge_object_arg: ObjectArg,
+    admin_cap: ObjectArg,
     sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
     bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
     metrics: Arc<BridgeMetrics>,
@@ -117,6 +119,9 @@ where
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await;
+        let admin_cap = sui_client
+            .get_object_for_cap_must_succeed(sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap")
+            .await;
         Self {
             sui_client,
             bridge_auth_agg,
@@ -124,7 +129,8 @@ where
             key,
             gas_object_id,
             sui_address,
-            bridge_object_arg,
+            bridge_object_arg, 
+            admin_cap,
             sui_token_type_tags,
             bridge_pause_rx,
             metrics,
