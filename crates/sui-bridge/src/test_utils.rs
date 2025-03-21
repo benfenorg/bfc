@@ -381,6 +381,7 @@ pub async fn approve_action_with_validator_secrets(
         &gas_obj_ref,
         action_certificate,
         bridge_obj_org,
+        None,
         id_token_map,
         rgp,
     )

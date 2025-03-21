@@ -276,17 +276,7 @@ where
                                     let action = EthToSuiBridgeAction{
                                         eth_tx_hash: action_inner.eth_tx_hash,
                                         eth_event_index: action_inner.eth_event_index,
-                                        eth_bridge_event: EthToSuiTokenBridgeV1{
-                                            nonce: action_inner.eth_bridge_event.nonce,
-                                            sui_chain_id: action_inner.eth_bridge_event.sui_chain_id,
-                                            eth_chain_id: action_inner.eth_bridge_event.eth_chain_id,
-                                            sui_address: action_inner.eth_bridge_event.sui_address,
-                                            eth_address: action_inner.eth_bridge_event.eth_address,
-                                            token_id: token_id,
-                                            sui_adjusted_amount: sui_adjusted_amount,
-                                            tx_hash: action_inner.eth_bridge_event.tx_hash,
-                                            event_idx: action_inner.eth_bridge_event.event_idx,
-                                        },
+                                        eth_bridge_event: EthToSuiTokenBridgeV1::try_from(action_inner.eth_bridge_event).unwrap(),
                                     };
                                     tracing::info!("bbking action: {:?}", action);
                                     println!("bbking action: {:?}", action);

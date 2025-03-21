@@ -13,6 +13,7 @@ use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{
     SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse,
 };
+use sui_types::object::Object;
 use sui_types::transaction::ObjectArg;
 use sui_types::TypeTag;
 use sui_types::{
@@ -79,6 +80,7 @@ pub struct BridgeActionExecutor<C> {
     gas_object_id: ObjectID,
     store: Arc<BridgeOrchestratorTables>,
     bridge_object_arg: ObjectArg,
+    admin_cap: ObjectArg,
     sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
     bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
     metrics: Arc<BridgeMetrics>,
@@ -117,6 +119,9 @@ where
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await;
+        let admin_cap = sui_client
+            .get_object_for_cap_must_succeed(sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap")
+            .await;
         Self {
             sui_client,
             bridge_auth_agg,
@@ -124,7 +129,8 @@ where
             key,
             gas_object_id,
             sui_address,
-            bridge_object_arg,
+            bridge_object_arg, 
+            admin_cap,
             sui_token_type_tags,
             bridge_pause_rx,
             metrics,
@@ -185,6 +191,7 @@ where
                 execution_tx_clone,
                 execution_rx,
                 self.bridge_object_arg,
+                self.admin_cap,
                 self.sui_token_type_tags,
                 self.bridge_pause_rx,
                 metrics,
@@ -409,6 +416,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: ObjectArg,
+        admin_cap_arg: ObjectArg,
         sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
@@ -434,6 +442,7 @@ where
                 &store,
                 &execution_queue_sender,
                 &bridge_object_arg,
+                &admin_cap_arg,
                 &sui_token_type_tags,
                 &metrics,
             )
@@ -454,6 +463,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: &ObjectArg,
+        admin_cap_arg: &ObjectArg,
         sui_token_type_tags: &ArcSwap<HashMap<u64, TypeTag>>,
         metrics: &Arc<BridgeMetrics>,
     ) {
@@ -490,6 +500,7 @@ where
             &gas_object_ref,
             ceriticate_clone,
             *bridge_object_arg,
+            Some(*admin_cap_arg),
             sui_token_type_tags.load().as_ref(),
             rgp,
         ) {
@@ -724,6 +735,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -783,6 +795,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -837,6 +850,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -923,6 +937,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1064,6 +1079,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1194,6 +1210,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &id_token_map,
             1000,
         )
@@ -1382,6 +1399,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &maplit::hashmap! {
                 new_token_id => new_type_tag.clone()
             },

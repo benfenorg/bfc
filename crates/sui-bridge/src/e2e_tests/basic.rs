@@ -653,7 +653,7 @@ async fn test_bridge_usdt_to_sui() {
         .build()
         .await;
 
-    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+    // let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
     let treasury_summary = bridge_test_cluster
         .bridge_client()

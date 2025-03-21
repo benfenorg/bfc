@@ -92,6 +92,7 @@ async fn test_sui_bridge_paused() {
         bridge_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await,
+        None,
         &sui_token_type_tags,
         1000,
     )
