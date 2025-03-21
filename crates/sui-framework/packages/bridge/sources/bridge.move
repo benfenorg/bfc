@@ -29,6 +29,9 @@ module bridge::bridge {
     use sui::vec_set;
     use sui::vec_set::VecSet;
     use std::ascii::String;
+    use bfc_system::bfc_system;
+    use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
+    use bfc_system::busd::BUSD;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -47,6 +50,7 @@ module bridge::bridge {
     public struct Bridge has key {
         id: UID,
         inner: Versioned,
+        bfc_system_id: UID,
     }
 
     public struct BridgeInner has store {
@@ -229,7 +233,7 @@ module bridge::bridge {
 
     // this method is called once in end of epoch tx to create the bridge
     #[allow(unused_function)]
-    fun create(id: UID, chain_id: u8, ctx: &mut TxContext) {
+    fun create(id: UID, bfc_system_id: UID, chain_id: u8, ctx: &mut TxContext) {
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
         let bridge_inner = BridgeInner {
             bridge_version: CURRENT_VERSION,
@@ -249,6 +253,7 @@ module bridge::bridge {
         let bridge = Bridge {
             id,
             inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
+            bfc_system_id,
         };
         transfer::share_object(bridge);
     }
@@ -507,12 +512,14 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): Coin<T> {
         let (maybe_token, owner) = bridge.claim_token_internal<T>(
             clock,
             source_chain,
             bridge_seq_num,
+            cap,
             ctx,
         );
         // Only token owner can claim the token
@@ -528,9 +535,10 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
-        let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, ctx);
+        let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -964,6 +972,7 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): (Option<Coin<T>>, address) {
         let inner = load_inner_mut(bridge);
@@ -986,6 +995,8 @@ module bridge::bridge {
         let token_payload = record.message.extract_token_bridge_payload();
         // get owner address
         let owner = address::from_bytes(token_payload.token_target_address());
+        // get token type
+        let token_id = token_payload.token_type();
 
         // If already claimed, exit early
         if (record.claimed) {
@@ -1024,6 +1035,13 @@ module bridge::bridge {
         };
 
         // claim from treasury
+        if (token_id == 5) { //BUSD type is 5
+            let busd = bfc_system::mint_stable_by_id<BUSD>(&mut bridge.bfc_system_id, amount, cap, ctx);
+            //transfer busd to owner
+            transfer::public_transfer(busd, owner);
+            return  (option::none(), owner)
+        };
+
         let token = inner.treasury.mint<T>(amount, ctx);
 
         // Record changes
@@ -1218,13 +1236,14 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun create_bridge_for_testing(id: UID, chain_id: u8, ctx: &mut TxContext) {
-        create(id, chain_id, ctx);
+    public fun create_bridge_for_testing(id: UID, chain_id: u8, bfc_system_id: UID, ctx: &mut TxContext) {
+        create(id, bfc_system_id, chain_id, ctx);
     }
 
     #[test_only]
     public fun new_for_testing(chain_id: u8, ctx: &mut TxContext): Bridge {
         let id = object::new(ctx);
+        let bfc_system_id = object::new(ctx);
         let bridge_inner = BridgeInner {
             bridge_version: CURRENT_VERSION,
             message_version: MESSAGE_VERSION,
@@ -1242,6 +1261,7 @@ module bridge::bridge {
         };
         let mut bridge = Bridge {
             id,
+            bfc_system_id,
             inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
         };
         bridge.setup_treasury_for_testing();

@@ -24,7 +24,7 @@ use sui_types::base_types::{
     ExecutionDigests, ObjectID, SequenceNumber, SuiAddress, TransactionDigest, TxContext,
 };
 use sui_types::bridge::{BridgeChainId, BRIDGE_CREATE_FUNCTION_NAME, BRIDGE_MODULE_NAME};
-use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use sui_types::committee::Committee;
 use sui_types::crypto::{
     AuthorityKeyPair, AuthorityPublicKeyBytes, AuthoritySignInfo, AuthoritySignInfoTrait,
@@ -1439,6 +1439,9 @@ pub fn generate_genesis_system_object(
             let bridge_uid = builder
                 .input(CallArg::Pure(UID::new(SUI_BRIDGE_OBJECT_ID).to_bcs_bytes()))
                 .unwrap();
+            let bfc_system_state_uid = builder
+                .input(CallArg::Pure(UID::new(BFC_SYSTEM_STATE_OBJECT_ID).to_bcs_bytes()))
+                .unwrap();
             // TODO(bridge): this needs to be passed in as a parameter for next testnet regenesis
             // Hardcoding chain id to SuiCustom
             let bridge_chain_id = builder.pure(BridgeChainId::SuiCustom).unwrap();
@@ -1447,7 +1450,7 @@ pub fn generate_genesis_system_object(
                 BRIDGE_MODULE_NAME.to_owned(),
                 BRIDGE_CREATE_FUNCTION_NAME.to_owned(),
                 vec![],
-                vec![bridge_uid, bridge_chain_id],
+                vec![bridge_uid, bridge_chain_id, bfc_system_state_uid],
             );
         }
 

@@ -8,6 +8,7 @@ edition = "2024.beta"
 MoveStdlib = { local = "../move-stdlib" }
 Sui = { local = "../sui-framework" }
 SuiSystem = { local = "../sui-system" }
+BfcSystem = { local = "../bfc-system" }
 
 [addresses]
 bridge = "0xb"

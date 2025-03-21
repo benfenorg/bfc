@@ -69,6 +69,7 @@ module bridge::bridge_env {
         validator_voting_powers_for_testing,
         SuiSystemState
     };
+    use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use sui::hex;
 
     //
@@ -322,7 +323,7 @@ module bridge::bridge_env {
     public fun create_bridge(env: &mut BridgeEnv, sender: address) {
         env.scenario.next_tx(sender);
         let ctx = env.scenario.ctx();
-        create_bridge_for_testing(object::new(ctx), env.chain_id, ctx);
+        create_bridge_for_testing(object::new(ctx), env.chain_id, object::new(ctx), ctx);
     }
 
     // Register 3 committee members (validators `@0xA`, `@0xB`, `@0xC`)
@@ -900,18 +901,19 @@ module bridge::bridge_env {
         bridge_seq_num: u64,
     ): Coin<T> {
         // set up
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&env.scenario);
         let scenario = &mut env.scenario;
         scenario.next_tx(sender);
         let clock = &env.clock;
         let mut bridge = scenario.take_shared<Bridge>();
         let ctx = scenario.ctx();
         let total_supply_before = get_total_supply<T>(&bridge);
-
         // run claim
         let token = bridge.claim_token<T>(
             clock,
             source_chain,
             bridge_seq_num,
+            &modify_cap,
             ctx,
         );
 
@@ -941,6 +943,7 @@ module bridge::bridge_env {
         assert!(mt == message_types::token());
         assert!(sn == bridge_seq_num);
 
+        test_scenario::return_to_sender(&env.scenario, modify_cap);
         // tear down
         test_scenario::return_shared(bridge);
         token
@@ -954,6 +957,7 @@ module bridge::bridge_env {
     ): u8 {
         // set up
         let sender = @0xA1B2C3; // random sender
+        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&env.scenario);
         let scenario = &mut env.scenario;
         scenario.next_tx(sender);
         let clock = &env.clock;
@@ -966,6 +970,7 @@ module bridge::bridge_env {
             clock,
             source_chain,
             bridge_seq_num,
+            &modify_cap,
             ctx,
         );
 
@@ -1005,6 +1010,7 @@ module bridge::bridge_env {
             scenario.return_to_sender(token);
         };
 
+        test_scenario::return_to_sender(&env.scenario, modify_cap);
         // tear down
         test_scenario::return_shared(bridge);
         claim_status

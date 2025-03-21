@@ -26,7 +26,7 @@ mod checked {
         RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME,
         RANDOMNESS_STATE_UPDATE_FUNCTION_NAME,
     };
-    use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
+    use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
     use tracing::{info, instrument, trace, warn};
 
     use crate::adapter::new_move_vm;
@@ -1360,6 +1360,9 @@ mod checked {
         let bridge_uid = builder
             .input(CallArg::Pure(UID::new(SUI_BRIDGE_OBJECT_ID).to_bcs_bytes()))
             .expect("Unable to create Bridge object UID!");
+        let bfc_system_uid = builder
+            .input(CallArg::Pure(UID::new(BFC_SYSTEM_STATE_OBJECT_ID).to_bcs_bytes()))
+            .expect("Unable to create BFC system state object UID!");
 
         let bridge_chain_id = if chain_id == get_mainnet_chain_identifier() {
             BridgeChainId::SuiMainnet as u8
@@ -1376,7 +1379,7 @@ mod checked {
             BRIDGE_MODULE_NAME.to_owned(),
             BRIDGE_CREATE_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![bridge_uid, bridge_chain_id],
+            vec![bridge_uid, bridge_chain_id, bfc_system_uid],
         );
         builder
     }
