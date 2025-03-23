@@ -29,6 +29,7 @@ module bridge::bridge {
     use sui::vec_set;
     use sui::vec_set::VecSet;
     use std::ascii::String;
+    use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -528,6 +529,7 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
+        _cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
         let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, ctx);
