@@ -4,7 +4,7 @@ use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery};
-use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
+use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, TransactionBlockBytes};
 use sui_sdk::json::SuiJsonValue;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::{Signature, SuiKeyPair};
@@ -13,6 +13,8 @@ use test_cluster::TestCluster;
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID};
 use serde_json::{json, Value};
+use sui_json_rpc_api::{IndexerApiClient,  WriteApiClient};
+use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 
 // #[allow(unused)]

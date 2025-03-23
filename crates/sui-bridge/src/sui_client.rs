@@ -119,11 +119,7 @@ where
             ) else {
                 panic!("Failed to get admin cap after retries");
             };
-            ObjectArg::SharedObject {
-                id: object_cap_admin.object_id,
-                initial_shared_version: object_cap_admin.version,
-                mutable: true,
-            }
+            ObjectArg::ImmOrOwnedObject(object_cap_admin.object_ref())
         })
         .await
     }
