@@ -9,9 +9,9 @@ use async_trait::async_trait;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
-use sui_json_rpc_types::SuiTransactionBlockResponse;
+use sui_json_rpc_types::{SuiObjectData, SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
-use sui_types::base_types::ObjectID;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
 use sui_types::bridge::{
     BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessage
@@ -154,6 +154,10 @@ impl SuiClientInner for SuiMockClient {
 
     async fn notify_something_done(&self) {
         self.requested_transactions_tx.send(TransactionDigest::random()).unwrap();
+    }
+
+    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error> {
+        unimplemented!()
     }
 
 

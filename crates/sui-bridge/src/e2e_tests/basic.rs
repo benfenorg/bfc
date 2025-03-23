@@ -660,7 +660,7 @@ async fn test_bridge_usdt_to_sui() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 4); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
     let (id, _type) = treasury_summary
         .id_token_type_map
         .iter()
