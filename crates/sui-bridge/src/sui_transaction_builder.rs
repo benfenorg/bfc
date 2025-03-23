@@ -227,7 +227,7 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
-    let admin_cap = builder.obj(admin_cap_arg).unwrap();
+    // let admin_cap = builder.obj(admin_cap_arg).unwrap();
 
     let mut sig_bytes = vec![];
     for (_, sig) in sigs.signatures {

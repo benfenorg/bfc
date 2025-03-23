@@ -337,6 +337,7 @@ impl BridgeNodeConfig {
         sui_client: Arc<SuiClient<SuiSdkClient>>,
         metrics: Arc<BridgeMetrics>,
     ) -> anyhow::Result<(SuiKeyPair, SuiAddress, ObjectRef)> {
+        tracing::info!("prepare_for_sui bridge_client_key_path {:?}", &self.sui.bridge_client_key_path);
         let bridge_client_key = match &self.sui.bridge_client_key_path {
             None => read_key(&self.bridge_authority_key_path, true),
             Some(path) => read_key(path, false),

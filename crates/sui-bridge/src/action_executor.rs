@@ -119,6 +119,10 @@ where
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await;
+        info!("get admin cap for {:?}", &sui_address);
+
+        //let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
+        // let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
         let admin_cap = sui_client
             .get_object_for_cap_must_succeed(sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap")
             .await;

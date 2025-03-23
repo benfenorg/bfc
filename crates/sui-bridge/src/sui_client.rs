@@ -117,7 +117,7 @@ where
                 self.inner.get_object_for_cap(address, filter_tag),
                 Duration::from_secs(30)
             ) else {
-                panic!("Failed to get bridge object arg after retries");
+                panic!("Failed to get admin cap after retries");
             };
             ObjectArg::SharedObject {
                 id: object_cap_admin.object_id,
@@ -672,7 +672,7 @@ impl SuiClientInner for SuiSdkClient {
             Some(filter),
             Some(data_option),
         )), None, None).await?.data;
-        println!("objects: {:?}", objects);
+        println!("get_object_for_cap address: {:?}, objects: {:?}", &address, objects);
         if objects.is_empty() {
             Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap")))
         } else {

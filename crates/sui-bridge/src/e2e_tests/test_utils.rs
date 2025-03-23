@@ -7,6 +7,7 @@ use crate::config::default_ed25519_key_pair;
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::BridgeAuthoritySignInfo;
+use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
@@ -38,6 +39,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
 use sui_json_rpc_types::SuiEvent;
 use sui_json_rpc_types::SuiExecutionStatus;
@@ -49,7 +51,7 @@ use sui_json_rpc_types::TransactionFilter;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::bridge::get_bridge_obj_initial_shared_version;
+use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BUSD};
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTrait;
@@ -64,7 +66,7 @@ use sui_types::transaction::{ObjectArg, Transaction, TransactionData};
 use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
 use tokio::join;
 use tokio::task::JoinHandle;
-use tokio::time::Instant;
+use tokio::time::{sleep, Instant};
 
 use tracing::error;
 use tracing::info;
@@ -192,7 +194,6 @@ impl BridgeTestClusterBuilder {
         let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
-
         let mut bridge_node_handles = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
@@ -811,6 +812,18 @@ pub(crate) async fn start_bridge_cluster(
             metrics: None,
             watchdog_config: None,
         };
+        let prometheus_registry = Registry::new();
+        if i == 0 {
+            let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+            let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+            let client_config = client_config.unwrap();
+            let sui_address = client_config.sui_address;
+            let sui_key_pair = client_config.key;
+            info!("add admin cap for {:?}", sui_address);
+            //set up auth key
+            auth::auth_setup_imut(&test_cluster.inner, &test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
+            sleep(Duration::from_secs(10)).await;
+        }
         // Spawn bridge node in memory
         handles.push(
             run_bridge_node(
@@ -1006,8 +1019,8 @@ impl TestClusterWrapperBuilder {
 
         if self.deploy_tokens {
             let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64];
+            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD];
+            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,1_000u64];
             let action = publish_and_register_coins_return_add_coins_on_sui_action(
                 test_cluster.wallet(),
                 bridge_arg,
@@ -1016,6 +1029,7 @@ impl TestClusterWrapperBuilder {
                     Path::new("../../bridge/move/tokens/eth").into(),
                     Path::new("../../bridge/move/tokens/usdc").into(),
                     Path::new("../../bridge/move/tokens/usdt").into(),
+                    Path::new("../../bridge/move/tokens/busd").into(),
                 ],
                 token_ids,
                 token_prices,

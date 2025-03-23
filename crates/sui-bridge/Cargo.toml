@@ -56,6 +56,7 @@ test-cluster = { workspace = true, optional = true }
 sui-config.workspace = true
 sui-test-transaction-builder.workspace = true
 maplit = "1.0.2"
+jsonrpsee.workspace = true
 
 [features]
 test-utils = ["hex-literal", "test-cluster"]
