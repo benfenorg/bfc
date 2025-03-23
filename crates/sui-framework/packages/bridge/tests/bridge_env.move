@@ -901,9 +901,15 @@ module bridge::bridge_env {
         bridge_seq_num: u64,
     ): Coin<T> {
         // set up
-        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&env.scenario);
         let scenario = &mut env.scenario;
+        bfc_system::bfc_system_state_inner::create_bfc_system_modify_cap_for_test(
+            scenario.ctx(),
+            sender,
+            std::ascii::string(b"MINT-BUSD-right_key"),
+        );
         scenario.next_tx(sender);
+
+        let modify_cap = scenario.take_from_sender<BfcSystemModifyCap>();
         let clock = &env.clock;
         let mut bridge = scenario.take_shared<Bridge>();
         let ctx = scenario.ctx();
@@ -916,6 +922,9 @@ module bridge::bridge_env {
             &modify_cap,
             ctx,
         );
+        {
+            scenario.return_to_sender(modify_cap);
+        };
 
         // verify value change and claim events
         let token_value = token.value();
@@ -943,7 +952,6 @@ module bridge::bridge_env {
         assert!(mt == message_types::token());
         assert!(sn == bridge_seq_num);
 
-        test_scenario::return_to_sender(&env.scenario, modify_cap);
         // tear down
         test_scenario::return_shared(bridge);
         token
@@ -957,22 +965,32 @@ module bridge::bridge_env {
     ): u8 {
         // set up
         let sender = @0xA1B2C3; // random sender
-        let modify_cap = test_scenario::take_from_sender<BfcSystemModifyCap>(&env.scenario);
         let scenario = &mut env.scenario;
+        bfc_system::bfc_system_state_inner::create_bfc_system_modify_cap_for_test(
+            scenario.ctx(),
+            sender,
+            std::ascii::string(b"MINT-BUSD-right_key"),
+        );
         scenario.next_tx(sender);
+
+        let modify_cap = scenario.take_from_sender<BfcSystemModifyCap>();
+
         let clock = &env.clock;
         let mut bridge = scenario.take_shared<Bridge>();
         let ctx = scenario.ctx();
         let total_supply_before = get_total_supply<T>(&bridge);
 
         // run claim and transfer
-        bridge.claim_and_transfer_token<T>(
-            clock,
-            source_chain,
-            bridge_seq_num,
-            &modify_cap,
-            ctx,
-        );
+        {
+            bridge.claim_and_transfer_token<T>(
+                clock,
+                source_chain,
+                bridge_seq_num,
+                &modify_cap,
+                ctx,
+            );
+            scenario.return_to_sender(modify_cap);
+        };
 
         // verify claim events
         let claimed = event::events_by_type<TokenTransferClaimed>();
@@ -1010,7 +1028,6 @@ module bridge::bridge_env {
             scenario.return_to_sender(token);
         };
 
-        test_scenario::return_to_sender(&env.scenario, modify_cap);
         // tear down
         test_scenario::return_shared(bridge);
         claim_status
