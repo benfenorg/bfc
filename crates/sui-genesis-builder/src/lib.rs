@@ -1450,7 +1450,7 @@ pub fn generate_genesis_system_object(
                 BRIDGE_MODULE_NAME.to_owned(),
                 BRIDGE_CREATE_FUNCTION_NAME.to_owned(),
                 vec![],
-                vec![bridge_uid, bridge_chain_id, bfc_system_state_uid],
+                vec![bridge_uid, bfc_system_state_uid,bridge_chain_id],
             );
         }
 

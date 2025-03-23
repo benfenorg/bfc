@@ -49,7 +49,7 @@ use sui_json_rpc_types::TransactionFilter;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::bridge::get_bridge_obj_initial_shared_version;
+use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BUSD};
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTrait;
