@@ -612,7 +612,7 @@ module bfc_system::bfc_system {
     public fun burn_stable_by_id<StableCoinType>(
         id: &mut UID,
         token: Coin<StableCoinType>,
-        ctx: &mut TxContext,
+        _ctx: &mut TxContext,
     ){
         let inner_state = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::burn_stable<StableCoinType>(inner_state, token);

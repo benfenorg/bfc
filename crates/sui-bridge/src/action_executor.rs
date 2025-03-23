@@ -1297,6 +1297,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &id_token_map,
             1000,
         )

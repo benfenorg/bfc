@@ -1006,8 +1006,8 @@ impl TestClusterWrapperBuilder {
 
         if self.deploy_tokens {
             let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64];
+            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT, TOKEN_ID_BUSD];
+            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64, 1_000u64];
             let action = publish_and_register_coins_return_add_coins_on_sui_action(
                 test_cluster.wallet(),
                 bridge_arg,
@@ -1016,6 +1016,7 @@ impl TestClusterWrapperBuilder {
                     Path::new("../../bridge/move/tokens/eth").into(),
                     Path::new("../../bridge/move/tokens/usdc").into(),
                     Path::new("../../bridge/move/tokens/usdt").into(),
+                    Path::new("../../bridge/move/tokens/busd").into(),
                 ],
                 token_ids,
                 token_prices,
