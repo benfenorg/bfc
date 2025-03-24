@@ -350,11 +350,12 @@ module bridge::bridge {
         );
 
         // burn / escrow token, unsupported coins will fail in this step
-        // if (is_busd) {
-        //     //todo call treasury::burn_busd
-        // } else {
-        //     inner.treasury.burn(token);
-        // }
+        if (is_busd) {
+            //todo call treasury::burn_busd
+            inner.treasury.burn(token);
+        } else {
+            inner.treasury.burn(token);
+        };
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(
