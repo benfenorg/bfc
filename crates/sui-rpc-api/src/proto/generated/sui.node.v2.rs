@@ -458,11 +458,11 @@ pub struct ExecuteTransactionOptions {
 /// Generated client implementations.
 pub mod node_service_client {
     #![allow(
-    unused_variables,
-    dead_code,
-    missing_docs,
-    clippy::wildcard_imports,
-    clippy::let_unit_value,
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
     )]
     use tonic::codegen::*;
     use tonic::codegen::http::Uri;
@@ -473,20 +473,20 @@ pub mod node_service_client {
     impl NodeServiceClient<tonic::transport::Channel> {
         /// Attempt to create a new client by connecting to a given endpoint.
         pub async fn connect<D>(dst: D) -> Result<Self, tonic::transport::Error>
-            where
-                D: TryInto<tonic::transport::Endpoint>,
-                D::Error: Into<StdError>,
+        where
+            D: TryInto<tonic::transport::Endpoint>,
+            D::Error: Into<StdError>,
         {
             let conn = tonic::transport::Endpoint::new(dst)?.connect().await?;
             Ok(Self::new(conn))
         }
     }
     impl<T> NodeServiceClient<T>
-        where
-            T: tonic::client::GrpcService<tonic::body::BoxBody>,
-            T::Error: Into<StdError>,
-            T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
-            <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
+    where
+        T: tonic::client::GrpcService<tonic::body::BoxBody>,
+        T::Error: Into<StdError>,
+        T::ResponseBody: Body<Data = Bytes> + std::marker::Send + 'static,
+        <T::ResponseBody as Body>::Error: Into<StdError> + std::marker::Send,
     {
         pub fn new(inner: T) -> Self {
             let inner = tonic::client::Grpc::new(inner);
@@ -500,18 +500,18 @@ pub mod node_service_client {
             inner: T,
             interceptor: F,
         ) -> NodeServiceClient<InterceptedService<T, F>>
-            where
-                F: tonic::service::Interceptor,
-                T::ResponseBody: Default,
-                T: tonic::codegen::Service<
-                    http::Request<tonic::body::BoxBody>,
-                    Response = http::Response<
-                        <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
-                    >,
+        where
+            F: tonic::service::Interceptor,
+            T::ResponseBody: Default,
+            T: tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+                Response = http::Response<
+                    <T as tonic::client::GrpcService<tonic::body::BoxBody>>::ResponseBody,
                 >,
-                <T as tonic::codegen::Service<
-                    http::Request<tonic::body::BoxBody>,
-                >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
+            >,
+            <T as tonic::codegen::Service<
+                http::Request<tonic::body::BoxBody>,
+            >>::Error: Into<StdError> + std::marker::Send + std::marker::Sync,
         {
             NodeServiceClient::new(InterceptedService::new(inner, interceptor))
         }
@@ -721,11 +721,11 @@ pub mod node_service_client {
 /// Generated server implementations.
 pub mod node_service_server {
     #![allow(
-    unused_variables,
-    dead_code,
-    missing_docs,
-    clippy::wildcard_imports,
-    clippy::let_unit_value,
+        unused_variables,
+        dead_code,
+        missing_docs,
+        clippy::wildcard_imports,
+        clippy::let_unit_value,
     )]
     use tonic::codegen::*;
     /// Generated trait containing gRPC methods that should be implemented for use with NodeServiceServer.
@@ -806,8 +806,8 @@ pub mod node_service_server {
             inner: T,
             interceptor: F,
         ) -> InterceptedService<Self, F>
-            where
-                F: tonic::service::Interceptor,
+        where
+            F: tonic::service::Interceptor,
         {
             InterceptedService::new(Self::new(inner), interceptor)
         }
@@ -841,10 +841,10 @@ pub mod node_service_server {
         }
     }
     impl<T, B> tonic::codegen::Service<http::Request<B>> for NodeServiceServer<T>
-        where
-            T: NodeService,
-            B: Body + std::marker::Send + 'static,
-            B::Error: Into<StdError> + std::marker::Send + 'static,
+    where
+        T: NodeService,
+        B: Body + std::marker::Send + 'static,
+        B::Error: Into<StdError> + std::marker::Send + 'static,
     {
         type Response = http::Response<tonic::body::BoxBody>;
         type Error = std::convert::Infallible;
