@@ -1314,6 +1314,7 @@ pub async fn initiate_bridge_sui_to_eth(
     token: ObjectRef,
     nonce: u64,
     sui_amount: u64,
+    expect_token_id: u64,
 ) -> Result<SuiToEthBridgeAction, anyhow::Error> {
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
@@ -1326,27 +1327,52 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-
-    let resp = match deposit_eth_to_sui_package(
-        sui_client,
-        sui_address,
-        bridge_test_cluster.wallet(),
-        bridge_test_cluster.eth_chain_id(),
-        eth_address,
-        token,
-        bridge_object_arg,
-        &token_types,
-    )
-    .await
-    {
-        Ok(resp) => {
-            if !resp.status_ok().unwrap() {
-                return Err(anyhow!("Sui TX error"));
-            } else {
-                resp
+    let resp = if expect_token_id == TOKEN_ID_ETH {
+        match deposit_eth_to_sui_package(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.eth_chain_id(),
+            eth_address,
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"));
+                } else {
+                    resp
+                }
             }
+            Err(e) => return Err(e),
         }
-        Err(e) => return Err(e),
+    }else{
+        match deposit_busd_to_sui_package(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.eth_chain_id(),
+            eth_address,
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"));
+                } else {
+                    resp
+                }
+            }
+            Err(e) => return Err(e),
+        }
     };
 
     let sui_events = resp.events.unwrap().data;
@@ -1446,19 +1472,66 @@ async fn deposit_eth_to_sui_package(
     token: ObjectRef,
     bridge_object_arg: ObjectArg,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_target_chain = builder.pure(target_chain as u8).unwrap();
     let arg_target_address = builder.pure(target_address.as_bytes()).unwrap();
     let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
-
+    let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
+    );
+
+    let pt = builder.finish();
+    let gas_object_ref = wallet_context
+        .get_one_gas_object_owned_by_address(sui_address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx_data = TransactionData::new_programmable(
+        sui_address,
+        vec![gas_object_ref],
+        pt,
+        500_000_000,
+        sui_client
+            .governance_api()
+            .get_reference_gas_price()
+            .await
+            .unwrap(),
+    );
+    let tx = wallet_context.sign_transaction(&tx_data);
+    wallet_context.execute_transaction_may_fail(tx).await
+}
+
+async fn deposit_busd_to_sui_package(
+    sui_client: &SuiClient,
+    sui_address: SuiAddress,
+    wallet_context: &WalletContext,
+    target_chain: BridgeChainId,
+    target_address: EthAddress,
+    token: ObjectRef,
+    bridge_object_arg: ObjectArg,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
+) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_target_chain = builder.pure(target_chain as u8).unwrap();
+    let arg_target_address = builder.pure(target_address.as_bytes()).unwrap();
+    let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("send_token").to_owned(),
+        vec![sui_token_type_tags.get(&TOKEN_ID_BUSD).unwrap().clone()],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
     );
 
     let pt = builder.finish();

@@ -13,7 +13,7 @@ module bridge::bridge {
     use sui::vec_map::{Self, VecMap};
     use sui::versioned::{Self, Versioned};
     use sui_system::sui_system::SuiSystemState;
-    use bfc_system::busd::BUSD;
+    // use bfc_system::busd::BUSD;
 
     use bridge::chain_ids;
     use bridge::committee::{Self, BridgeCommittee};
@@ -322,7 +322,8 @@ module bridge::bridge {
         assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
-        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        let is_busd = true; 
+        //type_name::get<T>() == type_name::get<BUSD>();
         let token_id = if (is_busd) {
             assert!(token_id_expect==3 || token_id_expect==4, EInvalidTokenIdExpect);
             token_id_expect
@@ -351,7 +352,11 @@ module bridge::bridge {
 
         // burn / escrow token, unsupported coins will fail in this step
         if (is_busd) {
-            //todo call treasury::burn_busd
+            //todo call bfc_system::burn_stable_by_id(
+                //     &mut bridge.bfc_system_id,
+                //     token,
+                //     ctx
+                // );
             inner.treasury.burn(token);
         } else {
             inner.treasury.burn(token);
