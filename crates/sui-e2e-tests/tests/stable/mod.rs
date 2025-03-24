@@ -11,6 +11,7 @@ use test_cluster::TestCluster;
 
 
 
+#[allow(dead_code)]
 pub async fn mint_stable_coin(amount: u64, test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress,coint_type: &str) -> Result<(), Error> {
     let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
     let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
@@ -100,6 +101,7 @@ pub async fn mint_stable_coin_with_gas(amount: u64, test_cluster: &TestCluster, 
     Ok(())
 }
 
+#[allow(dead_code)]
 fn effect_success(effects: SuiTransactionBlockEffects) {
     match effects {
         SuiTransactionBlockEffects::V1(_effects) => {
