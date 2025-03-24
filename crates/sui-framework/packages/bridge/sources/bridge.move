@@ -387,13 +387,6 @@ module bridge::bridge {
         assert!(tx_hash.length() >= 1, EInvalidTxHash);
         assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
-        //busd handle
-        let token_amount_source =
-            if (token_type == 5) { // BUSD
-            token_amount / 1000u64
-        } else {
-            token_amount
-            };
         // create bridge message
         let message = message::create_token_bridge_message(
             inner.chain_id,
@@ -402,7 +395,7 @@ module bridge::bridge {
             target_chain,
             target_address,
             token_type,
-            token_amount_source,
+            token_amount,
             tx_hash,
             event_idx,
         );
@@ -434,7 +427,7 @@ module bridge::bridge {
                 target_chain,
                 target_address,
                 token_type: token_type,
-                amount: token_amount_source,
+                amount: token_amount,
                 tx_hash,
                 event_idx,
             },
