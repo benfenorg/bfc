@@ -418,19 +418,33 @@ async fn sim_get_full_checkpoint() {
         .unwrap_err();
 }
 
+
 #[sim_test]
 async fn sim_subscribe_checkpoint() {
     use sui_rpc_api::proto::node::v2alpha::subscription_service_client::SubscriptionServiceClient;
     use sui_rpc_api::proto::node::v2alpha::SubscribeCheckpointsRequest;
     use tokio_stream::StreamExt;
+    use tracing::{info, warn};
+    
 
-    let test_cluster = TestClusterBuilder::new().build().await;
+    telemetry_subscribers::init_for_testing();
+    info!("==========start cluster ....");
 
+    let test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(5000*60)
+        .with_num_validators(5)
+        .build()
+        .await;
     let _transaction_digest = transfer_coin(&test_cluster.wallet).await;
+
+    info!("==========start transaction digest....");
+
 
     let mut client = SubscriptionServiceClient::connect(test_cluster.rpc_url().to_owned())
         .await
         .unwrap();
+    info!("==========start service connect....");
+
 
     let mut stream = client
         .subscribe_checkpoints(SubscribeCheckpointsRequest::default())
@@ -440,6 +454,8 @@ async fn sim_subscribe_checkpoint() {
 
     let mut count = 0;
     let mut last = None;
+
+    info!("==========before enter the while ....");
     while let Some(item) = stream.next().await {
         let checkpoint = item.unwrap();
         let cursor = checkpoint.cursor.unwrap();
@@ -447,7 +463,7 @@ async fn sim_subscribe_checkpoint() {
             cursor,
             checkpoint.checkpoint.unwrap().sequence_number.unwrap()
         );
-        println!("checkpoint: {cursor}");
+        info!("===========checkpoint: {cursor}");
 
         if let Some(last) = last {
             assert_eq!(last, cursor - 1);

@@ -20,3 +20,7 @@ cargo simtest sim_test_onsite_reconfig_observer_basic
 
 
 # UNIVERSE_SIZE=10 cargo nextest run --profile ci
+
+
+#ensure testing log
+cargo simtest sim_subscribe_checkpoint --nocapture
