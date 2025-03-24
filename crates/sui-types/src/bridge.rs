@@ -144,6 +144,7 @@ pub enum Bridge {
 pub struct BridgeWrapper {
     pub id: UID,
     pub version: Versioned,
+    pub bfc_system_id: UID,
 }
 
 /// This is the standard API that all bridge inner object type should implement.
