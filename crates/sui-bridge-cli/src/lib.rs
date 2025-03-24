@@ -593,6 +593,8 @@ pub enum BridgeClientCommands {
         #[clap(long)]
         coin_type: String,
         #[clap(long)]
+        token_id_expect: u64,
+        #[clap(long)]
         target_chain: u8,
         #[clap(long)]
         recipient_address: EthAddress,
@@ -646,6 +648,7 @@ impl BridgeClientCommands {
             BridgeClientCommands::DepositOnSui {
                 coin_object_id,
                 coin_type,
+                token_id_expect,
                 target_chain,
                 recipient_address,
             } => {
@@ -654,6 +657,7 @@ impl BridgeClientCommands {
                 deposit_on_sui(
                     coin_object_id,
                     coin_type,
+                    token_id_expect,
                     target_chain,
                     recipient_address,
                     config,
@@ -668,6 +672,7 @@ impl BridgeClientCommands {
 async fn deposit_on_sui(
     coin_object_id: ObjectID,
     coin_type: TypeTag,
+    token_id_expect: u64,
     target_chain: BridgeChainId,
     recipient_address: EthAddress,
     config: &LoadedBridgeCliConfig,
@@ -706,13 +711,13 @@ async fn deposit_on_sui(
         .obj(ObjectArg::ImmOrOwnedObject(coin_obj_ref))
         .unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
-
+    let arg_token_id_expect = builder.pure(token_id_expect).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![coin_type],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_token_id_expect],
     );
     let pt = builder.finish();
     let tx_data =

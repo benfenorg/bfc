@@ -993,11 +993,13 @@ mod tests {
         .unwrap();
 
         // 2. Test Sui -> Eth Transfer approval
+        let token_id_expect = TOKEN_ID_USDC;
         let bridge_event = bridge_token(
             context,
             EthAddress::random(),
             usdc_object_ref,
             id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            token_id_expect,
             bridge_object_arg,
         )
         .await;

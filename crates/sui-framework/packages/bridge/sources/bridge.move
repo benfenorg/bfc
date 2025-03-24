@@ -13,6 +13,7 @@ module bridge::bridge {
     use sui::vec_map::{Self, VecMap};
     use sui::versioned::{Self, Versioned};
     use sui_system::sui_system::SuiSystemState;
+    use bfc_system::busd::BUSD;
 
     use bridge::chain_ids;
     use bridge::committee::{Self, BridgeCommittee};
@@ -127,7 +128,8 @@ module bridge::bridge {
     const EInvalidSender: u64 = 20;
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
-
+    const EInvalidTokenIdExpect: u64 = 23;
+    
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
@@ -310,16 +312,28 @@ module bridge::bridge {
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
+        token_id_expect: u64,
         ctx: &mut TxContext
     ) {
+        
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
-        let token_id = inner.treasury.token_id<T>();
-        let token_amount = token.balance().value();
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        let token_id = if (is_busd) {
+            assert!(token_id_expect==3 || token_id_expect==4, EInvalidTokenIdExpect);
+            token_id_expect
+        } else {
+            inner.treasury.token_id<T>()
+        };
+        let token_amount = if (is_busd) {
+            token.balance().value()*1000u64
+        } else {
+            token.balance().value()
+        };
         assert!(token_amount > 0, ETokenValueIsZero);
 
         // create bridge message
@@ -336,7 +350,11 @@ module bridge::bridge {
         );
 
         // burn / escrow token, unsupported coins will fail in this step
-        inner.treasury.burn(token);
+        // if (is_busd) {
+        //     //todo call treasury::burn_busd
+        // } else {
+        //     inner.treasury.burn(token);
+        // }
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(

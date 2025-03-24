@@ -997,12 +997,14 @@ mod tests {
 
         // 2. Create a Sui -> Eth Transfer, approve with validator secrets and assert its status to be Approved
         // We need to actually send tokens to bridge to initialize the record.
+        let token_id_expect = TOKEN_ID_USDC;
         let eth_recv_address = EthAddress::random();
         let bridge_event = bridge_token(
             context,
             eth_recv_address,
             usdc_object_ref,
             id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            token_id_expect,
             bridge_object_arg,
         )
         .await;

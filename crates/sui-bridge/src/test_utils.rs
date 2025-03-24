@@ -295,6 +295,7 @@ pub async fn bridge_token(
     recv_address: EthAddress,
     token_ref: ObjectRef,
     token_type: TypeTag,
+    token_id_expect: u64,
     bridge_object_arg: ObjectArg,
 ) -> EmittedSuiToEthTokenBridgeV1 {
     let rgp = context.get_reference_gas_price().await.unwrap();
@@ -310,6 +311,7 @@ pub async fn bridge_token(
                 CallArg::Pure(bcs::to_bytes(&(BridgeChainId::EthCustom as u8)).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&recv_address.as_bytes()).unwrap()),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(token_ref)),
+                CallArg::Pure(bcs::to_bytes(&token_id_expect).unwrap()),
             ],
         )
         .with_type_args(vec![token_type])
