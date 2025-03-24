@@ -50,7 +50,6 @@ module bridge::bridge {
     public struct Bridge has key {
         id: UID,
         inner: Versioned,
-        bfc_system_id: UID,
     }
 
     public struct BridgeInner has store {
@@ -72,6 +71,7 @@ module bridge::bridge {
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
         refund_admins: VecSet<String>,
+        bfc_system_id: UID,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -249,11 +249,11 @@ module bridge::bridge {
             paused: false,
             refund_records: linked_table::new(ctx),
             refund_admins: vec_set::empty(),
+            bfc_system_id,
         };
         let bridge = Bridge {
             id,
-            inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
-            bfc_system_id,
+            inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx)
         };
         transfer::share_object(bridge);
     }
@@ -340,7 +340,15 @@ module bridge::bridge {
         );
 
         // burn / escrow token, unsupported coins will fail in this step
-        inner.treasury.burn(token);
+        if (token_id == 5) { //BUSD type is 5
+            bfc_system::burn_stable_by_id(
+                &mut inner.bfc_system_id,
+                token,
+                ctx
+            );
+        } else {
+            inner.treasury.burn(token);
+        };
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(
@@ -1036,7 +1044,7 @@ module bridge::bridge {
 
         // claim from treasury
         if (token_id == 5) { //BUSD type is 5
-            let busd = bfc_system::mint_stable_by_id<BUSD>(&mut bridge.bfc_system_id, amount, cap, ctx);
+            let busd = bfc_system::mint_stable_by_id<BUSD>(&mut inner.bfc_system_id, amount, cap, ctx);
             //transfer busd to owner
             transfer::public_transfer(busd, owner);
             return  (option::none(), owner)
