@@ -1365,6 +1365,7 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         {
             Ok(resp) => {
+                tracing::info!("Sui resp: {:?}", resp);
                 if !resp.status_ok().unwrap() {
                     return Err(anyhow!("Sui TX error"));
                 } else {
@@ -1402,7 +1403,11 @@ pub async fn initiate_bridge_sui_to_eth(
     );
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
-    assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
+    if expect_token_id == TOKEN_ID_ETH{
+        assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
+    }else{
+        assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
+    };
     assert_eq!(
         bridge_event.sui_bridge_event.amount_sui_adjusted,
         sui_amount

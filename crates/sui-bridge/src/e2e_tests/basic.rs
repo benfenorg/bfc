@@ -725,7 +725,7 @@ async fn test_bridge_usdt_to_sui() {
         busd_coin.object_ref(),
         nonce,
         100000000000,
-        TOKEN_ID_BUSD,
+        TOKEN_ID_USDT,
     )
     .await
     .unwrap();
