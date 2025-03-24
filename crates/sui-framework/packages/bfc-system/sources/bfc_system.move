@@ -600,6 +600,15 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), ctx)
     }
 
+    public fun verify_capability_by_id(
+        id: &UID,
+        cap: &BfcSystemModifyCap,
+        ctx: &TxContext,
+    ): bool {
+        let inner_state = load_system_state_by_uid(id);
+        inner_state.verify_operation_capability(&cap.get_bfc_system_modify_cap_key(), ctx.sender())
+    }
+
     entry public fun burn_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         token: Coin<StableCoinType>,

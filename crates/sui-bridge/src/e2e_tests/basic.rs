@@ -646,7 +646,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_usdt_to_sui() {
     telemetry_subscribers::init_for_testing();
-    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+    let bridge_test_cluster = BridgeTestClusterBuilder::new()
         .with_eth_env(true)
         .with_bridge_cluster(true)
         .with_num_validators(3)

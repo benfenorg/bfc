@@ -16,6 +16,8 @@ module bridge::limiter {
 
     const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
 
+    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000;
+
     //////////////////////////////////////////////////////
     // Types
     //
@@ -24,6 +26,8 @@ module bridge::limiter {
         transfer_limits: VecMap<BridgeRoute, u64>,
         // Per hour transfer amount for each bridge route
         transfer_records: VecMap<BridgeRoute, TransferRecord>,
+        // Each time the maximum mint value
+        max_mint_busd_limit: u64,
     }
 
     public struct TransferRecord has store {
@@ -49,6 +53,15 @@ module bridge::limiter {
         self.transfer_limits[route]
     }
 
+    // Return the mint busd max limit
+    public fun get_mint_busd_max_limit(self: &TransferLimiter): u64 {
+        self.max_mint_busd_limit
+    }
+
+    public(package) fun set_mint_busd_max_limit(self: &mut TransferLimiter, new_limit: u64) {
+        self.max_mint_busd_limit = new_limit;
+    }
+
     //////////////////////////////////////////////////////
     // Internal functions
     //
@@ -57,7 +70,8 @@ module bridge::limiter {
         // hardcoded limit for bridge genesis
         TransferLimiter {
             transfer_limits: initial_transfer_limits(),
-            transfer_records: vec_map::empty()
+            transfer_records: vec_map::empty(),
+            max_mint_busd_limit: DEFAULT_MAX_MINT_BUSD_LIMIT,
         }
     }
 
@@ -254,6 +268,7 @@ module bridge::limiter {
         TransferLimiter {
             transfer_limits: vec_map::empty(),
             transfer_records: vec_map::empty(),
+            max_mint_busd_limit: DEFAULT_MAX_MINT_BUSD_LIMIT,
         }
     }
 

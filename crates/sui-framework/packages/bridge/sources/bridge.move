@@ -135,6 +135,8 @@ module bridge::bridge {
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
 
+    const EUnauthorisedUpdateLimit: u64 = 40;
+
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -510,6 +512,24 @@ module bridge::bridge {
         };
 
         emit(TokenTransferApproved { message_key });
+    }
+
+    // Get the max mint BUSD amount
+    public fun get_max_mint_busd_amount(bridge: &Bridge): u64 {
+        let inner = load_inner(bridge);
+        inner.limiter.get_mint_busd_max_limit()
+    }
+
+    // Set the max mint BUSD amount
+    public fun set_max_mint_busd_amount(
+        bridge: &mut Bridge,
+        cap: &BfcSystemModifyCap,
+        new_limit: u64,
+        ctx: &mut TxContext,
+        ) {
+        assert!(bfc_system::verify_capability_by_id(&bridge.bfc_system_id, cap, ctx), EUnauthorisedUpdateLimit);
+        let inner = load_inner_mut(bridge);
+        inner.limiter.set_mint_busd_max_limit(new_limit);
     }
 
     // This function can only be called by the token recipient

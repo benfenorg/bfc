@@ -32,6 +32,8 @@ title: Module `0xb::bridge`
 -  [Function `send_back_token`](#0xb_bridge_send_back_token)
 -  [Function `is_refund_admin`](#0xb_bridge_is_refund_admin)
 -  [Function `approve_token_transfer`](#0xb_bridge_approve_token_transfer)
+-  [Function `get_max_mint_busd_amount`](#0xb_bridge_get_max_mint_busd_amount)
+-  [Function `set_max_mint_busd_amount`](#0xb_bridge_set_max_mint_busd_amount)
 -  [Function `claim_token`](#0xb_bridge_claim_token)
 -  [Function `claim_and_transfer_token`](#0xb_bridge_claim_and_transfer_token)
 -  [Function `execute_system_message`](#0xb_bridge_execute_system_message)
@@ -1178,6 +1180,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EUnauthorisedUpdateLimit"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 40;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EUnexpectedChainID"></a>
 
 
@@ -1584,13 +1595,6 @@ title: Module `0xb::bridge`
     <b>assert</b>!(tx_hash.length() &gt;= 1, <a href="bridge.md#0xb_bridge_EInvalidTxHash">EInvalidTxHash</a>);
     <b>assert</b>!(inner.<a href="bridge.md#0xb_bridge_is_refund_admin">is_refund_admin</a>(ctx.sender().to_ascii_string()), <a href="bridge.md#0xb_bridge_EInvalidSender">EInvalidSender</a>);
     <b>let</b> bridge_seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="message_types.md#0xb_message_types_token">message_types::token</a>());
-    //<a href="../bfc-system/busd.md#0xc8_busd">busd</a> handle
-    <b>let</b> token_amount_source =
-        <b>if</b> (token_type == 5) { // BUSD
-        token_amount / 1000u64
-    } <b>else</b> {
-        token_amount
-        };
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
     <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
         inner.chain_id,
@@ -1599,7 +1603,7 @@ title: Module `0xb::bridge`
         target_chain,
         target_address,
         token_type,
-        token_amount_source,
+        token_amount,
         tx_hash,
         event_idx,
     );
@@ -1631,7 +1635,7 @@ title: Module `0xb::bridge`
             target_chain,
             target_address,
             token_type: token_type,
-            amount: token_amount_source,
+            amount: token_amount,
             tx_hash,
             event_idx,
         },
@@ -1744,6 +1748,62 @@ title: Module `0xb::bridge`
     };
 
     emit(<a href="bridge.md#0xb_bridge_TokenTransferApproved">TokenTransferApproved</a> { message_key });
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_get_max_mint_busd_amount"></a>
+
+## Function `get_max_mint_busd_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_max_mint_busd_amount">get_max_mint_busd_amount</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_max_mint_busd_amount">get_max_mint_busd_amount</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">Bridge</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner">load_inner</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    inner.<a href="limiter.md#0xb_limiter">limiter</a>.get_mint_busd_max_limit()
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_set_max_mint_busd_amount"></a>
+
+## Function `set_max_mint_busd_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_set_max_mint_busd_amount">set_max_mint_busd_amount</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_set_max_mint_busd_amount">set_max_mint_busd_amount</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    cap: &BfcSystemModifyCap,
+    new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    ctx: &<b>mut</b> TxContext,
+    ) {
+    <b>assert</b>!(<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability_by_id">bfc_system::verify_capability_by_id</a>(&<a href="bridge.md#0xb_bridge">bridge</a>.bfc_system_id, cap, ctx), <a href="bridge.md#0xb_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    inner.<a href="limiter.md#0xb_limiter">limiter</a>.set_mint_busd_max_limit(new_limit);
 }
 </code></pre>
 

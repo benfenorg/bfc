@@ -5554,6 +5554,9 @@ mint_stable
 mint_stable_by_id
 	public fun
 	0xc8::bfc_system
+verify_capability_by_id
+	public fun
+	0xc8::bfc_system
 burn_stable
 	public entry fun
 	0xc8::bfc_system
@@ -6013,6 +6016,12 @@ UpdateRouteLimitEvent
 get_route_limit
 	public fun
 	0xb::limiter
+get_mint_busd_max_limit
+	public fun
+	0xb::limiter
+set_mint_busd_max_limit
+	public(package) fun
+	0xb::limiter
 new
 	public(package) fun
 	0xb::limiter
@@ -6155,6 +6164,12 @@ is_refund_admin
 	fun
 	0xb::bridge
 approve_token_transfer
+	public fun
+	0xb::bridge
+get_max_mint_busd_amount
+	public fun
+	0xb::bridge
+set_max_mint_busd_amount
 	public fun
 	0xb::bridge
 claim_token
