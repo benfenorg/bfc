@@ -647,7 +647,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_usdt_to_sui() {
     telemetry_subscribers::init_for_testing();
-    let bridge_test_cluster = BridgeTestClusterBuilder::new()
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
         .with_eth_env(true)
         .with_bridge_cluster(true)
         .with_num_validators(3)
@@ -693,6 +693,7 @@ async fn test_bridge_usdt_to_sui() {
         true,
     )
     .await;
+    tracing::info!("bbking 0325 events: {:?}", events);
     // There are exactly 1 approved and 1 claimed event
     assert_eq!(events.len(), 2);
     let sui_address = bridge_test_cluster.sui_user_address();

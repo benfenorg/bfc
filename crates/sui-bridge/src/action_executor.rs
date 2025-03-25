@@ -24,6 +24,7 @@ use sui_types::{
     object::Owner,
     transaction::Transaction,
 };
+use tap::Tap;
 
 use crate::events::{
     TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed, TokenTransferApproved,
@@ -446,7 +447,6 @@ where
                 &store,
                 &execution_queue_sender,
                 &bridge_object_arg,
-                &admin_cap_arg,
                 &sui_token_type_tags,
                 &metrics,
             )
@@ -467,7 +467,6 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: &ObjectArg,
-        admin_cap_arg: &ObjectArg,
         sui_token_type_tags: &ArcSwap<HashMap<u64, TypeTag>>,
         metrics: &Arc<BridgeMetrics>,
     ) {
@@ -499,12 +498,13 @@ where
 
         info!("Building Sui transaction");
         let rgp = sui_client.get_reference_gas_price_until_success().await;
+        let admin_cap_arg = sui_client.get_object_for_cap_must_succeed(*sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap").await;
         let tx_data = match build_sui_transaction(
             *sui_address,
             &gas_object_ref,
             ceriticate_clone,
             *bridge_object_arg,
-            Some(*admin_cap_arg),
+            Some(admin_cap_arg),
             sui_token_type_tags.load().as_ref(),
             rgp,
         ) {
@@ -543,6 +543,7 @@ where
             .await
         {
             Ok(resp) => {
+                tracing::info!("bbking 0325 resp: {:?}", resp);
                 Self::handle_execution_effects(tx_digest, resp, store, action, metrics).await
             }
 

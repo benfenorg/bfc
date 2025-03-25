@@ -15,7 +15,13 @@ use sui_types::{
     transaction::{ObjectArg, TransactionData},
     TypeTag,
 };
-use sui_types::{Identifier, BRIDGE_PACKAGE_ID};
+use sui_types::{Identifier, BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, BRIDGE_PACKAGE_ID};
+
+const BFC_SYSTEM_MUT: ObjectArg = ObjectArg::SharedObject {
+    id: BFC_SYSTEM_STATE_OBJECT_ID,
+    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
+    mutable: true,
+};
 
 use crate::{
     error::{BridgeError, BridgeResult},
@@ -39,7 +45,7 @@ pub fn build_sui_transaction(
             action,
             true,
             bridge_object_arg,
-            admin_cap_arg.unwrap(),
+            admin_cap_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -50,7 +56,7 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
-            admin_cap_arg.unwrap(),
+            admin_cap_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -60,7 +66,7 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
-            admin_cap_arg.unwrap(),
+            admin_cap_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -133,7 +139,7 @@ fn build_token_bridge_approve_transaction(
     action: VerifiedCertifiedBridgeAction,
     claim: bool,
     bridge_object_arg: ObjectArg,
-    admin_cap_arg: ObjectArg,
+    admin_cap_arg: Option<ObjectArg>,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
@@ -227,7 +233,8 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
-    // let admin_cap = builder.obj(admin_cap_arg).unwrap();
+    let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+    
 
     let mut sig_bytes = vec![];
     for (_, sig) in sigs.signatures {
@@ -249,6 +256,8 @@ fn build_token_bridge_approve_transaction(
     );
 
     if claim {
+        let system_obj = builder.pure(CallArg::Pure(bcs::to_bytes(&Option::Some(ObjectArg::BFC_SYSTEM_MUT))?)).unwrap();
+        // let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
             sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
@@ -257,7 +266,7 @@ fn build_token_bridge_approve_transaction(
                 .get(&token_type)
                 .ok_or(BridgeError::UnknownTokenId(token_type))?
                 .clone()],
-            vec![arg_bridge, arg_clock, source_chain, seq_num],
+            vec![arg_bridge, system_obj, arg_clock, source_chain, seq_num, admin_cap],
         );
     }
 

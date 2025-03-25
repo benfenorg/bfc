@@ -1073,6 +1073,7 @@ module bridge::bridge {
             bfc_system_state.borrow_mut().mint_stable_entry<BUSD>(amount, cap, ctx);
 
             record.claimed = true;
+            emit(TokenTransferClaimed { message_key: key });
             return  (option::none(), owner)
         };
 
