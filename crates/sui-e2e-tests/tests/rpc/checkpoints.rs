@@ -164,7 +164,8 @@ async fn sim_get_checkpoint() {
 
 #[sim_test]
 async fn sim_get_full_checkpoint() {
-    let test_cluster = TestClusterBuilder::new().build().await;
+    telemetry_subscribers::init_for_testing();
+    let test_cluster = TestClusterBuilder::new().with_epoch_duration_ms(600000).build().await;
 
     let transaction_digest = stake_with_validator(&test_cluster).await;
 

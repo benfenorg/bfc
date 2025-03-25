@@ -4,7 +4,7 @@
 use axum::extract::Query;
 use axum::extract::{Path, State};
 use axum::Json;
-use sui_sdk_types::{CheckpointSequenceNumber, SignedCheckpointSummary};
+use sui_sdk_types::CheckpointSequenceNumber;
 use sui_types::storage::ReadStore;
 
 use super::{ApiEndpoint, RouteHandler};

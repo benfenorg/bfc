@@ -14,8 +14,7 @@ use crate::{stake_with_validator, transfer_coin};
 
 #[sim_test]
 async fn sim_get_transaction() {
-    let test_cluster = TestClusterBuilder::new().build().await;
-
+    let test_cluster = TestClusterBuilder::new().with_epoch_duration_ms(450000).build().await;
     let transaction_digest = stake_with_validator(&test_cluster).await;
 
     let client = Client::new(test_cluster.rpc_url()).unwrap();
