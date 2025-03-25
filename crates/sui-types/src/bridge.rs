@@ -144,7 +144,6 @@ pub enum Bridge {
 pub struct BridgeWrapper {
     pub id: UID,
     pub version: Versioned,
-    pub bfc_system_id: UID,
 }
 
 /// This is the standard API that all bridge inner object type should implement.
@@ -255,6 +254,7 @@ pub struct BridgeInnerV1 {
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
     pub refund_admins: VecSet<String>,
+    // pub bfc_system_id: UID,
 }
 
 impl BridgeTrait for BridgeInnerV1 {

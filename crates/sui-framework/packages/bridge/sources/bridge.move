@@ -29,7 +29,7 @@ module bridge::bridge {
     use sui::vec_set;
     use sui::vec_set::VecSet;
     use std::ascii::String;
-    use bfc_system::bfc_system;
+    use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
 
@@ -71,7 +71,7 @@ module bridge::bridge {
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
         refund_admins: VecSet<String>,
-        bfc_system_id: UID,
+        // bfc_system_id: UID,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -235,7 +235,7 @@ module bridge::bridge {
 
     // this method is called once in end of epoch tx to create the bridge
     #[allow(unused_function)]
-    fun create(id: UID, bfc_system_id: UID, chain_id: u8, ctx: &mut TxContext) {
+    fun create(id: UID, chain_id: u8, ctx: &mut TxContext) {
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
         let bridge_inner = BridgeInner {
             bridge_version: CURRENT_VERSION,
@@ -251,7 +251,6 @@ module bridge::bridge {
             paused: false,
             refund_records: linked_table::new(ctx),
             refund_admins: vec_set::empty(),
-            bfc_system_id,
         };
         let bridge = Bridge {
             id,
@@ -313,6 +312,7 @@ module bridge::bridge {
     // pending state until approved
     public fun send_token<T>(
         bridge: &mut Bridge,
+        bfc_system_state: &mut Option<BfcSystemState>,
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
@@ -342,9 +342,9 @@ module bridge::bridge {
         );
 
         // burn / escrow token, unsupported coins will fail in this step
-        if (token_id == 5) { //BUSD type is 5
-            bfc_system::burn_stable_by_id(
-                &mut inner.bfc_system_id,
+        if (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
+            bfc_system_state.borrow_mut().burn_stable(
+                // &mut inner.bfc_system_id,
                 token,
                 ctx
             );
@@ -523,12 +523,13 @@ module bridge::bridge {
     // Set the max mint BUSD amount
     public fun set_max_mint_busd_amount(
         bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
         cap: &BfcSystemModifyCap,
         new_limit: u64,
         ctx: &mut TxContext,
         ) {
-        assert!(bfc_system::verify_capability_by_id(&bridge.bfc_system_id, cap, ctx), EUnauthorisedUpdateLimit);
         let inner = load_inner_mut(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
         inner.limiter.set_mint_busd_max_limit(new_limit);
     }
 
@@ -537,6 +538,7 @@ module bridge::bridge {
     // in which case, no event will be emitted and only abort code will be returned.
     public fun claim_token<T>(
         bridge: &mut Bridge,
+        bfc_system_state: &mut Option<BfcSystemState>,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
@@ -544,6 +546,7 @@ module bridge::bridge {
         ctx: &mut TxContext,
     ): Coin<T> {
         let (maybe_token, owner) = bridge.claim_token_internal<T>(
+            bfc_system_state,
             clock,
             source_chain,
             bridge_seq_num,
@@ -560,13 +563,14 @@ module bridge::bridge {
     // If the token has already been claimed or hits limiter currently, it will return instead of aborting.
     public fun claim_and_transfer_token<T>(
         bridge: &mut Bridge,
+        bfc_system_state: &mut Option<BfcSystemState>,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
         cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
-        let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, cap, ctx);
+        let (token, owner) = bridge.claim_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -997,6 +1001,7 @@ module bridge::bridge {
     // Returns Some(Coin) if coin can be claimed. If already claimed, return None
     fun claim_token_internal<T>(
         bridge: &mut Bridge,
+        bfc_system_state: &mut Option<BfcSystemState>,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
@@ -1063,10 +1068,11 @@ module bridge::bridge {
         };
 
         // claim from treasury
-        if (token_id == 5) { //BUSD type is 5
-            let busd = bfc_system::mint_stable_by_id<BUSD>(&mut inner.bfc_system_id, amount, cap, ctx);
+        if (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
             //transfer busd to owner
-            transfer::public_transfer(busd, owner);
+            bfc_system_state.borrow_mut().mint_stable_entry<BUSD>(amount, cap, ctx);
+
+            record.claimed = true;
             return  (option::none(), owner)
         };
 
@@ -1264,14 +1270,13 @@ module bridge::bridge {
     }
 
     #[test_only]
-    public fun create_bridge_for_testing(id: UID, chain_id: u8, bfc_system_id: UID, ctx: &mut TxContext) {
-        create(id, bfc_system_id, chain_id, ctx);
+    public fun create_bridge_for_testing(id: UID, chain_id: u8, ctx: &mut TxContext) {
+        create(id, chain_id, ctx);
     }
 
     #[test_only]
     public fun new_for_testing(chain_id: u8, ctx: &mut TxContext): Bridge {
         let id = object::new(ctx);
-        let bfc_system_id = object::new(ctx);
         let bridge_inner = BridgeInner {
             bridge_version: CURRENT_VERSION,
             message_version: MESSAGE_VERSION,
@@ -1289,7 +1294,6 @@ module bridge::bridge {
         };
         let mut bridge = Bridge {
             id,
-            bfc_system_id,
             inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
         };
         bridge.setup_treasury_for_testing();

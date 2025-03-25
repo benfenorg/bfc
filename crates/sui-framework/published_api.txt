@@ -5551,17 +5551,11 @@ mint_stable_entry
 mint_stable
 	public fun
 	0xc8::bfc_system
-mint_stable_by_id
-	public fun
-	0xc8::bfc_system
-verify_capability_by_id
+verify_capability
 	public fun
 	0xc8::bfc_system
 burn_stable
 	public entry fun
-	0xc8::bfc_system
-burn_stable_by_id
-	public fun
 	0xc8::bfc_system
 init_admin_capability
 	public entry fun

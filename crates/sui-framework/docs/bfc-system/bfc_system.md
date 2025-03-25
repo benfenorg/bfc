@@ -49,10 +49,8 @@ title: Module `0xc8::bfc_system`
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
--  [Function `mint_stable_by_id`](#0xc8_bfc_system_mint_stable_by_id)
--  [Function `verify_capability_by_id`](#0xc8_bfc_system_verify_capability_by_id)
+-  [Function `verify_capability`](#0xc8_bfc_system_verify_capability)
 -  [Function `burn_stable`](#0xc8_bfc_system_burn_stable)
--  [Function `burn_stable_by_id`](#0xc8_bfc_system_burn_stable_by_id)
 -  [Function `init_admin_capability`](#0xc8_bfc_system_init_admin_capability)
 -  [Function `add_admin_capability`](#0xc8_bfc_system_add_admin_capability)
 -  [Function `remove_admin_capability`](#0xc8_bfc_system_remove_admin_capability)
@@ -1448,13 +1446,13 @@ X treasury rebalance
 
 </details>
 
-<a name="0xc8_bfc_system_mint_stable_by_id"></a>
+<a name="0xc8_bfc_system_verify_capability"></a>
 
-## Function `mint_stable_by_id`
+## Function `verify_capability`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_mint_stable_by_id">mint_stable_by_id</a>&lt;StableCoinType&gt;(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability">verify_capability</a>(wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): bool
 </code></pre>
 
 
@@ -1463,42 +1461,12 @@ X treasury rebalance
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_mint_stable_by_id">mint_stable_by_id</a>&lt;StableCoinType&gt;(
-    id: &<b>mut</b> UID,
-    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    cap: &BfcSystemModifyCap,
-    ctx: &<b>mut</b> TxContext,
-): Coin&lt;StableCoinType&gt; {
-    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_verify_capability_by_id"></a>
-
-## Function `verify_capability_by_id`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability_by_id">verify_capability_by_id</a>(id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): bool
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability_by_id">verify_capability_by_id</a>(
-    id: &UID,
+<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability">verify_capability</a>(
+    wrapper: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
     cap: &BfcSystemModifyCap,
     ctx: &TxContext,
 ): bool {
-    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_by_uid">load_system_state_by_uid</a>(id);
+    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state">load_system_state</a>(wrapper);
     inner_state.verify_operation_capability(&cap.get_bfc_system_modify_cap_key(), ctx.sender())
 }
 </code></pre>
@@ -1528,35 +1496,6 @@ X treasury rebalance
     ctx: &<b>mut</b> TxContext,
 ){
     <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
-    <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_burn_stable">bfc_system_state_inner::burn_stable</a>&lt;StableCoinType&gt;(inner_state, token);
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xc8_bfc_system_burn_stable_by_id"></a>
-
-## Function `burn_stable_by_id`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_burn_stable_by_id">burn_stable_by_id</a>&lt;StableCoinType&gt;(id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;StableCoinType&gt;, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_burn_stable_by_id">burn_stable_by_id</a>&lt;StableCoinType&gt;(
-    id: &<b>mut</b> UID,
-    token: Coin&lt;StableCoinType&gt;,
-    _ctx: &<b>mut</b> TxContext,
-){
-    <b>let</b> inner_state = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut_by_uid">load_system_state_mut_by_uid</a>(id);
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_burn_stable">bfc_system_state_inner::burn_stable</a>&lt;StableCoinType&gt;(inner_state, token);
 }
 </code></pre>

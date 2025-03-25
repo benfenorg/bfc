@@ -120,12 +120,6 @@ title: Module `0xb::bridge`
 <dd>
 
 </dd>
-<dt>
-<code>bfc_system_id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a></code>
-</dt>
-<dd>
-
-</dd>
 </dl>
 
 
@@ -1321,7 +1315,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_create">create</a>(id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, bfc_system_id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, chain_id: u8, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_create">create</a>(id: <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, chain_id: u8, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1330,7 +1324,7 @@ title: Module `0xb::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_create">create</a>(id: UID, bfc_system_id: UID, chain_id: u8, ctx: &<b>mut</b> TxContext) {
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_create">create</a>(id: UID, chain_id: u8, ctx: &<b>mut</b> TxContext) {
     <b>assert</b>!(ctx.sender() == @0x0, <a href="bridge.md#0xb_bridge_ENotSystemAddress">ENotSystemAddress</a>);
     <b>let</b> bridge_inner = <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a> {
         bridge_version: <a href="bridge.md#0xb_bridge_CURRENT_VERSION">CURRENT_VERSION</a>,
@@ -1349,8 +1343,7 @@ title: Module `0xb::bridge`
     };
     <b>let</b> <a href="bridge.md#0xb_bridge">bridge</a> = <a href="bridge.md#0xb_bridge_Bridge">Bridge</a> {
         id,
-        inner: <a href="../sui-framework/versioned.md#0x2_versioned_create">versioned::create</a>(<a href="bridge.md#0xb_bridge_CURRENT_VERSION">CURRENT_VERSION</a>, bridge_inner, ctx),
-        bfc_system_id,
+        inner: <a href="../sui-framework/versioned.md#0x2_versioned_create">versioned::create</a>(<a href="bridge.md#0xb_bridge_CURRENT_VERSION">CURRENT_VERSION</a>, bridge_inner, ctx)
     };
     <a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
 }
@@ -1490,7 +1483,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>&gt;, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1501,6 +1494,7 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &<b>mut</b> Option&lt;BfcSystemState&gt;,
     target_chain: u8,
     target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     token: Coin&lt;T&gt;,
@@ -1530,7 +1524,15 @@ title: Module `0xb::bridge`
     );
 
     // burn / escrow token, unsupported coins will fail in this step
-    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
+    <b>if</b> (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
+        bfc_system_state.borrow_mut().burn_stable(
+            // &<b>mut</b> inner.bfc_system_id,
+            token,
+            ctx
+        );
+    } <b>else</b> {
+        inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
+    };
 
     // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
     inner.token_transfer_records.push_back(
@@ -1786,7 +1788,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_set_max_mint_busd_amount">set_max_mint_busd_amount</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_set_max_mint_busd_amount">set_max_mint_busd_amount</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1797,12 +1799,13 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_set_max_mint_busd_amount">set_max_mint_busd_amount</a>(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &BfcSystemState,
     cap: &BfcSystemModifyCap,
     new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &<b>mut</b> TxContext,
     ) {
-    <b>assert</b>!(<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_verify_capability_by_id">bfc_system::verify_capability_by_id</a>(&<a href="bridge.md#0xb_bridge">bridge</a>.bfc_system_id, cap, ctx), <a href="bridge.md#0xb_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(bfc_system_state.verify_capability(cap, ctx), <a href="bridge.md#0xb_bridge_EUnauthorisedUpdateLimit">EUnauthorisedUpdateLimit</a>);
     inner.<a href="limiter.md#0xb_limiter">limiter</a>.set_mint_busd_max_limit(new_limit);
 }
 </code></pre>
@@ -1817,7 +1820,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_token">claim_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_token">claim_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>&gt;, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;
 </code></pre>
 
 
@@ -1828,6 +1831,7 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_token">claim_token</a>&lt;T&gt;(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &<b>mut</b> Option&lt;BfcSystemState&gt;,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     source_chain: u8,
     bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
@@ -1835,6 +1839,7 @@ title: Module `0xb::bridge`
     ctx: &<b>mut</b> TxContext,
 ): Coin&lt;T&gt; {
     <b>let</b> (maybe_token, owner) = <a href="bridge.md#0xb_bridge">bridge</a>.<a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(
+        bfc_system_state,
         <a href="../sui-framework/clock.md#0x2_clock">clock</a>,
         source_chain,
         bridge_seq_num,
@@ -1858,7 +1863,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_and_transfer_token">claim_and_transfer_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_and_transfer_token">claim_and_transfer_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>&gt;, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1869,13 +1874,14 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_claim_and_transfer_token">claim_and_transfer_token</a>&lt;T&gt;(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &<b>mut</b> Option&lt;BfcSystemState&gt;,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     source_chain: u8,
     bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     cap: &BfcSystemModifyCap,
     ctx: &<b>mut</b> TxContext,
 ) {
-    <b>let</b> (token, owner) = <a href="bridge.md#0xb_bridge">bridge</a>.<a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(<a href="../sui-framework/clock.md#0x2_clock">clock</a>, source_chain, bridge_seq_num, cap, ctx);
+    <b>let</b> (token, owner) = <a href="bridge.md#0xb_bridge">bridge</a>.<a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(bfc_system_state, <a href="../sui-framework/clock.md#0x2_clock">clock</a>, source_chain, bridge_seq_num, cap, ctx);
     <b>if</b> (token.is_some()) {
         <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(token.destroy_some(), owner)
     } <b>else</b> {
@@ -2521,7 +2527,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;&gt;, <b>address</b>)
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>&gt;, <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &<a href="../sui-framework/clock.md#0x2_clock_Clock">clock::Clock</a>, source_chain: u8, bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;&gt;, <b>address</b>)
 </code></pre>
 
 
@@ -2532,6 +2538,7 @@ title: Module `0xb::bridge`
 
 <pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_claim_token_internal">claim_token_internal</a>&lt;T&gt;(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &<b>mut</b> Option&lt;BfcSystemState&gt;,
     <a href="../sui-framework/clock.md#0x2_clock">clock</a>: &Clock,
     source_chain: u8,
     bridge_seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
@@ -2598,10 +2605,11 @@ title: Module `0xb::bridge`
     };
 
     // claim from <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
-    <b>if</b> (token_id == 5) { //BUSD type is 5
-        <b>let</b> <a href="../bfc-system/busd.md#0xc8_busd">busd</a> = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_mint_stable_by_id">bfc_system::mint_stable_by_id</a>&lt;BUSD&gt;(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.bfc_system_id, amount, cap, ctx);
+    <b>if</b> (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
         //<a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="../bfc-system/busd.md#0xc8_busd">busd</a> <b>to</b> owner
-        <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../bfc-system/busd.md#0xc8_busd">busd</a>, owner);
+        bfc_system_state.borrow_mut().mint_stable_entry&lt;BUSD&gt;(amount, cap, ctx);
+
+        record.claimed = <b>true</b>;
         <b>return</b>  (<a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(), owner)
     };
 

@@ -590,22 +590,12 @@ module bfc_system::bfc_system {
         bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx)
     }
 
-    public fun mint_stable_by_id<StableCoinType>(
-        id: &mut UID,
-        amount: u64,
-        cap: &BfcSystemModifyCap,
-        ctx: &mut TxContext,
-    ): Coin<StableCoinType> {
-        let inner_state = load_system_state_mut_by_uid(id);
-        bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), ctx)
-    }
-
-    public fun verify_capability_by_id(
-        id: &UID,
+    public fun verify_capability(
+        wrapper: &BfcSystemState,
         cap: &BfcSystemModifyCap,
         ctx: &TxContext,
     ): bool {
-        let inner_state = load_system_state_by_uid(id);
+        let inner_state = load_system_state(wrapper);
         inner_state.verify_operation_capability(&cap.get_bfc_system_modify_cap_key(), ctx.sender())
     }
 
@@ -615,15 +605,6 @@ module bfc_system::bfc_system {
         ctx: &mut TxContext,
     ){
         let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
-        bfc_system_state_inner::burn_stable<StableCoinType>(inner_state, token);
-    }
-
-    public fun burn_stable_by_id<StableCoinType>(
-        id: &mut UID,
-        token: Coin<StableCoinType>,
-        _ctx: &mut TxContext,
-    ){
-        let inner_state = load_system_state_mut_by_uid(id);
         bfc_system_state_inner::burn_stable<StableCoinType>(inner_state, token);
     }
 
