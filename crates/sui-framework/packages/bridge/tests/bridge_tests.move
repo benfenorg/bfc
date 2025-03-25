@@ -460,6 +460,30 @@ fun test_remove_witness(){
 }
 
 #[test]
+fun test_add_target_address(){
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let addr = b"n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3";
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_target(coin_type, addr.to_ascii_string());
+    env.destroy_env();
+
+}
+
+#[test]
+fun test_remove_target_address(){
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let addr = b"n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3";
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    env.add_external_coin_target(coin_type, addr.to_ascii_string());
+    env.remove_external_coin_target(coin_type, addr.to_ascii_string());
+    env.destroy_env();
+}
+
+#[test]
 fun test_remove_witness_verify_bitcoin_signatures(){
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();

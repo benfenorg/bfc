@@ -5,6 +5,10 @@ use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
 use crate::types::AddExternalCoinAdminAction;
 use crate::types::RemoveExternalCoinAdminAction;
+use crate::types::AddExternalCoinWitnessAction;
+use crate::types::RemoveExternalCoinWitnessAction;
+use crate::types::AddExternalCoinTargetAction;
+use crate::types::RemoveExternalCoinTargetAction;
 use crate::types::AssetPriceUpdateAction;
 use crate::types::BlocklistCommitteeAction;
 use crate::types::BridgeAction;
@@ -27,6 +31,10 @@ pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const ADD_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
+pub const ADD_EXTERNAL_COIN_WITNESS_MESSAGE_VERSION: u8 = 1;
+pub const REMOVE_EXTERNAL_COIN_WITNESS_MESSAGE_VERSION: u8 = 1;
+pub const ADD_EXTERNAL_COIN_TARGET_MESSAGE_VERSION: u8 = 1;
+pub const REMOVE_EXTERNAL_COIN_TARGET_MESSAGE_VERSION: u8 = 1;
 pub const EMERGENCY_BUTTON_MESSAGE_VERSION: u8 = 1;
 pub const LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
@@ -400,7 +408,7 @@ impl BridgeMessageEncoding for AddExternalCoinAdminAction {
 
         bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
         bytes.extend_from_slice(&bcs::to_bytes(&self.admin_address).unwrap());
-      
+
         bytes
     }
 }
@@ -426,10 +434,116 @@ impl BridgeMessageEncoding for RemoveExternalCoinAdminAction {
 
         bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
         bytes.extend_from_slice(&bcs::to_bytes(&self.admin_address).unwrap());
-      
+
         bytes
     }
 }
+
+impl BridgeMessageEncoding for AddExternalCoinWitnessAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddExternalCoinWitness as u8);
+        // Add message version
+        bytes.push(ADD_EXTERNAL_COIN_WITNESS_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.witness_address).unwrap());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for RemoveExternalCoinWitnessAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::RemoveExternalCoinWitness as u8);
+        // Add message version
+        bytes.push(REMOVE_EXTERNAL_COIN_WITNESS_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.witness_address).unwrap());
+
+        bytes
+    }
+}
+
+
+impl BridgeMessageEncoding for AddExternalCoinTargetAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddExternalCoinTarget as u8);
+        // Add message version
+        bytes.push(ADD_EXTERNAL_COIN_TARGET_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.target_address).unwrap());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for RemoveExternalCoinTargetAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::RemoveExternalCoinTarget as u8);
+        // Add message version
+        bytes.push(REMOVE_EXTERNAL_COIN_TARGET_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+
+        bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
+        bytes.extend_from_slice(&bcs::to_bytes(&self.target_address).unwrap());
+
+        bytes
+    }
+}
+
 
 impl BridgeMessageEncoding for AddTokensOnSuiAction {
     fn as_bytes(&self) -> Vec<u8> {

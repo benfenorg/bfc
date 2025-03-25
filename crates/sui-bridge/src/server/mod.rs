@@ -14,6 +14,8 @@ use crate::{
         BlocklistCommitteeAction, BlocklistType, BridgeAction, EmergencyAction,
         EmergencyActionType, EvmContractUpgradeAction, LimitUpdateAction, SignedBridgeAction,
         AddExternalCoinAdminAction, RemoveExternalCoinAdminAction,
+        AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
+        AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
     },
 };
 use axum::{
@@ -62,6 +64,15 @@ pub const ADD_EXTERNAL_COIN_ADMIN: &str =
     "/sign/add_external_coin_admin/:chain_id/:nonce/:coin_type/:admin_address";
 pub const REMOVE_EXTERNAL_COIN_ADMIN: &str =
     "/sign/remove_external_coin_admin/:chain_id/:nonce/:coin_type/:admin_address";
+pub const ADD_EXTERNAL_COIN_WITNESS: &str =
+    "/sign/add_external_coin_witness/:chain_id/:nonce/:coin_type/:witness_address";
+pub const REMOVE_EXTERNAL_COIN_WITNESS: &str =
+    "/sign/remove_external_coin_witness/:chain_id/:nonce/:coin_type/:witness_address";
+pub const ADD_EXTERNAL_COIN_TARGET: &str =
+    "/sign/add_external_coin_target/:chain_id/:nonce/:coin_type/:target_address";
+pub const REMOVE_EXTERNAL_COIN_TARGET: &str =
+    "/sign/remove_external_coin_target/:chain_id/:nonce/:coin_type/:target_address";
+
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
 pub const ADD_TOKENS_ON_EVM_PATH: &str =
@@ -142,6 +153,10 @@ pub(crate) fn make_router(
         .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
         .route(ADD_EXTERNAL_COIN_ADMIN, get(handle_add_external_coin_admin))
         .route(REMOVE_EXTERNAL_COIN_ADMIN, get(handle_remove_external_coin_admin))
+        .route(ADD_EXTERNAL_COIN_WITNESS, get(handle_add_external_coin_witness))
+        .route(REMOVE_EXTERNAL_COIN_WITNESS, get(handle_remove_external_coin_witness))
+        .route(ADD_EXTERNAL_COIN_TARGET, get(handle_add_external_coin_target))
+        .route(REMOVE_EXTERNAL_COIN_TARGET, get(handle_remove_external_coin_target))
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
         .with_state((handler, metrics, metadata))
@@ -472,7 +487,7 @@ async fn handle_add_external_coin_admin(
                 "handle_add_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
-    
+
         let action = BridgeAction::AddExternalCoinAdminAction(AddExternalCoinAdminAction {
             coin_type,
             admin_address,
@@ -509,10 +524,158 @@ async fn handle_remove_external_coin_admin(
                 "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
-    
+
         let action = BridgeAction::RemoveExternalCoinAdminAction(RemoveExternalCoinAdminAction {
             coin_type,
             admin_address,
+            chain_id,
+            nonce,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_remove_tokens_on_sui", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
+async fn handle_add_external_coin_target(
+    Path((chain_id, nonce, coin_type, target_address)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_add_external_coin_admin only expects Sui chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::AddExternalCoinTargetAction(AddExternalCoinTargetAction {
+            coin_type,
+            target_address,
+            chain_id,
+            nonce,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
+async fn handle_remove_external_coin_target(
+    Path((chain_id, nonce, coin_type, target_address)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction {
+            coin_type,
+            target_address,
+            chain_id,
+            nonce,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_remove_tokens_on_sui", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, witness_address=witness_address))]
+async fn handle_add_external_coin_witness(
+    Path((chain_id, nonce, coin_type, witness_address)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_add_external_coin_admin only expects Sui chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+            coin_type,
+            witness_address: witness_address.into_bytes(),
+            chain_id,
+            nonce,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type,witness_address=witness_address))]
+async fn handle_remove_external_coin_witness(
+    Path((chain_id, nonce, coin_type, witness_address)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
+            coin_type,
+            witness_address: witness_address.into_bytes(),
             chain_id,
             nonce,
         });

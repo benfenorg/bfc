@@ -21,6 +21,7 @@ module bridge::bridge {
         Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
         AddExternalCoinAdmin, RemoveExternalCoinAdmin,RefundMessageKey,
         AddExternalCoinWitness,RemoveExternalCoinWitness,
+        AddExternalCoinTarget,RemoveExternalCoinTarget,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
@@ -583,17 +584,34 @@ module bridge::bridge {
         } else if (message_type == message_types::refund_admin_operate()) {
             let payload = message.extract_refund_admin_payload();
             inner.execute_refund_admin_operate(payload);
-        } else if  (message_type == message_types::add_bitcoin_witness()){
+        } else if  (message_type == message_types::add_external_coin_witness()){
             let payload = message.extract_add_witness_poyload();
             inner.execute_add_external_coin_witness(payload);
 
-        }else if  (message_type == message_types::remove_bitcoin_witness()){
+        }else if  (message_type == message_types::remove_external_coin_witness()){
             let payload = message.extract_remove_witness_poyload();
             inner.execute_remove_external_coin_witness(payload);
+
+        }else if  (message_type == message_types::add_external_coin_target()){
+            let payload = message.extract_add_external_target_address_poyload();
+            inner.execute_add_external_coin_target_payload(payload);
+        }else if  (message_type == message_types::remove_external_coin_target()){
+            let payload = message.extract_remove_external_target_address_poyload();
+            inner.execute_remove_external_coin_target_payload(payload);
 
         }else {
             abort EUnexpectedMessageType
         };
+    }
+
+    public fun get_available_claim_amount<T>(
+          bridge: &Bridge,
+          source_chain: u8,
+          target_chain: u8,
+    ): u64 {
+        let inner = load_inner(bridge);
+        let route = chain_ids::get_route(source_chain, target_chain);
+        inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
     }
 
     public fun pre_deposit_external_coin<T>(
@@ -827,7 +845,6 @@ module bridge::bridge {
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
-        _signatures: vector<u8>,
         ctx: &mut TxContext
     ) {
         let inner = load_inner_mut(bridge);
@@ -1118,6 +1135,20 @@ module bridge::bridge {
         inner.treasury.remove_external_coin_admin(
             payload.remove_external_coin_admin_payload_coin_type(),
             payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_add_external_coin_target_payload(inner: &mut BridgeInner, payload: AddExternalCoinTarget) {
+        inner.treasury.add_external_coin_target(
+            payload.add_external_coin_target_payload_coin_type(),
+            payload.add_external_coin_target_payload_target_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_target_payload(inner: &mut BridgeInner, payload: RemoveExternalCoinTarget) {
+        inner.treasury.remove_external_coin_target(
+            payload.remove_external_coin_target_payload_coin_type(),
+            payload.remove_external_coin_target_payload_target_address(),
         )
     }
 
