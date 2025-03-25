@@ -4,16 +4,16 @@
 //! BridgeActionExecutor receives BridgeActions (from BridgeOrchestrator),
 //! collects bridge authority signatures and submit signatures on chain.
 
+use crate::abi::EthToSuiTokenBridgeV1;
 use crate::aml_checker::AMLCheckerWrapper;
 use crate::retry_with_max_elapsed_time;
-use crate::types::IsBridgePaused;
+use crate::types::{EthToSuiBridgeAction, IsBridgePaused};
 use arc_swap::ArcSwap;
 use mysten_metrics::spawn_logged_monitored_task;
 use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{
     SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse,
 };
-use sui_types::object::Object;
 use sui_types::transaction::ObjectArg;
 use sui_types::TypeTag;
 use sui_types::{
@@ -526,7 +526,7 @@ where
         );
         let signed_tx = Transaction::from_data(tx_data, vec![sig]);
         let tx_digest = *signed_tx.digest();
-
+        tracing::info!("bbking 325 signed_tx: {:?} action: {:?}", signed_tx, action);
         // Check twice: If the action is already processed, skip it.
         if Self::handle_already_processed_token_transfer_action_maybe(
             sui_client, action, store, metrics,
@@ -657,9 +657,45 @@ pub async fn submit_to_executor(
     tx: &mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
     action: BridgeAction,
 ) -> Result<(), BridgeError> {
-    tx.send(BridgeActionExecutionWrapper(action, 0))
+    tracing::info!("bbking 325 action2: {:?}", action);
+    if action.is_stable_coin() {
+        match action {
+            BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                let action = EthToSuiBridgeAction{
+                    eth_tx_hash: action_inner.eth_tx_hash,
+                    eth_event_index: action_inner.eth_event_index,
+                    eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
+                };
+                tracing::info!("bbking action: {:?}", action);
+                println!("bbking action: {:?}", action);         
+                tx.send(BridgeActionExecutionWrapper(BridgeAction::EthToSuiBridgeAction(action), 0))
+                .await
+                .map_err(|e| BridgeError::Generic(e.to_string()))
+            },
+            _ => {
+                return Err(BridgeError::Generic("Not a stable coin".to_string()));
+            }
+        }
+    }else{
+        tx.send(BridgeActionExecutionWrapper(action, 0))
         .await
         .map_err(|e| BridgeError::Generic(e.to_string()))
+    }
+}
+
+pub async fn get_stable_coin_convertor(action: &BridgeAction) -> (u64, u64) {
+    if !action.is_stable_coin() {
+        return (0, 0);
+    }
+    let (token_id, sui_adjusted_amount) = match action {
+        BridgeAction::EthToSuiBridgeAction(action_inner) => {
+            action_inner.eth_bridge_event.stable_coin_convertor()
+        }
+        _ => {
+            (0, 0)
+        }
+    };
+    (token_id, sui_adjusted_amount)
 }
 
 pub async fn submit_to_aml_checker(

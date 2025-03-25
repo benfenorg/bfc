@@ -6,7 +6,7 @@
 //! 2. updates WAL table and cursor tables
 //! 2. hands actions to `BridgeExecutor` for execution
 
-use crate::abi::{EthBridgeEvent, EthToSuiTokenBridgeV1};
+use crate::abi::EthBridgeEvent;
 use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
@@ -16,10 +16,9 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::BridgeOrchestratorTables;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{BridgeAction, EthLog, EthToSuiBridgeAction};
+use crate::types::{BridgeAction, EthLog};
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
-use sui_types::bridge::TOKEN_ID_BUSD;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
@@ -269,25 +268,8 @@ where
                             action.chain_id().to_string().as_str(),
                             action.action_type().to_string().as_str(),
                         ]);
-                        let (token_id, sui_adjusted_amount) = Self::get_stable_coin_convertor(&action).await;
-                        if token_id == TOKEN_ID_BUSD {
-                            match action {
-                                BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                                    let action = EthToSuiBridgeAction{
-                                        eth_tx_hash: action_inner.eth_tx_hash,
-                                        eth_event_index: action_inner.eth_event_index,
-                                        eth_bridge_event: EthToSuiTokenBridgeV1::try_from(action_inner.eth_bridge_event).unwrap(),
-                                    };
-                                    tracing::info!("bbking action: {:?}", action);
-                                    println!("bbking action: {:?}", action);
-                                    actions.push(BridgeAction::EthToSuiBridgeAction(action));
-                                },
-                                _ => {}
-                            }
-                            
-                        }else{
-                            actions.push(action);
-                        }
+                        tracing::info!("bbking 325 action: {:?}", action);
+                        actions.push(action);
                     }
                     Ok(None) => {}
                     Err(e) => {

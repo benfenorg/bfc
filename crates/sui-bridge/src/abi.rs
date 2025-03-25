@@ -125,12 +125,10 @@ impl EthBridgeEvent {
                             }
                         };
 
-                        let bridge_event_stable = EthToSuiTokenBridgeV1::try_from(&bridge_event)?;
-
                         Some(BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
                             eth_tx_hash,
                             eth_event_index,
-                            eth_bridge_event: bridge_event_stable,
+                            eth_bridge_event: bridge_event,
                         }))
                     }
                     EthSuiBridgeEvents::TokensClaimedFilter(_event) => None,

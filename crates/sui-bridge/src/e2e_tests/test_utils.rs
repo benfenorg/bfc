@@ -1405,13 +1405,18 @@ pub async fn initiate_bridge_sui_to_eth(
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
     if expect_token_id == TOKEN_ID_ETH{
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
+        assert_eq!(
+            bridge_event.sui_bridge_event.amount_sui_adjusted,
+            sui_amount
+        );
     }else{
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
+        assert_eq!(
+            bridge_event.sui_bridge_event.amount_sui_adjusted,
+            sui_amount*1000
+        );
     };
-    assert_eq!(
-        bridge_event.sui_bridge_event.amount_sui_adjusted,
-        sui_amount
-    );
+    
 
     // Wait for the bridge action to be approved
     wait_for_transfer_action_status(

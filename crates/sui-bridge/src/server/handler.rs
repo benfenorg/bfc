@@ -3,12 +3,13 @@
 
 #![allow(clippy::type_complexity)]
 
+use crate::abi::EthToSuiTokenBridgeV1;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
 use crate::error::{BridgeError, BridgeResult};
 use crate::eth_client::EthClient;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{BridgeAction, BridgeActionType, SignedBridgeAction};
+use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -241,6 +242,27 @@ where
             .inc();
         match verifier.verify(key.clone()).await {
             Ok(bridge_action) => {
+                let bridge_action = if bridge_action.is_stable_coin() {
+                    let action_inner = match bridge_action {
+                        BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                            action_inner
+                        }
+                        _ => {
+                            return Err(BridgeError::Generic("Not a stable coin".to_string()));
+                        }
+                    };
+                    let action = EthToSuiBridgeAction{
+                        eth_tx_hash: action_inner.eth_tx_hash,
+                        eth_event_index: action_inner.eth_event_index,
+                        eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
+                    };
+                    BridgeAction::EthToSuiBridgeAction(action)
+                } else {
+                    bridge_action
+                };
+                tracing::info!("bbking 3251 bridge_action: {:?}", bridge_action);
+
+                
                 let sig = BridgeAuthoritySignInfo::new(&bridge_action, &signer);
                 let result = SignedBridgeAction::new_from_data_and_sig(bridge_action, sig);
                 // Cache result if Ok
