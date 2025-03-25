@@ -2610,6 +2610,7 @@ title: Module `0xb::bridge`
         bfc_system_state.borrow_mut().mint_stable_entry&lt;BUSD&gt;(amount, cap, ctx);
 
         record.claimed = <b>true</b>;
+        emit(<a href="bridge.md#0xb_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
         <b>return</b>  (<a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(), owner)
     };
 
