@@ -24,7 +24,7 @@ use sui_types::base_types::{
     ExecutionDigests, ObjectID, SequenceNumber, SuiAddress, TransactionDigest, TxContext,
 };
 use sui_types::bridge::{BridgeChainId, BRIDGE_CREATE_FUNCTION_NAME, BRIDGE_MODULE_NAME};
-use sui_types::{SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
+use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use sui_types::committee::Committee;
 use sui_types::crypto::{
     AuthorityKeyPair, AuthorityPublicKeyBytes, AuthoritySignInfo, AuthoritySignInfoTrait,
@@ -1395,6 +1395,7 @@ pub fn generate_genesis_system_object(
             vec![],
             vec![],
         );
+        dbg!(&bfc_system_state_uid);
 
         // Step 2: Create and share the Clock.
         builder.move_call(
@@ -1439,6 +1440,9 @@ pub fn generate_genesis_system_object(
             let bridge_uid = builder
                 .input(CallArg::Pure(UID::new(SUI_BRIDGE_OBJECT_ID).to_bcs_bytes()))
                 .unwrap();
+            // let bfc_system_id = builder
+            //     .input(CallArg::Pure(UID::new(BFC_SYSTEM_STATE_OBJECT_ID).to_bcs_bytes()))
+            //     .unwrap();
             // TODO(bridge): this needs to be passed in as a parameter for next testnet regenesis
             // Hardcoding chain id to SuiCustom
             let bridge_chain_id = builder.pure(BridgeChainId::SuiCustom).unwrap();
@@ -1449,6 +1453,8 @@ pub fn generate_genesis_system_object(
                 vec![],
                 vec![bridge_uid, bridge_chain_id],
             );
+        }else {
+            dbg!(&protocol_config.enable_bridge());
         }
 
         // Step 4: Mint the supply of SUI.
@@ -1476,7 +1482,7 @@ pub fn generate_genesis_system_object(
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
-        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid,sui_supply];
+        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid, sui_supply];
         let mut call_arg_arguments = vec![
             CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),

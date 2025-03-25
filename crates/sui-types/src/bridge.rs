@@ -254,6 +254,7 @@ pub struct BridgeInnerV1 {
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
     pub refund_admins: VecSet<String>,
+    // pub bfc_system_id: UID,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
@@ -342,9 +343,11 @@ impl BridgeTrait for BridgeInnerV1 {
                 Ok((source, destination, e.value))
             })
             .collect::<SuiResult<Vec<_>>>()?;
+        let max_mint_busd_limit = self.limiter.max_mint_busd_limit;
         let limiter = BridgeLimiterSummary {
             transfer_limit,
             transfer_records,
+            max_mint_busd_limit
         };
         Ok(BridgeSummary {
             bridge_version: self.bridge_version,
@@ -439,6 +442,7 @@ pub struct BridgeCommitteeSummary {
 pub struct BridgeLimiterSummary {
     pub transfer_limit: Vec<(BridgeChainId, BridgeChainId, u64)>,
     pub transfer_records: Vec<(BridgeChainId, BridgeChainId, MoveTypeBridgeTransferRecord)>,
+    pub max_mint_busd_limit: u64,
 }
 
 #[serde_as]
@@ -485,6 +489,7 @@ pub struct MoveTypeRefundMessageKey {
 pub struct MoveTypeBridgeTransferLimiter {
     pub transfer_limit: VecMap<MoveTypeBridgeRoute, u64>,
     pub transfer_records: VecMap<MoveTypeBridgeRoute, MoveTypeBridgeTransferRecord>,
+    pub max_mint_busd_limit: u64,
 }
 
 /// Rust version of the Move chain_ids::BridgeRoute type.

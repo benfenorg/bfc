@@ -1012,6 +1012,14 @@ module bfc_system::bfc_system_state_inner {
     }
 
     #[test_only]
+    public fun create_bfc_system_modify_cap_for_test(ctx: &mut TxContext, recipient: address, key: String) {
+        let cap = BfcSystemModifyCap {
+            key,
+            id: object::new(ctx),
+        };
+        transfer::transfer(cap, recipient);
+    }
+    #[test_only]
     public(package) fun get_external_stable_gas_coin_list(self: &BfcSystemStateInnerV2): &vector<ascii::String> {
         if (self.extra_fields.contains(KEY_EXTERNAL_STABLE_GAS_COIN_LIST)) {
             let list = self.extra_fields.borrow<vector<u8>, vector<ascii::String>>(KEY_EXTERNAL_STABLE_GAS_COIN_LIST);

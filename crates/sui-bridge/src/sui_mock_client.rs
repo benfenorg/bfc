@@ -155,6 +155,9 @@ impl SuiClientInner for SuiMockClient {
     async fn notify_something_done(&self) {
         self.requested_transactions_tx.send(TransactionDigest::random()).unwrap();
     }
+    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error> {
+        unimplemented!()
+    }
 
     async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error> {
         unimplemented!()

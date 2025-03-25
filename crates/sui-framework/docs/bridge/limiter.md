@@ -9,6 +9,8 @@ title: Module `0xb::limiter`
 -  [Struct `UpdateRouteLimitEvent`](#0xb_limiter_UpdateRouteLimitEvent)
 -  [Constants](#@Constants_0)
 -  [Function `get_route_limit`](#0xb_limiter_get_route_limit)
+-  [Function `get_mint_busd_max_limit`](#0xb_limiter_get_mint_busd_max_limit)
+-  [Function `set_mint_busd_max_limit`](#0xb_limiter_set_mint_busd_max_limit)
 -  [Function `new`](#0xb_limiter_new)
 -  [Function `check_and_record_sending_transfer`](#0xb_limiter_check_and_record_sending_transfer)
 -  [Function `update_route_limit`](#0xb_limiter_update_route_limit)
@@ -52,6 +54,12 @@ title: Module `0xb::limiter`
 </dd>
 <dt>
 <code>transfer_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>, <a href="limiter.md#0xb_limiter_TransferRecord">limiter::TransferRecord</a>&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>max_mint_busd_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -150,6 +158,15 @@ title: Module `0xb::limiter`
 ## Constants
 
 
+<a name="0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT"></a>
+
+
+
+<pre><code><b>const</b> <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 100000;
+</code></pre>
+
+
+
 <a name="0xb_limiter_ELimitNotFoundForRoute"></a>
 
 
@@ -201,6 +218,54 @@ title: Module `0xb::limiter`
 
 </details>
 
+<a name="0xb_limiter_get_mint_busd_max_limit"></a>
+
+## Function `get_mint_busd_max_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>(self: &<a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>(self: &<a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.max_mint_busd_limit
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_limiter_set_mint_busd_max_limit"></a>
+
+## Function `set_mint_busd_max_limit`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="limiter.md#0xb_limiter_set_mint_busd_max_limit">set_mint_busd_max_limit</a>(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="limiter.md#0xb_limiter_set_mint_busd_max_limit">set_mint_busd_max_limit</a>(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>, new_limit: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) {
+    self.max_mint_busd_limit = new_limit;
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_limiter_new"></a>
 
 ## Function `new`
@@ -220,7 +285,8 @@ title: Module `0xb::limiter`
     // hardcoded limit for <a href="bridge.md#0xb_bridge">bridge</a> <a href="../sui-system/genesis.md#0x3_genesis">genesis</a>
     <a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a> {
         transfer_limits: <a href="limiter.md#0xb_limiter_initial_transfer_limits">initial_transfer_limits</a>(),
-        transfer_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>()
+        transfer_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        max_mint_busd_limit: <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>,
     }
 }
 </code></pre>
