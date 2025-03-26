@@ -256,14 +256,11 @@ fn build_token_bridge_approve_transaction(
     );
 
     if claim {
-        tracing::info!("build_sui_transaction claim before");
-        let system_obj = builder.pure(CallArg::Pure(bcs::to_bytes(&Option::Some(ObjectArg::BFC_SYSTEM_MUT))?)).unwrap();
-        tracing::info!("build_sui_transaction claim after");
-        // let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
             sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-            ident_str!("claim_and_transfer_token").to_owned(),
+            ident_str!("claim_and_transfer_busd").to_owned(),
             vec![sui_token_type_tags
                 .get(&token_type)
                 .ok_or(BridgeError::UnknownTokenId(token_type))?

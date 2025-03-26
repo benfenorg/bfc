@@ -697,20 +697,21 @@ async fn test_bridge_usdt_to_sui() {
     // There are exactly 1 approved and 1 claimed event
     assert_eq!(events.len(), 2);
     let sui_address = bridge_test_cluster.sui_user_address();
-    let busd_coin = bridge_test_cluster
+    let all_coins = bridge_test_cluster
         .sui_client()
         .coin_read_api()
         .get_all_coins(sui_address, None, None)
         .await
-        .unwrap()
-        .data
+        .unwrap().data;
+    tracing::info!("bbking 0325 all_coins: {:?}", all_coins);
+    let busd_coin = all_coins
         .iter()
         .find(|c| c.coin_type.contains("BUSD"))
         .expect("Recipient should have received BUSD coin now")
-        .clone();
+        .clone();       
     assert_eq!(busd_coin.balance, 100000000000);
     info!(
-        "[Timer] Eth to Sui bridge transfer finished in {:?}",
+        "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
     );
 

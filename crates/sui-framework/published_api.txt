@@ -6172,6 +6172,9 @@ claim_token
 claim_and_transfer_token
 	public fun
 	0xb::bridge
+claim_and_transfer_busd
+	public fun
+	0xb::bridge
 execute_system_message
 	public fun
 	0xb::bridge
@@ -6206,6 +6209,9 @@ load_inner_mut
 	fun
 	0xb::bridge
 claim_token_internal
+	fun
+	0xb::bridge
+claim_stable_token_internal
 	fun
 	0xb::bridge
 execute_emergency_op

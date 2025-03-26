@@ -563,7 +563,6 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
-        _cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
         let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, ctx);
@@ -574,7 +573,7 @@ module bridge::bridge {
         };
     }
 
-    public fun claim_and_transfer_stable_token<T>(
+    public fun claim_and_transfer_busd<T>(
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
         clock: &Clock,
