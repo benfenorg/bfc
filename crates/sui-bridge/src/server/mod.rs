@@ -47,6 +47,7 @@ pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
+pub const EXTERNAL_TO_SUI_TX_PATH: &str = "sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
 pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
@@ -124,6 +125,7 @@ pub(crate) fn make_router(
         .route(ETH_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
         .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
         .route(SUI_TO_ETH_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
+        .route(EXTERNAL_TO_SUI_TX_PATH, get(handle_external_coin_tx_digest))
         .route(
             COMMITTEE_BLOCKLIST_UPDATE_PATH,
             get(handle_update_committee_blocklist_action),
@@ -237,6 +239,24 @@ async fn handle_send_back_tx_digest(
     let future = async {
         let sig: Json<SignedBridgeAction> = handler
             .handle_send_back_tx_digest(tx_digest_base58, event_idx)
+            .await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_send_back_tx_digest", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(tx_digest_base58=tx_digest_base58, event_idx=event_idx))]
+async fn handle_external_coin_tx_digest(
+    Path((tx_digest_base58, event_idx)): Path<(String, u16)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let sig: Json<SignedBridgeAction> = handler
+            .handle_external_coin_tx_digest(tx_digest_base58, event_idx)
             .await?;
         Ok(sig)
     };
