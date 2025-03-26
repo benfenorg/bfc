@@ -459,7 +459,7 @@ impl BridgeMessageEncoding for AddExternalCoinWitnessAction {
         let mut bytes = Vec::new();
 
         bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
-        bytes.extend_from_slice(&bcs::to_bytes(&self.witness_address).unwrap());
+        bytes.extend_from_slice(&self.witness_address);
 
         bytes
     }
@@ -485,8 +485,7 @@ impl BridgeMessageEncoding for RemoveExternalCoinWitnessAction {
         let mut bytes = Vec::new();
 
         bytes.extend_from_slice(&bcs::to_bytes(&self.coin_type).unwrap());
-        bytes.extend_from_slice(&bcs::to_bytes(&self.witness_address).unwrap());
-
+        bytes.extend_from_slice(&self.witness_address);
         bytes
     }
 }
