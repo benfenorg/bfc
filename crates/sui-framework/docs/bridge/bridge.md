@@ -1276,6 +1276,24 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EUseClaimBusd"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUseClaimBusd">EUseClaimBusd</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 26;
+</code></pre>
+
+
+
+<a name="0xb_bridge_EUseSendBusd"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUseSendBusd">EUseSendBusd</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 25;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EVM_ADDRESS_LENGTH"></a>
 
 
@@ -1530,6 +1548,7 @@ title: Module `0xb::bridge`
     <b>let</b> token_id = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.token_id&lt;T&gt;();
     <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>assert</b>!(token_id != 5, <a href="bridge.md#0xb_bridge_EUseSendBusd">EUseSendBusd</a>);
 
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
     <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
@@ -2682,7 +2701,8 @@ title: Module `0xb::bridge`
 ): (Option&lt;Coin&lt;T&gt;&gt;, <b>address</b>) {
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
-
+    <b>let</b> is_busd = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;();
+    <b>assert</b>!(!is_busd, <a href="bridge.md#0xb_bridge_EUseClaimBusd">EUseClaimBusd</a>);
     <b>let</b> key = <a href="message.md#0xb_message_create_key">message::create_key</a>(source_chain, <a href="message_types.md#0xb_message_types_token">message_types::token</a>(), bridge_seq_num);
     <b>assert</b>!(inner.token_transfer_records.contains(key), <a href="bridge.md#0xb_bridge_EMessageNotFoundInRecords">EMessageNotFoundInRecords</a>);
 
@@ -2797,6 +2817,7 @@ title: Module `0xb::bridge`
     <b>let</b> owner = address::from_bytes(token_payload.token_target_address());
     // get token type
     <b>let</b> token_id = token_payload.token_type();
+    <b>assert</b>!(token_id == 5, <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
 
     // If already claimed, exit early
     <b>if</b> (record.claimed) {
@@ -2835,14 +2856,10 @@ title: Module `0xb::bridge`
     };
 
     // claim from <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
-    <b>if</b> (token_id == 5 ) { //BUSD type is 5
-        //<a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="../bfc-system/busd.md#0xc8_busd">busd</a> <b>to</b> owner
-        bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, owner, ctx);
-
-        record.claimed = <b>true</b>;
-        emit(<a href="bridge.md#0xb_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
-    };
-
+    //<a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="../bfc-system/busd.md#0xc8_busd">busd</a> <b>to</b> owner
+    bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, owner, ctx);
+    record.claimed = <b>true</b>;
+    emit(<a href="bridge.md#0xb_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
     (<a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(), owner)
 }
 </code></pre>
