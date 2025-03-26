@@ -268,7 +268,6 @@ where
                             action.chain_id().to_string().as_str(),
                             action.action_type().to_string().as_str(),
                         ]);
-                        tracing::info!("bbking 325 action: {:?}", action);
                         actions.push(action);
                     }
                     Ok(None) => {}

@@ -526,7 +526,6 @@ where
         );
         let signed_tx = Transaction::from_data(tx_data, vec![sig]);
         let tx_digest = *signed_tx.digest();
-        tracing::info!("bbking 325 signed_tx: {:?} action: {:?}", signed_tx, action);
         // Check twice: If the action is already processed, skip it.
         if Self::handle_already_processed_token_transfer_action_maybe(
             sui_client, action, store, metrics,
@@ -543,7 +542,6 @@ where
             .await
         {
             Ok(resp) => {
-                tracing::info!("bbking 0325 resp: {:?}", resp);
                 Self::handle_execution_effects(tx_digest, resp, store, action, metrics).await
             }
 
@@ -658,7 +656,6 @@ pub async fn submit_to_executor(
     tx: &mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
     action: BridgeAction,
 ) -> Result<(), BridgeError> {
-    tracing::info!("bbking 325 action2: {:?}", action);
     if action.is_stable_coin() {
         match action {
             BridgeAction::EthToSuiBridgeAction(action_inner) => {
@@ -667,8 +664,6 @@ pub async fn submit_to_executor(
                     eth_event_index: action_inner.eth_event_index,
                     eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
                 };
-                tracing::info!("bbking action: {:?}", action);
-                println!("bbking action: {:?}", action);         
                 tx.send(BridgeActionExecutionWrapper(BridgeAction::EthToSuiBridgeAction(action), 0))
                 .await
                 .map_err(|e| BridgeError::Generic(e.to_string()))

@@ -1365,7 +1365,6 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         {
             Ok(resp) => {
-                tracing::info!("Sui resp: {:?}", resp);
                 if !resp.status_ok().unwrap() {
                     return Err(anyhow!("Sui TX error"));
                 } else {
@@ -1624,8 +1623,6 @@ pub async fn initiate_bridge_erc20_to_sui(
     else {
         unreachable!();
     };
-    tracing::info!("bbking 0325 tx_receipt: {:?}", tx_receipt);
-    tracing::info!("bbking 0325 eth_bridge_event: {:?}", eth_bridge_event);
     // assert eth log matches
     assert_eq!(eth_bridge_event.source_chain_id, eth_chain_id as u8);
     assert_eq!(eth_bridge_event.nonce, nonce);

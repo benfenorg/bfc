@@ -260,8 +260,6 @@ where
                 } else {
                     bridge_action
                 };
-                tracing::info!("bbking 3251 bridge_action: {:?}", bridge_action);
-
                 
                 let sig = BridgeAuthoritySignInfo::new(&bridge_action, &signer);
                 let result = SignedBridgeAction::new_from_data_and_sig(bridge_action, sig);

@@ -694,9 +694,7 @@ async fn test_bridge_usdt_to_sui() {
         ]),
         true,
     )
-    .await;
-    tracing::info!("bbking 0325 events: {:?}", events);
-    // There are exactly 1 approved and 1 claimed event
+    .await;    // There are exactly 1 approved and 1 claimed event
     assert_eq!(events.len(), 2);
     sleep(Duration::from_secs(10));
     let sui_address = bridge_test_cluster.sui_user_address();
@@ -706,7 +704,6 @@ async fn test_bridge_usdt_to_sui() {
         .get_all_coins(sui_address, None, None)
         .await
         .unwrap().data;
-    tracing::info!("bbking 0325 all_coins: {:?}", all_coins);
     let busd_coin = all_coins
         .iter()
         .find(|c| c.coin_type.contains("BUSD"))

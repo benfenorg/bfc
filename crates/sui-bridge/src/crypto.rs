@@ -160,7 +160,6 @@ pub fn verify_signed_bridge_action(
     committee: &BridgeCommittee,
 ) -> BridgeResult<VerifiedSignedBridgeAction> {
     if signed_action.data() != expected_action {
-        tracing::error!("bbking 325 signed_action: {:?} expected_action: {:?}", signed_action, expected_action);
         return Err(BridgeError::MismatchedAction);
     }
 
