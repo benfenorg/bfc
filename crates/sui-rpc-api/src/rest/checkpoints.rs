@@ -113,44 +113,7 @@ async fn list_checkpoints(
                     Ok(CheckpointResponse {
                         sequence_number: *checkpoint.sequence_number(),
                         digest: (*checkpoint.digest()).into(),
-                        summary: Some(sui_sdk_types::CheckpointSummary {
-                            epoch: checkpoint.epoch,
-                            sequence_number: *checkpoint.sequence_number(),
-                            network_total_transactions: checkpoint.network_total_transactions,
-                            content_digest: sui_sdk_types::CheckpointContentsDigest::new(*checkpoint.content_digest.inner()),
-                            previous_digest: checkpoint.previous_digest.map(|d | sui_sdk_types::CheckpointDigest::new(*d.inner())),
-                            epoch_rolling_bfc_gas_cost_summary: sui_sdk_types::GasCostSummary {
-                                base_point: checkpoint.epoch_rolling_bfc_gas_cost_summary.base_point,
-                                rate: checkpoint.epoch_rolling_bfc_gas_cost_summary.rate,
-                                computation_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-                                storage_cost: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-                                storage_rebate: checkpoint.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-                                non_refundable_storage_fee: checkpoint.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-                            },
-                            timestamp_ms: checkpoint.timestamp_ms,
-                            checkpoint_commitments: checkpoint.checkpoint_commitments.clone().into_iter().map(|c |
-                                sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match c {
-                                    sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                                        sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                                        ),
-                                }}).collect(),
-                            end_of_epoch_data: checkpoint.end_of_epoch_data.clone().map(|c | sui_sdk_types::EndOfEpochData {
-                                next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                                    sui_sdk_types::ValidatorCommitteeMember {
-                                        public_key: sui_sdk_types::Bls12381PublicKey::new(next_epoch_committee.0.0),
-                                        stake: next_epoch_committee.1,
-                                    }
-                                }).collect(),
-                                next_epoch_protocol_version: c.next_epoch_protocol_version.as_u64(),
-                                epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{digest: match epoch_commitment {
-                                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(ecmh_live_object_set_digest) =>
-                                            sui_sdk_types::Digest::new(*ecmh_live_object_set_digest.digest.inner()
-                                            ),
-                                    }}).collect(),
-                            }),
-                            version_specific_data: checkpoint.version_specific_data.clone(),
-                        }),
+                        summary: Some(checkpoint.data().into()),
                         signature: Some(checkpoint.into_sig().into()),
                         contents,
                         summary_bcs: None,

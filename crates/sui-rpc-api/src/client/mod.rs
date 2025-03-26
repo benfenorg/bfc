@@ -24,8 +24,6 @@ use sui_types::full_checkpoint_content::CheckpointData;
 use sui_types::messages_checkpoint::{CertifiedCheckpointSummary, CheckpointSequenceNumber};
 use sui_types::object::Object;
 use sui_types::transaction::Transaction;
-use sui_types::messages_checkpoint::CheckpointSummary;
-use std::collections::HashMap;
 
 pub type Result<T, E = tonic::Status> = std::result::Result<T, E>;
 
@@ -263,44 +261,7 @@ fn certified_checkpoint_internal_summary_try_from_proto(
             .map_err(TryFromProtoError::from_error)?,
     );
 
-    let checkpoint_summary = CheckpointSummary {
-        epoch: summary.epoch,
-        sequence_number: summary.sequence_number,
-        network_total_transactions: summary.network_total_transactions,
-        content_digest: sui_types::digests::CheckpointContentsDigest::new(*summary.content_digest.inner()),
-        previous_digest: summary.previous_digest.map(|d | sui_types::digests::CheckpointDigest::new(*d.inner())),
-        epoch_rolling_bfc_gas_cost_summary: sui_types::gas::GasCostSummary{
-            base_point: summary.epoch_rolling_bfc_gas_cost_summary.base_point,
-            rate: summary.epoch_rolling_bfc_gas_cost_summary.rate,
-            computation_cost: summary.epoch_rolling_bfc_gas_cost_summary.computation_cost,
-            storage_cost: summary.epoch_rolling_bfc_gas_cost_summary.storage_cost,
-            storage_rebate: summary.epoch_rolling_bfc_gas_cost_summary.storage_rebate,
-            non_refundable_storage_fee: summary.epoch_rolling_bfc_gas_cost_summary.non_refundable_storage_fee,
-        },
-        epoch_rolling_stable_gas_cost_summary_map: HashMap::new(),
-        timestamp_ms: summary.timestamp_ms,
-        checkpoint_commitments: summary.checkpoint_commitments.clone().into_iter().map(|c |
-            match c {
-                sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                    sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
-                        digest: sui_types::digests::Digest::new(*digest.inner())
-                    })
-            }).collect(),
-        end_of_epoch_data: summary.end_of_epoch_data.clone().map(|c | sui_types::messages_checkpoint::EndOfEpochData {
-            next_epoch_committee: c.next_epoch_committee.into_iter().map(|next_epoch_committee | {
-                (sui_types::crypto::AuthorityPublicKeyBytes(*next_epoch_committee.public_key.inner()), next_epoch_committee.stake)
-            }).collect(),
-            next_epoch_protocol_version: sui_types::committee::ProtocolVersion::new(c.next_epoch_protocol_version),
-            epoch_commitments: c.epoch_commitments.clone().into_iter().map(|epoch_commitment |
-                match epoch_commitment {
-                    sui_sdk_types::CheckpointCommitment::EcmhLiveObjectSet{ digest} =>
-                        sui_types::messages_checkpoint::CheckpointCommitment::ECMHLiveObjectSetDigest(sui_types::messages_checkpoint::ECMHLiveObjectSetDigest{
-                            digest: sui_types::digests::Digest::new(*digest.inner())
-                        })
-                }).collect(),
-        }),
-        version_specific_data: summary.version_specific_data,
-    };
+    let checkpoint_summary : sui_types::messages_checkpoint::CheckpointSummary = (&summary).into();
 
     Ok(CertifiedCheckpointSummary::new_from_data_and_sig(
         checkpoint_summary, signature,
