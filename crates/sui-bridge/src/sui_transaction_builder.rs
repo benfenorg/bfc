@@ -255,7 +255,8 @@ fn build_token_bridge_approve_transaction(
     );
 
     if claim {
-        let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+        if token_type == 5 {
+            let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
         let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
@@ -265,8 +266,20 @@ fn build_token_bridge_approve_transaction(
                 .get(&token_type)
                 .ok_or(BridgeError::UnknownTokenId(token_type))?
                 .clone()],
-            vec![arg_bridge, system_obj, arg_clock, source_chain, seq_num, admin_cap],
-        );
+                vec![arg_bridge, system_obj, arg_clock, source_chain, seq_num, admin_cap],
+            );
+        } else {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("claim_and_transfer_token").to_owned(),
+                vec![sui_token_type_tags
+                    .get(&token_type)
+                    .ok_or(BridgeError::UnknownTokenId(token_type))?
+                    .clone()],
+                    vec![arg_bridge, arg_clock, source_chain, seq_num],
+                );   
+        }
     }
 
     let pt = builder.finish();
