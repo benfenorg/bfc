@@ -456,7 +456,7 @@ module bridge::bridge {
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
         );
-        
+
         let message_key = message.key();
         // retrieve pending message if source chain is Sui, the initial message
         // must exist on chain
@@ -606,11 +606,10 @@ module bridge::bridge {
 
     public fun get_available_claim_amount<T>(
           bridge: &Bridge,
-          source_chain: u8,
           target_chain: u8,
     ): u64 {
         let inner = load_inner(bridge);
-        let route = chain_ids::get_route(source_chain, target_chain);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
         inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
     }
 
@@ -656,7 +655,7 @@ module bridge::bridge {
             records.insert(sender_str);
             inner.pre_deposit_multi_signature_records.push_back(key, records);
         };
-        
+
         emit(
             ExternalPreDepositedEvent {
                 tx_hash,
@@ -769,7 +768,7 @@ module bridge::bridge {
     ) {
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
-     
+
         // verify signatures
         inner.committee.verify_signatures(message, signatures);
 
@@ -798,7 +797,7 @@ module bridge::bridge {
             tx_hash,
         };
         if (inner.external_bridge_records.contains(key)) {
-            emit(ExternalDepositedApprovedEvent{ 
+            emit(ExternalDepositedApprovedEvent{
                 tx_hash,
                 coin_type,
                 source_chain: source_chain,
@@ -839,7 +838,7 @@ module bridge::bridge {
             },
         )
     }
-    
+
     public fun withdraw_external_coin<T>(
         bridge: &mut Bridge,
         target_chain: u8,
@@ -955,14 +954,14 @@ module bridge::bridge {
         // check then add to pre_deposit_multi_signature_records
         if (inner.pre_deposit_multi_signature_records.contains(key)) {
             let records = inner.pre_deposit_multi_signature_records[key];
-            // if pre_deposit_multi_signature_records > 50% 
+            // if pre_deposit_multi_signature_records > 50%
             let signed = records.size();
             let len = inner.treasury.external_coin_admin_count(coin_type);
             if (signed * 2 > len) {
                 return true
-            };   
+            };
         };
-            
+
         false
     }
 
