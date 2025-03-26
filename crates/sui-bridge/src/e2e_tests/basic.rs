@@ -23,6 +23,8 @@ use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use ethers::prelude::*;
 use ethers::types::Address as EthAddress;
 use std::collections::HashSet;
+use std::thread::sleep;
+use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
 use sui_types::crypto::get_key_pair;
 use test_cluster::TestClusterBuilder;
@@ -696,6 +698,7 @@ async fn test_bridge_usdt_to_sui() {
     tracing::info!("bbking 0325 events: {:?}", events);
     // There are exactly 1 approved and 1 claimed event
     assert_eq!(events.len(), 2);
+    sleep(Duration::from_secs(10));
     let sui_address = bridge_test_cluster.sui_user_address();
     let all_coins = bridge_test_cluster
         .sui_client()

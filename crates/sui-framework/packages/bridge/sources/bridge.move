@@ -1155,6 +1155,7 @@ module bridge::bridge {
         // claim from treasury
         if (token_id == 5 ) { //BUSD type is 5
             //transfer busd to owner
+            // let target_address = token_payload.token_target_address();
             bfc_system_state.mint_stable_entry<BUSD>(amount, cap, ctx);
 
             record.claimed = true;
