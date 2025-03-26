@@ -395,8 +395,10 @@ module bridge::bridge {
         assert!(token_id_expect == 3 || token_id_expect == 4, EInvalidTokenIdExpect);
 
         let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        // let token_id_origin = inner.treasury.token_id<T>();
+        // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
-        let token_amount = token.balance().value()*1000u64;
+        let token_amount = token.balance().value()/1000u64;
         assert!(token_amount > 0, ETokenValueIsZero);
 
         // create bridge message
@@ -1218,8 +1220,7 @@ module bridge::bridge {
         // claim from treasury
         if (token_id == 5 ) { //BUSD type is 5
             //transfer busd to owner
-            // let target_address = token_payload.token_target_address();
-            bfc_system_state.mint_stable_entry<BUSD>(amount, cap, ctx);
+            bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);
 
             record.claimed = true;
             emit(TokenTransferClaimed { message_key: key });

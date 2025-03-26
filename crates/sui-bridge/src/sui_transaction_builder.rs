@@ -233,7 +233,6 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
-    let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
     
 
     let mut sig_bytes = vec![];
@@ -256,6 +255,7 @@ fn build_token_bridge_approve_transaction(
     );
 
     if claim {
+        let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
         let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,

@@ -41,7 +41,7 @@ use std::str::FromStr;
 use std::sync::Arc;
 use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
-use sui_json_rpc_types::SuiEvent;
+use sui_json_rpc_types::{SuiEvent, SuiTypeTag};
 use sui_json_rpc_types::SuiExecutionStatus;
 use sui_json_rpc_types::SuiTransactionBlockEffectsAPI;
 use sui_json_rpc_types::SuiTransactionBlockResponse;
@@ -62,8 +62,8 @@ use sui_types::crypto::get_key_pair;
 use sui_types::crypto::ToFromBytes;
 use sui_types::digests::TransactionDigest;
 use sui_types::object::Object;
-use sui_types::transaction::{ObjectArg, Transaction, TransactionData};
-use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
+use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
+use sui_types::{bfc_system_state, BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
 use tokio::join;
 use tokio::task::JoinHandle;
 use tokio::time::{sleep, Instant};
@@ -73,7 +73,7 @@ use tracing::info;
 
 use crate::config::{BridgeNodeConfig, EthConfig, SuiConfig};
 use crate::node::run_bridge_node;
-use crate::sui_client::SuiBridgeClient;
+use crate::sui_client::{SuiBridgeClient, SuiClientInner};
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use anyhow::anyhow;
 use ethers::prelude::*;
@@ -1413,7 +1413,7 @@ pub async fn initiate_bridge_sui_to_eth(
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
         assert_eq!(
             bridge_event.sui_bridge_event.amount_sui_adjusted,
-            sui_amount*1000
+            sui_amount/1000
         );
     };
     
@@ -1527,7 +1527,7 @@ async fn deposit_busd_to_sui_package(
     target_address: EthAddress,
     token: ObjectRef,
     bridge_object_arg: ObjectArg,
-    sui_token_type_tags: &HashMap<u64, TypeTag>,
+    _sui_token_type_tags: &HashMap<u64, TypeTag>,
     expect_token_id: u64,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
@@ -1536,12 +1536,14 @@ async fn deposit_busd_to_sui_package(
     let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    let busd_type_tag = TypeTag::from_str("0xc8::busd::BUSD").unwrap();
+    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("send_token").to_owned(),
-        vec![sui_token_type_tags.get(&TOKEN_ID_BUSD).unwrap().clone()],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
+        ident_str!("send_busd").to_owned(),
+        vec![busd_type_tag],
+        vec![arg_bridge,system_obj, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
     );
 
     let pt = builder.finish();

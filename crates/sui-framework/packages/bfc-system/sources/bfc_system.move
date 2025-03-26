@@ -580,6 +580,18 @@ module bfc_system::bfc_system {
         transfer::public_transfer(coin, tx_context::sender(ctx));
     }
 
+    public entry fun mint_stable_entry_to_address<StableCoinType>(
+        wrapper: &mut BfcSystemState,
+        amount: u64,
+        cap: &BfcSystemModifyCap,
+        address: address,
+        ctx: &mut TxContext,
+    ) {
+        let (inner_state, _ctx) = load_system_state_mut(wrapper, ctx);
+        let coin = bfc_system_state_inner::mint_stable<StableCoinType>(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
+        transfer::public_transfer(coin, address);
+    }
+
     public fun mint_stable<StableCoinType>(
         wrapper: &mut BfcSystemState,
         amount: u64,

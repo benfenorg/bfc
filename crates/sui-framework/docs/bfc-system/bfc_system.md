@@ -48,6 +48,7 @@ title: Module `0xc8::bfc_system`
 -  [Function `rebalance`](#0xc8_bfc_system_rebalance)
 -  [Function `rebalance_with_one_stablecoin`](#0xc8_bfc_system_rebalance_with_one_stablecoin)
 -  [Function `mint_stable_entry`](#0xc8_bfc_system_mint_stable_entry)
+-  [Function `mint_stable_entry_to_address`](#0xc8_bfc_system_mint_stable_entry_to_address)
 -  [Function `mint_stable`](#0xc8_bfc_system_mint_stable)
 -  [Function `verify_capability`](#0xc8_bfc_system_verify_capability)
 -  [Function `burn_stable`](#0xc8_bfc_system_burn_stable)
@@ -1409,6 +1410,38 @@ X treasury rebalance
     <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
     <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
     <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_mint_stable_entry_to_address"></a>
+
+## Function `mint_stable_entry_to_address`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_mint_stable_entry_to_address">mint_stable_entry_to_address</a>&lt;StableCoinType&gt;(wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, <b>address</b>: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_mint_stable_entry_to_address">mint_stable_entry_to_address</a>&lt;StableCoinType&gt;(
+    wrapper: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">BfcSystemState</a>,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    cap: &BfcSystemModifyCap,
+    <b>address</b>: <b>address</b>,
+    ctx: &<b>mut</b> TxContext,
+) {
+    <b>let</b> (inner_state, _ctx) = <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_load_system_state_mut">load_system_state_mut</a>(wrapper, ctx);
+    <b>let</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a> = <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_mint_stable">bfc_system_state_inner::mint_stable</a>&lt;StableCoinType&gt;(inner_state, amount, &cap.get_bfc_system_modify_cap_key(), _ctx);
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>, <b>address</b>);
 }
 </code></pre>
 

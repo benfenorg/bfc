@@ -5548,6 +5548,9 @@ rebalance_with_one_stablecoin
 mint_stable_entry
 	public entry fun
 	0xc8::bfc_system
+mint_stable_entry_to_address
+	public entry fun
+	0xc8::bfc_system
 mint_stable
 	public fun
 	0xc8::bfc_system
@@ -6149,6 +6152,9 @@ register_foreign_token
 	public fun
 	0xb::bridge
 send_token
+	public fun
+	0xb::bridge
+send_busd
 	public fun
 	0xb::bridge
 send_back_token

@@ -111,17 +111,21 @@ where
     }
 
     pub async fn get_object_for_cap_must_succeed(&self,address: SuiAddress, filter_tag: &str) -> ObjectArg {
-        static ARG: OnceCell<ObjectArg> = OnceCell::const_new();
-        *ARG.get_or_init(|| async move {
-            let Ok(Ok(object_cap_admin)) = retry_with_max_elapsed_time!(
-                self.inner.get_object_for_cap(address, filter_tag),
-                Duration::from_secs(30)
-            ) else {
-                panic!("Failed to get admin cap after retries");
-            };
-            ObjectArg::ImmOrOwnedObject(object_cap_admin.object_ref())
-        })
-        .await
+        // static ARG: OnceCell<ObjectArg> = OnceCell::const_new();
+        // *ARG.get_or_init(|| async move {
+        //     let Ok(Ok(object_cap_admin)) = retry_with_max_elapsed_time!(
+        //         self.inner.get_object_for_cap(address, filter_tag),
+        //         Duration::from_secs(30)
+        //     ) else {
+        //         panic!("Failed to get admin cap after retries");
+        //     };
+        //     ObjectArg::ImmOrOwnedObject(object_cap_admin.object_ref())
+        // })
+        // .await
+        let obj_ref = self.inner.get_object_for_cap(address, filter_tag).await
+        .expect("Failed to get admin cap")
+        .object_ref();
+        ObjectArg::ImmOrOwnedObject(obj_ref)
     }
 
     /// Get the mutable bridge object arg on chain.

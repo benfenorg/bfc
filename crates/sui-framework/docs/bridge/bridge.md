@@ -29,6 +29,7 @@ title: Module `0xb::bridge`
 -  [Function `update_node_url`](#0xb_bridge_update_node_url)
 -  [Function `register_foreign_token`](#0xb_bridge_register_foreign_token)
 -  [Function `send_token`](#0xb_bridge_send_token)
+-  [Function `send_busd`](#0xb_bridge_send_busd)
 -  [Function `send_back_token`](#0xb_bridge_send_back_token)
 -  [Function `is_refund_admin`](#0xb_bridge_is_refund_admin)
 -  [Function `approve_token_transfer`](#0xb_bridge_approve_token_transfer)
@@ -1113,6 +1114,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EInvalidTokenIdExpect"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidTokenIdExpect">EInvalidTokenIdExpect</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 23;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EInvalidTxHash"></a>
 
 
@@ -1145,6 +1155,15 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EMessageNotFoundInRecords">EMessageNotFoundInRecords</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 11;
+</code></pre>
+
+
+
+<a name="0xb_bridge_EOnlySupportBusd"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 24;
 </code></pre>
 
 
@@ -1535,6 +1554,90 @@ title: Module `0xb::bridge`
     } <b>else</b> {
         inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
     };
+
+    // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
+    inner.token_transfer_records.push_back(
+        <a href="message.md#0xb_message">message</a>.key(),
+        <a href="bridge.md#0xb_bridge_BridgeRecord">BridgeRecord</a> {
+            <a href="message.md#0xb_message">message</a>,
+            verified_signatures: <a href="../move-stdlib/option.md#0x1_option_none">option::none</a>(),
+            claimed: <b>false</b>,
+        },
+    );
+
+    // emit <a href="../sui-framework/event.md#0x2_event">event</a>
+    emit(
+        <a href="bridge.md#0xb_bridge_TokenDepositedEvent">TokenDepositedEvent</a> {
+            seq_num: bridge_seq_num,
+            source_chain: inner.chain_id,
+            sender_address: address::to_bytes(ctx.sender()),
+            target_chain,
+            target_address,
+            token_type: token_id,
+            amount: token_amount,
+        },
+    );
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_send_busd"></a>
+
+## Function `send_busd`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_busd">send_busd</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, token_id_expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_busd">send_busd</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    bfc_system_state: &<b>mut</b> BfcSystemState,
+    target_chain: u8,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    token: Coin&lt;T&gt;,
+    token_id_expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>assert</b>!(target_address.length() == <a href="bridge.md#0xb_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="bridge.md#0xb_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
+    <b>let</b> is_busd = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;();
+    <b>assert</b>!(is_busd, <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
+    <b>assert</b>!(token_id_expect == 3 || token_id_expect == 4, <a href="bridge.md#0xb_bridge_EInvalidTokenIdExpect">EInvalidTokenIdExpect</a>);
+
+    <b>let</b> bridge_seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="message_types.md#0xb_message_types_token">message_types::token</a>());
+    // <b>let</b> token_id_origin = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.token_id&lt;T&gt;();
+    // <b>assert</b>!(token_id_origin == 5, <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
+    <b>let</b> token_id = token_id_expect;
+    <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value()/1000u64;
+    <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+
+    // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
+    <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
+        inner.chain_id,
+        bridge_seq_num,
+        address::to_bytes(ctx.sender()),
+        target_chain,
+        target_address,
+        token_id,
+        token_amount,
+        <a href="../sui-framework/hex.md#0x2_hex_decode">hex::decode</a>(b""),
+        0u8, // event_idx
+    );
+
+    // burn / escrow token, unsupported coins will fail in this step
+    bfc_system_state.burn_stable(token, ctx);
 
     // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
     inner.token_transfer_records.push_back(
@@ -2734,7 +2837,7 @@ title: Module `0xb::bridge`
     // claim from <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>
     <b>if</b> (token_id == 5 ) { //BUSD type is 5
         //<a href="../sui-framework/transfer.md#0x2_transfer">transfer</a> <a href="../bfc-system/busd.md#0xc8_busd">busd</a> <b>to</b> owner
-        bfc_system_state.mint_stable_entry&lt;BUSD&gt;(amount, cap, ctx);
+        bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, owner, ctx);
 
         record.claimed = <b>true</b>;
         emit(<a href="bridge.md#0xb_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
