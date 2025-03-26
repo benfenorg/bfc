@@ -16,6 +16,14 @@ use crate::events::{
 use crate::sui_transaction_builder::{build_add_tokens_on_sui_transaction, build_refund_admin_operate_transaction};
 use crate::sui_transaction_builder::build_add_external_coin_admin_transaction;
 use crate::sui_transaction_builder::build_remove_external_coin_admin_transaction;
+use crate::sui_transaction_builder::build_add_external_coin_witness_transaction;
+use crate::sui_transaction_builder::build_remove_external_coin_witness_transaction;
+use crate::sui_transaction_builder::build_add_external_coin_target_transaction;
+use crate::sui_transaction_builder::build_remove_external_coin_target_transaction;
+// use ethers::types::Address;
+use hex::decode;
+
+
 
 use crate::types::{
     AddExternalCoinAdminAction, AddTokensOnEvmAction,
@@ -366,19 +374,21 @@ async fn test_add_external_witness() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+    let hex_str="0x7518085822fAA839EeB59035a74A87b4220C6629";
+    let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
 
     let add_witness_action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
-        coin_type: "00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string(),
-        witness_address: "1234567890123456789012345678901234567890".as_bytes().to_vec(),
+        coin_type: "test".to_string(),
+        witness_address: addr.clone(),
     });
 
     let remove_witness_action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
-        coin_type: "00000000000000000000000000000000000000000000000000000000000000c8::busd::BUSD".to_string(),
-        witness_address: "1234567890123456789012345678901234567890".as_bytes().to_vec(),
+        coin_type: "test".to_string(),
+        witness_address: addr.clone(),
     });
 
     info!("Starting bridge cluster");
@@ -407,7 +417,7 @@ async fn test_add_external_witness() {
         .await
         .expect("Failed to request committee signatures for AddExternalCoinWitnessAction");
 
-    let tx = build_add_external_coin_admin_transaction(
+    let tx = build_add_external_coin_witness_transaction(
         sender,
         &bridge_test_cluster
             .wallet()
@@ -479,7 +489,7 @@ async fn test_add_external_target() {
         .await
         .expect("Failed to request committee signatures for AddExternalCoinTargetAction");
 
-    let tx = build_add_external_coin_admin_transaction(
+    let tx = build_add_external_coin_target_transaction(
         sender,
         &bridge_test_cluster
             .wallet()
@@ -618,6 +628,155 @@ async fn test_remove_external_admin() {
         .expect("Failed to request committee signatures for AddExternalCoinAdminAction");
 
     let tx = build_remove_external_coin_admin_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+            certified_action1,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_remove_external_witness() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+    let hex_str="0x7518085822fAA839EeB59035a74A87b4220C6629".to_lowercase();
+    let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
+
+    let add_witness_action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        witness_address: addr.clone(),
+    });
+
+    let remove_witness_action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        witness_address: addr.clone(),
+    });
+
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_witness_action.clone(), remove_witness_action.clone()],
+        vec![add_witness_action.clone()],
+        vec![remove_witness_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action1 = agg
+        .request_committee_signatures(remove_witness_action)
+        .await
+        .expect("Failed to request committee signatures for AddExternalCoinAdminAction");
+
+    let tx = build_remove_external_coin_witness_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+            certified_action1,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_remove_external_target() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let add_target_action = BridgeAction::AddExternalCoinTargetAction(AddExternalCoinTargetAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        target_address: "0x1234567890123456789012345678901234567890".to_string(),
+    });
+
+    let remove_target_action = BridgeAction::RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction {
+        nonce: 0,
+        chain_id: BridgeChainId::SuiCustom,
+        coin_type: "test".to_string(),
+        target_address: "0x1234567890123456789012345678901234567890".to_string(),
+    });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_target_action.clone(), remove_target_action.clone()],
+        vec![add_target_action.clone()],
+        vec![remove_target_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action1 = agg
+        .request_committee_signatures(remove_target_action)
+        .await
+        .expect("Failed to request committee signatures for AddExternalCoinTargetAction");
+
+    let tx = build_remove_external_coin_target_transaction(
         sender,
         &bridge_test_cluster
             .wallet()

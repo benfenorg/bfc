@@ -143,7 +143,7 @@ impl BridgeClient {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
                 let coin_type = a.coin_type.clone();
-                let witness_address = String::from_utf8(a.witness_address.clone()).unwrap();
+                let witness_address = hex::encode(a.witness_address.clone()).to_lowercase();
 
                 format!(
                     "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
@@ -153,7 +153,7 @@ impl BridgeClient {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
                 let coin_type = a.coin_type.clone();
-                let witness_address = String::from_utf8(a.witness_address.clone()).unwrap();
+                let witness_address = hex::encode(a.witness_address.clone()).to_lowercase();
 
                 format!(
                     "sign/remove_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
@@ -265,11 +265,12 @@ impl BridgeClient {
             return Err(BridgeError::InvalidAuthorityUrl(self.authority.clone()));
         }
         // Unwrap safe: checked `self.base_url.is_none()` above
-        let url = self
+        let url= self
             .base_url
             .clone()
             .unwrap()
             .join(&Self::bridge_action_to_path(&action))?;
+
         let resp = self
             .inner
             .get(url)
@@ -724,12 +725,12 @@ mod tests {
         );
 
         let action =
-        BridgeAction::AddExternalCoinTargetAction(crate::types::AddExternalCoinTargetAction {
-            nonce: 0,
-            chain_id: BridgeChainId::SuiCustom,
-            coin_type: "test".to_string(),
-            target_address: "0x0101010101010101010101010101010101010101".to_string(),
-        });
+            BridgeAction::AddExternalCoinTargetAction(crate::types::AddExternalCoinTargetAction {
+                nonce: 0,
+                chain_id: BridgeChainId::SuiCustom,
+                coin_type: "test".to_string(),
+                target_address: "0x0101010101010101010101010101010101010101".to_string(),
+            });
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             "sign/add_external_coin_target/2/0/test/0x0101010101010101010101010101010101010101",
@@ -747,16 +748,22 @@ mod tests {
             BridgeClient::bridge_action_to_path(&action),
             "sign/remove_external_coin_target/2/0/test/0x0101010101010101010101010101010101010101",
         );
-        let action =
-        BridgeAction::AddExternalCoinWitnessAction(crate::types::AddExternalCoinWitnessAction {
-            nonce: 0,
-            chain_id: BridgeChainId::SuiCustom,
-            coin_type: "test".to_string(),
-            witness_address: "0x0101010101010101010101010101010101010101".as_bytes().to_vec(),
-        });
+        let  addr="7518085822fAA839EeB59035a74A87b4220C6629".to_lowercase();
+        let action = BridgeAction::AddExternalCoinWitnessAction(
+            crate::types::AddExternalCoinWitnessAction {
+                nonce: 0,
+                chain_id: BridgeChainId::SuiCustom,
+                coin_type: "test".to_string(),
+                witness_address: hex::decode(addr.clone().as_str()).unwrap()
+            },
+        );
+
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            "sign/add_external_coin_witness/2/0/test/0x0101010101010101010101010101010101010101",
+            format!(
+                "sign/add_external_coin_witness/2/0/test/{}",
+                addr,
+            )
         );
 
         let action = BridgeAction::RemoveExternalCoinWitnessAction(
@@ -764,12 +771,15 @@ mod tests {
                 nonce: 0,
                 chain_id: BridgeChainId::SuiCustom,
                 coin_type: "test".to_string(),
-                witness_address: "0x0101010101010101010101010101010101010101".as_bytes().to_vec(),
+                witness_address: hex::decode(addr.clone().as_str()).unwrap()
             },
         );
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            "sign/remove_external_coin_witness/2/0/test/0x0101010101010101010101010101010101010101",
+            format!(
+                "sign/remove_external_coin_witness/2/0/test/{}",
+                addr
+            )
         );
     }
 }

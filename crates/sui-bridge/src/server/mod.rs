@@ -497,7 +497,7 @@ async fn handle_add_external_coin_admin(
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_add_external_coin_admin", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, admin_address=admin_address))]
@@ -534,7 +534,7 @@ async fn handle_remove_external_coin_admin(
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_remove_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_remove_external_coin_admin", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
@@ -571,7 +571,7 @@ async fn handle_add_external_coin_target(
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_add_external_coin_target", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, target_address=target_address))]
@@ -608,7 +608,7 @@ async fn handle_remove_external_coin_target(
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_remove_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_remove_external_coin_target", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type, witness_address=witness_address))]
@@ -635,17 +635,25 @@ async fn handle_add_external_coin_witness(
                 "handle_add_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
+        let witness_address_bytes = match hex::decode(&witness_address) {
+            Ok(bytes) => bytes,
+            Err(_) => {
+                return Err(BridgeError::InvalidBridgeClientRequest(
+                    "Invalid hex-encoded witness_address".to_string(),
+                ));
+            }
+        };
 
         let action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             coin_type,
-            witness_address: witness_address.into_bytes(),
+            witness_address: witness_address_bytes,
             chain_id,
             nonce,
         });
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_add_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_add_external_coin_witness", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, coin_type=coin_type,witness_address=witness_address))]
@@ -667,22 +675,30 @@ async fn handle_remove_external_coin_witness(
             BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
         })?;
 
+        let witness_address_bytes = match hex::decode(&witness_address) {
+            Ok(bytes) => bytes,
+            Err(_) => {
+                return Err(BridgeError::InvalidBridgeClientRequest(
+                    "Invalid hex-encoded witness_address".to_string(),
+                ));
+            }
+        };
+
         if !chain_id.is_sui_chain() {
             return Err(BridgeError::InvalidBridgeClientRequest(
                 "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
-
         let action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
             coin_type,
-            witness_address: witness_address.into_bytes(),
+            witness_address: witness_address_bytes,
             chain_id,
             nonce,
         });
         let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_remove_tokens_on_sui", future).await
+    with_metrics!(metrics.clone(), "handle_remove_external_coin_witness", future).await
 }
 
 
