@@ -538,19 +538,16 @@ module bridge::bridge {
     // in which case, no event will be emitted and only abort code will be returned.
     public fun claim_token<T>(
         bridge: &mut Bridge,
-        bfc_system_state: &mut Option<BfcSystemState>,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
-        cap: &BfcSystemModifyCap,
+        _cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): Coin<T> {
         let (maybe_token, owner) = bridge.claim_token_internal<T>(
-            bfc_system_state,
             clock,
             source_chain,
             bridge_seq_num,
-            cap,
             ctx,
         );
         // Only token owner can claim the token
@@ -563,14 +560,30 @@ module bridge::bridge {
     // If the token has already been claimed or hits limiter currently, it will return instead of aborting.
     public fun claim_and_transfer_token<T>(
         bridge: &mut Bridge,
-        bfc_system_state: &mut Option<BfcSystemState>,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        _cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ) {
+        let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, ctx);
+        if (token.is_some()) {
+            transfer::public_transfer(token.destroy_some(), owner)
+        } else {
+            token.destroy_none();
+        };
+    }
+
+    public fun claim_and_transfer_stable_token<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
         cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ) {
-        let (token, owner) = bridge.claim_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
+        let (token, owner) = bridge.claim_stable_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -1001,7 +1014,80 @@ module bridge::bridge {
     // Returns Some(Coin) if coin can be claimed. If already claimed, return None
     fun claim_token_internal<T>(
         bridge: &mut Bridge,
-        bfc_system_state: &mut Option<BfcSystemState>,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        ctx: &mut TxContext,
+    ): (Option<Coin<T>>, address) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
+        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+        // retrieve approved bridge message
+        let record = &mut inner.token_transfer_records[key];
+        // ensure this is a token bridge message
+        assert!(
+            &record.message.message_type() == message_types::token(),
+            EUnexpectedMessageType,
+        );
+        // Ensure it's signed
+        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+        // extract token message
+        let token_payload = record.message.extract_token_bridge_payload();
+        // get owner address
+        let owner = address::from_bytes(token_payload.token_target_address());
+
+        // If already claimed, exit early
+        if (record.claimed) {
+            emit(TokenTransferAlreadyClaimed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let target_chain = token_payload.token_target_chain();
+        // ensure target chain matches bridge.chain_id
+        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+        // TODO: why do we check validity of the route here? what if inconsistency?
+        // Ensure route is valid
+        // TODO: add unit tests
+        // `get_route` abort if route is invalid
+        let route = chain_ids::get_route(source_chain, target_chain);
+        // check token type
+        assert!(
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type(),
+            EUnexpectedTokenType,
+        );
+
+        let amount = token_payload.token_amount();
+        // Make sure transfer is within limit.
+        if (!inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+            &inner.treasury,
+            clock,
+            route,
+            amount,
+        )
+        ) {
+            emit(TokenTransferLimitExceed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let token = inner.treasury.mint<T>(amount, ctx);
+
+        // Record changes
+        record.claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
+
+        (option::some(token), owner)
+    }
+
+    fun claim_stable_token_internal<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
@@ -1068,22 +1154,15 @@ module bridge::bridge {
         };
 
         // claim from treasury
-        if (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
+        if (token_id == 5 ) { //BUSD type is 5
             //transfer busd to owner
-            bfc_system_state.borrow_mut().mint_stable_entry<BUSD>(amount, cap, ctx);
+            bfc_system_state.mint_stable_entry<BUSD>(amount, cap, ctx);
 
             record.claimed = true;
             emit(TokenTransferClaimed { message_key: key });
-            return  (option::none(), owner)
         };
 
-        let token = inner.treasury.mint<T>(amount, ctx);
-
-        // Record changes
-        record.claimed = true;
-        emit(TokenTransferClaimed { message_key: key });
-
-        (option::some(token), owner)
+        (option::none(), owner)
     }
 
     fun execute_emergency_op(inner: &mut BridgeInner, payload: EmergencyOp) {

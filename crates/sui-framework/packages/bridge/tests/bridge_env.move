@@ -916,16 +916,13 @@ module bridge::bridge_env {
         let ctx = scenario.ctx();
         let total_supply_before = get_total_supply<T>(&bridge);
         // run claim
-        let mut none_state = option::none<BfcSystemState>();
         let token = bridge.claim_token<T>(
-            &mut none_state,
             clock,
             source_chain,
             bridge_seq_num,
             &modify_cap,
             ctx,
         );
-        none_state.destroy_none();
         {
             scenario.return_to_sender(modify_cap);
         };
@@ -986,16 +983,13 @@ module bridge::bridge_env {
 
         // run claim and transfer
         {
-            let mut none_state = option::none<BfcSystemState>();
             bridge.claim_and_transfer_token<T>(
-                &mut none_state,
                 clock,
                 source_chain,
                 bridge_seq_num,
                 &modify_cap,
                 ctx,
             );
-            none_state.destroy_none();
             scenario.return_to_sender(modify_cap);
         };
 
