@@ -132,6 +132,8 @@ module bridge::bridge {
     const EDuplicateRefund: u64 = 22;
     const EInvalidTokenIdExpect: u64 = 23;
     const EOnlySupportBusd: u64 = 24;
+    const EUseSendBusd: u64 = 25;
+    const EUseClaimBusd: u64 = 26;
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
@@ -328,6 +330,7 @@ module bridge::bridge {
         let token_id = inner.treasury.token_id<T>();
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(token_id != 5, EUseSendBusd);
 
         // create bridge message
         let message = message::create_token_bridge_message(
@@ -1085,7 +1088,8 @@ module bridge::bridge {
     ): (Option<Coin<T>>, address) {
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
-
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(!is_busd, EUseClaimBusd);
         let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
         assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
 
