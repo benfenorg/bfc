@@ -130,7 +130,8 @@ module bridge::bridge {
     const EInvalidSender: u64 = 20;
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
-
+    const EInvalidTokenIdExpect: u64 = 23;
+    const EOnlySupportBusd: u64 = 24;
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
@@ -351,6 +352,68 @@ module bridge::bridge {
         } else {
             inner.treasury.burn(token);
         };
+
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            TokenDepositedEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: token_id,
+                amount: token_amount,
+            },
+        );
+    }
+
+    public fun send_busd<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token: Coin<T>,
+        token_id_expect: u64,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(is_busd, EOnlySupportBusd);
+        assert!(token_id_expect == 3 || token_id_expect == 4, EInvalidTokenIdExpect);
+
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        let token_id = token_id_expect;
+        let token_amount = token.balance().value()*1000u64;
+        assert!(token_amount > 0, ETokenValueIsZero);
+
+        // create bridge message
+        let message = message::create_token_bridge_message(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            target_address,
+            token_id,
+            token_amount,
+            hex::decode(b""),
+            0u8, // event_idx
+        );
+
+        // burn / escrow token, unsupported coins will fail in this step
+        bfc_system_state.burn_stable(token, ctx);
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(
