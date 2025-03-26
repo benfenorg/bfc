@@ -236,6 +236,14 @@ impl SuiClientInner for SuiMockClient {
                 .clone()
                 .unwrap_or_default(),
                 treasury: BridgeTreasurySummary {
+                    external_coin_target_address: vec![
+                        ("0x11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75".to_string(),
+                            vec![
+                                "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".to_string(),
+                                "123".to_string(),
+                            ],
+                        ),
+                    ],
                     supported_tokens: vec![("11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::btc::BTC".to_string(), BridgeTokenMetadata{
                         id: 1,
                         decimal_multiplier: 100_000_000,
@@ -275,6 +283,18 @@ impl SuiClientInner for SuiMockClient {
             .get(&(source_chain_id, seq_number))
             .cloned()
             .unwrap_or(BridgeActionStatus::Pending))
+    }
+
+    async fn get_external_token_transfer_action_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        source_address: &Vec<u8>,
+        target_address: &Vec<u8>,
+        amount: u64,
+        tx_hash: String,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(BridgeActionStatus::NotFound)
     }
 
     async fn get_send_back_onchain_status(

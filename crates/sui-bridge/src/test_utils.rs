@@ -3,12 +3,11 @@
 
 use crate::abi::EthToSuiTokenBridgeV1;
 use crate::eth_mock_provider::EthMockProvider;
-use crate::events::SuiBridgeEvent;
+use crate::events::{EmittedExternalDepositStartBridgeV1, SuiBridgeEvent};
 use crate::server::mock_handler::run_mock_server;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{
-    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction,
-    VerifiedCertifiedBridgeAction,
+    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction
 };
 use crate::{
     crypto::{BridgeAuthorityKeyPair, BridgeAuthorityPublicKey, BridgeAuthoritySignInfo},
@@ -39,7 +38,7 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
-use sui_types::bridge::MoveTypeCommitteeMember;
+use sui_types::bridge::{MoveTypeCommitteeMember, TOKEN_ID_BTC};
 use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary, TOKEN_ID_USDC};
 use sui_types::crypto::ToFromBytes;
 use sui_types::object::Owner;
@@ -98,6 +97,28 @@ pub fn get_test_sui_to_eth_bridge_action(
             amount_sui_adjusted: amount_sui_adjusted.unwrap_or(100_000),
             tx_hash: vec![],
             event_idx: 0,
+        },
+    })
+}
+
+pub fn get_test_external_bridge_action(
+    sui_tx_digest: Option<TransactionDigest>,
+    sui_tx_event_index: Option<u16>,
+    nonce: Option<u64>,
+    token_id: Option<u64>,
+) -> BridgeAction {
+    BridgeAction::ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction {
+        sui_tx_digest: sui_tx_digest.unwrap_or_else(TransactionDigest::random),
+        sui_tx_event_index: sui_tx_event_index.unwrap_or(0),
+        sui_bridge_event: EmittedExternalDepositStartBridgeV1 {
+            nonce: nonce.unwrap_or_default(),
+            tx_hash: String::from("20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941"),
+            token_id: token_id.unwrap_or(TOKEN_ID_BTC),
+            source_chain: BridgeChainId::BtcTestnet,
+            target_chain: BridgeChainId::SuiCustom,
+            source_address: vec![],
+            target_address: "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".into(),
+            amount: 10,
         },
     })
 }

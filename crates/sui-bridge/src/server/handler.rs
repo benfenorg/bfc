@@ -3,6 +3,7 @@
 
 #![allow(clippy::type_complexity)]
 
+use crate::btc_query::check_btc_txn;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
 use crate::error::{BridgeError, BridgeResult};
 use crate::eth_client::EthClient;
@@ -49,6 +50,12 @@ pub trait BridgeRequestHandlerTrait {
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
 
+    async fn handle_external_coin_tx_digest(
+        &self,
+        tx_digest_base58: String,
+        event_idx: u16,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError>;
+
     /// Handles a request to sign a governance action.
     async fn handle_governance_action(
         &self,
@@ -74,6 +81,10 @@ struct EthActionVerifier<P> {
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
+}
+
+struct ExternalCoinVerifier<C> {
+    sui_client: Arc<SuiClient<C>>,
 }
 
 #[async_trait::async_trait]
@@ -113,7 +124,64 @@ where
 }
 
 #[async_trait::async_trait]
-impl<C,P> ActionVerifier<(TransactionDigest, u16)> for SendBackActionVerifier<C,P>
+impl<C> ActionVerifier<(TransactionDigest, u16)> for ExternalCoinVerifier<C>
+where
+    C: SuiClientInner + Send + Sync + 'static,
+{
+    fn name(&self) -> &'static str {
+        "ExternalCoinVerifier"
+    }
+
+    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (tx_digest, event_idx) = key;
+        let result = self
+            .sui_client
+            .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
+            .await
+            .tap_ok(|action| info!("Sui action found: {:?}", action));
+        if let Err(e) = result {
+            return Err(e);
+        }
+        let action_rs: BridgeAction = result.unwrap();
+        if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
+            let tx_hash = &external_action.sui_bridge_event.tx_hash;
+            let target_address = String::from_utf8_lossy(&external_action.sui_bridge_event.target_address);
+            let amount = external_action.sui_bridge_event.amount;
+
+            // check target address in whitelist
+            let summary = self.sui_client.get_bridge_summary().await;
+            if summary.is_err() {
+                return Err(BridgeError::Generic("Get bridge summary failed".to_string()));
+            }
+            let mut whitelist: Vec<String> = vec![];
+            for (_, v) in summary.unwrap().treasury.external_coin_target_address {
+                whitelist.append(&mut v.clone());
+            }
+            info!("whitelist: {:#?}", &whitelist);
+            if !whitelist.contains(&target_address.to_string()) {
+                return Err(BridgeError::Generic(
+                    format!("Target address({:#?}) is not in whitelist({:#?})", &target_address.to_string(), &whitelist)
+                ));
+            }
+
+            // check btc txn
+            let ok =
+                check_btc_txn(tx_hash, &target_address, amount).await;
+            if ok {
+                return Ok(action_rs);
+            }
+
+            return Err(BridgeError::Generic(
+                format!("BTC txn({:#?}, {:#?}) is not valid", tx_hash, &target_address)
+            ));
+        }
+
+        Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
+    }
+}
+
+#[async_trait::async_trait]
+impl<C, P> ActionVerifier<(TransactionDigest, u16)> for SendBackActionVerifier<C, P>
 where
     C: SuiClientInner + Send + Sync + 'static,
     P: JsonRpcClient + Send + Sync + 'static,
@@ -124,7 +192,8 @@ where
 
     async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
         let (tx_digest, event_idx) = key;
-        let result = self.sui_client
+        let result = self
+            .sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
             .await
             .tap_ok(|action| info!("Sui action found: {:?}", action));
@@ -136,31 +205,54 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let tx_hash = U256::from_big_endian(&tx_hash_bytes);
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
-            let result = self.eth_client.get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx).await;
+            let result = self
+                .eth_client
+                .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                .await;
             if let Err(e) = result {
                 return Err(e);
             }
             let action = result.unwrap();
             if action.action_type() != BridgeActionType::TokenTransfer {
-                return Err(BridgeError::Generic(format!("Expected EthToSuiBridgeAction, got {:?}", action.action_type())));
+                return Err(BridgeError::Generic(format!(
+                    "Expected EthToSuiBridgeAction, got {:?}",
+                    action.action_type()
+                )));
             }
             // check amount, token_id, target_address
             if let BridgeAction::EthToSuiBridgeAction(ref eth_to_sui_action) = action {
-                if eth_to_sui_action.eth_bridge_event.sui_adjusted_amount != send_back_action.sui_bridge_event.amount_sui_adjusted {
-                    return Err(BridgeError::Generic(format!("Amount mismatch: expected {}, got {}", send_back_action.sui_bridge_event.amount_sui_adjusted, eth_to_sui_action.eth_bridge_event.sui_adjusted_amount)));
+                if eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                    != send_back_action.sui_bridge_event.amount_sui_adjusted
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Amount mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.amount_sui_adjusted,
+                        eth_to_sui_action.eth_bridge_event.sui_adjusted_amount
+                    )));
                 }
-                if eth_to_sui_action.eth_bridge_event.token_id != send_back_action.sui_bridge_event.token_id{
-                    return Err(BridgeError::Generic(format!("Token ID mismatch: expected {}, got {}", send_back_action.sui_bridge_event.token_id, eth_to_sui_action.eth_bridge_event.token_id)));
+                if eth_to_sui_action.eth_bridge_event.token_id
+                    != send_back_action.sui_bridge_event.token_id
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Token ID mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.token_id,
+                        eth_to_sui_action.eth_bridge_event.token_id
+                    )));
                 }
-                if eth_to_sui_action.eth_bridge_event.eth_address != send_back_action.sui_bridge_event.eth_address {
-                    return Err(BridgeError::Generic(format!("Target address mismatch: expected {}, got {}", send_back_action.sui_bridge_event.eth_address, eth_to_sui_action.eth_bridge_event.eth_address)));
+                if eth_to_sui_action.eth_bridge_event.eth_address
+                    != send_back_action.sui_bridge_event.eth_address
+                {
+                    return Err(BridgeError::Generic(format!(
+                        "Target address mismatch: expected {}, got {}",
+                        send_back_action.sui_bridge_event.eth_address,
+                        eth_to_sui_action.eth_bridge_event.eth_address
+                    )));
                 }
             }
             return Ok(action_rs);
         }
         //todo: mofei fix the error
         Err(BridgeError::ActionIsNotGovernanceAction(action_rs))
-
     }
 }
 
@@ -280,6 +372,10 @@ pub struct BridgeRequestHandler {
         (TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
+    external_coin_signer_tx: mysten_metrics::metered_channel::Sender<(
+        (TransactionDigest, u16),
+        oneshot::Sender<BridgeResult<SignedBridgeAction>>,
+    )>,
     send_back_signer_tx: mysten_metrics::metered_channel::Sender<(
         (TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
@@ -327,6 +423,14 @@ impl BridgeRequestHandler {
                 .channel_inflight
                 .with_label_values(&["server_eth_action_signing_queue"]),
         );
+        let (external_coin_signer_tx, external_coin_rx) = mysten_metrics::metered_channel::channel(
+            1000,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["server_sui_action_signing_queue"]),
+        );
+
         let (governance_signer_tx, governance_rx) = mysten_metrics::metered_channel::channel(
             1000,
             &mysten_metrics::get_metrics()
@@ -338,13 +442,27 @@ impl BridgeRequestHandler {
 
         SignerWithCache::new(
             signer.clone(),
-            SuiActionVerifier { sui_client: sui_client.clone() },
+            SuiActionVerifier {
+                sui_client: sui_client.clone(),
+            },
             metrics.clone(),
         )
         .spawn(sui_rx);
+
         SignerWithCache::new(
             signer.clone(),
-            EthActionVerifier { eth_client: eth_client.clone() },
+            ExternalCoinVerifier {
+                sui_client: sui_client.clone(),
+            },
+            metrics.clone(),
+        )
+        .spawn(external_coin_rx);
+
+        SignerWithCache::new(
+            signer.clone(),
+            EthActionVerifier {
+                eth_client: eth_client.clone(),
+            },
             metrics.clone(),
         )
         .spawn(eth_rx);
@@ -357,13 +475,17 @@ impl BridgeRequestHandler {
 
         SignerWithCache::new(
             signer.clone(),
-            SendBackActionVerifier { sui_client: sui_client.clone(), eth_client: eth_client.clone() },
+            SendBackActionVerifier {
+                sui_client: sui_client.clone(),
+                eth_client: eth_client.clone(),
+            },
             metrics.clone(),
         )
         .spawn(send_back_rx);
 
         Self {
             sui_signer_tx,
+            external_coin_signer_tx,
             send_back_signer_tx,
             eth_signer_tx,
             governance_signer_tx,
@@ -427,6 +549,24 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
         Ok(Json(signed_action))
     }
 
+    async fn handle_external_coin_tx_digest(
+        &self,
+        tx_digest_base58: String,
+        event_idx: u16,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        let tx_digest = TransactionDigest::from_str(&tx_digest_base58)
+            .map_err(|_e| BridgeError::InvalidTxHash)?;
+        let (tx, rx) = oneshot::channel();
+        self.external_coin_signer_tx
+            .send(((tx_digest, event_idx), tx))
+            .await
+            .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
+        let signed_action = rx
+            .await
+            .unwrap_or_else(|_| panic!("Server signing task's oneshot channel is dropped"))?;
+        Ok(Json(signed_action))
+    }
+
     async fn handle_governance_action(
         &self,
         action: BridgeAction,
@@ -453,16 +593,23 @@ mod tests {
     use super::*;
     use crate::{
         eth_mock_provider::EthMockProvider,
-        events::{init_all_struct_tags, MoveTokenDepositedEvent, SuiToEthTokenBridgeV1},
+        events::{
+            init_all_struct_tags, ExternalDepositStartBridgeV1, MoveExternalDepositStartEvent,
+            MoveTokenDepositedEvent, SuiToEthTokenBridgeV1,
+        },
         sui_mock_client::SuiMockClient,
         test_utils::{
-            get_test_log_and_action, get_test_sui_to_eth_bridge_action, mock_last_finalized_block,
+            get_test_external_bridge_action, get_test_log_and_action,
+            get_test_sui_to_eth_bridge_action, mock_last_finalized_block,
         },
-        types::{EmergencyAction, EmergencyActionType, AddExternalCoinAdminAction, RemoveExternalCoinAdminAction, LimitUpdateAction, RefundAdminAction},
+        types::{
+            AddExternalCoinAdminAction, EmergencyAction, EmergencyActionType, LimitUpdateAction,
+            RefundAdminAction, RemoveExternalCoinAdminAction,
+        },
     };
     use ethers::types::{Address as EthAddress, TransactionReceipt};
     use sui_json_rpc_types::{BcsEvent, SuiEvent};
-    use sui_types::bridge::{BridgeChainId, TOKEN_ID_USDC};
+    use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
     use sui_types::{base_types::SuiAddress, crypto::get_key_pair};
 
     #[tokio::test]
@@ -591,6 +738,134 @@ mod tests {
         );
         assert_eq!(
             sui_signer_with_cache
+                .sign((sui_tx_digest, sui_event_idx_2))
+                .await
+                .unwrap(),
+            signed_2
+        );
+    }
+
+    #[tokio::test]
+    async fn test_external_coin_signer_with_cache() {
+        let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+        let signer = Arc::new(kp);
+        let sui_client_mock = SuiMockClient::default();
+        let external_verifier = ExternalCoinVerifier {
+            sui_client: Arc::new(SuiClient::new_for_testing(sui_client_mock.clone())),
+        };
+        let metrics: Arc<BridgeMetrics> = Arc::new(BridgeMetrics::new_for_testing());
+        let mut external_signer_with_cache =
+            SignerWithCache::new(signer.clone(), external_verifier, metrics);
+
+        // Test `get_cache_entry` creates a new entry if not exist
+        let sui_tx_digest = TransactionDigest::random();
+        let sui_event_idx = 42;
+        assert!(external_signer_with_cache
+            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .await
+            .is_none());
+        let entry = external_signer_with_cache
+            .get_cache_entry((sui_tx_digest, sui_event_idx))
+            .await;
+        let entry_ = external_signer_with_cache
+            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_none());
+
+        let action =
+            get_test_external_bridge_action(Some(sui_tx_digest), Some(sui_event_idx), None, None);
+        let sig = BridgeAuthoritySignInfo::new(&action, &signer);
+        let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
+        entry.lock().await.replace(Ok(signed_action));
+        let entry_ = external_signer_with_cache
+            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_some());
+
+        // Test `sign` caches Err result
+        let sui_tx_digest = TransactionDigest::random();
+        let sui_event_idx = 0;
+
+        // Mock an non-cacheable error such as rpc error
+        sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
+        external_signer_with_cache
+            .sign((sui_tx_digest, sui_event_idx))
+            .await
+            .unwrap_err();
+        let entry_ = external_signer_with_cache
+            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .await;
+        assert!(entry_.unwrap().lock().await.is_none());
+
+        // Mock a cacheable error such as no bridge events in tx position (empty event list)
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
+        assert!(matches!(
+            external_signer_with_cache
+                .sign((sui_tx_digest, sui_event_idx))
+                .await,
+            Err(BridgeError::NoBridgeEventsInTxPosition)
+        ));
+        let entry_ = external_signer_with_cache
+            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .await;
+        assert_eq!(
+            entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
+            BridgeError::NoBridgeEventsInTxPosition,
+        );
+
+        // TODO: test BridgeEventInUnrecognizedSuiPackage, SuiBridgeEvent::try_from_sui_event
+        // and BridgeEventNotActionable to be cached
+
+        // Test `sign` caches Ok result
+        let emitted_event_1 = MoveExternalDepositStartEvent {
+            seq_num: 1,
+            tx_hash: "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941".to_string(),
+            source_chain: BridgeChainId::BtcTestnet as u8,
+            target_chain: BridgeChainId::SuiCustom as u8,
+            source_address: SuiAddress::random_for_testing_only().to_vec(),
+            target_address: "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".into(),
+            token_id: TOKEN_ID_BTC,
+            amount: 10,
+        };
+
+        init_all_struct_tags();
+
+        let mut sui_event_1 = SuiEvent::random_for_testing();
+        sui_event_1.type_ = ExternalDepositStartBridgeV1.get().unwrap().clone();
+        sui_event_1.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
+        let sui_tx_digest = sui_event_1.id.tx_digest;
+
+        let mut sui_event_2 = SuiEvent::random_for_testing();
+        sui_event_2.type_ = ExternalDepositStartBridgeV1.get().unwrap().clone();
+        sui_event_2.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
+        let sui_event_idx_2 = 1;
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![sui_event_2.clone()]);
+
+        sui_client_mock.add_events_by_tx_digest(
+            sui_tx_digest,
+            vec![sui_event_1.clone(), sui_event_2.clone()],
+        );
+        let signed_1 = external_signer_with_cache
+            .sign((sui_tx_digest, sui_event_idx))
+            .await
+            .unwrap();
+        let signed_2 = external_signer_with_cache
+            .sign((sui_tx_digest, sui_event_idx_2))
+            .await
+            .unwrap();
+
+        // Because the result is cached now, the verifier should not be called again.
+        // Even though we remove the `add_events_by_tx_digest` mock, we will still get the same result.
+        sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
+        assert_eq!(
+            external_signer_with_cache
+                .sign((sui_tx_digest, sui_event_idx))
+                .await
+                .unwrap(),
+            signed_1
+        );
+        assert_eq!(
+            external_signer_with_cache
                 .sign((sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
@@ -746,20 +1021,20 @@ mod tests {
             BridgeError::ActionIsNotGovernanceAction { .. }
         ));
     }
-    
+
     #[tokio::test]
     async fn test_add_remove_external_admin_action() {
         let action_1 = BridgeAction::AddExternalCoinAdminAction(AddExternalCoinAdminAction {
             chain_id: BridgeChainId::SuiCustom,
             nonce: 1,
             coin_type: "test".to_string(),
-            admin_address: SuiAddress::random_for_testing_only().to_string()
+            admin_address: SuiAddress::random_for_testing_only().to_string(),
         });
         let action_2 = BridgeAction::RemoveExternalCoinAdminAction(RemoveExternalCoinAdminAction {
             chain_id: BridgeChainId::SuiCustom,
             nonce: 1,
             coin_type: "test".to_string(),
-            admin_address: SuiAddress::random_for_testing_only().to_string()
+            admin_address: SuiAddress::random_for_testing_only().to_string(),
         });
         let verifier = GovernanceVerifier::new(vec![action_1.clone(), action_2.clone()]).unwrap();
         assert_eq!(
@@ -802,7 +1077,6 @@ mod tests {
                 .data(),
             &action_2
         );
-
     }
 
     #[tokio::test]
@@ -838,7 +1112,6 @@ mod tests {
                 .data(),
             &action_1
         );
-
     }
     // TODO: add tests for BridgeRequestHandler (need to hook up local eth node)
 }
