@@ -1184,6 +1184,7 @@ module bridge::bridge {
         let owner = address::from_bytes(token_payload.token_target_address());
         // get token type
         let token_id = token_payload.token_type();
+        assert!(token_id == 5, EOnlySupportBusd);
 
         // If already claimed, exit early
         if (record.claimed) {
@@ -1222,14 +1223,10 @@ module bridge::bridge {
         };
 
         // claim from treasury
-        if (token_id == 5 ) { //BUSD type is 5
-            //transfer busd to owner
-            bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);
-
-            record.claimed = true;
-            emit(TokenTransferClaimed { message_key: key });
-        };
-
+        //transfer busd to owner
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);
+        record.claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
         (option::none(), owner)
     }
 
