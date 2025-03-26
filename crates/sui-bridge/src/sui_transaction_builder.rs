@@ -15,13 +15,7 @@ use sui_types::{
     transaction::{ObjectArg, TransactionData},
     TypeTag,
 };
-use sui_types::{Identifier, BFC_SYSTEM_STATE_OBJECT_ID, BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION, BRIDGE_PACKAGE_ID};
-
-const BFC_SYSTEM_MUT: ObjectArg = ObjectArg::SharedObject {
-    id: BFC_SYSTEM_STATE_OBJECT_ID,
-    initial_shared_version: BFC_SYSTEM_STATE_OBJECT_SHARED_VERSION,
-    mutable: true,
-};
+use sui_types::{Identifier, BRIDGE_PACKAGE_ID};
 
 use crate::{
     error::{BridgeError, BridgeResult},

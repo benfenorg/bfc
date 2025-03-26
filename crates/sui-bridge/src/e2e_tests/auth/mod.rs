@@ -4,7 +4,7 @@ use anyhow::Error;
 use jsonrpsee::http_client::HttpClient;
 use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{SuiObjectData, SuiObjectDataFilter, SuiObjectDataOptions, SuiObjectResponse, SuiObjectResponseQuery};
-use sui_json_rpc_types::{SuiTransactionBlockResponseOptions, TransactionBlockBytes};
+use sui_json_rpc_types::SuiTransactionBlockResponseOptions;
 use sui_sdk::json::SuiJsonValue;
 use sui_types::base_types::SuiAddress;
 use sui_types::crypto::{Signature, SuiKeyPair};
@@ -102,7 +102,7 @@ pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClien
     Ok(())
 }
 
-async fn add_auth_key(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, bfc_status_address: &&SuiAddress, admin_cap: &&SuiObjectData,auth_key: &str) -> Result<(), Error> {
+async fn add_auth_key(_test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, bfc_status_address: &&SuiAddress, admin_cap: &&SuiObjectData,auth_key: &str) -> Result<(), Error> {
     let args1 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,

@@ -24,7 +24,6 @@ use sui_types::{
     object::Owner,
     transaction::Transaction,
 };
-use tap::Tap;
 
 use crate::events::{
     TokenTransferAlreadyApproved, TokenTransferAlreadyClaimed, TokenTransferApproved,
@@ -421,7 +420,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: ObjectArg,
-        admin_cap_arg: ObjectArg,
+        _admin_cap_arg: ObjectArg,
         sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
