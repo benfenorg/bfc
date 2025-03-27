@@ -21,6 +21,7 @@ module bridge::treasury {
     use sui::vec_set;
     use sui::vec_set::VecSet;
     use sui::ecdsa_k1;
+    use sui::hash;
     use bridge::crypto;
     use bridge::message;
 
@@ -240,6 +241,21 @@ module bridge::treasury {
         }
     }
 
+    public(package) fun add_external_coin_target(
+        self: &mut BridgeTreasury,
+        coin_type_name: String,
+        addr: String,
+    ) {
+        let admins = self.external_coin_target_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            self.external_coin_target_address.insert(coin_type_name, vec_set::empty());
+        };
+        let admins = self.external_coin_target_address.get_mut(&coin_type_name);
+        if (!admins.contains(&addr)) {
+            admins.insert(addr);
+        }
+    }
+
     public(package) fun add_external_coin_witness(
         self: &mut BridgeTreasury,
         coin_type_name: String,
@@ -293,7 +309,7 @@ module bridge::treasury {
             *ascii::as_bytes(&tx_hash),
             *ascii::as_bytes(&coin_type)
         );
-        let msg=sui::hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+        let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
         let pubkey =
             ecdsa_k1::decompress_pubkey(&ecdsa_k1::secp256k1_ecrecover(&signatures, &msg, 0));
         let addr=crypto::ecdsa_pub_key_to_eth_address(&pubkey);
@@ -314,6 +330,24 @@ module bridge::treasury {
             admins.remove(&address);
             if (admins.size() == 0) {
                 self.external_coin_admin_address.remove(&coin_type_name);
+            }
+        }
+    }
+
+     public(package) fun remove_external_coin_target(
+        self: &mut BridgeTreasury,
+        coin_type_name: String,
+        addr: String,
+    ) {
+        let admins = self.external_coin_target_address.try_get(&coin_type_name);
+        if (admins.is_none()) {
+            return
+        };
+        let admins = self.external_coin_target_address.get_mut(&coin_type_name);
+        if (admins.contains(&addr)) {
+            admins.remove(&addr);
+            if (admins.size() == 0) {
+                self.external_coin_target_address.remove(&coin_type_name);
             }
         }
     }
@@ -430,9 +464,14 @@ module bridge::treasury {
         &treasury.external_coin_admin_address
     }
 
-     #[test_only]
+    #[test_only]
     public fun external_coin_witness_address(treasury: &BridgeTreasury): &VecMap<String,VecSet<vector<u8>>> {
         &treasury.external_coin_witness_address
+    }
+
+    #[test_only]
+    public fun external_coin_target_address(treasury: &BridgeTreasury): &VecMap<String,VecSet<String>> {
+        &treasury.external_coin_target_address
     }
 
     #[test_only]

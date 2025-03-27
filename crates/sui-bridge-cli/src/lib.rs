@@ -28,6 +28,8 @@ use sui_bridge::types::{
     AddTokensOnEvmAction, AddTokensOnSuiAction, AssetPriceUpdateAction, BlocklistCommitteeAction,
     BlocklistType, EmergencyAction, EmergencyActionType, EvmContractUpgradeAction,
     LimitUpdateAction, AddExternalCoinAdminAction, RemoveExternalCoinAdminAction,
+    AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
+    AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner};
 use sui_config::Config;
@@ -197,6 +199,42 @@ pub enum GovernanceClientCommands {
         #[clap(name = "admin-address", long)]
         admin_address: String,
     },
+    #[clap(name = "add-external-coin-witness")]
+    AddExternalCoinWitness {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "witness-address", long)]
+        witness_address: Vec<u8>,
+    },
+    #[clap(name = "remove-external-coin-witness")]
+    RemoveExternalCoinWitness {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "witness-address", long)]
+        witness_address: Vec<u8>,
+    },
+    #[clap(name = "add-external-coin-target")]
+    AddExternalCoinTarget {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "target-address", long)]
+        target_address: String,
+    },
+    #[clap(name = "remove-external-coin-target")]
+    RemoveExternalCoinTarget {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "target-address", long)]
+        target_address: String,
+    },
     #[clap(name = "add-tokens-on-sui")]
     AddTokensOnSui {
         #[clap(name = "nonce", long)]
@@ -311,6 +349,46 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             chain_id,
             coin_type: coin_type.clone(),
             admin_address: admin_address.clone(),
+        }),
+        GovernanceClientCommands::AddExternalCoinWitness {
+            nonce,
+            coin_type,
+            witness_address,
+        } => BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            witness_address: witness_address.clone(),
+        }),
+        GovernanceClientCommands::RemoveExternalCoinWitness {
+            nonce,
+            coin_type,
+            witness_address,
+        } => BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction{
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            witness_address: witness_address.clone(),
+        }),
+        GovernanceClientCommands::AddExternalCoinTarget {
+            nonce,
+            coin_type,
+            target_address,
+        } => BridgeAction::AddExternalCoinTargetAction(AddExternalCoinTargetAction {
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            target_address: target_address.clone(),
+        }),
+        GovernanceClientCommands::RemoveExternalCoinTarget {
+            nonce,
+            coin_type,
+            target_address,
+        } => BridgeAction::RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction {
+            nonce: *nonce,
+            chain_id,
+            coin_type: coin_type.clone(),
+            target_address: target_address.clone(),
         }),
         GovernanceClientCommands::AddTokensOnSui {
             nonce,
@@ -428,6 +506,10 @@ pub fn select_contract_address(
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
         GovernanceClientCommands::AddExternalCoinAdmin {.. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinAdmin {.. } => unreachable!(),
+        GovernanceClientCommands::AddExternalCoinWitness {.. } => unreachable!(),
+        GovernanceClientCommands::RemoveExternalCoinWitness {.. } => unreachable!(),
+        GovernanceClientCommands::AddExternalCoinTarget {.. } => unreachable!(),
+        GovernanceClientCommands::RemoveExternalCoinTarget {.. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,

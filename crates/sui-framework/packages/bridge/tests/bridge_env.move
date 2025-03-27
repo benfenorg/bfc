@@ -39,6 +39,8 @@ module bridge::bridge_env {
         create_remove_external_coin_admin_message,
         create_add_external_coin_witness_message,
         create_remove_external_coin_witness_message,
+        create_add_external_coin_target_message,
+        create_remove_external_coin_target_message,
         create_blocklist_message,
         emergency_op_pause,
         emergency_op_unpause
@@ -470,7 +472,7 @@ module bridge::bridge_env {
     }
 
     public fun add_external_coin_admin(
-        env: &mut BridgeEnv, 
+        env: &mut BridgeEnv,
         coin_type_name: String,
         address: String,
     ) {
@@ -508,7 +510,7 @@ module bridge::bridge_env {
         let scenario = &mut env.scenario;
         scenario.next_tx(@0x0);
         let mut bridge = scenario.take_shared<Bridge>();
-        let add_message = create_add_external_coin_witness_message(env.chain_id, bridge.get_seq_num_for(message_types::add_bitcoin_witness()), coin_type_name, addr);
+        let add_message = create_add_external_coin_witness_message(env.chain_id, bridge.get_seq_num_for(message_types::add_external_coin_witness()), coin_type_name, addr);
         debug::print(&add_message);
         let signatures = env.sign_message(add_message);
         bridge.execute_system_message(add_message, signatures);
@@ -537,7 +539,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let remove_message = create_remove_external_coin_witness_message(
             env.chain_id,
-            bridge.get_seq_num_for(message_types::remove_bitcoin_witness()),
+            bridge.get_seq_num_for(message_types::remove_external_coin_witness()),
             coin_type_name,
             addr,
         );
@@ -588,6 +590,63 @@ module bridge::bridge_env {
 
         test_scenario::return_shared(bridge);
     }
+
+    public fun add_external_coin_target(
+        env: &mut BridgeEnv,
+        coin_type_name: String,
+        addr: String,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let add_message = create_add_external_coin_target_message(env.chain_id, bridge.get_seq_num_for(message_types::add_external_coin_target()), coin_type_name, *addr.as_bytes());
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message(add_message, signatures);
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_target_address();
+        std::debug::print( admin_cap);
+        let admins = admin_cap.try_get(&coin_type_name);
+        assert!(admins.is_some());
+        let admins = admins.destroy_some();
+        debug::print(&admins);
+        debug::print(&addr);
+        assert!(admins.contains(&addr));
+
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun remove_external_coin_target(
+        env: &mut BridgeEnv,
+        coin_type_name: String,
+        addr: String,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let remove_message = create_remove_external_coin_target_message(
+            env.chain_id,
+            bridge.get_seq_num_for(message_types::remove_external_coin_target()),
+            coin_type_name,
+            *addr.as_bytes(),
+        );
+        let signatures = env.sign_message(remove_message);
+        bridge.execute_system_message(remove_message, signatures);
+
+        // check
+        let inner = bridge.test_load_inner();
+        let treasury = inner.inner_treasury();
+        let admin_cap = treasury.external_coin_target_address();
+        let admins = admin_cap.try_get(&coin_type_name);
+        if (admins.is_some()) {
+            let admins = admins.destroy_some();
+            assert!(!admins.contains(&addr));
+        };
+
+        test_scenario::return_shared(bridge);
+    }
+
 
     //
     // Utility functions for custom behavior
@@ -1171,7 +1230,6 @@ module bridge::bridge_env {
             target_chain,
             target_address,
             token,
-            vector::empty(),
             ctx,
         );
      }
@@ -1711,7 +1769,7 @@ module bridge::bridge_env {
     }
 
     fun assert_external_records(
-        bridge: &Bridge, 
+        bridge: &Bridge,
         source_chain: u8,
         target_chain: u8,
         source_address:vector<u8>,

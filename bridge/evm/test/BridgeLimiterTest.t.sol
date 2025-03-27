@@ -3,6 +3,8 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./BridgeBaseTest.t.sol";
+import {console2} from "forge-std/console2.sol";
+
 
 contract BridgeLimiterTest is BridgeBaseTest {
     uint8 public supportedChainID;
@@ -63,6 +65,16 @@ contract BridgeLimiterTest is BridgeBaseTest {
         limiter.recordBridgeTransfers(supportedChainID, tokenID, amount);
         assertTrue(limiter.willAmountExceedLimit(supportedChainID, tokenID, 2000000));
         assertFalse(limiter.willAmountExceedLimit(supportedChainID, tokenID, 1000000));
+    }
+
+    function testGetAvailableClaimAmount() public {
+        changePrank(address(bridge));
+        uint8 tokenID = 3;
+        uint256 amount = 999999 * 1000000; // USDC has 6 decimals
+        limiter.recordBridgeTransfers(supportedChainID, tokenID, amount);
+        console2.log(limiter.getAvailableClaimAmount(supportedChainID,tokenID));
+        assertEq(limiter.getAvailableClaimAmount(supportedChainID,tokenID),1000000);
+        assertNotEq(limiter.getAvailableClaimAmount(supportedChainID,tokenID),1000001);
     }
 
     function testRecordBridgeTransfer() public {

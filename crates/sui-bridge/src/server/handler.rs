@@ -477,7 +477,7 @@ impl BridgeRequestHandler {
             metrics.clone(),
         )
         .spawn(external_coin_rx);
-
+      
         SignerWithCache::new(
             signer.clone(),
             EthActionVerifier {
@@ -623,8 +623,10 @@ mod tests {
             get_test_sui_to_eth_bridge_action, mock_last_finalized_block,
         },
         types::{
-            AddExternalCoinAdminAction, EmergencyAction, EmergencyActionType, LimitUpdateAction,
-            RefundAdminAction, RemoveExternalCoinAdminAction,
+            AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction,
+            EmergencyAction, EmergencyActionType, LimitUpdateAction, RefundAdminAction,
+            RemoveExternalCoinAdminAction, RemoveExternalCoinTargetAction,
+            RemoveExternalCoinWitnessAction,
         },
     };
     use ethers::types::{Address as EthAddress, TransactionReceipt};
@@ -1056,6 +1058,128 @@ mod tests {
             coin_type: "test".to_string(),
             admin_address: SuiAddress::random_for_testing_only().to_string(),
         });
+        let verifier = GovernanceVerifier::new(vec![action_1.clone(), action_2.clone()]).unwrap();
+        assert_eq!(
+            verifier.verify(action_1.clone()).await.unwrap(),
+            action_1.clone()
+        );
+        let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+        let signer = Arc::new(kp);
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let mut signer_with_cache = SignerWithCache::new(signer.clone(), verifier, metrics.clone());
+
+        // action_1 is signable
+        signer_with_cache.sign(action_1.clone()).await.unwrap();
+        // signed action is cached
+        let entry_ = signer_with_cache.get_testing_only(action_1.clone()).await;
+        assert_eq!(
+            entry_
+                .unwrap()
+                .lock()
+                .await
+                .clone()
+                .unwrap()
+                .unwrap()
+                .data(),
+            &action_1
+        );
+
+        // action_2 is signable
+        signer_with_cache.sign(action_2.clone()).await.unwrap();
+        // signed action is cached
+        let entry_ = signer_with_cache.get_testing_only(action_2.clone()).await;
+        assert_eq!(
+            entry_
+                .unwrap()
+                .lock()
+                .await
+                .clone()
+                .unwrap()
+                .unwrap()
+                .data(),
+            &action_2
+        );
+    }
+
+    #[tokio::test]
+    async fn test_add_remove_external_target_action() {
+        let action_1 = BridgeAction::AddExternalCoinTargetAction(AddExternalCoinTargetAction {
+            chain_id: BridgeChainId::SuiCustom,
+            nonce: 1,
+            coin_type: "test".to_string(),
+            target_address: SuiAddress::random_for_testing_only().to_string(),
+        });
+        let action_2 =
+            BridgeAction::RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction {
+                chain_id: BridgeChainId::SuiCustom,
+                nonce: 1,
+                coin_type: "test".to_string(),
+                target_address: SuiAddress::random_for_testing_only().to_string(),
+            });
+        let verifier = GovernanceVerifier::new(vec![action_1.clone(), action_2.clone()]).unwrap();
+        assert_eq!(
+            verifier.verify(action_1.clone()).await.unwrap(),
+            action_1.clone()
+        );
+        let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+        let signer = Arc::new(kp);
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let mut signer_with_cache = SignerWithCache::new(signer.clone(), verifier, metrics.clone());
+
+        // action_1 is signable
+        signer_with_cache.sign(action_1.clone()).await.unwrap();
+        // signed action is cached
+        let entry_ = signer_with_cache.get_testing_only(action_1.clone()).await;
+        assert_eq!(
+            entry_
+                .unwrap()
+                .lock()
+                .await
+                .clone()
+                .unwrap()
+                .unwrap()
+                .data(),
+            &action_1
+        );
+
+        // action_2 is signable
+        signer_with_cache.sign(action_2.clone()).await.unwrap();
+        // signed action is cached
+        let entry_ = signer_with_cache.get_testing_only(action_2.clone()).await;
+        assert_eq!(
+            entry_
+                .unwrap()
+                .lock()
+                .await
+                .clone()
+                .unwrap()
+                .unwrap()
+                .data(),
+            &action_2
+        );
+    }
+
+    #[tokio::test]
+    async fn test_add_remove_external_witness_action() {
+        let action_1 = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+            chain_id: BridgeChainId::SuiCustom,
+            nonce: 1,
+            coin_type: "test".to_string(),
+            witness_address: SuiAddress::random_for_testing_only()
+                .to_string()
+                .as_bytes()
+                .to_vec(),
+        });
+        let action_2 =
+            BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
+                chain_id: BridgeChainId::SuiCustom,
+                nonce: 1,
+                coin_type: "test".to_string(),
+                witness_address: SuiAddress::random_for_testing_only()
+                    .to_string()
+                    .as_bytes()
+                    .to_vec(),
+            });
         let verifier = GovernanceVerifier::new(vec![action_1.clone(), action_2.clone()]).unwrap();
         assert_eq!(
             verifier.verify(action_1.clone()).await.unwrap(),

@@ -13496,6 +13496,7 @@ dependencies = [
  "eyre",
  "fastcrypto",
  "futures",
+ "hex",
  "hex-literal 0.3.4",
  "jsonrpsee",
  "lru 0.10.0",

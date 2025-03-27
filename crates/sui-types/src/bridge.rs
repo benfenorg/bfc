@@ -34,6 +34,11 @@ pub type BridgeRecordDyanmicField = Field<
     LinkedTableNode<MoveTypeBridgeMessageKey, MoveTypeBridgeRecord>,
 >;
 
+pub type ExternalBridgeRecordDyanmicField = Field<
+    MoveTypeExternalBridgeMessageKey,
+    LinkedTableNode<MoveTypeExternalBridgeMessageKey, MoveTypeExternalBridgeRecord>,
+>;
+
 pub const BRIDGE_MODULE_NAME: &IdentStr = ident_str!("bridge");
 pub const BRIDGE_TREASURY_MODULE_NAME: &IdentStr = ident_str!("treasury");
 pub const BRIDGE_LIMITER_MODULE_NAME: &IdentStr = ident_str!("limiter");
@@ -65,6 +70,8 @@ pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REFUND_ADMIN: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN: u64 = 5001;
+pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS: u64 = 5001;
+pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET: u64 = 5001;
 
 // const for initial token ids for convenience
 pub const TOKEN_ID_SUI: u64 = 0;
@@ -97,7 +104,7 @@ pub enum BridgeChainId {
     EthSepolia = 11,
     EthCustom = 12,
 
-    // benfen btc 
+    // benfen btc
     BtcMainnet = 20,
     BtcTestnet = 21,
 }
@@ -492,6 +499,17 @@ pub struct MoveTypeExternalBridgeMessageKey {
     pub target_address: Vec<u8>,
     pub amount: u64,
     pub tx_hash: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeExternalBridgeRecord {
+    pub source_chain: u8,
+    pub target_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
+    pub verified_signatures: Option<Vec<Vec<u8>>>,
+    pub claimed: bool,
 }
 
 /// Rust version of the Move message::BridgeMessageKey type.
