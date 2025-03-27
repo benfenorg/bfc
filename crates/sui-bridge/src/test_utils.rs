@@ -251,7 +251,7 @@ pub fn get_test_log_and_action(
     tx_hash: TxHash,
     event_index: u16,
 ) -> (Log, BridgeAction) {
-    let token_id = 3u64;
+    let token_id = 1u64;
     let sui_adjusted_amount = 10000000u64;
     let source_address = EthAddress::random();
     let sui_address: SuiAddress = SuiAddress::random_for_testing_only();
