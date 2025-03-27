@@ -12,6 +12,7 @@ title: Module `0xb::limiter`
 -  [Function `get_mint_busd_max_limit`](#0xb_limiter_get_mint_busd_max_limit)
 -  [Function `set_mint_busd_max_limit`](#0xb_limiter_set_mint_busd_max_limit)
 -  [Function `new`](#0xb_limiter_new)
+-  [Function `get_available_claim_amount`](#0xb_limiter_get_available_claim_amount)
 -  [Function `check_and_record_sending_transfer`](#0xb_limiter_check_and_record_sending_transfer)
 -  [Function `update_route_limit`](#0xb_limiter_update_route_limit)
 -  [Function `current_hour_since_epoch`](#0xb_limiter_current_hour_since_epoch)
@@ -288,6 +289,48 @@ title: Module `0xb::limiter`
         transfer_records: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
         max_mint_busd_limit: <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>,
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_limiter_get_available_claim_amount"></a>
+
+## Function `get_available_claim_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(self: &<a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &treasury::BridgeTreasury, route: <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(
+    self: &<a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>,
+    <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &BridgeTreasury,
+    route: BridgeRoute,
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <b>if</b> (!self.transfer_records.contains(&route)) {
+       <b>return</b> 0
+    };
+    <b>let</b> record = self.transfer_records.get(&route);
+    <b>let</b> route_limit = self.transfer_limits.try_get(&route);
+    <b>assert</b>!(route_limit.is_some(), <a href="limiter.md#0xb_limiter_ELimitNotFoundForRoute">ELimitNotFoundForRoute</a>);
+    <b>let</b> route_limit = route_limit.destroy_some();
+    <b>let</b> route_limit_adjusted =
+        (route_limit <b>as</b> u128) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+    <b>let</b> total_adjusted= (record.total_amount <b>as</b> u128 ) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+    <b>if</b> (total_adjusted &lt;= route_limit_adjusted){
+        <b>return</b> 0
+    };
+    <b>let</b> price = (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
+   ((total_adjusted-route_limit_adjusted) / price) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 }
 </code></pre>
 

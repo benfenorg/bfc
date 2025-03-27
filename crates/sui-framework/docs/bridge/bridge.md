@@ -18,6 +18,7 @@ title: Module `0xb::bridge`
 -  [Struct `ExternalPreDepositedEvent`](#0xb_bridge_ExternalPreDepositedEvent)
 -  [Struct `ExternalPreDepositedDoneEvent`](#0xb_bridge_ExternalPreDepositedDoneEvent)
 -  [Struct `ExternalDepositedApprovedEvent`](#0xb_bridge_ExternalDepositedApprovedEvent)
+-  [Struct `ExternalDepositStartEvent`](#0xb_bridge_ExternalDepositStartEvent)
 -  [Struct `ExternalDepositedEvent`](#0xb_bridge_ExternalDepositedEvent)
 -  [Struct `ExternalWithdrawEvent`](#0xb_bridge_ExternalWithdrawEvent)
 -  [Struct `ExternalBridgeMessageKey`](#0xb_bridge_ExternalBridgeMessageKey)
@@ -39,11 +40,14 @@ title: Module `0xb::bridge`
 -  [Function `claim_and_transfer_token`](#0xb_bridge_claim_and_transfer_token)
 -  [Function `claim_and_transfer_busd`](#0xb_bridge_claim_and_transfer_busd)
 -  [Function `execute_system_message`](#0xb_bridge_execute_system_message)
+-  [Function `get_available_claim_amount`](#0xb_bridge_get_available_claim_amount)
 -  [Function `pre_deposit_external_coin`](#0xb_bridge_pre_deposit_external_coin)
 -  [Function `deposit_external_coin`](#0xb_bridge_deposit_external_coin)
+-  [Function `deposit_external_coin_v2`](#0xb_bridge_deposit_external_coin_v2)
 -  [Function `approval_and_claimed_external_coin`](#0xb_bridge_approval_and_claimed_external_coin)
 -  [Function `withdraw_external_coin`](#0xb_bridge_withdraw_external_coin)
 -  [Function `get_token_transfer_action_status`](#0xb_bridge_get_token_transfer_action_status)
+-  [Function `get_external_token_transfer_action_status`](#0xb_bridge_get_external_token_transfer_action_status)
 -  [Function `get_send_back_status`](#0xb_bridge_get_send_back_status)
 -  [Function `get_token_transfer_action_signatures`](#0xb_bridge_get_token_transfer_action_signatures)
 -  [Function `multi_signature_passed`](#0xb_bridge_multi_signature_passed)
@@ -59,6 +63,10 @@ title: Module `0xb::bridge`
 -  [Function `execute_update_asset_price`](#0xb_bridge_execute_update_asset_price)
 -  [Function `execute_add_external_coin_admin`](#0xb_bridge_execute_add_external_coin_admin)
 -  [Function `execute_remove_external_coin_admin`](#0xb_bridge_execute_remove_external_coin_admin)
+-  [Function `execute_add_external_coin_target_payload`](#0xb_bridge_execute_add_external_coin_target_payload)
+-  [Function `execute_remove_external_coin_target_payload`](#0xb_bridge_execute_remove_external_coin_target_payload)
+-  [Function `execute_add_external_coin_witness`](#0xb_bridge_execute_add_external_coin_witness)
+-  [Function `execute_remove_external_coin_witness`](#0xb_bridge_execute_remove_external_coin_witness)
 -  [Function `execute_add_tokens_on_sui`](#0xb_bridge_execute_add_tokens_on_sui)
 -  [Function `get_current_seq_num_and_increment`](#0xb_bridge_get_current_seq_num_and_increment)
 -  [Function `get_parsed_token_transfer_message`](#0xb_bridge_get_parsed_token_transfer_message)
@@ -767,6 +775,75 @@ title: Module `0xb::bridge`
 
 </details>
 
+<a name="0xb_bridge_ExternalDepositStartEvent"></a>
+
+## Struct `ExternalDepositStartEvent`
+
+
+
+<pre><code><b>struct</b> <a href="bridge.md#0xb_bridge_ExternalDepositStartEvent">ExternalDepositStartEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xb_bridge_ExternalDepositedEvent"></a>
 
 ## Struct `ExternalDepositedEvent`
@@ -1272,6 +1349,15 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnpassedMultiSignature">EUnpassedMultiSignature</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 32;
+</code></pre>
+
+
+
+<a name="0xb_bridge_EUnpassedWitnessSignature"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EUnpassedWitnessSignature">EUnpassedWitnessSignature</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 33;
 </code></pre>
 
 
@@ -2108,9 +2194,53 @@ title: Module `0xb::bridge`
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_refund_admin_operate">message_types::refund_admin_operate</a>()) {
         <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_refund_admin_payload();
         inner.<a href="bridge.md#0xb_bridge_execute_refund_admin_operate">execute_refund_admin_operate</a>(payload);
-    } <b>else</b> {
+    } <b>else</b> <b>if</b>  (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_witness">message_types::add_external_coin_witness</a>()){
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_add_witness_poyload();
+        inner.<a href="bridge.md#0xb_bridge_execute_add_external_coin_witness">execute_add_external_coin_witness</a>(payload);
+
+    }<b>else</b> <b>if</b>  (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_witness">message_types::remove_external_coin_witness</a>()){
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_remove_witness_poyload();
+        inner.<a href="bridge.md#0xb_bridge_execute_remove_external_coin_witness">execute_remove_external_coin_witness</a>(payload);
+
+    }<b>else</b> <b>if</b>  (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_target">message_types::add_external_coin_target</a>()){
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_add_external_target_address_poyload();
+        inner.<a href="bridge.md#0xb_bridge_execute_add_external_coin_target_payload">execute_add_external_coin_target_payload</a>(payload);
+    }<b>else</b> <b>if</b>  (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()){
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_remove_external_target_address_poyload();
+        inner.<a href="bridge.md#0xb_bridge_execute_remove_external_coin_target_payload">execute_remove_external_coin_target_payload</a>(payload);
+
+    }<b>else</b> {
         <b>abort</b> <a href="bridge.md#0xb_bridge_EUnexpectedMessageType">EUnexpectedMessageType</a>
     };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_get_available_claim_amount"></a>
+
+## Function `get_available_claim_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(
+      <a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+      target_chain: u8,
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner">load_inner</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> route = <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    inner.<a href="limiter.md#0xb_limiter">limiter</a>.<a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, route)
 }
 </code></pre>
 
@@ -2148,6 +2278,7 @@ title: Module `0xb::bridge`
     <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
 
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.verify_bitcoin_signatures&lt;T&gt;(source_chain, source_address, target_address, amount, tx_hash, signatures),<a href="bridge.md#0xb_bridge_EUnpassedWitnessSignature">EUnpassedWitnessSignature</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(source_chain, inner.chain_id), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender_str)) {
@@ -2215,7 +2346,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin">deposit_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin">deposit_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2231,13 +2362,15 @@ title: Module `0xb::bridge`
     target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
-    _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> sender = ctx.sender();
     <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
 
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+
+    <b>assert</b>!(inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.verify_bitcoin_signatures&lt;T&gt;(source_chain, source_address, target_address, amount, tx_hash, signatures),<a href="bridge.md#0xb_bridge_EUnpassedWitnessSignature">EUnpassedWitnessSignature</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(source_chain, inner.chain_id), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
@@ -2287,6 +2420,86 @@ title: Module `0xb::bridge`
         <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
             tx_hash,
             coin_type,
+            source_chain,
+            target_chain: inner.chain_id,
+            source_address,
+            target_address,
+            amount,
+        },
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_deposit_external_coin_v2"></a>
+
+## Function `deposit_external_coin_v2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin_v2">deposit_external_coin_v2</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_deposit_external_coin_v2">deposit_external_coin_v2</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+    _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> sender = ctx.sender();
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
+
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(source_chain, inner.chain_id), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+    <b>if</b> (!inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EUnknownExternalCoinOrSender">EUnknownExternalCoinOrSender</a>
+    };
+
+    <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+    };
+    <b>if</b> (!inner.<a href="bridge.md#0xb_bridge_multi_signature_passed">multi_signature_passed</a>(key, coin_type)) {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EUnpassedMultiSignature">EUnpassedMultiSignature</a>
+    };
+
+    // check records
+    <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+    };
+    <b>if</b> (inner.external_bridge_records.contains(key)) {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EDuplicatedMessage">EDuplicatedMessage</a>
+    };
+
+    <b>let</b> seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(<a href="message_types.md#0xb_message_types_token">message_types::token</a>());
+    <b>let</b> token_id = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.token_id&lt;T&gt;();
+
+    emit(
+        <a href="bridge.md#0xb_bridge_ExternalDepositStartEvent">ExternalDepositStartEvent</a> {
+            seq_num,
+            tx_hash,
+            token_id,
             source_chain,
             target_chain: inner.chain_id,
             source_address,
@@ -2406,7 +2619,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_coin">withdraw_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_coin">withdraw_external_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -2420,7 +2633,6 @@ title: Module `0xb::bridge`
     target_chain: u8,
     target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     token: Coin&lt;T&gt;,
-    _signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
@@ -2483,6 +2695,60 @@ title: Module `0xb::bridge`
     };
 
     <b>let</b> record = &inner.token_transfer_records[key];
+    <b>if</b> (record.claimed) {
+        <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_CLAIMED">TRANSFER_STATUS_CLAIMED</a>
+    };
+
+    <b>if</b> (record.verified_signatures.is_some()) {
+        <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_APPROVED">TRANSFER_STATUS_APPROVED</a>
+    };
+
+    <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_PENDING">TRANSFER_STATUS_PENDING</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_get_external_token_transfer_action_status"></a>
+
+## Function `get_external_token_transfer_action_status`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_get_external_token_transfer_action_status">get_external_token_transfer_action_status</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_get_external_token_transfer_action_status">get_external_token_transfer_action_status</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    source_chain: u8,
+    source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+): u8 {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner">load_inner</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+
+     <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+    };
+
+    <b>if</b> (!inner.external_bridge_records.contains(key)) {
+        <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_NOT_FOUND">TRANSFER_STATUS_NOT_FOUND</a>
+    };
+
+    <b>let</b> record = &inner.external_bridge_records[key];
     <b>if</b> (record.claimed) {
         <b>return</b> <a href="bridge.md#0xb_bridge_TRANSFER_STATUS_CLAIMED">TRANSFER_STATUS_CLAIMED</a>
     };
@@ -3095,6 +3361,114 @@ title: Module `0xb::bridge`
     inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.remove_external_coin_admin(
         payload.remove_external_coin_admin_payload_coin_type(),
         payload.remove_external_coin_admin_payload_admin_address(),
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_add_external_coin_target_payload"></a>
+
+## Function `execute_add_external_coin_target_payload`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_target_payload">execute_add_external_coin_target_payload</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_AddExternalCoinTarget">message::AddExternalCoinTarget</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_target_payload">execute_add_external_coin_target_payload</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: AddExternalCoinTarget) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.add_external_coin_target(
+        payload.add_external_coin_target_payload_coin_type(),
+        payload.add_external_coin_target_payload_target_address(),
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_remove_external_coin_target_payload"></a>
+
+## Function `execute_remove_external_coin_target_payload`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_target_payload">execute_remove_external_coin_target_payload</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_RemoveExternalCoinTarget">message::RemoveExternalCoinTarget</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_target_payload">execute_remove_external_coin_target_payload</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: RemoveExternalCoinTarget) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.remove_external_coin_target(
+        payload.remove_external_coin_target_payload_coin_type(),
+        payload.remove_external_coin_target_payload_target_address(),
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_add_external_coin_witness"></a>
+
+## Function `execute_add_external_coin_witness`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_witness">execute_add_external_coin_witness</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_AddExternalCoinWitness">message::AddExternalCoinWitness</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_external_coin_witness">execute_add_external_coin_witness</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: AddExternalCoinWitness) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.add_external_coin_witness(
+        payload.add_external_coin_witness_payload_coin_type(),
+        payload.add_external_coin_witness_payload_witness_address(),
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_remove_external_coin_witness"></a>
+
+## Function `execute_remove_external_coin_witness`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_witness">execute_remove_external_coin_witness</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, payload: <a href="message.md#0xb_message_RemoveExternalCoinWitness">message::RemoveExternalCoinWitness</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_external_coin_witness">execute_remove_external_coin_witness</a>(inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a>, payload: RemoveExternalCoinWitness) {
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.remove_external_coin_witness(
+        payload.remove_external_coin_witness_payload_coin_type(),
+        payload.remove_external_coin_witness_payload_witness_address(),
     )
 }
 </code></pre>

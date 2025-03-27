@@ -5,6 +5,7 @@ title: Module `0xb::message`
 
 
 -  [Struct `BridgeMessage`](#0xb_message_BridgeMessage)
+-  [Struct `BitcoinMessage`](#0xb_message_BitcoinMessage)
 -  [Struct `BridgeMessageKey`](#0xb_message_BridgeMessageKey)
 -  [Struct `RefundMessageKey`](#0xb_message_RefundMessageKey)
 -  [Struct `TokenTransferPayload`](#0xb_message_TokenTransferPayload)
@@ -15,10 +16,18 @@ title: Module `0xb::message`
 -  [Struct `UpdateAssetPrice`](#0xb_message_UpdateAssetPrice)
 -  [Struct `AddExternalCoinAdmin`](#0xb_message_AddExternalCoinAdmin)
 -  [Struct `RemoveExternalCoinAdmin`](#0xb_message_RemoveExternalCoinAdmin)
+-  [Struct `AddExternalCoinWitness`](#0xb_message_AddExternalCoinWitness)
+-  [Struct `RemoveExternalCoinWitness`](#0xb_message_RemoveExternalCoinWitness)
+-  [Struct `AddExternalCoinTarget`](#0xb_message_AddExternalCoinTarget)
+-  [Struct `RemoveExternalCoinTarget`](#0xb_message_RemoveExternalCoinTarget)
 -  [Struct `AddTokenOnSui`](#0xb_message_AddTokenOnSui)
 -  [Struct `ParsedTokenTransferMessage`](#0xb_message_ParsedTokenTransferMessage)
 -  [Constants](#@Constants_0)
 -  [Function `extract_token_bridge_payload`](#0xb_message_extract_token_bridge_payload)
+-  [Function `extract_add_witness_poyload`](#0xb_message_extract_add_witness_poyload)
+-  [Function `extract_remove_witness_poyload`](#0xb_message_extract_remove_witness_poyload)
+-  [Function `extract_add_external_target_address_poyload`](#0xb_message_extract_add_external_target_address_poyload)
+-  [Function `extract_remove_external_target_address_poyload`](#0xb_message_extract_remove_external_target_address_poyload)
 -  [Function `extract_emergency_op_payload`](#0xb_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#0xb_message_extract_blocklist_payload)
 -  [Function `extract_refund_admin_payload`](#0xb_message_extract_refund_admin_payload)
@@ -28,6 +37,8 @@ title: Module `0xb::message`
 -  [Function `extract_update_asset_price`](#0xb_message_extract_update_asset_price)
 -  [Function `extract_add_tokens_on_sui`](#0xb_message_extract_add_tokens_on_sui)
 -  [Function `serialize_message`](#0xb_message_serialize_message)
+-  [Function `serialize_bitcoin_message`](#0xb_message_serialize_bitcoin_message)
+-  [Function `create_bitcoin_message`](#0xb_message_create_bitcoin_message)
 -  [Function `create_token_bridge_message`](#0xb_message_create_token_bridge_message)
 -  [Function `create_emergency_op_message`](#0xb_message_create_emergency_op_message)
 -  [Function `create_blocklist_message`](#0xb_message_create_blocklist_message)
@@ -35,6 +46,10 @@ title: Module `0xb::message`
 -  [Function `create_update_bridge_limit_message`](#0xb_message_create_update_bridge_limit_message)
 -  [Function `create_update_asset_price_message`](#0xb_message_create_update_asset_price_message)
 -  [Function `create_add_external_coin_admin_message`](#0xb_message_create_add_external_coin_admin_message)
+-  [Function `create_add_external_coin_witness_message`](#0xb_message_create_add_external_coin_witness_message)
+-  [Function `create_remove_external_coin_witness_message`](#0xb_message_create_remove_external_coin_witness_message)
+-  [Function `create_add_external_coin_target_message`](#0xb_message_create_add_external_coin_target_message)
+-  [Function `create_remove_external_coin_target_message`](#0xb_message_create_remove_external_coin_target_message)
 -  [Function `create_remove_external_coin_admin_message`](#0xb_message_create_remove_external_coin_admin_message)
 -  [Function `create_add_tokens_on_sui_message`](#0xb_message_create_add_tokens_on_sui_message)
 -  [Function `create_key`](#0xb_message_create_key)
@@ -64,6 +79,14 @@ title: Module `0xb::message`
 -  [Function `update_bridge_limit_payload_limit`](#0xb_message_update_bridge_limit_payload_limit)
 -  [Function `update_asset_price_payload_token_id`](#0xb_message_update_asset_price_payload_token_id)
 -  [Function `update_asset_price_payload_new_price`](#0xb_message_update_asset_price_payload_new_price)
+-  [Function `add_external_coin_witness_payload_coin_type`](#0xb_message_add_external_coin_witness_payload_coin_type)
+-  [Function `add_external_coin_witness_payload_witness_address`](#0xb_message_add_external_coin_witness_payload_witness_address)
+-  [Function `remove_external_coin_witness_payload_coin_type`](#0xb_message_remove_external_coin_witness_payload_coin_type)
+-  [Function `remove_external_coin_witness_payload_witness_address`](#0xb_message_remove_external_coin_witness_payload_witness_address)
+-  [Function `add_external_coin_target_payload_coin_type`](#0xb_message_add_external_coin_target_payload_coin_type)
+-  [Function `add_external_coin_target_payload_target_address`](#0xb_message_add_external_coin_target_payload_target_address)
+-  [Function `remove_external_coin_target_payload_coin_type`](#0xb_message_remove_external_coin_target_payload_coin_type)
+-  [Function `remove_external_coin_target_payload_target_address`](#0xb_message_remove_external_coin_target_payload_target_address)
 -  [Function `add_external_coin_admin_payload_coin_type`](#0xb_message_add_external_coin_admin_payload_coin_type)
 -  [Function `add_external_coin_admin_payload_admin_address`](#0xb_message_add_external_coin_admin_payload_admin_address)
 -  [Function `remove_external_coin_admin_payload_coin_type`](#0xb_message_remove_external_coin_admin_payload_coin_type)
@@ -131,6 +154,63 @@ title: Module `0xb::message`
 </dd>
 <dt>
 <code>payload: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_BitcoinMessage"></a>
+
+## Struct `BitcoinMessage`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_BitcoinMessage">BitcoinMessage</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>coin_type: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
 </dt>
 <dd>
 
@@ -500,6 +580,138 @@ title: Module `0xb::message`
 
 </details>
 
+<a name="0xb_message_AddExternalCoinWitness"></a>
+
+## Struct `AddExternalCoinWitness`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_RemoveExternalCoinWitness"></a>
+
+## Struct `RemoveExternalCoinWitness`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_AddExternalCoinTarget"></a>
+
+## Struct `AddExternalCoinTarget`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_AddExternalCoinTarget">AddExternalCoinTarget</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_RemoveExternalCoinTarget"></a>
+
+## Struct `RemoveExternalCoinTarget`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>target_address: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="0xb_message_AddTokenOnSui"></a>
 
 ## Struct `AddTokenOnSui`
@@ -753,6 +965,151 @@ title: Module `0xb::message`
         amount,
         tx_hash,
         event_idx
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_add_witness_poyload"></a>
+
+## Function `extract_add_witness_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_witness_poyload">extract_add_witness_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinWitness">message::AddExternalCoinWitness</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_witness_poyload">extract_add_witness_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a> {
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+    <b>let</b> (<b>mut</b> witness_address, <b>mut</b> i) = (<a href="../move-stdlib/vector.md#0x1_vector">vector</a>[], 0);
+    <b>while</b> (i &lt; <a href="message.md#0xb_message_ECDSA_ADDRESS_LENGTH">ECDSA_ADDRESS_LENGTH</a>) {
+            witness_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
+            i = i + 1;
+    };
+     <a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a> {
+        coin_type,
+        witness_address
+     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_remove_witness_poyload"></a>
+
+## Function `extract_remove_witness_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_witness_poyload">extract_remove_witness_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinWitness">message::RemoveExternalCoinWitness</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_witness_poyload">extract_remove_witness_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> {
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+    <b>let</b> (<b>mut</b> witness_address, <b>mut</b> i) = (<a href="../move-stdlib/vector.md#0x1_vector">vector</a>[], 0);
+     <b>while</b> (i &lt; <a href="message.md#0xb_message_ECDSA_ADDRESS_LENGTH">ECDSA_ADDRESS_LENGTH</a>) {
+            witness_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
+            i = i + 1;
+    };
+    <a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> {
+        coin_type,
+        witness_address
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_add_external_target_address_poyload"></a>
+
+## Function `extract_add_external_target_address_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_external_target_address_poyload">extract_add_external_target_address_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinTarget">message::AddExternalCoinTarget</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_external_target_address_poyload">extract_add_external_target_address_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_AddExternalCoinTarget">AddExternalCoinTarget</a> {
+  <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+  <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+  <b>let</b> length=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+
+  <b>let</b> (<b>mut</b> target_address, <b>mut</b> i) = (<a href="../move-stdlib/vector.md#0x1_vector">vector</a>[], 0);
+  <b>while</b> (i &lt; length) {
+          target_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
+          i = i + 1;
+  };
+  <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
+
+  <b>let</b> target_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(target_address);
+
+   <a href="message.md#0xb_message_AddExternalCoinTarget">AddExternalCoinTarget</a> {
+      coin_type,
+      target_address
+   }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_remove_external_target_address_poyload"></a>
+
+## Function `extract_remove_external_target_address_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_external_target_address_poyload">extract_remove_external_target_address_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinTarget">message::RemoveExternalCoinTarget</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_external_target_address_poyload">extract_remove_external_target_address_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
+    <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+    <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
+    <b>let</b> length=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+    <b>let</b> (<b>mut</b> target_address, <b>mut</b> i) = (<a href="../move-stdlib/vector.md#0x1_vector">vector</a>[], 0);
+
+    <b>while</b> (i &lt; length) {
+            target_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
+            i = i + 1;
+    };
+    <b>let</b> target_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(target_address);
+    <a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
+        coin_type,
+        target_address
     }
 }
 </code></pre>
@@ -1080,6 +1437,84 @@ Emergency op payload is just a single byte
     <a href="message.md#0xb_message">message</a>.push_back(source_chain);
     <a href="message.md#0xb_message">message</a>.append(payload);
     <a href="message.md#0xb_message">message</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_serialize_bitcoin_message"></a>
+
+## Function `serialize_bitcoin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_serialize_bitcoin_message">serialize_bitcoin_message</a>(<a href="message.md#0xb_message">message</a>: <a href="message.md#0xb_message_BitcoinMessage">message::BitcoinMessage</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_serialize_bitcoin_message">serialize_bitcoin_message</a>(<a href="message.md#0xb_message">message</a>: <a href="message.md#0xb_message_BitcoinMessage">BitcoinMessage</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;{
+    <b>let</b> <a href="message.md#0xb_message_BitcoinMessage">BitcoinMessage</a> {
+    source_chain,
+    source_address,
+    target_address,
+    amount,
+    tx_hash,
+    coin_type,
+    } = <a href="message.md#0xb_message">message</a>;
+     <b>let</b> <b>mut</b> <a href="message.md#0xb_message">message</a>=<a href="../move-stdlib/vector.md#0x1_vector">vector</a>[
+        source_chain,
+     ];
+    <a href="message.md#0xb_message">message</a>.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&amount)));
+    <a href="message.md#0xb_message">message</a>.append(source_address);
+    <a href="message.md#0xb_message">message</a>.append(target_address);
+    <a href="message.md#0xb_message">message</a>.append(tx_hash);
+    <a href="message.md#0xb_message">message</a>.append(coin_type);
+    <a href="message.md#0xb_message">message</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_bitcoin_message"></a>
+
+## Function `create_bitcoin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_bitcoin_message">create_bitcoin_message</a>(source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, coin_type: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="message.md#0xb_message_BitcoinMessage">message::BitcoinMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_bitcoin_message">create_bitcoin_message</a> (
+    source_chain: u8,
+    source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    tx_hash: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    coin_type: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;
+):<a href="message.md#0xb_message_BitcoinMessage">BitcoinMessage</a>{
+    <a href="message.md#0xb_message_BitcoinMessage">BitcoinMessage</a>{
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        coin_type,
+    }
 }
 </code></pre>
 
@@ -1433,6 +1868,168 @@ Update asset price message
         source_chain,
         payload,
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_add_external_coin_witness_message"></a>
+
+## Function `create_add_external_coin_witness_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_witness_message">create_add_external_coin_witness_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_witness_message">create_add_external_coin_witness_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    coin_type: String,
+    witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+): <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+     <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+    payload.append(witness_address);
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_add_external_coin_witness">message_types::add_external_coin_witness</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_remove_external_coin_witness_message"></a>
+
+## Function `create_remove_external_coin_witness_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_witness_message">create_remove_external_coin_witness_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_witness_message">create_remove_external_coin_witness_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    coin_type: String,
+    witness_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+):<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+     <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+    payload.append(witness_address);
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_remove_external_coin_witness">message_types::remove_external_coin_witness</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_add_external_coin_target_message"></a>
+
+## Function `create_add_external_coin_target_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_target_message">create_add_external_coin_target_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_external_coin_target_message">create_add_external_coin_target_message</a>(
+   source_chain: u8,
+   seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+   coin_type: String,
+   target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+): <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+   <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+   payload.push_back(target_address.length() <b>as</b> u8);
+   payload.append(target_address);
+
+   <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+       message_type: <a href="message_types.md#0xb_message_types_add_external_coin_target">message_types::add_external_coin_target</a>(),
+       message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+       seq_num,
+       source_chain,
+       payload,
+   }
+
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_remove_external_coin_target_message"></a>
+
+## Function `create_remove_external_coin_target_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_target_message">create_remove_external_coin_target_message</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, coin_type: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_external_coin_target_message">create_remove_external_coin_target_message</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    coin_type: String,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+):<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+     <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <b>let</b> <b>mut</b> payload = <a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&coin_type);
+    payload.push_back(target_address.length() <b>as</b> u8);
+    payload.append(target_address);
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+
 }
 </code></pre>
 
@@ -2178,6 +2775,198 @@ Update Sui token message
 
 </details>
 
+<a name="0xb_message_add_external_coin_witness_payload_coin_type"></a>
+
+## Function `add_external_coin_witness_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_witness_payload_coin_type">add_external_coin_witness_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinWitness">message::AddExternalCoinWitness</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_witness_payload_coin_type">add_external_coin_witness_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_external_coin_witness_payload_witness_address"></a>
+
+## Function `add_external_coin_witness_payload_witness_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_witness_payload_witness_address">add_external_coin_witness_payload_witness_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinWitness">message::AddExternalCoinWitness</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_witness_payload_witness_address">add_external_coin_witness_payload_witness_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; {
+    self.witness_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_witness_payload_coin_type"></a>
+
+## Function `remove_external_coin_witness_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_witness_payload_coin_type">remove_external_coin_witness_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinWitness">message::RemoveExternalCoinWitness</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_witness_payload_coin_type">remove_external_coin_witness_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_witness_payload_witness_address"></a>
+
+## Function `remove_external_coin_witness_payload_witness_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_witness_payload_witness_address">remove_external_coin_witness_payload_witness_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinWitness">message::RemoveExternalCoinWitness</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_witness_payload_witness_address">remove_external_coin_witness_payload_witness_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; {
+    self.witness_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_external_coin_target_payload_coin_type"></a>
+
+## Function `add_external_coin_target_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_target_payload_coin_type">add_external_coin_target_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinTarget">message::AddExternalCoinTarget</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_target_payload_coin_type">add_external_coin_target_payload_coin_type</a>(self: &<a href="message.md#0xb_message_AddExternalCoinTarget">AddExternalCoinTarget</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_external_coin_target_payload_target_address"></a>
+
+## Function `add_external_coin_target_payload_target_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_target_payload_target_address">add_external_coin_target_payload_target_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinTarget">message::AddExternalCoinTarget</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_external_coin_target_payload_target_address">add_external_coin_target_payload_target_address</a>(self: &<a href="message.md#0xb_message_AddExternalCoinTarget">AddExternalCoinTarget</a>): String {
+    self.target_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_target_payload_coin_type"></a>
+
+## Function `remove_external_coin_target_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_target_payload_coin_type">remove_external_coin_target_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinTarget">message::RemoveExternalCoinTarget</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_target_payload_coin_type">remove_external_coin_target_payload_coin_type</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_external_coin_target_payload_target_address"></a>
+
+## Function `remove_external_coin_target_payload_target_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_target_payload_target_address">remove_external_coin_target_payload_target_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinTarget">message::RemoveExternalCoinTarget</a>): <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_external_coin_target_payload_target_address">remove_external_coin_target_payload_target_address</a>(self: &<a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a>): String {
+    self.target_address
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_message_add_external_coin_admin_payload_coin_type"></a>
 
 ## Function `add_external_coin_admin_payload_coin_type`
@@ -2461,6 +3250,14 @@ Return the required signature threshold for the message, values are voting power
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>()) {
         5001
     } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_refund_admin_operate">message_types::refund_admin_operate</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_witness">message_types::add_external_coin_witness</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_witness">message_types::remove_external_coin_witness</a>()) {
+        5001
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_external_coin_target">message_types::add_external_coin_target</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()) {
         5001
     } <b>else</b> {
         <b>abort</b> <a href="message.md#0xb_message_EInvalidMessageType">EInvalidMessageType</a>
