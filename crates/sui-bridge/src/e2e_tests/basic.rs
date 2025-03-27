@@ -813,7 +813,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
     // Register tokens on Sui
-    let token_id = 5;
+    let token_id = 6;
     let token_sui_decimal = 9; // this needs to match ka.move
     let token_price = 10000;
     let sender = bridge_test_cluster.sui_user_address();

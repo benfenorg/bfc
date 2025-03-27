@@ -1342,8 +1342,9 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         {
             Ok(resp) => {
+                tracing::info!("Sui TX response: {:?}", resp);
                 if !resp.status_ok().unwrap() {
-                    return Err(anyhow!("Sui TX error"));
+                    return Err(anyhow!("Sui TX error"))
                 } else {
                     resp
                 }
@@ -1494,7 +1495,7 @@ async fn deposit_eth_to_sui_package(
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
     );
 
     let pt = builder.finish();
