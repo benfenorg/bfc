@@ -696,21 +696,6 @@ pub async fn submit_to_executor(
     }
 }
 
-pub async fn get_stable_coin_convertor(action: &BridgeAction) -> (u64, u64) {
-    if !action.is_stable_coin() {
-        return (0, 0);
-    }
-    let (token_id, sui_adjusted_amount) = match action {
-        BridgeAction::EthToSuiBridgeAction(action_inner) => {
-            action_inner.eth_bridge_event.stable_coin_convertor()
-        }
-        _ => {
-            (0, 0)
-        }
-    };
-    (token_id, sui_adjusted_amount)
-}
-
 pub async fn submit_to_aml_checker(
     tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
     action: BridgeAction,

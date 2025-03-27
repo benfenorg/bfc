@@ -623,7 +623,6 @@ module bridge::bridge {
         clock: &Clock,
         source_chain: u8,
         bridge_seq_num: u64,
-        _cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): Coin<T> {
         let (maybe_token, owner) = bridge.claim_token_internal<T>(

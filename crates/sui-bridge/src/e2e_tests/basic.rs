@@ -1016,7 +1016,7 @@ async fn test_bridge_usdt_to_sui() {
         .find(|c| c.coin_type.contains("BUSD"))
         .expect("Recipient should have received BUSD coin now")
         .clone();       
-    assert_eq!(busd_coin.balance, 100000000000);
+    assert_eq!(busd_coin.balance, 100_000_000_000);
     info!(
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
@@ -1033,7 +1033,7 @@ async fn test_bridge_usdt_to_sui() {
         eth_address_1,
         busd_coin.object_ref(),
         nonce,
-        100000000000,
+        100_000_000_000,
         TOKEN_ID_USDT,
     )
     .await

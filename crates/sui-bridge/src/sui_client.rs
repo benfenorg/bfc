@@ -111,21 +111,8 @@ where
     }
 
     pub async fn get_object_for_cap_must_succeed(&self,address: SuiAddress, filter_tag: &str) -> ObjectArg {
-        // static ARG: OnceCell<ObjectArg> = OnceCell::const_new();
-        // *ARG.get_or_init(|| async move {
-        //     let Ok(Ok(object_cap_admin)) = retry_with_max_elapsed_time!(
-        //         self.inner.get_object_for_cap(address, filter_tag),
-        //         Duration::from_secs(30)
-        //     ) else {
-        //         panic!("Failed to get admin cap after retries");
-        //     };
-        //     ObjectArg::ImmOrOwnedObject(object_cap_admin.object_ref())
-        // })
-        // .await
-        let obj_ref = self.inner.get_object_for_cap(address, filter_tag).await
+        self.inner.get_object_for_cap(address, filter_tag).await
         .expect("Failed to get admin cap")
-        .object_ref();
-        ObjectArg::ImmOrOwnedObject(obj_ref)
     }
 
     /// Get the mutable bridge object arg on chain.
@@ -492,7 +479,7 @@ pub trait SuiClientInner: Send + Sync {
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error>;
 
-    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error>;
+    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<ObjectArg, Self::Error>;
 
     async fn get_bridge_summary(&self) -> Result<BridgeSummary, Self::Error>;
 
@@ -728,7 +715,7 @@ impl SuiClientInner for SuiSdkClient {
         //do nothing,just for testing
     }
 
-    async fn get_object_for_cap(&self,address: SuiAddress, filter_tag: &str) -> Result<SuiObjectData, Self::Error> {
+    async fn get_object_for_cap(&self,address: SuiAddress, filter_tag: &str) -> Result<ObjectArg, Self::Error> {
         let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
         let data_option = SuiObjectDataOptions::new()
             .with_type()
@@ -739,12 +726,11 @@ impl SuiClientInner for SuiSdkClient {
             Some(filter),
             Some(data_option),
         )), None, None).await?.data;
-        println!("get_object_for_cap address: {:?}, objects: {:?}", &address, objects);
         if objects.is_empty() {
             Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap")))
         } else {
             match objects.get(0).and_then(|obj| obj.data.as_ref()) {
-                Some(data) => Ok(data.clone()),
+                Some(data) => Ok(ObjectArg::ImmOrOwnedObject(data.object_ref())),
                 None => Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap index 0 is None"))),
             }
         }
