@@ -315,6 +315,15 @@ impl BridgeTrait for BridgeInnerV1 {
                 Ok((source, destination, e.value))
             })
             .collect::<SuiResult<Vec<_>>>()?;
+
+        let external_coin_target_address = self
+          .treasury
+          .external_coin_target_address
+          .contents
+          .into_iter()
+          .map(|e| (e.key, e.value.contents))
+          .collect::<Vec<_>>();
+
         let supported_tokens = self
             .treasury
             .supported_tokens
@@ -382,6 +391,7 @@ impl BridgeTrait for BridgeInnerV1 {
             bridge_records_id: self.bridge_records.id,
             limiter,
             treasury: BridgeTreasurySummary {
+                external_coin_target_address,
                 supported_tokens,
                 id_token_type_map,
             },
@@ -452,6 +462,7 @@ pub struct BridgeLimiterSummary {
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BridgeTreasurySummary {
+    pub external_coin_target_address: Vec<(String, Vec<String>)>,
     pub supported_tokens: Vec<(String, BridgeTokenMetadata)>,
     pub id_token_type_map: Vec<(u64, String)>,
 }

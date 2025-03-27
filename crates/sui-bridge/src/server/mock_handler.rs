@@ -133,6 +133,14 @@ impl BridgeRequestHandlerTrait for BridgeRequestMockHandler {
         unimplemented!()
     }
 
+    async fn handle_external_coin_tx_digest(
+        &self,
+        _tx_digest_base58: String,
+        _event_idx: u16,
+    ) -> Result<Json<SignedBridgeAction>, BridgeError> {
+        unimplemented!()
+    }
+
     async fn handle_governance_action(
         &self,
         action: crate::types::BridgeAction,

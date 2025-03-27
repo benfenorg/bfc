@@ -60,6 +60,11 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/send/back/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
+            BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
+                "sign/bridge_tx/external/sui/{}/{}",
+                e.sui_tx_digest,
+                e.sui_tx_event_index
+            ),
             BridgeAction::EthToSuiBridgeAction(e) => format!(
                 "sign/bridge_tx/eth/sui/{}/{}",
                 Hex::encode(e.eth_tx_hash.0),

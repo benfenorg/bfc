@@ -14,6 +14,7 @@ use crate::error::BridgeResult;
 use crate::types::BridgeAction;
 use crate::types::EthSendBackBridgeAction;
 use crate::types::SuiToEthBridgeAction;
+use crate::types::ExternalDepositStartBridgeAction;
 use ethers::types::Address as EthAddress;
 use fastcrypto::encoding::Encoding;
 use fastcrypto::encoding::Hex;
@@ -44,6 +45,18 @@ pub struct MoveTokenDepositedEvent {
     pub target_address: Vec<u8>,
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MoveExternalDepositStartEvent {
+    pub seq_num: u64,
+    pub tx_hash: String,
+    pub token_id: u64,
+    pub source_chain: u8,
+    pub target_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -239,6 +252,18 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
+pub struct EmittedExternalDepositStartBridgeV1 {
+    pub nonce: u64,
+    pub tx_hash: String,
+    pub token_id: u64,
+    pub source_chain: BridgeChainId,
+    pub target_chain: BridgeChainId,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
 pub struct EmittedEthTokenSendBackBridgeV1 {
     pub nonce: u64,
     pub sui_chain_id: BridgeChainId,
@@ -430,8 +455,52 @@ impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
     }
 }
 
+impl TryFrom<MoveExternalDepositStartEvent> for EmittedExternalDepositStartBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveExternalDepositStartEvent) -> BridgeResult<Self> {
+        if event.amount == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveExternalDepositStartEvent to EmittedExternalDepositStartBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let source_chain = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveExternalDepositStartEvent to EmittedExternalDepositStartBridgeV1. Failed to convert source chain {} to BridgeChainId, {:?}",
+                event.source_chain, event,
+            ))
+        })?;
+        let target_chain = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveExternalDepositStartEvent to EmittedExternalDepositStartBridgeV1. Failed to convert target chain {} to BridgeChainId, {:?}",
+                event.target_chain, event,
+            ))
+        })?;
+        if !target_chain.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveExternalDepositStartEvent to EmittedExternalDepositStartBridgeV1. Invalid target chain {}, {:?}",
+                event.target_chain, event,
+            )));
+        }
+
+        Ok(Self {
+            nonce: event.seq_num,
+            tx_hash: event.tx_hash,
+            token_id: event.token_id,
+            source_chain,
+            target_chain,
+            source_address: event.source_address,
+            target_address: event.target_address,
+            amount: event.amount,
+        })
+    }
+}
+
 crate::declare_events!(
     SuiToEthTokenBridgeV1(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEvent", MoveTokenDepositedEvent),
+    ExternalDepositStartBridgeV1(EmittedExternalDepositStartBridgeV1) => ("bridge::ExternalDepositStartEvent", MoveExternalDepositStartEvent),
     TokenSendBackEvent(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEvent", MoveTokenSendBackEvent),
     TokenTransferApproved(TokenTransferApproved) => ("bridge::TokenTransferApproved", MoveTokenTransferApproved),
     TokenTransferClaimed(TokenTransferClaimed) => ("bridge::TokenTransferClaimed", MoveTokenTransferClaimed),
@@ -510,6 +579,13 @@ impl SuiBridgeEvent {
                     sui_bridge_event: event.clone(),
                 }),
             ),
+            SuiBridgeEvent::ExternalDepositStartBridgeV1(event) => Some(
+                BridgeAction::ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }),
+            ),
             SuiBridgeEvent::TokenTransferApproved(_event) => None,
             SuiBridgeEvent::TokenTransferClaimed(_event) => None,
             SuiBridgeEvent::TokenTransferAlreadyApproved(_event) => None,
@@ -545,6 +621,7 @@ pub mod tests {
     use sui_types::base_types::SuiAddress;
     use sui_types::bridge::BridgeChainId;
     use sui_types::bridge::MoveTypeTokenTransferPayload;
+    use sui_types::bridge::TOKEN_ID_BTC;
     use sui_types::bridge::TOKEN_ID_ETH;
     use sui_types::bridge::TOKEN_ID_SUI;
     use sui_types::crypto::get_key_pair;
@@ -585,6 +662,64 @@ pub mod tests {
         });
         let event = SuiEvent {
             type_: SuiToEthTokenBridgeV1.get().unwrap().clone(),
+            bcs: BcsEvent::new(bcs::to_bytes(&emitted_event).unwrap()),
+            id: EventID {
+                tx_digest,
+                event_seq: event_idx as u64,
+            },
+
+            // The following fields do not matter as of writing,
+            // but if tests start to fail, it's worth checking these fields.
+            package_id: ObjectID::ZERO,
+            transaction_module: identifier.clone(),
+            sender: SuiAddress::random_for_testing_only(),
+            parsed_json: serde_json::json!({"test": "test"}),
+            timestamp_ms: None,
+        };
+        (event, bridge_action)
+    }
+
+    pub fn get_test_external_coin_event_and_action(identifier: Identifier) -> (SuiEvent, BridgeAction) {
+        init_all_struct_tags(); // Ensure all tags are initialized
+        let sanitized_event = EmittedExternalDepositStartBridgeV1 {
+            nonce: 1,
+            token_id: TOKEN_ID_BTC,
+            tx_hash: "test hash".into(),
+            source_chain: BridgeChainId::BtcTestnet,
+            target_chain: BridgeChainId::SuiCustom,
+            source_address: vec![],
+            target_address: vec![],
+            amount: 1,
+        };
+        let emitted_event = MoveExternalDepositStartEvent {
+            seq_num: sanitized_event.nonce,
+            source_chain: sanitized_event.source_chain as u8,
+            target_chain: sanitized_event.target_chain as u8,
+            target_address: sanitized_event.target_address,
+            tx_hash: sanitized_event.tx_hash,
+            token_id: sanitized_event.token_id,
+            source_address: sanitized_event.source_address,
+            amount: sanitized_event.amount,
+        };
+
+        let tx_digest = TransactionDigest::random();
+        let event_idx = 10u16;
+        let bridge_action = BridgeAction::ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction {
+            sui_tx_digest: tx_digest,
+            sui_tx_event_index: event_idx,
+            sui_bridge_event: EmittedExternalDepositStartBridgeV1 {
+                nonce: 1,
+                token_id: TOKEN_ID_BTC,
+                tx_hash: "test hash".into(),
+                source_chain: BridgeChainId::BtcTestnet,
+                target_chain: BridgeChainId::SuiCustom,
+                source_address: vec![],
+                target_address:vec![],
+                amount: 1,
+            },
+        });
+        let event = SuiEvent {
+            type_: ExternalDepositStartBridgeV1.get().unwrap().clone(),
             bcs: BcsEvent::new(bcs::to_bytes(&emitted_event).unwrap()),
             id: EventID {
                 tx_digest,
@@ -680,6 +815,24 @@ pub mod tests {
             amount_sui_adjusted: 0,
         };
         match EmittedSuiToEthTokenBridgeV1::try_from(emitted_event).unwrap_err() {
+            BridgeError::ZeroValueBridgeTransfer(_) => (),
+            other => panic!("Expected Generic error, got: {:?}", other),
+        }
+    }
+
+    #[test]
+    fn test_0_sui_amount_conversion_for_external_event() {
+        let emitted_event = MoveExternalDepositStartEvent {
+            seq_num: 1,
+            source_chain: BridgeChainId::BtcTestnet as u8,
+            target_chain: BridgeChainId::SuiCustom as u8,
+            source_address: vec![],
+            target_address: vec![],
+            tx_hash: "test".into(),
+            token_id: TOKEN_ID_BTC,
+            amount: 0,
+        };
+        match EmittedExternalDepositStartBridgeV1::try_from(emitted_event).unwrap_err() {
             BridgeError::ZeroValueBridgeTransfer(_) => (),
             other => panic!("Expected Generic error, got: {:?}", other),
         }

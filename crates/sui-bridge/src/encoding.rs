@@ -15,6 +15,7 @@ use crate::types::BridgeAction;
 use crate::types::BridgeActionType;
 use crate::types::EmergencyAction;
 use crate::types::EthSendBackBridgeAction;
+use crate::types::ExternalDepositStartBridgeAction;
 use crate::types::EthToSuiBridgeAction;
 use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
@@ -155,6 +156,62 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
 
         // Add event idx
         bytes.push(e.event_idx);
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for ExternalDepositStartBridgeAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+        // Add message type
+        bytes.push(BridgeActionType::TokenTransfer as u8);
+        // Add message version
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION);
+
+        // Add nonce
+        bytes.extend_from_slice(&e.nonce.to_be_bytes());
+
+        // Add source chain id
+        bytes.push(e.source_chain as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        let e = &self.sui_bridge_event;
+
+        // pub struct EmittedExternalDepositStartBridgeV1 {
+        //     pub tx_hash: String,
+        //     pub coin_type: String,
+        //     pub source_chain: BridgeChainId,
+        //     pub target_chain: BridgeChainId,
+        //     pub source_address: Vec<u8>,
+        //     pub target_address: Vec<u8>,
+        //     pub amount: u64,
+        // }
+
+        bytes.push(e.tx_hash.len() as u8);
+        bytes.extend_from_slice(&bcs::to_bytes(&e.tx_hash).unwrap());
+
+        // Add token id
+        bytes.extend_from_slice(&e.token_id.to_be_bytes());
+
+        bytes.push(e.source_chain as u8);
+        bytes.push(e.target_chain as u8);
+        
+        bytes.push(e.source_address.len() as u8);
+        bytes.extend_from_slice(&e.source_address.to_vec());
+
+        bytes.push(e.target_address.len() as u8);
+        bytes.extend_from_slice(&e.target_address.to_vec());
+
+        bytes.extend_from_slice(&e.amount.to_be_bytes());
 
         bytes
     }
