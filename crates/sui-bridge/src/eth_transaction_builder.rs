@@ -77,6 +77,9 @@ pub async fn build_eth_transaction(
         BridgeAction::RemoveExternalCoinAdminAction(_) => {
             unreachable!();
         }
+        BridgeAction::ExternalDepositStartBridgeAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AddTokensOnSuiAction(_) => {
             unreachable!();
         }

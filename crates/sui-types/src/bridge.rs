@@ -310,6 +310,15 @@ impl BridgeTrait for BridgeInnerV1 {
                 Ok((source, destination, e.value))
             })
             .collect::<SuiResult<Vec<_>>>()?;
+
+        let external_coin_target_address = self
+          .treasury
+          .external_coin_target_address
+          .contents
+          .into_iter()
+          .map(|e| (e.key, e.value.contents))
+          .collect::<Vec<_>>();
+
         let supported_tokens = self
             .treasury
             .supported_tokens
@@ -379,6 +388,7 @@ impl BridgeTrait for BridgeInnerV1 {
             bridge_records_id: self.bridge_records.id,
             limiter,
             treasury: BridgeTreasurySummary {
+                external_coin_target_address,
                 supported_tokens,
                 id_token_type_map,
             },
@@ -392,6 +402,7 @@ impl BridgeTrait for BridgeInnerV1 {
 pub struct MoveTypeBridgeTreasury {
     pub external_coin_admin_address: VecMap<String, VecSet<String>>,
     pub external_coin_target_address: VecMap<String, VecSet<String>>,
+    pub external_coin_witness_address: VecMap<String, VecSet<Vec<u8>>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
@@ -449,6 +460,7 @@ pub struct BridgeLimiterSummary {
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BridgeTreasurySummary {
+    pub external_coin_target_address: Vec<(String, Vec<String>)>,
     pub supported_tokens: Vec<(String, BridgeTokenMetadata)>,
     pub id_token_type_map: Vec<(u64, String)>,
 }
@@ -475,6 +487,10 @@ pub struct MoveTypeBridgeMessageKey {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeExternalBridgeMessageKey {
+    pub source_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
     pub tx_hash: String,
 }
 

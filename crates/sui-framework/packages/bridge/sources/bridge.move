@@ -20,6 +20,7 @@ module bridge::bridge {
     use bridge::message::{
         Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
         AddExternalCoinAdmin, RemoveExternalCoinAdmin,RefundMessageKey,
+        AddExternalCoinWitness,RemoveExternalCoinWitness,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
@@ -137,6 +138,7 @@ module bridge::bridge {
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
+    const EUnpassedWitnessSignature: u64=33;
 
     const EUnauthorisedUpdateLimit: u64 = 40;
 
@@ -187,6 +189,17 @@ module bridge::bridge {
     public struct ExternalDepositedApprovedEvent has copy, drop {
         tx_hash: ascii::String,
         coin_type: ascii::String,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
+    public struct ExternalDepositStartEvent has copy, drop {
+        seq_num: u64,
+        tx_hash: ascii::String,
+        token_id: u64,
         source_chain: u8,
         target_chain: u8,
         source_address: vector<u8>,
@@ -701,7 +714,15 @@ module bridge::bridge {
         } else if (message_type == message_types::refund_admin_operate()) {
             let payload = message.extract_refund_admin_payload();
             inner.execute_refund_admin_operate(payload);
-        } else {
+        } else if  (message_type == message_types::add_bitcoin_witness()){
+            let payload = message.extract_add_witness_poyload();
+            inner.execute_add_external_coin_witness(payload);
+
+        }else if  (message_type == message_types::remove_bitcoin_witness()){
+            let payload = message.extract_remove_witness_poyload();
+            inner.execute_remove_external_coin_witness(payload);
+
+        }else {
             abort EUnexpectedMessageType
         };
     }
@@ -721,6 +742,7 @@ module bridge::bridge {
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender_str)) {
@@ -784,13 +806,15 @@ module bridge::bridge {
         target_address: vector<u8>,
         amount: u64,
         tx_hash: ascii::String,
-        _signatures: vector<u8>,
+        signatures: vector<u8>,
         ctx: &mut TxContext
     ) {
         let sender = ctx.sender();
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
+
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
@@ -840,6 +864,66 @@ module bridge::bridge {
             ExternalDepositedEvent {
                 tx_hash,
                 coin_type,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+            },
+        )
+    }
+
+    public fun deposit_external_coin_v2<T>(
+        bridge: &mut Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+        _signatures: vector<u8>,
+        ctx: &mut TxContext
+    ) {
+        let sender = ctx.sender();
+        let coin_type = type_name::into_string(type_name::get<T>());
+
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
+        if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
+            abort EUnknownExternalCoinOrSender
+        };
+
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (!inner.multi_signature_passed(key, coin_type)) {
+            abort EUnpassedMultiSignature
+        };
+
+        // check records
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (inner.external_bridge_records.contains(key)) {
+            abort EDuplicatedMessage
+        };
+
+        let seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        let token_id = inner.treasury.token_id<T>();
+
+        emit(
+            ExternalDepositStartEvent {
+                seq_num,
+                tx_hash,
+                token_id,
                 source_chain,
                 target_chain: inner.chain_id,
                 source_address,
@@ -982,6 +1066,41 @@ module bridge::bridge {
         };
 
         let record = &inner.token_transfer_records[key];
+        if (record.claimed) {
+            return TRANSFER_STATUS_CLAIMED
+        };
+
+        if (record.verified_signatures.is_some()) {
+            return TRANSFER_STATUS_APPROVED
+        };
+
+        TRANSFER_STATUS_PENDING
+    }
+
+    #[allow(unused_function)]
+    fun get_external_token_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+    ): u8 {
+        let inner = load_inner(bridge);
+
+         let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+
+        if (!inner.external_bridge_records.contains(key)) {
+            return TRANSFER_STATUS_NOT_FOUND
+        };
+
+        let record = &inner.external_bridge_records[key];
         if (record.claimed) {
             return TRANSFER_STATUS_CLAIMED
         };
@@ -1302,6 +1421,20 @@ module bridge::bridge {
         inner.treasury.remove_external_coin_admin(
             payload.remove_external_coin_admin_payload_coin_type(),
             payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_add_external_coin_witness(inner: &mut BridgeInner, payload: AddExternalCoinWitness) {
+        inner.treasury.add_external_coin_witness(
+            payload.add_external_coin_witness_payload_coin_type(),
+            payload.add_external_coin_witness_payload_witness_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_witness(inner: &mut BridgeInner, payload: RemoveExternalCoinWitness) {
+        inner.treasury.remove_external_coin_witness(
+            payload.remove_external_coin_witness_payload_coin_type(),
+            payload.remove_external_coin_witness_payload_witness_address(),
         )
     }
 

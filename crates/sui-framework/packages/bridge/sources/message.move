@@ -38,6 +38,15 @@ module bridge::message {
         payload: vector<u8>
     }
 
+     public struct BitcoinMessage has copy, drop, store {
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: vector<u8>,
+        coin_type: vector<u8>
+    }
+
     public struct BridgeMessageKey has copy, drop, store {
         source_chain: u8,
         message_type: u8,
@@ -97,6 +106,16 @@ module bridge::message {
         admin_address: String,
     }
 
+    public struct AddExternalCoinWitness has drop {
+        coin_type: String,
+        witness_address: vector<u8>,
+    }
+
+    public struct RemoveExternalCoinWitness has drop {
+        coin_type: String,
+        witness_address: vector<u8>,
+    }
+
     public struct AddTokenOnSui has drop {
         native_token: bool,
         token_ids: vector<u64>,
@@ -141,6 +160,34 @@ module bridge::message {
             amount,
             tx_hash,
             event_idx
+        }
+    }
+
+    public fun extract_add_witness_poyload(message: &BridgeMessage): AddExternalCoinWitness {
+        let mut bcs = bcs::new(message.payload);
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let (mut witness_address, mut i) = (vector[], 0);
+        while (i < ECDSA_ADDRESS_LENGTH) {
+                witness_address.push_back(bcs.peel_u8());
+                i = i + 1;
+        };
+         AddExternalCoinWitness {
+            coin_type,
+            witness_address
+         }
+    }
+
+    public fun extract_remove_witness_poyload(message: &BridgeMessage): RemoveExternalCoinWitness {
+        let mut bcs = bcs::new(message.payload);
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let (mut witness_address, mut i) = (vector[], 0);
+         while (i < ECDSA_ADDRESS_LENGTH) {
+                witness_address.push_back(bcs.peel_u8());
+                i = i + 1;
+        };
+        RemoveExternalCoinWitness {
+            coin_type,
+            witness_address
         }
     }
 
@@ -288,6 +335,44 @@ module bridge::message {
         message.push_back(source_chain);
         message.append(payload);
         message
+    }
+
+    public fun serialize_bitcoin_message(message: BitcoinMessage): vector<u8>{
+        let BitcoinMessage {
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        coin_type,
+        } = message;
+         let mut message=vector[
+            source_chain,
+         ];
+        message.append(reverse_bytes(bcs::to_bytes(&amount)));
+        message.append(source_address);
+        message.append(target_address);
+        message.append(tx_hash);
+        message.append(coin_type);
+        message
+    }
+
+    public fun create_bitcoin_message (
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: vector<u8>,
+        coin_type: vector<u8>
+    ):BitcoinMessage{
+        BitcoinMessage{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+            coin_type,
+        }
     }
 
     /// Token Transfer Message Format:
@@ -503,6 +588,46 @@ module bridge::message {
         }
     }
 
+    public fun create_add_external_coin_witness_message(
+        source_chain: u8,
+        seq_num: u64,
+        coin_type: String,
+        witness_address: vector<u8>,
+    ): BridgeMessage{
+         chain_ids::assert_valid_chain_id(source_chain);
+        let mut payload = bcs::to_bytes(&coin_type);
+        payload.append(witness_address);
+
+        BridgeMessage {
+            message_type: message_types::add_bitcoin_witness(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+
+    }
+
+    public fun create_remove_external_coin_witness_message(
+        source_chain: u8,
+        seq_num: u64,
+        coin_type: String,
+        witness_address: vector<u8>,
+    ):BridgeMessage{
+         chain_ids::assert_valid_chain_id(source_chain);
+        let mut payload = bcs::to_bytes(&coin_type);
+        payload.append(witness_address);
+
+        BridgeMessage {
+            message_type: message_types::remove_bitcoin_witness(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+
+    }
+
     public fun create_remove_external_coin_admin_message(
         source_chain: u8,
         seq_num: u64,
@@ -663,6 +788,22 @@ module bridge::message {
         self.new_price
     }
 
+    public fun add_external_coin_witness_payload_coin_type(self: &AddExternalCoinWitness): String {
+        self.coin_type
+    }
+
+    public fun add_external_coin_witness_payload_witness_address(self: &AddExternalCoinWitness): vector<u8> {
+        self.witness_address
+    }
+
+    public fun remove_external_coin_witness_payload_coin_type(self: &RemoveExternalCoinWitness): String {
+        self.coin_type
+    }
+
+    public fun remove_external_coin_witness_payload_witness_address(self: &RemoveExternalCoinWitness): vector<u8> {
+        self.witness_address
+    }
+
     public fun add_external_coin_admin_payload_coin_type(self: &AddExternalCoinAdmin): String {
         self.coin_type
     }
@@ -731,6 +872,10 @@ module bridge::message {
         } else if (message_type == message_types::remove_external_coin_admin()) {
             5001
         } else if (message_type == message_types::refund_admin_operate()) {
+            5001
+        }else if (message_type == message_types::add_bitcoin_witness()) {
+            5001
+        }else if (message_type == message_types::remove_bitcoin_witness()) {
             5001
         } else {
             abort EInvalidMessageType

@@ -306,12 +306,30 @@ where
         store: &Arc<BridgeOrchestratorTables>,
         metrics: &Arc<BridgeMetrics>,
     ) -> bool {
-        let status = sui_client
-            .get_token_transfer_action_onchain_status_until_success(
-                action.chain_id() as u8,
-                action.seq_number(),
-            )
-            .await;
+        let status: BridgeActionStatus;
+
+        match &action {
+            BridgeAction::ExternalDepositStartBridgeAction(external_action) => {
+                status = sui_client
+                .get_external_token_transfer_action_onchain_status_until_success(
+                    external_action.sui_bridge_event.source_chain as u8,
+                    external_action.sui_bridge_event.source_address.clone(),
+                    external_action.sui_bridge_event.target_address.clone(),
+                    external_action.sui_bridge_event.amount.clone(),
+                    external_action.sui_bridge_event.tx_hash.clone(),
+                )
+                .await;
+            },
+            _ => {
+                status = sui_client
+                    .get_token_transfer_action_onchain_status_until_success(
+                        action.chain_id() as u8,
+                        action.seq_number(),
+                    )
+                    .await;
+            },
+        };
+        
         match status {
             BridgeActionStatus::Approved | BridgeActionStatus::Claimed => {
                 info!(
@@ -355,7 +373,7 @@ where
 
         // Only token transfer action should reach here
         match &action {
-            BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
+            BridgeAction::ExternalDepositStartBridgeAction(_) | BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 

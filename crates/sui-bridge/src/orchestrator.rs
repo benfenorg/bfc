@@ -317,8 +317,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{
-        test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action},
-        types::BridgeActionDigest,
+        events::tests::get_test_external_coin_event_and_action, test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action}, types::BridgeActionDigest
     };
     use ethers::types::{Address as EthAddress, TxHash};
     use prometheus::Registry;
@@ -376,6 +375,76 @@ mod tests {
             executor_requested_action_rx.recv().await.unwrap(),
             bridge_action.digest()
         );
+        loop {
+            let actions = store.get_all_pending_actions();
+            if actions.is_empty() {
+                if start.elapsed().as_secs() > 5 {
+                    panic!("Timed out waiting for action to be written to WAL");
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                continue;
+            }
+            assert_eq!(actions.len(), 1);
+            let action = actions.get(&bridge_action.digest()).unwrap();
+            assert_eq!(action, &bridge_action);
+            assert_eq!(
+                store.get_sui_event_cursors(&[identifier]).unwrap()[0].unwrap(),
+                sui_event.id,
+            );
+            break;
+        }
+    }
+
+    #[tokio::test]
+    async fn test_sui_external_watcher_task() {
+        // Note: this test may fail because of the following reasons:
+        // the SuiEvent's struct tag does not match the ones in events.rs
+
+        let (
+            sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+        ) = setup();
+        let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+        )
+        .run(executor,aml_checker)
+        .await;
+
+        // external action 
+        let identifier = Identifier::from_str("test_external_watcher_task").unwrap();
+        let (sui_event, bridge_action) = get_test_external_coin_event_and_action(identifier.clone());
+        sui_events_tx
+            .send((identifier.clone(), vec![sui_event.clone()]))
+            .await
+            .unwrap();
+
+        // Executor should have received the action
+        assert_eq!(
+            executor_requested_action_rx.recv().await.unwrap(),
+            bridge_action.digest()
+        );
+        
+        let start = std::time::Instant::now();
+        
         loop {
             let actions = store.get_all_pending_actions();
             if actions.is_empty() {

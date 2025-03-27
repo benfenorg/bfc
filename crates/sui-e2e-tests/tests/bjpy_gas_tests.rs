@@ -21,7 +21,7 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef, SuiAddress};
 use sui_types::stable_coin::stable::checked::get_allow_stable_gas_coins_rate_map;
 use sui_types::sui_serde::BigInt;
-use sui_types::transaction::{Argument, CallArg, ObjectArg};
+use sui_types::transaction::{CallArg, ObjectArg};
 use test_cluster::{TestCluster, TestClusterBuilder};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, BFC_SYSTEM_STATE_OBJECT_ID, SUI_CLOCK_OBJECT_ID};
@@ -30,7 +30,7 @@ use sui_json_rpc_api::{CoinReadApiClient, IndexerApiClient, WriteApiClient};
 use sui_json_rpc_api::TransactionBuilderClient;
 use tokio::time::sleep;
 use tracing::error;
-use sui_network::tonic::codegen::StdError;
+//use sui_network::tonic::codegen::StdError;
 
 #[sim_test]
 #[ignore]
@@ -683,7 +683,7 @@ async fn test_move_call_new_test_coin_pool(test_cluster: &mut TestCluster, packa
     let mut  http_client = test_cluster.rpc_client().clone();
     swap_bfc_to_stablecoin(&test_cluster, &mut http_client, address, 100000000000).await?;
 
-    let mut gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
+    let  gases = test_cluster.rpc_client().clone().get_all_coins(address, None, None)
         .await
         .unwrap();
 
@@ -789,7 +789,7 @@ async fn test_move_call_add_external_stable_gas_coin(test_cluster: &mut TestClus
     assert!(resp.status_ok().unwrap());
     Ok(())
 }
-
+#[allow(dead_code)]
 async fn test_move_call_delete_external_stable_gas_coin(test_cluster: &mut TestCluster,  coin_type: String) -> Result<(), Error> {
     let context = &test_cluster.wallet;
     let address = test_cluster.get_address_0();
