@@ -1093,24 +1093,18 @@ module bridge::bridge_env {
         );
         scenario.next_tx(sender);
 
-        let modify_cap = scenario.take_from_sender<BfcSystemModifyCap>();
-
         let clock = &env.clock;
         let mut bridge = scenario.take_shared<Bridge>();
         let ctx = scenario.ctx();
         let total_supply_before = get_total_supply<T>(&bridge);
 
         // run claim and transfer
-        {
-            bridge.claim_and_transfer_token<T>(
-                clock,
-                source_chain,
-                bridge_seq_num,
-                &modify_cap,
-                ctx,
-            );
-            scenario.return_to_sender(modify_cap);
-        };
+        bridge.claim_and_transfer_token<T>(
+            clock,
+            source_chain,
+            bridge_seq_num,
+            ctx,
+        );
 
         // verify claim events
         let claimed = event::events_by_type<TokenTransferClaimed>();
