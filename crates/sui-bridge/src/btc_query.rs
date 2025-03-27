@@ -60,7 +60,7 @@ pub async fn check_btc_txn(txn_id: &str, address: &str, amount: u64) -> bool {
     if txn_id.len() != 64 {
         return false;
     }
-    match retry_with_max_elapsed_time!(btc_query(txn_id, address, amount), Duration::from_secs(5)) {
+    match retry_with_max_elapsed_time!(btc_query(txn_id, address, amount), Duration::from_secs(2)) {
         Ok(result) => result.unwrap_or_else(|_| false),
         Err(e) => {
             error!("Error checking BTC txn: {:?}", e);
@@ -79,18 +79,74 @@ const ERROR_JSON_PARSE_FAILED: &str = "Failed to parse JSON response";
 //todo add obc addresses to config
 const OBC_ADDRESSES: [&str; 2] = ["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3", "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3"];
 
+#[derive(Deserialize)]
+struct TokenResponse {
+    access_token: String,
+}
+ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
+      let client_id = std::env::var("BTC_CLIENT_ID").unwrap_or_else(|_| "".to_string());
+      let client_secret = std::env::var("BTC_CLIENT_SECRET").unwrap_or_else(|_| "".to_string());
+
+      if client_id.is_empty() || client_secret.is_empty() {
+          return Err(anyhow::anyhow!("CLIENT_ID or CLIENT_SECRET not set"));
+      }
+
+      let url = "https://login.blockstream.com/realms/blockstream-public/protocol/openid-connect/token";
+
+      let params = [
+          ("client_id", &client_id),
+          ("client_secret", &client_secret),
+          ("grant_type", &"client_credentials".to_string()),
+          ("scope", &"openid".to_string()),
+      ];
+
+      let response = match client.post(url)
+          .header("Content-Type", "application/x-www-form-urlencoded")
+          .form(&params)
+          .send()
+          .await {
+              Ok(response) => response,
+              Err(_) => return Err(anyhow::anyhow!("Failed to send token request")),
+          };
+
+      if !response.status().is_success() {
+          return Err(anyhow::anyhow!("Token request failed with status: {}", response.status()));
+      }
+
+      let response_text = match response.text().await {
+          Ok(text) => text,
+          Err(_) => return Err(anyhow::anyhow!("Failed to get token response text")),
+      };
+
+      let token_response: TokenResponse = match serde_json::from_str(&response_text) {
+          Ok(parsed) => parsed,
+          Err(_) => return Err(anyhow::anyhow!("Failed to parse token JSON response")),
+      };
+
+      info!("Successfully retrieved access token");
+      Ok(token_response.access_token)
+  }
+
   pub async fn btc_query(txn_id: &str, address: &str, amount: u64) -> Result<bool, Error> {
-     let url = format!("https://blockstream.info/testnet/api/tx/{}", txn_id);
-     let response = match reqwest::get(&url).await {
-         Ok(response) => response,
-         Err(_) => return Err(anyhow::anyhow!(ERROR_REQUEST_FAILED)),
-     };
+      let client = reqwest::Client::new();
+      let token = get_access_token(client.clone()).await?;
+      println!(" token： {:#?}", token);
+      let url = format!("https://enterprise.blockstream.info/testnet/api/tx/{}", txn_id);
+      println!(" url： {:#?}", url);
+      let response = match
+          client.get(&url)
+            .header("Authorization", format!("Bearer {}", token))
+            .send()
+            .await {
+                Ok(response) => response,
+                Err(_) => return Err(anyhow::anyhow!(ERROR_REQUEST_FAILED)),
+            };
 
      let response_text = match response.text().await {
          Ok(text) => text,
          Err(_) => return Err(anyhow::anyhow!(ERROR_RESPONSE_TEXT_FAILED)),
      };
-      // println!(" text： {:#?}", response_text);
+       println!(" text： {:#?}", response_text);
      let parsed_response: BtcQuery = match serde_json::from_str(&response_text) {
          Ok(parsed) => parsed,
          Err(e) => {
