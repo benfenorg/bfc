@@ -38,7 +38,7 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
-use sui_types::bridge::{MoveTypeCommitteeMember, TOKEN_ID_BTC};
+use sui_types::bridge::{MoveTypeCommitteeMember, TOKEN_ID_BTC, TOKEN_ID_ETH};
 use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary, TOKEN_ID_USDC};
 use sui_types::crypto::ToFromBytes;
 use sui_types::object::Owner;
@@ -93,7 +93,7 @@ pub fn get_test_sui_to_eth_bridge_action(
             sui_address: sender_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_chain_id: BridgeChainId::EthCustom,
             eth_address: recipient_address.unwrap_or_else(EthAddress::random),
-            token_id: token_id.unwrap_or(TOKEN_ID_USDC),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
             amount_sui_adjusted: amount_sui_adjusted.unwrap_or(100_000),
             tx_hash: vec![],
             event_idx: 0,
@@ -137,7 +137,7 @@ pub fn get_test_eth_to_sui_bridge_action(
             eth_chain_id: BridgeChainId::EthCustom,
             nonce: nonce.unwrap_or_default(),
             sui_chain_id: BridgeChainId::SuiCustom,
-            token_id: token_id.unwrap_or(TOKEN_ID_USDC),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
             sui_adjusted_amount: amount.unwrap_or(100_000),
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
