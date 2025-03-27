@@ -16,7 +16,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::BridgeOrchestratorTables;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{BridgeAction, EthLog};
+use crate::types::EthLog;
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
@@ -298,20 +298,6 @@ where
         panic!("Eth event channel was closed");
     }
 
-    pub async fn get_stable_coin_convertor(action: &BridgeAction) -> (u64, u64) {
-        if !action.is_stable_coin() {
-            return (0, 0);
-        }
-        let (token_id, sui_adjusted_amount) = match action {
-            BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                action_inner.eth_bridge_event.stable_coin_convertor()
-            }
-            _ => {
-                (0, 0)
-            }
-        };
-        (token_id, sui_adjusted_amount)
-    }
 }
 
 #[cfg(test)]
