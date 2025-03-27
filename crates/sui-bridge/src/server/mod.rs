@@ -49,7 +49,7 @@ pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
-pub const EXTERNAL_TO_SUI_TX_PATH: &str = "sign/bridge_tx/external/sui/:tx_digest/:event_index";
+pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
 pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
