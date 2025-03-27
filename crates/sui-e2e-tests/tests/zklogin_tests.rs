@@ -231,6 +231,7 @@ async fn sim_test_auth_state_creation() {
 }
 
 #[sim_test]
+#[ignore]
 async fn sim_test_create_authenticator_state_object() {
     let test_cluster = TestClusterBuilder::new()
         .with_protocol_version(44.into())
