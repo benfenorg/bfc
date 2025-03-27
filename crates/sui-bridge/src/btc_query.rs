@@ -1,6 +1,8 @@
 use anyhow::Error;
-use std::time::Duration;
+use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
 use tracing::{info, error};
 use crate::retry_with_max_elapsed_time;
 
@@ -83,60 +85,93 @@ const OBC_ADDRESSES: [&str; 2] = ["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3", "n1sfLwo
 struct TokenResponse {
     access_token: String,
 }
- async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
-      let client_id = std::env::var("BTC_CLIENT_ID").unwrap_or_else(|_| "".to_string());
-      let client_secret = std::env::var("BTC_CLIENT_SECRET").unwrap_or_else(|_| "".to_string());
+/// 这里定义一个结构体来缓存token
+struct TokenCache {
+    token: String,
+    created_at: Instant,
+}
 
-      if client_id.is_empty() || client_secret.is_empty() {
-          return Err(anyhow::anyhow!("CLIENT_ID or CLIENT_SECRET not set"));
-      }
+static TOKEN_CACHE: Lazy<Mutex<Option<TokenCache>>> = Lazy::new(|| Mutex::new(None));
+const TOKEN_VALIDITY: Duration = Duration::from_secs(5 * 60); // 5分钟有效期
 
-      let url = "https://login.blockstream.com/realms/blockstream-public/protocol/openid-connect/token";
+async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
+    // 尝试从缓存获取token
+    {
+        let cache = TOKEN_CACHE.lock().unwrap();
+        if let Some(cache_data) = cache.as_ref() {
+            if cache_data.created_at.elapsed() < TOKEN_VALIDITY {
+                info!("Using cached access token");
+                return Ok(cache_data.token.clone());
+            }
+            // Token已过期，需要重新获取
+        }
+    }
+    //todo add client id to config
+    let client_id = std::env::var("BTC_CLIENT_ID").unwrap_or_else(|_| "".to_string());
+    let client_secret = std::env::var("BTC_CLIENT_SECRET").unwrap_or_else(|_| "".to_string());
 
-      let params = [
-          ("client_id", &client_id),
-          ("client_secret", &client_secret),
-          ("grant_type", &"client_credentials".to_string()),
-          ("scope", &"openid".to_string()),
-      ];
+    if client_id.is_empty() || client_secret.is_empty() {
+        return Err(anyhow::anyhow!("CLIENT_ID or CLIENT_SECRET not set"));
+    }
 
-      let response = match client.post(url)
-          .header("Content-Type", "application/x-www-form-urlencoded")
-          .form(&params)
-          .send()
-          .await {
-              Ok(response) => response,
-              Err(_) => return Err(anyhow::anyhow!("Failed to send token request")),
-          };
+    let url = "https://login.blockstream.com/realms/blockstream-public/protocol/openid-connect/token";
 
-      if !response.status().is_success() {
-          return Err(anyhow::anyhow!("Token request failed with status: {}", response.status()));
-      }
+    let params = [
+        ("client_id", &client_id),
+        ("client_secret", &client_secret),
+        ("grant_type", &"client_credentials".to_string()),
+        ("scope", &"openid".to_string()),
+    ];
 
-      let response_text = match response.text().await {
-          Ok(text) => text,
-          Err(_) => return Err(anyhow::anyhow!("Failed to get token response text")),
-      };
+    let response = match client.post(url)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .form(&params)
+        .send()
+        .await {
+        Ok(response) => response,
+        Err(_) => return Err(anyhow::anyhow!("Failed to send token request")),
+    };
 
-      let token_response: TokenResponse = match serde_json::from_str(&response_text) {
-          Ok(parsed) => parsed,
-          Err(_) => return Err(anyhow::anyhow!("Failed to parse token JSON response")),
-      };
+    if !response.status().is_success() {
+        return Err(anyhow::anyhow!("Token request failed with status: {}", response.status()));
+    }
 
-      info!("Successfully retrieved access token");
-      Ok(token_response.access_token)
-  }
+    let response_text = match response.text().await {
+        Ok(text) => text,
+        Err(_) => return Err(anyhow::anyhow!("Failed to get token response text")),
+    };
+
+    let token_response: TokenResponse = match serde_json::from_str(&response_text) {
+        Ok(parsed) => parsed,
+        Err(_) => return Err(anyhow::anyhow!("Failed to parse token JSON response")),
+    };
+
+    let token = token_response.access_token;
+
+    // 更新缓存
+    {
+        let mut cache = TOKEN_CACHE.lock().unwrap();
+        *cache = Some(TokenCache {
+            token: token.clone(),
+            created_at: Instant::now(),
+        });
+    }
+
+    info!("Successfully retrieved new access token");
+    Ok(token)
+}
 
   pub async fn btc_query(txn_id: &str, address: &str, amount: u64) -> Result<bool, Error> {
       let client = reqwest::Client::new();
       let token = get_access_token(client.clone()).await?;
-      println!(" token： {:#?}", token);
+      // println!(" token： {:#?}", token);
       let url = format!("https://enterprise.blockstream.info/testnet/api/tx/{}", txn_id);
-      println!(" url： {:#?}", url);
+      // println!(" url： {:#?}", url);
       let response = match
-          client.get(&url)
-            .header("Authorization", format!("Bearer {}", token))
-            .send()
+          client
+              .get(&url)
+              .bearer_auth(token)
+              .send()
             .await {
                 Ok(response) => response,
                 Err(_) => return Err(anyhow::anyhow!(ERROR_REQUEST_FAILED)),
@@ -146,7 +181,7 @@ struct TokenResponse {
          Ok(text) => text,
          Err(_) => return Err(anyhow::anyhow!(ERROR_RESPONSE_TEXT_FAILED)),
      };
-       println!(" text： {:#?}", response_text);
+       // println!(" text： {:#?}", response_text);
      let parsed_response: BtcQuery = match serde_json::from_str(&response_text) {
          Ok(parsed) => parsed,
          Err(e) => {
@@ -174,7 +209,7 @@ struct TokenResponse {
           return Err(anyhow::anyhow!(ERROR_TARGET_ADDRESS_NOT_CORRECT));
       }
 
-      println!("response：{:#?}", parsed_response);
+      // println!("response：{:#?}", parsed_response);
       info!("btc query: {:?}", parsed_response);
      if parsed_response.status.confirmed && parsed_response.status.block_height > 0 {
          Ok(true)
