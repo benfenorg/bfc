@@ -821,7 +821,7 @@ pub(crate) async fn start_bridge_cluster(
             let sui_key_pair = client_config.key;
             info!("add admin cap for {:?}", sui_address);
             //set up auth key
-            auth::auth_setup_imut(&test_cluster.inner, &test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
+            auth::auth_setup_imut(&test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
             sleep(Duration::from_secs(10)).await;
         }
         // Spawn bridge node in memory

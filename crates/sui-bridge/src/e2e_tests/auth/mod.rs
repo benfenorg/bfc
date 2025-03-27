@@ -57,7 +57,7 @@ use tokio::time::sleep;
 // }
 
 #[allow(unused)]
-pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, auth_key: &str) -> Result<(), Error> {
+pub async fn auth_setup_imut(http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, auth_key: &str) -> Result<(), Error> {
     
     let bfc_status_address = SuiAddress::from_str("0x00000000000000000000000000000000000000000000000000000000000000c9").unwrap();
     let args0 = vec![
@@ -81,9 +81,6 @@ pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClien
         sui_key,
     );
     let tx0 = Transaction::from_data(tx_data, vec![sig]);
-    // let tx0 = test_cluster
-    //     .wallet
-    //     .sign_transaction(&transaction_bytes0.to_data()?);
     let (tx_bytes0, signatures0) = tx0.to_tx_bytes_and_signatures();
     let auth_result = http_client
         .execute_transaction_block(
@@ -97,12 +94,12 @@ pub async fn auth_setup_imut(test_cluster: &TestCluster, http_client: &HttpClien
     let _ = sleep(Duration::from_secs(5)).await;
     let admin_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemAdminCap", http_client, address).await.unwrap();
     let admin_cap = admin_cap_vec.first().unwrap().object().unwrap();
-    let result = add_auth_key(test_cluster, http_client, address,sui_key, &&bfc_status_address, &admin_cap,auth_key).await?;
+    let result = add_auth_key(http_client, address,sui_key, &&bfc_status_address, &admin_cap,auth_key).await?;
 
     Ok(())
 }
 
-async fn add_auth_key(_test_cluster: &TestCluster, http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, bfc_status_address: &&SuiAddress, admin_cap: &&SuiObjectData,auth_key: &str) -> Result<(), Error> {
+async fn add_auth_key(http_client: &HttpClient, address: SuiAddress, sui_key: &SuiKeyPair, bfc_status_address: &&SuiAddress, admin_cap: &&SuiObjectData,auth_key: &str) -> Result<(), Error> {
     let args1 = vec![
         SuiJsonValue::from_str(&bfc_status_address.to_string())?,
         SuiJsonValue::from_str(&admin_cap.object_id.to_string())?,
