@@ -1608,7 +1608,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, bfc_system_state: &<b>mut</b> <a href="../move-stdlib/option.md#0x1_option_Option">option::Option</a>&lt;<a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>&gt;, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1619,7 +1619,6 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_send_token">send_token</a>&lt;T&gt;(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
-    bfc_system_state: &<b>mut</b> Option&lt;BfcSystemState&gt;,
     target_chain: u8,
     target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     token: Coin&lt;T&gt;,
@@ -1650,15 +1649,7 @@ title: Module `0xb::bridge`
     );
 
     // burn / escrow token, unsupported coins will fail in this step
-    <b>if</b> (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
-        bfc_system_state.borrow_mut().burn_stable(
-            // &<b>mut</b> inner.bfc_system_id,
-            token,
-            ctx
-        );
-    } <b>else</b> {
-        inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
-    };
+    inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.burn(token);
 
     // Store pending <a href="bridge.md#0xb_bridge">bridge</a> request
     inner.token_transfer_records.push_back(

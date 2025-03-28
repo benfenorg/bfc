@@ -329,7 +329,6 @@ module bridge::bridge {
     // pending state until approved
     public fun send_token<T>(
         bridge: &mut Bridge,
-        bfc_system_state: &mut Option<BfcSystemState>,
         target_chain: u8,
         target_address: vector<u8>,
         token: Coin<T>,
@@ -360,15 +359,7 @@ module bridge::bridge {
         );
 
         // burn / escrow token, unsupported coins will fail in this step
-        if (token_id == 5 && bfc_system_state.is_some()) { //BUSD type is 5
-            bfc_system_state.borrow_mut().burn_stable(
-                // &mut inner.bfc_system_id,
-                token,
-                ctx
-            );
-        } else {
-            inner.treasury.burn(token);
-        };
+        inner.treasury.burn(token);
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(

@@ -821,7 +821,7 @@ pub(crate) async fn start_bridge_cluster(
             let sui_key_pair = client_config.key;
             info!("add admin cap for {:?}", sui_address);
             //set up auth key
-            auth::auth_setup_imut(&test_cluster.inner, &test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
+            auth::auth_setup_imut(&test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
             sleep(Duration::from_secs(10)).await;
         }
         // Spawn bridge node in memory
@@ -1342,8 +1342,9 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         {
             Ok(resp) => {
+                tracing::info!("Sui TX response: {:?}", resp);
                 if !resp.status_ok().unwrap() {
-                    return Err(anyhow!("Sui TX error"));
+                    return Err(anyhow!("Sui TX error"))
                 } else {
                     resp
                 }
@@ -1494,7 +1495,7 @@ async fn deposit_eth_to_sui_package(
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
-        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
+        vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
     );
 
     let pt = builder.finish();

@@ -1395,7 +1395,6 @@ pub fn generate_genesis_system_object(
             vec![],
             vec![],
         );
-        dbg!(&bfc_system_state_uid);
 
         // Step 2: Create and share the Clock.
         builder.move_call(
