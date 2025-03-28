@@ -940,7 +940,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
     use sui_json_rpc_types::BcsEvent;
-    use sui_types::bridge::{BridgeChainId, TOKEN_ID_SUI, TOKEN_ID_USDC};
+    use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_SUI, TOKEN_ID_USDC};
     use sui_types::crypto::get_key_pair;
 
     use super::*;
@@ -1124,13 +1124,13 @@ mod tests {
 
         // 2. Create a Sui -> Eth Transfer, approve with validator secrets and assert its status to be Approved
         // We need to actually send tokens to bridge to initialize the record.
-        let token_id_expect = TOKEN_ID_USDC;
+        let token_id_expect = TOKEN_ID_ETH;
         let eth_recv_address = EthAddress::random();
         let bridge_event = bridge_token(
             context,
             eth_recv_address,
             usdc_object_ref,
-            id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            id_token_map.get(&TOKEN_ID_ETH).unwrap().clone(),
             token_id_expect,
             bridge_object_arg,
         )
@@ -1140,7 +1140,7 @@ mod tests {
         assert_eq!(bridge_event.eth_chain_id, BridgeChainId::EthCustom);
         assert_eq!(bridge_event.eth_address, eth_recv_address);
         assert_eq!(bridge_event.sui_address, sender);
-        assert_eq!(bridge_event.token_id, TOKEN_ID_USDC);
+        assert_eq!(bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(bridge_event.amount_sui_adjusted, usdc_amount);
 
         let action = get_test_sui_to_eth_bridge_action(
@@ -1150,7 +1150,7 @@ mod tests {
             Some(bridge_event.amount_sui_adjusted),
             Some(bridge_event.sui_address),
             Some(bridge_event.eth_address),
-            Some(TOKEN_ID_USDC),
+            Some(TOKEN_ID_ETH),
         );
         let status = sui_client
             .inner

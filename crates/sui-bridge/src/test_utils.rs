@@ -332,7 +332,6 @@ pub async fn bridge_token(
                 CallArg::Pure(bcs::to_bytes(&(BridgeChainId::EthCustom as u8)).unwrap()),
                 CallArg::Pure(bcs::to_bytes(&recv_address.as_bytes()).unwrap()),
                 CallArg::Object(ObjectArg::ImmOrOwnedObject(token_ref)),
-                CallArg::Pure(bcs::to_bytes(&token_id_expect).unwrap()),
             ],
         )
         .with_type_args(vec![token_type])
