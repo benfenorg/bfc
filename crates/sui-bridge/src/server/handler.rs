@@ -167,7 +167,7 @@ where
 
             // check btc txn
             let ok =
-                check_btc_txn(tx_hash, &target_address, amount).await;
+                check_btc_txn(tx_hash, vec![target_address.to_string()], amount).await;
             if ok {
                 return Ok(action_rs);
             }

@@ -58,11 +58,11 @@ pub struct Status {
 }
 
 /// Check if the given Bitcoin transaction is confirmed.
-pub async fn check_btc_txn(txn_id: &str, address: &str, amount: u64) -> bool {
+pub async fn check_btc_txn(txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> bool {
     if txn_id.len() != 64 {
         return false;
     }
-    match retry_with_max_elapsed_time!(btc_query(txn_id, address, amount), Duration::from_secs(5)) {
+    match retry_with_max_elapsed_time!(btc_query(txn_id, whitelist_address.clone(), amount), Duration::from_secs(5)) {
         Ok(result) => result.unwrap_or_else(|_| false),
         Err(e) => {
             error!("Error checking BTC txn: {:?}", e);
@@ -164,7 +164,7 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
     Ok(token)
 }
 
-  pub async fn btc_query(txn_id: &str, address: &str, amount: u64) -> Result<bool, Error> {
+  pub async fn btc_query(txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> Result<bool, Error> {
       let client = reqwest::Client::new();
       // let token = get_access_token(client.clone()).await?;  //enterprise.blockstream.info
       let url = format!("https://mempool.space/testnet/api/tx/{}", txn_id);
@@ -184,7 +184,7 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
        // println!(" text： {:#?}", response_text);
      let parsed_response: BtcQuery = match serde_json::from_str(&response_text) {
          Ok(parsed) => parsed,
-         Err(e) => {
+         Err(_e) => {
              // println!("error: {:?}", e);
              return Err(anyhow::anyhow!(ERROR_JSON_PARSE_FAILED))
          },
@@ -192,7 +192,7 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
 
       let mut found = false;
       for v in &parsed_response.vout {
-          if v.scriptpubkey_address.as_deref() == Some(address) {
+          if whitelist_address.contains(&(v.scriptpubkey_address.as_deref().unwrap_or("").to_string())) {
               if v.value != amount {
                   return Err(anyhow::anyhow!(ERROR_AMOUNT_NOT_CORRECT));
               }
@@ -221,7 +221,7 @@ mod tests {
     async fn test_check_btc_txn() {
         let result = check_btc_txn(
             "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
-            "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3",
+            vec!["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string()],
             10).await;
         assert_eq!(result, true);
     }
