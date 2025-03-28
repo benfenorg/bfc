@@ -62,7 +62,7 @@ pub async fn check_btc_txn(txn_id: &str, address: &str, amount: u64) -> bool {
     if txn_id.len() != 64 {
         return false;
     }
-    match retry_with_max_elapsed_time!(btc_query(txn_id, address, amount), Duration::from_secs(2)) {
+    match retry_with_max_elapsed_time!(btc_query(txn_id, address, amount), Duration::from_secs(5)) {
         Ok(result) => result.unwrap_or_else(|_| false),
         Err(e) => {
             error!("Error checking BTC txn: {:?}", e);
@@ -73,27 +73,30 @@ pub async fn check_btc_txn(txn_id: &str, address: &str, amount: u64) -> bool {
 
 const ERROR_REQUEST_FAILED: &str = "Request failed";
 const ERROR_RESPONSE_TEXT_FAILED: &str = "Failed to get response text";
-const ERROR_ADDRESS_NOT_IN_TXN: &str = "Address not in txn";
 const ERROR_AMOUNT_NOT_CORRECT: &str = "Amount not correct";
 const ERROR_TARGET_ADDRESS_NOT_CORRECT: &str = "Target address not correct";
 const ERROR_JSON_PARSE_FAILED: &str = "Failed to parse JSON response";
 
-//todo add obc addresses to config
-const OBC_ADDRESSES: [&str; 2] = ["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3", "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3"];
-
+#[allow(unused)]
+/// 这里定义一个结构体来解析token的返回值
 #[derive(Deserialize)]
 struct TokenResponse {
     access_token: String,
 }
+
+#[allow(unused)]
 /// 这里定义一个结构体来缓存token
 struct TokenCache {
     token: String,
     created_at: Instant,
 }
 
+#[allow(unused)]
 static TOKEN_CACHE: Lazy<Mutex<Option<TokenCache>>> = Lazy::new(|| Mutex::new(None));
+#[allow(unused)]
 const TOKEN_VALIDITY: Duration = Duration::from_secs(5 * 60); // 5分钟有效期
 
+#[allow(unused)]
 async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
     // 尝试从缓存获取token
     {
@@ -163,14 +166,11 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
 
   pub async fn btc_query(txn_id: &str, address: &str, amount: u64) -> Result<bool, Error> {
       let client = reqwest::Client::new();
-      let token = get_access_token(client.clone()).await?;
-      // println!(" token： {:#?}", token);
-      let url = format!("https://enterprise.blockstream.info/testnet/api/tx/{}", txn_id);
-      // println!(" url： {:#?}", url);
+      // let token = get_access_token(client.clone()).await?;  //enterprise.blockstream.info
+      let url = format!("https://mempool.space/testnet/api/tx/{}", txn_id);
       let response = match
           client
               .get(&url)
-              .bearer_auth(token)
               .send()
             .await {
                 Ok(response) => response,
@@ -185,19 +185,14 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
      let parsed_response: BtcQuery = match serde_json::from_str(&response_text) {
          Ok(parsed) => parsed,
          Err(e) => {
-                println!("error: {:?}", e);
+             // println!("error: {:?}", e);
              return Err(anyhow::anyhow!(ERROR_JSON_PARSE_FAILED))
          },
      };
 
-      if parsed_response.vout.iter().any(|v| v.scriptpubkey_address.as_deref() == Some(address)) {
-      } else {
-          return Err(anyhow::anyhow!(ERROR_ADDRESS_NOT_IN_TXN))
-      }
-
       let mut found = false;
       for v in &parsed_response.vout {
-          if OBC_ADDRESSES.contains(&v.scriptpubkey_address.as_deref().unwrap_or("")) {
+          if v.scriptpubkey_address.as_deref() == Some(address) {
               if v.value != amount {
                   return Err(anyhow::anyhow!(ERROR_AMOUNT_NOT_CORRECT));
               }
@@ -226,7 +221,7 @@ mod tests {
     async fn test_check_btc_txn() {
         let result = check_btc_txn(
             "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
-            "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc",
+            "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3",
             10).await;
         assert_eq!(result, true);
     }
