@@ -1,0 +1,10 @@
+[package]
+name = "coin_metadata"
+version = "0.0.1"
+edition = "2024.beta"
+
+[dependencies]
+Bfc = { local = "../../../../../../crates/bfc-framework/packages/bfc-framework" }
+
+[addresses]
+coin_metadata =  "0x0"
