@@ -1489,7 +1489,7 @@ async fn deposit_eth_to_sui_package(
     let arg_target_address = builder.pure(target_address.as_bytes()).unwrap();
     let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
-    let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    let _arg_expect_token_id = builder.pure(expect_token_id).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),

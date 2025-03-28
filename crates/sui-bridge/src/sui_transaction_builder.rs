@@ -1337,7 +1337,6 @@ mod tests {
     use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;
     use crate::metrics::BridgeMetrics;
     use crate::sui_client::SuiClient;
-    use crate::test_utils::get_test_external_bridge_action;
     use crate::types::BridgeAction;
     use crate::types::EmergencyAction;
     use crate::types::EmergencyActionType;

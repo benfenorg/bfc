@@ -9,7 +9,7 @@ use async_trait::async_trait;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
-use sui_json_rpc_types::{SuiObjectData, SuiTransactionBlockResponse};
+use sui_json_rpc_types::{ SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
 use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
@@ -155,7 +155,9 @@ impl SuiClientInner for SuiMockClient {
     async fn notify_something_done(&self) {
         self.requested_transactions_tx.send(TransactionDigest::random()).unwrap();
     }
-    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<ObjectArg, Self::Error> {
+    async fn get_object_for_cap(&self,
+                                _address: SuiAddress,
+                                _filter_tag: &str) -> Result<ObjectArg, Self::Error> {
         Ok(DUMMY_MUTALBE_BRIDGE_OBJECT_ARG)
     }
 
@@ -290,12 +292,12 @@ impl SuiClientInner for SuiMockClient {
 
     async fn get_external_token_transfer_action_onchain_status(
         &self,
-        bridge_object_arg: ObjectArg,
-        source_chain: u8,
-        source_address: &Vec<u8>,
-        target_address: &Vec<u8>,
-        amount: u64,
-        tx_hash: String,
+        _bridge_object_arg: ObjectArg,
+        _source_chain: u8,
+        _source_address: &Vec<u8>,
+        _target_address: &Vec<u8>,
+        _amount: u64,
+        _tx_hash: String,
     ) -> Result<BridgeActionStatus, BridgeError> {
         Ok(BridgeActionStatus::NotFound)
     }

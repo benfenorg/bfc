@@ -47,7 +47,7 @@ use std::path::Path;
 use std::sync::Arc;
 use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use sui_types::bridge::{
-    get_bridge, BridgeChainId, BridgeTokenMetadata, BridgeTrait, TOKEN_ID_BUSD, TOKEN_ID_ETH, TOKEN_ID_USDT
+    get_bridge, BridgeChainId, BridgeTokenMetadata, BridgeTrait, TOKEN_ID_ETH, TOKEN_ID_USDT
 };
 use sui_types::SUI_BRIDGE_OBJECT_ID;
 use tracing::info;
@@ -973,12 +973,12 @@ async fn test_bridge_usdt_to_sui() {
         .await
         .unwrap();
     assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
-    let (id, _type) = treasury_summary
+    let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
         .find(|(id, _)| id == &TOKEN_ID_USDT)
         .unwrap();
-    let (_type, metadata) = treasury_summary
+    let (_type, _metadata) = treasury_summary
         .supported_tokens
         .iter()
         .find(|(_type_, _)| _type == _type_)
@@ -1028,7 +1028,7 @@ async fn test_bridge_usdt_to_sui() {
     let eth_address_1 = EthAddress::random();
     let nonce = 0;
 
-    let sui_to_eth_bridge_action = initiate_bridge_sui_to_eth(
+    let _sui_to_eth_bridge_action = initiate_bridge_sui_to_eth(
         &bridge_test_cluster,
         eth_address_1,
         busd_coin.object_ref(),
