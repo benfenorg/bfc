@@ -12,7 +12,7 @@ use std::str::from_utf8;
 use std::sync::Arc;
 use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
-use sui_json_rpc_types::{DevInspectResults, SuiObjectData, SuiObjectDataFilter, SuiObjectResponseQuery};
+use sui_json_rpc_types::{DevInspectResults, SuiObjectDataFilter, SuiObjectResponseQuery};
 use sui_json_rpc_types::{EventFilter, Page, SuiEvent};
 use sui_json_rpc_types::{
     EventPage, SuiObjectDataOptions, SuiTransactionBlockResponse,

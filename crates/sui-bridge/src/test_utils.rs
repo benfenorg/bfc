@@ -39,7 +39,7 @@ use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
 use sui_types::bridge::{MoveTypeCommitteeMember, TOKEN_ID_BTC, TOKEN_ID_ETH};
-use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary, TOKEN_ID_USDC};
+use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary};
 use sui_types::crypto::ToFromBytes;
 use sui_types::object::Owner;
 use sui_types::transaction::{CallArg, ObjectArg};
