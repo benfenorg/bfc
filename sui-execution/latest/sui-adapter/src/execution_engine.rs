@@ -1360,10 +1360,6 @@ mod checked {
         let bridge_uid = builder
             .input(CallArg::Pure(UID::new(SUI_BRIDGE_OBJECT_ID).to_bcs_bytes()))
             .expect("Unable to create Bridge object UID!");
-        let bfc_system_uid = builder
-            .input(CallArg::Pure(UID::new(BFC_SYSTEM_STATE_OBJECT_ID).to_bcs_bytes()))
-            .expect("Unable to create BFC system state object UID!");
-
         let bridge_chain_id = if chain_id == get_mainnet_chain_identifier() {
             BridgeChainId::SuiMainnet as u8
         } else if chain_id == get_testnet_chain_identifier() {
@@ -1379,7 +1375,7 @@ mod checked {
             BRIDGE_MODULE_NAME.to_owned(),
             BRIDGE_CREATE_FUNCTION_NAME.to_owned(),
             vec![],
-            vec![bridge_uid, bridge_chain_id, bfc_system_uid],
+            vec![bridge_uid, bridge_chain_id],
         );
         builder
     }
