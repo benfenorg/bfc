@@ -316,7 +316,7 @@ pub async fn bridge_token(
     recv_address: EthAddress,
     token_ref: ObjectRef,
     token_type: TypeTag,
-    token_id_expect: u64,
+    _token_id_expect: u64,
     bridge_object_arg: ObjectArg,
 ) -> EmittedSuiToEthTokenBridgeV1 {
     let rgp = context.get_reference_gas_price().await.unwrap();

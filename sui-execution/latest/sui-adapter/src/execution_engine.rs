@@ -26,7 +26,7 @@ mod checked {
         RANDOMNESS_MODULE_NAME, RANDOMNESS_STATE_CREATE_FUNCTION_NAME,
         RANDOMNESS_STATE_UPDATE_FUNCTION_NAME,
     };
-    use sui_types::{BFC_SYSTEM_STATE_OBJECT_ID, BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
+    use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
     use tracing::{info, instrument, trace, warn};
 
     use crate::adapter::new_move_vm;

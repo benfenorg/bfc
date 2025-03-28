@@ -1439,9 +1439,6 @@ pub fn generate_genesis_system_object(
             let bridge_uid = builder
                 .input(CallArg::Pure(UID::new(SUI_BRIDGE_OBJECT_ID).to_bcs_bytes()))
                 .unwrap();
-            // let bfc_system_id = builder
-            //     .input(CallArg::Pure(UID::new(BFC_SYSTEM_STATE_OBJECT_ID).to_bcs_bytes()))
-            //     .unwrap();
             // TODO(bridge): this needs to be passed in as a parameter for next testnet regenesis
             // Hardcoding chain id to SuiCustom
             let bridge_chain_id = builder.pure(BridgeChainId::SuiCustom).unwrap();
@@ -1452,8 +1449,6 @@ pub fn generate_genesis_system_object(
                 vec![],
                 vec![bridge_uid, bridge_chain_id],
             );
-        }else {
-            dbg!(&protocol_config.enable_bridge());
         }
 
         // Step 4: Mint the supply of SUI.

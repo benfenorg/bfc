@@ -940,7 +940,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
     use sui_json_rpc_types::BcsEvent;
-    use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_SUI, TOKEN_ID_USDC};
+    use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_SUI};
     use sui_types::crypto::get_key_pair;
 
     use super::*;
