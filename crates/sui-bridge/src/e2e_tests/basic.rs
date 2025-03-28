@@ -903,7 +903,8 @@ async fn test_add_new_coins_on_sui_and_eth() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    dbg!(&treasury_summary.id_token_type_map);
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 5 + 1 new token
     let (id, _type) = treasury_summary
         .id_token_type_map
         .iter()

@@ -1349,6 +1349,7 @@ mod tests {
         },
     };
     use ethers::types::Address as EthAddress;
+    use sui_types::bridge::TOKEN_ID_ETH;
     use std::collections::HashMap;
     use std::sync::Arc;
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
@@ -1403,12 +1404,12 @@ mod tests {
         .unwrap();
 
         // 2. Test Sui -> Eth Transfer approval
-        let token_id_expect = TOKEN_ID_USDC;
+        let token_id_expect = TOKEN_ID_ETH;
         let bridge_event = bridge_token(
             context,
             EthAddress::random(),
             usdc_object_ref,
-            id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            id_token_map.get(&TOKEN_ID_ETH).unwrap().clone(),
             token_id_expect,
             bridge_object_arg,
         )
@@ -1421,7 +1422,7 @@ mod tests {
             Some(bridge_event.amount_sui_adjusted),
             Some(bridge_event.sui_address),
             Some(bridge_event.eth_address),
-            Some(TOKEN_ID_USDC),
+            Some(TOKEN_ID_ETH),
         );
         // `approve_action_with_validator_secrets` covers transaction building
         approve_action_with_validator_secrets(

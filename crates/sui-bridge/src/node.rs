@@ -682,6 +682,24 @@ mod tests {
             metrics: None,
             watchdog_config: None,
         };
+
+        let prometheus_registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+        let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+        let client_config = client_config.unwrap();
+        let sui_address = client_config.sui_address;
+        let sui_key_pair = client_config.key;
+        info!("add admin cap for {:?}", sui_address);
+        //set up auth key for client
+        auth::auth_setup_imut(
+            &bridge_test_cluster.test_cluster.inner.rpc_client(),
+            sui_address,
+            &sui_key_pair,
+            "MINT-BUSD-BRIDGE-KEY",
+        )
+        .await
+        .unwrap();
+        sleep(Duration::from_secs(10)).await;
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
             config,
