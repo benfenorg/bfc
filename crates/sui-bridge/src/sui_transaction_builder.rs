@@ -1411,7 +1411,6 @@ mod tests {
             EthAddress::random(),
             usdc_object_ref,
             id_token_map.get(&TOKEN_ID_ETH).unwrap().clone(),
-            token_id_expect,
             bridge_object_arg,
         )
         .await;

@@ -146,7 +146,6 @@ where
         let action_rs: BridgeAction = result.unwrap();
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
-            let target_address = String::from_utf8_lossy(&external_action.sui_bridge_event.target_address);
             let amount = external_action.sui_bridge_event.amount;
 
             // check target address in whitelist
@@ -159,21 +158,16 @@ where
                 whitelist.append(&mut v.clone());
             }
             info!("whitelist: {:#?}", &whitelist);
-            if !whitelist.contains(&target_address.to_string()) {
-                return Err(BridgeError::Generic(
-                    format!("Target address({:#?}) is not in whitelist({:#?})", &target_address.to_string(), &whitelist)
-                ));
-            }
 
             // check btc txn
             let ok =
-                check_btc_txn(tx_hash, &target_address, amount).await;
+                check_btc_txn(tx_hash, whitelist, amount).await;
             if ok {
                 return Ok(action_rs);
             }
 
             return Err(BridgeError::Generic(
-                format!("BTC txn({:#?}, {:#?}) is not valid", tx_hash, &target_address)
+                format!("BTC txn({:#?}) is not valid", tx_hash)
             ));
         }
 
