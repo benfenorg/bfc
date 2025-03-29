@@ -105,6 +105,7 @@ pub fn get_test_external_bridge_action(
     sui_tx_digest: Option<TransactionDigest>,
     sui_tx_event_index: Option<u16>,
     nonce: Option<u64>,
+    recipient_address: SuiAddress,
     token_id: Option<u64>,
 ) -> BridgeAction {
     BridgeAction::ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction {
@@ -117,7 +118,7 @@ pub fn get_test_external_bridge_action(
             source_chain: BridgeChainId::BtcTestnet,
             target_chain: BridgeChainId::SuiCustom,
             source_address: vec![],
-            target_address: "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".into(),
+            target_address: recipient_address.to_vec(),
             amount: 10,
         },
     })
