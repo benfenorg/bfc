@@ -244,7 +244,7 @@ impl SuiClientInner for SuiMockClient {
                     external_coin_target_address: vec![
                         ("0x11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75".to_string(),
                             vec![
-                                "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".to_string(),
+                                "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string(),
                                 "123".to_string(),
                             ],
                         ),

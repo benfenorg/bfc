@@ -60,6 +60,7 @@ pub struct Status {
 /// Check if the given Bitcoin transaction is confirmed.
 pub async fn check_btc_txn(txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> bool {
     if txn_id.len() != 64 {
+        error!("Invalid txn_id len != 64: {:?}", txn_id);
         return false;
     }
     match retry_with_max_elapsed_time!(btc_query(txn_id, whitelist_address.clone(), amount), Duration::from_secs(5)) {
