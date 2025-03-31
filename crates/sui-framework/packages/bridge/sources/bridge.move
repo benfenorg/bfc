@@ -142,6 +142,7 @@ module bridge::bridge {
     const EUnpassedWitnessSignature: u64=33;
 
     const EUnauthorisedUpdateLimit: u64 = 40;
+    const EInvalidMintAmount: u64 = 41;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -1321,9 +1322,6 @@ module bridge::bridge {
         // ensure target chain matches bridge.chain_id
         assert!(target_chain == inner.chain_id, EUnexpectedChainID);
 
-        // TODO: why do we check validity of the route here? what if inconsistency?
-        // Ensure route is valid
-        // TODO: add unit tests
         // `get_route` abort if route is invalid
         let route = chain_ids::get_route(source_chain, target_chain);
         // check token type
@@ -1333,6 +1331,7 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount();
+        assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
             .limiter
