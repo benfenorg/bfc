@@ -6298,9 +6298,6 @@ pre_deposit_external_coin
 deposit_external_coin
 	public fun
 	0xb::bridge
-deposit_external_coin_v2
-	public fun
-	0xb::bridge
 approval_and_claimed_external_coin
 	public fun
 	0xb::bridge
