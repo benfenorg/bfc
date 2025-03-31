@@ -789,7 +789,7 @@ mod tests {
         assert!(entry_.unwrap().lock().await.is_none());
 
         let action =
-            get_test_external_bridge_action(Some(sui_tx_digest), Some(sui_event_idx), None, None);
+            get_test_external_bridge_action(Some(sui_tx_digest), Some(sui_event_idx), None, SuiAddress::random_for_testing_only(), None);
         let sig = BridgeAuthoritySignInfo::new(&action, &signer);
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));

@@ -210,7 +210,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     let arg_token_type = builder.pure(token_type).unwrap();
     let amount = builder.pure(amount).unwrap();
     let tx_hash = builder.pure(tx_hash).unwrap();
-    let event_idx = builder.pure(0).unwrap();
+    let event_idx = builder.pure(0 as u8).unwrap();
 
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
@@ -1337,6 +1337,7 @@ mod tests {
     use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;
     use crate::metrics::BridgeMetrics;
     use crate::sui_client::SuiClient;
+    use crate::test_utils::get_test_external_bridge_action;
     use crate::types::BridgeAction;
     use crate::types::EmergencyAction;
     use crate::types::EmergencyActionType;
@@ -1433,6 +1434,55 @@ mod tests {
             &id_token_map,
         )
         .await;
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn test_build_sui_transaction_for_external_token_transfer() {
+        telemetry_subscribers::init_for_testing();
+        let num_valdiator = 2;
+        let mut bridge_keys = vec![];
+        for _ in 0..num_valdiator {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+        }
+        let mut test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .build()
+            .await;
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.inner.fullnode_handle.rpc_url, metrics)
+            .await
+            .unwrap();
+        let bridge_authority_keys = test_cluster.authority_keys_clone();
+        assert_eq!(bridge_authority_keys.len(), num_valdiator);
+
+        // Wait until committee is set up
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+        let summary = sui_client.get_bridge_summary().await.unwrap();
+        assert!(!summary.is_frozen);
+
+        let context = &mut test_cluster.inner.wallet;
+        let sender = context.active_address().unwrap();
+        let bridge_object_arg = sui_client
+            .get_mutable_bridge_object_arg_must_succeed()
+            .await;
+        let id_token_map = sui_client.get_token_id_map().await.unwrap();
+
+        let action = get_test_external_bridge_action(None, None, None, sender, None);
+        // `approve_action_with_validator_secrets` covers transaction building
+        approve_action_with_validator_secrets(
+            context,
+            bridge_object_arg,
+            action.clone(),
+            &bridge_authority_keys,
+            Some(sender),
+            &id_token_map,
+        )
+        .await
+        .unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]

@@ -851,78 +851,36 @@ module bridge::bridge {
             abort EDuplicatedMessage
         };
 
-        let token = inner.treasury.mint<T>(amount, ctx);
-        transfer::public_transfer(token, address::from_bytes(target_address));
+        // // v1
+        // let token = inner.treasury.mint<T>(amount, ctx);
+        // transfer::public_transfer(token, address::from_bytes(target_address));
 
-        inner.external_bridge_records.push_back(
-            key,
-            ExternalBridgeRecord {
-                source_chain,
-                target_chain: inner.chain_id,
-                source_address,
-                target_address,
-                amount,
-                verified_signatures: option::none(),
-                claimed: true,
-            },
-        );
+        // inner.external_bridge_records.push_back(
+        //     key,
+        //     ExternalBridgeRecord {
+        //         source_chain,
+        //         target_chain: inner.chain_id,
+        //         source_address,
+        //         target_address,
+        //         amount,
+        //         verified_signatures: option::none(),
+        //         claimed: true,
+        //     },
+        // );
 
-        emit(
-            ExternalDepositedEvent {
-                tx_hash,
-                coin_type,
-                source_chain,
-                target_chain: inner.chain_id,
-                source_address,
-                target_address,
-                amount,
-            },
-        )
-    }
+        // emit(
+        //     ExternalDepositedEvent {
+        //         tx_hash,
+        //         coin_type,
+        //         source_chain,
+        //         target_chain: inner.chain_id,
+        //         source_address,
+        //         target_address,
+        //         amount,
+        //     },
+        // )
 
-    public fun deposit_external_coin_v2<T>(
-        bridge: &mut Bridge,
-        source_chain: u8,
-        source_address: vector<u8>,
-        target_address: vector<u8>,
-        amount: u64,
-        tx_hash: ascii::String,
-        _signatures: vector<u8>,
-        ctx: &mut TxContext
-    ) {
-        let sender = ctx.sender();
-        let coin_type = type_name::into_string(type_name::get<T>());
-
-        let inner = load_inner_mut(bridge);
-        assert!(!inner.paused, EBridgeUnavailable);
-        assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
-        if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
-            abort EUnknownExternalCoinOrSender
-        };
-
-        let key = ExternalBridgeMessageKey{
-            source_chain,
-            source_address,
-            target_address,
-            amount,
-            tx_hash,
-        };
-        if (!inner.multi_signature_passed(key, coin_type)) {
-            abort EUnpassedMultiSignature
-        };
-
-        // check records
-        let key = ExternalBridgeMessageKey{
-            source_chain,
-            source_address,
-            target_address,
-            amount,
-            tx_hash,
-        };
-        if (inner.external_bridge_records.contains(key)) {
-            abort EDuplicatedMessage
-        };
-
+        // v2
         let seq_num = inner.get_current_seq_num_and_increment(message_types::token());
         let token_id = inner.treasury.token_id<T>();
 

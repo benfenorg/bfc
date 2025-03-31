@@ -186,32 +186,25 @@ impl BridgeMessageEncoding for ExternalDepositStartBridgeAction {
         let mut bytes = Vec::new();
         let e = &self.sui_bridge_event;
 
-        // pub struct EmittedExternalDepositStartBridgeV1 {
-        //     pub tx_hash: String,
-        //     pub coin_type: String,
-        //     pub source_chain: BridgeChainId,
-        //     pub target_chain: BridgeChainId,
-        //     pub source_address: Vec<u8>,
-        //     pub target_address: Vec<u8>,
-        //     pub amount: u64,
-        // }
-
-        bytes.push(e.tx_hash.len() as u8);
-        bytes.extend_from_slice(&bcs::to_bytes(&e.tx_hash).unwrap());
+        bytes.push(e.source_address.len() as u8);
+        bytes.extend_from_slice(&e.source_address.to_vec());
+        // Add dest chain id
+        bytes.push(e.target_chain as u8);
+        // Add dest address length
+        bytes.push(e.target_address.len() as u8);
+        bytes.extend_from_slice(&e.target_address.to_vec());
 
         // Add token id
         bytes.extend_from_slice(&e.token_id.to_be_bytes());
 
-        bytes.push(e.source_chain as u8);
-        bytes.push(e.target_chain as u8);
-        
-        bytes.push(e.source_address.len() as u8);
-        bytes.extend_from_slice(&e.source_address.to_vec());
-
-        bytes.push(e.target_address.len() as u8);
-        bytes.extend_from_slice(&e.target_address.to_vec());
-
+        // Add token amount
         bytes.extend_from_slice(&e.amount.to_be_bytes());
+
+        // Add tx hash
+        bytes.extend_from_slice(&bcs::to_bytes(&e.tx_hash).unwrap());
+
+        // Add event idx
+        bytes.push(0 as u8);
 
         bytes
     }

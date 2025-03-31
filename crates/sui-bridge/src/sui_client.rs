@@ -616,7 +616,7 @@ impl SuiClientInner for SuiSdkClient {
             target_address,
             amount,
             tx_hash,
-            "get_external_token_transfer_action_onchain_status",
+            "get_external_token_transfer_action_status",
         )
         .await
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
