@@ -36,25 +36,25 @@ Response: {
   "data": {
     "after_obj_3_0": {
       "objects": {
+        "nodes": []
+      }
+    },
+    "before_obj_3_0": {
+      "objects": {
         "nodes": [
           {
             "version": 4,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
                 "value": "100"
               }
             }
           }
         ]
-      }
-    },
-    "before_obj_3_0": {
-      "objects": {
-        "nodes": []
       }
     }
   }
@@ -75,25 +75,25 @@ Response: {
   "data": {
     "after_obj_3_0_chkpt_1": {
       "objects": {
+        "nodes": []
+      }
+    },
+    "before_obj_3_0_chkpt_1": {
+      "objects": {
         "nodes": [
           {
             "version": 4,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
                 "value": "100"
               }
             }
           }
         ]
-      }
-    },
-    "before_obj_3_0_chkpt_1": {
-      "objects": {
-        "nodes": []
       }
     }
   }
@@ -107,26 +107,26 @@ Response: {
       "objects": {
         "nodes": [
           {
-            "version": 4,
+            "version": 5,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0x66d1f728bf6ac9e9c5baf6696d63daa7c97c518cfce4405e5275fd1d865a67f7",
-                "value": "1"
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
+                "value": "200"
               }
             }
           },
           {
-            "version": 5,
+            "version": 4,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
-                "value": "200"
+                "id": "0xeecdd2f61f1bf0cd257efbc7e6bf5e3389de8dc875a6e3c76f277c3c587300f4",
+                "value": "1"
               }
             }
           }
@@ -135,15 +135,20 @@ Response: {
     },
     "after_obj_3_0_chkpt_2": {
       "consistent_with_above": {
+        "nodes": []
+      }
+    },
+    "before_obj_3_0_chkpt_2": {
+      "consistent_with_above": {
         "nodes": [
           {
             "version": 5,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
                 "value": "200"
               }
             },
@@ -152,26 +157,26 @@ Response: {
                 "objects": {
                   "nodes": [
                     {
-                      "version": 4,
+                      "version": 5,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0x66d1f728bf6ac9e9c5baf6696d63daa7c97c518cfce4405e5275fd1d865a67f7",
-                          "value": "1"
+                          "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
+                          "value": "200"
                         }
                       }
                     },
                     {
-                      "version": 5,
+                      "version": 4,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
-                          "value": "200"
+                          "id": "0xeecdd2f61f1bf0cd257efbc7e6bf5e3389de8dc875a6e3c76f277c3c587300f4",
+                          "value": "1"
                         }
                       }
                     }
@@ -181,11 +186,6 @@ Response: {
             }
           }
         ]
-      }
-    },
-    "before_obj_3_0_chkpt_2": {
-      "consistent_with_above": {
-        "nodes": []
       }
     }
   }
@@ -206,15 +206,20 @@ Response: {
   "data": {
     "after_obj_3_0_chkpt_2": {
       "objects": {
+        "nodes": []
+      }
+    },
+    "before_obj_3_0_chkpt_2": {
+      "objects": {
         "nodes": [
           {
             "version": 5,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
                 "value": "200"
               }
             },
@@ -223,26 +228,26 @@ Response: {
                 "objects": {
                   "nodes": [
                     {
-                      "version": 4,
+                      "version": 5,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0x66d1f728bf6ac9e9c5baf6696d63daa7c97c518cfce4405e5275fd1d865a67f7",
-                          "value": "1"
+                          "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
+                          "value": "200"
                         }
                       }
                     },
                     {
-                      "version": 5,
+                      "version": 4,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
-                          "value": "200"
+                          "id": "0xeecdd2f61f1bf0cd257efbc7e6bf5e3389de8dc875a6e3c76f277c3c587300f4",
+                          "value": "1"
                         }
                       }
                     }
@@ -252,11 +257,6 @@ Response: {
             }
           }
         ]
-      }
-    },
-    "before_obj_3_0_chkpt_2": {
-      "objects": {
-        "nodes": []
       }
     }
   }
@@ -270,26 +270,26 @@ Response: {
       "objects": {
         "nodes": [
           {
-            "version": 6,
+            "version": 5,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0x66d1f728bf6ac9e9c5baf6696d63daa7c97c518cfce4405e5275fd1d865a67f7",
-                "value": "300"
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
+                "value": "200"
               }
             }
           },
           {
-            "version": 5,
+            "version": 6,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
-                "value": "200"
+                "id": "0xeecdd2f61f1bf0cd257efbc7e6bf5e3389de8dc875a6e3c76f277c3c587300f4",
+                "value": "300"
               }
             }
           }
@@ -298,15 +298,20 @@ Response: {
     },
     "after_obj_3_0_chkpt_3": {
       "consistent_with_above": {
+        "nodes": []
+      }
+    },
+    "before_obj_3_0_chkpt_3": {
+      "consistent_with_above": {
         "nodes": [
           {
             "version": 5,
             "contents": {
               "type": {
-                "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
               },
               "json": {
-                "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
+                "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
                 "value": "200"
               }
             },
@@ -315,26 +320,26 @@ Response: {
                 "objects": {
                   "nodes": [
                     {
-                      "version": 6,
+                      "version": 5,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0x66d1f728bf6ac9e9c5baf6696d63daa7c97c518cfce4405e5275fd1d865a67f7",
-                          "value": "300"
+                          "id": "0x3d8370c310f33cd8f7ae828c3d3e9314e5dec2b03203753c352ec1206dedf86f",
+                          "value": "200"
                         }
                       }
                     },
                     {
-                      "version": 5,
+                      "version": 6,
                       "contents": {
                         "type": {
-                          "repr": "0xed8ee3f21a8334181202588aca647f64e87bd1e2a29e045dc58bccce513758b2::M1::Object"
+                          "repr": "0x01b10940a61113df3878df60ea800c62121c25dcf8ec75c4cb63a225a28d9a7b::M1::Object"
                         },
                         "json": {
-                          "id": "0xaf43ab02f8878a70b063c499c2b572814e847bde8f03532cbc969cff206f370c",
-                          "value": "200"
+                          "id": "0xeecdd2f61f1bf0cd257efbc7e6bf5e3389de8dc875a6e3c76f277c3c587300f4",
+                          "value": "300"
                         }
                       }
                     }
@@ -344,11 +349,6 @@ Response: {
             }
           }
         ]
-      }
-    },
-    "before_obj_3_0_chkpt_3": {
-      "consistent_with_above": {
-        "nodes": []
       }
     }
   }
