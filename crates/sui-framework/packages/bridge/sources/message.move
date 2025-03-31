@@ -181,6 +181,7 @@ module bridge::message {
                 witness_address.push_back(bcs.peel_u8());
                 i = i + 1;
         };
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
          AddExternalCoinWitness {
             coin_type,
             witness_address
@@ -195,6 +196,7 @@ module bridge::message {
                 witness_address.push_back(bcs.peel_u8());
                 i = i + 1;
         };
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
         RemoveExternalCoinWitness {
             coin_type,
             witness_address
@@ -231,6 +233,7 @@ module bridge::message {
                 target_address.push_back(bcs.peel_u8());
                 i = i + 1;
         };
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
         let target_address = ascii::string(target_address);
         RemoveExternalCoinTarget {
             coin_type,
@@ -321,7 +324,7 @@ module bridge::message {
         let mut bcs = bcs::new(message.payload);
         let coin_type = ascii::string(bcs.peel_vec_u8());
         let admin_address = ascii::string(bcs.peel_vec_u8());
-
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
         RemoveExternalCoinAdmin {
             coin_type,
             admin_address
