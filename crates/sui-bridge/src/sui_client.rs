@@ -1200,7 +1200,7 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn get_external_token_transfer_action_status() {
+    async fn test_get_external_token_transfer_action_status() {
         telemetry_subscribers::init_for_testing();
         let mut bridge_keys = vec![];
         for _ in 0..=3 {
