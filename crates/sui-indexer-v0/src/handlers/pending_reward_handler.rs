@@ -148,7 +148,11 @@ impl PendingReward {
     pub async fn pending_reward(&self, stake_item: &StakePendingItem,mining_config: &MiningConfig) -> Result<u64, IndexerError> {
         let reward=self.get_reward(&mining_config).await;
         let reward_per_power = mining_config.reward_per_power+reward/mining_config.total_power;
-        Ok(reward_per_power * self.power - stake_item.debt as u64)
+        if reward_per_power * self.power > stake_item.debt as u64 {
+            Ok(reward_per_power * self.power - stake_item.debt as u64)
+        } else {
+            Ok(0u64)
+        }
     }
 
     pub async fn get_reward(&self,mining_config: &MiningConfig) -> u64 {

@@ -269,15 +269,17 @@ pub async fn get_nft_staking_overview(
     let nft_staking = get_global_nft_staking(http_client.clone(), config.clone()).await?;
     let di = nft_staking.decrease_interval;
     let rps = nft_staking.reward_per_second;
-    let diff: u64 = if timestamp > nft_staking.begin_at {timestamp - nft_staking.begin_at} else {0};
+    let rps_old = 3_000_000_000u64;
+    // let diff: u64 = if timestamp > nft_staking.begin_at {timestamp - nft_staking.begin_at} else {0};
+    let diff: u64 = 1743436800u64 - nft_staking.begin_at;
     let p: u64 = diff / di + 1; // nft_staking.period;
     let prev_total_reward: f64 = (1..p)
         .into_iter()
-        .map(|n| di as f64 * current_period_rps(rps, n))
+        .map(|n| di as f64 * current_period_rps(rps_old, n))
         .sum();
     let past_period_secs = di * (p - 1);
-    let current_period_past_secs = if diff > past_period_secs {diff - past_period_secs} else {0};
-    let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
+    // let current_period_past_secs = if diff > past_period_secs {diff - past_period_secs} else {0};
+    // let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
     let nft_config = get_global_nft_config(http_client, config).await?;
     let mut nft_future_rewards = vec![];
     let mut nft_future_profit_rates = vec![];
@@ -314,8 +316,8 @@ pub async fn get_nft_staking_overview(
 
     Ok(NFTStakingOverview {
         total_power: nft_staking.total_power,
-        reward_per_day: (86_400f64 * current_period_rps(rps, p)) as u64,
-        total_rewarded: (prev_total_reward + current_total_reward) as u64,
+        reward_per_day: 0u64,
+        total_rewarded: prev_total_reward as u64,
         bfc_usd_price: 0f64,
         bfc_24h_rate: 0f64,
         nft_future_rewards,
