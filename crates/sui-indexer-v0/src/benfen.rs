@@ -317,7 +317,7 @@ pub async fn get_nft_staking_overview(
     Ok(NFTStakingOverview {
         total_power: nft_staking.total_power,
         reward_per_day: 0u64,
-        total_rewarded: prev_total_reward as u64,
+        total_rewarded: 62618400000000000u64,
         bfc_usd_price: 0f64,
         bfc_24h_rate: 0f64,
         nft_future_rewards,
