@@ -9,6 +9,7 @@ module bridge::bridge_env {
         create_bridge_for_testing,
         inner_token_transfer_records,
         test_init_bridge_committee,
+        test_get_external_token_transfer_action_status,
         test_load_inner_mut,
         Bridge,
         EmergencyOpEvent,
@@ -1300,6 +1301,23 @@ module bridge::bridge_env {
 
         // tear down
         test_scenario::return_shared(bridge);
+    }
+
+    public fun env_get_external_token_transfer_action_status(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+        sender: address,
+    ): u8{
+        let scenario = env.scenario();
+        scenario.next_tx(sender);
+        let bridge = scenario.take_shared<Bridge>();
+        let status =test_get_external_token_transfer_action_status(&bridge,source_chain, source_address, target_address, amount, tx_hash);
+        test_scenario::return_shared(bridge);
+        status
     }
 
     // Send a coin (token) to the target chain

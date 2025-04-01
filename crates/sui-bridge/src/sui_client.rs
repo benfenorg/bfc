@@ -1198,4 +1198,48 @@ mod tests {
             .unwrap();
         assert_eq!(status, BridgeActionStatus::NotFound);
     }
+
+    #[tokio::test]
+    async fn get_external_token_transfer_action_status() {
+        telemetry_subscribers::init_for_testing();
+        let mut bridge_keys = vec![];
+        for _ in 0..=3 {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+        }
+        let mut test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .build()
+            .await;
+
+        let bridge_metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client =
+            SuiClient::new(&test_cluster.inner.fullnode_handle.rpc_url, bridge_metrics)
+                .await
+                .unwrap();
+
+        // Wait until committee is set up
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+        let bridge_object_arg = sui_client
+            .get_mutable_bridge_object_arg_must_succeed()
+            .await;
+        let status = sui_client
+            .inner
+            .get_external_token_transfer_action_onchain_status(
+                bridge_object_arg,
+                BridgeChainId::BtcTestnet as u8,
+                &String::from("tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude")
+                    .as_bytes()
+                    .to_vec(),
+                &AccountAddress::random().to_vec(),
+                1000,
+                String::from("3fbdaa17331b3966b7bd737754778ec93a7a7233f5126daf6d0cbdb94d776e87"),
+            )
+            .await
+            .unwrap();
+        assert_eq!(status, BridgeActionStatus::NotFound);
+    }
 }

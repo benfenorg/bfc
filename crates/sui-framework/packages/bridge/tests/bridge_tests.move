@@ -557,6 +557,72 @@ fun test_btc_bridge_deposit_with_sufficient_multi_signature() {
 }
 
 #[test]
+fun test_get_external_token_transfer_action_not_found_status(){
+    let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let source_addr=b"tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude";
+    let target_addr=@0x1234;
+    let sender=@0x87;
+    assert!(env.env_get_external_token_transfer_action_status(
+        chain_ids::btc_testnet(),
+        source_addr,
+        target_addr.to_bytes(),
+        10000,
+        ascii::string(b""),
+        sender,
+    )==transfer_status_not_found(),0);
+    env.destroy_env();
+}
+
+#[test]
+fun test_get_external_token_transfer_action_claimed_status(){
+     let mut env = create_env(chain_ids::sui_testnet());
+    env.create_bridge_default();
+    let sender = @0xABCD;
+   let (witness,private_key,source_address,tx_hash,target_address,amount)=mock_bitcoin_message();
+    let type_name = type_name::get<BTC>();
+    let coin_type = type_name.into_string();
+    let bitcoin_message=message::create_bitcoin_message(chain_ids::btc_testnet(), source_address, target_address, amount, tx_hash, *type_name.into_string().as_bytes());
+    let msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+    let signatures= ecdsa_k1::secp256k1_sign(&private_key, &msg, 0, true);
+    env.add_external_coin_witness(coin_type, witness);
+    env.add_external_coin_admin( coin_type, sender.to_ascii_string());
+
+    env.pre_deposit_external_coin_for_testing<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        10000,
+        tx_hash.to_ascii_string(),
+        signatures,
+    );
+
+    env.deposit_and_withdraw_external_coin<BTC>(
+        sender,
+        chain_ids::btc_testnet(),
+        chain_ids::sui_testnet(),
+        source_address,
+        target_address,
+        10000,
+        signatures,
+        tx_hash.to_ascii_string(),
+    );
+
+     assert!(env.env_get_external_token_transfer_action_status(
+        chain_ids::btc_testnet(),
+        source_address,
+        target_address,
+        10000,
+        tx_hash.to_ascii_string(),
+        sender,
+    )==transfer_status_claimed(),0);
+
+
+    env.destroy_env();
+}
+
+#[test]
 fun test_btc_bridge_deposit_and_withdraw_external_btc() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();

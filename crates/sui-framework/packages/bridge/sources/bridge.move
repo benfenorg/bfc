@@ -1615,6 +1615,20 @@ module bridge::bridge {
     }
 
     #[test_only]
+     public fun test_get_external_token_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+    ): u8 {
+        bridge.get_external_token_transfer_action_status(source_chain, source_address,target_address,amount,tx_hash)
+    }
+
+
+
+    #[test_only]
     public fun test_get_token_transfer_action_signatures(
         bridge: &mut Bridge,
         source_chain: u8,
