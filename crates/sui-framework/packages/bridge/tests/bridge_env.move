@@ -1221,12 +1221,27 @@ module bridge::bridge_env {
         tx_hash: ascii::String,
     ) {
         // set up
+        let token_type = env.token_type<T>();
+        let message = message::create_token_bridge_message(
+            source_chain,
+            0,
+            source_address,
+            env.chain_id,
+            target_address,
+            token_type,
+            amount,
+            *tx_hash.as_bytes(),
+            0u8, // event_idx
+        );
+
+        let node_signatures = env.sign_message(message);
+
         let scenario = &mut env.scenario;
         scenario.next_tx(sender);
         let mut bridge = scenario.take_shared<Bridge>();
         let total_supply_before = get_total_supply<T>(&bridge);
         let coin_type = type_name::into_string(type_name::get<T>());
-
+        
         // deposit coin
         deposit_external_coin_for_testing<T>(
             &mut bridge,
@@ -1237,6 +1252,31 @@ module bridge::bridge_env {
             signatures,
             scenario.ctx(),
         );
+
+        bridge.approval_and_claimed_external_coin<T>(message, node_signatures, scenario.ctx());
+        let approved = event::events_by_type<ExternalDepositedApprovedEvent>();
+        let deposited = event::events_by_type<ExternalDepositedEvent>();
+        assert!(approved.length() == 0 && deposited.length() == 1);
+        {
+            let (
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain,
+                source_address,
+                target_address,
+                amount,
+            ) = deposited[0].unwrap_external_deposited_event();
+            assert!(
+                tx_hash == tx_hash &&
+                coin_type == type_name::get<T>().into_string() &&
+                source_chain == source_chain &&
+                target_chain == env.chain_id &&
+                source_address == source_address &&
+                target_address == target_address &&
+                amount == amount,
+            );
+        };
 
         let deposited = event::events_by_type<ExternalDepositedEvent>();
         assert!(deposited.length() == 1);
