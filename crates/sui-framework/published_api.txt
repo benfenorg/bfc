@@ -6043,6 +6043,24 @@ NewTokenEvent
 TokenRegistrationEvent
 	public struct
 	0xb::treasury
+AddExternalCoinAdminEvent
+	public struct
+	0xb::treasury
+RemoveExternalCoinAdminEvent
+	public struct
+	0xb::treasury
+AddExternalCoinWitnessEvent
+	public struct
+	0xb::treasury
+RemoveExternalCoinWitnessEvent
+	public struct
+	0xb::treasury
+AddExternalCoinTargetEvent
+	public struct
+	0xb::treasury
+RemoveExternalCoinTargetEvent
+	public struct
+	0xb::treasury
 token_id
 	public fun
 	0xb::treasury
