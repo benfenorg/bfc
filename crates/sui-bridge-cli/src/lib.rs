@@ -206,7 +206,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "coin-type", long)]
         coin_type: String,
         #[clap(name = "witness-address", long)]
-        witness_address: String,
+        witness_address: EthAddress,
     },
     #[clap(name = "remove-external-coin-witness")]
     RemoveExternalCoinWitness {
@@ -215,7 +215,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "coin-type", long)]
         coin_type: String,
         #[clap(name = "witness-address", long)]
-        witness_address: String,
+        witness_address: EthAddress,
     },
     #[clap(name = "add-external-coin-target")]
     AddExternalCoinTarget {
@@ -355,12 +355,11 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             coin_type,
             witness_address,
         } => {
-            let witness_address_bytes = hex::decode(&witness_address).expect("Invalid witness address");
             BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
                 nonce: *nonce,
                 chain_id,
                 coin_type: coin_type.clone(),
-                witness_address: witness_address_bytes,
+                witness_address: *witness_address,
             })
         }
         GovernanceClientCommands::RemoveExternalCoinWitness {
@@ -368,12 +367,11 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             coin_type,
             witness_address,
         } => {
-            let witness_address_bytes = hex::decode(&witness_address).expect("Invalid witness address");
             BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction{
                 nonce: *nonce,
                 chain_id,
                 coin_type: coin_type.clone(),
-                witness_address: witness_address_bytes,
+                witness_address: *witness_address,
             })
         }
         GovernanceClientCommands::AddExternalCoinTarget {

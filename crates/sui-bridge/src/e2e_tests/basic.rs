@@ -377,21 +377,22 @@ async fn test_add_external_witness() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
-    let hex_str="0x7518085822fAA839EeB59035a74A87b4220C6629";
-    let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
+    let hex_str: H160="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+
+    //let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
 
     let add_witness_action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         coin_type: "test".to_string(),
-        witness_address: addr.clone(),
+        witness_address: hex_str.clone(),
     });
 
     let remove_witness_action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         coin_type: "test".to_string(),
-        witness_address: addr.clone(),
+        witness_address: hex_str.clone(),
     });
 
     info!("Starting bridge cluster");
@@ -662,21 +663,21 @@ async fn test_remove_external_witness() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
-    let hex_str="0x7518085822fAA839EeB59035a74A87b4220C6629".to_lowercase();
-    let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
+    let hex_str: H160="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+
 
     let add_witness_action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         coin_type: "test".to_string(),
-        witness_address: addr.clone(),
+        witness_address: hex_str.clone(),
     });
 
     let remove_witness_action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
         nonce: 0,
         chain_id: BridgeChainId::SuiCustom,
         coin_type: "test".to_string(),
-        witness_address: addr.clone(),
+        witness_address: hex_str.clone(),
     });
 
 
@@ -704,7 +705,7 @@ async fn test_remove_external_witness() {
     let certified_action1 = agg
         .request_committee_signatures(remove_witness_action)
         .await
-        .expect("Failed to request committee signatures for AddExternalCoinAdminAction");
+        .expect("Failed to request committee signatures for RemoveExternalCoinWitnessAction");
 
     let tx = build_remove_external_coin_witness_transaction(
         sender,

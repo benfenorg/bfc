@@ -948,7 +948,7 @@ pub fn build_add_external_coin_witness_transaction(
 
     let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
         BridgeAction::AddExternalCoinWitnessAction(a) => {
-            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address.0.to_vec())
         }
         _ => unreachable!(),
     };
@@ -1011,7 +1011,7 @@ pub fn build_remove_external_coin_witness_transaction(
 
     let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
         BridgeAction::RemoveExternalCoinWitnessAction(a) => {
-            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address.0.to_vec())
         }
         _ => unreachable!(),
     };
