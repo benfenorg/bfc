@@ -71,22 +71,22 @@ Response: {
           }
         },
         {
-          "cursor": "IJROmTG1tAjDUfS+2TL27re8KU08URKDDCFN5hWS5Pk0AgAAAAAAAAA=",
+          "cursor": "IMGP5R5ksxKXMS6Y42OgPyAYvLhioCh2OzR76kF19Cr6AgAAAAAAAAA=",
           "node": {
             "asMoveObject": {
               "asStakedSui": {
-                "principal": "10000000000",
+                "principal": "200000000000000",
                 "poolId": "0x13febc5066e5c6556ee364215a77e4d75daf0a27d446aaf99ce1c55d38d7b0df"
               }
             }
           }
         },
         {
-          "cursor": "IMGP5R5ksxKXMS6Y42OgPyAYvLhioCh2OzR76kF19Cr6AgAAAAAAAAA=",
+          "cursor": "IMd160GMZs8IjPIZ+jGMDzdKQEgcyOhcrSzvyYJ6M1b9AgAAAAAAAAA=",
           "node": {
             "asMoveObject": {
               "asStakedSui": {
-                "principal": "200000000000000",
+                "principal": "10000000000",
                 "poolId": "0x13febc5066e5c6556ee364215a77e4d75daf0a27d446aaf99ce1c55d38d7b0df"
               }
             }
@@ -98,7 +98,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IJROmTG1tAjDUfS+2TL27re8KU08URKDDCFN5hWS5Pk0AgAAAAAAAAA=",
+            "cursor": "IMd160GMZs8IjPIZ+jGMDzdKQEgcyOhcrSzvyYJ6M1b9AgAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }

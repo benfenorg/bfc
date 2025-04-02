@@ -34,7 +34,7 @@ Response: {
         {
           "sendingModule": {
             "package": {
-              "address": "0xd0cf2c50e71a6aed2a907ccafa79e2232a8508b554e210e529c17d47dc88d07a"
+              "address": "0xcdeeea79f7b18869dbe724fb83e86e4ceb92916d6275ae2586f1f86df32e29b1"
             },
             "name": "M1"
           }
