@@ -471,7 +471,7 @@ impl BridgeRequestHandler {
             metrics.clone(),
         )
         .spawn(external_coin_rx);
-      
+
         SignerWithCache::new(
             signer.clone(),
             EthActionVerifier {
@@ -1155,7 +1155,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_remove_external_witness_action() {
-        let hex_str: ethers::types::H160="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+        let hex_str  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
 
         let action_1 = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             chain_id: BridgeChainId::SuiCustom,

@@ -21,7 +21,8 @@ use crate::sui_transaction_builder::build_remove_external_coin_witness_transacti
 use crate::sui_transaction_builder::build_add_external_coin_target_transaction;
 use crate::sui_transaction_builder::build_remove_external_coin_target_transaction;
 // use ethers::types::Address;
-use hex::decode;
+use ethers::types::Address as EthAddress;
+
 
 
 
@@ -34,8 +35,8 @@ use crate::types::{
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use ethers::prelude::*;
-use ethers::types::Address as EthAddress;
 use std::collections::HashSet;
+use std::str::FromStr;
 use std::thread::sleep;
 use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
@@ -377,7 +378,7 @@ async fn test_add_external_witness() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
-    let hex_str: H160="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+    let hex_str  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
 
     //let addr=decode(hex_str.trim_start_matches("0x")).unwrap();
 
@@ -663,7 +664,8 @@ async fn test_remove_external_witness() {
 
     let sender = bridge_test_cluster.sui_user_address();
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
-    let hex_str: H160="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+    let hex_str  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
+
 
 
     let add_witness_action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
@@ -1017,7 +1019,7 @@ async fn test_bridge_usdt_to_sui() {
         .iter()
         .find(|c| c.coin_type.contains("BUSD"))
         .expect("Recipient should have received BUSD coin now")
-        .clone();       
+        .clone();
     assert_eq!(busd_coin.balance, 100_000_000_000);
     info!(
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",

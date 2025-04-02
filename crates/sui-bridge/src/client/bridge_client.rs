@@ -753,7 +753,8 @@ mod tests {
             BridgeClient::bridge_action_to_path(&action),
             "sign/remove_external_coin_target/2/0/test/0x0101010101010101010101010101010101010101",
         );
-        let addr="7518085822fAA839EeB59035a74A87b4220C6629".parse().unwrap();
+        let addr  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
+
         let action = BridgeAction::AddExternalCoinWitnessAction(
             crate::types::AddExternalCoinWitnessAction {
                 nonce: 0,
