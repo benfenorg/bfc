@@ -151,7 +151,7 @@ impl BridgeClient {
                 let witness_address=format!("{:x}",a.witness_address.clone());
 
                 format!(
-                    "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{eth_address}"
+                    "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
                 )
             }
             BridgeAction::RemoveExternalCoinWitnessAction(a) => {
@@ -160,7 +160,7 @@ impl BridgeClient {
                 let coin_type = a.coin_type.clone();
                 let witness_address=format!("{:x}",a.witness_address.clone());
                 format!(
-                    "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{eth_address}"
+                    "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
                 )
             }
             BridgeAction::AddExternalCoinTargetAction(a) => {
