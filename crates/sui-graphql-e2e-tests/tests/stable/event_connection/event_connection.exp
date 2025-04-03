@@ -66,7 +66,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -86,7 +86,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -106,7 +106,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -126,7 +126,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::Object>"
               },
               "json": {
                 "new_value": "3"
@@ -157,7 +157,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -177,7 +177,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -197,7 +197,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -217,7 +217,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M2::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M2::Object>"
               },
               "json": {
                 "new_value": "3"
@@ -248,7 +248,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -268,7 +268,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -299,7 +299,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventA"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -330,7 +330,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::EventB<0x1e11422e5164db2403e41572e26802c850c74c96a3137bebb21a24c0c4360a36::M1::Object>"
+                "repr": "0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::EventB<0x802f68b96cd3e4b5314f0407c31de4868032132f856caadc0ab6dea773ed02a4::M1::Object>"
               },
               "json": {
                 "new_value": "1"

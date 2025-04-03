@@ -78,25 +78,13 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x232db20fea6d7e694d1672c84ef93331dcb7332501fdea608338b8642abaf11f",
-                    "asMovePackage": null
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0x6541e68b0b2c3345698aafbe95c2a41778d9152fbb9a519678f84f0cd61c6bb1",
-                    "asMovePackage": null
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0xd516359536ea956fc8f382623a2d168199fb25530b89cd1ebff7c0c125de3793",
+                    "address": "0x0f1ad07d1bf23eb25ffc9546a08c63b99aaea15e7fc58119a1f84ccf613333cd",
                     "asMovePackage": {
                       "module": {
                         "function": {
                           "module": {
                             "package": {
-                              "address": "0xd516359536ea956fc8f382623a2d168199fb25530b89cd1ebff7c0c125de3793"
+                              "address": "0x0f1ad07d1bf23eb25ffc9546a08c63b99aaea15e7fc58119a1f84ccf613333cd"
                             }
                           },
                           "name": "f",
@@ -125,6 +113,18 @@ Response: {
                         }
                       }
                     }
+                  }
+                },
+                {
+                  "outputState": {
+                    "address": "0x9f239c7c62033824d92c6d17a96c308e66833c98b4292161ebea96d151ebb8f6",
+                    "asMovePackage": null
+                  }
+                },
+                {
+                  "outputState": {
+                    "address": "0xf12368f9f3fc00637338927c76006aad3dbe98c0e9d40d0156d41901959a92cc",
+                    "asMovePackage": null
                   }
                 }
               ]
@@ -158,19 +158,13 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x232db20fea6d7e694d1672c84ef93331dcb7332501fdea608338b8642abaf11f",
-                    "asMovePackage": null
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f",
+                    "address": "0x62f76e4880f757c7fcc7a5f1c8737e1fb6db6a935ab84d1d715b64da87a71dea",
                     "asMovePackage": {
                       "module": {
                         "f": {
                           "module": {
                             "package": {
-                              "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f"
+                              "address": "0x62f76e4880f757c7fcc7a5f1c8737e1fb6db6a935ab84d1d715b64da87a71dea"
                             }
                           },
                           "name": "f",
@@ -200,7 +194,7 @@ Response: {
                         "g": {
                           "module": {
                             "package": {
-                              "address": "0x4b61352eeb4bc1426eb90bd5c2805a9a9a1287804b40835a3c4e32250063686f"
+                              "address": "0x62f76e4880f757c7fcc7a5f1c8737e1fb6db6a935ab84d1d715b64da87a71dea"
                             }
                           },
                           "name": "g",
@@ -220,7 +214,13 @@ Response: {
                 },
                 {
                   "outputState": {
-                    "address": "0x6541e68b0b2c3345698aafbe95c2a41778d9152fbb9a519678f84f0cd61c6bb1",
+                    "address": "0x9f239c7c62033824d92c6d17a96c308e66833c98b4292161ebea96d151ebb8f6",
+                    "asMovePackage": null
+                  }
+                },
+                {
+                  "outputState": {
+                    "address": "0xf12368f9f3fc00637338927c76006aad3dbe98c0e9d40d0156d41901959a92cc",
                     "asMovePackage": null
                   }
                 }

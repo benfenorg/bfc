@@ -54,13 +54,13 @@ Response: {
                   },
                   {
                     "node": {
-                      "amount": "3000"
+                      "amount": "5000"
                     },
                     "cursor": "eyJpIjoxLCJjIjoyfQ"
                   },
                   {
                     "node": {
-                      "amount": "5000"
+                      "amount": "3000"
                     },
                     "cursor": "eyJpIjoyLCJjIjoyfQ"
                   },
@@ -156,13 +156,13 @@ Response: {
                   },
                   {
                     "node": {
-                      "amount": "3000"
+                      "amount": "5000"
                     },
                     "cursor": "eyJpIjoxLCJjIjoxfQ"
                   },
                   {
                     "node": {
-                      "amount": "5000"
+                      "amount": "3000"
                     },
                     "cursor": "eyJpIjoyLCJjIjoxfQ"
                   }
