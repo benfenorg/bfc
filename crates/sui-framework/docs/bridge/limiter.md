@@ -9,7 +9,10 @@ title: Module `bridge::limiter`
 -  [Struct `UpdateRouteLimitEvent`](#bridge_limiter_UpdateRouteLimitEvent)
 -  [Constants](#@Constants_0)
 -  [Function `get_route_limit`](#bridge_limiter_get_route_limit)
+-  [Function `get_mint_busd_max_limit`](#bridge_limiter_get_mint_busd_max_limit)
+-  [Function `set_mint_busd_max_limit`](#bridge_limiter_set_mint_busd_max_limit)
 -  [Function `new`](#bridge_limiter_new)
+-  [Function `get_available_claim_amount`](#bridge_limiter_get_available_claim_amount)
 -  [Function `check_and_record_sending_transfer`](#bridge_limiter_check_and_record_sending_transfer)
 -  [Function `update_route_limit`](#bridge_limiter_update_route_limit)
 -  [Function `current_hour_since_epoch`](#bridge_limiter_current_hour_since_epoch)
@@ -18,6 +21,9 @@ title: Module `bridge::limiter`
 
 
 <pre><code><b>use</b> <a href="../bridge/chain_ids.md#bridge_chain_ids">bridge::chain_ids</a>;
+<b>use</b> <a href="../bridge/crypto.md#bridge_crypto">bridge::crypto</a>;
+<b>use</b> <a href="../bridge/message.md#bridge_message">bridge::message</a>;
+<b>use</b> <a href="../bridge/message_types.md#bridge_message_types">bridge::message_types</a>;
 <b>use</b> <a href="../bridge/treasury.md#bridge_treasury">bridge::treasury</a>;
 <b>use</b> <a href="../std/address.md#std_address">std::address</a>;
 <b>use</b> <a href="../std/ascii.md#std_ascii">std::ascii</a>;
@@ -30,13 +36,16 @@ title: Module `bridge::limiter`
 <b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
 <b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
 <b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
+<b>use</b> <a href="../sui/bcs.md#sui_bcs">sui::bcs</a>;
 <b>use</b> <a href="../sui/clock.md#sui_clock">sui::clock</a>;
 <b>use</b> <a href="../sui/coin.md#sui_coin">sui::coin</a>;
 <b>use</b> <a href="../sui/config.md#sui_config">sui::config</a>;
 <b>use</b> <a href="../sui/deny_list.md#sui_deny_list">sui::deny_list</a>;
 <b>use</b> <a href="../sui/dynamic_field.md#sui_dynamic_field">sui::dynamic_field</a>;
 <b>use</b> <a href="../sui/dynamic_object_field.md#sui_dynamic_object_field">sui::dynamic_object_field</a>;
+<b>use</b> <a href="../sui/ecdsa_k1.md#sui_ecdsa_k1">sui::ecdsa_k1</a>;
 <b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
+<b>use</b> <a href="../sui/hash.md#sui_hash">sui::hash</a>;
 <b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
 <b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
 <b>use</b> <a href="../sui/object_bag.md#sui_object_bag">sui::object_bag</a>;
@@ -75,6 +84,11 @@ title: Module `bridge::limiter`
 </dd>
 <dt>
 <code>transfer_records: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">bridge::chain_ids::BridgeRoute</a>, <a href="../bridge/limiter.md#bridge_limiter_TransferRecord">bridge::limiter::TransferRecord</a>&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>max_mint_busd_limit: u64</code>
 </dt>
 <dd>
 </dd>
@@ -165,6 +179,15 @@ title: Module `bridge::limiter`
 ## Constants
 
 
+<a name="bridge_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/limiter.md#bridge_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: u64 = 100000;
+</code></pre>
+
+
+
 <a name="bridge_limiter_ELimitNotFoundForRoute"></a>
 
 
@@ -216,6 +239,54 @@ title: Module `bridge::limiter`
 
 </details>
 
+<a name="bridge_limiter_get_mint_busd_max_limit"></a>
+
+## Function `get_mint_busd_max_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>(self: &<a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">bridge::limiter::TransferLimiter</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>(self: &<a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">TransferLimiter</a>): u64 {
+    self.max_mint_busd_limit
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_set_mint_busd_max_limit"></a>
+
+## Function `set_mint_busd_max_limit`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_set_mint_busd_max_limit">set_mint_busd_max_limit</a>(self: &<b>mut</b> <a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">bridge::limiter::TransferLimiter</a>, new_limit: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_set_mint_busd_max_limit">set_mint_busd_max_limit</a>(self: &<b>mut</b> <a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">TransferLimiter</a>, new_limit: u64) {
+    self.max_mint_busd_limit = new_limit;
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_limiter_new"></a>
 
 ## Function `new`
@@ -235,8 +306,51 @@ title: Module `bridge::limiter`
     // hardcoded limit <b>for</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> genesis
     <a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">TransferLimiter</a> {
         transfer_limits: <a href="../bridge/limiter.md#bridge_limiter_initial_transfer_limits">initial_transfer_limits</a>(),
-        transfer_records: vec_map::empty()
+        transfer_records: vec_map::empty(),
+        max_mint_busd_limit: <a href="../bridge/limiter.md#bridge_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>,
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_limiter_get_available_claim_amount"></a>
+
+## Function `get_available_claim_amount`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(self: &<a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">bridge::limiter::TransferLimiter</a>, <a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, route: <a href="../bridge/chain_ids.md#bridge_chain_ids_BridgeRoute">bridge::chain_ids::BridgeRoute</a>): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/limiter.md#bridge_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(
+    self: &<a href="../bridge/limiter.md#bridge_limiter_TransferLimiter">TransferLimiter</a>,
+    <a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &BridgeTreasury,
+    route: BridgeRoute,
+): u64{
+    <b>if</b> (!self.transfer_records.contains(&route)) {
+       <b>return</b> 0
+    };
+    <b>let</b> record = self.transfer_records.get(&route);
+    <b>let</b> route_limit = self.transfer_limits.try_get(&route);
+    <b>assert</b>!(route_limit.is_some(), <a href="../bridge/limiter.md#bridge_limiter_ELimitNotFoundForRoute">ELimitNotFoundForRoute</a>);
+    <b>let</b> route_limit = route_limit.destroy_some();
+    <b>let</b> route_limit_adjusted =
+        (route_limit <b>as</b> u128) * (<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+    <b>let</b> total_adjusted= (record.total_amount <b>as</b> u128 ) * (<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
+    <b>if</b> (total_adjusted &lt;= route_limit_adjusted){
+        <b>return</b> 0
+    };
+    <b>let</b> price = (<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
+   ((total_adjusted-route_limit_adjusted) / price) <b>as</b> u64
 }
 </code></pre>
 

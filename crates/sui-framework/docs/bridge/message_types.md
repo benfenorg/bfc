@@ -14,6 +14,10 @@ title: Module `bridge::message_types`
 -  [Function `add_external_coin_admin`](#bridge_message_types_add_external_coin_admin)
 -  [Function `remove_external_coin_admin`](#bridge_message_types_remove_external_coin_admin)
 -  [Function `refund_admin_operate`](#bridge_message_types_refund_admin_operate)
+-  [Function `add_external_coin_witness`](#bridge_message_types_add_external_coin_witness)
+-  [Function `remove_external_coin_witness`](#bridge_message_types_remove_external_coin_witness)
+-  [Function `add_external_coin_target`](#bridge_message_types_add_external_coin_target)
+-  [Function `remove_external_coin_target`](#bridge_message_types_remove_external_coin_target)
 
 
 <pre><code></code></pre>
@@ -30,6 +34,24 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_ADMIN">ADD_EXTERNAL_COIN_ADMIN</a>: u8 = 11;
+</code></pre>
+
+
+
+<a name="bridge_message_types_ADD_EXTERNAL_COIN_TARGET"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_TARGET">ADD_EXTERNAL_COIN_TARGET</a>: u8 = 15;
+</code></pre>
+
+
+
+<a name="bridge_message_types_ADD_EXTERNAL_COIN_WITNESS"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_WITNESS">ADD_EXTERNAL_COIN_WITNESS</a>: u8 = 13;
 </code></pre>
 
 
@@ -75,6 +97,24 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_ADMIN">REMOVE_EXTERNAL_COIN_ADMIN</a>: u8 = 12;
+</code></pre>
+
+
+
+<a name="bridge_message_types_REMOVE_EXTERNAL_COIN_TARGET"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_TARGET">REMOVE_EXTERNAL_COIN_TARGET</a>: u8 = 16;
+</code></pre>
+
+
+
+<a name="bridge_message_types_REMOVE_EXTERNAL_COIN_WITNESS"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_WITNESS">REMOVE_EXTERNAL_COIN_WITNESS</a>: u8 = 14;
 </code></pre>
 
 
@@ -298,6 +338,98 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_refund_admin_operate">refund_admin_operate</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_REFUND_ADMIN_OPERATE">REFUND_ADMIN_OPERATE</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_add_external_coin_witness"></a>
+
+## Function `add_external_coin_witness`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_witness">add_external_coin_witness</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_witness">add_external_coin_witness</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_WITNESS">ADD_EXTERNAL_COIN_WITNESS</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_remove_external_coin_witness"></a>
+
+## Function `remove_external_coin_witness`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_witness">remove_external_coin_witness</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_witness">remove_external_coin_witness</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_WITNESS">REMOVE_EXTERNAL_COIN_WITNESS</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_add_external_coin_target"></a>
+
+## Function `add_external_coin_target`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_target">add_external_coin_target</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_target">add_external_coin_target</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_ADD_EXTERNAL_COIN_TARGET">ADD_EXTERNAL_COIN_TARGET</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_remove_external_coin_target"></a>
+
+## Function `remove_external_coin_target`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">remove_external_coin_target</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">remove_external_coin_target</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_TARGET">REMOVE_EXTERNAL_COIN_TARGET</a>
+}
 </code></pre>
 
 

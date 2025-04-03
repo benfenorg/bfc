@@ -5,6 +5,7 @@ title: Module `bridge::message`
 
 
 -  [Struct `BridgeMessage`](#bridge_message_BridgeMessage)
+-  [Struct `BitcoinMessage`](#bridge_message_BitcoinMessage)
 -  [Struct `BridgeMessageKey`](#bridge_message_BridgeMessageKey)
 -  [Struct `RefundMessageKey`](#bridge_message_RefundMessageKey)
 -  [Struct `TokenTransferPayload`](#bridge_message_TokenTransferPayload)
@@ -15,10 +16,18 @@ title: Module `bridge::message`
 -  [Struct `UpdateAssetPrice`](#bridge_message_UpdateAssetPrice)
 -  [Struct `AddExternalCoinAdmin`](#bridge_message_AddExternalCoinAdmin)
 -  [Struct `RemoveExternalCoinAdmin`](#bridge_message_RemoveExternalCoinAdmin)
+-  [Struct `AddExternalCoinWitness`](#bridge_message_AddExternalCoinWitness)
+-  [Struct `RemoveExternalCoinWitness`](#bridge_message_RemoveExternalCoinWitness)
+-  [Struct `AddExternalCoinTarget`](#bridge_message_AddExternalCoinTarget)
+-  [Struct `RemoveExternalCoinTarget`](#bridge_message_RemoveExternalCoinTarget)
 -  [Struct `AddTokenOnSui`](#bridge_message_AddTokenOnSui)
 -  [Struct `ParsedTokenTransferMessage`](#bridge_message_ParsedTokenTransferMessage)
 -  [Constants](#@Constants_0)
 -  [Function `extract_token_bridge_payload`](#bridge_message_extract_token_bridge_payload)
+-  [Function `extract_add_witness_poyload`](#bridge_message_extract_add_witness_poyload)
+-  [Function `extract_remove_witness_poyload`](#bridge_message_extract_remove_witness_poyload)
+-  [Function `extract_add_external_target_address_poyload`](#bridge_message_extract_add_external_target_address_poyload)
+-  [Function `extract_remove_external_target_address_poyload`](#bridge_message_extract_remove_external_target_address_poyload)
 -  [Function `extract_emergency_op_payload`](#bridge_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#bridge_message_extract_blocklist_payload)
 -  [Function `extract_refund_admin_payload`](#bridge_message_extract_refund_admin_payload)
@@ -28,6 +37,8 @@ title: Module `bridge::message`
 -  [Function `extract_update_asset_price`](#bridge_message_extract_update_asset_price)
 -  [Function `extract_add_tokens_on_sui`](#bridge_message_extract_add_tokens_on_sui)
 -  [Function `serialize_message`](#bridge_message_serialize_message)
+-  [Function `serialize_bitcoin_message`](#bridge_message_serialize_bitcoin_message)
+-  [Function `create_bitcoin_message`](#bridge_message_create_bitcoin_message)
 -  [Function `create_token_bridge_message`](#bridge_message_create_token_bridge_message)
 -  [Function `create_emergency_op_message`](#bridge_message_create_emergency_op_message)
 -  [Function `create_blocklist_message`](#bridge_message_create_blocklist_message)
@@ -35,6 +46,10 @@ title: Module `bridge::message`
 -  [Function `create_update_bridge_limit_message`](#bridge_message_create_update_bridge_limit_message)
 -  [Function `create_update_asset_price_message`](#bridge_message_create_update_asset_price_message)
 -  [Function `create_add_external_coin_admin_message`](#bridge_message_create_add_external_coin_admin_message)
+-  [Function `create_add_external_coin_witness_message`](#bridge_message_create_add_external_coin_witness_message)
+-  [Function `create_remove_external_coin_witness_message`](#bridge_message_create_remove_external_coin_witness_message)
+-  [Function `create_add_external_coin_target_message`](#bridge_message_create_add_external_coin_target_message)
+-  [Function `create_remove_external_coin_target_message`](#bridge_message_create_remove_external_coin_target_message)
 -  [Function `create_remove_external_coin_admin_message`](#bridge_message_create_remove_external_coin_admin_message)
 -  [Function `create_add_tokens_on_sui_message`](#bridge_message_create_add_tokens_on_sui_message)
 -  [Function `create_key`](#bridge_message_create_key)
@@ -45,6 +60,7 @@ title: Module `bridge::message`
 -  [Function `seq_num`](#bridge_message_seq_num)
 -  [Function `source_chain`](#bridge_message_source_chain)
 -  [Function `payload`](#bridge_message_payload)
+-  [Function `token_sender_address`](#bridge_message_token_sender_address)
 -  [Function `token_target_chain`](#bridge_message_token_target_chain)
 -  [Function `token_target_address`](#bridge_message_token_target_address)
 -  [Function `token_type`](#bridge_message_token_type)
@@ -63,6 +79,14 @@ title: Module `bridge::message`
 -  [Function `update_bridge_limit_payload_limit`](#bridge_message_update_bridge_limit_payload_limit)
 -  [Function `update_asset_price_payload_token_id`](#bridge_message_update_asset_price_payload_token_id)
 -  [Function `update_asset_price_payload_new_price`](#bridge_message_update_asset_price_payload_new_price)
+-  [Function `add_external_coin_witness_payload_coin_type`](#bridge_message_add_external_coin_witness_payload_coin_type)
+-  [Function `add_external_coin_witness_payload_witness_address`](#bridge_message_add_external_coin_witness_payload_witness_address)
+-  [Function `remove_external_coin_witness_payload_coin_type`](#bridge_message_remove_external_coin_witness_payload_coin_type)
+-  [Function `remove_external_coin_witness_payload_witness_address`](#bridge_message_remove_external_coin_witness_payload_witness_address)
+-  [Function `add_external_coin_target_payload_coin_type`](#bridge_message_add_external_coin_target_payload_coin_type)
+-  [Function `add_external_coin_target_payload_target_address`](#bridge_message_add_external_coin_target_payload_target_address)
+-  [Function `remove_external_coin_target_payload_coin_type`](#bridge_message_remove_external_coin_target_payload_coin_type)
+-  [Function `remove_external_coin_target_payload_target_address`](#bridge_message_remove_external_coin_target_payload_target_address)
 -  [Function `add_external_coin_admin_payload_coin_type`](#bridge_message_add_external_coin_admin_payload_coin_type)
 -  [Function `add_external_coin_admin_payload_admin_address`](#bridge_message_add_external_coin_admin_payload_admin_address)
 -  [Function `remove_external_coin_admin_payload_coin_type`](#bridge_message_remove_external_coin_admin_payload_coin_type)
@@ -131,6 +155,57 @@ title: Module `bridge::message`
 </dd>
 <dt>
 <code><a href="../bridge/message.md#bridge_message_payload">payload</a>: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_BitcoinMessage"></a>
+
+## Struct `BitcoinMessage`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_BitcoinMessage">BitcoinMessage</a> <b>has</b> <b>copy</b>, drop, store
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code><a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>tx_hash: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>coin_type: vector&lt;u8&gt;</code>
 </dt>
 <dd>
 </dd>
@@ -474,6 +549,130 @@ title: Module `bridge::message`
 
 </details>
 
+<a name="bridge_message_AddExternalCoinWitness"></a>
+
+## Struct `AddExternalCoinWitness`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">AddExternalCoinWitness</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>witness_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_RemoveExternalCoinWitness"></a>
+
+## Struct `RemoveExternalCoinWitness`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>witness_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_AddExternalCoinTarget"></a>
+
+## Struct `AddExternalCoinTarget`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">AddExternalCoinTarget</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_message_RemoveExternalCoinTarget"></a>
+
+## Struct `RemoveExternalCoinTarget`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
 <a name="bridge_message_AddTokenOnSui"></a>
 
 ## Struct `AddTokenOnSui`
@@ -638,15 +837,6 @@ title: Module `bridge::message`
 
 
 
-<a name="bridge_message_EInvalidPayloadLength"></a>
-
-
-
-<pre><code><b>const</b> <a href="../bridge/message.md#bridge_message_EInvalidPayloadLength">EInvalidPayloadLength</a>: u64 = 5;
-</code></pre>
-
-
-
 <a name="bridge_message_EMustBeTokenMessage"></a>
 
 
@@ -726,6 +916,147 @@ title: Module `bridge::message`
         amount,
         tx_hash,
         event_idx
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_add_witness_poyload"></a>
+
+## Function `extract_add_witness_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_witness_poyload">extract_add_witness_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">bridge::message::AddExternalCoinWitness</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_witness_poyload">extract_add_witness_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">AddExternalCoinWitness</a> {
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> coin_type = ascii::string(bcs.peel_vec_u8());
+    <b>let</b> (<b>mut</b> witness_address, <b>mut</b> i) = (vector[], 0);
+    <b>while</b> (i &lt; <a href="../bridge/message.md#bridge_message_ECDSA_ADDRESS_LENGTH">ECDSA_ADDRESS_LENGTH</a>) {
+            witness_address.push_back(bcs.peel_u8());
+            i = i + 1;
+    };
+     <a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">AddExternalCoinWitness</a> {
+        coin_type,
+        witness_address
+     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_remove_witness_poyload"></a>
+
+## Function `extract_remove_witness_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_witness_poyload">extract_remove_witness_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">bridge::message::RemoveExternalCoinWitness</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_witness_poyload">extract_remove_witness_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> {
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> coin_type = ascii::string(bcs.peel_vec_u8());
+    <b>let</b> (<b>mut</b> witness_address, <b>mut</b> i) = (vector[], 0);
+     <b>while</b> (i &lt; <a href="../bridge/message.md#bridge_message_ECDSA_ADDRESS_LENGTH">ECDSA_ADDRESS_LENGTH</a>) {
+            witness_address.push_back(bcs.peel_u8());
+            i = i + 1;
+    };
+    <a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> {
+        coin_type,
+        witness_address
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_add_external_target_address_poyload"></a>
+
+## Function `extract_add_external_target_address_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_external_target_address_poyload">extract_add_external_target_address_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">bridge::message::AddExternalCoinTarget</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_add_external_target_address_poyload">extract_add_external_target_address_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">AddExternalCoinTarget</a> {
+  <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+  <b>let</b> coin_type = ascii::string(bcs.peel_vec_u8());
+  <b>let</b> length=bcs.peel_u8();
+  <b>let</b> (<b>mut</b> target_address, <b>mut</b> i) = (vector[], 0);
+  <b>while</b> (i &lt; length) {
+          target_address.push_back(bcs.peel_u8());
+          i = i + 1;
+  };
+  <b>assert</b>!(bcs.into_remainder_bytes().is_empty(), <a href="../bridge/message.md#bridge_message_ETrailingBytes">ETrailingBytes</a>);
+  <b>let</b> target_address = ascii::string(target_address);
+   <a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">AddExternalCoinTarget</a> {
+      coin_type,
+      target_address
+   }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_extract_remove_external_target_address_poyload"></a>
+
+## Function `extract_remove_external_target_address_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_external_target_address_poyload">extract_remove_external_target_address_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">bridge::message::RemoveExternalCoinTarget</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_extract_remove_external_target_address_poyload">extract_remove_external_target_address_poyload</a>(<a href="../bridge/message.md#bridge_message">message</a>: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): <a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
+    <b>let</b> <b>mut</b> bcs = bcs::new(<a href="../bridge/message.md#bridge_message">message</a>.<a href="../bridge/message.md#bridge_message_payload">payload</a>);
+    <b>let</b> coin_type = ascii::string(bcs.peel_vec_u8());
+    <b>let</b> length=bcs.peel_u8();
+    <b>let</b> (<b>mut</b> target_address, <b>mut</b> i) = (vector[], 0);
+    <b>while</b> (i &lt; length) {
+            target_address.push_back(bcs.peel_u8());
+            i = i + 1;
+    };
+    <b>let</b> target_address = ascii::string(target_address);
+    <a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
+        coin_type,
+        target_address
     }
 }
 </code></pre>
@@ -1043,6 +1374,84 @@ Emergency op payload is just a single byte
 
 </details>
 
+<a name="bridge_message_serialize_bitcoin_message"></a>
+
+## Function `serialize_bitcoin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_serialize_bitcoin_message">serialize_bitcoin_message</a>(<a href="../bridge/message.md#bridge_message">message</a>: <a href="../bridge/message.md#bridge_message_BitcoinMessage">bridge::message::BitcoinMessage</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_serialize_bitcoin_message">serialize_bitcoin_message</a>(<a href="../bridge/message.md#bridge_message">message</a>: <a href="../bridge/message.md#bridge_message_BitcoinMessage">BitcoinMessage</a>): vector&lt;u8&gt;{
+    <b>let</b> <a href="../bridge/message.md#bridge_message_BitcoinMessage">BitcoinMessage</a> {
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+    source_address,
+    target_address,
+    amount,
+    tx_hash,
+    coin_type,
+    } = <a href="../bridge/message.md#bridge_message">message</a>;
+     <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message">message</a>=vector[
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+     ];
+    <a href="../bridge/message.md#bridge_message">message</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&amount)));
+    <a href="../bridge/message.md#bridge_message">message</a>.append(source_address);
+    <a href="../bridge/message.md#bridge_message">message</a>.append(target_address);
+    <a href="../bridge/message.md#bridge_message">message</a>.append(tx_hash);
+    <a href="../bridge/message.md#bridge_message">message</a>.append(coin_type);
+    <a href="../bridge/message.md#bridge_message">message</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_bitcoin_message"></a>
+
+## Function `create_bitcoin_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_bitcoin_message">create_bitcoin_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, source_address: vector&lt;u8&gt;, target_address: vector&lt;u8&gt;, amount: u64, tx_hash: vector&lt;u8&gt;, coin_type: vector&lt;u8&gt;): <a href="../bridge/message.md#bridge_message_BitcoinMessage">bridge::message::BitcoinMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_bitcoin_message">create_bitcoin_message</a> (
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    source_address: vector&lt;u8&gt;,
+    target_address: vector&lt;u8&gt;,
+    amount: u64,
+    tx_hash: vector&lt;u8&gt;,
+    coin_type: vector&lt;u8&gt;
+):<a href="../bridge/message.md#bridge_message_BitcoinMessage">BitcoinMessage</a>{
+    <a href="../bridge/message.md#bridge_message_BitcoinMessage">BitcoinMessage</a>{
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+        coin_type,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_message_create_token_bridge_message"></a>
 
 ## Function `create_token_bridge_message`
@@ -1094,7 +1503,8 @@ Token Transfer Message Format:
     // bcs serialzies u64 <b>as</b> 8 bytes
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&<a href="../bridge/message.md#bridge_message_token_type">token_type</a>)));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&amount)));
-    <b>assert</b>!(vector::length(&<a href="../bridge/message.md#bridge_message_payload">payload</a>) == 71, <a href="../bridge/message.md#bridge_message_EInvalidPayloadLength">EInvalidPayloadLength</a>);
+    // btc <b>address</b> len is different from eth <b>address</b> len, so we can't <b>assert</b> palyload length
+    // <b>assert</b>!(vector::length(&<a href="../bridge/message.md#bridge_message_payload">payload</a>) == 71, EInvalidPayloadLength);
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&tx_hash) <b>as</b> u8));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(tx_hash);
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(event_idx);
@@ -1382,6 +1792,160 @@ Update asset price message
 
 </details>
 
+<a name="bridge_message_create_add_external_coin_witness_message"></a>
+
+## Function `create_add_external_coin_witness_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_external_coin_witness_message">create_add_external_coin_witness_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, witness_address: vector&lt;u8&gt;): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_external_coin_witness_message">create_add_external_coin_witness_message</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    coin_type: String,
+    witness_address: vector&lt;u8&gt;,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&coin_type);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(witness_address);
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_witness">message_types::add_external_coin_witness</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_remove_external_coin_witness_message"></a>
+
+## Function `create_remove_external_coin_witness_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_external_coin_witness_message">create_remove_external_coin_witness_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, witness_address: vector&lt;u8&gt;): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_external_coin_witness_message">create_remove_external_coin_witness_message</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    coin_type: String,
+    witness_address: vector&lt;u8&gt;,
+):<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&coin_type);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(witness_address);
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_witness">message_types::remove_external_coin_witness</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_add_external_coin_target_message"></a>
+
+## Function `create_add_external_coin_target_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_external_coin_target_message">create_add_external_coin_target_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, target_address: vector&lt;u8&gt;): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_add_external_coin_target_message">create_add_external_coin_target_message</a>(
+   <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+   <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+   coin_type: String,
+   target_address: vector&lt;u8&gt;,
+): <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+    <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+   <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&coin_type);
+   <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(target_address.length() <b>as</b> u8);
+   <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(target_address);
+   <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+       <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_target">message_types::add_external_coin_target</a>(),
+       <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+       <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+       <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+       <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+   }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_create_remove_external_coin_target_message"></a>
+
+## Function `create_remove_external_coin_target_message`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_external_coin_target_message">create_remove_external_coin_target_message</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8, <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64, coin_type: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, target_address: vector&lt;u8&gt;): <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_create_remove_external_coin_target_message">create_remove_external_coin_target_message</a>(
+    <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>: u8,
+    <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>: u64,
+    coin_type: String,
+    target_address: vector&lt;u8&gt;,
+):<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>{
+     <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(<a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>);
+    <b>let</b> <b>mut</b> <a href="../bridge/message.md#bridge_message_payload">payload</a> = bcs::to_bytes(&coin_type);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(target_address.length() <b>as</b> u8);
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(target_address);
+    <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
+        <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>(),
+        <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        <a href="../bridge/message.md#bridge_message_seq_num">seq_num</a>,
+        <a href="../bridge/message.md#bridge_message_source_chain">source_chain</a>,
+        <a href="../bridge/message.md#bridge_message_payload">payload</a>,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_message_create_remove_external_coin_admin_message"></a>
 
 ## Function `create_remove_external_coin_admin_message`
@@ -1656,6 +2220,30 @@ Update Sui token message
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_payload">payload</a>(self: &<a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a>): vector&lt;u8&gt; {
     self.<a href="../bridge/message.md#bridge_message_payload">payload</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_token_sender_address"></a>
+
+## Function `token_sender_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_sender_address">token_sender_address</a>(self: &<a href="../bridge/message.md#bridge_message_TokenTransferPayload">bridge::message::TokenTransferPayload</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_token_sender_address">token_sender_address</a>(self: &<a href="../bridge/message.md#bridge_message_TokenTransferPayload">TokenTransferPayload</a>): vector&lt;u8&gt; {
+    self.sender_address
 }
 </code></pre>
 
@@ -2095,6 +2683,198 @@ Update Sui token message
 
 </details>
 
+<a name="bridge_message_add_external_coin_witness_payload_coin_type"></a>
+
+## Function `add_external_coin_witness_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_witness_payload_coin_type">add_external_coin_witness_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">bridge::message::AddExternalCoinWitness</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_witness_payload_coin_type">add_external_coin_witness_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">AddExternalCoinWitness</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_external_coin_witness_payload_witness_address"></a>
+
+## Function `add_external_coin_witness_payload_witness_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_witness_payload_witness_address">add_external_coin_witness_payload_witness_address</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">bridge::message::AddExternalCoinWitness</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_witness_payload_witness_address">add_external_coin_witness_payload_witness_address</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinWitness">AddExternalCoinWitness</a>): vector&lt;u8&gt; {
+    self.witness_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_external_coin_witness_payload_coin_type"></a>
+
+## Function `remove_external_coin_witness_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_witness_payload_coin_type">remove_external_coin_witness_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">bridge::message::RemoveExternalCoinWitness</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_witness_payload_coin_type">remove_external_coin_witness_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_external_coin_witness_payload_witness_address"></a>
+
+## Function `remove_external_coin_witness_payload_witness_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_witness_payload_witness_address">remove_external_coin_witness_payload_witness_address</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">bridge::message::RemoveExternalCoinWitness</a>): vector&lt;u8&gt;
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_witness_payload_witness_address">remove_external_coin_witness_payload_witness_address</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a>): vector&lt;u8&gt; {
+    self.witness_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_external_coin_target_payload_coin_type"></a>
+
+## Function `add_external_coin_target_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_target_payload_coin_type">add_external_coin_target_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">bridge::message::AddExternalCoinTarget</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_target_payload_coin_type">add_external_coin_target_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">AddExternalCoinTarget</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_add_external_coin_target_payload_target_address"></a>
+
+## Function `add_external_coin_target_payload_target_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_target_payload_target_address">add_external_coin_target_payload_target_address</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">bridge::message::AddExternalCoinTarget</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_add_external_coin_target_payload_target_address">add_external_coin_target_payload_target_address</a>(self: &<a href="../bridge/message.md#bridge_message_AddExternalCoinTarget">AddExternalCoinTarget</a>): String {
+    self.target_address
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_external_coin_target_payload_coin_type"></a>
+
+## Function `remove_external_coin_target_payload_coin_type`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_target_payload_coin_type">remove_external_coin_target_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">bridge::message::RemoveExternalCoinTarget</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_target_payload_coin_type">remove_external_coin_target_payload_coin_type</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a>): String {
+    self.coin_type
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_remove_external_coin_target_payload_target_address"></a>
+
+## Function `remove_external_coin_target_payload_target_address`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_target_payload_target_address">remove_external_coin_target_payload_target_address</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">bridge::message::RemoveExternalCoinTarget</a>): <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message.md#bridge_message_remove_external_coin_target_payload_target_address">remove_external_coin_target_payload_target_address</a>(self: &<a href="../bridge/message.md#bridge_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a>): String {
+    self.target_address
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_message_add_external_coin_admin_payload_coin_type"></a>
 
 ## Function `add_external_coin_admin_payload_coin_type`
@@ -2377,6 +3157,14 @@ Return the required signature threshold for the message, values are voting power
     } <b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_admin">message_types::remove_external_coin_admin</a>()) {
         5001
     } <b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_refund_admin_operate">message_types::refund_admin_operate</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_witness">message_types::add_external_coin_witness</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_witness">message_types::remove_external_coin_witness</a>()) {
+        5001
+    } <b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_add_external_coin_target">message_types::add_external_coin_target</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (<a href="../bridge/message.md#bridge_message_message_type">message_type</a> == <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()) {
         5001
     } <b>else</b> {
         <b>abort</b> <a href="../bridge/message.md#bridge_message_EInvalidMessageType">EInvalidMessageType</a>

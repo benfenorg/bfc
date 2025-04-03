@@ -385,6 +385,8 @@ title: Module `bridge::chain_ids`
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/chain_ids.md#bridge_chain_ids_assert_valid_chain_id">assert_valid_chain_id</a>(id: u8) {
     <b>assert</b>!(
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BtcMainnet">BtcMainnet</a> ||
+        id == <a href="../bridge/chain_ids.md#bridge_chain_ids_BtcTestnet">BtcTestnet</a> ||
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiMainnet">SuiMainnet</a> ||
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiTestnet">SuiTestnet</a> ||
         id == <a href="../bridge/chain_ids.md#bridge_chain_ids_SuiCustom">SuiCustom</a> ||
