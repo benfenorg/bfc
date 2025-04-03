@@ -11,18 +11,18 @@ type BenfenClientQueryOptions = BenfenRpcMethods[keyof BenfenRpcMethods] extends
 	? Method extends {
 			name: infer M extends keyof BenfenRpcMethods;
 			params?: infer P;
-	  }
+		}
 		? undefined extends P
 			? {
 					method: M;
 					params?: P;
 					options?: UseBenfenClientQueryOptions<M, unknown>;
-			  }
+				}
 			: {
 					method: M;
 					params: P;
 					options?: UseBenfenClientQueryOptions<M, unknown>;
-			  }
+				}
 		: never
 	: never;
 

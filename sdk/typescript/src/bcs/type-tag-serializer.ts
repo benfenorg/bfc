@@ -2,8 +2,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { normalizeHexAddress } from '../utils/bf-types.js';
-import type { TypeTag } from './index.js';
 import { splitGenericParameters } from './src/index.js';
+import type { TypeTag } from './types.js';
 
 const VECTOR_REGEX = /^vector<(.+)>$/;
 const STRUCT_REGEX = /^([^:]+)::([^:]+)::([^<]+)(<(.+)>)?/;
@@ -29,6 +29,7 @@ export class TypeTagSerializer {
 		} else if (str === 'signer') {
 			return { signer: null };
 		}
+
 		const vectorMatch = str.match(VECTOR_REGEX);
 		if (vectorMatch) {
 			return {

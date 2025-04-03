@@ -5,14 +5,14 @@ import { secp256r1 } from '@noble/curves/p256';
 import { sha256 } from '@noble/hashes/sha256';
 import { describe, expect, it } from 'vitest';
 
-import { fromB64, toB58, toB64 } from '../../../src/bcs/index.js';
-import { decodeBenfenPrivateKey, PRIVATE_KEY_SIZE } from '../../../src/cryptography/keypair';
+import { fromBase64, toBase58, toBase64 } from '../../../src/bcs/index';
+import { decodeBenfenPrivateKey } from '../../../src/cryptography/keypair';
 import {
 	DEFAULT_SECP256R1_DERIVATION_PATH,
 	Secp256r1Keypair,
 } from '../../../src/keypairs/secp256r1';
-import { TransactionBlock } from '../../../src/transactions';
-import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/verify';
+import { Transaction } from '../../../src/transactions';
+import { verifyPersonalMessageSignature, verifyTransactionSignature } from '../../../src/verify';
 
 const VALID_SECP256R1_SECRET_KEY = [
 	66, 37, 141, 205, 161, 76, 241, 17, 198, 2, 184, 151, 27, 140, 200, 67, 233, 30, 70, 202, 144, 81,
@@ -25,6 +25,7 @@ export const VALID_SECP256R1_PUBLIC_KEY = [
 	64, 127, 95, 116, 31, 109, 239, 87, 98, 96, 154,
 ];
 
+const PRIVATE_KEY_SIZE = 32;
 // Invalid private key with incorrect length
 export const INVALID_SECP256R1_SECRET_KEY = Uint8Array.from(Array(PRIVATE_KEY_SIZE - 1).fill(1));
 
@@ -34,18 +35,18 @@ export const INVALID_SECP256R1_PUBLIC_KEY = Uint8Array.from(Array(PRIVATE_KEY_SI
 const TEST_CASES = [
 	[
 		'act wing dilemma glory episode region allow mad tourist humble muffin oblige',
-		'benfenprivkey1qgj6vet4rstf2p00j860xctkg4fyqqq5hxgu4mm0eg60fq787ujnq4zzh09',
-		'0x4a822457f1970468d38dae8e63fb60eefdaa497d74d781f581ea2d137ec36f3a',
+		'benfenprivkey1qttpz4ff25dmspjc3eukglglaxwxz7kdxyhmf499z4096wz8k3ffgjnun6x',
+		'0x1b543013a22f0139b30165365d8edb9784b91a823a88ba80e8da08233fa969aa',
 	],
 	[
 		'flag rebel cabbage captain minimum purpose long already valley horn enrich salt',
-		'benfenprivkey1qgmgr6dza8slgxn0rcxcy47xeas9l565cc5q440ngdzr575rc2356d5n0kc',
-		'0xcd43ecb9dd32249ff5748f5e4d51855b01c9b1b8bbe7f8638bb8ab4cb463b920',
+		'benfenprivkey1qf0wvzm6wu0ut84l57njujryr0d2cvuvyudr92c9aeu3xu26y0xagccx60t',
+		'0x7fd6f5b608438638c82b9368ece6217a9549bc03bf7866831f4b8f4f4dcd4e37',
 	],
 	[
 		'area renew bar language pudding trial small host remind supreme cabbage era',
-		'benfenprivkey1qt2gsye4dyn0lxey0ht6d5f2ada7ew9044a49y2f3mymy2uf0hr55hd9d35',
-		'0x0d9047b7e7b698cc09c955ea97b0c68c2be7fb3aebeb59edcc84b1fb87e0f28e',
+		'benfenprivkey1q26mrlgtfcht7va2u76fdsywhlnj4cctj0zffa5c4h9tp2gtdy456shnv3j',
+		'0xee43398c14d4fea1d2432067f4574c9ecc00e22b04128cfd0efedac7b7035ce6',
 	],
 ];
 
@@ -59,7 +60,7 @@ describe('secp256r1-keypair', () => {
 	it('create keypair from secret key', () => {
 		const secret_key = new Uint8Array(VALID_SECP256R1_SECRET_KEY);
 		const pub_key = new Uint8Array(VALID_SECP256R1_PUBLIC_KEY);
-		let pub_key_base64 = toB64(pub_key);
+		let pub_key_base64 = toBase64(pub_key);
 		const keypair = Secp256r1Keypair.fromSecretKey(secret_key);
 		expect(keypair.getPublicKey().toRawBytes()).toEqual(new Uint8Array(pub_key));
 		expect(keypair.getPublicKey().toBase64()).toEqual(pub_key_base64);
@@ -67,8 +68,8 @@ describe('secp256r1-keypair', () => {
 
 	it('creating keypair from invalid secret key throws error', () => {
 		const secret_key = new Uint8Array(INVALID_SECP256R1_SECRET_KEY);
-		let secret_key_base64 = toB64(secret_key);
-		const secretKey = fromB64(secret_key_base64);
+		let secret_key_base64 = toBase64(secret_key);
+		const secretKey = fromBase64(secret_key_base64);
 		expect(() => {
 			Secp256r1Keypair.fromSecretKey(secretKey);
 		}).toThrow('private key must be 32 bytes, hex or bigint, not object');
@@ -86,7 +87,7 @@ describe('secp256r1-keypair', () => {
 		const signData = new TextEncoder().encode('hello world');
 
 		const msgHash = sha256(signData);
-		const sig = keypair.signData(signData);
+		const sig = await keypair.sign(signData);
 		expect(
 			secp256r1.verify(
 				secp256r1.Signature.fromCompact(sig),
@@ -102,7 +103,7 @@ describe('secp256r1-keypair', () => {
 		const signData = new TextEncoder().encode('Hello, world!');
 
 		const msgHash = sha256(signData);
-		const sig = keypair.signData(signData);
+		const sig = await keypair.sign(signData);
 
 		// Assert the signature is the same as the rust implementation.
 		expect(Buffer.from(sig).toString('hex')).toEqual(
@@ -135,8 +136,8 @@ describe('secp256r1-keypair', () => {
 			expect(kp.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Exported keypair matches the Bech32 encoded secret key.
-			const exported = kp.export();
-			expect(exported.privateKey).toEqual(t[1]);
+			const exported = kp.getSecretKey();
+			expect(exported).toEqual(t[1]);
 		}
 	});
 
@@ -152,28 +153,33 @@ describe('secp256r1-keypair', () => {
 		}).toThrow('Invalid derivation path');
 	});
 
-	it('signs TransactionBlocks', async () => {
+	it('signs Transactions', async () => {
 		const keypair = new Secp256r1Keypair();
-		const txb = new TransactionBlock();
-		txb.setSender(keypair.getPublicKey().toHexAddress());
-		txb.setGasPrice(5);
-		txb.setGasBudget(100);
-		txb.setGasPayment([
+		const tx = new Transaction();
+		tx.setSender(keypair.getPublicKey().toHexAddress());
+		tx.setGasPrice(5);
+		tx.setGasBudget(100);
+		tx.setGasPayment([
 			{
 				objectId: (Math.random() * 100000).toFixed(0).padEnd(64, '0'),
 				version: String((Math.random() * 10000).toFixed(0)),
-				digest: toB58(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])),
+				digest: toBase58(
+					new Uint8Array([
+						0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+						9, 1, 2,
+					]),
+				),
 			},
 		]);
 
-		const bytes = await txb.build();
+		const bytes = await tx.build();
 
-		const serializedSignature = (await keypair.signTransactionBlock(bytes)).signature;
+		const serializedSignature = (await keypair.signTransaction(bytes)).signature;
 
-		expect(await keypair.getPublicKey().verifyTransactionBlock(bytes, serializedSignature)).toEqual(
+		expect(await keypair.getPublicKey().verifyTransaction(bytes, serializedSignature)).toEqual(
 			true,
 		);
-		expect(!!(await verifyTransactionBlock(bytes, serializedSignature))).toEqual(true);
+		expect(!!(await verifyTransactionSignature(bytes, serializedSignature))).toEqual(true);
 	});
 
 	it('signs PersonalMessages', async () => {
@@ -185,6 +191,6 @@ describe('secp256r1-keypair', () => {
 		expect(
 			await keypair.getPublicKey().verifyPersonalMessage(message, serializedSignature),
 		).toEqual(true);
-		expect(!!(await verifyPersonalMessage(message, serializedSignature))).toEqual(true);
+		expect(!!(await verifyPersonalMessageSignature(message, serializedSignature))).toEqual(true);
 	});
 });

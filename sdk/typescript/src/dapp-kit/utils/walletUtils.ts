@@ -4,32 +4,33 @@
 import { getWallets, isWalletWithRequiredFeatureSet } from '../../wallet-standard/index.js';
 import type {
 	MinimallyRequiredFeatures,
+	StandardConnectFeature,
+	StandardEventsFeature,
 	Wallet,
 	WalletWithFeatures,
+	WalletWithRequiredFeatures,
 } from '../../wallet-standard/index.js';
-
-export {} from '@wallet-standard/core'; // fix ts error
 
 export function getRegisteredWallets<AdditionalFeatures extends Wallet['features']>(
 	preferredWallets: string[],
-	requiredFeatures?: (keyof AdditionalFeatures)[],
-) {
+	walletFilter?: (wallet: WalletWithRequiredFeatures) => boolean,
+): WalletWithFeatures<StandardConnectFeature & StandardEventsFeature & AdditionalFeatures>[] {
 	const walletsApi = getWallets();
 	const wallets = walletsApi.get();
 
-	const benfenWallets = wallets.filter(
+	const bfcWallets = wallets.filter(
 		(wallet): wallet is WalletWithFeatures<MinimallyRequiredFeatures & AdditionalFeatures> =>
-			isWalletWithRequiredFeatureSet(wallet, requiredFeatures),
+			isWalletWithRequiredFeatureSet(wallet) && (!walletFilter || walletFilter(wallet)),
 	);
 
 	return [
 		// Preferred wallets, in order:
 		...(preferredWallets
-			.map((name) => benfenWallets.find((wallet) => wallet.name === name))
+			.map((name) => bfcWallets.find((wallet) => wallet.name === name))
 			.filter(Boolean) as WalletWithFeatures<MinimallyRequiredFeatures & AdditionalFeatures>[]),
 
 		// Wallets in default order:
-		...benfenWallets.filter((wallet) => !preferredWallets.includes(wallet.name)),
+		...bfcWallets.filter((wallet) => !preferredWallets.includes(wallet.name)),
 	];
 }
 

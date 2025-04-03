@@ -4,11 +4,11 @@
 import { blake2b } from '@noble/hashes/blake2b';
 import { bytesToHex } from '@noble/hashes/utils';
 
-import { bcs } from '../bcs/index.js';
-import { toB64 } from '../bcs/src/index.js';
+import { bcs, fromBase64, toBase64 } from '../bcs/index.js';
 import { BENFEN_ADDRESS_LENGTH, normalizeHexAddress } from '../utils/bf-types.js';
-import type { SerializedSignature } from './index.js';
-import { IntentScope, messageWithIntent } from './intent.js';
+import type { IntentScope } from './intent.js';
+import { messageWithIntent } from './intent.js';
+import { SIGNATURE_FLAG_TO_SCHEME, SIGNATURE_SCHEME_TO_SIZE } from './signature-scheme.js';
 
 /**
  * Value to be converted into public key.
@@ -45,7 +45,7 @@ export abstract class PublicKey {
 	 * Return the base-64 representation of the public key
 	 */
 	toBase64() {
-		return toB64(this.toRawBytes());
+		return toBase64(this.toRawBytes());
 	}
 
 	toString(): never {
@@ -54,19 +54,14 @@ export abstract class PublicKey {
 		);
 	}
 
-	/**
-	 * Return the Benfen representation of the public key encoded in
-	 * base-64. A Benfen public key is formed by the concatenation
-	 * of the scheme flag with the raw bytes of the public key
-	 */
 	toBenfenPublicKey(): string {
 		const bytes = this.toBenfenBytes();
-		return toB64(bytes);
+		return toBase64(bytes);
 	}
 
 	verifyWithIntent(
 		bytes: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
+		signature: Uint8Array | string,
 		intent: IntentScope,
 	): Promise<boolean> {
 		const intentMessage = messageWithIntent(intent, bytes);
@@ -78,25 +73,26 @@ export abstract class PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided PersonalMessage
 	 */
-	verifyPersonalMessage(
-		message: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
-	): Promise<boolean> {
+	verifyPersonalMessage(message: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
 		return this.verifyWithIntent(
 			bcs.vector(bcs.u8()).serialize(message).toBytes(),
 			signature,
-			IntentScope.PersonalMessage,
+			'PersonalMessage',
 		);
 	}
 
 	/**
-	 * Verifies that the signature is valid for for the provided TransactionBlock
+	 * Verifies that the signature is valid for for the provided Transaction
 	 */
-	verifyTransactionBlock(
-		transactionBlock: Uint8Array,
-		signature: Uint8Array | SerializedSignature,
-	): Promise<boolean> {
-		return this.verifyWithIntent(transactionBlock, signature, IntentScope.TransactionData);
+	verifyTransaction(transaction: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
+		return this.verifyWithIntent(transaction, signature, 'TransactionData');
+	}
+
+	/**
+	 * Verifies that the public key is associated with the provided address
+	 */
+	verifyAddress(address: string): boolean {
+		return this.toHexAddress() === address;
 	}
 
 	/**
@@ -135,5 +131,32 @@ export abstract class PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided message
 	 */
-	abstract verify(data: Uint8Array, signature: Uint8Array | SerializedSignature): Promise<boolean>;
+	abstract verify(data: Uint8Array, signature: Uint8Array | string): Promise<boolean>;
+}
+
+export function parseSerializedKeypairSignature(serializedSignature: string) {
+	const bytes = fromBase64(serializedSignature);
+
+	const signatureScheme =
+		SIGNATURE_FLAG_TO_SCHEME[bytes[0] as keyof typeof SIGNATURE_FLAG_TO_SCHEME];
+
+	switch (signatureScheme) {
+		case 'ED25519':
+		case 'Secp256k1':
+		case 'Secp256r1':
+			const size =
+				SIGNATURE_SCHEME_TO_SIZE[signatureScheme as keyof typeof SIGNATURE_SCHEME_TO_SIZE];
+			const signature = bytes.slice(1, bytes.length - size);
+			const publicKey = bytes.slice(1 + signature.length);
+
+			return {
+				serializedSignature,
+				signatureScheme,
+				signature,
+				publicKey,
+				bytes,
+			};
+		default:
+			throw new Error('Unsupported signature scheme');
+	}
 }

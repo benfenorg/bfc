@@ -1,10 +1,41 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
+import { blake2b } from '@noble/hashes/blake2b';
+import { bytesToHex } from '@noble/hashes/utils';
 import { decodeJwt } from 'jose';
 
-import { computeZkLoginAddressFromSeed } from './helper/address.js';
-import { genAddressSeed } from './utils.js';
+import { SIGNATURE_SCHEME_TO_FLAG } from '../cryptography/signature-scheme.js';
+import { BENFEN_ADDRESS_LENGTH, normalizeHexAddress } from '../utils/bf-types.js';
+import {
+	genAddressSeed,
+	normalizeZkLoginIssuer,
+	toBigEndianBytes,
+	toPaddedBigEndianBytes,
+} from './utils.js';
+
+export function computeZkLoginAddressFromSeed(
+	addressSeed: bigint,
+	iss: string,
+	/** TODO: This default should be changed in the next major release */
+	legacyAddress = true,
+) {
+	const addressSeedBytesBigEndian = legacyAddress
+		? toBigEndianBytes(addressSeed, 32)
+		: toPaddedBigEndianBytes(addressSeed, 32);
+
+	const addressParamBytes = new TextEncoder().encode(normalizeZkLoginIssuer(iss));
+	const tmp = new Uint8Array(2 + addressSeedBytesBigEndian.length + addressParamBytes.length);
+
+	tmp.set([SIGNATURE_SCHEME_TO_FLAG.ZkLogin]);
+	tmp.set([addressParamBytes.length], 1);
+	tmp.set(addressParamBytes, 2);
+	tmp.set(addressSeedBytesBigEndian, 2 + addressParamBytes.length);
+
+	return normalizeHexAddress(
+		bytesToHex(blake2b(tmp, { dkLen: 32 })).slice(0, BENFEN_ADDRESS_LENGTH * 2),
+	);
+}
 
 export const MAX_HEADER_LEN_B64 = 248;
 export const MAX_PADDED_UNSIGNED_JWT_LEN = 64 * 25;

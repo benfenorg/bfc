@@ -2,13 +2,13 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import type {
-	BenfenCallArg,
-	BenfenMoveNormalizedModule,
-	BenfenParsedData,
-	BenfenTransaction,
-	BenfenValidatorSummary,
 	Checkpoint,
 	DynamicFieldInfo,
+	SuiCallArg,
+	SuiMoveNormalizedModule,
+	SuiParsedData,
+	SuiTransaction,
+	SuiValidatorSummary,
 } from './generated.js';
 
 export type ResolvedNameServiceNames = {
@@ -19,7 +19,7 @@ export type ResolvedNameServiceNames = {
 
 export type EpochInfo = {
 	epoch: string;
-	validators: BenfenValidatorSummary[];
+	validators: SuiValidatorSummary[];
 	epochTotalTransactions: string;
 	firstCheckpointId: string;
 	epochStartTimestamp: string;
@@ -111,12 +111,12 @@ export type DynamicFieldPage = {
 	hasNextPage: boolean;
 };
 
-export type BenfenMoveNormalizedModules = Record<string, BenfenMoveNormalizedModule>;
+export type SuiMoveNormalizedModules = Record<string, SuiMoveNormalizedModule>;
 
-export type BenfenMoveObject = Extract<BenfenParsedData, { dataType: 'moveObject' }>;
-export type BenfenMovePackage = Extract<BenfenParsedData, { dataType: 'package' }>;
+export type SuiMoveObject = Extract<SuiParsedData, { dataType: 'moveObject' }>;
+export type SuiMovePackage = Extract<SuiParsedData, { dataType: 'package' }>;
 
 export type ProgrammableTransaction = {
-	transactions: BenfenTransaction[];
-	inputs: BenfenCallArg[];
+	transactions: SuiTransaction[];
+	inputs: SuiCallArg[];
 };

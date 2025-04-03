@@ -8,8 +8,7 @@ import {
 	WalletFeatureNotSupportedError,
 	WalletNotConnectedError,
 } from '../../errors/walletErrors.js';
-import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
-import { useSignPersonalMessage } from '../../hooks/wallet/useSignPersonalMessage.js';
+import { useConnectWallet, useSignPersonalMessage } from '../../index.js';
 import { benfenFeatures, signMessageFeature } from '../mocks/mockFeatures.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 

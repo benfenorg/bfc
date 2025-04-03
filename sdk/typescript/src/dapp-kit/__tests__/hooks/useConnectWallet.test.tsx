@@ -4,10 +4,7 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import type { Mock } from 'vitest';
 
-import { useAccounts } from '../../hooks/wallet/useAccounts.js';
-import { useConnectWallet } from '../../hooks/wallet/useConnectWallet.js';
-import { useCurrentAccount } from '../../hooks/wallet/useCurrentAccount.js';
-import { useCurrentWallet } from '../../hooks/wallet/useCurrentWallet.js';
+import { useAccounts, useConnectWallet, useCurrentAccount, useCurrentWallet } from '../../index.js';
 import { createMockAccount } from '../mocks/mockAccount.js';
 import { createWalletProviderContextWrapper, registerMockWallet } from '../test-utils.js';
 
@@ -70,7 +67,7 @@ describe('useConnectWallet', () => {
 		});
 	});
 
-	test('only Bfc accounts from multi-chain wallets are connected', async () => {
+	test('only Benfen accounts from multi-chain wallets are connected', async () => {
 		const { unregister, mockWallet } = registerMockWallet({
 			walletName: 'Mock Wallet 1',
 			accounts: [createMockAccount(), createMockAccount({ chains: ['solana:mainnet'] })],

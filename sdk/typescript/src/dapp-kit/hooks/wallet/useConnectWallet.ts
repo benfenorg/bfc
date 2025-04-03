@@ -55,7 +55,12 @@ export function useConnectWallet({
 				);
 				const selectedAccount = getSelectedAccount(connectedBenfenAccounts, accountAddress);
 
-				setWalletConnected(wallet, connectedBenfenAccounts, selectedAccount);
+				setWalletConnected(
+					wallet,
+					connectedBenfenAccounts,
+					selectedAccount,
+					connectResult.supportedIntents,
+				);
 
 				return { accounts: connectedBenfenAccounts };
 			} catch (error) {

@@ -4,10 +4,10 @@
 import EventEmitter from 'node:events';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BenfenHTTPTransport } from '../../../src/client';
+import { BenfenHTTPTransport } from '../../../src/client/http-transport';
 import { PACKAGE_VERSION, TARGETED_RPC_VERSION } from '../../../src/version';
 
-describe('BenfenHTTPTransport', () => {
+describe('SuiHTTPTransport', () => {
 	describe('rpc requests', () => {
 		const mockResult = { data: 123 };
 		let requestId = 0;
@@ -62,6 +62,7 @@ describe('BenfenHTTPTransport', () => {
 					'Client-Sdk-Type': 'typescript',
 					'Client-Sdk-Version': PACKAGE_VERSION,
 					'Client-Target-Api-Version': TARGETED_RPC_VERSION,
+					'Client-Request-Method': 'getAllBalances',
 				},
 				method: 'POST',
 			});
@@ -210,7 +211,7 @@ describe('BenfenHTTPTransport', () => {
 			expect(onMessage).toHaveBeenCalledTimes(0);
 			socket1.emit('close');
 
-			await new Promise((resolve) => setTimeout(resolve, 20));
+			await new Promise((resolve) => setTimeout(resolve, 100));
 
 			expect(socket1.close).toHaveBeenCalled();
 			expect(sockets.length).toEqual(2);

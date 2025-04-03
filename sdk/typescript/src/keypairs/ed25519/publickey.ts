@@ -1,14 +1,16 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import nacl from 'tweetnacl';
+import { ed25519 } from '@noble/curves/ed25519';
 
-import { fromB64 } from '../../bcs/src/index.js';
+import { fromBase64 } from '../../bcs/index.js';
+import {
+	bytesEqual,
+	parseSerializedKeypairSignature,
+	PublicKey,
+} from '../../cryptography/publickey.js';
 import type { PublicKeyInitData } from '../../cryptography/publickey.js';
-import { bytesEqual, PublicKey } from '../../cryptography/publickey.js';
 import { SIGNATURE_SCHEME_TO_FLAG } from '../../cryptography/signature-scheme.js';
-import type { SerializedSignature } from '../../cryptography/signature.js';
-import { parseSerializedSignature } from '../../cryptography/signature.js';
 
 const PUBLIC_KEY_SIZE = 32;
 
@@ -27,7 +29,7 @@ export class Ed25519PublicKey extends PublicKey {
 		super();
 
 		if (typeof value === 'string') {
-			this.data = fromB64(value);
+			this.data = fromBase64(value);
 		} else if (value instanceof Uint8Array) {
 			this.data = value;
 		} else {
@@ -65,10 +67,10 @@ export class Ed25519PublicKey extends PublicKey {
 	/**
 	 * Verifies that the signature is valid for for the provided message
 	 */
-	async verify(message: Uint8Array, signature: Uint8Array | SerializedSignature): Promise<boolean> {
+	async verify(message: Uint8Array, signature: Uint8Array | string): Promise<boolean> {
 		let bytes;
 		if (typeof signature === 'string') {
-			const parsed = parseSerializedSignature(signature);
+			const parsed = parseSerializedKeypairSignature(signature);
 			if (parsed.signatureScheme !== 'ED25519') {
 				throw new Error('Invalid signature scheme');
 			}
@@ -82,6 +84,6 @@ export class Ed25519PublicKey extends PublicKey {
 			bytes = signature;
 		}
 
-		return nacl.sign.detached.verify(message, bytes, this.toRawBytes());
+		return ed25519.verify(bytes, message, this.toRawBytes());
 	}
 }

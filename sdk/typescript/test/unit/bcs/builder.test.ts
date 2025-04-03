@@ -3,7 +3,9 @@
 
 import { describe, expect, test } from 'vitest';
 
-import { bcs, BcsReader, BcsType, BcsWriter, toB58, toB64, toHEX } from '../../../src/bcs/index.js';
+import { bcs } from '../../../src/bcs/src/bcs';
+import { BcsType } from '../../../src/bcs/src/bcs-type.js';
+import { BcsReader, BcsWriter, toBase58, toBase64, toHex } from '../../../src/bcs/src/index';
 
 describe('bcs', () => {
 	describe('base types', () => {
@@ -164,6 +166,10 @@ describe('bcs', () => {
 		testType('bytes', bcs.bytes(4), new Uint8Array([1, 2, 3, 4]), '01020304');
 	});
 
+	describe('byteVector', () => {
+		testType('byteVector', bcs.byteVector(), new Uint8Array([1, 2, 3]), '03010203');
+	});
+
 	describe('tuples', () => {
 		testType('tuple(u8, u8)', bcs.tuple([bcs.u8(), bcs.u8()]), [1, 2], '0102');
 		testType(
@@ -240,9 +246,37 @@ describe('bcs', () => {
 			Variant2: bcs.string(),
 		});
 
-		testType('Enum::Variant0(1)', E, { Variant0: 1 }, '000100');
-		testType('Enum::Variant1(1)', E, { Variant1: 1 }, '0101');
-		testType('Enum::Variant2("hello")', E, { Variant2: 'hello' }, '020568656c6c6f');
+		testType('Enum::Variant0(1)', E, { Variant0: 1 }, '000100', { $kind: 'Variant0', Variant0: 1 });
+		testType('Enum::Variant1(1)', E, { Variant1: 1 }, '0101', { $kind: 'Variant1', Variant1: 1 });
+		testType('Enum::Variant2("hello")', E, { Variant2: 'hello' }, '020568656c6c6f', {
+			$kind: 'Variant2',
+			Variant2: 'hello',
+		});
+	});
+
+	describe('transform', () => {
+		const stringU8 = bcs.u8().transform({
+			input: (val: string) => parseInt(val),
+			output: (val) => val.toString(),
+		});
+
+		testType('transform', stringU8, '1', '01', '1');
+
+		// Output only
+		const bigIntu64 = bcs.u64().transform({
+			output: (val) => BigInt(val),
+		});
+
+		testType('transform', bigIntu64, '1', '0100000000000000', 1n);
+		testType('transform', bigIntu64, 1, '0100000000000000', 1n);
+		testType('transform', bigIntu64, 1n, '0100000000000000', 1n);
+
+		// Input only
+		const hexU8 = bcs.u8().transform({
+			input: (val: string) => Number.parseInt(val, 16),
+		});
+
+		testType('transform', hexU8, 'ff', 'ff', 255);
 	});
 });
 
@@ -256,19 +290,20 @@ function testType<T, Input>(
 	test(name, () => {
 		const serialized = schema.serialize(value);
 		const bytes = serialized.toBytes();
-		expect(toHEX(bytes)).toBe(hex);
+		expect(toHex(bytes)).toBe(hex);
 		expect(serialized.toHex()).toBe(hex);
-		expect(serialized.toBase64()).toBe(toB64(bytes));
-		expect(serialized.toBase58()).toBe(toB58(bytes));
+		expect(serialized.toBase64()).toBe(toBase64(bytes));
+		expect(serialized.toBase58()).toBe(toBase58(bytes));
 
 		const deserialized = schema.parse(bytes);
 		expect(deserialized).toEqual(expected);
 
-		const writer = new BcsWriter({ size: bytes.length });
+		const writer = new BcsWriter({ initialSize: bytes.length });
 		schema.write(value, writer);
-		expect(toHEX(writer.toBytes())).toBe(hex);
+		expect(toHex(writer.toBytes())).toBe(hex);
 
 		const reader = new BcsReader(bytes);
+
 		expect(schema.read(reader)).toEqual(expected);
 	});
 }

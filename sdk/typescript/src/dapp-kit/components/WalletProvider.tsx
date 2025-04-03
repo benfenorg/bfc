@@ -11,9 +11,9 @@ import type {
 } from '../../wallet-standard/index.js';
 import {
 	DEFAULT_PREFERRED_WALLETS,
-	DEFAULT_REQUIRED_FEATURES,
 	DEFAULT_STORAGE,
 	DEFAULT_STORAGE_KEY,
+	DEFAULT_WALLET_FILTER,
 } from '../constants/walletDefaults.js';
 import { WalletContext } from '../contexts/walletContext.js';
 import { useAutoConnectWallet } from '../hooks/wallet/useAutoConnectWallet.js';
@@ -27,8 +27,11 @@ export type WalletProviderProps = {
 	/** A list of wallets that are sorted to the top of the wallet list, if they are available to connect to. By default, wallets are sorted by the order they are loaded in. */
 	preferredWallets?: string[];
 
-	/** A list of features that are required for the dApp to function. This filters the list of wallets presented to users when selecting a wallet to connect from, ensuring that only wallets that meet the dApps requirements can connect. */
-	requiredFeatures?: (keyof WalletWithRequiredFeatures['features'])[];
+	/** A filter function to select wallets that support features required for the dApp to function. This filters the list of wallets presented to users when selecting a wallet to connect from, ensuring that only wallets that meet the dApps requirements can connect. */
+	walletFilter?: (wallet: WalletWithRequiredFeatures) => boolean;
+
+	/** Enables the development-only unsafe burner wallet, which can be useful for testing. */
+	enableUnsafeBurner?: boolean;
 
 	/** Enables automatically reconnecting to the most recently used wallet account upon mounting. */
 	autoConnect?: boolean;
@@ -46,7 +49,7 @@ export type { WalletWithFeatures };
 
 export function WalletProvider({
 	preferredWallets = DEFAULT_PREFERRED_WALLETS,
-	requiredFeatures = DEFAULT_REQUIRED_FEATURES,
+	walletFilter = DEFAULT_WALLET_FILTER,
 	storage = DEFAULT_STORAGE,
 	storageKey = DEFAULT_STORAGE_KEY,
 	autoConnect = false,
@@ -55,7 +58,7 @@ export function WalletProvider({
 	const storeRef = useRef(
 		createWalletStore({
 			autoConnectEnabled: autoConnect,
-			wallets: getRegisteredWallets(preferredWallets, requiredFeatures),
+			wallets: getRegisteredWallets(preferredWallets, walletFilter),
 			storage: storage || createInMemoryStore(),
 			storageKey,
 		}),
@@ -63,10 +66,8 @@ export function WalletProvider({
 
 	return (
 		<WalletContext.Provider value={storeRef.current}>
-			<WalletConnectionManager
-				preferredWallets={preferredWallets}
-				requiredFeatures={requiredFeatures}
-			>
+			<WalletConnectionManager preferredWallets={preferredWallets} walletFilter={walletFilter}>
+				{/* TODO: We ideally don't want to inject styles if people aren't using the UI components */}
 				{children}
 			</WalletConnectionManager>
 		</WalletContext.Provider>
@@ -75,15 +76,15 @@ export function WalletProvider({
 
 type WalletConnectionManagerProps = Pick<
 	WalletProviderProps,
-	'preferredWallets' | 'requiredFeatures' | 'children'
+	'preferredWallets' | 'walletFilter' | 'children'
 >;
 
 function WalletConnectionManager({
 	preferredWallets = DEFAULT_PREFERRED_WALLETS,
-	requiredFeatures = DEFAULT_REQUIRED_FEATURES,
+	walletFilter = DEFAULT_WALLET_FILTER,
 	children,
 }: WalletConnectionManagerProps) {
-	useWalletsChanged(preferredWallets, requiredFeatures);
+	useWalletsChanged(preferredWallets, walletFilter);
 	useWalletPropertiesChanged();
 	useAutoConnectWallet();
 

@@ -40,7 +40,7 @@ describe('String type guards', () => {
 			);
 		});
 
-		it('rejects hex strings of the wrong format', () => {
+		it('rejects hex strings of the wrong length', () => {
 			expectAll(
 				[
 					'5f713bef531629b47dd1bdbb382a',

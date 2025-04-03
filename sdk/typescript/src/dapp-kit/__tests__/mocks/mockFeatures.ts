@@ -1,6 +1,5 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
-import { vi } from 'vitest';
 
 import type {
 	BenfenFeatures,
@@ -32,9 +31,21 @@ export const benfenFeatures: BenfenFeatures = {
 		version: '1.0.0',
 		signTransactionBlock: vi.fn(),
 	},
+	'bfc:signTransaction': {
+		version: '2.0.0',
+		signTransaction: vi.fn(),
+	},
 	'bfc:signAndExecuteTransactionBlock': {
 		version: '1.0.0',
 		signAndExecuteTransactionBlock: vi.fn(),
+	},
+	'bfc:signAndExecuteTransaction': {
+		version: '2.0.0',
+		signAndExecuteTransaction: vi.fn(),
+	},
+	'bfc:reportTransactionEffects': {
+		version: '1.0.0',
+		reportTransactionEffects: vi.fn(),
 	},
 	'bfc:switchChain': {
 		version: '1.0.0',

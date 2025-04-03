@@ -77,7 +77,7 @@ export function BenfenClientProvider<T extends NetworkConfigs>(
 			networks,
 			network: currentNetwork,
 			config:
-				(networks[currentNetwork] as any) instanceof BenfenClient
+				networks[currentNetwork] instanceof BenfenClient
 					? null
 					: (networks[currentNetwork] as BenfenClientOptions),
 			selectNetwork: (newNetwork) => {

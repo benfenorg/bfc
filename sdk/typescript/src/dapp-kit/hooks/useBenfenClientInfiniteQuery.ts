@@ -35,7 +35,7 @@ export type BenfenRpcPaginatedMethods = {
 				result: Result;
 				params: Params;
 				cursor: Cursor;
-		  }
+			}
 		: never;
 };
 

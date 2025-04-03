@@ -16,7 +16,7 @@ export * from './hooks/wallet/useConnectWallet.js';
 export * from './hooks/wallet/useCurrentAccount.js';
 export * from './hooks/wallet/useCurrentWallet.js';
 export * from './hooks/wallet/useDisconnectWallet.js';
-export * from './hooks/wallet/useSignAndExecuteTransactionBlock.js';
+export * from './hooks/wallet/useSignAndExecuteTransaction.js';
 export * from './hooks/wallet/useSignPersonalMessage.js';
 export * from './hooks/wallet/useSignTransactionBlock.js';
 export * from './hooks/wallet/useSwitchAccount.js';

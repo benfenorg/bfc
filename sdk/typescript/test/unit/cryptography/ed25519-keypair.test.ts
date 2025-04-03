@@ -1,14 +1,14 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-import nacl from 'tweetnacl';
+import { ed25519 } from '@noble/curves/ed25519';
 import { describe, expect, it } from 'vitest';
 
-import { fromB64, toB58 } from '../../../src/bcs/index.js';
+import { fromBase64, toBase58 } from '../../../src/bcs/index';
 import { decodeBenfenPrivateKey } from '../../../src/cryptography/keypair';
 import { Ed25519Keypair } from '../../../src/keypairs/ed25519';
-import { TransactionBlock } from '../../../src/transactions';
-import { verifyPersonalMessage, verifyTransactionBlock } from '../../../src/verify';
+import { Transaction } from '../../../src/transactions';
+import { verifyPersonalMessageSignature, verifyTransactionSignature } from '../../../src/verify';
 
 const VALID_SECRET_KEY = 'mdqVWeFekT7pqy5T49+tV12jO0m+ESW7ki4zSU9JiCg=';
 const PRIVATE_KEY_SIZE = 32;
@@ -16,18 +16,18 @@ const PRIVATE_KEY_SIZE = 32;
 const TEST_CASES = [
 	[
 		'film crazy soon outside stand loop subway crumble thrive popular green nuclear struggle pistol arm wife phrase warfare march wheat nephew ask sunny firm',
-		'benfenprivkey1qrwsjvr6gwaxmsvxk4cfun99ra8uwxg3c9pl0nhle7xxpe4s80y05aa3d3x',
-		'0xa2d14fad60c56049ecf75246a481934691214ce413e6a8ae2fe6834c173a6133',
+		'benfenprivkey1qzegvtc9nef88shvuj2q9ea6ph42sdyulhvp9sfx69ty88kww2r6utu2ny5',
+		'0xf9ccb37c04af5fa8f57cce6048a0b41eaf01b9301eef2414f64c0cdf2c9a380a',
 	],
 	[
 		'require decline left thought grid priority false tiny gasp angle royal system attack beef setup reward aunt skill wasp tray vital bounce inflict level',
-		'benfenprivkey1qzdvpa77ct272ultqcy20dkw78dysnfyg90fhcxkdm60el0qht9mv8fucah',
-		'0x1ada6e6f3f3e4055096f606c746690f1108fcc2ca479055cc434a3e1d3f758aa',
+		'benfenprivkey1qzexllxh33475x9ql59x9e60l508s6x5hwvy0s3frhm34zwyc5ysj2p3de3',
+		'0x641936c763d8ad9de3657bb7e056b71fbfbb271bd333421b5bebebfe9fcb339f',
 	],
 	[
 		'organ crash swim stick traffic remember army arctic mesh slice swear summer police vast chaos cradle squirrel hood useless evidence pet hub soap lake',
-		'benfenprivkey1qqqscjyyr64jea849dfv9cukurqj2swx0m3rr4hr7sw955jy07tzgam4m5w',
-		'0xe69e896ca10f5a77732769803cc2b5707f0ab9d4407afb5e4b4464b89769af14',
+		'benfenprivkey1qr4r2sjlz94u2cg8umsvpsycxku2p9lf3qrw39ch8j2hagndutz7wzzt84c',
+		'0x1dc138927fb296136882fdc730a3976da09663223302a783032c2391ee99d004',
 	],
 ];
 
@@ -39,7 +39,7 @@ describe('ed25519-keypair', () => {
 	});
 
 	it('create keypair from secret key', () => {
-		const secretKey = fromB64(VALID_SECRET_KEY);
+		const secretKey = fromBase64(VALID_SECRET_KEY);
 		const keypair = Ed25519Keypair.fromSecretKey(secretKey);
 		expect(keypair.getPublicKey().toBase64()).toEqual(
 			'Gy9JCW4+Xb0Pz6nAwM2S2as7IVRLNNXdSmXZi4eLmSI=',
@@ -58,8 +58,8 @@ describe('ed25519-keypair', () => {
 			expect(kp.getPublicKey().toHexAddress()).toEqual(t[2]);
 
 			// Exported keypair matches the Bech32 encoded secret key.
-			const exported = kp.export();
-			expect(exported.privateKey).toEqual(t[1]);
+			const exported = kp.getSecretKey();
+			expect(exported).toEqual(t[1]);
 		}
 	});
 
@@ -70,29 +70,21 @@ describe('ed25519-keypair', () => {
 		);
 	});
 
-	it('signature of data is valid', () => {
+	it('signature of data is valid', async () => {
 		const keypair = new Ed25519Keypair();
 		const signData = new TextEncoder().encode('hello world');
-		const signature = keypair.signData(signData);
-		const isValid = nacl.sign.detached.verify(
-			signData,
-			signature,
-			keypair.getPublicKey().toRawBytes(),
-		);
+		const signature = await keypair.sign(signData);
+		const isValid = ed25519.verify(signature, signData, keypair.getPublicKey().toRawBytes());
 		expect(isValid).toBeTruthy();
 		expect(keypair.getPublicKey().verify(signData, signature));
 	});
 
-	it('incorrect coin type node for ed25519 derivation path', () => {
+	it('incorrect coin type node for ed25519 derivation path', async () => {
 		const keypair = Ed25519Keypair.deriveKeypair(TEST_CASES[0][0], `m/44'/728'/0'/0'/0'`);
 
 		const signData = new TextEncoder().encode('hello world');
-		const signature = keypair.signData(signData);
-		const isValid = nacl.sign.detached.verify(
-			signData,
-			signature,
-			keypair.getPublicKey().toRawBytes(),
-		);
+		const signature = await keypair.sign(signData);
+		const isValid = ed25519.verify(signature, signData, keypair.getPublicKey().toRawBytes());
 		expect(isValid).toBeTruthy();
 	});
 
@@ -114,31 +106,36 @@ describe('ed25519-keypair', () => {
 		}).toThrow('Invalid mnemonic');
 	});
 
-	it('signs TransactionBlocks', async () => {
+	it('signs Transactions', async () => {
 		const keypair = new Ed25519Keypair();
-		const txb = new TransactionBlock();
-		txb.setSender(keypair.getPublicKey().toHexAddress());
-		txb.setGasPrice(5);
-		txb.setGasBudget(100);
-		txb.setGasPayment([
+		const tx = new Transaction();
+		tx.setSender(keypair.getPublicKey().toHexAddress());
+		tx.setGasPrice(5);
+		tx.setGasBudget(100);
+		tx.setGasPayment([
 			{
 				objectId: (Math.random() * 100000).toFixed(0).padEnd(64, '0'),
 				version: String((Math.random() * 10000).toFixed(0)),
-				digest: toB58(new Uint8Array([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9])),
+				digest: toBase58(
+					new Uint8Array([
+						0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8,
+						9, 1, 2,
+					]),
+				),
 			},
 		]);
 
-		const bytes = await txb.build();
+		const bytes = await tx.build();
 
-		const serializedSignature = (await keypair.signTransactionBlock(bytes)).signature;
+		const serializedSignature = (await keypair.signTransaction(bytes)).signature;
 
-		expect(await keypair.getPublicKey().verifyTransactionBlock(bytes, serializedSignature)).toEqual(
+		expect(await keypair.getPublicKey().verifyTransaction(bytes, serializedSignature)).toEqual(
 			true,
 		);
-		expect(await keypair.getPublicKey().verifyTransactionBlock(bytes, serializedSignature)).toEqual(
+		expect(await keypair.getPublicKey().verifyTransaction(bytes, serializedSignature)).toEqual(
 			true,
 		);
-		expect(!!(await verifyTransactionBlock(bytes, serializedSignature))).toEqual(true);
+		expect(!!(await verifyTransactionSignature(bytes, serializedSignature))).toEqual(true);
 	});
 
 	it('signs PersonalMessages', async () => {
@@ -153,6 +150,6 @@ describe('ed25519-keypair', () => {
 		expect(
 			await keypair.getPublicKey().verifyPersonalMessage(message, serializedSignature),
 		).toEqual(true);
-		expect(!!(await verifyPersonalMessage(message, serializedSignature))).toEqual(true);
+		expect(!!(await verifyPersonalMessageSignature(message, serializedSignature))).toEqual(true);
 	});
 });

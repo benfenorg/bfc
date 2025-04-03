@@ -11,7 +11,7 @@ import { WebsocketClient } from './rpc-websocket-client.js';
  */
 export type HttpHeaders = { [header: string]: string };
 
-interface BenfenHTTPTransportOptions {
+export interface BenfenHTTPTransportOptions {
 	fetch?: typeof fetch;
 	WebSocketConstructor?: typeof WebSocket;
 	url: string;
@@ -55,20 +55,20 @@ export class BenfenHTTPTransport implements BenfenTransport {
 	}
 
 	fetch(input: RequestInfo, init?: RequestInit): Promise<Response> {
-		const fetch = this.#options.fetch ?? globalThis.fetch;
+		const fetchFn = this.#options.fetch ?? fetch;
 
-		if (!fetch) {
+		if (!fetchFn) {
 			throw new Error(
 				'The current environment does not support fetch, you can provide a fetch implementation in the options for BenfenHTTPTransport.',
 			);
 		}
 
-		return fetch(input, init);
+		return fetchFn(input, init);
 	}
 
 	#getWebsocketClient(): WebsocketClient {
 		if (!this.#websocketClient) {
-			const WebSocketConstructor = this.#options.WebSocketConstructor ?? globalThis.WebSocket;
+			const WebSocketConstructor = this.#options.WebSocketConstructor ?? WebSocket;
 			if (!WebSocketConstructor) {
 				throw new Error(
 					'The current environment does not support WebSocket, you can provide a WebSocketConstructor in the options for BenfenHTTPTransport.',
@@ -97,6 +97,7 @@ export class BenfenHTTPTransport implements BenfenTransport {
 				'Client-Sdk-Type': 'typescript',
 				'Client-Sdk-Version': PACKAGE_VERSION,
 				'Client-Target-Api-Version': TARGETED_RPC_VERSION,
+				'Client-Request-Method': input.method,
 				...this.#options.rpc?.headers,
 			},
 			body: JSON.stringify({
