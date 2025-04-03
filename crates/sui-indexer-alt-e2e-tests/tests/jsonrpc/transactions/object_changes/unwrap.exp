@@ -35,7 +35,7 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "5WLrr7vDuYMU1i4qBfXcEYrGLzyNUwM8ToU7modNoA81",
+    "digest": "32XCmFfRgoiB6XTdfnQ5PUXzb5rFFsZEjJyrLzQSrLse",
     "objectChanges": [
       {
         "type": "mutated",
@@ -43,11 +43,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFCa44c016594d73d678c6dd13ee8603d1cbcf71c2767cafcbd41e7f18e71e0da61acf3",
+        "objectType": "0x0a26ef5ccfaf7650e2358936a683f166d8e46efd16aad44e8894756dccc2609e::M::O",
+        "objectId": "BFC5c39c74dfa21b997e0f21667861648293c1e783df2f894aa7bff62bdb6dc8ee1cac9",
         "version": "3",
         "previousVersion": "2",
-        "digest": "9DFQ5a3oKgeaLLzWs43rEAjpiwowx3ryJ9yJAupEnDqB"
+        "digest": "6z7McNZiqt4FSvq73eRgpcs8qWHde79EBEbcmDWUaoVy"
       },
       {
         "type": "mutated",
@@ -55,11 +55,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0xd3ef7aa49b3766f52d6575a3ada369e238605a218c45449106fb10db53ff0e4d::M::O",
-        "objectId": "BFCcc0908e909143a8050cca8369c98b5e8c6ddc0a69e4688f4cd76911854ff1e1b0d64",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFC6156426cbfdc37ea964031e97d3e76145a5e8ba8a1c94ffac49d1816bd4ea867196e",
         "version": "3",
         "previousVersion": "2",
-        "digest": "8TuLfdmUxfUWNf5Gp4rpob7caHNdKRNAmzoF5XZ1g3QA"
+        "digest": "6xnsv95TWtWLVGCUQ1ViGeo2nfCpKvpDgTRYjc3HfJpj"
       }
     ]
   }
