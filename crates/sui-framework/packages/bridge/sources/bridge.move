@@ -144,6 +144,8 @@ module bridge::bridge {
     const EUnauthorisedUpdateLimit: u64 = 40;
     const EInvalidMintAmount: u64 = 41;
 
+    const EInvalidMinStakeParticipationPercentage: u64 = 50;
+
     const CURRENT_VERSION: u64 = 1;
 
     public struct TokenTransferApproved has copy, drop {
@@ -286,6 +288,7 @@ module bridge::bridge {
     ) {
         assert!(ctx.sender() == @0x0, ENotSystemAddress);
         let inner = load_inner_mut(bridge);
+        assert!(min_stake_participation_percentage>=7500, EInvalidMinStakeParticipationPercentage);
         if (inner.committee.committee_members().is_empty()) {
             inner.committee.try_create_next_committee(
                 active_validator_voting_power,
