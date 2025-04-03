@@ -1,0 +1,32 @@
+// Copyright (c) Benfen
+// SPDX-License-Identifier: Apache-2.0
+
+import { SuiObjectDataOptions, SuiObjectResponse } from '@benfen/bfc.js/client';
+import { useBenfenClient } from '@benfen/bfc.js/dapp-kit';
+import { useQuery, UseQueryOptions } from '@tanstack/react-query';
+
+import { chunkArray } from '../utils/chunkArray';
+
+export function useMultiGetObjects(
+	ids: string[],
+	options: SuiObjectDataOptions,
+	queryOptions?: Omit<UseQueryOptions<SuiObjectResponse[]>, 'queryKey' | 'queryFn'>,
+) {
+	const client = useBenfenClient();
+	return useQuery({
+		...queryOptions,
+		queryKey: ['multiGetObjects', ids],
+		queryFn: async () => {
+			const responses = await Promise.all(
+				chunkArray(ids, 50).map((chunk) =>
+					client.multiGetObjects({
+						ids: chunk,
+						options,
+					}),
+				),
+			);
+			return responses.flat();
+		},
+		enabled: !!ids?.length,
+	});
+}

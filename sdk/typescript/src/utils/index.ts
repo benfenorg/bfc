@@ -1,7 +1,7 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
-export { formatAddress, formatDigest } from './format.js';
+export { formatAddress, formatDigest, hex2BfcAddress, bfc2HexAddress } from './format.js';
 export {
 	isValidBenfenAddress,
 	isValidBenfenObjectId,
