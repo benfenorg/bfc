@@ -34,6 +34,11 @@ pub type BridgeRecordDyanmicField = Field<
     LinkedTableNode<MoveTypeBridgeMessageKey, MoveTypeBridgeRecord>,
 >;
 
+pub type ExternalBridgeRecordDyanmicField = Field<
+    MoveTypeExternalBridgeMessageKey,
+    LinkedTableNode<MoveTypeExternalBridgeMessageKey, MoveTypeExternalBridgeRecord>,
+>;
+
 pub const BRIDGE_MODULE_NAME: &IdentStr = ident_str!("bridge");
 pub const BRIDGE_TREASURY_MODULE_NAME: &IdentStr = ident_str!("treasury");
 pub const BRIDGE_LIMITER_MODULE_NAME: &IdentStr = ident_str!("limiter");
@@ -65,6 +70,8 @@ pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI: u64 = 5001;
 pub const APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM: u64 = 5001;
 pub const APPROVAL_THRESHOLD_REFUND_ADMIN: u64 = 5001;
 pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN: u64 = 5001;
+pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS: u64 = 5001;
+pub const APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET: u64 = 5001;
 
 // const for initial token ids for convenience
 pub const TOKEN_ID_SUI: u64 = 0;
@@ -72,6 +79,7 @@ pub const TOKEN_ID_BTC: u64 = 1;
 pub const TOKEN_ID_ETH: u64 = 2;
 pub const TOKEN_ID_USDC: u64 = 3;
 pub const TOKEN_ID_USDT: u64 = 4;
+pub const TOKEN_ID_BUSD: u64 = 5;
 
 #[derive(
     Debug,
@@ -96,7 +104,7 @@ pub enum BridgeChainId {
     EthSepolia = 11,
     EthCustom = 12,
 
-    // benfen btc 
+    // benfen btc
     BtcMainnet = 20,
     BtcTestnet = 21,
 }
@@ -248,10 +256,12 @@ pub struct BridgeInnerV1 {
     pub treasury: MoveTypeBridgeTreasury,
     pub bridge_records: LinkedTable<MoveTypeBridgeMessageKey>,
     pub external_bridge_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
+    pub pre_deposit_multi_signature_records: LinkedTable<MoveTypeExternalBridgeMessageKey>,
     pub limiter: MoveTypeBridgeTransferLimiter,
     pub frozen: bool,
     pub refund_records: LinkedTable<MoveTypeRefundMessageKey>,
     pub refund_admins: VecSet<String>,
+    // pub bfc_system_id: UID,
 }
 
 impl BridgeTrait for BridgeInnerV1 {
@@ -307,6 +317,15 @@ impl BridgeTrait for BridgeInnerV1 {
                 Ok((source, destination, e.value))
             })
             .collect::<SuiResult<Vec<_>>>()?;
+
+        let external_coin_target_address = self
+          .treasury
+          .external_coin_target_address
+          .contents
+          .into_iter()
+          .map(|e| (e.key, e.value.contents))
+          .collect::<Vec<_>>();
+
         let supported_tokens = self
             .treasury
             .supported_tokens
@@ -340,9 +359,11 @@ impl BridgeTrait for BridgeInnerV1 {
                 Ok((source, destination, e.value))
             })
             .collect::<SuiResult<Vec<_>>>()?;
+        let max_mint_busd_limit = self.limiter.max_mint_busd_limit;
         let limiter = BridgeLimiterSummary {
             transfer_limit,
             transfer_records,
+            max_mint_busd_limit
         };
         Ok(BridgeSummary {
             bridge_version: self.bridge_version,
@@ -374,6 +395,7 @@ impl BridgeTrait for BridgeInnerV1 {
             bridge_records_id: self.bridge_records.id,
             limiter,
             treasury: BridgeTreasurySummary {
+                external_coin_target_address,
                 supported_tokens,
                 id_token_type_map,
             },
@@ -386,6 +408,8 @@ impl BridgeTrait for BridgeInnerV1 {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct MoveTypeBridgeTreasury {
     pub external_coin_admin_address: VecMap<String, VecSet<String>>,
+    pub external_coin_target_address: VecMap<String, VecSet<String>>,
+    pub external_coin_witness_address: VecMap<String, VecSet<Vec<u8>>>,
     pub treasuries: Bag,
     pub supported_tokens: VecMap<String, BridgeTokenMetadata>,
     // Mapping token id to type name
@@ -436,12 +460,14 @@ pub struct BridgeCommitteeSummary {
 pub struct BridgeLimiterSummary {
     pub transfer_limit: Vec<(BridgeChainId, BridgeChainId, u64)>,
     pub transfer_records: Vec<(BridgeChainId, BridgeChainId, MoveTypeBridgeTransferRecord)>,
+    pub max_mint_busd_limit: u64,
 }
 
 #[serde_as]
 #[derive(Debug, Serialize, Deserialize, Clone, JsonSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct BridgeTreasurySummary {
+    pub external_coin_target_address: Vec<(String, Vec<String>)>,
     pub supported_tokens: Vec<(String, BridgeTokenMetadata)>,
     pub id_token_type_map: Vec<(u64, String)>,
 }
@@ -468,7 +494,22 @@ pub struct MoveTypeBridgeMessageKey {
 
 #[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
 pub struct MoveTypeExternalBridgeMessageKey {
+    pub source_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
     pub tx_hash: String,
+}
+
+#[derive(Debug, Serialize, Deserialize, Clone, Eq, PartialEq)]
+pub struct MoveTypeExternalBridgeRecord {
+    pub source_chain: u8,
+    pub target_chain: u8,
+    pub source_address: Vec<u8>,
+    pub target_address: Vec<u8>,
+    pub amount: u64,
+    pub verified_signatures: Option<Vec<Vec<u8>>>,
+    pub claimed: bool,
 }
 
 /// Rust version of the Move message::BridgeMessageKey type.
@@ -482,6 +523,7 @@ pub struct MoveTypeRefundMessageKey {
 pub struct MoveTypeBridgeTransferLimiter {
     pub transfer_limit: VecMap<MoveTypeBridgeRoute, u64>,
     pub transfer_records: VecMap<MoveTypeBridgeRoute, MoveTypeBridgeTransferRecord>,
+    pub max_mint_busd_limit: u64,
 }
 
 /// Rust version of the Move chain_ids::BridgeRoute type.

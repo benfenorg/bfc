@@ -16,8 +16,8 @@ use crate::utils::{
     get_committee_voting_power_by_name, get_eth_contract_addresses, get_validator_names_by_pub_keys,
 };
 use crate::{
-    aml_checker::AMLChecker,
     action_executor::BridgeActionExecutor,
+    aml_checker::AMLChecker,
     client::bridge_authority_aggregator::BridgeAuthorityAggregator,
     config::{BridgeClientConfig, BridgeNodeConfig},
     eth_syncer::EthSyncer,
@@ -300,7 +300,16 @@ async fn start_client_components(
     )
     .await;
 
-    let aml_checker = AMLChecker::new(store.clone(), sui_client.clone(), client_config.sui_address, client_config.gas_object_ref.0, client_config.key.copy(), metrics.clone(),client_config.aml_key).await;
+    let aml_checker = AMLChecker::new(
+        store.clone(),
+        sui_client.clone(),
+        client_config.sui_address,
+        client_config.gas_object_ref.0,
+        client_config.key.copy(),
+        metrics.clone(),
+        client_config.aml_key,
+    )
+    .await;
 
     let monitor = BridgeMonitor::new(
         sui_client.clone(),
@@ -323,7 +332,7 @@ async fn start_client_components(
         metrics,
     );
 
-    all_handles.extend(orchestrator.run(bridge_action_executor,aml_checker).await);
+    all_handles.extend(orchestrator.run(bridge_action_executor, aml_checker).await);
     Ok(all_handles)
 }
 
@@ -403,12 +412,14 @@ fn get_eth_contracts_to_watch(
 mod tests {
     use ethers::types::Address as EthAddress;
     use prometheus::Registry;
+    use tokio::time::sleep;
 
     use super::*;
     use crate::config::default_ed25519_key_pair;
     use crate::config::BridgeNodeConfig;
     use crate::config::EthConfig;
     use crate::config::SuiConfig;
+    use crate::e2e_tests::auth;
     use crate::e2e_tests::test_utils::BridgeTestCluster;
     use crate::e2e_tests::test_utils::BridgeTestClusterBuilder;
     use crate::utils::wait_for_server_to_be_up;
@@ -671,6 +682,24 @@ mod tests {
             metrics: None,
             watchdog_config: None,
         };
+
+        let prometheus_registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+        let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+        let client_config = client_config.unwrap();
+        let sui_address = client_config.sui_address;
+        let sui_key_pair = client_config.key;
+        info!("add admin cap for {:?}", sui_address);
+        //set up auth key for client
+        auth::auth_setup_imut(
+            &bridge_test_cluster.test_cluster.inner.rpc_client(),
+            sui_address,
+            &sui_key_pair,
+            "MINT-BUSD-BRIDGE-KEY",
+        )
+        .await
+        .unwrap();
+        sleep(Duration::from_secs(10)).await;
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
             config,
@@ -718,7 +747,7 @@ mod tests {
         let gas_obj = bridge_test_cluster
             .test_cluster
             .inner
-            .transfer_sui_must_exceed(sender_address, client_sui_address, 1000000000)
+            .transfer_sui_must_exceed(sender_address, client_sui_address, 2_000_000_000)
             .await;
 
         let config = BridgeNodeConfig {
@@ -750,6 +779,24 @@ mod tests {
             metrics: None,
             watchdog_config: None,
         };
+        let prometheus_registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+        let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+        let client_config = client_config.unwrap();
+        let sui_address = client_config.sui_address;
+        let sui_key_pair = client_config.key;
+        info!("add admin cap for {:?}", sui_address);
+        //set up auth key for client
+        auth::auth_setup_imut(
+            &bridge_test_cluster.test_cluster.inner.rpc_client(),
+            sui_address,
+            &sui_key_pair,
+            "MINT-BUSD-BRIDGE-KEY",
+        )
+        .await
+        .unwrap();
+        sleep(Duration::from_secs(10)).await;
+
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
             config,

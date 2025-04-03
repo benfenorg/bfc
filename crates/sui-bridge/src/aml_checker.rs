@@ -95,9 +95,10 @@ P: SuiClientInner + 'static,{
             match &bridge_action {
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
+                    let tx_hash = action_inner.eth_tx_hash.as_bytes().to_vec();
                     let is_passed = check_aml_eth(eth_address, aml_key.clone()).await;
                     // let is_passed = false;
-                    println!("bbking 125 check aml eth address:{:?} is_passed: {:?}", &eth_address, &is_passed);
+                    info!("aml checker eth address:{:?} is_passed: {:?} tx_hash: {:?}", &eth_address, &is_passed, &tx_hash);
                     if is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
                             panic!("Write to DB should not fail: {:?}", e);
@@ -108,7 +109,6 @@ P: SuiClientInner + 'static,{
                         });
                         sui_client.notify_something_done().await;
                     }else{
-                        info!("AMLChecker failed, sending back");
                         Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
                     }
                 },
@@ -123,7 +123,6 @@ P: SuiClientInner + 'static,{
     async fn send_back(action:BridgeAction,store: &Arc<BridgeOrchestratorTables>, sui_key: &SuiKeyPair, metrics: &Arc<BridgeMetrics>,sui_client: &Arc<SuiClient<P>>,sui_address: SuiAddress,gas_object_id: ObjectID,bridge_object_arg: ObjectArg){
             let (_gas_coin, gas_object_ref) = Self::get_gas_data_assert_ownership(sui_address, gas_object_id, &sui_client).await;
             let rgp = sui_client.get_reference_gas_price_until_success().await;
-            println!("bbking 26 client address:{:?}", &sui_address);
             let tx_data =match build_token_send_back_transaction(sui_address, &gas_object_ref, action.clone(), bridge_object_arg, rgp){
                 Ok(tx_data) => tx_data,
                 Err(err) => {
@@ -151,6 +150,9 @@ P: SuiClientInner + 'static,{
             .await
             {
                 info!("Action already processed, skipping");
+                store.remove_pending_aml_checked_actions(&[action.digest()]).unwrap_or_else(|e| {
+                    panic!("remove from DB should not fail: {:?}", e);
+                });
                 return;
             }
 
@@ -294,8 +296,7 @@ P: SuiClientInner + 'static,{
                     "Expected TokenSendBackEvent event but got: {:?}",
                     events,
                     );
-                info!(?tx_digest, "Sui transaction executed successfully");
-                println!("received token send back event");
+                info!(?tx_digest, "send back transaction executed successfully");
                 store
                     .remove_pending_aml_checked_actions(&[action.digest()])
                     .unwrap_or_else(|e| {

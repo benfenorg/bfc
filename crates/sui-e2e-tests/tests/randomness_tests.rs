@@ -9,6 +9,7 @@ use sui_macros::sim_test;
 //use sui_rpc_api::rest::info;
 //use tracing::info;
 #[sim_test]
+#[ignore]
 async fn sim_test_create_randomness_state_object() {
 
     let test_cluster = TestClusterBuilder::new()

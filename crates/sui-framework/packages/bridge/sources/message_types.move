@@ -14,6 +14,10 @@ module bridge::message_types {
     // for external coins
     const ADD_EXTERNAL_COIN_ADMIN: u8 = 11;
     const REMOVE_EXTERNAL_COIN_ADMIN: u8 = 12;
+    const ADD_EXTERNAL_COIN_WITNESS: u8 =13;
+    const REMOVE_EXTERNAL_COIN_WITNESS: u8 =14;
+    const ADD_EXTERNAL_COIN_TARGET: u8 =15;
+    const REMOVE_EXTERNAL_COIN_TARGET: u8 =16;
 
     public fun token(): u8 { TOKEN }
 
@@ -34,4 +38,15 @@ module bridge::message_types {
     public fun remove_external_coin_admin(): u8 { REMOVE_EXTERNAL_COIN_ADMIN }
 
     public fun refund_admin_operate(): u8 { REFUND_ADMIN_OPERATE }
+
+    public fun add_external_coin_witness(): u8 { ADD_EXTERNAL_COIN_WITNESS }
+
+    public fun remove_external_coin_witness(): u8 { REMOVE_EXTERNAL_COIN_WITNESS }
+
+    public fun add_external_coin_target(): u8{
+        ADD_EXTERNAL_COIN_TARGET
+    }
+    public fun remove_external_coin_target(): u8{
+        REMOVE_EXTERNAL_COIN_TARGET
+    }
 }

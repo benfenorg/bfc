@@ -92,6 +92,7 @@ async fn test_sui_bridge_paused() {
         bridge_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await,
+        None,
         &sui_token_type_tags,
         1000,
     )
@@ -126,6 +127,7 @@ async fn test_sui_bridge_paused() {
         eth_coin.first().unwrap().object_ref(),
         0,
         10,
+        TOKEN_ID_ETH,
     )
     .await;
     assert!(sui_to_eth_bridge_action.is_err())

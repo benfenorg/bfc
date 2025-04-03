@@ -6,3 +6,4 @@ mod basic;
 #[cfg(test)]
 mod complex;
 pub mod test_utils;
+pub mod auth;

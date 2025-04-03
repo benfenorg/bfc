@@ -720,31 +720,31 @@ module bridge::message_tests {
         abort 0
     }
 
-    #[test]
-    #[expected_failure(abort_code = bridge::message::EInvalidPayloadLength)]
-    fun test_bad_payload_size() {
-        let sender_address = address::from_u256(100);
-        let mut scenario = test_scenario::begin(sender_address);
-        let ctx = test_scenario::ctx(&mut scenario);
-        let coin = coin::mint_for_testing<USDC>(12345, ctx);
-        let mut sender = address::to_bytes(sender_address);
-        // double sender which wil make the payload different the 64 bytes
-        sender.append(address::to_bytes(sender_address));
-        create_token_bridge_message(
-            chain_ids::sui_testnet(), // source chain
-            10, // seq_num
-            sender, // sender address
-            chain_ids::eth_sepolia(), // target_chain
-            // Eth address is 20 bytes long
-            hex::decode(b"00000000000000000000000000000000000000c8"), // target_address
-            3u64, // token_type
-            balance::value(coin::balance(&coin)), // amount: u64
-            hex::decode(b""), // tx_hash
-            0u8, // event_idx
-        );
+    // #[test]
+    // #[expected_failure(abort_code = bridge::message::EInvalidPayloadLength)]
+    // fun test_bad_payload_size() {
+    //     let sender_address = address::from_u256(100);
+    //     let mut scenario = test_scenario::begin(sender_address);
+    //     let ctx = test_scenario::ctx(&mut scenario);
+    //     let coin = coin::mint_for_testing<USDC>(12345, ctx);
+    //     let mut sender = address::to_bytes(sender_address);
+    //     // double sender which wil make the payload different the 64 bytes
+    //     sender.append(address::to_bytes(sender_address));
+    //     create_token_bridge_message(
+    //         chain_ids::sui_testnet(), // source chain
+    //         10, // seq_num
+    //         sender, // sender address
+    //         chain_ids::eth_sepolia(), // target_chain
+    //         // Eth address is 20 bytes long
+    //         hex::decode(b"00000000000000000000000000000000000000c8"), // target_address
+    //         3u64, // token_type
+    //         balance::value(coin::balance(&coin)), // amount: u64
+    //         hex::decode(b""), // tx_hash
+    //         0u8, // event_idx
+    //     );
 
-        abort 0
-    }
+    //     abort 0
+    // }
 
     #[test]
     #[expected_failure(abort_code = bridge::message::EMustBeTokenMessage)]

@@ -3,12 +3,11 @@
 
 use crate::abi::EthToSuiTokenBridgeV1;
 use crate::eth_mock_provider::EthMockProvider;
-use crate::events::SuiBridgeEvent;
+use crate::events::{EmittedExternalDepositStartBridgeV1, SuiBridgeEvent};
 use crate::server::mock_handler::run_mock_server;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{
-    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction,
-    VerifiedCertifiedBridgeAction,
+    BridgeCommittee, BridgeCommitteeValiditySignInfo, CertifiedBridgeAction, ExternalDepositStartBridgeAction, VerifiedCertifiedBridgeAction
 };
 use crate::{
     crypto::{BridgeAuthorityKeyPair, BridgeAuthorityPublicKey, BridgeAuthoritySignInfo},
@@ -39,8 +38,8 @@ use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::ObjectRef;
 use sui_types::base_types::SequenceNumber;
-use sui_types::bridge::MoveTypeCommitteeMember;
-use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary, TOKEN_ID_USDC};
+use sui_types::bridge::{MoveTypeCommitteeMember, TOKEN_ID_BTC, TOKEN_ID_ETH};
+use sui_types::bridge::{BridgeChainId, BridgeCommitteeSummary};
 use sui_types::crypto::ToFromBytes;
 use sui_types::object::Owner;
 use sui_types::transaction::{CallArg, ObjectArg};
@@ -94,10 +93,33 @@ pub fn get_test_sui_to_eth_bridge_action(
             sui_address: sender_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_chain_id: BridgeChainId::EthCustom,
             eth_address: recipient_address.unwrap_or_else(EthAddress::random),
-            token_id: token_id.unwrap_or(TOKEN_ID_USDC),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
             amount_sui_adjusted: amount_sui_adjusted.unwrap_or(100_000),
             tx_hash: vec![],
             event_idx: 0,
+        },
+    })
+}
+
+pub fn get_test_external_bridge_action(
+    sui_tx_digest: Option<TransactionDigest>,
+    sui_tx_event_index: Option<u16>,
+    nonce: Option<u64>,
+    recipient_address: SuiAddress,
+    token_id: Option<u64>,
+) -> BridgeAction {
+    BridgeAction::ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction {
+        sui_tx_digest: sui_tx_digest.unwrap_or_else(TransactionDigest::random),
+        sui_tx_event_index: sui_tx_event_index.unwrap_or(0),
+        sui_bridge_event: EmittedExternalDepositStartBridgeV1 {
+            nonce: nonce.unwrap_or_default(),
+            tx_hash: String::from("20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941"),
+            token_id: token_id.unwrap_or(TOKEN_ID_BTC),
+            source_chain: BridgeChainId::BtcTestnet,
+            target_chain: BridgeChainId::SuiCustom,
+            source_address: vec![],
+            target_address: recipient_address.to_vec(),
+            amount: 10,
         },
     })
 }
@@ -116,7 +138,7 @@ pub fn get_test_eth_to_sui_bridge_action(
             eth_chain_id: BridgeChainId::EthCustom,
             nonce: nonce.unwrap_or_default(),
             sui_chain_id: BridgeChainId::SuiCustom,
-            token_id: token_id.unwrap_or(TOKEN_ID_USDC),
+            token_id: token_id.unwrap_or(TOKEN_ID_ETH),
             sui_adjusted_amount: amount.unwrap_or(100_000),
             sui_address: sui_address.unwrap_or_else(SuiAddress::random_for_testing_only),
             eth_address: EthAddress::random(),
@@ -230,7 +252,7 @@ pub fn get_test_log_and_action(
     tx_hash: TxHash,
     event_index: u16,
 ) -> (Log, BridgeAction) {
-    let token_id = 3u64;
+    let token_id = 1u64;
     let sui_adjusted_amount = 10000000u64;
     let source_address = EthAddress::random();
     let sui_address: SuiAddress = SuiAddress::random_for_testing_only();
@@ -269,7 +291,6 @@ pub fn get_test_log_and_action(
         log_index: Some(0.into()),
         ..Default::default()
     };
-    println!("bbking log: {:?}", log);
     let topic_1: [u8; 32] = log.topics[1].into();
     let topic_3: [u8; 32] = log.topics[3].into();
 
@@ -343,12 +364,10 @@ pub fn get_certified_action_with_validator_secrets(
         let signed_action = sign_action_with_key(&action, secret);
         sigs.insert(secret.public().into(), signed_action.into_sig().signature);
     }
-    println!("bbking inner action: {:?}", action);
     let certified_action = CertifiedBridgeAction::new_from_data_and_sig(
         action,
         BridgeCommitteeValiditySignInfo { signatures: sigs },
     );
-    println!("bbking inner certified_action: {:?}", certified_action);
     VerifiedCertifiedBridgeAction::new_from_verified(certified_action)
 }
 
@@ -371,7 +390,6 @@ pub async fn approve_action_with_validator_secrets(
     id_token_map: &HashMap<u64, TypeTag>,
 ) -> Option<ObjectRef> {
     let action_certificate = get_certified_action_with_validator_secrets(action, validator_secrets);
-    println!("bbking action_certificate: {:?}", action_certificate);
     let rgp = wallet_context.get_reference_gas_price().await.unwrap();
     let sui_address = wallet_context.active_address().unwrap();
     let gas_obj_ref = wallet_context
@@ -385,6 +403,7 @@ pub async fn approve_action_with_validator_secrets(
         &gas_obj_ref,
         action_certificate,
         bridge_obj_org,
+        None,
         id_token_map,
         rgp,
     )

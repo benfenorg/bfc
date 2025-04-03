@@ -47,7 +47,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         // Create update tokens payload
         bool _isNative = true;
         uint8 _numTokenIDs = 1;
-        uint8 tokenID1 = 10;
+        uint64 tokenID1 = 10;
         uint8 _numAddresses = 1;
         address address1 = address(_newToken);
         uint8 _numSuiDecimals = 1;
@@ -102,7 +102,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         // Create update tokens payload
         bool _isNative = true;
         uint8 _numTokenIDs = 1;
-        uint8 tokenID1 = 10;
+        uint64 tokenID1 = 10;
         uint8 _numAddresses = 1;
         address address1 = address(0);
         uint8 _numSuiDecimals = 1;
@@ -153,7 +153,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         // Create add tokens payload
         bool _isNative = true;
         uint8 _numTokenIDs = 1;
-        uint8 tokenID1 = 10;
+        uint64 tokenID1 = 10;
         uint8 _numAddresses = 1;
         address address1 = address(_newToken);
         uint8 _numSuiDecimals = 1;
@@ -204,7 +204,7 @@ contract BridgeConfigTest is BridgeBaseTest {
         // Create update tokens payload
         bool _isNative = true;
         uint8 _numTokenIDs = 1;
-        uint8 tokenID1 = 10;
+        uint64 tokenID1 = 10;
         uint8 _numAddresses = 1;
         address address1 = address(_newToken);
         uint8 _numSuiDecimals = 1;

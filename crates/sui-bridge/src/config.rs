@@ -337,6 +337,7 @@ impl BridgeNodeConfig {
         sui_client: Arc<SuiClient<SuiSdkClient>>,
         metrics: Arc<BridgeMetrics>,
     ) -> anyhow::Result<(SuiKeyPair, SuiAddress, ObjectRef)> {
+        tracing::info!("prepare_for_sui bridge_client_key_path {:?}", &self.sui.bridge_client_key_path);
         let bridge_client_key = match &self.sui.bridge_client_key_path {
             None => read_key(&self.bridge_authority_key_path, true),
             Some(path) => read_key(path, false),
@@ -370,7 +371,6 @@ impl BridgeNodeConfig {
             "Connected to Sui chain: {}, Bridge chain id: {}",
             sui_identifier, self.sui.sui_bridge_chain_id,
         );
-        println!("bbking 24 client_sui_address: {:?}", &bridge_client_key.public());
         let client_sui_address = SuiAddress::from(&bridge_client_key.public());
 
         let gas_object_id = match self.sui.bridge_client_gas_object {

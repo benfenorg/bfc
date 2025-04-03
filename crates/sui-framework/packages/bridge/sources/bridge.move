@@ -20,6 +20,8 @@ module bridge::bridge {
     use bridge::message::{
         Self, BridgeMessage, BridgeMessageKey, EmergencyOp, UpdateAssetPrice,
         AddExternalCoinAdmin, RemoveExternalCoinAdmin,RefundMessageKey,
+        AddExternalCoinWitness,RemoveExternalCoinWitness,
+        AddExternalCoinTarget,RemoveExternalCoinTarget,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
@@ -29,6 +31,9 @@ module bridge::bridge {
     use sui::vec_set;
     use sui::vec_set::VecSet;
     use std::ascii::String;
+    use bfc_system::bfc_system::BfcSystemState;
+    use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
+    use bfc_system::busd::BUSD;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -62,10 +67,13 @@ module bridge::bridge {
         treasury: BridgeTreasury,
         token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
         external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
+        // tx hash : [signature addresses]
+        pre_deposit_multi_signature_records: LinkedTable<ExternalBridgeMessageKey, VecSet<String>>,
         limiter: TransferLimiter,
         paused: bool,
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
-        refund_admins:VecSet<String>,
+        refund_admins: VecSet<String>,
+        // bfc_system_id: UID,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -124,9 +132,16 @@ module bridge::bridge {
     const EInvalidSender: u64 = 20;
     const EInvalidTxHash: u64 = 21;
     const EDuplicateRefund: u64 = 22;
-
+    const EInvalidTokenIdExpect: u64 = 23;
+    const EOnlySupportBusd: u64 = 24;
+    const EUseSendBusd: u64 = 25;
+    const EUseClaimBusd: u64 = 26;
     const EDuplicatedMessage: u64 = 30;
     const EUnknownExternalCoinOrSender: u64 = 31;
+    const EUnpassedMultiSignature: u64 = 32;
+    const EUnpassedWitnessSignature: u64=33;
+
+    const EUnauthorisedUpdateLimit: u64 = 40;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -150,6 +165,49 @@ module bridge::bridge {
         message_key: BridgeMessageKey,
     }
 
+    public struct ExternalPreDepositedEvent has copy, drop {
+        tx_hash: ascii::String,
+        coin_type: ascii::String,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        sender: address,
+        signatures: vector<u8>,
+    }
+
+    public struct ExternalPreDepositedDoneEvent has copy, drop {
+        tx_hash: ascii::String,
+        coin_type: ascii::String,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
+    public struct ExternalDepositedApprovedEvent has copy, drop {
+        tx_hash: ascii::String,
+        coin_type: ascii::String,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
+    public struct ExternalDepositStartEvent has copy, drop {
+        seq_num: u64,
+        tx_hash: ascii::String,
+        token_id: u64,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+    }
+
     public struct ExternalDepositedEvent has copy, drop {
         tx_hash: ascii::String,
         coin_type: ascii::String,
@@ -170,6 +228,10 @@ module bridge::bridge {
     }
 
     public struct ExternalBridgeMessageKey has copy, drop, store {
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
         tx_hash: ascii::String,
     }
 
@@ -179,6 +241,9 @@ module bridge::bridge {
         source_address: vector<u8>,
         target_address: vector<u8>,
         amount: u64,
+
+        verified_signatures: Option<vector<vector<u8>>>,
+        claimed: bool,
     }
 
     //////////////////////////////////////////////////////
@@ -198,6 +263,7 @@ module bridge::bridge {
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
             external_bridge_records: linked_table::new(ctx),
+            pre_deposit_multi_signature_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
@@ -205,7 +271,7 @@ module bridge::bridge {
         };
         let bridge = Bridge {
             id,
-            inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx),
+            inner: versioned::create(CURRENT_VERSION, bridge_inner, ctx)
         };
         transfer::share_object(bridge);
     }
@@ -277,6 +343,7 @@ module bridge::bridge {
         let token_id = inner.treasury.token_id<T>();
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(token_id != 5, EUseSendBusd);
 
         // create bridge message
         let message = message::create_token_bridge_message(
@@ -293,6 +360,70 @@ module bridge::bridge {
 
         // burn / escrow token, unsupported coins will fail in this step
         inner.treasury.burn(token);
+
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            TokenDepositedEvent {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: token_id,
+                amount: token_amount,
+            },
+        );
+    }
+
+    public fun send_busd<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token: Coin<T>,
+        token_id_expect: u64,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(is_busd, EOnlySupportBusd);
+        assert!(token_id_expect == 3 || token_id_expect == 4, EInvalidTokenIdExpect);
+
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        // let token_id_origin = inner.treasury.token_id<T>();
+        // assert!(token_id_origin == 5, EOnlySupportBusd);
+        let token_id = token_id_expect;
+        let token_amount = token.balance().value()/1000u64;
+        assert!(token_amount > 0, ETokenValueIsZero);
+
+        // create bridge message
+        let message = message::create_token_bridge_message(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            target_address,
+            token_id,
+            token_amount,
+            hex::decode(b""),
+            0u8, // event_idx
+        );
+
+        // burn / escrow token, unsupported coins will fail in this step
+        bfc_system_state.burn_stable(token, ctx);
 
         // Store pending bridge request
         inner.token_transfer_records.push_back(
@@ -410,7 +541,7 @@ module bridge::bridge {
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
         );
-        
+
         let message_key = message.key();
         // retrieve pending message if source chain is Sui, the initial message
         // must exist on chain
@@ -456,6 +587,25 @@ module bridge::bridge {
         emit(TokenTransferApproved { message_key });
     }
 
+    // Get the max mint BUSD amount
+    public fun get_max_mint_busd_amount(bridge: &Bridge): u64 {
+        let inner = load_inner(bridge);
+        inner.limiter.get_mint_busd_max_limit()
+    }
+
+    // Set the max mint BUSD amount
+    public fun set_max_mint_busd_amount(
+        bridge: &mut Bridge,
+        bfc_system_state: &BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        new_limit: u64,
+        ctx: &mut TxContext,
+        ) {
+        let inner = load_inner_mut(bridge);
+        assert!(bfc_system_state.verify_capability(cap, ctx), EUnauthorisedUpdateLimit);
+        inner.limiter.set_mint_busd_max_limit(new_limit);
+    }
+
     // This function can only be called by the token recipient
     // Abort if the token has already been claimed or hits limiter currently,
     // in which case, no event will be emitted and only abort code will be returned.
@@ -488,6 +638,23 @@ module bridge::bridge {
         ctx: &mut TxContext,
     ) {
         let (token, owner) = bridge.claim_token_internal<T>(clock, source_chain, bridge_seq_num, ctx);
+        if (token.is_some()) {
+            transfer::public_transfer(token.destroy_some(), owner)
+        } else {
+            token.destroy_none();
+        };
+    }
+
+    public fun claim_and_transfer_busd<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ) {
+        let (token, owner) = bridge.claim_stable_token_internal<T>(bfc_system_state, clock, source_chain, bridge_seq_num, cap, ctx);
         if (token.is_some()) {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
@@ -538,34 +705,248 @@ module bridge::bridge {
         } else if (message_type == message_types::refund_admin_operate()) {
             let payload = message.extract_refund_admin_payload();
             inner.execute_refund_admin_operate(payload);
-        } else {
+        } else if  (message_type == message_types::add_external_coin_witness()){
+            let payload = message.extract_add_witness_poyload();
+            inner.execute_add_external_coin_witness(payload);
+
+        }else if  (message_type == message_types::remove_external_coin_witness()){
+            let payload = message.extract_remove_witness_poyload();
+            inner.execute_remove_external_coin_witness(payload);
+
+        }else if  (message_type == message_types::add_external_coin_target()){
+            let payload = message.extract_add_external_target_address_poyload();
+            inner.execute_add_external_coin_target_payload(payload);
+        }else if  (message_type == message_types::remove_external_coin_target()){
+            let payload = message.extract_remove_external_target_address_poyload();
+            inner.execute_remove_external_coin_target_payload(payload);
+
+        }else {
             abort EUnexpectedMessageType
         };
+    }
+
+    public fun get_available_claim_amount<T>(
+          bridge: &Bridge,
+          target_chain: u8,
+    ): u64 {
+        let inner = load_inner(bridge);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
+    }
+
+    public fun pre_deposit_external_coin<T>(
+        bridge: &mut Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+        signatures: vector<u8>,
+        ctx: &mut TxContext
+    ) {
+        let sender = ctx.sender();
+        let sender_str = sender.to_ascii_string();
+        let coin_type = type_name::into_string(type_name::get<T>());
+
+        let inner = load_inner_mut(bridge);
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
+        if (!inner.treasury.is_external_coin_admin(coin_type, sender_str)) {
+            abort EUnknownExternalCoinOrSender
+        };
+
+        // check then add to pre_deposit_multi_signature_records
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (inner.pre_deposit_multi_signature_records.contains(key)) {
+            let records = &mut inner.pre_deposit_multi_signature_records[key];
+            if (records.contains(&sender_str)) {
+                return
+            };
+
+            records.insert(sender_str);
+        } else {
+            let mut records = vec_set::empty();
+            records.insert(sender_str);
+            inner.pre_deposit_multi_signature_records.push_back(key, records);
+        };
+
+        emit(
+            ExternalPreDepositedEvent {
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+                sender,
+                signatures,
+            }
+        );
+
+        if (inner.multi_signature_passed(key, coin_type)) {
+            emit(
+                ExternalPreDepositedDoneEvent {
+                    tx_hash,
+                    coin_type,
+                    source_chain,
+                    target_chain: inner.chain_id,
+                    source_address,
+                    target_address,
+                    amount,
+                },
+            )
+        }
     }
 
     public fun deposit_external_coin<T>(
         bridge: &mut Bridge,
         source_chain: u8,
-        source_address:vector<u8>,
+        source_address: vector<u8>,
         target_address: vector<u8>,
         amount: u64,
         tx_hash: ascii::String,
+        signatures: vector<u8>,
         ctx: &mut TxContext
     ) {
         let sender = ctx.sender();
         let coin_type = type_name::into_string(type_name::get<T>());
 
         let inner = load_inner_mut(bridge);
+
+        assert!(inner.treasury.verify_bitcoin_signatures<T>(source_chain, source_address, target_address, amount, tx_hash, signatures),EUnpassedWitnessSignature);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(source_chain, inner.chain_id), EInvalidBridgeRoute);
         if (!inner.treasury.is_external_coin_admin(coin_type, sender.to_ascii_string())) {
             abort EUnknownExternalCoinOrSender
         };
 
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (!inner.multi_signature_passed(key, coin_type)) {
+            abort EUnpassedMultiSignature
+        };
+
         // check records
-        let key = ExternalBridgeMessageKey{tx_hash};
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
         if (inner.external_bridge_records.contains(key)) {
             abort EDuplicatedMessage
+        };
+
+        // // v1
+        // let token = inner.treasury.mint<T>(amount, ctx);
+        // transfer::public_transfer(token, address::from_bytes(target_address));
+
+        // inner.external_bridge_records.push_back(
+        //     key,
+        //     ExternalBridgeRecord {
+        //         source_chain,
+        //         target_chain: inner.chain_id,
+        //         source_address,
+        //         target_address,
+        //         amount,
+        //         verified_signatures: option::none(),
+        //         claimed: true,
+        //     },
+        // );
+
+        // emit(
+        //     ExternalDepositedEvent {
+        //         tx_hash,
+        //         coin_type,
+        //         source_chain,
+        //         target_chain: inner.chain_id,
+        //         source_address,
+        //         target_address,
+        //         amount,
+        //     },
+        // )
+
+        // v2
+        let seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        let token_id = inner.treasury.token_id<T>();
+
+        emit(
+            ExternalDepositStartEvent {
+                seq_num,
+                tx_hash,
+                token_id,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+            },
+        )
+    }
+
+    // for v2
+    public fun approval_and_claimed_external_coin<T>(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        let token_payload = message.extract_token_bridge_payload();
+        let target_chain = token_payload.token_target_chain();
+        assert!(
+            message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+            EUnexpectedChainID,
+        );
+
+        let coin_type = type_name::into_string(type_name::get<T>());
+        // check records
+        let tx_hash = ascii::string(token_payload.token_tx_hash());
+        let source_chain = message.source_chain();
+        let target_chain = token_payload.token_target_chain();
+        let source_address = token_payload.token_sender_address();
+        let target_address = token_payload.token_target_address();
+        let amount = token_payload.token_amount();
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (inner.external_bridge_records.contains(key)) {
+            emit(ExternalDepositedApprovedEvent{
+                tx_hash,
+                coin_type,
+                source_chain: source_chain,
+                target_chain: target_chain,
+                source_address: source_address,
+                target_address: target_address,
+                amount: token_payload.token_amount(),
+               });
+
+            return
         };
 
         let token = inner.treasury.mint<T>(amount, ctx);
@@ -579,6 +960,8 @@ module bridge::bridge {
                 source_address,
                 target_address,
                 amount,
+                verified_signatures: option::some(signatures),
+                claimed: true,
             },
         );
 
@@ -658,6 +1041,41 @@ module bridge::bridge {
         TRANSFER_STATUS_PENDING
     }
 
+    #[allow(unused_function)]
+    fun get_external_token_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+    ): u8 {
+        let inner = load_inner(bridge);
+
+         let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+
+        if (!inner.external_bridge_records.contains(key)) {
+            return TRANSFER_STATUS_NOT_FOUND
+        };
+
+        let record = &inner.external_bridge_records[key];
+        if (record.claimed) {
+            return TRANSFER_STATUS_CLAIMED
+        };
+
+        if (record.verified_signatures.is_some()) {
+            return TRANSFER_STATUS_APPROVED
+        };
+
+        TRANSFER_STATUS_PENDING
+    }
+
     // just for idempotent check
     #[allow(unused_function)]
     fun get_send_back_status(
@@ -702,6 +1120,24 @@ module bridge::bridge {
     //////////////////////////////////////////////////////
     // Internal functions
     //
+    fun multi_signature_passed(
+        inner: & BridgeInner,
+        key: ExternalBridgeMessageKey,
+        coin_type: String,
+    ): bool {
+        // check then add to pre_deposit_multi_signature_records
+        if (inner.pre_deposit_multi_signature_records.contains(key)) {
+            let records = inner.pre_deposit_multi_signature_records[key];
+            // if pre_deposit_multi_signature_records > 50%
+            let signed = records.size();
+            let len = inner.treasury.external_coin_admin_count(coin_type);
+            if (signed * 2 > len) {
+                return true
+            };
+        };
+
+        false
+    }
 
     fun load_inner(
         bridge: &Bridge,
@@ -735,7 +1171,8 @@ module bridge::bridge {
     ): (Option<Coin<T>>, address) {
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
-
+        let is_busd = type_name::get<T>() == type_name::get<BUSD>();
+        assert!(!is_busd, EUseClaimBusd);
         let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
         assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
 
@@ -790,7 +1227,6 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        // claim from treasury
         let token = inner.treasury.mint<T>(amount, ctx);
 
         // Record changes
@@ -798,6 +1234,83 @@ module bridge::bridge {
         emit(TokenTransferClaimed { message_key: key });
 
         (option::some(token), owner)
+    }
+
+    fun claim_stable_token_internal<T>(
+        bridge: &mut Bridge,
+        bfc_system_state: &mut BfcSystemState,
+        clock: &Clock,
+        source_chain: u8,
+        bridge_seq_num: u64,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext,
+    ): (Option<Coin<T>>, address) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
+        assert!(inner.token_transfer_records.contains(key), EMessageNotFoundInRecords);
+
+        // retrieve approved bridge message
+        let record = &mut inner.token_transfer_records[key];
+        // ensure this is a token bridge message
+        assert!(
+            &record.message.message_type() == message_types::token(),
+            EUnexpectedMessageType,
+        );
+        // Ensure it's signed
+        assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
+
+        // extract token message
+        let token_payload = record.message.extract_token_bridge_payload();
+        // get owner address
+        let owner = address::from_bytes(token_payload.token_target_address());
+        // get token type
+        let token_id = token_payload.token_type();
+        assert!(token_id == 5, EOnlySupportBusd);
+
+        // If already claimed, exit early
+        if (record.claimed) {
+            emit(TokenTransferAlreadyClaimed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        let target_chain = token_payload.token_target_chain();
+        // ensure target chain matches bridge.chain_id
+        assert!(target_chain == inner.chain_id, EUnexpectedChainID);
+
+        // TODO: why do we check validity of the route here? what if inconsistency?
+        // Ensure route is valid
+        // TODO: add unit tests
+        // `get_route` abort if route is invalid
+        let route = chain_ids::get_route(source_chain, target_chain);
+        // check token type
+        assert!(
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type(),
+            EUnexpectedTokenType,
+        );
+
+        let amount = token_payload.token_amount();
+        // Make sure transfer is within limit.
+        if (!inner
+            .limiter
+            .check_and_record_sending_transfer<T>(
+            &inner.treasury,
+            clock,
+            route,
+            amount,
+        )
+        ) {
+            emit(TokenTransferLimitExceed { message_key: key });
+            return (option::none(), owner)
+        };
+
+        // claim from treasury
+        //transfer busd to owner
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);
+        record.claimed = true;
+        emit(TokenTransferClaimed { message_key: key });
+        (option::none(), owner)
     }
 
     fun execute_emergency_op(inner: &mut BridgeInner, payload: EmergencyOp) {
@@ -872,6 +1385,34 @@ module bridge::bridge {
         inner.treasury.remove_external_coin_admin(
             payload.remove_external_coin_admin_payload_coin_type(),
             payload.remove_external_coin_admin_payload_admin_address(),
+        )
+    }
+
+    fun execute_add_external_coin_target_payload(inner: &mut BridgeInner, payload: AddExternalCoinTarget) {
+        inner.treasury.add_external_coin_target(
+            payload.add_external_coin_target_payload_coin_type(),
+            payload.add_external_coin_target_payload_target_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_target_payload(inner: &mut BridgeInner, payload: RemoveExternalCoinTarget) {
+        inner.treasury.remove_external_coin_target(
+            payload.remove_external_coin_target_payload_coin_type(),
+            payload.remove_external_coin_target_payload_target_address(),
+        )
+    }
+
+    fun execute_add_external_coin_witness(inner: &mut BridgeInner, payload: AddExternalCoinWitness) {
+        inner.treasury.add_external_coin_witness(
+            payload.add_external_coin_witness_payload_coin_type(),
+            payload.add_external_coin_witness_payload_witness_address(),
+        )
+    }
+
+    fun execute_remove_external_coin_witness(inner: &mut BridgeInner, payload: RemoveExternalCoinWitness) {
+        inner.treasury.remove_external_coin_witness(
+            payload.remove_external_coin_witness_payload_coin_type(),
+            payload.remove_external_coin_witness_payload_witness_address(),
         )
     }
 
@@ -955,9 +1496,19 @@ module bridge::bridge {
     #[test_only]
     public fun find_external_bridge_record(
         bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
         tx_hash: ascii::String,
     )   : Option<ExternalBridgeRecord> {
-        let key = ExternalBridgeMessageKey{tx_hash};
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
         let inner = load_inner(bridge)  ;
         if (!inner.external_bridge_records.contains(key)) {
             return option::none()
@@ -969,6 +1520,8 @@ module bridge::bridge {
             source_address: record.source_address,
             target_address: record.target_address,
             amount: record.amount,
+            verified_signatures: record.verified_signatures,
+            claimed: record.claimed,
         })
     }
 
@@ -989,6 +1542,7 @@ module bridge::bridge {
             treasury: treasury::create(ctx),
             token_transfer_records: linked_table::new(ctx),
             external_bridge_records: linked_table::new(ctx),
+            pre_deposit_multi_signature_records: linked_table::new(ctx),
             limiter: limiter::new(),
             paused: false,
             refund_records: linked_table::new(ctx),
@@ -1059,6 +1613,20 @@ module bridge::bridge {
     ): u8 {
         bridge.get_token_transfer_action_status(source_chain, bridge_seq_num)
     }
+
+    #[test_only]
+     public fun test_get_external_token_transfer_action_status(
+        bridge: &Bridge,
+        source_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount: u64,
+        tx_hash: ascii::String,
+    ): u8 {
+        bridge.get_external_token_transfer_action_status(source_chain, source_address,target_address,amount,tx_hash)
+    }
+
+
 
     #[test_only]
     public fun test_get_token_transfer_action_signatures(
@@ -1226,6 +1794,19 @@ module bridge::bridge {
     #[test_only]
     public fun transfer_limit_exceed_key(event: TokenTransferLimitExceed): BridgeMessageKey {
         event.message_key
+    }
+
+    #[test_only]
+    public fun unwrap_external_deposited_approved_event(event: ExternalDepositedApprovedEvent):  (ascii::String, ascii::String, u8, u8, vector<u8>, vector<u8>, u64)  {
+        (
+            event.tx_hash,
+            event.coin_type,
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount,
+        )
     }
 
     #[test_only]

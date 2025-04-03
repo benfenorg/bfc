@@ -12,7 +12,7 @@ use std::str::from_utf8;
 use std::sync::Arc;
 use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
-use sui_json_rpc_types::DevInspectResults;
+use sui_json_rpc_types::{DevInspectResults, SuiObjectDataFilter, SuiObjectResponseQuery};
 use sui_json_rpc_types::{EventFilter, Page, SuiEvent};
 use sui_json_rpc_types::{
     EventPage, SuiObjectDataOptions, SuiTransactionBlockResponse,
@@ -27,7 +27,7 @@ use sui_types::bridge::MoveTypeCommitteeMember;
 use sui_types::bridge::MoveTypeParsedTokenTransferMessage;
 use sui_types::gas_coin::GasCoin;
 use sui_types::object::Owner;
-use sui_types::parse_sui_type_tag;
+use sui_types::{parse_sui_struct_tag, parse_sui_type_tag};
 use sui_types::transaction::Argument;
 use sui_types::transaction::CallArg;
 use sui_types::transaction::Command;
@@ -108,6 +108,11 @@ where
 
     pub async fn notify_something_done(&self){
         self.inner.notify_something_done().await;
+    }
+
+    pub async fn get_object_for_cap_must_succeed(&self,address: SuiAddress, filter_tag: &str) -> ObjectArg {
+        self.inner.get_object_for_cap(address, filter_tag).await
+        .expect("Failed to get admin cap")
     }
 
     /// Get the mutable bridge object arg on chain.
@@ -332,6 +337,40 @@ where
         }
     }
 
+    pub async fn get_external_token_transfer_action_onchain_status_until_success(
+        &self,
+        source_chain: u8,
+        source_address: Vec<u8>,
+        target_address: Vec<u8>,
+        amount: u64,
+        tx_hash: String,
+    ) -> BridgeActionStatus {
+        loop {
+            let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
+            let Ok(Ok(status)) = retry_with_max_elapsed_time!(
+                self.inner.get_external_token_transfer_action_onchain_status(
+                    bridge_object_arg,
+                    source_chain,
+                    &source_address,
+                    &target_address,
+                    amount,
+                    tx_hash.clone(),
+                ),
+                Duration::from_secs(30)
+            ) else {
+                self.bridge_metrics
+                    .sui_rpc_errors
+                    .with_label_values(&["get_external_token_transfer_action_onchain_status"])
+                    .inc();
+                
+                error!("Failed to get external token onchain status for tx_hash: {}", tx_hash.clone());
+
+                continue;
+            };
+            return status;
+        }
+    }
+
     // TODO: this function is very slow (seconds) in tests, we need to optimize it
     pub async fn get_send_back_onchain_status_until_success(
         &self,
@@ -440,6 +479,8 @@ pub trait SuiClientInner: Send + Sync {
 
     async fn get_mutable_bridge_object_arg(&self) -> Result<ObjectArg, Self::Error>;
 
+    async fn get_object_for_cap(&self, address: SuiAddress, filter_tag: &str) -> Result<ObjectArg, Self::Error>;
+
     async fn get_bridge_summary(&self) -> Result<BridgeSummary, Self::Error>;
 
     async fn execute_transaction_block_with_effects(
@@ -452,6 +493,16 @@ pub trait SuiClientInner: Send + Sync {
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
+    ) -> Result<BridgeActionStatus, BridgeError>;
+
+    async fn get_external_token_transfer_action_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        source_address: &Vec<u8>,
+        target_address: &Vec<u8>,
+        amount: u64,
+        tx_hash: String,
     ) -> Result<BridgeActionStatus, BridgeError>;
 
     async fn get_send_back_onchain_status(
@@ -548,6 +599,29 @@ impl SuiClientInner for SuiSdkClient {
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
 
+    async fn get_external_token_transfer_action_onchain_status(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain: u8,
+        source_address: &Vec<u8>,
+        target_address: &Vec<u8>,
+        amount: u64,
+        tx_hash: String,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        dev_inspect_exteranl_token_bridge::<u8>(
+            self,
+            bridge_object_arg,
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+            "get_external_token_transfer_action_status",
+        )
+        .await
+        .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
+    }
+
     async fn get_send_back_onchain_status(
         &self,
         bridge_object_arg: ObjectArg,
@@ -562,10 +636,6 @@ impl SuiClientInner for SuiSdkClient {
         .await
         .and_then(|status_byte| BridgeActionStatus::try_from(status_byte).map_err(Into::into))
     }
-
-
-
-
 
     async fn get_token_transfer_action_onchain_signatures(
         &self,
@@ -644,6 +714,27 @@ impl SuiClientInner for SuiSdkClient {
     async fn notify_something_done(&self){
         //do nothing,just for testing
     }
+
+    async fn get_object_for_cap(&self,address: SuiAddress, filter_tag: &str) -> Result<ObjectArg, Self::Error> {
+        let filter = SuiObjectDataFilter::StructType(parse_sui_struct_tag(filter_tag).unwrap());
+        let data_option = SuiObjectDataOptions::new()
+            .with_type()
+            .with_owner()
+            .with_previous_transaction()
+            .with_content();
+        let objects = self.read_api().get_owned_objects(address, Some(SuiObjectResponseQuery::new(
+            Some(filter),
+            Some(data_option),
+        )), None, None).await?.data;
+        if objects.is_empty() {
+            Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap")))
+        } else {
+            match objects.get(0).and_then(|obj| obj.data.as_ref()) {
+                Some(data) => Ok(ObjectArg::ImmOrOwnedObject(data.object_ref())),
+                None => Err(sui_sdk::error::Error::DataError(format!("No object found: admin cap index 0 is None"))),
+            }
+        }
+    }
 }
 
 /// Helper function to dev-inspect `bridge::{function_name}` function
@@ -671,6 +762,76 @@ where
             Identifier::new(function_name).unwrap(),
             vec![],
             vec![Argument::Input(0), Argument::Input(1), Argument::Input(2)],
+        )],
+    };
+    let kind = TransactionKind::programmable(pt);
+    let resp = sui_client
+        .read_api()
+        .dev_inspect_transaction_block(SuiAddress::ZERO, kind, None, None, None)
+        .await?;
+    let DevInspectResults {
+        results, effects, ..
+    } = resp;
+    let Some(results) = results else {
+        return Err(BridgeError::Generic(format!(
+            "No results returned for '{}', effects: {:?}",
+            function_name, effects
+        )));
+    };
+    let return_values = &results
+        .first()
+        .ok_or(BridgeError::Generic(format!(
+            "No return values for '{}', results: {:?}",
+            function_name, results
+        )))?
+        .return_values;
+    let (value_bytes, _type_tag) = return_values.first().ok_or(BridgeError::Generic(format!(
+        "No first return value for '{}', results: {:?}",
+        function_name, results
+    )))?;
+    bcs::from_bytes::<T>(value_bytes).map_err(|e| {
+        BridgeError::Generic(format!(
+            "Failed to parse return value for '{}', error: {:?}, results: {:?}",
+            function_name, e, results
+        ))
+    })
+}
+
+async fn dev_inspect_exteranl_token_bridge<T>(
+    sui_client: &SuiSdkClient,
+    bridge_object_arg: ObjectArg,
+    source_chain: u8,
+    source_address: &Vec<u8>,
+    target_address: &Vec<u8>,
+    amount: u64,
+    tx_hash: String,
+    function_name: &str,
+) -> Result<T, BridgeError>
+where
+    T: DeserializeOwned,
+{
+    let pt = ProgrammableTransaction {
+        inputs: vec![
+            CallArg::Object(bridge_object_arg),
+            CallArg::Pure(bcs::to_bytes(&source_chain).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&source_address).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&target_address).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&amount).unwrap()),
+            CallArg::Pure(bcs::to_bytes(&tx_hash).unwrap()),
+        ],
+        commands: vec![Command::move_call(
+            BRIDGE_PACKAGE_ID,
+            Identifier::new("bridge").unwrap(),
+            Identifier::new(function_name).unwrap(),
+            vec![],
+            vec![
+                Argument::Input(0), 
+                Argument::Input(1), 
+                Argument::Input(2),
+                Argument::Input(3),
+                Argument::Input(4),
+                Argument::Input(5),
+            ],
         )],
     };
     let kind = TransactionKind::programmable(pt);
@@ -779,7 +940,7 @@ mod tests {
     use serde::{Deserialize, Serialize};
     use std::str::FromStr;
     use sui_json_rpc_types::BcsEvent;
-    use sui_types::bridge::{BridgeChainId, TOKEN_ID_SUI, TOKEN_ID_USDC};
+    use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_SUI};
     use sui_types::crypto::get_key_pair;
 
     use super::*;
@@ -968,7 +1129,7 @@ mod tests {
             context,
             eth_recv_address,
             usdc_object_ref,
-            id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            id_token_map.get(&TOKEN_ID_ETH).unwrap().clone(),
             bridge_object_arg,
         )
         .await;
@@ -977,7 +1138,7 @@ mod tests {
         assert_eq!(bridge_event.eth_chain_id, BridgeChainId::EthCustom);
         assert_eq!(bridge_event.eth_address, eth_recv_address);
         assert_eq!(bridge_event.sui_address, sender);
-        assert_eq!(bridge_event.token_id, TOKEN_ID_USDC);
+        assert_eq!(bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(bridge_event.amount_sui_adjusted, usdc_amount);
 
         let action = get_test_sui_to_eth_bridge_action(
@@ -987,7 +1148,7 @@ mod tests {
             Some(bridge_event.amount_sui_adjusted),
             Some(bridge_event.sui_address),
             Some(bridge_event.eth_address),
-            Some(TOKEN_ID_USDC),
+            Some(TOKEN_ID_ETH),
         );
         let status = sui_client
             .inner
@@ -1032,6 +1193,50 @@ mod tests {
                 bridge_object_arg,
                 action.chain_id() as u8,
                 action.seq_number(),
+            )
+            .await
+            .unwrap();
+        assert_eq!(status, BridgeActionStatus::NotFound);
+    }
+
+    #[tokio::test]
+    async fn test_get_external_token_transfer_action_status() {
+        telemetry_subscribers::init_for_testing();
+        let mut bridge_keys = vec![];
+        for _ in 0..=3 {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+        }
+        let mut test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .build()
+            .await;
+
+        let bridge_metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client =
+            SuiClient::new(&test_cluster.inner.fullnode_handle.rpc_url, bridge_metrics)
+                .await
+                .unwrap();
+
+        // Wait until committee is set up
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+        let bridge_object_arg = sui_client
+            .get_mutable_bridge_object_arg_must_succeed()
+            .await;
+        let status = sui_client
+            .inner
+            .get_external_token_transfer_action_onchain_status(
+                bridge_object_arg,
+                BridgeChainId::BtcTestnet as u8,
+                &String::from("tb1pxafm6dv7rj8x8st44n64f58nuy5r9vaplvfgdy747gdeug7xcvuqx98ude")
+                    .as_bytes()
+                    .to_vec(),
+                &AccountAddress::random().to_vec(),
+                1000,
+                String::from("3fbdaa17331b3966b7bd737754778ec93a7a7233f5126daf6d0cbdb94d776e87"),
             )
             .await
             .unwrap();

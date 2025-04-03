@@ -22,7 +22,6 @@ use sui_types::execution::{
 };
 use sui_types::execution_config_utils::to_binary_config;
 use sui_types::execution_status::ExecutionStatus;
-use sui_types::gas::calculate_bfc_to_stable_cost_with_base_point;
 use sui_types::inner_temporary_store::InnerTemporaryStore;
 use sui_types::layout_resolver::LayoutResolver;
 use sui_types::oracle_price::OraclePrice;
@@ -47,7 +46,7 @@ use sui_types::{
     effects::EffectsObjectChange,
     //storage::{BackingPackageStore, ChildObjectResolver, ParentSync, Storage},
     //transaction::InputObjects,
-    SUI_DENY_LIST_OBJECT_ID,
+    SUI_DENY_LIST_OBJECT_ID
 };
 use sui_types::{is_system_package, SUI_SYSTEM_STATE_OBJECT_ID};
 
@@ -1126,38 +1125,11 @@ impl<'backing> TemporaryStore<'backing> {
         }
 
         if pay_with_stable_gas {
-            total_input_stable_gas -= calculate_bfc_to_stable_cost_with_base_point(
-                gas_summary.computation_cost,
-                gas_summary.rate,
-                gas_summary.base_point,
-            );
-            total_output_sui =
-                total_output_sui.saturating_add(gas_summary.non_refundable_storage_fee);
-
-            let stable_amount = if total_input_stable_gas >= total_output_stable_gas {
-                total_input_stable_gas - total_output_stable_gas
-            } else {
-                total_output_stable_gas - total_input_stable_gas
-            };
-            let sui_amount = if total_input_sui >= total_output_sui {
-                total_input_sui - total_output_sui
-            } else {
-                total_output_sui - total_input_sui
-            };
-
-            if stable_amount != gas_summary.storage_gas_usage_abs_improved() {
+            if total_input_sui+gas_summary.storage_cost != total_output_sui + gas_summary.storage_rebate + gas_summary.non_refundable_storage_fee{
                 return Err(ExecutionError::invariant_violation(
-                    format!("SUI conservation failed: stable_amount={}, storage_gas_usage_abs_improved={}, this transaction either mints or burns SUI",
-                            stable_amount,
-                            gas_summary.storage_gas_usage_abs_improved()))
-                );
-            }
-
-            if sui_amount != gas_summary.storage_gas_usage_abs() {
-                return Err(ExecutionError::invariant_violation(
-                    format!("SUI conservation failed: sui amount={}, storage_gas_usage_abs={}, this transaction either mints or burns SUI",
-                            sui_amount,
-                            gas_summary.storage_gas_usage_abs()))
+                    format!("SUI conservation failed: input={}, output={}, this transaction either mints or burns SUI",
+                            total_input_sui,
+                            total_output_sui))
                 );
             }
         } else {

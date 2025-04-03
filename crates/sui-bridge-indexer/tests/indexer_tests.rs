@@ -67,8 +67,8 @@ async fn test_indexing_transfer() {
         .await
         .unwrap();
 
-    // 8 governance actions in total, token registration and approval events for ETH USDC, USDT and BTC.
-    assert_eq!(8, data.len());
+    // 10 governance actions in total, token registration and approval events for ETH USDC, USDT and BTC.
+    assert_eq!(10, data.len());
 
     // transfer eth to sui
     initiate_bridge_eth_to_sui(&cluster, 1000, 0, false).await.unwrap();

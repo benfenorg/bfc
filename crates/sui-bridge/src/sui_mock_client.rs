@@ -9,9 +9,9 @@ use async_trait::async_trait;
 use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::AtomicU64;
 use std::sync::{Arc, Mutex};
-use sui_json_rpc_types::SuiTransactionBlockResponse;
+use sui_json_rpc_types::{ SuiTransactionBlockResponse};
 use sui_json_rpc_types::{EventFilter, EventPage, SuiEvent};
-use sui_types::base_types::ObjectID;
+use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::base_types::ObjectRef;
 use sui_types::bridge::{
     BridgeCommitteeSummary, BridgeSummary, BridgeTokenMetadata, BridgeTreasurySummary, MoveTypeParsedTokenTransferMessage
@@ -155,6 +155,11 @@ impl SuiClientInner for SuiMockClient {
     async fn notify_something_done(&self) {
         self.requested_transactions_tx.send(TransactionDigest::random()).unwrap();
     }
+    async fn get_object_for_cap(&self,
+                                _address: SuiAddress,
+                                _filter_tag: &str) -> Result<ObjectArg, Self::Error> {
+        Ok(DUMMY_MUTALBE_BRIDGE_OBJECT_ARG)
+    }
 
 
     // Unwraps in this function: We assume the responses are pre-populated
@@ -236,6 +241,14 @@ impl SuiClientInner for SuiMockClient {
                 .clone()
                 .unwrap_or_default(),
                 treasury: BridgeTreasurySummary {
+                    external_coin_target_address: vec![
+                        ("0x11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75".to_string(),
+                            vec![
+                                "n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string(),
+                                "123".to_string(),
+                            ],
+                        ),
+                    ],
                     supported_tokens: vec![("11c6be44f809a2a017d2e5580b2ceab5cd3e20582da1e615c92127222470ac75::btc::BTC".to_string(), BridgeTokenMetadata{
                         id: 1,
                         decimal_multiplier: 100_000_000,
@@ -275,6 +288,18 @@ impl SuiClientInner for SuiMockClient {
             .get(&(source_chain_id, seq_number))
             .cloned()
             .unwrap_or(BridgeActionStatus::Pending))
+    }
+
+    async fn get_external_token_transfer_action_onchain_status(
+        &self,
+        _bridge_object_arg: ObjectArg,
+        _source_chain: u8,
+        _source_address: &Vec<u8>,
+        _target_address: &Vec<u8>,
+        _amount: u64,
+        _tx_hash: String,
+    ) -> Result<BridgeActionStatus, BridgeError> {
+        Ok(BridgeActionStatus::NotFound)
     }
 
     async fn get_send_back_onchain_status(

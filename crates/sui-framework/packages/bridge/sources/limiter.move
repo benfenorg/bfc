@@ -16,6 +16,8 @@ module bridge::limiter {
 
     const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
 
+    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000;
+
     //////////////////////////////////////////////////////
     // Types
     //
@@ -24,6 +26,8 @@ module bridge::limiter {
         transfer_limits: VecMap<BridgeRoute, u64>,
         // Per hour transfer amount for each bridge route
         transfer_records: VecMap<BridgeRoute, TransferRecord>,
+        // Each time the maximum mint value
+        max_mint_busd_limit: u64,
     }
 
     public struct TransferRecord has store {
@@ -49,6 +53,15 @@ module bridge::limiter {
         self.transfer_limits[route]
     }
 
+    // Return the mint busd max limit
+    public fun get_mint_busd_max_limit(self: &TransferLimiter): u64 {
+        self.max_mint_busd_limit
+    }
+
+    public(package) fun set_mint_busd_max_limit(self: &mut TransferLimiter, new_limit: u64) {
+        self.max_mint_busd_limit = new_limit;
+    }
+
     //////////////////////////////////////////////////////
     // Internal functions
     //
@@ -57,10 +70,33 @@ module bridge::limiter {
         // hardcoded limit for bridge genesis
         TransferLimiter {
             transfer_limits: initial_transfer_limits(),
-            transfer_records: vec_map::empty()
+            transfer_records: vec_map::empty(),
+            max_mint_busd_limit: DEFAULT_MAX_MINT_BUSD_LIMIT,
         }
     }
 
+
+    public fun get_available_claim_amount<T>(
+        self: &TransferLimiter,
+        treasury: &BridgeTreasury,
+        route: BridgeRoute,
+    ): u64{
+        if (!self.transfer_records.contains(&route)) {
+           return 0
+        };
+        let record = self.transfer_records.get(&route);
+        let route_limit = self.transfer_limits.try_get(&route);
+        assert!(route_limit.is_some(), ELimitNotFoundForRoute);
+        let route_limit = route_limit.destroy_some();
+        let route_limit_adjusted =
+            (route_limit as u128) * (treasury.decimal_multiplier<T>() as u128);
+        let total_adjusted= (record.total_amount as u128 ) * (treasury.decimal_multiplier<T>() as u128);
+        if (total_adjusted <= route_limit_adjusted){
+            return 0
+        };
+        let price = (treasury.notional_value<T>() as u128);
+       ((total_adjusted-route_limit_adjusted) / price) as u64
+    }
     public(package) fun check_and_record_sending_transfer<T>(
         self: &mut TransferLimiter,
         treasury: &BridgeTreasury,
@@ -254,6 +290,7 @@ module bridge::limiter {
         TransferLimiter {
             transfer_limits: vec_map::empty(),
             transfer_records: vec_map::empty(),
+            max_mint_busd_limit: DEFAULT_MAX_MINT_BUSD_LIMIT,
         }
     }
 

@@ -4,9 +4,10 @@
 //! BridgeActionExecutor receives BridgeActions (from BridgeOrchestrator),
 //! collects bridge authority signatures and submit signatures on chain.
 
+use crate::abi::EthToSuiTokenBridgeV1;
 use crate::aml_checker::AMLCheckerWrapper;
 use crate::retry_with_max_elapsed_time;
-use crate::types::IsBridgePaused;
+use crate::types::{EthToSuiBridgeAction, IsBridgePaused};
 use arc_swap::ArcSwap;
 use mysten_metrics::spawn_logged_monitored_task;
 use shared_crypto::intent::{Intent, IntentMessage};
@@ -79,6 +80,7 @@ pub struct BridgeActionExecutor<C> {
     gas_object_id: ObjectID,
     store: Arc<BridgeOrchestratorTables>,
     bridge_object_arg: ObjectArg,
+    admin_cap: ObjectArg,
     sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
     bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
     metrics: Arc<BridgeMetrics>,
@@ -117,6 +119,13 @@ where
         let bridge_object_arg = sui_client
             .get_mutable_bridge_object_arg_must_succeed()
             .await;
+        info!("get admin cap for {:?}", &sui_address);
+
+        //let modify_cap_vec = get_owned_objects("0xc8::bfc_system_state_inner::BfcSystemModifyCap", http_client, address).await.unwrap();
+        // let modify_cap = modify_cap_vec.first().unwrap().object().unwrap();
+        let admin_cap = sui_client
+            .get_object_for_cap_must_succeed(sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap")
+            .await;
         Self {
             sui_client,
             bridge_auth_agg,
@@ -124,7 +133,8 @@ where
             key,
             gas_object_id,
             sui_address,
-            bridge_object_arg,
+            bridge_object_arg, 
+            admin_cap,
             sui_token_type_tags,
             bridge_pause_rx,
             metrics,
@@ -185,6 +195,7 @@ where
                 execution_tx_clone,
                 execution_rx,
                 self.bridge_object_arg,
+                self.admin_cap,
                 self.sui_token_type_tags,
                 self.bridge_pause_rx,
                 metrics,
@@ -295,12 +306,30 @@ where
         store: &Arc<BridgeOrchestratorTables>,
         metrics: &Arc<BridgeMetrics>,
     ) -> bool {
-        let status = sui_client
-            .get_token_transfer_action_onchain_status_until_success(
-                action.chain_id() as u8,
-                action.seq_number(),
-            )
-            .await;
+        let status: BridgeActionStatus;
+
+        match &action {
+            BridgeAction::ExternalDepositStartBridgeAction(external_action) => {
+                status = sui_client
+                .get_external_token_transfer_action_onchain_status_until_success(
+                    external_action.sui_bridge_event.source_chain as u8,
+                    external_action.sui_bridge_event.source_address.clone(),
+                    external_action.sui_bridge_event.target_address.clone(),
+                    external_action.sui_bridge_event.amount.clone(),
+                    external_action.sui_bridge_event.tx_hash.clone(),
+                )
+                .await;
+            },
+            _ => {
+                status = sui_client
+                    .get_token_transfer_action_onchain_status_until_success(
+                        action.chain_id() as u8,
+                        action.seq_number(),
+                    )
+                    .await;
+            },
+        };
+        
         match status {
             BridgeActionStatus::Approved | BridgeActionStatus::Claimed => {
                 info!(
@@ -344,7 +373,7 @@ where
 
         // Only token transfer action should reach here
         match &action {
-            BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
+            BridgeAction::ExternalDepositStartBridgeAction(_) | BridgeAction::SuiToEthBridgeAction(_) | BridgeAction::EthToSuiBridgeAction(_) | BridgeAction::EthSendBackBridgeAction(_) => (),
             _ => unreachable!("Non token transfer action should not reach here"),
         };
 
@@ -409,6 +438,7 @@ where
             CertifiedBridgeActionExecutionWrapper,
         >,
         bridge_object_arg: ObjectArg,
+        _admin_cap_arg: ObjectArg,
         sui_token_type_tags: Arc<ArcSwap<HashMap<u64, TypeTag>>>,
         bridge_pause_rx: tokio::sync::watch::Receiver<IsBridgePaused>,
         metrics: Arc<BridgeMetrics>,
@@ -485,11 +515,13 @@ where
 
         info!("Building Sui transaction");
         let rgp = sui_client.get_reference_gas_price_until_success().await;
+        let admin_cap_arg = sui_client.get_object_for_cap_must_succeed(*sui_address, "0xc8::bfc_system_state_inner::BfcSystemModifyCap").await;
         let tx_data = match build_sui_transaction(
             *sui_address,
             &gas_object_ref,
             ceriticate_clone,
             *bridge_object_arg,
+            Some(admin_cap_arg),
             sui_token_type_tags.load().as_ref(),
             rgp,
         ) {
@@ -511,7 +543,6 @@ where
         );
         let signed_tx = Transaction::from_data(tx_data, vec![sig]);
         let tx_digest = *signed_tx.digest();
-
         // Check twice: If the action is already processed, skip it.
         if Self::handle_already_processed_token_transfer_action_maybe(
             sui_client, action, store, metrics,
@@ -642,9 +673,27 @@ pub async fn submit_to_executor(
     tx: &mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
     action: BridgeAction,
 ) -> Result<(), BridgeError> {
-    tx.send(BridgeActionExecutionWrapper(action, 0))
+    if action.is_stable_coin() {
+        match action {
+            BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                let action = EthToSuiBridgeAction{
+                    eth_tx_hash: action_inner.eth_tx_hash,
+                    eth_event_index: action_inner.eth_event_index,
+                    eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
+                };
+                tx.send(BridgeActionExecutionWrapper(BridgeAction::EthToSuiBridgeAction(action), 0))
+                .await
+                .map_err(|e| BridgeError::Generic(e.to_string()))
+            },
+            _ => {
+                return Err(BridgeError::Generic("Not a stable coin".to_string()));
+            }
+        }
+    }else{
+        tx.send(BridgeActionExecutionWrapper(action, 0))
         .await
         .map_err(|e| BridgeError::Generic(e.to_string()))
+    }
 }
 
 pub async fn submit_to_aml_checker(
@@ -724,6 +773,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -783,6 +833,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -837,6 +888,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -923,6 +975,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1064,6 +1117,7 @@ mod tests {
             &gas_object_ref,
             action_certificate,
             DUMMY_MUTALBE_BRIDGE_OBJECT_ARG,
+            None,
             &id_token_map,
             1000,
         )
@@ -1194,6 +1248,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &id_token_map,
             1000,
         )
@@ -1280,6 +1335,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &id_token_map,
             1000,
         )
@@ -1382,6 +1438,7 @@ mod tests {
             &gas_object_ref,
             action_certificate.clone(),
             arg,
+            None,
             &maplit::hashmap! {
                 new_token_id => new_type_tag.clone()
             },

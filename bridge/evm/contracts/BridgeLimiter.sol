@@ -90,6 +90,16 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         return total;
     }
 
+    function getAvailableClaimAmount(uint8 chainID,uint64 tokenID)  public view returns (uint256){
+        uint256 windowAmount = calculateWindowAmount(chainID);
+        uint256 total = chainLimits[chainID];
+        require(total > windowAmount,"BridgeLimiter: chainLimits must be greater than windowAmount");
+        address tokenAddress = committee.config().tokenAddressOf(tokenID);
+        uint8 decimals = IERC20Metadata(tokenAddress).decimals();
+        uint256 tokenPrice = committee.config().tokenPriceOf(tokenID);
+        return ((total - windowAmount) * (10 ** decimals)) / tokenPrice;
+    }
+
     /// @notice Calculates the given token amount in USD (8 decimal precision).
     /// @param tokenID The ID of the token.
     /// @param amount The amount of tokens.

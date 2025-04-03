@@ -31,7 +31,7 @@ contract BridgeConfig is IBridgeConfig, CommitteeUpgradeable {
         uint8 _chainID,
         address[] memory _supportedTokens,
         uint64[] memory _tokenPrices,
-        uint8[] memory _tokenIds,
+        uint64[] memory _tokenIds,
         uint8[] memory _suiDecimals,
         uint8[] memory _supportedChains
     ) external initializer {

@@ -3,9 +3,7 @@
 
 use fastcrypto::traits::ToFromBytes;
 use move_core_types::ident_str;
-use std::io::Read;
 use std::{collections::HashMap, str::FromStr};
-use fastcrypto::encoding::Hex;
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,
@@ -29,6 +27,7 @@ pub fn build_sui_transaction(
     gas_object_ref: &ObjectRef,
     action: VerifiedCertifiedBridgeAction,
     bridge_object_arg: ObjectArg,
+    admin_cap_arg: Option<ObjectArg>,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
@@ -40,6 +39,7 @@ pub fn build_sui_transaction(
             action,
             true,
             bridge_object_arg,
+            admin_cap_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -50,6 +50,15 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
+            admin_cap_arg,
+            sui_token_type_tags,
+            rgp,
+        ),
+        BridgeAction::ExternalDepositStartBridgeAction(_) => build_external_token_bridge_approve_and_claim_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -59,6 +68,7 @@ pub fn build_sui_transaction(
             action,
             false,
             bridge_object_arg,
+            admin_cap_arg,
             sui_token_type_tags,
             rgp,
         ),
@@ -108,6 +118,34 @@ pub fn build_sui_transaction(
             bridge_object_arg,
             rgp,
         ),
+        BridgeAction::AddExternalCoinWitnessAction(_) => build_add_external_coin_witness_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::RemoveExternalCoinWitnessAction(_) => build_remove_external_coin_witness_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::AddExternalCoinTargetAction(_) => build_add_external_coin_target_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::RemoveExternalCoinTargetAction(_) => build_remove_external_coin_target_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
         BridgeAction::AddTokensOnSuiAction(_) => build_add_tokens_on_sui_transaction(
             client_address,
             gas_object_ref,
@@ -125,12 +163,119 @@ pub fn build_sui_transaction(
     }
 }
 
+fn build_external_token_bridge_approve_and_claim_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    sui_token_type_tags: &HashMap<u64, TypeTag>,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, sender, target_chain, target, token_type, amount, tx_hash) =
+        match bridge_action {
+            BridgeAction::ExternalDepositStartBridgeAction(a) => {
+                let bridge_event = a.sui_bridge_event;
+                (
+                    bridge_event.source_chain,
+                    bridge_event.nonce,
+                    bridge_event.source_address.to_vec(),
+                    bridge_event.target_chain,
+                    bridge_event.target_address.to_vec(),
+                    bridge_event.token_id,
+                    bridge_event.amount,
+                    bridge_event.tx_hash,
+                )
+            }
+           
+            _ => unreachable!(),
+        };
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let sender = builder.pure(sender.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize sender: {:?}. Err: {:?}",
+            sender, e
+        ))
+    })?;
+    let target_chain = builder.pure(target_chain as u8).unwrap();
+    let target = builder.pure(target.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize target: {:?}. Err: {:?}",
+            target, e
+        ))
+    })?;
+    let arg_token_type = builder.pure(token_type).unwrap();
+    let amount = builder.pure(amount).unwrap();
+    let tx_hash = builder.pure(tx_hash).unwrap();
+    let event_idx = builder.pure(0 as u8).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_token_bridge_message").to_owned(),
+        vec![],
+        vec![
+            source_chain,
+            seq_num,
+            sender,
+            target_chain,
+            target,
+            arg_token_type,
+            amount,
+            tx_hash,
+            event_idx,
+        ],
+    );
+
+    // Unwrap: these should not fail
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("approval_and_claimed_external_coin").to_owned(),
+        vec![
+            sui_token_type_tags
+            .get(&token_type)
+            .ok_or(BridgeError::UnknownTokenId(token_type))?
+            .clone()
+        ],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
 fn build_token_bridge_approve_transaction(
     client_address: SuiAddress,
     gas_object_ref: &ObjectRef,
     action: VerifiedCertifiedBridgeAction,
     claim: bool,
     bridge_object_arg: ObjectArg,
+    admin_cap_arg: Option<ObjectArg>,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
@@ -183,13 +328,6 @@ fn build_token_bridge_approve_transaction(
             }
             _ => unreachable!(),
         };
-    let sender_clone = sender.clone();
-    let target_clone = target.clone();
-    let sender_clone2 = sender.clone();
-    let target_clone2 = target.clone();
-    println!("bbking 21 source_chain: {:?} seq_num: {:?} sender: {:?} target_chain: {:?} target: {:?} token_type: {:?} amount: {:?} tx_hash: {:?} event_idx: {:?}", source_chain, seq_num, sender_clone.bytes(), target_chain, target_clone.bytes(), token_type, amount, Hex::encode_with_format(&tx_hash), event_idx);
-    println!("bbking 21 sender: {:?}", Hex::encode_with_format(sender_clone2));
-    println!("bbking 21 target: {:?}", Hex::encode_with_format(target_clone2));
     let source_chain = builder.pure(source_chain as u8).unwrap();
     let seq_num = builder.pure(seq_num).unwrap();
     let sender = builder.pure(sender.clone()).map_err(|e| {
@@ -231,6 +369,7 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
+    
 
     let mut sig_bytes = vec![];
     for (_, sig) in sigs.signatures {
@@ -252,16 +391,31 @@ fn build_token_bridge_approve_transaction(
     );
 
     if claim {
+        if token_type == 5 {
+            let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+        let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,
             sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-            ident_str!("claim_and_transfer_token").to_owned(),
+            ident_str!("claim_and_transfer_busd").to_owned(),
             vec![sui_token_type_tags
                 .get(&token_type)
                 .ok_or(BridgeError::UnknownTokenId(token_type))?
                 .clone()],
-            vec![arg_bridge, arg_clock, source_chain, seq_num],
-        );
+                vec![arg_bridge, system_obj, arg_clock, source_chain, seq_num, admin_cap],
+            );
+        } else {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("claim_and_transfer_token").to_owned(),
+                vec![sui_token_type_tags
+                    .get(&token_type)
+                    .ok_or(BridgeError::UnknownTokenId(token_type))?
+                    .clone()],
+                    vec![arg_bridge, arg_clock, source_chain, seq_num],
+                );   
+        }
     }
 
     let pt = builder.finish();
@@ -781,6 +935,259 @@ pub fn build_remove_external_coin_admin_transaction(
     ))
 }
 
+pub fn build_add_external_coin_witness_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)   -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
+        BridgeAction::AddExternalCoinWitnessAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let witness_address = builder.pure(witness_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_add_external_coin_witness_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, witness_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_remove_external_coin_witness_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
+        BridgeAction::RemoveExternalCoinWitnessAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let witness_address = builder.pure(witness_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_remove_external_coin_witness_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, witness_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+
+pub fn build_add_external_coin_target_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)   -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, target_address) = match bridge_action {
+        BridgeAction::AddExternalCoinTargetAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.target_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let target_address = builder.pure(target_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_add_external_coin_target_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, target_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_remove_external_coin_target_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (source_chain, seq_num, coin_type, target_address) = match bridge_action {
+        BridgeAction::RemoveExternalCoinTargetAction(a) => {
+            (a.chain_id, a.nonce, a.coin_type, a.target_address)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let coin_type = builder.pure(coin_type).unwrap();
+    let target_address = builder.pure(target_address).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_remove_external_coin_target_message").to_owned(),
+        vec![],
+        vec![source_chain, seq_num, coin_type, target_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
 pub fn build_add_tokens_on_sui_transaction(
     client_address: SuiAddress,
     gas_object_ref: &ObjectRef,
@@ -930,6 +1337,7 @@ mod tests {
     use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;
     use crate::metrics::BridgeMetrics;
     use crate::sui_client::SuiClient;
+    use crate::test_utils::get_test_external_bridge_action;
     use crate::types::BridgeAction;
     use crate::types::EmergencyAction;
     use crate::types::EmergencyActionType;
@@ -942,6 +1350,7 @@ mod tests {
         },
     };
     use ethers::types::Address as EthAddress;
+    use sui_types::bridge::TOKEN_ID_ETH;
     use std::collections::HashMap;
     use std::sync::Arc;
     use sui_types::bridge::{BridgeChainId, TOKEN_ID_BTC, TOKEN_ID_USDC};
@@ -996,11 +1405,12 @@ mod tests {
         .unwrap();
 
         // 2. Test Sui -> Eth Transfer approval
+        let token_id_expect = TOKEN_ID_ETH;
         let bridge_event = bridge_token(
             context,
             EthAddress::random(),
             usdc_object_ref,
-            id_token_map.get(&TOKEN_ID_USDC).unwrap().clone(),
+            id_token_map.get(&TOKEN_ID_ETH).unwrap().clone(),
             bridge_object_arg,
         )
         .await;
@@ -1012,7 +1422,7 @@ mod tests {
             Some(bridge_event.amount_sui_adjusted),
             Some(bridge_event.sui_address),
             Some(bridge_event.eth_address),
-            Some(TOKEN_ID_USDC),
+            Some(TOKEN_ID_ETH),
         );
         // `approve_action_with_validator_secrets` covers transaction building
         approve_action_with_validator_secrets(
@@ -1024,6 +1434,55 @@ mod tests {
             &id_token_map,
         )
         .await;
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+    async fn test_build_sui_transaction_for_external_token_transfer() {
+        telemetry_subscribers::init_for_testing();
+        let num_valdiator = 2;
+        let mut bridge_keys = vec![];
+        for _ in 0..num_valdiator {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+        }
+        let mut test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .build()
+            .await;
+        let metrics = Arc::new(BridgeMetrics::new_for_testing());
+        let sui_client = SuiClient::new(&test_cluster.inner.fullnode_handle.rpc_url, metrics)
+            .await
+            .unwrap();
+        let bridge_authority_keys = test_cluster.authority_keys_clone();
+        assert_eq!(bridge_authority_keys.len(), num_valdiator);
+
+        // Wait until committee is set up
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+        let summary = sui_client.get_bridge_summary().await.unwrap();
+        assert!(!summary.is_frozen);
+
+        let context = &mut test_cluster.inner.wallet;
+        let sender = context.active_address().unwrap();
+        let bridge_object_arg = sui_client
+            .get_mutable_bridge_object_arg_must_succeed()
+            .await;
+        let id_token_map = sui_client.get_token_id_map().await.unwrap();
+
+        let action = get_test_external_bridge_action(None, None, None, sender, None);
+        // `approve_action_with_validator_secrets` covers transaction building
+        approve_action_with_validator_secrets(
+            context,
+            bridge_object_arg,
+            action.clone(),
+            &bridge_authority_keys,
+            Some(sender),
+            &id_token_map,
+        )
+        .await
+        .unwrap();
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 8)]

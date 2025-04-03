@@ -213,7 +213,6 @@ pub mod checked {
     
             r
         }
-
         pub fn is_outer_gas_type(other: &TypeTag,version : u64) -> bool {
             if version > BFC_ROUND_V2_PROTOCOL_VERSION {
                 if &(STABLE::BUSD.type_tag()) == other {
@@ -224,7 +223,6 @@ pub mod checked {
             }
             Self::is_configurable_gas_type(other)
         }
-
         pub fn is_gas_type(other: &TypeTag) -> bool {
             [   STABLE::BARS,
                 STABLE::BAUD,

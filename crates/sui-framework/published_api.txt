@@ -5548,7 +5548,13 @@ rebalance_with_one_stablecoin
 mint_stable_entry
 	public entry fun
 	0xc8::bfc_system
+mint_stable_entry_to_address
+	public entry fun
+	0xc8::bfc_system
 mint_stable
+	public fun
+	0xc8::bfc_system
+verify_capability
 	public fun
 	0xc8::bfc_system
 burn_stable
@@ -5644,63 +5650,6 @@ vote_of
 has_vote
 	public entry fun
 	0xc8::bfc_system
-BridgeTreasury
-	public struct
-	0xb::treasury
-BridgeTokenMetadata
-	public struct
-	0xb::treasury
-ForeignTokenRegistration
-	public struct
-	0xb::treasury
-UpdateTokenPriceEvent
-	public struct
-	0xb::treasury
-NewTokenEvent
-	public struct
-	0xb::treasury
-TokenRegistrationEvent
-	public struct
-	0xb::treasury
-token_id
-	public fun
-	0xb::treasury
-decimal_multiplier
-	public fun
-	0xb::treasury
-notional_value
-	public fun
-	0xb::treasury
-register_foreign_token
-	public(package) fun
-	0xb::treasury
-add_new_token
-	public(package) fun
-	0xb::treasury
-create
-	public(package) fun
-	0xb::treasury
-is_external_coin_admin
-	public(package) fun
-	0xb::treasury
-add_external_coin_admin
-	public(package) fun
-	0xb::treasury
-remove_external_coin_admin
-	public(package) fun
-	0xb::treasury
-burn
-	public(package) fun
-	0xb::treasury
-mint
-	public(package) fun
-	0xb::treasury
-update_asset_notional_price
-	public(package) fun
-	0xb::treasury
-get_token_metadata
-	fun
-	0xb::treasury
 token
 	public fun
 	0xb::message_types
@@ -5726,6 +5675,18 @@ remove_external_coin_admin
 	public fun
 	0xb::message_types
 refund_admin_operate
+	public fun
+	0xb::message_types
+add_external_coin_witness
+	public fun
+	0xb::message_types
+remove_external_coin_witness
+	public fun
+	0xb::message_types
+add_external_coin_target
+	public fun
+	0xb::message_types
+remove_external_coin_target
 	public fun
 	0xb::message_types
 BridgeRoute
@@ -5776,6 +5737,9 @@ get_route
 BridgeMessage
 	public struct
 	0xb::message
+BitcoinMessage
+	public struct
+	0xb::message
 BridgeMessageKey
 	public struct
 	0xb::message
@@ -5806,6 +5770,18 @@ AddExternalCoinAdmin
 RemoveExternalCoinAdmin
 	public struct
 	0xb::message
+AddExternalCoinWitness
+	public struct
+	0xb::message
+RemoveExternalCoinWitness
+	public struct
+	0xb::message
+AddExternalCoinTarget
+	public struct
+	0xb::message
+RemoveExternalCoinTarget
+	public struct
+	0xb::message
 AddTokenOnSui
 	public struct
 	0xb::message
@@ -5813,6 +5789,18 @@ ParsedTokenTransferMessage
 	public struct
 	0xb::message
 extract_token_bridge_payload
+	public fun
+	0xb::message
+extract_add_witness_poyload
+	public fun
+	0xb::message
+extract_remove_witness_poyload
+	public fun
+	0xb::message
+extract_add_external_target_address_poyload
+	public fun
+	0xb::message
+extract_remove_external_target_address_poyload
 	public fun
 	0xb::message
 extract_emergency_op_payload
@@ -5842,6 +5830,12 @@ extract_add_tokens_on_sui
 serialize_message
 	public fun
 	0xb::message
+serialize_bitcoin_message
+	public fun
+	0xb::message
+create_bitcoin_message
+	public fun
+	0xb::message
 create_token_bridge_message
 	public fun
 	0xb::message
@@ -5861,6 +5855,18 @@ create_update_asset_price_message
 	public fun
 	0xb::message
 create_add_external_coin_admin_message
+	public fun
+	0xb::message
+create_add_external_coin_witness_message
+	public fun
+	0xb::message
+create_remove_external_coin_witness_message
+	public fun
+	0xb::message
+create_add_external_coin_target_message
+	public fun
+	0xb::message
+create_remove_external_coin_target_message
 	public fun
 	0xb::message
 create_remove_external_coin_admin_message
@@ -5891,6 +5897,9 @@ source_chain
 	public fun
 	0xb::message
 payload
+	public fun
+	0xb::message
+token_sender_address
 	public fun
 	0xb::message
 token_target_chain
@@ -5947,6 +5956,30 @@ update_asset_price_payload_token_id
 update_asset_price_payload_new_price
 	public fun
 	0xb::message
+add_external_coin_witness_payload_coin_type
+	public fun
+	0xb::message
+add_external_coin_witness_payload_witness_address
+	public fun
+	0xb::message
+remove_external_coin_witness_payload_coin_type
+	public fun
+	0xb::message
+remove_external_coin_witness_payload_witness_address
+	public fun
+	0xb::message
+add_external_coin_target_payload_coin_type
+	public fun
+	0xb::message
+add_external_coin_target_payload_target_address
+	public fun
+	0xb::message
+remove_external_coin_target_payload_coin_type
+	public fun
+	0xb::message
+remove_external_coin_target_payload_target_address
+	public fun
+	0xb::message
 add_external_coin_admin_payload_coin_type
 	public fun
 	0xb::message
@@ -5989,6 +6022,87 @@ reverse_bytes
 peel_u64_be
 	fun
 	0xb::message
+ecdsa_pub_key_to_eth_address
+	public(package) fun
+	0xb::crypto
+BridgeTreasury
+	public struct
+	0xb::treasury
+BridgeTokenMetadata
+	public struct
+	0xb::treasury
+ForeignTokenRegistration
+	public struct
+	0xb::treasury
+UpdateTokenPriceEvent
+	public struct
+	0xb::treasury
+NewTokenEvent
+	public struct
+	0xb::treasury
+TokenRegistrationEvent
+	public struct
+	0xb::treasury
+token_id
+	public fun
+	0xb::treasury
+decimal_multiplier
+	public fun
+	0xb::treasury
+notional_value
+	public fun
+	0xb::treasury
+register_foreign_token
+	public(package) fun
+	0xb::treasury
+add_new_token
+	public(package) fun
+	0xb::treasury
+create
+	public(package) fun
+	0xb::treasury
+is_external_coin_admin
+	public(package) fun
+	0xb::treasury
+is_external_coin_witness
+	public(package) fun
+	0xb::treasury
+external_coin_admin_count
+	public(package) fun
+	0xb::treasury
+add_external_coin_admin
+	public(package) fun
+	0xb::treasury
+add_external_coin_target
+	public(package) fun
+	0xb::treasury
+add_external_coin_witness
+	public(package) fun
+	0xb::treasury
+remove_external_coin_witness
+	public(package) fun
+	0xb::treasury
+verify_bitcoin_signatures
+	public fun
+	0xb::treasury
+remove_external_coin_admin
+	public(package) fun
+	0xb::treasury
+remove_external_coin_target
+	public(package) fun
+	0xb::treasury
+burn
+	public(package) fun
+	0xb::treasury
+mint
+	public(package) fun
+	0xb::treasury
+update_asset_notional_price
+	public(package) fun
+	0xb::treasury
+get_token_metadata
+	fun
+	0xb::treasury
 TransferLimiter
 	public struct
 	0xb::limiter
@@ -6001,8 +6115,17 @@ UpdateRouteLimitEvent
 get_route_limit
 	public fun
 	0xb::limiter
+get_mint_busd_max_limit
+	public fun
+	0xb::limiter
+set_mint_busd_max_limit
+	public(package) fun
+	0xb::limiter
 new
 	public(package) fun
+	0xb::limiter
+get_available_claim_amount
+	public fun
 	0xb::limiter
 check_and_record_sending_transfer
 	public(package) fun
@@ -6019,9 +6142,6 @@ adjust_transfer_records
 initial_transfer_limits
 	fun
 	0xb::limiter
-ecdsa_pub_key_to_eth_address
-	public(package) fun
-	0xb::crypto
 BlocklistValidatorEvent
 	public struct
 	0xb::committee
@@ -6097,6 +6217,18 @@ TokenTransferAlreadyClaimed
 TokenTransferLimitExceed
 	public struct
 	0xb::bridge
+ExternalPreDepositedEvent
+	public struct
+	0xb::bridge
+ExternalPreDepositedDoneEvent
+	public struct
+	0xb::bridge
+ExternalDepositedApprovedEvent
+	public struct
+	0xb::bridge
+ExternalDepositStartEvent
+	public struct
+	0xb::bridge
 ExternalDepositedEvent
 	public struct
 	0xb::bridge
@@ -6127,6 +6259,9 @@ register_foreign_token
 send_token
 	public fun
 	0xb::bridge
+send_busd
+	public fun
+	0xb::bridge
 send_back_token
 	public fun
 	0xb::bridge
@@ -6136,16 +6271,34 @@ is_refund_admin
 approve_token_transfer
 	public fun
 	0xb::bridge
+get_max_mint_busd_amount
+	public fun
+	0xb::bridge
+set_max_mint_busd_amount
+	public fun
+	0xb::bridge
 claim_token
 	public fun
 	0xb::bridge
 claim_and_transfer_token
 	public fun
 	0xb::bridge
+claim_and_transfer_busd
+	public fun
+	0xb::bridge
 execute_system_message
 	public fun
 	0xb::bridge
+get_available_claim_amount
+	public fun
+	0xb::bridge
+pre_deposit_external_coin
+	public fun
+	0xb::bridge
 deposit_external_coin
+	public fun
+	0xb::bridge
+approval_and_claimed_external_coin
 	public fun
 	0xb::bridge
 withdraw_external_coin
@@ -6154,10 +6307,16 @@ withdraw_external_coin
 get_token_transfer_action_status
 	fun
 	0xb::bridge
+get_external_token_transfer_action_status
+	fun
+	0xb::bridge
 get_send_back_status
 	fun
 	0xb::bridge
 get_token_transfer_action_signatures
+	fun
+	0xb::bridge
+multi_signature_passed
 	fun
 	0xb::bridge
 load_inner
@@ -6167,6 +6326,9 @@ load_inner_mut
 	fun
 	0xb::bridge
 claim_token_internal
+	fun
+	0xb::bridge
+claim_stable_token_internal
 	fun
 	0xb::bridge
 execute_emergency_op
@@ -6191,6 +6353,18 @@ execute_add_external_coin_admin
 	fun
 	0xb::bridge
 execute_remove_external_coin_admin
+	fun
+	0xb::bridge
+execute_add_external_coin_target_payload
+	fun
+	0xb::bridge
+execute_remove_external_coin_target_payload
+	fun
+	0xb::bridge
+execute_add_external_coin_witness
+	fun
+	0xb::bridge
+execute_remove_external_coin_witness
 	fun
 	0xb::bridge
 execute_add_tokens_on_sui

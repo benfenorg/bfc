@@ -8,7 +8,7 @@ use crate::crypto::{
 };
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
-use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedSuiToEthTokenBridgeV1};
+use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedSuiToEthTokenBridgeV1, EmittedExternalDepositStartBridgeV1};
 use enum_dispatch::enum_dispatch;
 use ethers::types::Address as EthAddress;
 use ethers::types::Log;
@@ -26,7 +26,7 @@ use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
 use sui_types::bridge::{
-    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER
+    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT
 };
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
@@ -34,6 +34,8 @@ use sui_types::bridge::{
     APPROVAL_THRESHOLD_EMERGENCY_UNPAUSE, APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
     APPROVAL_THRESHOLD_LIMIT_UPDATE, APPROVAL_THRESHOLD_TOKEN_TRANSFER,
     APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
+    APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS,
+    APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
 };
 use sui_types::committee::CommitteeTrait;
 use sui_types::committee::StakeUnit;
@@ -216,6 +218,10 @@ pub enum BridgeActionType {
 
     AddExternalCoinAdmin = 11,
     RemoveExternalCoinAdmin = 12,
+    AddExternalCoinWitness = 13,
+    RemoveExternalCoinWitness = 14,
+    AddExternalCoinTarget = 15,
+    RemoveExternalCoinTarget = 16,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -251,6 +257,15 @@ pub struct SuiToEthBridgeAction {
     // The index of the event in the transaction
     pub sui_tx_event_index: u16,
     pub sui_bridge_event: EmittedSuiToEthTokenBridgeV1,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct ExternalDepositStartBridgeAction {
+    // Digest of the transaction where the event was emitted
+    pub sui_tx_digest: TransactionDigest,
+    // The index of the event in the transaction
+    pub sui_tx_event_index: u16,
+    pub sui_bridge_event: EmittedExternalDepositStartBridgeV1,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -367,6 +382,39 @@ pub struct RemoveExternalCoinAdminAction {
     pub admin_address: String,
 }
 
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddExternalCoinTargetAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub target_address: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RemoveExternalCoinTargetAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub target_address: String,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct AddExternalCoinWitnessAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub witness_address: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
+pub struct RemoveExternalCoinWitnessAction {
+    pub nonce: u64,
+    pub chain_id: BridgeChainId,
+    pub coin_type: String,
+    pub witness_address: Vec<u8>,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct EvmContractUpgradeAction {
     pub nonce: u64,
@@ -405,6 +453,7 @@ pub enum BridgeAction {
     /// Sui to Eth bridge action
     SuiToEthBridgeAction(SuiToEthBridgeAction),
     EthSendBackBridgeAction(EthSendBackBridgeAction),
+    ExternalDepositStartBridgeAction(ExternalDepositStartBridgeAction),
     /// Eth to sui bridge action
     EthToSuiBridgeAction(EthToSuiBridgeAction),
     BlocklistCommitteeAction(BlocklistCommitteeAction),
@@ -415,6 +464,10 @@ pub enum BridgeAction {
     EvmContractUpgradeAction(EvmContractUpgradeAction),
     AddExternalCoinAdminAction(AddExternalCoinAdminAction),
     RemoveExternalCoinAdminAction(RemoveExternalCoinAdminAction),
+    AddExternalCoinWitnessAction(AddExternalCoinWitnessAction),
+    RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction),
+    AddExternalCoinTargetAction(AddExternalCoinTargetAction),
+    RemoveExternalCoinTargetAction(RemoveExternalCoinTargetAction),
     AddTokensOnSuiAction(AddTokensOnSuiAction),
     AddTokensOnEvmAction(AddTokensOnEvmAction),
 }
@@ -439,6 +492,7 @@ impl BridgeAction {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.sui_chain_id,
+            BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.source_chain,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.eth_chain_id,
             BridgeAction::BlocklistCommitteeAction(a) => a.chain_id,
             BridgeAction::EmergencyAction(a) => a.chain_id,
@@ -447,6 +501,10 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
             BridgeAction::AddExternalCoinAdminAction(a) => a.chain_id,
             BridgeAction::RemoveExternalCoinAdminAction(a) => a.chain_id,
+            BridgeAction::AddExternalCoinWitnessAction(a) => a.chain_id,
+            BridgeAction::RemoveExternalCoinWitnessAction(a) => a.chain_id,
+            BridgeAction::AddExternalCoinTargetAction(a) => a.chain_id,
+            BridgeAction::RemoveExternalCoinTargetAction(a) => a.chain_id,
             BridgeAction::AddTokensOnSuiAction(a) => a.chain_id,
             BridgeAction::AddTokensOnEvmAction(a) => a.chain_id,
             BridgeAction::RefundAdminAction(a) => a.chain_id,
@@ -463,6 +521,10 @@ impl BridgeAction {
             BridgeActionType::EvmContractUpgrade => true,
             BridgeActionType::AddExternalCoinAdmin => true,
             BridgeActionType::RemoveExternalCoinAdmin => true,
+            BridgeActionType::AddExternalCoinWitness => true,
+            BridgeActionType::RemoveExternalCoinWitness => true,
+            BridgeActionType::AddExternalCoinTarget => true,
+            BridgeActionType::RemoveExternalCoinTarget => true,
             BridgeActionType::AddTokensOnSui => true,
             BridgeActionType::AddTokensOnEvm => true,
             BridgeActionType::RefundAdmin => true,
@@ -474,6 +536,7 @@ impl BridgeAction {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthSendBackBridgeAction(_) => BridgeActionType::TokenTransfer,
+            BridgeAction::ExternalDepositStartBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::EthToSuiBridgeAction(_) => BridgeActionType::TokenTransfer,
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
@@ -482,6 +545,10 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
             BridgeAction::AddExternalCoinAdminAction(_) => BridgeActionType::AddExternalCoinAdmin,
             BridgeAction::RemoveExternalCoinAdminAction(_) => BridgeActionType::RemoveExternalCoinAdmin,
+            BridgeAction::AddExternalCoinWitnessAction(_) => BridgeActionType::AddExternalCoinWitness,
+            BridgeAction::RemoveExternalCoinWitnessAction(_) => BridgeActionType::RemoveExternalCoinWitness,
+            BridgeAction::AddExternalCoinTargetAction(_) => BridgeActionType::AddExternalCoinTarget,
+            BridgeAction::RemoveExternalCoinTargetAction(_) => BridgeActionType::RemoveExternalCoinTarget,
             BridgeAction::AddTokensOnSuiAction(_) => BridgeActionType::AddTokensOnSui,
             BridgeAction::AddTokensOnEvmAction(_) => BridgeActionType::AddTokensOnEvm,
             BridgeAction::RefundAdminAction(_) => BridgeActionType::RefundAdmin,
@@ -493,6 +560,7 @@ impl BridgeAction {
         match self {
             BridgeAction::SuiToEthBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthSendBackBridgeAction(a) => a.sui_bridge_event.nonce,
+            BridgeAction::ExternalDepositStartBridgeAction(a) => a.sui_bridge_event.nonce,
             BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.nonce,
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
             BridgeAction::EmergencyAction(a) => a.nonce,
@@ -501,6 +569,10 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
             BridgeAction::AddExternalCoinAdminAction(a) => a.nonce,
             BridgeAction::RemoveExternalCoinAdminAction(a) => a.nonce,
+            BridgeAction::AddExternalCoinWitnessAction(a) => a.nonce,
+            BridgeAction::RemoveExternalCoinWitnessAction(a) => a.nonce,
+            BridgeAction::AddExternalCoinTargetAction(a) => a.nonce,
+            BridgeAction::RemoveExternalCoinTargetAction(a) => a.nonce,
             BridgeAction::AddTokensOnSuiAction(a) => a.nonce,
             BridgeAction::AddTokensOnEvmAction(a) => a.nonce,
             BridgeAction::RefundAdminAction(a) => a.nonce,
@@ -511,6 +583,7 @@ impl BridgeAction {
         match self {
             BridgeAction::SuiToEthBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthSendBackBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
+            BridgeAction::ExternalDepositStartBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::EthToSuiBridgeAction(_) => APPROVAL_THRESHOLD_TOKEN_TRANSFER,
             BridgeAction::BlocklistCommitteeAction(_) => APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST,
             BridgeAction::EmergencyAction(a) => match a.action_type {
@@ -522,9 +595,20 @@ impl BridgeAction {
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
             BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
             BridgeAction::RemoveExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,
+            BridgeAction::AddExternalCoinWitnessAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS,
+            BridgeAction::RemoveExternalCoinWitnessAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_WITNESS,
+            BridgeAction::AddExternalCoinTargetAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
+            BridgeAction::RemoveExternalCoinTargetAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_TARGET,
             BridgeAction::AddTokensOnSuiAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI,
             BridgeAction::AddTokensOnEvmAction(_) => APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM,
             BridgeAction::RefundAdminAction(_) => APPROVAL_THRESHOLD_REFUND_ADMIN,
+        }
+    }
+
+    pub fn is_stable_coin(&self) -> bool {
+        match self {
+            BridgeAction::EthToSuiBridgeAction(a) => a.eth_bridge_event.token_id ==TOKEN_ID_USDC || a.eth_bridge_event.token_id ==TOKEN_ID_USDT,
+            _ => false,
         }
     }
 }

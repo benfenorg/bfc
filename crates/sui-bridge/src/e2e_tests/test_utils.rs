@@ -7,6 +7,7 @@ use crate::config::default_ed25519_key_pair;
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
 use crate::crypto::BridgeAuthoritySignInfo;
+use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
@@ -38,6 +39,7 @@ use std::path::PathBuf;
 use std::process::Command;
 use std::str::FromStr;
 use std::sync::Arc;
+use std::time::Duration;
 use sui_json_rpc_api::BridgeReadApiClient;
 use sui_json_rpc_types::SuiEvent;
 use sui_json_rpc_types::SuiExecutionStatus;
@@ -49,7 +51,7 @@ use sui_json_rpc_types::TransactionFilter;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::bridge::get_bridge_obj_initial_shared_version;
+use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BUSD};
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTrait;
@@ -60,11 +62,11 @@ use sui_types::crypto::get_key_pair;
 use sui_types::crypto::ToFromBytes;
 use sui_types::digests::TransactionDigest;
 use sui_types::object::Object;
-use sui_types::transaction::{ObjectArg, Transaction, TransactionData};
+use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
 use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
 use tokio::join;
 use tokio::task::JoinHandle;
-use tokio::time::Instant;
+use tokio::time::{sleep, Instant};
 
 use tracing::error;
 use tracing::info;
@@ -192,7 +194,6 @@ impl BridgeTestClusterBuilder {
         let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
-
         let mut bridge_node_handles = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
@@ -811,6 +812,18 @@ pub(crate) async fn start_bridge_cluster(
             metrics: None,
             watchdog_config: None,
         };
+        let prometheus_registry = Registry::new();
+        if i == 0 {
+            let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+            let (_, client_config) = config.validate(metrics.clone()).await.unwrap();
+            let client_config = client_config.unwrap();
+            let sui_address = client_config.sui_address;
+            let sui_key_pair = client_config.key;
+            info!("add admin cap for {:?}", sui_address);
+            //set up auth key
+            auth::auth_setup_imut(&test_cluster.inner.rpc_client(), sui_address, &sui_key_pair, "MINT-BUSD-BRIDGE-KEY").await.unwrap();
+            sleep(Duration::from_secs(10)).await;
+        }
         // Spawn bridge node in memory
         handles.push(
             run_bridge_node(
@@ -1006,8 +1019,8 @@ impl TestClusterWrapperBuilder {
 
         if self.deploy_tokens {
             let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64];
+            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD];
+            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,1_000u64];
             let action = publish_and_register_coins_return_add_coins_on_sui_action(
                 test_cluster.wallet(),
                 bridge_arg,
@@ -1016,6 +1029,7 @@ impl TestClusterWrapperBuilder {
                     Path::new("../../bridge/move/tokens/eth").into(),
                     Path::new("../../bridge/move/tokens/usdc").into(),
                     Path::new("../../bridge/move/tokens/usdt").into(),
+                    Path::new("../../bridge/move/tokens/busd").into(),
                 ],
                 token_ids,
                 token_prices,
@@ -1300,6 +1314,7 @@ pub async fn initiate_bridge_sui_to_eth(
     token: ObjectRef,
     nonce: u64,
     sui_amount: u64,
+    expect_token_id: u64,
 ) -> Result<SuiToEthBridgeAction, anyhow::Error> {
     let bridge_object_arg = bridge_test_cluster
         .bridge_client()
@@ -1312,27 +1327,53 @@ pub async fn initiate_bridge_sui_to_eth(
         .await
         .unwrap();
     let sui_address = bridge_test_cluster.sui_user_address();
-
-    let resp = match deposit_eth_to_sui_package(
-        sui_client,
-        sui_address,
-        bridge_test_cluster.wallet(),
-        bridge_test_cluster.eth_chain_id(),
-        eth_address,
-        token,
-        bridge_object_arg,
-        &token_types,
-    )
-    .await
-    {
-        Ok(resp) => {
-            if !resp.status_ok().unwrap() {
-                return Err(anyhow!("Sui TX error"));
-            } else {
-                resp
+    let resp = if expect_token_id == TOKEN_ID_ETH {
+        match deposit_eth_to_sui_package(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.eth_chain_id(),
+            eth_address,
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                tracing::info!("Sui TX response: {:?}", resp);
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"))
+                } else {
+                    resp
+                }
             }
+            Err(e) => return Err(e),
         }
-        Err(e) => return Err(e),
+    }else{
+        match deposit_busd_to_sui_package(
+            sui_client,
+            sui_address,
+            bridge_test_cluster.wallet(),
+            bridge_test_cluster.eth_chain_id(),
+            eth_address,
+            token,
+            bridge_object_arg,
+            &token_types,
+            expect_token_id,
+        )
+        .await
+        {
+            Ok(resp) => {
+                if !resp.status_ok().unwrap() {
+                    return Err(anyhow!("Sui TX error"));
+                } else {
+                    resp
+                }
+            }
+            Err(e) => return Err(e),
+        }
     };
 
     let sui_events = resp.events.unwrap().data;
@@ -1362,11 +1403,20 @@ pub async fn initiate_bridge_sui_to_eth(
     );
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
-    assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
-    assert_eq!(
-        bridge_event.sui_bridge_event.amount_sui_adjusted,
-        sui_amount
-    );
+    if expect_token_id == TOKEN_ID_ETH{
+        assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
+        assert_eq!(
+            bridge_event.sui_bridge_event.amount_sui_adjusted,
+            sui_amount
+        );
+    }else{
+        assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
+        assert_eq!(
+            bridge_event.sui_bridge_event.amount_sui_adjusted,
+            sui_amount/1000
+        );
+    };
+    
 
     // Wait for the bridge action to be approved
     wait_for_transfer_action_status(
@@ -1432,19 +1482,68 @@ async fn deposit_eth_to_sui_package(
     token: ObjectRef,
     bridge_object_arg: ObjectArg,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
 ) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
     let mut builder = ProgrammableTransactionBuilder::new();
     let arg_target_chain = builder.pure(target_chain as u8).unwrap();
     let arg_target_address = builder.pure(target_address.as_bytes()).unwrap();
     let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
-
+    let _arg_expect_token_id = builder.pure(expect_token_id).unwrap();
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         BRIDGE_MODULE_NAME.to_owned(),
         ident_str!("send_token").to_owned(),
         vec![sui_token_type_tags.get(&TOKEN_ID_ETH).unwrap().clone()],
         vec![arg_bridge, arg_target_chain, arg_target_address, arg_token],
+    );
+
+    let pt = builder.finish();
+    let gas_object_ref = wallet_context
+        .get_one_gas_object_owned_by_address(sui_address)
+        .await
+        .unwrap()
+        .unwrap();
+    let tx_data = TransactionData::new_programmable(
+        sui_address,
+        vec![gas_object_ref],
+        pt,
+        500_000_000,
+        sui_client
+            .governance_api()
+            .get_reference_gas_price()
+            .await
+            .unwrap(),
+    );
+    let tx = wallet_context.sign_transaction(&tx_data);
+    wallet_context.execute_transaction_may_fail(tx).await
+}
+
+async fn deposit_busd_to_sui_package(
+    sui_client: &SuiClient,
+    sui_address: SuiAddress,
+    wallet_context: &WalletContext,
+    target_chain: BridgeChainId,
+    target_address: EthAddress,
+    token: ObjectRef,
+    bridge_object_arg: ObjectArg,
+    _sui_token_type_tags: &HashMap<u64, TypeTag>,
+    expect_token_id: u64,
+) -> Result<SuiTransactionBlockResponse, anyhow::Error> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_target_chain = builder.pure(target_chain as u8).unwrap();
+    let arg_target_address = builder.pure(target_address.as_bytes()).unwrap();
+    let arg_token = builder.obj(ObjectArg::ImmOrOwnedObject(token)).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+    let arg_expect_token_id = builder.pure(expect_token_id).unwrap();
+    let busd_type_tag = TypeTag::from_str("0xc8::busd::BUSD").unwrap();
+    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.to_owned(),
+        ident_str!("send_busd").to_owned(),
+        vec![busd_type_tag],
+        vec![arg_bridge,system_obj, arg_target_chain, arg_target_address, arg_token, arg_expect_token_id],
     );
 
     let pt = builder.finish();

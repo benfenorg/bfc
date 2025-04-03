@@ -24,7 +24,7 @@ use ethers::{
 };
 use serde::{Deserialize, Serialize};
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::BridgeChainId;
+use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD, TOKEN_ID_USDC, TOKEN_ID_USDT};
 
 macro_rules! gen_eth_events {
     ($($contract:ident, $contract_event:ident, $abi_path:literal),* $(,)?) => {
@@ -196,6 +196,10 @@ impl EthToSuiTokenBridgeV1 {
     pub fn set_event_idx(&mut self, event_idx: u8) {
         self.event_idx = event_idx;
     }
+
+    pub fn stable_coin_convertor(&self) -> (u64, u64) {
+        (TOKEN_ID_BUSD, self.sui_adjusted_amount * 1000)
+    }
 }
 
 impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
@@ -215,6 +219,30 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
     }
 }
 
+impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
+    type Error = BridgeError;
+    fn try_from(msg: &EthToSuiTokenBridgeV1) -> BridgeResult<Self> {
+        Ok(Self {
+            nonce: msg.nonce,
+            sui_chain_id: msg.sui_chain_id,
+            eth_chain_id: msg.eth_chain_id,
+            sui_address: msg.sui_address,
+            eth_address: msg.eth_address,
+            token_id: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
+                TOKEN_ID_BUSD
+            } else {
+                msg.token_id
+            },
+            sui_adjusted_amount: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
+                msg.sui_adjusted_amount * 1000
+            } else {
+                msg.sui_adjusted_amount
+            },
+            tx_hash: msg.tx_hash.clone(),
+            event_idx: msg.event_idx,
+        })
+    }
+}
 ////////////////////////////////////////////////////////////////////////
 //                        Eth Message Conversion                      //
 ////////////////////////////////////////////////////////////////////////

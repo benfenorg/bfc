@@ -137,6 +137,7 @@ async fn main() -> anyhow::Result<()> {
                     &gas_object_ref,
                     certified_action,
                     bridge_arg,
+                    None,
                     &id_token_map,
                     rgp,
                 )

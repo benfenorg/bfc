@@ -47,7 +47,7 @@ contract BridgeBaseTest is Test {
     uint64 USDC_PRICE = 1_00000000;
     uint64[] tokenPrices;
     uint8[] suiDecimals;
-    uint8[] tokenIds;
+    uint64[] tokenIds;
     address[] supportedTokens;
     uint8[] supportedChains;
 
@@ -120,7 +120,7 @@ contract BridgeBaseTest is Test {
         supportedChains[0] = 0;
         tokenPrices = new uint64[](5);
         suiDecimals = new uint8[](5);
-        tokenIds = new uint8[](5);
+        tokenIds = new uint64[](5);
         suiDecimals[0] = 9;
         suiDecimals[1] = 8;
         suiDecimals[2] = 8;

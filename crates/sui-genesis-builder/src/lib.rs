@@ -1476,7 +1476,7 @@ pub fn generate_genesis_system_object(
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
-        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid,sui_supply];
+        let mut arguments = vec![sui_system_state_uid, bfc_system_state_uid, sui_supply];
         let mut call_arg_arguments = vec![
             CallArg::Pure(bcs::to_bytes(&genesis_chain_parameters).unwrap()),
             CallArg::Pure(bcs::to_bytes(&genesis_validators).unwrap()),
