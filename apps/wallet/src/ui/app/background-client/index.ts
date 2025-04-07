@@ -59,7 +59,6 @@ export class BackgroundClient {
 		return Promise.all([
 			this.sendGetPermissionRequests(),
 			this.sendGetTransactionRequests(),
-			this.loadFeatures(),
 			this.getNetwork(),
 		]).then(() => undefined);
 	}
@@ -562,16 +561,6 @@ export class BackgroundClient {
 					type: 'method-payload',
 					method: 'acknowledgeZkLoginWarning',
 					args,
-				}),
-			).pipe(take(1)),
-		);
-	}
-
-	private loadFeatures() {
-		return lastValueFrom(
-			this.sendMessage(
-				createMessage<BasePayload>({
-					type: 'get-features',
 				}),
 			).pipe(take(1)),
 		);

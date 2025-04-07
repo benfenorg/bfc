@@ -30,10 +30,7 @@ export abstract class WalletSigner {
 
 	abstract getAddress(): Promise<string>;
 
-	async signMessage(
-		input: { message: Uint8Array },
-		clientIdentifier?: string,
-	): Promise<SignedMessage> {
+	async signMessage(input: { message: Uint8Array }): Promise<SignedMessage> {
 		const signature = await this.signData(
 			messageWithIntent('PersonalMessage', bcs.vector(bcs.u8()).serialize(input.message).toBytes()),
 		);
@@ -64,12 +61,9 @@ export abstract class WalletSigner {
 		throw new Error('Unknown transaction format');
 	}
 
-	async signTransactionBlock(
-		input: {
-			transactionBlock: Uint8Array | Transaction;
-		},
-		clientIdentifier?: string,
-	): Promise<SignedTransaction> {
+	async signTransactionBlock(input: {
+		transactionBlock: Uint8Array | Transaction;
+	}): Promise<SignedTransaction> {
 		const bytes = await this.prepareTransactionBlock(input.transactionBlock);
 		const signature = await this.signData(messageWithIntent('TransactionData', bytes));
 

@@ -51,22 +51,16 @@ export const respondToTransactionRequest = createAsyncThunk<
 		if (approved) {
 			try {
 				if (txRequest.tx.type === 'sign-message') {
-					txResult = await signer.signMessage(
-						{
-							message: fromB64(txRequest.tx.message),
-						},
-						clientIdentifier,
-					);
+					txResult = await signer.signMessage({
+						message: fromB64(txRequest.tx.message),
+					});
 				} else if (txRequest.tx.type === 'transaction') {
 					const tx = Transaction.from(txRequest.tx.data);
 					if (txRequest.tx.justSign) {
 						// Just a signing request, do not submit
-						txSigned = await signer.signTransactionBlock(
-							{
-								transactionBlock: tx,
-							},
-							clientIdentifier,
-						);
+						txSigned = await signer.signTransactionBlock({
+							transactionBlock: tx,
+						});
 					} else {
 						txResult = await signer.signAndExecuteTransactionBlock({
 							transactionBlock: tx,

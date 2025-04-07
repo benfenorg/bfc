@@ -420,6 +420,7 @@ export class BenfenClient {
 				typeof transactionBlock === 'string' ? transactionBlock : toBase64(transactionBlock),
 				Array.isArray(signature) ? signature : [signature],
 				options,
+				requestType,
 			],
 		});
 
