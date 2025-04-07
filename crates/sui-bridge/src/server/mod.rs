@@ -23,7 +23,7 @@ use axum::{
     Json,
 };
 use axum::{http::StatusCode, routing::get, Router};
-use ethers::types::Address as EthAddress;
+use ethers::types::{Address as EthAddress, H160};
 use fastcrypto::ed25519::Ed25519PublicKey;
 use fastcrypto::{
     encoding::{Encoding, Hex},
@@ -655,18 +655,11 @@ async fn handle_add_external_coin_witness(
                 "handle_add_external_coin_admin only expects Sui chain id".to_string(),
             ));
         }
-        let witness_address_bytes = match hex::decode(&witness_address) {
-            Ok(bytes) => bytes,
-            Err(_) => {
-                return Err(BridgeError::InvalidBridgeClientRequest(
-                    "Invalid hex-encoded witness_address".to_string(),
-                ));
-            }
-        };
 
+        let witness_address: H160=witness_address.parse().unwrap();
         let action = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             coin_type,
-            witness_address: witness_address_bytes,
+            witness_address,
             chain_id,
             nonce,
         });
@@ -695,15 +688,7 @@ async fn handle_remove_external_coin_witness(
             BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
         })?;
 
-        let witness_address_bytes = match hex::decode(&witness_address) {
-            Ok(bytes) => bytes,
-            Err(_) => {
-                return Err(BridgeError::InvalidBridgeClientRequest(
-                    "Invalid hex-encoded witness_address".to_string(),
-                ));
-            }
-        };
-
+        let witness_address: H160=witness_address.parse().unwrap();
         if !chain_id.is_sui_chain() {
             return Err(BridgeError::InvalidBridgeClientRequest(
                 "handle_remove_external_coin_admin only expects Sui chain id".to_string(),
@@ -711,7 +696,7 @@ async fn handle_remove_external_coin_witness(
         }
         let action = BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
             coin_type,
-            witness_address: witness_address_bytes,
+            witness_address,
             chain_id,
             nonce,
         });

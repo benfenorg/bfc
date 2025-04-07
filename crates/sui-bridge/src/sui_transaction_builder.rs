@@ -189,7 +189,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
                     bridge_event.tx_hash,
                 )
             }
-           
+
             _ => unreachable!(),
         };
     let source_chain = builder.pure(source_chain as u8).unwrap();
@@ -369,7 +369,7 @@ fn build_token_bridge_approve_transaction(
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
     let arg_clock = builder.input(CallArg::CLOCK_IMM).unwrap();
-    
+
 
     let mut sig_bytes = vec![];
     for (_, sig) in sigs.signatures {
@@ -414,7 +414,7 @@ fn build_token_bridge_approve_transaction(
                     .ok_or(BridgeError::UnknownTokenId(token_type))?
                     .clone()],
                     vec![arg_bridge, arg_clock, source_chain, seq_num],
-                );   
+                );
         }
     }
 
@@ -948,7 +948,7 @@ pub fn build_add_external_coin_witness_transaction(
 
     let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
         BridgeAction::AddExternalCoinWitnessAction(a) => {
-            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address.as_bytes().to_vec().to_vec())
         }
         _ => unreachable!(),
     };
@@ -1011,7 +1011,7 @@ pub fn build_remove_external_coin_witness_transaction(
 
     let (source_chain, seq_num, coin_type, witness_address) = match bridge_action {
         BridgeAction::RemoveExternalCoinWitnessAction(a) => {
-            (a.chain_id, a.nonce, a.coin_type, a.witness_address)
+            (a.chain_id, a.nonce, a.coin_type, a.witness_address.as_bytes().to_vec())
         }
         _ => unreachable!(),
     };

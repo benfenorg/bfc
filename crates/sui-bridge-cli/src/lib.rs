@@ -206,7 +206,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "coin-type", long)]
         coin_type: String,
         #[clap(name = "witness-address", long)]
-        witness_address: Vec<u8>,
+        witness_address: EthAddress,
     },
     #[clap(name = "remove-external-coin-witness")]
     RemoveExternalCoinWitness {
@@ -215,7 +215,7 @@ pub enum GovernanceClientCommands {
         #[clap(name = "coin-type", long)]
         coin_type: String,
         #[clap(name = "witness-address", long)]
-        witness_address: Vec<u8>,
+        witness_address: EthAddress,
     },
     #[clap(name = "add-external-coin-target")]
     AddExternalCoinTarget {
@@ -354,22 +354,26 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
             nonce,
             coin_type,
             witness_address,
-        } => BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
-            nonce: *nonce,
-            chain_id,
-            coin_type: coin_type.clone(),
-            witness_address: witness_address.clone(),
-        }),
+        } => {
+            BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
+                nonce: *nonce,
+                chain_id,
+                coin_type: coin_type.clone(),
+                witness_address: *witness_address,
+            })
+        }
         GovernanceClientCommands::RemoveExternalCoinWitness {
             nonce,
             coin_type,
             witness_address,
-        } => BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction{
-            nonce: *nonce,
-            chain_id,
-            coin_type: coin_type.clone(),
-            witness_address: witness_address.clone(),
-        }),
+        } => {
+            BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction{
+                nonce: *nonce,
+                chain_id,
+                coin_type: coin_type.clone(),
+                witness_address: *witness_address,
+            })
+        }
         GovernanceClientCommands::AddExternalCoinTarget {
             nonce,
             coin_type,
