@@ -6,20 +6,20 @@ Response: {
   "data": {
     "availableRange": {
       "first": {
-        "digest": "Cj4kQupM2Syoo74pW3zvsVE1qkX9PKzRZNsfoQ6SSiW5",
+        "digest": "7NUPT9weDZJdt6vb1HWmhH85FnZMwqX9vNXZdFVhKPjL",
         "sequenceNumber": 0
       },
       "last": {
-        "digest": "Cj4kQupM2Syoo74pW3zvsVE1qkX9PKzRZNsfoQ6SSiW5",
+        "digest": "7NUPT9weDZJdt6vb1HWmhH85FnZMwqX9vNXZdFVhKPjL",
         "sequenceNumber": 0
       }
     },
     "first": {
-      "digest": "Cj4kQupM2Syoo74pW3zvsVE1qkX9PKzRZNsfoQ6SSiW5",
+      "digest": "7NUPT9weDZJdt6vb1HWmhH85FnZMwqX9vNXZdFVhKPjL",
       "sequenceNumber": 0
     },
     "last": {
-      "digest": "Cj4kQupM2Syoo74pW3zvsVE1qkX9PKzRZNsfoQ6SSiW5",
+      "digest": "7NUPT9weDZJdt6vb1HWmhH85FnZMwqX9vNXZdFVhKPjL",
       "sequenceNumber": 0
     }
   }
@@ -118,11 +118,11 @@ Response: {
       }
     },
     "first": {
-      "digest": "Cj4kQupM2Syoo74pW3zvsVE1qkX9PKzRZNsfoQ6SSiW5",
+      "digest": "7NUPT9weDZJdt6vb1HWmhH85FnZMwqX9vNXZdFVhKPjL",
       "sequenceNumber": 0
     },
     "last": {
-      "digest": "H7nDYCR166acUAbN38kiBxBB2NooitJPooADHFC9Rx6P",
+      "digest": "4urNLDdRhrd2vrdenCdYo9GawZWmfm6wX6A2nENtUhHi",
       "sequenceNumber": 5
     }
   }
