@@ -84,6 +84,36 @@ module bridge::treasury {
         native_token: bool
     }
 
+    public struct AddExternalCoinAdminEvent has copy, drop {
+        coin_type_name: String,
+        address: String,
+    }
+
+    public struct RemoveExternalCoinAdminEvent has copy, drop {
+    coin_type_name: String,
+    address: String,
+}
+
+    public struct AddExternalCoinWitnessEvent has copy, drop {
+    coin_type_name: String,
+    address: vector<u8>,
+}
+
+    public struct RemoveExternalCoinWitnessEvent has copy, drop {
+    coin_type_name: String,
+    address: vector<u8>,
+}
+
+    public struct AddExternalCoinTargetEvent has copy, drop {
+    coin_type_name: String,
+    address: String,
+}
+
+    public struct RemoveExternalCoinTargetEvent has copy, drop {
+    coin_type_name: String,
+    address: String,
+}
+
     public fun token_id<T>(self: &BridgeTreasury): u64 {
         let metadata = self.get_token_metadata<T>();
         metadata.id
@@ -238,7 +268,11 @@ module bridge::treasury {
         let admins = self.external_coin_admin_address.get_mut(&coin_type_name);
         if (!admins.contains(&address)) {
             admins.insert(address);
-        }
+        };
+        emit(AddExternalCoinAdminEvent{
+            coin_type_name,
+            address
+        })
     }
 
     public(package) fun add_external_coin_target(
@@ -253,7 +287,12 @@ module bridge::treasury {
         let admins = self.external_coin_target_address.get_mut(&coin_type_name);
         if (!admins.contains(&addr)) {
             admins.insert(addr);
-        }
+        };
+        emit(AddExternalCoinTargetEvent{
+            coin_type_name,
+            address: addr
+        })
+
     }
 
     public(package) fun add_external_coin_witness(
@@ -268,7 +307,11 @@ module bridge::treasury {
         let admins = self.external_coin_witness_address.get_mut(&coin_type_name);
         if (!admins.contains(&addr)) {
             admins.insert(addr);
-        }
+        };
+        emit(AddExternalCoinWitnessEvent{
+            coin_type_name,
+            address: addr
+        })
     }
 
     public(package) fun remove_external_coin_witness(
@@ -285,7 +328,11 @@ module bridge::treasury {
             admins.remove(&addr);
             if (admins.size() == 0) {
                 self.external_coin_witness_address.remove(&coin_type_name);
-            }
+            };
+            emit(RemoveExternalCoinWitnessEvent{
+                coin_type_name,
+                address: addr
+            })
         }
     }
 
@@ -330,7 +377,11 @@ module bridge::treasury {
             admins.remove(&address);
             if (admins.size() == 0) {
                 self.external_coin_admin_address.remove(&coin_type_name);
-            }
+            };
+            emit(RemoveExternalCoinAdminEvent{
+                coin_type_name,
+                address
+            })
         }
     }
 
@@ -348,7 +399,11 @@ module bridge::treasury {
             admins.remove(&addr);
             if (admins.size() == 0) {
                 self.external_coin_target_address.remove(&coin_type_name);
-            }
+            };
+            emit(RemoveExternalCoinTargetEvent{
+                coin_type_name,
+                address: addr
+            })
         }
     }
 

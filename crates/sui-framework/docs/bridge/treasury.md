@@ -10,6 +10,12 @@ title: Module `0xb::treasury`
 -  [Struct `UpdateTokenPriceEvent`](#0xb_treasury_UpdateTokenPriceEvent)
 -  [Struct `NewTokenEvent`](#0xb_treasury_NewTokenEvent)
 -  [Struct `TokenRegistrationEvent`](#0xb_treasury_TokenRegistrationEvent)
+-  [Struct `AddExternalCoinAdminEvent`](#0xb_treasury_AddExternalCoinAdminEvent)
+-  [Struct `RemoveExternalCoinAdminEvent`](#0xb_treasury_RemoveExternalCoinAdminEvent)
+-  [Struct `AddExternalCoinWitnessEvent`](#0xb_treasury_AddExternalCoinWitnessEvent)
+-  [Struct `RemoveExternalCoinWitnessEvent`](#0xb_treasury_RemoveExternalCoinWitnessEvent)
+-  [Struct `AddExternalCoinTargetEvent`](#0xb_treasury_AddExternalCoinTargetEvent)
+-  [Struct `RemoveExternalCoinTargetEvent`](#0xb_treasury_RemoveExternalCoinTargetEvent)
 -  [Constants](#@Constants_0)
 -  [Function `token_id`](#0xb_treasury_token_id)
 -  [Function `decimal_multiplier`](#0xb_treasury_decimal_multiplier)
@@ -318,6 +324,204 @@ title: Module `0xb::treasury`
 </dd>
 <dt>
 <code>native_token: bool</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinAdminEvent"></a>
+
+## Struct `AddExternalCoinAdminEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinAdminEvent">AddExternalCoinAdminEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinAdminEvent"></a>
+
+## Struct `RemoveExternalCoinAdminEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinAdminEvent">RemoveExternalCoinAdminEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinWitnessEvent"></a>
+
+## Struct `AddExternalCoinWitnessEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinWitnessEvent">AddExternalCoinWitnessEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinWitnessEvent"></a>
+
+## Struct `RemoveExternalCoinWitnessEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinWitnessEvent">RemoveExternalCoinWitnessEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinTargetEvent"></a>
+
+## Struct `AddExternalCoinTargetEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinTargetEvent">AddExternalCoinTargetEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinTargetEvent"></a>
+
+## Struct `RemoveExternalCoinTargetEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinTargetEvent">RemoveExternalCoinTargetEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
 </dt>
 <dd>
 
@@ -713,7 +917,11 @@ title: Module `0xb::treasury`
     <b>let</b> admins = self.external_coin_admin_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&<b>address</b>)) {
         admins.insert(<b>address</b>);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinAdminEvent">AddExternalCoinAdminEvent</a>{
+        coin_type_name,
+        <b>address</b>
+    })
 }
 </code></pre>
 
@@ -748,7 +956,12 @@ title: Module `0xb::treasury`
     <b>let</b> admins = self.external_coin_target_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&addr)) {
         admins.insert(addr);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinTargetEvent">AddExternalCoinTargetEvent</a>{
+        coin_type_name,
+        <b>address</b>: addr
+    })
+
 }
 </code></pre>
 
@@ -783,7 +996,11 @@ title: Module `0xb::treasury`
     <b>let</b> admins = self.external_coin_witness_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&addr)) {
         admins.insert(addr);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinWitnessEvent">AddExternalCoinWitnessEvent</a>{
+        coin_type_name,
+        <b>address</b>: addr
+    })
 }
 </code></pre>
 
@@ -820,7 +1037,11 @@ title: Module `0xb::treasury`
         admins.remove(&addr);
         <b>if</b> (admins.size() == 0) {
             self.external_coin_witness_address.remove(&coin_type_name);
-        }
+        };
+        emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinWitnessEvent">RemoveExternalCoinWitnessEvent</a>{
+            coin_type_name,
+            <b>address</b>: addr
+        })
     }
 }
 </code></pre>
@@ -904,7 +1125,11 @@ title: Module `0xb::treasury`
         admins.remove(&<b>address</b>);
         <b>if</b> (admins.size() == 0) {
             self.external_coin_admin_address.remove(&coin_type_name);
-        }
+        };
+        emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinAdminEvent">RemoveExternalCoinAdminEvent</a>{
+            coin_type_name,
+            <b>address</b>
+        })
     }
 }
 </code></pre>
@@ -942,7 +1167,11 @@ title: Module `0xb::treasury`
        admins.remove(&addr);
        <b>if</b> (admins.size() == 0) {
            self.external_coin_target_address.remove(&coin_type_name);
-       }
+       };
+       emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinTargetEvent">RemoveExternalCoinTargetEvent</a>{
+           coin_type_name,
+           <b>address</b>: addr
+       })
    }
 }
 </code></pre>

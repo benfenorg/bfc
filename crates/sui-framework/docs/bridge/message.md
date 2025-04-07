@@ -996,6 +996,7 @@ title: Module `0xb::message`
             witness_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
             i = i + 1;
     };
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
      <a href="message.md#0xb_message_AddExternalCoinWitness">AddExternalCoinWitness</a> {
         coin_type,
         witness_address
@@ -1030,6 +1031,7 @@ title: Module `0xb::message`
             witness_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
             i = i + 1;
     };
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
     <a href="message.md#0xb_message_RemoveExternalCoinWitness">RemoveExternalCoinWitness</a> {
         coin_type,
         witness_address
@@ -1106,6 +1108,7 @@ title: Module `0xb::message`
             target_address.push_back(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8());
             i = i + 1;
     };
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
     <b>let</b> target_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(target_address);
     <a href="message.md#0xb_message_RemoveExternalCoinTarget">RemoveExternalCoinTarget</a> {
         coin_type,
@@ -1316,7 +1319,7 @@ Emergency op payload is just a single byte
     <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
     <b>let</b> coin_type = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
     <b>let</b> admin_address = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_vec_u8());
-
+    <b>assert</b>!(<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.into_remainder_bytes().is_empty(), <a href="message.md#0xb_message_ETrailingBytes">ETrailingBytes</a>);
     <a href="message.md#0xb_message_RemoveExternalCoinAdmin">RemoveExternalCoinAdmin</a> {
         coin_type,
         admin_address
