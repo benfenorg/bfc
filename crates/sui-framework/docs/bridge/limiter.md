@@ -163,7 +163,7 @@ title: Module `0xb::limiter`
 
 
 
-<pre><code><b>const</b> <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 100000;
+<pre><code><b>const</b> <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 100000000000000;
 </code></pre>
 
 
