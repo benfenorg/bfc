@@ -370,7 +370,7 @@ module bridge::bridge_env {
         );
         bridge.test_init_bridge_committee(
             voting_powers,
-            50,
+            7500,
             scenario.ctx(),
         );
         test_scenario::return_shared(bridge);

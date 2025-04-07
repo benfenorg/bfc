@@ -16,7 +16,7 @@ module bridge::limiter {
 
     const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
 
-    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000;
+    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000 * 1000_000_000; //
 
     //////////////////////////////////////////////////////
     // Types
