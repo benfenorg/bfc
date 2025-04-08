@@ -731,10 +731,10 @@ module bridge::bridge {
 
     public fun get_available_claim_amount<T>(
           bridge: &Bridge,
-          target_chain: u8,
+          source_chain: u8,
     ): u64 {
         let inner = load_inner(bridge);
-        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let route = chain_ids::get_route(source_chain, inner.chain_id);
         inner.limiter.get_available_claim_amount<T>(&inner.treasury, route)
     }
 
