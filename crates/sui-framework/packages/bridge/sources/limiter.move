@@ -91,11 +91,17 @@ module bridge::limiter {
         let route_limit_adjusted =
             (route_limit as u128) * (treasury.decimal_multiplier<T>() as u128);
         let total_adjusted= (record.total_amount as u128 ) * (treasury.decimal_multiplier<T>() as u128);
-        if (total_adjusted <= route_limit_adjusted){
+        if (total_adjusted >= route_limit_adjusted){
             return 0
         };
         let price = (treasury.notional_value<T>() as u128);
-       ((total_adjusted-route_limit_adjusted) / price) as u64
+
+        if (price == 0) {
+            return 0
+        };
+
+        let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
+        available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(
         self: &mut TransferLimiter,
@@ -122,7 +128,7 @@ module bridge::limiter {
         let route_limit = self.transfer_limits.try_get(&route);
         assert!(route_limit.is_some(), ELimitNotFoundForRoute);
         let route_limit = route_limit.destroy_some();
-        let route_limit_adjusted = 
+        let route_limit_adjusted =
             (route_limit as u128) * (treasury.decimal_multiplier<T>() as u128);
 
         // Compute notional amount
@@ -132,15 +138,15 @@ module bridge::limiter {
 
         // Check if transfer amount exceed limit
         // Upscale them to the token's decimal.
-        if ((record.total_amount as u128) 
-            * (treasury.decimal_multiplier<T>() as u128) 
+        if ((record.total_amount as u128)
+            * (treasury.decimal_multiplier<T>() as u128)
             + notional_amount_with_token_multiplier > route_limit_adjusted
         ) {
             return false
         };
 
         // Now scale down to notional value
-        let notional_amount = notional_amount_with_token_multiplier 
+        let notional_amount = notional_amount_with_token_multiplier
             / (treasury.decimal_multiplier<T>() as u128);
         // Should be safe to downcast to u64 after dividing by the decimals
         let notional_amount = (notional_amount as u64);
@@ -316,7 +322,7 @@ module bridge::limiter {
 
     #[test_only]
     public(package) fun unpack_route_limit_event(event: UpdateRouteLimitEvent):
-        (u8, u8, u64) 
+        (u8, u8, u64)
     {
         (event.sending_chain, event.receiving_chain, event.new_limit)
     }
