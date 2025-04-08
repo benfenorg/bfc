@@ -306,7 +306,7 @@ impl BridgeClient {
 
 #[cfg(test)]
 mod tests {
-    use std::ops::Add;
+    //use std::ops::Add;
     use super::*;
     use crate::test_utils::run_mock_bridge_server;
     use crate::{
@@ -765,12 +765,12 @@ mod tests {
         );
 
 
-        let hexAddress_without_head = "7518085822fAA839EeB59035a74A87b4220C6629".to_string().to_lowercase();
+        let hex_address_without_head = "7518085822fAA839EeB59035a74A87b4220C6629".to_string().to_lowercase();
 
-        let actionString = ("sign/add_external_coin_witness/2/0/test/".to_owned()+&hexAddress_without_head.clone()).to_string();
+        let action_string = ("sign/add_external_coin_witness/2/0/test/".to_owned()+&hex_address_without_head.clone()).to_string();
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            actionString
+            action_string
         );
 
         let action = BridgeAction::RemoveExternalCoinWitnessAction(
@@ -782,11 +782,11 @@ mod tests {
             },
         );
 
-        let actionString = ("sign/remove_external_coin_witness/2/0/test/".to_owned()+&hexAddress_without_head).to_string();
+        let action_string = ("sign/remove_external_coin_witness/2/0/test/".to_owned()+&hex_address_without_head).to_string();
 
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            actionString
+            action_string
         );
     }
 }

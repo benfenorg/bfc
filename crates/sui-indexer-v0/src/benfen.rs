@@ -273,11 +273,11 @@ pub async fn get_nft_staking_overview(
     // let diff: u64 = if timestamp > nft_staking.begin_at {timestamp - nft_staking.begin_at} else {0};
     let diff: u64 = 1743436800u64 - nft_staking.begin_at;
     let p: u64 = diff / di + 1; // nft_staking.period;
-    let prev_total_reward: f64 = (1..p)
+    let _prev_total_reward: f64 = (1..p)
         .into_iter()
         .map(|n| di as f64 * current_period_rps(rps_old, n))
         .sum();
-    let past_period_secs = di * (p - 1);
+    let _past_period_secs = di * (p - 1);
     // let current_period_past_secs = if diff > past_period_secs {diff - past_period_secs} else {0};
     // let current_total_reward = current_period_past_secs as f64 * current_period_rps(rps, p);
     let nft_config = get_global_nft_config(http_client, config).await?;

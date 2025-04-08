@@ -1405,7 +1405,7 @@ mod tests {
         .unwrap();
 
         // 2. Test Sui -> Eth Transfer approval
-        let token_id_expect = TOKEN_ID_ETH;
+        let _token_id_expect = TOKEN_ID_ETH;
         let bridge_event = bridge_token(
             context,
             EthAddress::random(),
