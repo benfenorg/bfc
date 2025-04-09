@@ -326,11 +326,17 @@ title: Module `0xb::limiter`
     <b>let</b> route_limit_adjusted =
         (route_limit <b>as</b> u128) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
     <b>let</b> total_adjusted= (record.total_amount <b>as</b> u128 ) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
-    <b>if</b> (total_adjusted &lt;= route_limit_adjusted){
+    <b>if</b> (total_adjusted &gt;= route_limit_adjusted){
         <b>return</b> 0
     };
     <b>let</b> price = (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
-   ((total_adjusted-route_limit_adjusted) / price) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+
+    <b>if</b> (price == 0) {
+        <b>return</b> 0
+    };
+
+    <b>let</b> available_amount=((route_limit_adjusted-total_adjusted) / price) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
+    available_amount
 }
 </code></pre>
 

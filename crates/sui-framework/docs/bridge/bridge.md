@@ -2233,7 +2233,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, source_chain: u8): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -2244,10 +2244,10 @@ title: Module `0xb::bridge`
 
 <pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(
       <a href="bridge.md#0xb_bridge">bridge</a>: &<a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
-      target_chain: u8,
+      source_chain: u8,
 ): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner">load_inner</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
-    <b>let</b> route = <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>let</b> route = <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(source_chain, inner.chain_id);
     inner.<a href="limiter.md#0xb_limiter">limiter</a>.<a href="bridge.md#0xb_bridge_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, route)
 }
 </code></pre>
