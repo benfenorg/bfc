@@ -4,16 +4,15 @@
 /// <reference types="vitest" />
 
 import { vanillaExtractPlugin } from '@vanilla-extract/vite-plugin';
-import { defineConfig } from 'vite';
-import { configDefaults } from 'vitest/config';
+import { configDefaults, defineConfig } from 'vitest/config';
 
 export default defineConfig({
 	root: __dirname,
-	plugins: [vanillaExtractPlugin()],
+	plugins: [vanillaExtractPlugin() as never],
 	test: {
 		include: ['./__tests__/hooks/**', './__tests__/components/**'],
 		exclude: [...configDefaults.exclude, 'tests/**'],
-		environment: 'jsdom',
+		environment: 'happy-dom',
 		restoreMocks: true,
 		globals: true,
 		setupFiles: ['./__tests__/setup.ts'],

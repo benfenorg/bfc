@@ -5,12 +5,15 @@ import type { WalletAccount } from '@wallet-standard/core';
 
 /**
  * The latest API version of the signMessage API.
+ * @deprecated Wallets can still implement this method for compatibility, but this has been replaced by the `bfc:signPersonalMessage` feature
  */
 export type BenfenSignMessageVersion = '1.0.0';
 
 /**
  * A Wallet Standard feature for signing a personal message, and returning the
  * message bytes that were signed, and message signature.
+ *
+ * @deprecated Wallets can still implement this method for compatibility, but this has been replaced by the `bfc:signPersonalMessage` feature
  */
 export type BenfenSignMessageFeature = {
 	/** Namespace for the feature. */
@@ -21,12 +24,14 @@ export type BenfenSignMessageFeature = {
 	};
 };
 
+/** @deprecated Wallets can still implement this method for compatibility, but this has been replaced by the `bfc:signPersonalMessage` feature */
 export type BenfenSignMessageMethod = (
 	input: BenfenSignMessageInput,
 ) => Promise<BenfenSignMessageOutput>;
 
 /**
  * Input for signing messages.
+ * @deprecated Wallets can still implement this method for compatibility, but this has been replaced by the `bfc:signPersonalMessage` feature
  */
 export interface BenfenSignMessageInput {
 	message: Uint8Array;
@@ -35,8 +40,11 @@ export interface BenfenSignMessageInput {
 
 /**
  * Output of signing messages.
+ * @deprecated Wallets can still implement this method for compatibility, but this has been replaced by the `bfc:signPersonalMessage` feature
  */
 export interface BenfenSignMessageOutput {
+	/** Base64 message bytes. */
 	messageBytes: string;
+	/** Base64 encoded signature */
 	signature: string;
 }

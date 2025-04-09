@@ -1,0 +1,157 @@
+// Copyright (c) Benfen
+// SPDX-License-Identifier: Apache-2.0
+
+import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+
+import type { BenfenTransactionBlockResponse } from '../../../client/index.js';
+import type { Transaction } from '../../../transactions/index.js';
+// import { toBase64 } from '../../../utils/index.js';
+import type {
+	BenfenSignAndExecuteTransactionInput,
+	BenfenSignAndExecuteTransactionOutput,
+} from '../../../wallet-standard/index.js';
+import { signTransaction } from '../../../wallet-standard/index.js';
+import { walletMutationKeys } from '../../constants/walletMutationKeys.js';
+import {
+	WalletFeatureNotSupportedError,
+	WalletNoAccountSelectedError,
+	WalletNotConnectedError,
+} from '../../errors/walletErrors.js';
+import type { PartialBy } from '../../types/utilityTypes.js';
+import { useBenfenClient } from '../useBenfenClient.js';
+import { useCurrentAccount } from './useCurrentAccount.js';
+import { useCurrentWallet } from './useCurrentWallet.js';
+
+// import { useReportTransactionEffects } from './useReportTransactionEffects.js';
+
+type UseSignAndExecuteTransactionArgs = PartialBy<
+	Omit<BenfenSignAndExecuteTransactionInput, 'transaction'>,
+	'account' | 'chain'
+> & {
+	transaction: Transaction | string;
+};
+
+type UseSignAndExecuteTransactionResult = BenfenSignAndExecuteTransactionOutput;
+
+type UseSignAndExecuteTransactionError =
+	| WalletFeatureNotSupportedError
+	| WalletNoAccountSelectedError
+	| WalletNotConnectedError
+	| Error;
+
+type ExecuteTransactionResult = BenfenTransactionBlockResponse;
+
+type UseSignAndExecuteTransactionMutationOptions<Result extends ExecuteTransactionResult> = Omit<
+	UseMutationOptions<
+		Result,
+		UseSignAndExecuteTransactionError,
+		UseSignAndExecuteTransactionArgs,
+		unknown
+	>,
+	'mutationFn'
+> & {
+	execute?: ({ bytes, signature }: { bytes: string; signature: string }) => Promise<Result>;
+};
+
+/**
+ * Mutation hook for prompting the user to sign and execute a transaction.
+ */
+export function useSignAndExecuteTransaction<
+	Result extends ExecuteTransactionResult = UseSignAndExecuteTransactionResult,
+>({
+	mutationKey,
+	execute,
+	...mutationOptions
+}: UseSignAndExecuteTransactionMutationOptions<Result> = {}): UseMutationResult<
+	Result,
+	UseSignAndExecuteTransactionError,
+	UseSignAndExecuteTransactionArgs
+> {
+	const { currentWallet, supportedIntents } = useCurrentWallet();
+	const currentAccount = useCurrentAccount();
+	const client = useBenfenClient();
+	// const { mutate: reportTransactionEffects } = useReportTransactionEffects();
+
+	const executeTransaction: ({
+		bytes,
+		signature,
+	}: {
+		bytes: string;
+		signature: string;
+	}) => Promise<ExecuteTransactionResult> =
+		execute ??
+		(async ({ bytes, signature }) => {
+			const result = await client.executeTransactionBlock({
+				transactionBlock: bytes,
+				signature,
+				options: {
+					showRawEffects: true,
+					showEffects: true,
+				},
+			});
+
+			return {
+				...result,
+				bytes,
+				signature,
+			};
+		});
+
+	return useMutation({
+		mutationKey: walletMutationKeys.signAndExecuteTransaction(mutationKey),
+		mutationFn: async ({ transaction, ...signTransactionArgs }): Promise<Result> => {
+			if (!currentWallet) {
+				throw new WalletNotConnectedError('No wallet is connected.');
+			}
+
+			const signerAccount = signTransactionArgs.account ?? currentAccount;
+			if (!signerAccount) {
+				throw new WalletNoAccountSelectedError(
+					'No wallet account is selected to sign the transaction with.',
+				);
+			}
+			// const chain = signTransactionArgs.chain ?? signerAccount?.chains[0];
+
+			if (
+				!currentWallet.features['bfc:signTransaction'] &&
+				!currentWallet.features['bfc:signTransactionBlock']
+			) {
+				throw new WalletFeatureNotSupportedError(
+					"This wallet doesn't support the `signTransaction` feature.",
+				);
+			}
+
+			const { signature, bytes } = await signTransaction(currentWallet, {
+				...signTransactionArgs,
+				transaction: {
+					async toJSON() {
+						return typeof transaction === 'string'
+							? transaction
+							: await transaction.toJSON({
+									supportedIntents,
+									client,
+								});
+					},
+				},
+				account: signerAccount,
+				chain: signTransactionArgs.chain ?? signerAccount.chains[0],
+			});
+
+			const result = await executeTransaction({ bytes, signature });
+
+			// let effects: string;
+
+			// if ('rawEffects' in result) {
+			// 	effects = toBase64(new Uint8Array(result.rawEffects!));
+			// } else {
+			// 	throw new Error('Could not parse effects from transaction result.');
+			// }
+
+			// reportTransactionEffects({ effects, account: signerAccount, chain });
+
+			return result as Result;
+		},
+		...mutationOptions,
+	});
+}

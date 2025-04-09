@@ -12,6 +12,8 @@ import type { BenfenSignTransactionBlockInput } from './bfcSignTransactionBlock.
 export type BenfenSignAndExecuteTransactionBlockVersion = '1.0.0';
 
 /**
+ * @deprecated Use `bfc:signAndExecuteTransaction` instead.
+ *
  * A Wallet Standard feature for signing a transaction, and submitting it to the
  * network. The wallet is expected to submit the transaction to the network via RPC,
  * and return the transaction response.
@@ -21,10 +23,12 @@ export type BenfenSignAndExecuteTransactionBlockFeature = {
 	'bfc:signAndExecuteTransactionBlock': {
 		/** Version of the feature API. */
 		version: BenfenSignAndExecuteTransactionBlockVersion;
+		/** @deprecated Use `bfc:signAndExecuteTransaction` instead. */
 		signAndExecuteTransactionBlock: BenfenSignAndExecuteTransactionBlockMethod;
 	};
 };
 
+/** @deprecated Use `bfc:signAndExecuteTransaction` instead. */
 export type BenfenSignAndExecuteTransactionBlockMethod = (
 	input: BenfenSignAndExecuteTransactionBlockInput,
 ) => Promise<BenfenSignAndExecuteTransactionBlockOutput>;
@@ -32,8 +36,7 @@ export type BenfenSignAndExecuteTransactionBlockMethod = (
 /** Input for signing and sending transactions. */
 export interface BenfenSignAndExecuteTransactionBlockInput extends BenfenSignTransactionBlockInput {
 	/**
-	 * `WaitForEffectsCert` or `WaitForLocalExecution`, see details in `ExecuteTransactionRequestType`.
-	 * Defaults to `WaitForLocalExecution` if options.showEffects or options.showEvents is true
+	 * @deprecated requestType will be ignored by JSON RPC in the future
 	 */
 	requestType?: ExecuteTransactionRequestType;
 	/** specify which fields to return (e.g., transaction, effects, events, etc). By default, only the transaction digest will be returned. */

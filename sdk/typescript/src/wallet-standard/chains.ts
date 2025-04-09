@@ -1,5 +1,6 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
+
 import type { IdentifierString } from '@wallet-standard/core';
 
 /** Benfen Devnet */
