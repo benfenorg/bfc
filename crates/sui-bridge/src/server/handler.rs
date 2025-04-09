@@ -147,6 +147,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
+            let btc_chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -161,7 +162,7 @@ where
 
             // check btc txn
             let ok =
-                check_btc_txn(tx_hash, whitelist, amount).await;
+                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
             if ok {
                 return Ok(action_rs);
             }

@@ -1,4 +1,5 @@
 use anyhow::Error;
+use sui_types::bridge::BridgeChainId;
 use std::time::{Duration, Instant};
 use serde::{Deserialize, Serialize};
 use std::sync::Mutex;
@@ -58,12 +59,12 @@ pub struct Status {
 }
 
 /// Check if the given Bitcoin transaction is confirmed.
-pub async fn check_btc_txn(txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> bool {
+pub async fn check_btc_txn(btc_chain_id: BridgeChainId, txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> bool {
     if txn_id.len() != 64 {
         error!("Invalid txn_id len != 64: {:?}", txn_id);
         return false;
     }
-    match retry_with_max_elapsed_time!(btc_query(txn_id, whitelist_address.clone(), amount), Duration::from_secs(5)) {
+    match retry_with_max_elapsed_time!(btc_query(btc_chain_id, txn_id, whitelist_address.clone(), amount), Duration::from_secs(5)) {
         Ok(result) => result.unwrap_or_else(|_| false),
         Err(e) => {
             error!("Error checking BTC txn: {:?}", e);
@@ -165,10 +166,23 @@ async fn get_access_token(client: reqwest::Client) -> Result<String, Error> {
     Ok(token)
 }
 
-  pub async fn btc_query(txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> Result<bool, Error> {
+  pub async fn btc_query(btc_chain_id: BridgeChainId, txn_id: &str, whitelist_address: Vec<String>, amount: u64) -> Result<bool, Error> {
+    let base_url;
+    match btc_chain_id {
+        BridgeChainId::BtcMainnet => {
+            base_url = "https://mempool.space/api/tx";
+        },
+        BridgeChainId::BtcTestnet => {
+            base_url = "https://mempool.space/testnet/api/tx";
+        },
+        _ => {
+            return Err(anyhow::anyhow!("Unsupported BTC chain ID"));
+        }
+    }
+
       let client = reqwest::Client::new();
       // let token = get_access_token(client.clone()).await?;  //enterprise.blockstream.info
-      let url = format!("https://mempool.space/testnet/api/tx/{}", txn_id);
+      let url = format!("{}/{}", base_url, txn_id);
       let response = match
           client
               .get(&url)
@@ -221,9 +235,24 @@ mod tests {
     #[tokio::test]
     async fn test_check_btc_txn() {
         let result = check_btc_txn(
+            BridgeChainId::BtcTestnet,
             "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
             vec!["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string()],
             10).await;
         assert_eq!(result, true);
+
+        let result = check_btc_txn(
+            BridgeChainId::BtcMainnet,
+            "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
+            vec!["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string()],
+            10).await;
+        assert_eq!(result, false);
+
+        let result = check_btc_txn(
+            BridgeChainId::SuiMainnet,
+            "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
+            vec!["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string()],
+            10).await;
+        assert_eq!(result, false);
     }
 }
