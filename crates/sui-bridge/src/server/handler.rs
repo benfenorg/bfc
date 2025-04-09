@@ -147,6 +147,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
+            let btc_chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -161,7 +162,7 @@ where
 
             // check btc txn
             let ok =
-                check_btc_txn(tx_hash, whitelist, amount).await;
+                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
             if ok {
                 return Ok(action_rs);
             }
@@ -471,7 +472,7 @@ impl BridgeRequestHandler {
             metrics.clone(),
         )
         .spawn(external_coin_rx);
-      
+
         SignerWithCache::new(
             signer.clone(),
             EthActionVerifier {
@@ -1155,24 +1156,20 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_remove_external_witness_action() {
+        let hex_str  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
+
         let action_1 = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             chain_id: BridgeChainId::SuiCustom,
             nonce: 1,
             coin_type: "test".to_string(),
-            witness_address: SuiAddress::random_for_testing_only()
-                .to_string()
-                .as_bytes()
-                .to_vec(),
+            witness_address: hex_str.clone(),
         });
         let action_2 =
             BridgeAction::RemoveExternalCoinWitnessAction(RemoveExternalCoinWitnessAction {
                 chain_id: BridgeChainId::SuiCustom,
                 nonce: 1,
                 coin_type: "test".to_string(),
-                witness_address: SuiAddress::random_for_testing_only()
-                    .to_string()
-                    .as_bytes()
-                    .to_vec(),
+                witness_address: hex_str.clone(),
             });
         let verifier = GovernanceVerifier::new(vec![action_1.clone(), action_2.clone()]).unwrap();
         assert_eq!(

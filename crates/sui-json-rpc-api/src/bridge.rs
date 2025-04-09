@@ -7,8 +7,8 @@ use jsonrpsee::proc_macros::rpc;
 use sui_open_rpc_macros::open_rpc;
 use sui_types::bridge::BridgeSummary;
 
-#[open_rpc(namespace = "suix", tag = "Bridge Read API")]
-#[rpc(server, client, namespace = "suix")]
+#[open_rpc(namespace = "bfcx", tag = "Bridge Read API")]
+#[rpc(server, client, namespace = "bfcx")]
 pub trait BridgeReadApi {
     /// Returns the latest BridgeSummary
     #[method(name = "getLatestBridge")]

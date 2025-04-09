@@ -1,84 +1,75 @@
 ---
-title: Module `bridge::treasury`
+title: Module `0xb::treasury`
 ---
 
 
 
--  [Struct `BridgeTreasury`](#bridge_treasury_BridgeTreasury)
--  [Struct `BridgeTokenMetadata`](#bridge_treasury_BridgeTokenMetadata)
--  [Struct `ForeignTokenRegistration`](#bridge_treasury_ForeignTokenRegistration)
--  [Struct `UpdateTokenPriceEvent`](#bridge_treasury_UpdateTokenPriceEvent)
--  [Struct `NewTokenEvent`](#bridge_treasury_NewTokenEvent)
--  [Struct `TokenRegistrationEvent`](#bridge_treasury_TokenRegistrationEvent)
+-  [Struct `BridgeTreasury`](#0xb_treasury_BridgeTreasury)
+-  [Struct `BridgeTokenMetadata`](#0xb_treasury_BridgeTokenMetadata)
+-  [Struct `ForeignTokenRegistration`](#0xb_treasury_ForeignTokenRegistration)
+-  [Struct `UpdateTokenPriceEvent`](#0xb_treasury_UpdateTokenPriceEvent)
+-  [Struct `NewTokenEvent`](#0xb_treasury_NewTokenEvent)
+-  [Struct `TokenRegistrationEvent`](#0xb_treasury_TokenRegistrationEvent)
+-  [Struct `AddExternalCoinAdminEvent`](#0xb_treasury_AddExternalCoinAdminEvent)
+-  [Struct `RemoveExternalCoinAdminEvent`](#0xb_treasury_RemoveExternalCoinAdminEvent)
+-  [Struct `AddExternalCoinWitnessEvent`](#0xb_treasury_AddExternalCoinWitnessEvent)
+-  [Struct `RemoveExternalCoinWitnessEvent`](#0xb_treasury_RemoveExternalCoinWitnessEvent)
+-  [Struct `AddExternalCoinTargetEvent`](#0xb_treasury_AddExternalCoinTargetEvent)
+-  [Struct `RemoveExternalCoinTargetEvent`](#0xb_treasury_RemoveExternalCoinTargetEvent)
 -  [Constants](#@Constants_0)
--  [Function `token_id`](#bridge_treasury_token_id)
--  [Function `decimal_multiplier`](#bridge_treasury_decimal_multiplier)
--  [Function `notional_value`](#bridge_treasury_notional_value)
--  [Function `register_foreign_token`](#bridge_treasury_register_foreign_token)
--  [Function `add_new_token`](#bridge_treasury_add_new_token)
--  [Function `create`](#bridge_treasury_create)
--  [Function `is_external_coin_admin`](#bridge_treasury_is_external_coin_admin)
--  [Function `is_external_coin_witness`](#bridge_treasury_is_external_coin_witness)
--  [Function `external_coin_admin_count`](#bridge_treasury_external_coin_admin_count)
--  [Function `add_external_coin_admin`](#bridge_treasury_add_external_coin_admin)
--  [Function `add_external_coin_target`](#bridge_treasury_add_external_coin_target)
--  [Function `add_external_coin_witness`](#bridge_treasury_add_external_coin_witness)
--  [Function `remove_external_coin_witness`](#bridge_treasury_remove_external_coin_witness)
--  [Function `verify_bitcoin_signatures`](#bridge_treasury_verify_bitcoin_signatures)
--  [Function `remove_external_coin_admin`](#bridge_treasury_remove_external_coin_admin)
--  [Function `remove_external_coin_target`](#bridge_treasury_remove_external_coin_target)
--  [Function `burn`](#bridge_treasury_burn)
--  [Function `mint`](#bridge_treasury_mint)
--  [Function `update_asset_notional_price`](#bridge_treasury_update_asset_notional_price)
--  [Function `get_token_metadata`](#bridge_treasury_get_token_metadata)
+-  [Function `token_id`](#0xb_treasury_token_id)
+-  [Function `decimal_multiplier`](#0xb_treasury_decimal_multiplier)
+-  [Function `notional_value`](#0xb_treasury_notional_value)
+-  [Function `register_foreign_token`](#0xb_treasury_register_foreign_token)
+-  [Function `add_new_token`](#0xb_treasury_add_new_token)
+-  [Function `create`](#0xb_treasury_create)
+-  [Function `is_external_coin_admin`](#0xb_treasury_is_external_coin_admin)
+-  [Function `is_external_coin_witness`](#0xb_treasury_is_external_coin_witness)
+-  [Function `external_coin_admin_count`](#0xb_treasury_external_coin_admin_count)
+-  [Function `add_external_coin_admin`](#0xb_treasury_add_external_coin_admin)
+-  [Function `add_external_coin_target`](#0xb_treasury_add_external_coin_target)
+-  [Function `add_external_coin_witness`](#0xb_treasury_add_external_coin_witness)
+-  [Function `remove_external_coin_witness`](#0xb_treasury_remove_external_coin_witness)
+-  [Function `verify_bitcoin_signatures`](#0xb_treasury_verify_bitcoin_signatures)
+-  [Function `remove_external_coin_admin`](#0xb_treasury_remove_external_coin_admin)
+-  [Function `remove_external_coin_target`](#0xb_treasury_remove_external_coin_target)
+-  [Function `burn`](#0xb_treasury_burn)
+-  [Function `mint`](#0xb_treasury_mint)
+-  [Function `update_asset_notional_price`](#0xb_treasury_update_asset_notional_price)
+-  [Function `get_token_metadata`](#0xb_treasury_get_token_metadata)
 
 
-<pre><code><b>use</b> <a href="../bridge/chain_ids.md#bridge_chain_ids">bridge::chain_ids</a>;
-<b>use</b> <a href="../bridge/crypto.md#bridge_crypto">bridge::crypto</a>;
-<b>use</b> <a href="../bridge/message.md#bridge_message">bridge::message</a>;
-<b>use</b> <a href="../bridge/message_types.md#bridge_message_types">bridge::message_types</a>;
-<b>use</b> <a href="../std/address.md#std_address">std::address</a>;
-<b>use</b> <a href="../std/ascii.md#std_ascii">std::ascii</a>;
-<b>use</b> <a href="../std/bcs.md#std_bcs">std::bcs</a>;
-<b>use</b> <a href="../std/option.md#std_option">std::option</a>;
-<b>use</b> <a href="../std/string.md#std_string">std::string</a>;
-<b>use</b> <a href="../std/type_name.md#std_type_name">std::type_name</a>;
-<b>use</b> <a href="../std/u64.md#std_u64">std::u64</a>;
-<b>use</b> <a href="../std/vector.md#std_vector">std::vector</a>;
-<b>use</b> <a href="../sui/address.md#sui_address">sui::address</a>;
-<b>use</b> <a href="../sui/bag.md#sui_bag">sui::bag</a>;
-<b>use</b> <a href="../sui/balance.md#sui_balance">sui::balance</a>;
-<b>use</b> <a href="../sui/bcs.md#sui_bcs">sui::bcs</a>;
-<b>use</b> <a href="../sui/coin.md#sui_coin">sui::coin</a>;
-<b>use</b> <a href="../sui/config.md#sui_config">sui::config</a>;
-<b>use</b> <a href="../sui/deny_list.md#sui_deny_list">sui::deny_list</a>;
-<b>use</b> <a href="../sui/dynamic_field.md#sui_dynamic_field">sui::dynamic_field</a>;
-<b>use</b> <a href="../sui/dynamic_object_field.md#sui_dynamic_object_field">sui::dynamic_object_field</a>;
-<b>use</b> <a href="../sui/ecdsa_k1.md#sui_ecdsa_k1">sui::ecdsa_k1</a>;
-<b>use</b> <a href="../sui/event.md#sui_event">sui::event</a>;
-<b>use</b> <a href="../sui/hash.md#sui_hash">sui::hash</a>;
-<b>use</b> <a href="../sui/hex.md#sui_hex">sui::hex</a>;
-<b>use</b> <a href="../sui/object.md#sui_object">sui::object</a>;
-<b>use</b> <a href="../sui/object_bag.md#sui_object_bag">sui::object_bag</a>;
-<b>use</b> <a href="../sui/package.md#sui_package">sui::package</a>;
-<b>use</b> <a href="../sui/table.md#sui_table">sui::table</a>;
-<b>use</b> <a href="../sui/transfer.md#sui_transfer">sui::transfer</a>;
-<b>use</b> <a href="../sui/tx_context.md#sui_tx_context">sui::tx_context</a>;
-<b>use</b> <a href="../sui/types.md#sui_types">sui::types</a>;
-<b>use</b> <a href="../sui/url.md#sui_url">sui::url</a>;
-<b>use</b> <a href="../sui/vec_map.md#sui_vec_map">sui::vec_map</a>;
-<b>use</b> <a href="../sui/vec_set.md#sui_vec_set">sui::vec_set</a>;
+<pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
+<b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
+<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
+<b>use</b> <a href="../move-stdlib/u64.md#0x1_u64">0x1::u64</a>;
+<b>use</b> <a href="../sui-framework/address.md#0x2_address">0x2::address</a>;
+<b>use</b> <a href="../sui-framework/bag.md#0x2_bag">0x2::bag</a>;
+<b>use</b> <a href="../sui-framework/coin.md#0x2_coin">0x2::coin</a>;
+<b>use</b> <a href="../sui-framework/ecdsa_k1.md#0x2_ecdsa_k1">0x2::ecdsa_k1</a>;
+<b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
+<b>use</b> <a href="../sui-framework/hash.md#0x2_hash">0x2::hash</a>;
+<b>use</b> <a href="../sui-framework/hex.md#0x2_hex">0x2::hex</a>;
+<b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
+<b>use</b> <a href="../sui-framework/object_bag.md#0x2_object_bag">0x2::object_bag</a>;
+<b>use</b> <a href="../sui-framework/package.md#0x2_package">0x2::package</a>;
+<b>use</b> <a href="../sui-framework/transfer.md#0x2_transfer">0x2::transfer</a>;
+<b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
+<b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
+<b>use</b> <a href="../sui-framework/vec_set.md#0x2_vec_set">0x2::vec_set</a>;
+<b>use</b> <a href="crypto.md#0xb_crypto">0xb::crypto</a>;
+<b>use</b> <a href="message.md#0xb_message">0xb::message</a>;
 </code></pre>
 
 
 
-<a name="bridge_treasury_BridgeTreasury"></a>
+<a name="0xb_treasury_BridgeTreasury"></a>
 
 ## Struct `BridgeTreasury`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a> <b>has</b> store
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a> <b>has</b> store
 </code></pre>
 
 
@@ -89,52 +80,59 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code>external_coin_admin_address: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <a href="../sui/vec_set.md#sui_vec_set_VecSet">sui::vec_set::VecSet</a>&lt;<a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>&gt;&gt;</code>
+<code>external_coin_admin_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>external_coin_target_address: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <a href="../sui/vec_set.md#sui_vec_set_VecSet">sui::vec_set::VecSet</a>&lt;<a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>&gt;&gt;</code>
+<code>external_coin_target_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>&gt;&gt;</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>external_coin_witness_address: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <a href="../sui/vec_set.md#sui_vec_set_VecSet">sui::vec_set::VecSet</a>&lt;vector&lt;u8&gt;&gt;&gt;</code>
+<code>external_coin_witness_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <a href="../sui-framework/vec_set.md#0x2_vec_set_VecSet">vec_set::VecSet</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt;&gt;</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>treasuries: <a href="../sui/object_bag.md#sui_object_bag_ObjectBag">sui::object_bag::ObjectBag</a></code>
+<code>treasuries: <a href="../sui-framework/object_bag.md#0x2_object_bag_ObjectBag">object_bag::ObjectBag</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>supported_tokens: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;<a href="../std/type_name.md#std_type_name_TypeName">std::type_name::TypeName</a>, <a href="../bridge/treasury.md#bridge_treasury_BridgeTokenMetadata">bridge::treasury::BridgeTokenMetadata</a>&gt;</code>
+<code>supported_tokens: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a>, treasury::BridgeTokenMetadata&gt;</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>id_token_type_map: <a href="../sui/vec_map.md#sui_vec_map_VecMap">sui::vec_map::VecMap</a>&lt;u64, <a href="../std/type_name.md#std_type_name_TypeName">std::type_name::TypeName</a>&gt;</code>
+<code>id_token_type_map: <a href="../sui-framework/vec_map.md#0x2_vec_map_VecMap">vec_map::VecMap</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a>&gt;</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>waiting_room: <a href="../sui/bag.md#sui_bag_Bag">sui::bag::Bag</a></code>
+<code>waiting_room: <a href="../sui-framework/bag.md#0x2_bag_Bag">bag::Bag</a></code>
 </dt>
 <dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="bridge_treasury_BridgeTokenMetadata"></a>
+<a name="0xb_treasury_BridgeTokenMetadata"></a>
 
 ## Struct `BridgeTokenMetadata`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a> <b>has</b> <b>copy</b>, drop, store
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a> <b>has</b> <b>copy</b>, drop, store
 </code></pre>
 
 
@@ -145,37 +143,41 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code>id: u64</code>
+<code>id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>: u64</code>
+<code>decimal_multiplier: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>: u64</code>
+<code>notional_value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
 <code>native_token: bool</code>
 </dt>
 <dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="bridge_treasury_ForeignTokenRegistration"></a>
+<a name="0xb_treasury_ForeignTokenRegistration"></a>
 
 ## Struct `ForeignTokenRegistration`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a> <b>has</b> store
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a> <b>has</b> store
 </code></pre>
 
 
@@ -186,32 +188,35 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code>type_name: <a href="../std/type_name.md#std_type_name_TypeName">std::type_name::TypeName</a></code>
+<code><a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>: <a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>uc: <a href="../sui/package.md#sui_package_UpgradeCap">sui::package::UpgradeCap</a></code>
+<code>uc: <a href="../sui-framework/package.md#0x2_package_UpgradeCap">package::UpgradeCap</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
 <code>decimal: u8</code>
 </dt>
 <dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="bridge_treasury_UpdateTokenPriceEvent"></a>
+<a name="0xb_treasury_UpdateTokenPriceEvent"></a>
 
 ## Struct `UpdateTokenPriceEvent`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_UpdateTokenPriceEvent">UpdateTokenPriceEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_UpdateTokenPriceEvent">UpdateTokenPriceEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -222,27 +227,29 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64</code>
+<code>token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>new_price: u64</code>
+<code>new_price: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="bridge_treasury_NewTokenEvent"></a>
+<a name="0xb_treasury_NewTokenEvent"></a>
 
 ## Struct `NewTokenEvent`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_NewTokenEvent">NewTokenEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_NewTokenEvent">NewTokenEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -253,42 +260,47 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64</code>
+<code>token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code>type_name: <a href="../std/type_name.md#std_type_name_TypeName">std::type_name::TypeName</a></code>
+<code><a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>: <a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
 <code>native_token: bool</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>: u64</code>
+<code>decimal_multiplier: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
-<code><a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>: u64</code>
+<code>notional_value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
+
 </dd>
 </dl>
 
 
 </details>
 
-<a name="bridge_treasury_TokenRegistrationEvent"></a>
+<a name="0xb_treasury_TokenRegistrationEvent"></a>
 
 ## Struct `TokenRegistrationEvent`
 
 
 
-<pre><code><b>public</b> <b>struct</b> <a href="../bridge/treasury.md#bridge_treasury_TokenRegistrationEvent">TokenRegistrationEvent</a> <b>has</b> <b>copy</b>, drop
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_TokenRegistrationEvent">TokenRegistrationEvent</a> <b>has</b> <b>copy</b>, drop
 </code></pre>
 
 
@@ -299,19 +311,220 @@ title: Module `bridge::treasury`
 
 <dl>
 <dt>
-<code>type_name: <a href="../std/type_name.md#std_type_name_TypeName">std::type_name::TypeName</a></code>
+<code><a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>: <a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a></code>
 </dt>
 <dd>
+
 </dd>
 <dt>
 <code>decimal: u8</code>
 </dt>
 <dd>
+
 </dd>
 <dt>
 <code>native_token: bool</code>
 </dt>
 <dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinAdminEvent"></a>
+
+## Struct `AddExternalCoinAdminEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinAdminEvent">AddExternalCoinAdminEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinAdminEvent"></a>
+
+## Struct `RemoveExternalCoinAdminEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinAdminEvent">RemoveExternalCoinAdminEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinWitnessEvent"></a>
+
+## Struct `AddExternalCoinWitnessEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinWitnessEvent">AddExternalCoinWitnessEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinWitnessEvent"></a>
+
+## Struct `RemoveExternalCoinWitnessEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinWitnessEvent">RemoveExternalCoinWitnessEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_AddExternalCoinTargetEvent"></a>
+
+## Struct `AddExternalCoinTargetEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_AddExternalCoinTargetEvent">AddExternalCoinTargetEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_treasury_RemoveExternalCoinTargetEvent"></a>
+
+## Struct `RemoveExternalCoinTargetEvent`
+
+
+
+<pre><code><b>struct</b> <a href="treasury.md#0xb_treasury_RemoveExternalCoinTargetEvent">RemoveExternalCoinTargetEvent</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code><b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a></code>
+</dt>
+<dd>
+
 </dd>
 </dl>
 
@@ -323,49 +536,49 @@ title: Module `bridge::treasury`
 ## Constants
 
 
-<a name="bridge_treasury_EInvalidNotionalValue"></a>
+<a name="0xb_treasury_EInvalidNotionalValue"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/treasury.md#bridge_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>: u64 = 4;
+<pre><code><b>const</b> <a href="treasury.md#0xb_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4;
 </code></pre>
 
 
 
-<a name="bridge_treasury_EInvalidUpgradeCap"></a>
+<a name="0xb_treasury_EInvalidUpgradeCap"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/treasury.md#bridge_treasury_EInvalidUpgradeCap">EInvalidUpgradeCap</a>: u64 = 2;
+<pre><code><b>const</b> <a href="treasury.md#0xb_treasury_EInvalidUpgradeCap">EInvalidUpgradeCap</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 2;
 </code></pre>
 
 
 
-<a name="bridge_treasury_ETokenSupplyNonZero"></a>
+<a name="0xb_treasury_ETokenSupplyNonZero"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/treasury.md#bridge_treasury_ETokenSupplyNonZero">ETokenSupplyNonZero</a>: u64 = 3;
+<pre><code><b>const</b> <a href="treasury.md#0xb_treasury_ETokenSupplyNonZero">ETokenSupplyNonZero</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 3;
 </code></pre>
 
 
 
-<a name="bridge_treasury_EUnsupportedTokenType"></a>
+<a name="0xb_treasury_EUnsupportedTokenType"></a>
 
 
 
-<pre><code><b>const</b> <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>: u64 = 1;
+<pre><code><b>const</b> <a href="treasury.md#0xb_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 
 
-<a name="bridge_treasury_token_id"></a>
+<a name="0xb_treasury_token_id"></a>
 
 ## Function `token_id`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_token_id">token_id</a>&lt;T&gt;(self: &treasury::BridgeTreasury): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -374,8 +587,8 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>): u64 {
-    <b>let</b> metadata = self.<a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_token_id">token_id</a>&lt;T&gt;(self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> metadata = self.<a href="treasury.md#0xb_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
     metadata.id
 }
 </code></pre>
@@ -384,13 +597,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_decimal_multiplier"></a>
+<a name="0xb_treasury_decimal_multiplier"></a>
 
 ## Function `decimal_multiplier`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_decimal_multiplier">decimal_multiplier</a>&lt;T&gt;(self: &treasury::BridgeTreasury): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -399,9 +612,9 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>): u64 {
-    <b>let</b> metadata = self.<a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
-    metadata.<a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_decimal_multiplier">decimal_multiplier</a>&lt;T&gt;(self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> metadata = self.<a href="treasury.md#0xb_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
+    metadata.decimal_multiplier
 }
 </code></pre>
 
@@ -409,13 +622,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_notional_value"></a>
+<a name="0xb_treasury_notional_value"></a>
 
 ## Function `notional_value`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>): u64
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_notional_value">notional_value</a>&lt;T&gt;(self: &treasury::BridgeTreasury): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -424,9 +637,9 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>): u64 {
-    <b>let</b> metadata = self.<a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
-    metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_notional_value">notional_value</a>&lt;T&gt;(self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> metadata = self.<a href="treasury.md#0xb_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
+    metadata.notional_value
 }
 </code></pre>
 
@@ -434,13 +647,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_register_foreign_token"></a>
+<a name="0xb_treasury_register_foreign_token"></a>
 
 ## Function `register_foreign_token`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_register_foreign_token">register_foreign_token</a>&lt;T&gt;(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, tc: <a href="../sui/coin.md#sui_coin_TreasuryCap">sui::coin::TreasuryCap</a>&lt;T&gt;, uc: <a href="../sui/package.md#sui_package_UpgradeCap">sui::package::UpgradeCap</a>, metadata: &<a href="../sui/coin.md#sui_coin_CoinMetadata">sui::coin::CoinMetadata</a>&lt;T&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_register_foreign_token">register_foreign_token</a>&lt;T&gt;(self: &<b>mut</b> treasury::BridgeTreasury, tc: <a href="../sui-framework/coin.md#0x2_coin_TreasuryCap">coin::TreasuryCap</a>&lt;T&gt;, uc: <a href="../sui-framework/package.md#0x2_package_UpgradeCap">package::UpgradeCap</a>, metadata: &<a href="../sui-framework/coin.md#0x2_coin_CoinMetadata">coin::CoinMetadata</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -449,33 +662,34 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_register_foreign_token">register_foreign_token</a>&lt;T&gt;(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_register_foreign_token">register_foreign_token</a>&lt;T&gt;(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     tc: TreasuryCap&lt;T&gt;,
     uc: UpgradeCap,
     metadata: &CoinMetadata&lt;T&gt;,
 ) {
     // Make sure TreasuryCap <b>has</b> not been minted before.
-    <b>assert</b>!(coin::total_supply(&tc) == 0, <a href="../bridge/treasury.md#bridge_treasury_ETokenSupplyNonZero">ETokenSupplyNonZero</a>);
-    <b>let</b> type_name = type_name::get&lt;T&gt;();
-    <b>let</b> address_bytes = hex::decode(ascii::into_bytes(type_name::get_address(&type_name)));
+    <b>assert</b>!(<a href="../sui-framework/coin.md#0x2_coin_total_supply">coin::total_supply</a>(&tc) == 0, <a href="treasury.md#0xb_treasury_ETokenSupplyNonZero">ETokenSupplyNonZero</a>);
+    <b>let</b> <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a> = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;();
+    <b>let</b> address_bytes = <a href="../sui-framework/hex.md#0x2_hex_decode">hex::decode</a>(<a href="../move-stdlib/ascii.md#0x1_ascii_into_bytes">ascii::into_bytes</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get_address">type_name::get_address</a>(&<a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>)));
     <b>let</b> coin_address = address::from_bytes(address_bytes);
-    // Make sure upgrade cap is <b>for</b> the Coin package
+    // Make sure upgrade cap is for the Coin <a href="../sui-framework/package.md#0x2_package">package</a>
     // FIXME: add test
     <b>assert</b>!(
-        object::id_to_address(&package::upgrade_package(&uc))
-            == coin_address, <a href="../bridge/treasury.md#bridge_treasury_EInvalidUpgradeCap">EInvalidUpgradeCap</a>
+        <a href="../sui-framework/object.md#0x2_object_id_to_address">object::id_to_address</a>(&<a href="../sui-framework/package.md#0x2_package_upgrade_package">package::upgrade_package</a>(&uc))
+            == coin_address, <a href="treasury.md#0xb_treasury_EInvalidUpgradeCap">EInvalidUpgradeCap</a>
     );
-    <b>let</b> registration = <a href="../bridge/treasury.md#bridge_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a> {
-        type_name,
+    <b>let</b> registration = <a href="treasury.md#0xb_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a> {
+        <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>,
         uc,
-        decimal: coin::get_decimals(metadata),
+        decimal: <a href="../sui-framework/coin.md#0x2_coin_get_decimals">coin::get_decimals</a>(metadata),
     };
-    self.waiting_room.add(type_name::into_string(type_name), registration);
-    self.treasuries.add(type_name, tc);
-    emit(<a href="../bridge/treasury.md#bridge_treasury_TokenRegistrationEvent">TokenRegistrationEvent</a>{
-        type_name,
-        decimal: coin::get_decimals(metadata),
+    self.waiting_room.add(<a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>), registration);
+    self.treasuries.add(<a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>, tc);
+
+    emit(<a href="treasury.md#0xb_treasury_TokenRegistrationEvent">TokenRegistrationEvent</a>{
+        <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>,
+        decimal: <a href="../sui-framework/coin.md#0x2_coin_get_decimals">coin::get_decimals</a>(metadata),
         native_token: <b>false</b>
     });
 }
@@ -485,13 +699,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_add_new_token"></a>
+<a name="0xb_treasury_add_new_token"></a>
 
 ## Function `add_new_token`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_new_token">add_new_token</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, token_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, native_token: bool, <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_new_token">add_new_token</a>(self: &<b>mut</b> treasury::BridgeTreasury, token_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, native_token: bool, notional_value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -500,42 +714,44 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_new_token">add_new_token</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_new_token">add_new_token</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     token_name: String,
-    <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64,
+    token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     native_token: bool,
-    <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>: u64,
+    notional_value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ) {
     <b>if</b> (!native_token){
-        <b>assert</b>!(<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> &gt; 0, <a href="../bridge/treasury.md#bridge_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>);
-        <b>let</b> <a href="../bridge/treasury.md#bridge_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a>{
-            type_name,
+        <b>assert</b>!(notional_value &gt; 0, <a href="treasury.md#0xb_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>);
+        <b>let</b> <a href="treasury.md#0xb_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a>{
+            <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>,
             uc,
             decimal,
-        } = self.waiting_room.remove&lt;String, <a href="../bridge/treasury.md#bridge_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a>&gt;(token_name);
-        <b>let</b> <a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a> = 10u64.pow(decimal);
+        } = self.waiting_room.remove&lt;String, <a href="treasury.md#0xb_treasury_ForeignTokenRegistration">ForeignTokenRegistration</a>&gt;(token_name);
+        <b>let</b> decimal_multiplier = 10u64.pow(decimal);
         self.supported_tokens.insert(
-            type_name,
-            <a href="../bridge/treasury.md#bridge_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a>{
-                id: <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>,
-                <a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>,
-                <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>,
+            <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>,
+            <a href="treasury.md#0xb_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a>{
+                id: token_id,
+                decimal_multiplier,
+                notional_value,
                 native_token
             },
         );
-        self.id_token_type_map.insert(<a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>, type_name);
-        // Freeze upgrade cap to prevent changes to the coin
-        transfer::public_freeze_object(uc);
-        emit(<a href="../bridge/treasury.md#bridge_treasury_NewTokenEvent">NewTokenEvent</a>{
-            <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>,
-            type_name,
+        self.id_token_type_map.insert(token_id, <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>);
+
+        // Freeze upgrade cap <b>to</b> prevent changes <b>to</b> the <a href="../sui-framework/coin.md#0x2_coin">coin</a>
+        <a href="../sui-framework/transfer.md#0x2_transfer_public_freeze_object">transfer::public_freeze_object</a>(uc);
+
+        emit(<a href="treasury.md#0xb_treasury_NewTokenEvent">NewTokenEvent</a>{
+            token_id,
+            <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>,
             native_token,
-            <a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a>,
-            <a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a>
+            decimal_multiplier,
+            notional_value
         })
     } <b>else</b> {
-        // Not implemented <b>for</b> V1
+        // Not implemented for V1
     }
 }
 </code></pre>
@@ -544,13 +760,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_create"></a>
+<a name="0xb_treasury_create"></a>
 
 ## Function `create`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_create">create</a>(ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_create">create</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): treasury::BridgeTreasury
 </code></pre>
 
 
@@ -559,15 +775,15 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_create">create</a>(ctx: &<b>mut</b> TxContext): <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a> {
-    <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a> {
-        external_coin_admin_address: vec_map::empty(),
-        external_coin_target_address: vec_map::empty(),
-        external_coin_witness_address: vec_map::empty(),
-        treasuries: object_bag::new(ctx),
-        supported_tokens: vec_map::empty(),
-        id_token_type_map: vec_map::empty(),
-        waiting_room: bag::new(ctx),
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_create">create</a>(ctx: &<b>mut</b> TxContext): <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a> {
+    <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a> {
+        external_coin_admin_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        external_coin_target_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        external_coin_witness_address: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        treasuries: <a href="../sui-framework/object_bag.md#0x2_object_bag_new">object_bag::new</a>(ctx),
+        supported_tokens: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        id_token_type_map: <a href="../sui-framework/vec_map.md#0x2_vec_map_empty">vec_map::empty</a>(),
+        waiting_room: <a href="../sui-framework/bag.md#0x2_bag_new">bag::new</a>(ctx),
     }
 }
 </code></pre>
@@ -576,13 +792,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_is_external_coin_admin"></a>
+<a name="0xb_treasury_is_external_coin_admin"></a>
 
 ## Function `is_external_coin_admin`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_is_external_coin_admin">is_external_coin_admin</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <b>address</b>: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_admin">is_external_coin_admin</a>(self: &treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): bool
 </code></pre>
 
 
@@ -591,8 +807,8 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_is_external_coin_admin">is_external_coin_admin</a>(
-    self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_admin">is_external_coin_admin</a>(
+    self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
     <b>address</b>: String,
 ): bool {
@@ -609,13 +825,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_is_external_coin_witness"></a>
+<a name="0xb_treasury_is_external_coin_witness"></a>
 
 ## Function `is_external_coin_witness`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_is_external_coin_witness">is_external_coin_witness</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, addr: vector&lt;u8&gt;): bool
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_witness">is_external_coin_witness</a>(self: &treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): bool
 </code></pre>
 
 
@@ -624,10 +840,10 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_is_external_coin_witness">is_external_coin_witness</a>(
-  self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_is_external_coin_witness">is_external_coin_witness</a>(
+  self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
   coin_type_name: String,
-  addr: vector&lt;u8&gt;,
+  addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
 ): bool {
   <b>let</b> admins = self.external_coin_witness_address.try_get(&coin_type_name);
   <b>if</b> (admins.is_none()) {
@@ -642,13 +858,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_external_coin_admin_count"></a>
+<a name="0xb_treasury_external_coin_admin_count"></a>
 
 ## Function `external_coin_admin_count`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_external_coin_admin_count">external_coin_admin_count</a>(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>): u64
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_external_coin_admin_count">external_coin_admin_count</a>(self: &treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -657,10 +873,10 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_external_coin_admin_count">external_coin_admin_count</a>(
-    self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_external_coin_admin_count">external_coin_admin_count</a>(
+    self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
-): u64 {
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <b>let</b> admins = self.external_coin_admin_address.try_get(&coin_type_name);
     <b>if</b> (admins.is_none()) {
         <b>return</b> 0
@@ -674,13 +890,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_add_external_coin_admin"></a>
+<a name="0xb_treasury_add_external_coin_admin"></a>
 
 ## Function `add_external_coin_admin`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_admin">add_external_coin_admin</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <b>address</b>: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_admin">add_external_coin_admin</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -689,19 +905,23 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_admin">add_external_coin_admin</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_admin">add_external_coin_admin</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
     <b>address</b>: String,
 ) {
     <b>let</b> admins = self.external_coin_admin_address.try_get(&coin_type_name);
     <b>if</b> (admins.is_none()) {
-        self.external_coin_admin_address.insert(coin_type_name, vec_set::empty());
+        self.external_coin_admin_address.insert(coin_type_name, <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>());
     };
     <b>let</b> admins = self.external_coin_admin_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&<b>address</b>)) {
         admins.insert(<b>address</b>);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinAdminEvent">AddExternalCoinAdminEvent</a>{
+        coin_type_name,
+        <b>address</b>
+    })
 }
 </code></pre>
 
@@ -709,13 +929,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_add_external_coin_target"></a>
+<a name="0xb_treasury_add_external_coin_target"></a>
 
 ## Function `add_external_coin_target`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_target">add_external_coin_target</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, addr: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_target">add_external_coin_target</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -724,19 +944,24 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_target">add_external_coin_target</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_target">add_external_coin_target</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
     addr: String,
 ) {
     <b>let</b> admins = self.external_coin_target_address.try_get(&coin_type_name);
     <b>if</b> (admins.is_none()) {
-        self.external_coin_target_address.insert(coin_type_name, vec_set::empty());
+        self.external_coin_target_address.insert(coin_type_name, <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>());
     };
     <b>let</b> admins = self.external_coin_target_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&addr)) {
         admins.insert(addr);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinTargetEvent">AddExternalCoinTargetEvent</a>{
+        coin_type_name,
+        <b>address</b>: addr
+    })
+
 }
 </code></pre>
 
@@ -744,13 +969,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_add_external_coin_witness"></a>
+<a name="0xb_treasury_add_external_coin_witness"></a>
 
 ## Function `add_external_coin_witness`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_witness">add_external_coin_witness</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, addr: vector&lt;u8&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_witness">add_external_coin_witness</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;)
 </code></pre>
 
 
@@ -759,19 +984,23 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_add_external_coin_witness">add_external_coin_witness</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_add_external_coin_witness">add_external_coin_witness</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
-    addr: vector&lt;u8&gt;,
+    addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
 ) {
     <b>let</b> admins = self.external_coin_witness_address.try_get(&coin_type_name);
     <b>if</b> (admins.is_none()) {
-        self.external_coin_witness_address.insert(coin_type_name, vec_set::empty());
+        self.external_coin_witness_address.insert(coin_type_name, <a href="../sui-framework/vec_set.md#0x2_vec_set_empty">vec_set::empty</a>());
     };
     <b>let</b> admins = self.external_coin_witness_address.get_mut(&coin_type_name);
     <b>if</b> (!admins.contains(&addr)) {
         admins.insert(addr);
-    }
+    };
+    emit(<a href="treasury.md#0xb_treasury_AddExternalCoinWitnessEvent">AddExternalCoinWitnessEvent</a>{
+        coin_type_name,
+        <b>address</b>: addr
+    })
 }
 </code></pre>
 
@@ -779,13 +1008,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_remove_external_coin_witness"></a>
+<a name="0xb_treasury_remove_external_coin_witness"></a>
 
 ## Function `remove_external_coin_witness`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_witness">remove_external_coin_witness</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, addr: vector&lt;u8&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_witness">remove_external_coin_witness</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;)
 </code></pre>
 
 
@@ -794,10 +1023,10 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_witness">remove_external_coin_witness</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_witness">remove_external_coin_witness</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
-    addr: vector&lt;u8&gt;,
+    addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
  ) {
     <b>let</b> admins = self.external_coin_witness_address.try_get(&coin_type_name);
     <b>if</b> (admins.is_none()) {
@@ -808,7 +1037,11 @@ title: Module `bridge::treasury`
         admins.remove(&addr);
         <b>if</b> (admins.size() == 0) {
             self.external_coin_witness_address.remove(&coin_type_name);
-        }
+        };
+        emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinWitnessEvent">RemoveExternalCoinWitnessEvent</a>{
+            coin_type_name,
+            <b>address</b>: addr
+        })
     }
 }
 </code></pre>
@@ -817,13 +1050,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_verify_bitcoin_signatures"></a>
+<a name="0xb_treasury_verify_bitcoin_signatures"></a>
 
 ## Function `verify_bitcoin_signatures`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_verify_bitcoin_signatures">verify_bitcoin_signatures</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, source_chain: u8, source_address: vector&lt;u8&gt;, target_address: vector&lt;u8&gt;, amount: u64, tx_hash: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, signatures: vector&lt;u8&gt;): bool
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_verify_bitcoin_signatures">verify_bitcoin_signatures</a>&lt;T&gt;(self: &treasury::BridgeTreasury, source_chain: u8, source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): bool
 </code></pre>
 
 
@@ -832,29 +1065,30 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_verify_bitcoin_signatures">verify_bitcoin_signatures</a>&lt;T&gt;(
-   self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b> <b>fun</b> <a href="treasury.md#0xb_treasury_verify_bitcoin_signatures">verify_bitcoin_signatures</a>&lt;T&gt;(
+   self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
    source_chain: u8,
-   source_address: vector&lt;u8&gt;,
-   target_address: vector&lt;u8&gt;,
-   amount: u64,
-   tx_hash: ascii::String,
-   signatures: vector&lt;u8&gt;,
+   source_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+   target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+   amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+   tx_hash: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>,
+   signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
 ):bool{
-   <b>let</b> coin_type = type_name::into_string(type_name::get&lt;T&gt;());
-   <b>let</b> bitcoin_message=<a href="../bridge/message.md#bridge_message_create_bitcoin_message">message::create_bitcoin_message</a>(
+   <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
+
+   <b>let</b> bitcoin_message=<a href="message.md#0xb_message_create_bitcoin_message">message::create_bitcoin_message</a>(
        source_chain,
        source_address,
        target_address,
        amount,
-       *ascii::as_bytes(&tx_hash),
-       *ascii::as_bytes(&coin_type)
+       *<a href="../move-stdlib/ascii.md#0x1_ascii_as_bytes">ascii::as_bytes</a>(&tx_hash),
+       *<a href="../move-stdlib/ascii.md#0x1_ascii_as_bytes">ascii::as_bytes</a>(&coin_type)
    );
-   <b>let</b> msg=hash::keccak256(&bitcoin_message.serialize_bitcoin_message());
+   <b>let</b> msg=<a href="../sui-framework/hash.md#0x2_hash_keccak256">hash::keccak256</a>(&bitcoin_message.serialize_bitcoin_message());
    <b>let</b> pubkey =
-       ecdsa_k1::decompress_pubkey(&ecdsa_k1::secp256k1_ecrecover(&signatures, &msg, 0));
-   <b>let</b> addr=<a href="../bridge/crypto.md#bridge_crypto_ecdsa_pub_key_to_eth_address">crypto::ecdsa_pub_key_to_eth_address</a>(&pubkey);
-   self.<a href="../bridge/treasury.md#bridge_treasury_is_external_coin_witness">is_external_coin_witness</a>(coin_type, addr)
+       <a href="../sui-framework/ecdsa_k1.md#0x2_ecdsa_k1_decompress_pubkey">ecdsa_k1::decompress_pubkey</a>(&<a href="../sui-framework/ecdsa_k1.md#0x2_ecdsa_k1_secp256k1_ecrecover">ecdsa_k1::secp256k1_ecrecover</a>(&signatures, &msg, 0));
+   <b>let</b> addr=<a href="crypto.md#0xb_crypto_ecdsa_pub_key_to_eth_address">crypto::ecdsa_pub_key_to_eth_address</a>(&pubkey);
+   self.<a href="treasury.md#0xb_treasury_is_external_coin_witness">is_external_coin_witness</a>(coin_type, addr)
 }
 </code></pre>
 
@@ -862,13 +1096,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_remove_external_coin_admin"></a>
+<a name="0xb_treasury_remove_external_coin_admin"></a>
 
 ## Function `remove_external_coin_admin`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, <b>address</b>: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, <b>address</b>: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -877,8 +1111,8 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_admin">remove_external_coin_admin</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
     coin_type_name: String,
     <b>address</b>: String,
 ) {
@@ -891,7 +1125,11 @@ title: Module `bridge::treasury`
         admins.remove(&<b>address</b>);
         <b>if</b> (admins.size() == 0) {
             self.external_coin_admin_address.remove(&coin_type_name);
-        }
+        };
+        emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinAdminEvent">RemoveExternalCoinAdminEvent</a>{
+            coin_type_name,
+            <b>address</b>
+        })
     }
 }
 </code></pre>
@@ -900,13 +1138,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_remove_external_coin_target"></a>
+<a name="0xb_treasury_remove_external_coin_target"></a>
 
 ## Function `remove_external_coin_target`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_target">remove_external_coin_target</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, coin_type_name: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>, addr: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_target">remove_external_coin_target</a>(self: &<b>mut</b> treasury::BridgeTreasury, coin_type_name: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>, addr: <a href="../move-stdlib/ascii.md#0x1_ascii_String">ascii::String</a>)
 </code></pre>
 
 
@@ -915,8 +1153,8 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_remove_external_coin_target">remove_external_coin_target</a>(
-   self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_remove_external_coin_target">remove_external_coin_target</a>(
+   self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
    coin_type_name: String,
    addr: String,
 ) {
@@ -929,7 +1167,11 @@ title: Module `bridge::treasury`
        admins.remove(&addr);
        <b>if</b> (admins.size() == 0) {
            self.external_coin_target_address.remove(&coin_type_name);
-       }
+       };
+       emit(<a href="treasury.md#0xb_treasury_RemoveExternalCoinTargetEvent">RemoveExternalCoinTargetEvent</a>{
+           coin_type_name,
+           <b>address</b>: addr
+       })
    }
 }
 </code></pre>
@@ -938,13 +1180,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_burn"></a>
+<a name="0xb_treasury_burn"></a>
 
 ## Function `burn`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_burn">burn</a>&lt;T&gt;(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, token: <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;T&gt;)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_burn">burn</a>&lt;T&gt;(self: &<b>mut</b> treasury::BridgeTreasury, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -953,9 +1195,9 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_burn">burn</a>&lt;T&gt;(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>, token: Coin&lt;T&gt;) {
-    <b>let</b> <a href="../bridge/treasury.md#bridge_treasury">treasury</a> = &<b>mut</b> self.treasuries[type_name::get&lt;T&gt;()];
-    coin::burn(<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, token);
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_burn">burn</a>&lt;T&gt;(self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>, token: Coin&lt;T&gt;) {
+    <b>let</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a> = &<b>mut</b> self.treasuries[<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;()];
+    <a href="../sui-framework/coin.md#0x2_coin_burn">coin::burn</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, token);
 }
 </code></pre>
 
@@ -963,13 +1205,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_mint"></a>
+<a name="0xb_treasury_mint"></a>
 
 ## Function `mint`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_mint">mint</a>&lt;T&gt;(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, amount: u64, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>): <a href="../sui/coin.md#sui_coin_Coin">sui::coin::Coin</a>&lt;T&gt;
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_mint">mint</a>&lt;T&gt;(self: &<b>mut</b> treasury::BridgeTreasury, amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;
 </code></pre>
 
 
@@ -978,13 +1220,13 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_mint">mint</a>&lt;T&gt;(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
-    amount: u64,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_mint">mint</a>&lt;T&gt;(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
+    amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &<b>mut</b> TxContext,
 ): Coin&lt;T&gt; {
-    <b>let</b> <a href="../bridge/treasury.md#bridge_treasury">treasury</a> = &<b>mut</b> self.treasuries[type_name::get&lt;T&gt;()];
-    coin::mint(<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, amount, ctx)
+    <b>let</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a> = &<b>mut</b> self.treasuries[<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;()];
+    <a href="../sui-framework/coin.md#0x2_coin_mint">coin::mint</a>(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>, amount, ctx)
 }
 </code></pre>
 
@@ -992,13 +1234,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_update_asset_notional_price"></a>
+<a name="0xb_treasury_update_asset_notional_price"></a>
 
 ## Function `update_asset_notional_price`
 
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_update_asset_notional_price">update_asset_notional_price</a>(self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64, new_usd_price: u64)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="treasury.md#0xb_treasury_update_asset_notional_price">update_asset_notional_price</a>(self: &<b>mut</b> treasury::BridgeTreasury, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, new_usd_price: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
 </code></pre>
 
 
@@ -1007,19 +1249,20 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_update_asset_notional_price">update_asset_notional_price</a>(
-    self: &<b>mut</b> <a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
-    <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>: u64,
-    new_usd_price: u64,
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="treasury.md#0xb_treasury_update_asset_notional_price">update_asset_notional_price</a>(
+    self: &<b>mut</b> <a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>,
+    token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    new_usd_price: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ) {
-    <b>let</b> type_name = self.id_token_type_map.try_get(&<a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>);
-    <b>assert</b>!(type_name.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
-    <b>assert</b>!(new_usd_price &gt; 0, <a href="../bridge/treasury.md#bridge_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>);
-    <b>let</b> type_name = type_name.destroy_some();
-    <b>let</b> metadata = self.supported_tokens.get_mut(&type_name);
-    metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> = new_usd_price;
-    emit(<a href="../bridge/treasury.md#bridge_treasury_UpdateTokenPriceEvent">UpdateTokenPriceEvent</a> {
-        <a href="../bridge/treasury.md#bridge_treasury_token_id">token_id</a>,
+    <b>let</b> <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a> = self.id_token_type_map.try_get(&token_id);
+    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>.is_some(), <a href="treasury.md#0xb_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>assert</b>!(new_usd_price &gt; 0, <a href="treasury.md#0xb_treasury_EInvalidNotionalValue">EInvalidNotionalValue</a>);
+    <b>let</b> <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a> = <a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>.destroy_some();
+    <b>let</b> metadata = self.supported_tokens.get_mut(&<a href="../move-stdlib/type_name.md#0x1_type_name">type_name</a>);
+    metadata.notional_value = new_usd_price;
+
+    emit(<a href="treasury.md#0xb_treasury_UpdateTokenPriceEvent">UpdateTokenPriceEvent</a> {
+        token_id,
         new_price: new_usd_price,
     })
 }
@@ -1029,13 +1272,13 @@ title: Module `bridge::treasury`
 
 </details>
 
-<a name="bridge_treasury_get_token_metadata"></a>
+<a name="0xb_treasury_get_token_metadata"></a>
 
 ## Function `get_token_metadata`
 
 
 
-<pre><code><b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>): <a href="../bridge/treasury.md#bridge_treasury_BridgeTokenMetadata">bridge::treasury::BridgeTokenMetadata</a>
+<pre><code><b>fun</b> <a href="treasury.md#0xb_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;(self: &treasury::BridgeTreasury): treasury::BridgeTokenMetadata
 </code></pre>
 
 
@@ -1044,10 +1287,10 @@ title: Module `bridge::treasury`
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;(self: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>): <a href="../bridge/treasury.md#bridge_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a> {
-    <b>let</b> coin_type = type_name::get&lt;T&gt;();
+<pre><code><b>fun</b> <a href="treasury.md#0xb_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;(self: &<a href="treasury.md#0xb_treasury_BridgeTreasury">BridgeTreasury</a>): <a href="treasury.md#0xb_treasury_BridgeTokenMetadata">BridgeTokenMetadata</a> {
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;();
     <b>let</b> metadata = self.supported_tokens.try_get(&coin_type);
-    <b>assert</b>!(metadata.is_some(), <a href="../bridge/treasury.md#bridge_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
+    <b>assert</b>!(metadata.is_some(), <a href="treasury.md#0xb_treasury_EUnsupportedTokenType">EUnsupportedTokenType</a>);
     metadata.destroy_some()
 }
 </code></pre>

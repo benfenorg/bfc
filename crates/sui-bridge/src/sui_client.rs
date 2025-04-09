@@ -1207,7 +1207,7 @@ mod tests {
             let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
             bridge_keys.push(kp);
         }
-        let mut test_cluster = TestClusterWrapperBuilder::new()
+        let  test_cluster = TestClusterWrapperBuilder::new()
             .with_bridge_authority_keys(bridge_keys)
             .with_deploy_tokens(true)
             .build()

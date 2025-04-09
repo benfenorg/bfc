@@ -10,6 +10,7 @@ module bridge::bridge_env {
         inner_token_transfer_records,
         test_init_bridge_committee,
         test_get_external_token_transfer_action_status,
+        get_available_claim_amount,
         test_load_inner_mut,
         Bridge,
         EmergencyOpEvent,
@@ -370,7 +371,7 @@ module bridge::bridge_env {
         );
         bridge.test_init_bridge_committee(
             voting_powers,
-            50,
+            7500,
             scenario.ctx(),
         );
         test_scenario::return_shared(bridge);
@@ -1242,7 +1243,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let total_supply_before = get_total_supply<T>(&bridge);
         let coin_type = type_name::into_string(type_name::get<T>());
-        
+
         // deposit coin
         deposit_external_coin_for_testing<T>(
             &mut bridge,
@@ -1358,6 +1359,22 @@ module bridge::bridge_env {
         let status =test_get_external_token_transfer_action_status(&bridge,source_chain, source_address, target_address, amount, tx_hash);
         test_scenario::return_shared(bridge);
         status
+    }
+
+    public fun env_get_available_claim_amount<T>(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        sender: address,
+    ): u64{
+        let scenario = env.scenario();
+        scenario.next_tx(sender);
+        let bridge = scenario.take_shared<Bridge>();
+        let limit=get_available_claim_amount<T>(
+            &bridge,
+            source_chain,
+        );
+        test_scenario::return_shared(bridge);
+        limit
     }
 
     // Send a coin (token) to the target chain

@@ -190,7 +190,7 @@ library BridgeUtils {
         pure
         returns (TokenTransferPayload memory)
     {
-        require(_payload.length >= 64, "BridgeUtils: TokenTransferPayload must be 64 bytes");
+        require(_payload.length >= 64, "BridgeUtils: TokenTransferPayload must be at least 64 bytes");
 
         uint8 senderAddressLength = uint8(_payload[0]);
 
@@ -237,7 +237,7 @@ library BridgeUtils {
         // move offset past the target address length
         offset += recipientAddressLength;
 
-        // token id 
+        // token id
         uint8 tokenIDLength = 8;
         uint64 tokenID;
         assembly {

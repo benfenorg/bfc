@@ -148,7 +148,7 @@ impl BridgeClient {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
                 let coin_type = a.coin_type.clone();
-                let witness_address = hex::encode(a.witness_address.clone()).to_lowercase();
+                let witness_address=format!("{:x}",a.witness_address.clone());
 
                 format!(
                     "sign/add_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
@@ -158,8 +158,7 @@ impl BridgeClient {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
                 let coin_type = a.coin_type.clone();
-                let witness_address = hex::encode(a.witness_address.clone()).to_lowercase();
-
+                let witness_address=format!("{:x}",a.witness_address.clone());
                 format!(
                     "sign/remove_external_coin_witness/{chain_id}/{nonce}/{coin_type}/{witness_address}"
                 )
@@ -307,6 +306,7 @@ impl BridgeClient {
 
 #[cfg(test)]
 mod tests {
+    //use std::ops::Add;
     use super::*;
     use crate::test_utils::run_mock_bridge_server;
     use crate::{
@@ -753,22 +753,24 @@ mod tests {
             BridgeClient::bridge_action_to_path(&action),
             "sign/remove_external_coin_target/2/0/test/0x0101010101010101010101010101010101010101",
         );
-        let  addr="7518085822fAA839EeB59035a74A87b4220C6629".to_lowercase();
+        let addr  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
+
         let action = BridgeAction::AddExternalCoinWitnessAction(
             crate::types::AddExternalCoinWitnessAction {
                 nonce: 0,
                 chain_id: BridgeChainId::SuiCustom,
                 coin_type: "test".to_string(),
-                witness_address: hex::decode(addr.clone().as_str()).unwrap()
+                witness_address: addr
             },
         );
 
+
+        let hex_address_without_head = "7518085822fAA839EeB59035a74A87b4220C6629".to_string().to_lowercase();
+
+        let action_string = ("sign/add_external_coin_witness/2/0/test/".to_owned()+&hex_address_without_head.clone()).to_string();
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            format!(
-                "sign/add_external_coin_witness/2/0/test/{}",
-                addr,
-            )
+            action_string
         );
 
         let action = BridgeAction::RemoveExternalCoinWitnessAction(
@@ -776,15 +778,15 @@ mod tests {
                 nonce: 0,
                 chain_id: BridgeChainId::SuiCustom,
                 coin_type: "test".to_string(),
-                witness_address: hex::decode(addr.clone().as_str()).unwrap()
+                witness_address: addr,
             },
         );
+
+        let action_string = ("sign/remove_external_coin_witness/2/0/test/".to_owned()+&hex_address_without_head).to_string();
+
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
-            format!(
-                "sign/remove_external_coin_witness/2/0/test/{}",
-                addr
-            )
+            action_string
         );
     }
 }

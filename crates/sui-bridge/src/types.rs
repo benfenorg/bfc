@@ -404,7 +404,7 @@ pub struct AddExternalCoinWitnessAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
     pub coin_type: String,
-    pub witness_address: Vec<u8>,
+    pub witness_address: EthAddress,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Hash)]
@@ -412,7 +412,7 @@ pub struct RemoveExternalCoinWitnessAction {
     pub nonce: u64,
     pub chain_id: BridgeChainId,
     pub coin_type: String,
-    pub witness_address: Vec<u8>,
+    pub witness_address: EthAddress,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
