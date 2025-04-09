@@ -249,6 +249,13 @@ mod tests {
         assert_eq!(result, false);
 
         let result = check_btc_txn(
+            BridgeChainId::BtcMainnet,
+            "52347b7acef0fbc6cdbdc502d45e89c07d4d658b0134f6fe0918ca2e08d21cdc",
+            vec!["15MdAHnkxt9TMC2Rj595hsg8Hnv693pPBB".to_string()],
+            312735111).await;
+        assert_eq!(result, true);
+
+        let result = check_btc_txn(
             BridgeChainId::SuiMainnet,
             "20c04f56b8dc0f507f8ca7d208fff8f7ca6ca7508bb2a334bbcbf7ec99804941",
             vec!["n1sfLwoLTnLFxj2BT8kNETsLDM8xMecYn3".to_string()],
