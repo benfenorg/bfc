@@ -1,6 +1,7 @@
 // Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
+import type { BenfenTransactionBlockResponse } from '../../client/index.js';
 import type { BenfenSignTransactionInput, SignedTransaction } from './bfcSignTransaction.js';
 
 /** The latest API version of the signAndExecuteTransactionBlock API. */
@@ -28,8 +29,6 @@ export type BenfenSignAndExecuteTransactionMethod = (
 export interface BenfenSignAndExecuteTransactionInput extends BenfenSignTransactionInput {}
 
 /** Output of signing and sending transactions. */
-export interface BenfenSignAndExecuteTransactionOutput extends SignedTransaction {
-	digest: string;
-	/** Transaction effects as base64 encoded bcs. */
-	effects: string;
-}
+export interface BenfenSignAndExecuteTransactionOutput
+	extends SignedTransaction,
+		BenfenTransactionBlockResponse {}

@@ -45,6 +45,12 @@ export type {
 	SerializeTransactionOptions,
 	TransactionPlugin,
 } from './json-rpc-resolver.js';
+export {
+	GAS_SAFE_OVERHEAD,
+	DEFAULT_GAS_PRICE,
+	MAX_GAS,
+	MAX_OBJECTS_PER_FETCH,
+} from './json-rpc-resolver.js';
 
 export { Arguments } from './Arguments.js';
 

@@ -4,7 +4,6 @@
 import { act, renderHook, waitFor } from '@testing-library/react';
 import { expect, type Mock } from 'vitest';
 
-import { bcs, toBase58 } from '../../../bcs/index.js';
 import { BenfenClient, getFullnodeUrl } from '../../../client/index.js';
 import { Transaction } from '../../../transactions/index.js';
 import {
@@ -70,11 +69,6 @@ describe('useSignAndExecuteTransaction', () => {
 			signature: '123',
 		});
 
-		const reportEffectsFeature = mockWallet.features['bfc:reportTransactionEffects'];
-		const reportEffects = reportEffectsFeature!.reportTransactionEffects as Mock;
-
-		reportEffects.mockImplementation(async () => {});
-
 		const executeTransaction = vi.spyOn(benfenClient, 'executeTransactionBlock');
 
 		executeTransaction.mockResolvedValueOnce({
@@ -116,11 +110,6 @@ describe('useSignAndExecuteTransaction', () => {
 			signature: '123',
 			rawEffects: [10, 20, 30],
 		});
-		expect(reportEffects).toHaveBeenCalledWith({
-			effects: 'ChQe',
-			chain: 'bfc:testnet',
-			account: mockWallet.accounts[0],
-		});
 
 		const call = signTransaction.mock.calls[0];
 
@@ -146,50 +135,15 @@ describe('useSignAndExecuteTransaction', () => {
 			signature: '123',
 		});
 
-		const reportEffectsFeature = mockWallet.features['bfc:reportTransactionEffects'];
-		const reportEffects = reportEffectsFeature!.reportTransactionEffects as Mock;
-
-		reportEffects.mockImplementation(async () => {});
-
 		const wrapper = createWalletProviderContextWrapper({}, benfenClient);
 
-		const fakeDigest = toBase58(
-			new Uint8Array([
-				1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 0, 1,
-				2,
-			]),
-		);
-		const effectsBcs = bcs.TransactionEffects.serialize({
-			V2: {
-				status: {
-					Success: true,
-				},
-				executedEpoch: 1,
-				gasUsed: {
-					computationCost: 1,
-					storageCost: 1,
-					storageRebate: 1,
-					nonRefundableStorageFee: 1,
-				},
-				transactionDigest: fakeDigest,
-				gasObjectIndex: 0,
-				eventsDigest: fakeDigest,
-				dependencies: [],
-				lamportVersion: 1,
-				changedObjects: [],
-				unchangedSharedObjects: [],
-				auxDataDigest: fakeDigest,
-			},
-		}).toBase64();
 		const { result } = renderHook(
 			() => ({
 				connectWallet: useConnectWallet(),
 				useSignAndExecuteTransaction: useSignAndExecuteTransaction({
 					execute: async () => ({
+						digest: '123',
 						custom: 123,
-						effects: {
-							bcs: effectsBcs,
-						},
 					}),
 				}),
 			}),
@@ -215,17 +169,10 @@ describe('useSignAndExecuteTransaction', () => {
 
 		await waitFor(() => expect(result.current.useSignAndExecuteTransaction.isSuccess).toBe(true));
 		expect(result.current.useSignAndExecuteTransaction.data).toStrictEqual({
-			effects: {
-				bcs: effectsBcs,
-			},
+			digest: '123',
 			custom: 123,
 		});
 		expect(result.current.useSignAndExecuteTransaction.data?.custom).toBe(123);
-		expect(reportEffects).toHaveBeenCalledWith({
-			account: mockWallet.accounts[0],
-			chain: 'bfc:testnet',
-			effects: effectsBcs,
-		});
 
 		const call = signTransaction.mock.calls[0];
 

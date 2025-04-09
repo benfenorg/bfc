@@ -4,8 +4,9 @@
 import type { UseMutationOptions, UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 
+import type { BenfenTransactionBlockResponse } from '../../../client/index.js';
 import type { Transaction } from '../../../transactions/index.js';
-import { toBase64 } from '../../../utils/index.js';
+// import { toBase64 } from '../../../utils/index.js';
 import type {
 	BenfenSignAndExecuteTransactionInput,
 	BenfenSignAndExecuteTransactionOutput,
@@ -21,7 +22,8 @@ import type { PartialBy } from '../../types/utilityTypes.js';
 import { useBenfenClient } from '../useBenfenClient.js';
 import { useCurrentAccount } from './useCurrentAccount.js';
 import { useCurrentWallet } from './useCurrentWallet.js';
-import { useReportTransactionEffects } from './useReportTransactionEffects.js';
+
+// import { useReportTransactionEffects } from './useReportTransactionEffects.js';
 
 type UseSignAndExecuteTransactionArgs = PartialBy<
 	Omit<BenfenSignAndExecuteTransactionInput, 'transaction'>,
@@ -38,16 +40,7 @@ type UseSignAndExecuteTransactionError =
 	| WalletNotConnectedError
 	| Error;
 
-type ExecuteTransactionResult =
-	| {
-			digest: string;
-			rawEffects?: number[];
-	  }
-	| {
-			effects?: {
-				bcs?: string;
-			};
-	  };
+type ExecuteTransactionResult = BenfenTransactionBlockResponse;
 
 type UseSignAndExecuteTransactionMutationOptions<Result extends ExecuteTransactionResult> = Omit<
 	UseMutationOptions<
@@ -78,7 +71,7 @@ export function useSignAndExecuteTransaction<
 	const { currentWallet, supportedIntents } = useCurrentWallet();
 	const currentAccount = useCurrentAccount();
 	const client = useBenfenClient();
-	const { mutate: reportTransactionEffects } = useReportTransactionEffects();
+	// const { mutate: reportTransactionEffects } = useReportTransactionEffects();
 
 	const executeTransaction: ({
 		bytes,
@@ -89,18 +82,17 @@ export function useSignAndExecuteTransaction<
 	}) => Promise<ExecuteTransactionResult> =
 		execute ??
 		(async ({ bytes, signature }) => {
-			const { digest, rawEffects } = await client.executeTransactionBlock({
+			const result = await client.executeTransactionBlock({
 				transactionBlock: bytes,
 				signature,
 				options: {
 					showRawEffects: true,
+					showEffects: true,
 				},
 			});
 
 			return {
-				digest,
-				rawEffects,
-				effects: toBase64(new Uint8Array(rawEffects!)),
+				...result,
 				bytes,
 				signature,
 			};
@@ -119,7 +111,7 @@ export function useSignAndExecuteTransaction<
 					'No wallet account is selected to sign the transaction with.',
 				);
 			}
-			const chain = signTransactionArgs.chain ?? signerAccount?.chains[0];
+			// const chain = signTransactionArgs.chain ?? signerAccount?.chains[0];
 
 			if (
 				!currentWallet.features['bfc:signTransaction'] &&
@@ -148,17 +140,15 @@ export function useSignAndExecuteTransaction<
 
 			const result = await executeTransaction({ bytes, signature });
 
-			let effects: string;
+			// let effects: string;
 
-			if ('effects' in result && result.effects?.bcs) {
-				effects = result.effects.bcs;
-			} else if ('rawEffects' in result) {
-				effects = toBase64(new Uint8Array(result.rawEffects!));
-			} else {
-				throw new Error('Could not parse effects from transaction result.');
-			}
+			// if ('rawEffects' in result) {
+			// 	effects = toBase64(new Uint8Array(result.rawEffects!));
+			// } else {
+			// 	throw new Error('Could not parse effects from transaction result.');
+			// }
 
-			reportTransactionEffects({ effects, account: signerAccount, chain });
+			// reportTransactionEffects({ effects, account: signerAccount, chain });
 
 			return result as Result;
 		},

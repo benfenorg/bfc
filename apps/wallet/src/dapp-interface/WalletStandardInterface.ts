@@ -28,7 +28,7 @@ import {
 } from '_src/shared/messaging/messages/payloads/QredoConnect';
 import { type SignMessageRequest } from '_src/shared/messaging/messages/payloads/transactions/SignMessage';
 import { isWalletStatusChangePayload } from '_src/shared/messaging/messages/payloads/wallet-status-change';
-import { bfc2HexAddress, fromB64, hex2BfcAddress, toB64, toBase64 } from '@benfen/bfc.js/utils';
+import { bfc2HexAddress, fromB64, hex2BfcAddress, toB64 } from '@benfen/bfc.js/utils';
 import {
 	BFC_CHAINS,
 	BFC_DEVNET_CHAIN,
@@ -287,7 +287,6 @@ export class SuiWallet implements Wallet {
 			}),
 			(response) => ({
 				...response.result,
-				effects: toBase64(new Uint8Array(response.result.rawEffects!)),
 			}),
 		);
 	};

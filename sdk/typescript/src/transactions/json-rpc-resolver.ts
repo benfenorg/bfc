@@ -14,11 +14,12 @@ import { getPureBcsSchema, isTxContext, normalizedTypeToMoveTypeSignature } from
 import type { TransactionDataBuilder } from './TransactionData.js';
 
 // The maximum objects that can be fetched at once using multiGetObjects.
-const MAX_OBJECTS_PER_FETCH = 50;
+export const MAX_OBJECTS_PER_FETCH = 50;
 
 // An amount of gas (in gas units) that is added to transactions as an overhead to ensure transactions do not fail.
-const GAS_SAFE_OVERHEAD = 1000n;
-const MAX_GAS = 50_000_000_000;
+export const GAS_SAFE_OVERHEAD = 1000n;
+export const MAX_GAS = 50_000_000_000;
+export const DEFAULT_GAS_PRICE = 100n;
 
 export interface BuildTransactionOptions {
 	client?: BenfenClient;
