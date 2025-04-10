@@ -197,7 +197,7 @@ impl SuiNodeProvider {
 
     /// get_bridge_validators will retrieve known bridge validators
     async fn get_bridge_validators(url: String) -> Result<BridgeSummary> {
-        let rpc_method = "suix_getLatestBridge";
+        let rpc_method = "bfcx_getLatestBridge";
         let _timer = JSON_RPC_DURATION
             .with_label_values(&[rpc_method])
             .start_timer();
