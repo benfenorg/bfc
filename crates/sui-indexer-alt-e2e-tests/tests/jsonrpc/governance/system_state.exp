@@ -58,16 +58,16 @@ Response: {
         "nextEpochPrimaryAddress": null,
         "nextEpochWorkerAddress": null,
         "votingPower": "10000",
-        "operationCapId": "BFC5ab2de4657113a31cd8ac23b835356b76d7acb9d07cde5513e32d2f3ef0f90320d13",
+        "operationCapId": "BFCda6516ee82bd87bf7882fc9da9e47b2e188db9b0e0c537965c4c6550f0e7d855123d",
         "gasPrice": "100",
         "commissionRate": "200",
         "nextEpochStake": "200000000000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC570fc905b1f4ccb6f88e559cef87a93a95ae9675975bfb4c04eaf9c0db0dbff884cf",
+        "stakingPoolId": "BFCfa57724dbe75a4774727c8a27405b3d42df72f4e13fb1f3e8c18133b6422183b7705",
         "stablePools": {
           "id": {
-            "id": "BFC0f81f28de206ba0598560a2bdef5b49e075bd8814d6b683a2aa31e472ee6d504ad63"
+            "id": "BFCd5a591cfb39e3bd6e4552ae0268af145403fa044d245c33a0075d735ec898c13847b"
           },
           "size": 17
         },
@@ -79,18 +79,18 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFC7ca814ba0214df0d11667a14d2cd89d0fb4a1156acfff71cb295d81970ad894ccb47",
+        "exchangeRatesId": "BFCe7a79fc3a15828b875e5035430855cc2223c246fec3b843caa378a264ee583bc8368",
         "exchangeRatesSize": "1"
       }
     ],
-    "pendingActiveValidatorsId": "BFCb02e5047ff6b109195b8c15d1f9dd71f9c010e2a60cfe5ff0e95c037c979d0fedd07",
+    "pendingActiveValidatorsId": "BFCa2bd81a423942271c3e02a09a99352eb946e24e7f073b5d9fed14bed88ab6ec48d96",
     "pendingActiveValidatorsSize": "0",
     "pendingRemovals": [],
-    "stakingPoolMappingsId": "BFCdaae6a37f608950aa8e5fdfbe0ed2d15f73a44a3b8ec1e332159d054ae9c3f0831a7",
+    "stakingPoolMappingsId": "BFC079ab1ee889b90b744a0ce495a2bc07add53928327c4984a0cf061c9ff15559ab7a6",
     "stakingPoolMappingsSize": "1",
-    "inactivePoolsId": "BFC261f6796c9a2bbaf35d06250cd71442211fec32419ec56f7b95ebc22209fa07bd98f",
+    "inactivePoolsId": "BFC85239339d78cdb65c16bcccdf3a1545cb009f0b75d41ef9e7947a9b8269d1cd1364d",
     "inactivePoolsSize": "0",
-    "validatorCandidatesId": "BFC88fec6b3188facaf6cf792e1195c1ab11198a1689f6cd98bbe8e33f0d43508df83ed",
+    "validatorCandidatesId": "BFC4e67c69ab509ab5e0c1fde1256dba24a8cb17978c832e22c0f02072e7ed193e6bf09",
     "validatorCandidatesSize": "0",
     "atRiskValidators": [],
     "validatorReportRecords": []
@@ -101,7 +101,7 @@ task 2, lines 12-14:
 //# programmable --sender A --inputs 1000000000 object(0x5) @validator_0
 //> 0: SplitCoins(Gas, [Input(0)]);
 //> 1: sui_system::sui_system::request_add_stake(Input(1), Result(0), Input(2))
-events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("StakingRequestEvent"), type_params: [] }, contents: [87, 15, 201, 5, 177, 244, 204, 182, 248, 142, 85, 156, 239, 135, 169, 58, 149, 174, 150, 117, 151, 91, 251, 76, 4, 234, 249, 192, 219, 13, 191, 248, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0] }
+events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("StakingRequestEvent"), type_params: [] }, contents: [250, 87, 114, 77, 190, 117, 164, 119, 71, 39, 200, 162, 116, 5, 179, 212, 45, 247, 47, 78, 19, 251, 31, 62, 140, 24, 19, 59, 100, 34, 24, 59, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 0, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0] }
 created: object(2,0), object(2,1)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0)
 deleted: object(_)
@@ -166,16 +166,16 @@ Response: {
         "nextEpochPrimaryAddress": null,
         "nextEpochWorkerAddress": null,
         "votingPower": "10000",
-        "operationCapId": "BFC5ab2de4657113a31cd8ac23b835356b76d7acb9d07cde5513e32d2f3ef0f90320d13",
+        "operationCapId": "BFCda6516ee82bd87bf7882fc9da9e47b2e188db9b0e0c537965c4c6550f0e7d855123d",
         "gasPrice": "100",
         "commissionRate": "200",
         "nextEpochStake": "200001000000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC570fc905b1f4ccb6f88e559cef87a93a95ae9675975bfb4c04eaf9c0db0dbff884cf",
+        "stakingPoolId": "BFCfa57724dbe75a4774727c8a27405b3d42df72f4e13fb1f3e8c18133b6422183b7705",
         "stablePools": {
           "id": {
-            "id": "BFC0f81f28de206ba0598560a2bdef5b49e075bd8814d6b683a2aa31e472ee6d504ad63"
+            "id": "BFCd5a591cfb39e3bd6e4552ae0268af145403fa044d245c33a0075d735ec898c13847b"
           },
           "size": 17
         },
@@ -187,18 +187,18 @@ Response: {
         "pendingStake": "1000000000",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFC7ca814ba0214df0d11667a14d2cd89d0fb4a1156acfff71cb295d81970ad894ccb47",
+        "exchangeRatesId": "BFCe7a79fc3a15828b875e5035430855cc2223c246fec3b843caa378a264ee583bc8368",
         "exchangeRatesSize": "1"
       }
     ],
-    "pendingActiveValidatorsId": "BFCb02e5047ff6b109195b8c15d1f9dd71f9c010e2a60cfe5ff0e95c037c979d0fedd07",
+    "pendingActiveValidatorsId": "BFCa2bd81a423942271c3e02a09a99352eb946e24e7f073b5d9fed14bed88ab6ec48d96",
     "pendingActiveValidatorsSize": "0",
     "pendingRemovals": [],
-    "stakingPoolMappingsId": "BFCdaae6a37f608950aa8e5fdfbe0ed2d15f73a44a3b8ec1e332159d054ae9c3f0831a7",
+    "stakingPoolMappingsId": "BFC079ab1ee889b90b744a0ce495a2bc07add53928327c4984a0cf061c9ff15559ab7a6",
     "stakingPoolMappingsSize": "1",
-    "inactivePoolsId": "BFC261f6796c9a2bbaf35d06250cd71442211fec32419ec56f7b95ebc22209fa07bd98f",
+    "inactivePoolsId": "BFC85239339d78cdb65c16bcccdf3a1545cb009f0b75d41ef9e7947a9b8269d1cd1364d",
     "inactivePoolsSize": "0",
-    "validatorCandidatesId": "BFC88fec6b3188facaf6cf792e1195c1ab11198a1689f6cd98bbe8e33f0d43508df83ed",
+    "validatorCandidatesId": "BFC4e67c69ab509ab5e0c1fde1256dba24a8cb17978c832e22c0f02072e7ed193e6bf09",
     "validatorCandidatesSize": "0",
     "atRiskValidators": [],
     "validatorReportRecords": []
@@ -264,16 +264,16 @@ Response: {
         "nextEpochPrimaryAddress": null,
         "nextEpochWorkerAddress": null,
         "votingPower": "10000",
-        "operationCapId": "BFC5ab2de4657113a31cd8ac23b835356b76d7acb9d07cde5513e32d2f3ef0f90320d13",
+        "operationCapId": "BFCda6516ee82bd87bf7882fc9da9e47b2e188db9b0e0c537965c4c6550f0e7d855123d",
         "gasPrice": "100",
         "commissionRate": "200",
         "nextEpochStake": "200001001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC570fc905b1f4ccb6f88e559cef87a93a95ae9675975bfb4c04eaf9c0db0dbff884cf",
+        "stakingPoolId": "BFCfa57724dbe75a4774727c8a27405b3d42df72f4e13fb1f3e8c18133b6422183b7705",
         "stablePools": {
           "id": {
-            "id": "BFC0f81f28de206ba0598560a2bdef5b49e075bd8814d6b683a2aa31e472ee6d504ad63"
+            "id": "BFCd5a591cfb39e3bd6e4552ae0268af145403fa044d245c33a0075d735ec898c13847b"
           },
           "size": 17
         },
@@ -285,18 +285,18 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFC7ca814ba0214df0d11667a14d2cd89d0fb4a1156acfff71cb295d81970ad894ccb47",
+        "exchangeRatesId": "BFCe7a79fc3a15828b875e5035430855cc2223c246fec3b843caa378a264ee583bc8368",
         "exchangeRatesSize": "2"
       }
     ],
-    "pendingActiveValidatorsId": "BFCb02e5047ff6b109195b8c15d1f9dd71f9c010e2a60cfe5ff0e95c037c979d0fedd07",
+    "pendingActiveValidatorsId": "BFCa2bd81a423942271c3e02a09a99352eb946e24e7f073b5d9fed14bed88ab6ec48d96",
     "pendingActiveValidatorsSize": "0",
     "pendingRemovals": [],
-    "stakingPoolMappingsId": "BFCdaae6a37f608950aa8e5fdfbe0ed2d15f73a44a3b8ec1e332159d054ae9c3f0831a7",
+    "stakingPoolMappingsId": "BFC079ab1ee889b90b744a0ce495a2bc07add53928327c4984a0cf061c9ff15559ab7a6",
     "stakingPoolMappingsSize": "1",
-    "inactivePoolsId": "BFC261f6796c9a2bbaf35d06250cd71442211fec32419ec56f7b95ebc22209fa07bd98f",
+    "inactivePoolsId": "BFC85239339d78cdb65c16bcccdf3a1545cb009f0b75d41ef9e7947a9b8269d1cd1364d",
     "inactivePoolsSize": "0",
-    "validatorCandidatesId": "BFC88fec6b3188facaf6cf792e1195c1ab11198a1689f6cd98bbe8e33f0d43508df83ed",
+    "validatorCandidatesId": "BFC4e67c69ab509ab5e0c1fde1256dba24a8cb17978c832e22c0f02072e7ed193e6bf09",
     "validatorCandidatesSize": "0",
     "atRiskValidators": [],
     "validatorReportRecords": []
@@ -306,7 +306,7 @@ Response: {
 task 8, lines 34-35:
 //# programmable --sender A --inputs object(0x5) object(2,1)
 //> 0: sui_system::sui_system::request_withdraw_stake(Input(0), Input(1))
-events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("UnstakingRequestEvent"), type_params: [] }, contents: [87, 15, 201, 5, 177, 244, 204, 182, 248, 142, 85, 156, 239, 135, 169, 58, 149, 174, 150, 117, 151, 91, 251, 76, 4, 234, 249, 192, 219, 13, 191, 248, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
+events: Event { package_id: sui_system, transaction_module: Identifier("sui_system"), sender: A, type_: StructTag { address: sui_system, module: Identifier("validator"), name: Identifier("UnstakingRequestEvent"), type_params: [] }, contents: [250, 87, 114, 77, 190, 117, 164, 119, 71, 39, 200, 162, 116, 5, 179, 212, 45, 247, 47, 78, 19, 251, 31, 62, 140, 24, 19, 59, 100, 34, 24, 59, 218, 131, 22, 109, 1, 175, 215, 221, 207, 138, 245, 248, 68, 244, 90, 170, 83, 244, 133, 72, 229, 17, 124, 35, 245, 162, 151, 140, 253, 66, 34, 68, 252, 204, 154, 66, 27, 187, 19, 193, 166, 106, 26, 169, 143, 10, 215, 80, 41, 237, 233, 72, 87, 119, 156, 105, 21, 180, 79, 148, 6, 139, 146, 30, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 202, 154, 59, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0] }
 created: object(8,0)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(2,0)
 deleted: object(2,1)
@@ -371,16 +371,16 @@ Response: {
         "nextEpochPrimaryAddress": null,
         "nextEpochWorkerAddress": null,
         "votingPower": "10000",
-        "operationCapId": "BFC5ab2de4657113a31cd8ac23b835356b76d7acb9d07cde5513e32d2f3ef0f90320d13",
+        "operationCapId": "BFCda6516ee82bd87bf7882fc9da9e47b2e188db9b0e0c537965c4c6550f0e7d855123d",
         "gasPrice": "100",
         "commissionRate": "200",
         "nextEpochStake": "200000001000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC570fc905b1f4ccb6f88e559cef87a93a95ae9675975bfb4c04eaf9c0db0dbff884cf",
+        "stakingPoolId": "BFCfa57724dbe75a4774727c8a27405b3d42df72f4e13fb1f3e8c18133b6422183b7705",
         "stablePools": {
           "id": {
-            "id": "BFC0f81f28de206ba0598560a2bdef5b49e075bd8814d6b683a2aa31e472ee6d504ad63"
+            "id": "BFCd5a591cfb39e3bd6e4552ae0268af145403fa044d245c33a0075d735ec898c13847b"
           },
           "size": 17
         },
@@ -392,18 +392,18 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "1000000000",
         "pendingPoolTokenWithdraw": "999999995",
-        "exchangeRatesId": "BFC7ca814ba0214df0d11667a14d2cd89d0fb4a1156acfff71cb295d81970ad894ccb47",
+        "exchangeRatesId": "BFCe7a79fc3a15828b875e5035430855cc2223c246fec3b843caa378a264ee583bc8368",
         "exchangeRatesSize": "2"
       }
     ],
-    "pendingActiveValidatorsId": "BFCb02e5047ff6b109195b8c15d1f9dd71f9c010e2a60cfe5ff0e95c037c979d0fedd07",
+    "pendingActiveValidatorsId": "BFCa2bd81a423942271c3e02a09a99352eb946e24e7f073b5d9fed14bed88ab6ec48d96",
     "pendingActiveValidatorsSize": "0",
     "pendingRemovals": [],
-    "stakingPoolMappingsId": "BFCdaae6a37f608950aa8e5fdfbe0ed2d15f73a44a3b8ec1e332159d054ae9c3f0831a7",
+    "stakingPoolMappingsId": "BFC079ab1ee889b90b744a0ce495a2bc07add53928327c4984a0cf061c9ff15559ab7a6",
     "stakingPoolMappingsSize": "1",
-    "inactivePoolsId": "BFC261f6796c9a2bbaf35d06250cd71442211fec32419ec56f7b95ebc22209fa07bd98f",
+    "inactivePoolsId": "BFC85239339d78cdb65c16bcccdf3a1545cb009f0b75d41ef9e7947a9b8269d1cd1364d",
     "inactivePoolsSize": "0",
-    "validatorCandidatesId": "BFC88fec6b3188facaf6cf792e1195c1ab11198a1689f6cd98bbe8e33f0d43508df83ed",
+    "validatorCandidatesId": "BFC4e67c69ab509ab5e0c1fde1256dba24a8cb17978c832e22c0f02072e7ed193e6bf09",
     "validatorCandidatesSize": "0",
     "atRiskValidators": [],
     "validatorReportRecords": []
@@ -469,16 +469,16 @@ Response: {
         "nextEpochPrimaryAddress": null,
         "nextEpochWorkerAddress": null,
         "votingPower": "10000",
-        "operationCapId": "BFC5ab2de4657113a31cd8ac23b835356b76d7acb9d07cde5513e32d2f3ef0f90320d13",
+        "operationCapId": "BFCda6516ee82bd87bf7882fc9da9e47b2e188db9b0e0c537965c4c6550f0e7d855123d",
         "gasPrice": "100",
         "commissionRate": "200",
         "nextEpochStake": "200000002000000",
         "nextEpochGasPrice": "100",
         "nextEpochCommissionRate": "200",
-        "stakingPoolId": "BFC570fc905b1f4ccb6f88e559cef87a93a95ae9675975bfb4c04eaf9c0db0dbff884cf",
+        "stakingPoolId": "BFCfa57724dbe75a4774727c8a27405b3d42df72f4e13fb1f3e8c18133b6422183b7705",
         "stablePools": {
           "id": {
-            "id": "BFC0f81f28de206ba0598560a2bdef5b49e075bd8814d6b683a2aa31e472ee6d504ad63"
+            "id": "BFCd5a591cfb39e3bd6e4552ae0268af145403fa044d245c33a0075d735ec898c13847b"
           },
           "size": 17
         },
@@ -490,18 +490,18 @@ Response: {
         "pendingStake": "0",
         "pendingTotalSuiWithdraw": "0",
         "pendingPoolTokenWithdraw": "0",
-        "exchangeRatesId": "BFC7ca814ba0214df0d11667a14d2cd89d0fb4a1156acfff71cb295d81970ad894ccb47",
+        "exchangeRatesId": "BFCe7a79fc3a15828b875e5035430855cc2223c246fec3b843caa378a264ee583bc8368",
         "exchangeRatesSize": "3"
       }
     ],
-    "pendingActiveValidatorsId": "BFCb02e5047ff6b109195b8c15d1f9dd71f9c010e2a60cfe5ff0e95c037c979d0fedd07",
+    "pendingActiveValidatorsId": "BFCa2bd81a423942271c3e02a09a99352eb946e24e7f073b5d9fed14bed88ab6ec48d96",
     "pendingActiveValidatorsSize": "0",
     "pendingRemovals": [],
-    "stakingPoolMappingsId": "BFCdaae6a37f608950aa8e5fdfbe0ed2d15f73a44a3b8ec1e332159d054ae9c3f0831a7",
+    "stakingPoolMappingsId": "BFC079ab1ee889b90b744a0ce495a2bc07add53928327c4984a0cf061c9ff15559ab7a6",
     "stakingPoolMappingsSize": "1",
-    "inactivePoolsId": "BFC261f6796c9a2bbaf35d06250cd71442211fec32419ec56f7b95ebc22209fa07bd98f",
+    "inactivePoolsId": "BFC85239339d78cdb65c16bcccdf3a1545cb009f0b75d41ef9e7947a9b8269d1cd1364d",
     "inactivePoolsSize": "0",
-    "validatorCandidatesId": "BFC88fec6b3188facaf6cf792e1195c1ab11198a1689f6cd98bbe8e33f0d43508df83ed",
+    "validatorCandidatesId": "BFC4e67c69ab509ab5e0c1fde1256dba24a8cb17978c832e22c0f02072e7ed193e6bf09",
     "validatorCandidatesSize": "0",
     "atRiskValidators": [],
     "validatorReportRecords": []

@@ -147,7 +147,7 @@ task 4, lines 60-91:
 Response: {
   "data": {
     "object": {
-      "address": "0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6",
+      "address": "0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860",
       "asMovePackage": {
         "module": {
           "struct": {
@@ -191,13 +191,13 @@ task 7, lines 103-150:
 Response: {
   "data": {
     "object": {
-      "address": "0x27af7774b5b97c1072194ae6d22443eb8f115f3ed2dcead26093fd689e751f40",
+      "address": "0xf53502bb864ec36a0a2595d06bb0b3f0f3cf463a9df6b8416a6d20143dc9781c",
       "asMovePackage": {
         "module": {
           "s": {
             "module": {
               "package": {
-                "address": "0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6"
+                "address": "0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860"
               }
             },
             "name": "S",
@@ -222,7 +222,7 @@ Response: {
           "t": {
             "module": {
               "package": {
-                "address": "0x27af7774b5b97c1072194ae6d22443eb8f115f3ed2dcead26093fd689e751f40"
+                "address": "0xf53502bb864ec36a0a2595d06bb0b3f0f3cf463a9df6b8416a6d20143dc9781c"
               }
             },
             "name": "T",
@@ -249,12 +249,12 @@ Response: {
               {
                 "name": "s",
                 "type": {
-                  "repr": "0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6::m::S",
+                  "repr": "0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860::m::S",
                   "signature": {
                     "ref": null,
                     "body": {
                       "datatype": {
-                        "package": "0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6",
+                        "package": "0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860",
                         "module": "m",
                         "type": "S",
                         "typeParameters": []
@@ -283,7 +283,7 @@ Response: {
               {
                 "name": "t",
                 "type": {
-                  "repr": "0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6::m::T<0xf49890522498003d4157406c0d9610254e297714ccd598f6f5690388c6894cd6::m::S>"
+                  "repr": "0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860::m::T<0x5397dcea16e747e1fd4f006d9042e2bfa4aa32de48281b43dc139f5e798c2860::m::S>"
                 }
               }
             ]
