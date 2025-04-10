@@ -234,7 +234,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
                 msg.token_id
             },
             sui_adjusted_amount: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
-                msg.sui_adjusted_amount * 1000
+                msg.sui_adjusted_amount.checked_mul(1000).unwrap_or(msg.sui_adjusted_amount)
             } else {
                 msg.sui_adjusted_amount
             },
