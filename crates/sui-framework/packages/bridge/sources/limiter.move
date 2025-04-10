@@ -4,7 +4,9 @@
 module bridge::limiter {
     use sui::clock::{Self, Clock};
     use sui::event::emit;
+    use std::type_name;
     use sui::vec_map::{Self, VecMap};
+    use bfc_system::busd::BUSD;
 
     use bridge::chain_ids::{Self, BridgeRoute};
     use bridge::treasury::BridgeTreasury;
@@ -101,7 +103,14 @@ module bridge::limiter {
         };
 
         let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
-        available_amount
+
+
+        return if (type_name::get<T>() == type_name::get<BUSD>()){
+            let busd_mint_limit=self.get_mint_busd_max_limit();
+            busd_mint_limit.min(available_amount)
+        }else{
+            available_amount
+        }
     }
     public(package) fun check_and_record_sending_transfer<T>(
         self: &mut TransferLimiter,
