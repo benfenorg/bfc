@@ -21,12 +21,15 @@ title: Module `0xb::limiter`
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
+<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
+<b>use</b> <a href="../move-stdlib/u64.md#0x1_u64">0x1::u64</a>;
 <b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="chain_ids.md#0xb_chain_ids">0xb::chain_ids</a>;
 <b>use</b> <a href="treasury.md#0xb_treasury">0xb::treasury</a>;
+<b>use</b> <a href="../bfc-system/busd.md#0xc8_busd">0xc8::busd</a>;
 </code></pre>
 
 
@@ -336,7 +339,14 @@ title: Module `0xb::limiter`
     };
 
     <b>let</b> available_amount=((route_limit_adjusted-total_adjusted) / price) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
-    available_amount
+
+
+    <b>return</b> <b>if</b> (<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;()){
+        <b>let</b> busd_mint_limit=self.<a href="limiter.md#0xb_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>();
+        busd_mint_limit.<b>min</b>(available_amount)
+    }<b>else</b>{
+        available_amount
+    }
 }
 </code></pre>
 
