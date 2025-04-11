@@ -48,19 +48,19 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IAJ/FBuHkBjE6MLLPdNw8x3YGv3ou70ZcWZH8PoWiekkAQAAAAAAAAA="
+            "cursor": "IC7uMBe+A0MGZnVQf/rabxBl7RQ2ePleH+d51AFAKlm5AQAAAAAAAAA="
           },
           {
-            "cursor": "IJAqtD4hG9A8VDkjTuTdAGHdtrKTIMOBOxVoXtsCJhZZAQAAAAAAAAA="
+            "cursor": "IDu6UrpLrMSqQTsz/hUGPvsiDiQD8caZQCbpJdPm8pFxAQAAAAAAAAA="
           },
           {
-            "cursor": "IK7Wa4xmJaR7zasdWSxEXXSfOMGSwUAYQhEla/1gAzS8AQAAAAAAAAA="
+            "cursor": "IFJdZ1BhuRY4z2ITp9AYVFfJM4x1IxNPnuLEkqyw+xoqAQAAAAAAAAA="
           },
           {
-            "cursor": "ILCgOAAGe87E665SXGt1K4DRX3OEhU5aiuxnXLIltTiUAQAAAAAAAAA="
+            "cursor": "IMpXKCCbanEzFLa0J5SeFW5Gk2xvwESZu5Duxj3oEKxaAQAAAAAAAAA="
           },
           {
-            "cursor": "IMlwnJwWcO4tYGLPGKTgnVKPZ5rFm/uvS9tDJkW3hQRKAQAAAAAAAAA="
+            "cursor": "INidoFvpgZjTb60XZN5LOXX3iH4tKq+THtSej5GU8y64AQAAAAAAAAA="
           }
         ]
       }
@@ -76,10 +76,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IAJ/FBuHkBjE6MLLPdNw8x3YGv3ou70ZcWZH8PoWiekkAQAAAAAAAAA="
+            "cursor": "IC7uMBe+A0MGZnVQf/rabxBl7RQ2ePleH+d51AFAKlm5AQAAAAAAAAA="
           },
           {
-            "cursor": "IJAqtD4hG9A8VDkjTuTdAGHdtrKTIMOBOxVoXtsCJhZZAQAAAAAAAAA="
+            "cursor": "IDu6UrpLrMSqQTsz/hUGPvsiDiQD8caZQCbpJdPm8pFxAQAAAAAAAAA="
           }
         ]
       }
@@ -95,10 +95,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IK7Wa4xmJaR7zasdWSxEXXSfOMGSwUAYQhEla/1gAzS8AQAAAAAAAAA="
+            "cursor": "IFJdZ1BhuRY4z2ITp9AYVFfJM4x1IxNPnuLEkqyw+xoqAQAAAAAAAAA="
           },
           {
-            "cursor": "ILCgOAAGe87E665SXGt1K4DRX3OEhU5aiuxnXLIltTiUAQAAAAAAAAA="
+            "cursor": "IMpXKCCbanEzFLa0J5SeFW5Gk2xvwESZu5Duxj3oEKxaAQAAAAAAAAA="
           }
         ]
       }
@@ -112,7 +112,11 @@ Response: {
   "data": {
     "address": {
       "objects": {
-        "edges": []
+        "edges": [
+          {
+            "cursor": "INidoFvpgZjTb60XZN5LOXX3iH4tKq+THtSej5GU8y64AQAAAAAAAAA="
+          }
+        ]
       }
     }
   }
@@ -138,10 +142,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "ILCgOAAGe87E665SXGt1K4DRX3OEhU5aiuxnXLIltTiUAQAAAAAAAAA="
+            "cursor": "IMpXKCCbanEzFLa0J5SeFW5Gk2xvwESZu5Duxj3oEKxaAQAAAAAAAAA="
           },
           {
-            "cursor": "IMlwnJwWcO4tYGLPGKTgnVKPZ5rFm/uvS9tDJkW3hQRKAQAAAAAAAAA="
+            "cursor": "INidoFvpgZjTb60XZN5LOXX3iH4tKq+THtSej5GU8y64AQAAAAAAAAA="
           }
         ]
       }

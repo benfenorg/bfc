@@ -41,27 +41,6 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
                 "repr": "bool"
               },
               "data": {
@@ -91,50 +70,71 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveObject",
               "contents": {
                 "type": {
-                  "repr": "0x0106a00135162f3d25d5ac92d3bef506e8940a9437a9b0acd6768f84a95a01fb::m::Child"
+                  "repr": "0x3cfb42d5cefaed6adaf8d69bbc8fdb53e456d1478f83e9210765381036a46328::m::Child"
                 },
-                "bcs": "lOGyRkuQZq22oXkLRWIxpPaBu3nG0wLmKKWmzd/S/tc=",
+                "bcs": "VEyix+tlcAZ4gsRcTTcc2PBMNvFZKjL1816xJ0q0f6c=",
                 "data": {
                   "Struct": [
                     {
                       "name": "id",
                       "value": {
                         "UID": [
-                          148,
-                          225,
-                          178,
-                          70,
-                          75,
-                          144,
-                          102,
-                          173,
-                          182,
-                          161,
-                          121,
-                          11,
-                          69,
-                          98,
-                          49,
-                          164,
-                          246,
-                          129,
-                          187,
-                          121,
-                          198,
-                          211,
-                          2,
-                          230,
-                          40,
-                          165,
-                          166,
-                          205,
-                          223,
-                          210,
-                          254,
-                          215
+                          84,
+                          76,
+                          162,
+                          199,
+                          235,
+                          101,
+                          112,
+                          6,
+                          120,
+                          130,
+                          196,
+                          92,
+                          77,
+                          55,
+                          28,
+                          216,
+                          240,
+                          76,
+                          54,
+                          241,
+                          89,
+                          42,
+                          50,
+                          245,
+                          243,
+                          94,
+                          177,
+                          39,
+                          74,
+                          180,
+                          127,
+                          167
                         ]
                       }
                     }
@@ -173,27 +173,6 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
                 "repr": "bool"
               },
               "data": {
@@ -223,50 +202,71 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveObject",
               "contents": {
                 "type": {
-                  "repr": "0x0106a00135162f3d25d5ac92d3bef506e8940a9437a9b0acd6768f84a95a01fb::m::Child"
+                  "repr": "0x3cfb42d5cefaed6adaf8d69bbc8fdb53e456d1478f83e9210765381036a46328::m::Child"
                 },
-                "bcs": "lOGyRkuQZq22oXkLRWIxpPaBu3nG0wLmKKWmzd/S/tc=",
+                "bcs": "VEyix+tlcAZ4gsRcTTcc2PBMNvFZKjL1816xJ0q0f6c=",
                 "data": {
                   "Struct": [
                     {
                       "name": "id",
                       "value": {
                         "UID": [
-                          148,
-                          225,
-                          178,
-                          70,
-                          75,
-                          144,
-                          102,
-                          173,
-                          182,
-                          161,
-                          121,
-                          11,
-                          69,
-                          98,
-                          49,
-                          164,
-                          246,
-                          129,
-                          187,
-                          121,
-                          198,
-                          211,
-                          2,
-                          230,
-                          40,
-                          165,
-                          166,
-                          205,
-                          223,
-                          210,
-                          254,
-                          215
+                          84,
+                          76,
+                          162,
+                          199,
+                          235,
+                          101,
+                          112,
+                          6,
+                          120,
+                          130,
+                          196,
+                          92,
+                          77,
+                          55,
+                          28,
+                          216,
+                          240,
+                          76,
+                          54,
+                          241,
+                          89,
+                          42,
+                          50,
+                          245,
+                          243,
+                          94,
+                          177,
+                          39,
+                          74,
+                          180,
+                          127,
+                          167
                         ]
                       }
                     }
@@ -324,27 +324,6 @@ Response: {
           {
             "name": {
               "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveValue",
-              "type": {
-                "repr": "u64"
-              },
-              "bcs": "AAAAAAAAAAA=",
-              "data": {
-                "Number": "0"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
                 "repr": "bool"
               },
               "data": {
@@ -374,50 +353,71 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveValue",
+              "type": {
+                "repr": "u64"
+              },
+              "bcs": "AAAAAAAAAAA=",
+              "data": {
+                "Number": "0"
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveObject",
               "contents": {
                 "type": {
-                  "repr": "0x0106a00135162f3d25d5ac92d3bef506e8940a9437a9b0acd6768f84a95a01fb::m::Child"
+                  "repr": "0x3cfb42d5cefaed6adaf8d69bbc8fdb53e456d1478f83e9210765381036a46328::m::Child"
                 },
-                "bcs": "lOGyRkuQZq22oXkLRWIxpPaBu3nG0wLmKKWmzd/S/tc=",
+                "bcs": "VEyix+tlcAZ4gsRcTTcc2PBMNvFZKjL1816xJ0q0f6c=",
                 "data": {
                   "Struct": [
                     {
                       "name": "id",
                       "value": {
                         "UID": [
-                          148,
-                          225,
-                          178,
-                          70,
-                          75,
-                          144,
-                          102,
-                          173,
-                          182,
-                          161,
-                          121,
-                          11,
-                          69,
-                          98,
-                          49,
-                          164,
-                          246,
-                          129,
-                          187,
-                          121,
-                          198,
-                          211,
-                          2,
-                          230,
-                          40,
-                          165,
-                          166,
-                          205,
-                          223,
-                          210,
-                          254,
-                          215
+                          84,
+                          76,
+                          162,
+                          199,
+                          235,
+                          101,
+                          112,
+                          6,
+                          120,
+                          130,
+                          196,
+                          92,
+                          77,
+                          55,
+                          28,
+                          216,
+                          240,
+                          76,
+                          54,
+                          241,
+                          89,
+                          42,
+                          50,
+                          245,
+                          243,
+                          94,
+                          177,
+                          39,
+                          74,
+                          180,
+                          127,
+                          167
                         ]
                       }
                     }
@@ -493,47 +493,47 @@ Response: {
           "__typename": "MoveObject",
           "contents": {
             "type": {
-              "repr": "0x0106a00135162f3d25d5ac92d3bef506e8940a9437a9b0acd6768f84a95a01fb::m::Child"
+              "repr": "0x3cfb42d5cefaed6adaf8d69bbc8fdb53e456d1478f83e9210765381036a46328::m::Child"
             },
-            "bcs": "lOGyRkuQZq22oXkLRWIxpPaBu3nG0wLmKKWmzd/S/tc=",
+            "bcs": "VEyix+tlcAZ4gsRcTTcc2PBMNvFZKjL1816xJ0q0f6c=",
             "data": {
               "Struct": [
                 {
                   "name": "id",
                   "value": {
                     "UID": [
-                      148,
-                      225,
-                      178,
-                      70,
-                      75,
-                      144,
-                      102,
-                      173,
-                      182,
-                      161,
-                      121,
-                      11,
-                      69,
-                      98,
-                      49,
-                      164,
-                      246,
-                      129,
-                      187,
-                      121,
-                      198,
-                      211,
-                      2,
-                      230,
-                      40,
-                      165,
-                      166,
-                      205,
-                      223,
-                      210,
-                      254,
-                      215
+                      84,
+                      76,
+                      162,
+                      199,
+                      235,
+                      101,
+                      112,
+                      6,
+                      120,
+                      130,
+                      196,
+                      92,
+                      77,
+                      55,
+                      28,
+                      216,
+                      240,
+                      76,
+                      54,
+                      241,
+                      89,
+                      42,
+                      50,
+                      245,
+                      243,
+                      94,
+                      177,
+                      39,
+                      74,
+                      180,
+                      127,
+                      167
                     ]
                   }
                 }
