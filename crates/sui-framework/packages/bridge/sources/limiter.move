@@ -18,7 +18,7 @@ module bridge::limiter {
 
     const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
 
-    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000 * 1000_000_000; //
+    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 500_000 * 1000_000_000; // 50W BUSD
 
     //////////////////////////////////////////////////////
     // Types
@@ -233,7 +233,7 @@ module bridge::limiter {
         // 5M limit on Sui -> Ethereum mainnet
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet()),
-            5_000_000 * USD_VALUE_MULTIPLIER
+            500_000 * USD_VALUE_MULTIPLIER
         );
 
         // MAX limit for testnet and devnet
