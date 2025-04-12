@@ -124,10 +124,10 @@ Response: {
           "version": 11,
           "contents": {
             "json": {
-              "id": "0x50c9ca54b4b9909f8d28fe414b9689b8ef7626e3e43dc241a3659b99a8830a8d",
+              "id": "0xa1508e6dd8c46c89a3b8cd11db3023e1c52458584660bbb18b0baefe6d66a19c",
               "count": "1",
               "wrapped": {
-                "id": "0x5b8df7147f3fe8a48cc65770775e845e7955163d692c282e8e767ec888a11793",
+                "id": "0xf456a70f88e61fca86b3839b460c3fd2b74744e1f637aa1f654a5e78c01cfc1b",
                 "count": "1"
               }
             }
