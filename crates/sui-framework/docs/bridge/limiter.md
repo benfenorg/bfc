@@ -166,7 +166,7 @@ title: Module `0xb::limiter`
 
 
 
-<pre><code><b>const</b> <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 100000000000000;
+<pre><code><b>const</b> <a href="limiter.md#0xb_limiter_DEFAULT_MAX_MINT_BUSD_LIMIT">DEFAULT_MAX_MINT_BUSD_LIMIT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 500000000000000;
 </code></pre>
 
 
@@ -565,7 +565,7 @@ title: Module `0xb::limiter`
     // 5M limit on Sui -&gt; Ethereum mainnet
     transfer_limits.insert(
         <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
-        5_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+        500_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
     );
 
     // MAX limit for testnet and devnet
