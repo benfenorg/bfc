@@ -13,6 +13,7 @@ use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
     SuiBridgeEvent, SuiToEthTokenBridgeV1, TokenTransferApproved, TokenTransferClaimed,TokenSendBackEvent,
 };
+use crate::sui_client::SuiClientInner;
 use crate::sui_transaction_builder::{build_add_tokens_on_sui_transaction, build_refund_admin_operate_transaction};
 use crate::sui_transaction_builder::build_add_external_coin_admin_transaction;
 use crate::sui_transaction_builder::build_remove_external_coin_admin_transaction;
@@ -35,7 +36,7 @@ use crate::types::{
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
 use ethers::prelude::*;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use std::thread::sleep;
 use std::time::Duration;
@@ -50,7 +51,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use sui_types::bridge::{
     get_bridge, BridgeChainId, BridgeTokenMetadata, BridgeTrait, TOKEN_ID_ETH, TOKEN_ID_USDT
 };
-use sui_types::SUI_BRIDGE_OBJECT_ID;
+use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
@@ -1140,6 +1141,41 @@ async fn test_eth_to_sui_limit() {
     let limit_record_total_amount = limit_record.2.total_amount();
     assert_eq!(limit_record_total_amount, 100000);
 }
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)] 
+async fn test_eth_to_sui_limit_with_new_token() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let treasury_summary = bridge_test_cluster
+        .bridge_client()
+        .get_treasury_summary()
+        .await
+        .unwrap();
+    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    let (_id, _type) = treasury_summary
+        .id_token_type_map
+        .iter()
+        .find(|(id, _)| id == &TOKEN_ID_USDT)
+        .unwrap();
+
+    let bridge_object_arg = bridge_test_cluster.sui_client().get_mutable_bridge_object_arg().await.unwrap();
+    let source_chain_id = BridgeChainId::EthCustom as u8;
+    let token_type = TOKEN_ID_USDT;
+    let mut token_type_map = HashMap::new();
+    for (id, type_) in treasury_summary.id_token_type_map.iter() {
+        println!("id: {}, type_: {}", id, type_);
+        token_type_map.insert(*id, TypeTag::from_str(&format!("0x{}", type_)).unwrap());
+    }
+    let limit = bridge_test_cluster.bridge_client().sui_client().get_eth_to_sui_limit(bridge_object_arg, source_chain_id, token_type, token_type_map).await.unwrap();
+    assert_eq!(limit, 1000);
+}
+
 
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
