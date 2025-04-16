@@ -32,7 +32,7 @@ module bridge::limiter {
         max_mint_busd_limit: u64,
     }
 
-    public struct TransferRecord has store,drop {
+    public struct TransferRecord has store {
         hour_head: u64,
         hour_tail: u64,
         per_hour_amounts: vector<u64>,
@@ -83,34 +83,29 @@ module bridge::limiter {
         treasury: &BridgeTreasury,
         route: BridgeRoute,
     ): u64{
-        let record= if (!self.transfer_records.contains(&route)) {
-            &TransferRecord {
-                hour_head: 0,
-                hour_tail: 0,
-                per_hour_amounts: vector[],
-                total_amount: 0
-            }
-        }else{
-            self.transfer_records.get(&route)
-        };
         let route_limit = self.transfer_limits.try_get(&route);
         assert!(route_limit.is_some(), ELimitNotFoundForRoute);
         let route_limit = route_limit.destroy_some();
+
+        let price = (treasury.notional_value<T>() as u128);
+        if (price == 0) {
+            return 0
+        };
         let route_limit_adjusted =
             (route_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
+
+        if (!self.transfer_records.contains(&route)) {
+            return (route_limit_adjusted / price) as u64
+        };
+
+        let record=self.transfer_records.get(&route);
+
         let total_adjusted= (record.total_amount as u128 ) * (USD_VALUE_MULTIPLIER as u128);
         if (total_adjusted >= route_limit_adjusted){
             return 0
         };
-        let price = (treasury.notional_value<T>() as u128);
-
-        if (price == 0) {
-            return 0
-        };
 
         let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
-
-
         available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(

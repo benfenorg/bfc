@@ -70,39 +70,7 @@ fun test_limits() {
     env.destroy_env();
 }
 
-#[test]
-fun test_get_available_claim_amount(){
-    let mut env = create_env(chain_ids::sui_custom());
-    env.create_bridge_default();
-    let chain_id = env.chain_id();
-    let source_chain = chain_ids::eth_custom();
-    env.update_bridge_limit(@0x0, chain_id, source_chain, 10000*1_00_000_000);
 
-    let source_chain = chain_ids::eth_custom();
-    let sui_address = @0xABCDEF;
-    let eth_address = x"0000000000000000000000000000000000001234";
-    let amount = 1000*1_00_000_000;
-
-    // move from eth and transfer to sui account
-    let transfer_id1 = env.bridge_to_sui<ETH>(
-        source_chain,
-        eth_address,
-        sui_address,
-        amount,
-    );
-
-    let token = env.claim_token<ETH>(sui_address, source_chain, transfer_id1);
-    env.send_token<ETH>(
-        sui_address,
-        source_chain,
-        eth_address,
-        token,
-    );
-
-    assert!(&env.env_get_available_claim_amount<ETH>(source_chain,sui_address)!=0,0);
-
-    env.destroy_env();
-}
 
 #[test]
 fun test_bridge_and_claim() {

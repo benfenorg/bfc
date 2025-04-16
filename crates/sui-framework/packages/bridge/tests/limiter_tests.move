@@ -12,7 +12,7 @@ module bridge::limiter_tests {
             transfer_limits_mut, total_amount, transfer_records,
             update_route_limit, usd_value_multiplier,
         },
-        treasury::{Self, BTC, ETH, USDC, USDT},
+        treasury::{Self, BTC, ETH, USDC, USDT,BUSD},
     };
 
     use sui::clock;
@@ -152,6 +152,37 @@ module bridge::limiter_tests {
         let record = limiter.transfer_records().get(&route2);
         assert!(record.total_amount() == 50000 * 5 * usd_value_multiplier());
 
+        destroy(limiter);
+        destroy(treasury);
+        clock::destroy_for_testing(clock);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_busd_limit(){
+        let mut limiter = make_transfer_limiter();
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        let mut treasury = treasury::mock_for_test(ctx);
+
+        let route = chain_ids::get_route(chain_ids::sui_custom(), chain_ids::eth_sepolia());
+        // Global transfer limit is 50w USD
+        limiter.transfer_limits_mut().insert(route, 500_0000 * usd_value_multiplier());
+        // Notional price for BUSD is 1 USD
+        let id = treasury::token_id<BUSD>(&treasury);
+        treasury.update_asset_notional_price(id, 1 * usd_value_multiplier());
+        assert!(limiter.get_available_claim_amount<BUSD>(&treasury, route)==500_0000 * usd_value_multiplier(),0);
+
+        let mut clock = clock::create_for_testing(ctx);
+        clock.set_for_testing(1706288001377);
+
+        limiter.check_and_record_sending_transfer<BUSD>(
+                &treasury,
+                &clock,
+                route,
+                1_000_000_000,
+        );
+        assert!(limiter.get_available_claim_amount<BUSD>(&treasury, route)==(500_0000-1) * usd_value_multiplier(),0);
         destroy(limiter);
         destroy(treasury);
         clock::destroy_for_testing(clock);
