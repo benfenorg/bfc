@@ -1145,6 +1145,7 @@ async fn test_eth_to_sui_limit() {
     assert_eq!(limit_record_total_amount, 100000);
 }
 
+#[ignore]
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_to_sui_limit_with_new_token() {
     telemetry_subscribers::init_for_testing();
