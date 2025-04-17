@@ -22,7 +22,7 @@ use sui_types::gas_coin::GasCoin;
 use sui_types::object::Owner;
 use sui_types::transaction::ObjectArg;
 use sui_types::transaction::Transaction;
-use sui_types::Identifier;
+use sui_types::{Identifier, TypeTag};
 
 use crate::sui_client::SuiClientInner;
 use crate::types::{BridgeAction, BridgeActionStatus, IsBridgePaused};
@@ -288,6 +288,16 @@ impl SuiClientInner for SuiMockClient {
             .get(&(source_chain_id, seq_number))
             .cloned()
             .unwrap_or(BridgeActionStatus::Pending))
+    }
+
+    async fn get_eth_to_sui_limit(
+        &self,
+        bridge_object_arg: ObjectArg,
+        source_chain_id: u8,
+        token_type:u64,
+        token_type_map:HashMap<u64,TypeTag>
+    ) -> Result<u64, BridgeError> {
+        Ok(1000)
     }
 
     async fn get_external_token_transfer_action_onchain_status(
