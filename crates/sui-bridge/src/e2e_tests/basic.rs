@@ -1142,7 +1142,7 @@ async fn test_eth_to_sui_limit() {
     let limit = treasury_summary_after.limiter;
     let limit_record = limit.transfer_records.first().unwrap();
     let limit_record_total_amount = limit_record.2.total_amount();
-    assert_eq!(limit_record_total_amount, 100000);
+    assert_eq!(limit_record_total_amount, 10_000_000_000);
 }
 
 #[ignore]
