@@ -48,7 +48,7 @@ use std::path::Path;
 use std::sync::Arc;
 use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI};
 use sui_types::bridge::{
-    get_bridge, BridgeChainId, BridgeTokenMetadata, BridgeTrait, TOKEN_ID_ETH, TOKEN_ID_USDT,
+    get_bridge, BridgeChainId, BridgeTokenMetadata, BridgeTrait, TOKEN_ID_ETH, TOKEN_ID_USDT,TOKEN_ID_BUSD,
 };
 use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
@@ -1145,7 +1145,7 @@ async fn test_eth_to_sui_limit() {
     assert_eq!(limit_record_total_amount, 10_000_000_000);
 }
 
-#[ignore]
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_to_sui_limit_with_new_token() {
     telemetry_subscribers::init_for_testing();
@@ -1229,7 +1229,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         .await
         .unwrap();
     let source_chain_id = BridgeChainId::EthCustom as u8;
-    let token_type = TOKEN_ID_USDT;
+    let token_type = TOKEN_ID_BUSD;
     let mut token_type_map = HashMap::new();
     for (id, type_) in treasury_summary.id_token_type_map.iter() {
         println!("id: {}, type_: {}", id, type_);
@@ -1246,7 +1246,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         )
         .await
         .unwrap();
-    assert_eq!(limit, 1000);
+    assert_eq!(limit, 18_446_744_073_709_551_615-100*100_000_000);
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]

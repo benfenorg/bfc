@@ -501,7 +501,7 @@ pub trait SuiClientInner: Send + Sync {
         source_chain_id: u8,
         token_type:u64,
         token_type_map:HashMap<u64,TypeTag>
-    ) -> Result<u64, BridgeError>;
+    ) -> Result<u128, BridgeError>;
 
     async fn get_external_token_transfer_action_onchain_status(
         &self,
@@ -613,10 +613,10 @@ impl SuiClientInner for SuiSdkClient {
         source_chain_id: u8,
         token_type:u64,
         token_type_map:HashMap<u64,TypeTag>
-    ) -> Result<u64, BridgeError> {
-        dev_inspect_limiter::<u64>(
+    ) -> Result<u128, BridgeError> {
+        dev_inspect_limiter::<u128>(
             self,
-            bridge_object_arg,  
+            bridge_object_arg,
             source_chain_id,
             token_type,
             token_type_map,

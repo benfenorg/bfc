@@ -4,9 +4,7 @@
 module bridge::limiter {
     use sui::clock::{Self, Clock};
     use sui::event::emit;
-    use std::type_name;
     use sui::vec_map::{Self, VecMap};
-    use bfc_system::busd::BUSD;
 
     use bridge::chain_ids::{Self, BridgeRoute};
     use bridge::treasury::BridgeTreasury;
@@ -82,7 +80,7 @@ module bridge::limiter {
         self: &TransferLimiter,
         treasury: &BridgeTreasury,
         route: BridgeRoute,
-    ): u64{
+    ): u128{
         let route_limit = self.transfer_limits.try_get(&route);
         assert!(route_limit.is_some(), ELimitNotFoundForRoute);
         let route_limit = route_limit.destroy_some();
@@ -95,7 +93,7 @@ module bridge::limiter {
             (route_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
 
         if (!self.transfer_records.contains(&route)) {
-            return (route_limit_adjusted / price) as u64
+            return (route_limit_adjusted / price)
         };
 
         let record=self.transfer_records.get(&route);
@@ -105,7 +103,7 @@ module bridge::limiter {
             return 0
         };
 
-        let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
+        let available_amount=((route_limit_adjusted-total_adjusted) / price);
         available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(
