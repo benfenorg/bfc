@@ -21,15 +21,12 @@ title: Module `0xb::limiter`
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
-<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
-<b>use</b> <a href="../move-stdlib/u64.md#0x1_u64">0x1::u64</a>;
 <b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
 <b>use</b> <a href="../sui-framework/event.md#0x2_event">0x2::event</a>;
 <b>use</b> <a href="../sui-framework/vec_map.md#0x2_vec_map">0x2::vec_map</a>;
 <b>use</b> <a href="chain_ids.md#0xb_chain_ids">0xb::chain_ids</a>;
 <b>use</b> <a href="treasury.md#0xb_treasury">0xb::treasury</a>;
-<b>use</b> <a href="../bfc-system/busd.md#0xc8_busd">0xc8::busd</a>;
 </code></pre>
 
 
@@ -305,7 +302,7 @@ title: Module `0xb::limiter`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(self: &<a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &treasury::BridgeTreasury, route: <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="limiter.md#0xb_limiter_get_available_claim_amount">get_available_claim_amount</a>&lt;T&gt;(self: &<a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>, <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &treasury::BridgeTreasury, route: <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">chain_ids::BridgeRoute</a>): u128
 </code></pre>
 
 
@@ -318,35 +315,31 @@ title: Module `0xb::limiter`
     self: &<a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>,
     <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &BridgeTreasury,
     route: BridgeRoute,
-): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
-    <b>if</b> (!self.transfer_records.contains(&route)) {
-       <b>return</b> 0
-    };
-    <b>let</b> record = self.transfer_records.get(&route);
+): u128{
     <b>let</b> route_limit = self.transfer_limits.try_get(&route);
     <b>assert</b>!(route_limit.is_some(), <a href="limiter.md#0xb_limiter_ELimitNotFoundForRoute">ELimitNotFoundForRoute</a>);
     <b>let</b> route_limit = route_limit.destroy_some();
-    <b>let</b> route_limit_adjusted =
-        (route_limit <b>as</b> u128) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
-    <b>let</b> total_adjusted= (record.total_amount <b>as</b> u128 ) * (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.decimal_multiplier&lt;T&gt;() <b>as</b> u128);
-    <b>if</b> (total_adjusted &gt;= route_limit_adjusted){
-        <b>return</b> 0
-    };
-    <b>let</b> price = (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
 
+    <b>let</b> price = (<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.notional_value&lt;T&gt;() <b>as</b> u128);
     <b>if</b> (price == 0) {
         <b>return</b> 0
     };
+    <b>let</b> route_limit_adjusted =
+        (route_limit <b>as</b> u128) * (<a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a> <b>as</b> u128);
 
-    <b>let</b> available_amount=((route_limit_adjusted-total_adjusted) / price) <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
+    <b>if</b> (!self.transfer_records.contains(&route)) {
+        <b>return</b> (route_limit_adjusted / price)
+    };
 
+    <b>let</b> record=self.transfer_records.get(&route);
 
-    <b>return</b> <b>if</b> (<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;()){
-        <b>let</b> busd_mint_limit=self.<a href="limiter.md#0xb_limiter_get_mint_busd_max_limit">get_mint_busd_max_limit</a>();
-        busd_mint_limit.<b>min</b>(available_amount)
-    }<b>else</b>{
-        available_amount
-    }
+    <b>let</b> total_adjusted= (record.total_amount <b>as</b> u128 ) * (<a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a> <b>as</b> u128);
+    <b>if</b> (total_adjusted &gt;= route_limit_adjusted){
+        <b>return</b> 0
+    };
+
+    <b>let</b> available_amount=((route_limit_adjusted-total_adjusted) / price);
+    available_amount
 }
 </code></pre>
 
