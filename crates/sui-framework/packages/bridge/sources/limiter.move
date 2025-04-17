@@ -83,34 +83,30 @@ module bridge::limiter {
         treasury: &BridgeTreasury,
         route: BridgeRoute,
     ): u64{
-        if (!self.transfer_records.contains(&route)) {
-           return 0
-        };
-        let record = self.transfer_records.get(&route);
         let route_limit = self.transfer_limits.try_get(&route);
         assert!(route_limit.is_some(), ELimitNotFoundForRoute);
         let route_limit = route_limit.destroy_some();
-        let route_limit_adjusted =
-            (route_limit as u128) * (treasury.decimal_multiplier<T>() as u128);
-        let total_adjusted= (record.total_amount as u128 ) * (treasury.decimal_multiplier<T>() as u128);
-        if (total_adjusted >= route_limit_adjusted){
+
+        let price = (treasury.notional_value<T>() as u128);
+        if (price == 0) {
             return 0
         };
-        let price = (treasury.notional_value<T>() as u128);
+        let route_limit_adjusted =
+            (route_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
 
-        if (price == 0) {
+        if (!self.transfer_records.contains(&route)) {
+            return (route_limit_adjusted / price) as u64
+        };
+
+        let record=self.transfer_records.get(&route);
+
+        let total_adjusted= (record.total_amount as u128 ) * (USD_VALUE_MULTIPLIER as u128);
+        if (total_adjusted >= route_limit_adjusted){
             return 0
         };
 
         let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
-
-
-        return if (type_name::get<T>() == type_name::get<BUSD>()){
-            let busd_mint_limit=self.get_mint_busd_max_limit();
-            busd_mint_limit.min(available_amount)
-        }else{
-            available_amount
-        }
+        available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(
         self: &mut TransferLimiter,

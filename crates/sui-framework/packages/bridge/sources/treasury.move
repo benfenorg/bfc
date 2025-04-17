@@ -460,6 +460,10 @@ module bridge::treasury {
     public struct USDC has drop {}
 
     #[test_only]
+    public struct BUSD has drop {}
+
+
+    #[test_only]
     public fun new_for_testing(ctx: &mut TxContext): BridgeTreasury {
         create(ctx)
     }
@@ -497,11 +501,19 @@ module bridge::treasury {
             notional_value: USD_VALUE_MULTIPLIER,
             native_token: false,
         });
+        treasury.supported_tokens.insert(type_name::get<BUSD>(), BridgeTokenMetadata{
+            id: 5,
+            decimal_multiplier: 1_000_000_000,
+            notional_value: USD_VALUE_MULTIPLIER,
+            native_token: false,
+        });
+
 
         treasury.id_token_type_map.insert(1, type_name::get<BTC>());
         treasury.id_token_type_map.insert(2, type_name::get<ETH>());
         treasury.id_token_type_map.insert(3, type_name::get<USDC>());
         treasury.id_token_type_map.insert(4, type_name::get<USDT>());
+        treasury.id_token_type_map.insert(5, type_name::get<BUSD>());
     }
 
     #[test_only]
