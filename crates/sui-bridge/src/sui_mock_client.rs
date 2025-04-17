@@ -296,7 +296,7 @@ impl SuiClientInner for SuiMockClient {
         source_chain_id: u8,
         token_type:u64,
         token_type_map:HashMap<u64,TypeTag>
-    ) -> Result<u64, BridgeError> {
+    ) -> Result<u128, BridgeError> {
         Ok(1000)
     }
 
