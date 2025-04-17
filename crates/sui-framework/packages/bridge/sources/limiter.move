@@ -93,7 +93,7 @@ module bridge::limiter {
             (route_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
 
         if (!self.transfer_records.contains(&route)) {
-            return (route_limit_adjusted / price) as u128
+            return (route_limit_adjusted / price)
         };
 
         let record=self.transfer_records.get(&route);
@@ -103,7 +103,7 @@ module bridge::limiter {
             return 0
         };
 
-        let available_amount=((route_limit_adjusted-total_adjusted) / price) as u128;
+        let available_amount=((route_limit_adjusted-total_adjusted) / price);
         available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(
