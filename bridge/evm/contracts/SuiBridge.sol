@@ -159,7 +159,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         );
 
         if (tokenID==TOKEN_ID_USDC || tokenID ==TOKEN_ID_USDT){
-            require(amount>=limiter.getUsdMaxLimit(),"SuiBridge: USDC Exceed Limit");
+            require(amount>=limiter.getUsdMaxLimit(),"SuiBridge: USD Exceed Limit");
         }
 
         // calculate old vault balance
