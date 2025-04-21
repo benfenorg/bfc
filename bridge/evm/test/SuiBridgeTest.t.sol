@@ -496,6 +496,26 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         assertEq(IERC20(USDC).balanceOf(address(vault)), usdcAmount);
     }
 
+    function testBridgeUSDTExceedLimit() public{
+        changePrank(USDCWhale);
+
+        uint256 usdcAmount = 100*1000000;
+
+        // approve
+        IERC20(USDC).approve(address(bridge), usdcAmount);
+
+        assertEq(IERC20(USDC).balanceOf(address(vault)), 0);
+        uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
+
+        vm.expectRevert("SuiBridge: USD Exceed Limit");
+        bridge.bridgeERC20(
+            BridgeUtils.USDC,
+            usdcAmount,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
+            0
+        );
+    }
+
     function testBridgeUSDT() public {
         changePrank(USDTWhale);
 
