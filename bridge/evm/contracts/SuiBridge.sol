@@ -27,6 +27,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
     uint8 constant SUI_ADDRESS_LENGTH = 32;
 
+    uint8 constant TOKEN_ID_USDC=3;
+    uint8 constant TOKEN_ID_USDT=4;
+
     /* ========== INITIALIZER ========== */
 
     /// @notice Initializes the SuiBridge contract with the provided parameters.
@@ -154,6 +157,10 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             IERC20(tokenAddress).allowance(msg.sender, address(this)) >= amount,
             "SuiBridge: Insufficient allowance"
         );
+
+        if (tokenID==TOKEN_ID_USDC || tokenID ==TOKEN_ID_USDT){
+            require(amount>=limiter.getUsdMaxLimit(),"SuiBridge: USDC Exceed Limit");
+        }
 
         // calculate old vault balance
         uint256 oldBalance = IERC20(tokenAddress).balanceOf(address(vault));

@@ -692,12 +692,14 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -809,13 +811,14 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
         skip(2 days);
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -886,13 +889,15 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         skip(2 days);
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
-                BridgeLimiter.initialize, (address(committee), supportedChains, totalLimits)
+                BridgeLimiter.initialize, (address(committee), supportedChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -1039,11 +1044,13 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         skip(2 days);
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 1_000_000 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );

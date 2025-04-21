@@ -305,6 +305,8 @@ contract BridgeConfigTest is BridgeBaseTest {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 1000000;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
         uint8[] memory _supportedDestinationChains = new uint8[](1);
         _supportedDestinationChains[0] = 0;
         skip(2 days);
@@ -312,7 +314,7 @@ contract BridgeConfigTest is BridgeBaseTest {
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -387,12 +389,14 @@ contract BridgeConfigTest is BridgeBaseTest {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 1000000;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -474,13 +478,15 @@ contract BridgeConfigTest is BridgeBaseTest {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 1000000;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         skip(2 days);
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
