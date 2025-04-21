@@ -25,7 +25,7 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f",
+                    "address": "0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3",
                     "asMovePackage": {
                       "module": {
                         "enum": {
@@ -84,7 +84,7 @@ Response: {
                 },
                 {
                   "outputState": {
-                    "address": "0x65fec9af7d01ef4080258c8a1d8355410d15bcfecd8e9b5ac6b3fdf26abaf068",
+                    "address": "0x64c0704e48df72824dc7bc544385916ab96ab88d3f84d95f986d9258bc31b6a5",
                     "asMovePackage": null
                   }
                 },
@@ -125,7 +125,7 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x65fec9af7d01ef4080258c8a1d8355410d15bcfecd8e9b5ac6b3fdf26abaf068",
+                    "address": "0x64c0704e48df72824dc7bc544385916ab96ab88d3f84d95f986d9258bc31b6a5",
                     "asMovePackage": null
                   }
                 },
@@ -137,13 +137,13 @@ Response: {
                 },
                 {
                   "outputState": {
-                    "address": "0xb1b997ad06914476b1262290476243dd4b76c0d7445c5fe1dc62e55b251df2cc",
+                    "address": "0xbb9319081352eb7b0aad7428e1af9bd673eb978176abeb98532452d57588638d",
                     "asMovePackage": {
                       "module": {
                         "s": {
                           "module": {
                             "package": {
-                              "address": "0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f"
+                              "address": "0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3"
                             }
                           },
                           "name": "S",
@@ -198,7 +198,7 @@ Response: {
                         "t": {
                           "module": {
                             "package": {
-                              "address": "0xb1b997ad06914476b1262290476243dd4b76c0d7445c5fe1dc62e55b251df2cc"
+                              "address": "0xbb9319081352eb7b0aad7428e1af9bd673eb978176abeb98532452d57588638d"
                             }
                           },
                           "name": "T",
@@ -228,12 +228,12 @@ Response: {
                                 {
                                   "name": "s",
                                   "type": {
-                                    "repr": "0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f::m::S",
+                                    "repr": "0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3::m::S",
                                     "signature": {
                                       "ref": null,
                                       "body": {
                                         "datatype": {
-                                          "package": "0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f",
+                                          "package": "0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3",
                                           "module": "m",
                                           "type": "S",
                                           "typeParameters": []
@@ -267,7 +267,7 @@ Response: {
                                 {
                                   "name": "t",
                                   "type": {
-                                    "repr": "0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f::m::T<0x0b8c52866ecb2e43cad87392a2fe1d08fdbd714c4e07165ee3b47352bfe0c15f::m::S>"
+                                    "repr": "0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3::m::T<0x608c90e8b978f536f921377ff6e1b97ddebe727b208646f251d5ccd18f5db2a3::m::S>"
                                   }
                                 }
                               ]

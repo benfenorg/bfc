@@ -70,6 +70,69 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xe3d939df8283c71d17f649ea845d3d9a99c59e88aae46ea8f0ecfdf0651f63a4::m::Child"
+                },
+                "bcs": "UkaIugF1PLzlm8RIAypXpJgF8zD8EN4ouQztOLRMKls=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          82,
+                          70,
+                          136,
+                          186,
+                          1,
+                          117,
+                          60,
+                          188,
+                          229,
+                          155,
+                          196,
+                          72,
+                          3,
+                          42,
+                          87,
+                          164,
+                          152,
+                          5,
+                          243,
+                          48,
+                          252,
+                          16,
+                          222,
+                          40,
+                          185,
+                          12,
+                          237,
+                          56,
+                          180,
+                          76,
+                          42,
+                          91
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
@@ -98,69 +161,6 @@ Response: {
               "bcs": "AQAAAAAAAAA=",
               "data": {
                 "Number": "1"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x3cb7f41a85065a38118a328e5bdddaaacd5d97301e7f6cfa596976dcb51119f4::m::Child"
-                },
-                "bcs": "37osiX8GiBYOlAsfJtpR0zhv3mZeEwWGAzLIXqncY7g=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          223,
-                          186,
-                          44,
-                          137,
-                          127,
-                          6,
-                          136,
-                          22,
-                          14,
-                          148,
-                          11,
-                          31,
-                          38,
-                          218,
-                          81,
-                          211,
-                          56,
-                          111,
-                          222,
-                          102,
-                          94,
-                          19,
-                          5,
-                          134,
-                          3,
-                          50,
-                          200,
-                          94,
-                          169,
-                          220,
-                          99,
-                          184
-                        ]
-                      }
-                    }
-                  ]
-                }
               }
             }
           }
@@ -202,6 +202,69 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xe3d939df8283c71d17f649ea845d3d9a99c59e88aae46ea8f0ecfdf0651f63a4::m::Child"
+                },
+                "bcs": "UkaIugF1PLzlm8RIAypXpJgF8zD8EN4ouQztOLRMKls=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          82,
+                          70,
+                          136,
+                          186,
+                          1,
+                          117,
+                          60,
+                          188,
+                          229,
+                          155,
+                          196,
+                          72,
+                          3,
+                          42,
+                          87,
+                          164,
+                          152,
+                          5,
+                          243,
+                          48,
+                          252,
+                          16,
+                          222,
+                          40,
+                          185,
+                          12,
+                          237,
+                          56,
+                          180,
+                          76,
+                          42,
+                          91
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
@@ -230,69 +293,6 @@ Response: {
               "bcs": "AQAAAAAAAAA=",
               "data": {
                 "Number": "1"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x3cb7f41a85065a38118a328e5bdddaaacd5d97301e7f6cfa596976dcb51119f4::m::Child"
-                },
-                "bcs": "37osiX8GiBYOlAsfJtpR0zhv3mZeEwWGAzLIXqncY7g=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          223,
-                          186,
-                          44,
-                          137,
-                          127,
-                          6,
-                          136,
-                          22,
-                          14,
-                          148,
-                          11,
-                          31,
-                          38,
-                          218,
-                          81,
-                          211,
-                          56,
-                          111,
-                          222,
-                          102,
-                          94,
-                          19,
-                          5,
-                          134,
-                          3,
-                          50,
-                          200,
-                          94,
-                          169,
-                          220,
-                          99,
-                          184
-                        ]
-                      }
-                    }
-                  ]
-                }
               }
             }
           }
@@ -353,6 +353,69 @@ Response: {
               "bcs": "AAAAAAAAAAA="
             },
             "value": {
+              "__typename": "MoveObject",
+              "contents": {
+                "type": {
+                  "repr": "0xe3d939df8283c71d17f649ea845d3d9a99c59e88aae46ea8f0ecfdf0651f63a4::m::Child"
+                },
+                "bcs": "UkaIugF1PLzlm8RIAypXpJgF8zD8EN4ouQztOLRMKls=",
+                "data": {
+                  "Struct": [
+                    {
+                      "name": "id",
+                      "value": {
+                        "UID": [
+                          82,
+                          70,
+                          136,
+                          186,
+                          1,
+                          117,
+                          60,
+                          188,
+                          229,
+                          155,
+                          196,
+                          72,
+                          3,
+                          42,
+                          87,
+                          164,
+                          152,
+                          5,
+                          243,
+                          48,
+                          252,
+                          16,
+                          222,
+                          40,
+                          185,
+                          12,
+                          237,
+                          56,
+                          180,
+                          76,
+                          42,
+                          91
+                        ]
+                      }
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          {
+            "name": {
+              "type": {
+                "repr": "u64"
+              },
+              "data": {
+                "Number": "0"
+              },
+              "bcs": "AAAAAAAAAAA="
+            },
+            "value": {
               "__typename": "MoveValue",
               "type": {
                 "repr": "u64"
@@ -381,69 +444,6 @@ Response: {
               "bcs": "AQAAAAAAAAA=",
               "data": {
                 "Number": "1"
-              }
-            }
-          },
-          {
-            "name": {
-              "type": {
-                "repr": "u64"
-              },
-              "data": {
-                "Number": "0"
-              },
-              "bcs": "AAAAAAAAAAA="
-            },
-            "value": {
-              "__typename": "MoveObject",
-              "contents": {
-                "type": {
-                  "repr": "0x3cb7f41a85065a38118a328e5bdddaaacd5d97301e7f6cfa596976dcb51119f4::m::Child"
-                },
-                "bcs": "37osiX8GiBYOlAsfJtpR0zhv3mZeEwWGAzLIXqncY7g=",
-                "data": {
-                  "Struct": [
-                    {
-                      "name": "id",
-                      "value": {
-                        "UID": [
-                          223,
-                          186,
-                          44,
-                          137,
-                          127,
-                          6,
-                          136,
-                          22,
-                          14,
-                          148,
-                          11,
-                          31,
-                          38,
-                          218,
-                          81,
-                          211,
-                          56,
-                          111,
-                          222,
-                          102,
-                          94,
-                          19,
-                          5,
-                          134,
-                          3,
-                          50,
-                          200,
-                          94,
-                          169,
-                          220,
-                          99,
-                          184
-                        ]
-                      }
-                    }
-                  ]
-                }
               }
             }
           }
@@ -493,47 +493,47 @@ Response: {
           "__typename": "MoveObject",
           "contents": {
             "type": {
-              "repr": "0x3cb7f41a85065a38118a328e5bdddaaacd5d97301e7f6cfa596976dcb51119f4::m::Child"
+              "repr": "0xe3d939df8283c71d17f649ea845d3d9a99c59e88aae46ea8f0ecfdf0651f63a4::m::Child"
             },
-            "bcs": "37osiX8GiBYOlAsfJtpR0zhv3mZeEwWGAzLIXqncY7g=",
+            "bcs": "UkaIugF1PLzlm8RIAypXpJgF8zD8EN4ouQztOLRMKls=",
             "data": {
               "Struct": [
                 {
                   "name": "id",
                   "value": {
                     "UID": [
-                      223,
-                      186,
-                      44,
-                      137,
-                      127,
-                      6,
+                      82,
+                      70,
                       136,
-                      22,
-                      14,
-                      148,
-                      11,
-                      31,
-                      38,
-                      218,
-                      81,
-                      211,
-                      56,
-                      111,
-                      222,
-                      102,
-                      94,
-                      19,
-                      5,
-                      134,
+                      186,
+                      1,
+                      117,
+                      60,
+                      188,
+                      229,
+                      155,
+                      196,
+                      72,
                       3,
-                      50,
-                      200,
-                      94,
-                      169,
-                      220,
-                      99,
-                      184
+                      42,
+                      87,
+                      164,
+                      152,
+                      5,
+                      243,
+                      48,
+                      252,
+                      16,
+                      222,
+                      40,
+                      185,
+                      12,
+                      237,
+                      56,
+                      180,
+                      76,
+                      42,
+                      91
                     ]
                   }
                 }
