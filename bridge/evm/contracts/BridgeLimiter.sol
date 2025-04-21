@@ -197,8 +197,4 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
         emit LimitUpdatedV2(message.nonce, sourceChainID, newLimit);
     }
 
-    function updateUSDLimit(uint64 _maxUSDLimit)public {
-        maxUSDLimit=_maxUSDLimit;
-    }
-
 }
