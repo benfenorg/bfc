@@ -30,7 +30,7 @@ Response: {
       }
     },
     "firstPackage": {
-      "address": "0x5bb7f90e4d650c4d615618ac2fecd562c1664db9bf4f4e539558d9ef2902f21b",
+      "address": "0xc8f57a6b7caaa0147b850d06f41d6fd5404073a5936ec2e36f62e0a6f81e5bde",
       "version": 1,
       "module": {
         "functions": {
@@ -75,7 +75,7 @@ Response: {
       }
     },
     "firstPackage": {
-      "address": "0x5bb7f90e4d650c4d615618ac2fecd562c1664db9bf4f4e539558d9ef2902f21b",
+      "address": "0xc8f57a6b7caaa0147b850d06f41d6fd5404073a5936ec2e36f62e0a6f81e5bde",
       "version": 1,
       "module": {
         "functions": {
@@ -123,7 +123,7 @@ Response: {
       }
     },
     "firstPackage": {
-      "address": "0x5bb7f90e4d650c4d615618ac2fecd562c1664db9bf4f4e539558d9ef2902f21b",
+      "address": "0xc8f57a6b7caaa0147b850d06f41d6fd5404073a5936ec2e36f62e0a6f81e5bde",
       "version": 1,
       "module": {
         "functions": {
