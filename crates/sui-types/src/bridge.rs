@@ -542,6 +542,13 @@ pub struct MoveTypeBridgeTransferRecord {
     total_amount: u64,
 }
 
+impl MoveTypeBridgeTransferRecord {
+    pub fn total_amount(&self) -> u64 {
+        self.total_amount
+    }
+}
+
+
 /// Rust version of the Move message::BridgeMessage type.
 #[derive(Debug, Serialize, Deserialize)]
 pub struct MoveTypeBridgeMessage {

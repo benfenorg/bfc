@@ -4,9 +4,7 @@
 module bridge::limiter {
     use sui::clock::{Self, Clock};
     use sui::event::emit;
-    use std::type_name;
     use sui::vec_map::{Self, VecMap};
-    use bfc_system::busd::BUSD;
 
     use bridge::chain_ids::{Self, BridgeRoute};
     use bridge::treasury::BridgeTreasury;
@@ -18,7 +16,7 @@ module bridge::limiter {
 
     const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
 
-    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 100_000 * 1000_000_000; //
+    const DEFAULT_MAX_MINT_BUSD_LIMIT: u64 = 500_000 * 1000_000_000; // 50W BUSD
 
     //////////////////////////////////////////////////////
     // Types
@@ -82,35 +80,31 @@ module bridge::limiter {
         self: &TransferLimiter,
         treasury: &BridgeTreasury,
         route: BridgeRoute,
-    ): u64{
-        if (!self.transfer_records.contains(&route)) {
-           return 0
-        };
-        let record = self.transfer_records.get(&route);
+    ): u128{
         let route_limit = self.transfer_limits.try_get(&route);
         assert!(route_limit.is_some(), ELimitNotFoundForRoute);
         let route_limit = route_limit.destroy_some();
-        let route_limit_adjusted =
-            (route_limit as u128) * (treasury.decimal_multiplier<T>() as u128);
-        let total_adjusted= (record.total_amount as u128 ) * (treasury.decimal_multiplier<T>() as u128);
-        if (total_adjusted >= route_limit_adjusted){
-            return 0
-        };
-        let price = (treasury.notional_value<T>() as u128);
 
+        let price = (treasury.notional_value<T>() as u128);
         if (price == 0) {
             return 0
         };
+        let route_limit_adjusted =
+            (route_limit as u128) * (USD_VALUE_MULTIPLIER as u128);
 
-        let available_amount=((route_limit_adjusted-total_adjusted) / price) as u64;
+        if (!self.transfer_records.contains(&route)) {
+            return (route_limit_adjusted / price)
+        };
 
+        let record=self.transfer_records.get(&route);
 
-        return if (type_name::get<T>() == type_name::get<BUSD>()){
-            let busd_mint_limit=self.get_mint_busd_max_limit();
-            busd_mint_limit.min(available_amount)
-        }else{
-            available_amount
-        }
+        let total_adjusted= (record.total_amount as u128 ) * (USD_VALUE_MULTIPLIER as u128);
+        if (total_adjusted >= route_limit_adjusted){
+            return 0
+        };
+
+        let available_amount=((route_limit_adjusted-total_adjusted) / price);
+        available_amount
     }
     public(package) fun check_and_record_sending_transfer<T>(
         self: &mut TransferLimiter,
@@ -233,7 +227,7 @@ module bridge::limiter {
         // 5M limit on Sui -> Ethereum mainnet
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet()),
-            5_000_000 * USD_VALUE_MULTIPLIER
+            500_000 * USD_VALUE_MULTIPLIER
         );
 
         // MAX limit for testnet and devnet

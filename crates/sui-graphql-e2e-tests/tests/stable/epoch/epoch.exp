@@ -82,7 +82,7 @@ Response: {
             "kind": {
               "__typename": "ProgrammableTransactionBlock"
             },
-            "digest": "H8wYqUR237jempda8oD5hxtfBkvVbPf23tf53Une3epf"
+            "digest": "8ayb7XzdtRcNtaTtntyCBsL41PeWxDV7UFsqnWVSSuXA"
           },
           {
             "kind": {

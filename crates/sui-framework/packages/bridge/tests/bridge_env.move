@@ -1365,7 +1365,7 @@ module bridge::bridge_env {
         env: &mut BridgeEnv,
         source_chain: u8,
         sender: address,
-    ): u64{
+    ): u128{
         let scenario = env.scenario();
         scenario.next_tx(sender);
         let bridge = scenario.take_shared<Bridge>();
