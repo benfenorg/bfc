@@ -35,7 +35,7 @@ Response: {
   "jsonrpc": "2.0",
   "id": 0,
   "result": {
-    "digest": "8DiamrRKrb7qpMuW3kLibfEUN38CFDmLfdc1rN3JYniQ",
+    "digest": "FQSEyqyBGqRD1ZzoCp639irHwCQYmxaTvPxsbZyzqRHk",
     "objectChanges": [
       {
         "type": "mutated",
@@ -43,11 +43,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x7048428ef92d3b0b2209239cad375c8e202e2f62b942ff4da656b103ed14591b::M::O",
-        "objectId": "BFC0c3f7dbeef7b8cb5710b15116ecd5323c12b4a4a53cd8988d89cc618ba84d4d69a94",
+        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
+        "objectId": "BFC1368f3ce1a354a08e6a92821900897ceb1ad5c9ba4ddcde7c0f0f88a2e9bfbfd4278",
         "version": "3",
         "previousVersion": "2",
-        "digest": "EEk6iZv8SxwVsw5t6qcEJTaT4efwQgbUEqjEK5bDX7fq"
+        "digest": "7rHGMiY3C7dwSh7tjQzqTzMrSKa1CqR5G1LWKLPzPAjx"
       },
       {
         "type": "mutated",
@@ -55,11 +55,11 @@ Response: {
         "owner": {
           "AddressOwner": "BFCfccc9a421bbb13c1a66a1aa98f0ad75029ede94857779c6915b44f94068b921e71f7"
         },
-        "objectType": "0x2::coin::Coin<0x2::bfc::BFC>",
-        "objectId": "BFCbc292ffb154b66cba578e7e593f87f03f86eacfb317109297c2f786298c116afd38e",
+        "objectType": "0xb3757aeb4a39fae8249aec4cfd7746f53b7d06af1804e57eb71289dbc0bcbd0f::M::O",
+        "objectId": "BFCd249ae98f3ca895f3a61af64d35fe48f5edd20cab697923e4ce4ae842764e30b41c4",
         "version": "3",
         "previousVersion": "2",
-        "digest": "7sfeJe5NoRzrPrcZK4VNrhDZn7XSqZA4vdit1MecLPUz"
+        "digest": "GmRbPRx9vpVSuix7ATRT8wquTWKMLwTJFzuX5XJgrDzH"
       }
     ]
   }
