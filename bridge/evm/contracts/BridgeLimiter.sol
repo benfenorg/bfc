@@ -21,6 +21,7 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     // total limit in USD (8 decimal precision) (e.g. 1000_00000000 => 1000 USD)
     mapping(uint8 chainID => uint64 totalLimit) public chainLimits;
     mapping(uint8 chainID => uint32 oldestHourTimestamp) public oldestChainTimestamp;
+    uint64 public maxUSDLimit;
 
     /* ========== INITIALIZER ========== */
 
@@ -30,7 +31,7 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
     /// @param _committee The address of the BridgeCommittee contract.
     /// @param chainIDs An array of chain IDs to limit.
     /// @param _totalLimits The total limit for the bridge (8 decimal precision).
-    function initialize(address _committee, uint8[] memory chainIDs, uint64[] memory _totalLimits)
+    function initialize(address _committee, uint8[] memory chainIDs, uint64[] memory _totalLimits,uint64 _maxUSDLimit)
         external
         initializer
     {
@@ -48,7 +49,12 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
             );
             chainLimits[chainIDs[i]] = _totalLimits[i];
             oldestChainTimestamp[chainIDs[i]] = currentHour();
+            maxUSDLimit=_maxUSDLimit;
         }
+    }
+
+    function getUsdMaxLimit()public view returns (uint64 limit){
+        return maxUSDLimit;
     }
 
     /* ========== VIEW FUNCTIONS ========== */
@@ -190,4 +196,5 @@ contract BridgeLimiter is IBridgeLimiter, CommitteeUpgradeable, OwnableUpgradeab
 
         emit LimitUpdatedV2(message.nonce, sourceChainID, newLimit);
     }
+
 }
