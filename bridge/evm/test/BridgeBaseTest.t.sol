@@ -53,6 +53,8 @@ contract BridgeBaseTest is Test {
 
     uint8 public chainID = 1;
     uint64 totalLimit = 1_000_000 * USD_VALUE_MULTIPLIER;
+    uint64 maxUSDLimit=100 * 1000000;
+
     uint16 minStakeRequired = 10000;
 
     BridgeCommittee public committee;
@@ -163,7 +165,7 @@ contract BridgeBaseTest is Test {
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
-                BridgeLimiter.initialize, (address(committee), supportedChains, chainLimits)
+                BridgeLimiter.initialize, (address(committee), supportedChains, chainLimits,maxUSDLimit)
             ),
             opts
         );

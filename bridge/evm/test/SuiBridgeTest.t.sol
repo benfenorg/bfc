@@ -496,6 +496,26 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         assertEq(IERC20(USDC).balanceOf(address(vault)), usdcAmount);
     }
 
+    function testBridgeUSDTExceedLimit() public{
+        changePrank(USDCWhale);
+
+        uint256 usdcAmount = 100*1000000;
+
+        // approve
+        IERC20(USDC).approve(address(bridge), usdcAmount);
+
+        assertEq(IERC20(USDC).balanceOf(address(vault)), 0);
+        uint256 balance = IERC20(USDC).balanceOf(USDCWhale);
+
+        vm.expectRevert("SuiBridge: USD Exceed Limit");
+        bridge.bridgeERC20(
+            BridgeUtils.USDC,
+            usdcAmount,
+            hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4",
+            0
+        );
+    }
+
     function testBridgeUSDT() public {
         changePrank(USDTWhale);
 
@@ -692,12 +712,14 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -809,13 +831,14 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
         skip(2 days);
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -886,13 +909,15 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 100 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
 
         skip(2 days);
 
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
-                BridgeLimiter.initialize, (address(committee), supportedChains, totalLimits)
+                BridgeLimiter.initialize, (address(committee), supportedChains, totalLimits,maxUSDLimit)
             ),
             opts
         );
@@ -1039,11 +1064,13 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         skip(2 days);
         uint64[] memory totalLimits = new uint64[](1);
         totalLimits[0] = 1_000_000 * USD_VALUE_MULTIPLIER;
+        uint64 maxUSDLimit=100 * USD_VALUE_MULTIPLIER;
+
         address _limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
             abi.encodeCall(
                 BridgeLimiter.initialize,
-                (address(committee), _supportedDestinationChains, totalLimits)
+                (address(committee), _supportedDestinationChains, totalLimits,maxUSDLimit)
             ),
             opts
         );

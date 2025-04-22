@@ -23,6 +23,9 @@ interface IBridgeLimiter {
         view
         returns (bool);
 
+    function getUsdMaxLimit()external view returns (uint64 limit);
+
+
     // We no longer emit this event but keep it here for ABI compatibility.
     /// @dev (deprecated, not in use) Emitted when the hourly transfer amount is updated.
     /// @param hourUpdated The hour that was updated.

@@ -154,6 +154,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             IERC20(tokenAddress).allowance(msg.sender, address(this)) >= amount,
             "SuiBridge: Insufficient allowance"
         );
+        if (tokenID == BridgeUtils.USDC || tokenID == BridgeUtils.USDT) {
+            require(amount < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
+        }
 
         // calculate old vault balance
         uint256 oldBalance = IERC20(tokenAddress).balanceOf(address(vault));
