@@ -233,11 +233,18 @@ async fn start_client_components(
         &store,
         client_config.sui_bridge_module_last_processed_event_id_override,
     );
+    
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
         &client_config.eth_contracts,
         client_config.eth_contracts_start_block_fallback,
         client_config.eth_contracts_start_block_override,
+    );
+    let bsc_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.bsc_contracts,
+        client_config.bsc_contracts_start_block_fallback,
+        client_config.bsc_contracts_start_block_override,
     );
 
     let sui_client = client_config.sui_client.clone();
@@ -250,11 +257,18 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["eth_events_queue"]),
     );
-    let (task_handles, eth_events_rx, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch, eth_evnets_tx, eth_events_rx)
+    let (task_handles, _, _) =
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), eth_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _, _) =
+        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, eth_evnets_tx)
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start bsc syncer");
     all_handles.extend(task_handles);
 
     let (task_handles, sui_events_rx) = SuiSyncer::new(
