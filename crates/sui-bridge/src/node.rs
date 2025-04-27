@@ -243,8 +243,15 @@ async fn start_client_components(
     let sui_client = client_config.sui_client.clone();
 
     let mut all_handles = vec![];
+    let (eth_evnets_tx, eth_events_rx) = mysten_metrics::metered_channel::channel(
+        1000,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["eth_events_queue"]),
+    );
     let (task_handles, eth_events_rx, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch)
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch, eth_evnets_tx, eth_events_rx)
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
