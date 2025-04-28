@@ -75,7 +75,7 @@ impl BridgeClient {
                 e.sui_tx_event_index
             ),
             BridgeAction::EthToSuiBridgeAction(e) => {
-                if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
+                if e.eth_bridge_event.eth_chain_id.is_eth_chain(){
                     format!(
                         "sign/bridge_tx/eth/sui/{}/{}",
                         Hex::encode(e.eth_tx_hash.0),

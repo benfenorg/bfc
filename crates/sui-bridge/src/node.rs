@@ -257,14 +257,14 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
-    let (task_handles, _, _) =
+    let (task_handles, _) =
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
 
-    let (task_handles, _, _) =
+    let (task_handles, _) =
         EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx)
             .run(metrics.clone())
             .await
