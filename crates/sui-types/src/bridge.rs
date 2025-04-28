@@ -110,6 +110,7 @@ pub enum BridgeChainId {
 
     BscMainnet = 30,
     BscTestnet = 31,
+    BscCustom = 32,
 }
 
 impl BridgeChainId {
@@ -117,6 +118,18 @@ impl BridgeChainId {
         matches!(
             self,
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom
+        )
+    }
+    pub fn is_bsc_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom
+        )
+    }
+    pub fn is_eth_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom
         )
     }
 }

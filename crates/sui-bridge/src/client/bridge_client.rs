@@ -57,22 +57,38 @@ impl BridgeClient {
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
-                // e.sui_bridge_event.eth_chain_id
-                format!(
-                    "sign/bridge_tx/sui/eth/send/back/{}/{}",
-                    e.sui_tx_digest, e.sui_tx_event_index
-                )
-            } ,
+                if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
+                    format!(
+                        "sign/bridge_tx/sui/eth/send/back/{}/{}",
+                        e.sui_tx_digest, e.sui_tx_event_index
+                    )
+                }else{
+                    format!(
+                        "sign/bridge_tx/sui/bsc/send/back/{}/{}",
+                        e.sui_tx_digest, e.sui_tx_event_index
+                    )
+                }
+            },
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
                 e.sui_tx_digest,
                 e.sui_tx_event_index
             ),
-            BridgeAction::EthToSuiBridgeAction(e) => format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
-                Hex::encode(e.eth_tx_hash.0),
-                e.eth_event_index
-            ),
+            BridgeAction::EthToSuiBridgeAction(e) => {
+                if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
+                    format!(
+                        "sign/bridge_tx/eth/sui/{}/{}",
+                        Hex::encode(e.eth_tx_hash.0),
+                        e.eth_event_index
+                    )
+                }else{
+                    format!(
+                        "sign/bridge_tx/bsc/sui/{}/{}",
+                        Hex::encode(e.eth_tx_hash.0),
+                        e.eth_event_index
+                    )
+                }
+            },
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
