@@ -115,6 +115,8 @@ pub struct BridgeNodeConfig {
     pub sui: SuiConfig,
     /// Eth configuration
     pub eth: EthConfig,
+    /// Bsc configuration
+    pub bsc: EthConfig,
     /// AML key used for AML checking
     pub aml_key: String,
     /// Network key used for metrics pushing
@@ -184,6 +186,7 @@ impl BridgeNodeConfig {
         }
 
         let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
+        let (bsc_client, bsc_contracts) = self.prepare_for_eth(metrics.clone()).await?;
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -248,6 +251,13 @@ impl BridgeNodeConfig {
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
             aml_key: self.aml_key.clone(),
+            bsc_client: bsc_client.clone(),
+            bsc_contracts,
+            bsc_contracts_start_block_fallback: self
+                .bsc
+                .eth_contracts_start_block_fallback
+                .unwrap(),
+            bsc_contracts_start_block_override: self.bsc.eth_contracts_start_block_override,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -302,6 +312,19 @@ impl BridgeNodeConfig {
                 chain_id.as_u64()
             );
         }
+        if bridge_chain_id == BridgeChainId::BscMainnet as u8 && chain_id.as_u64() != 56 {
+            anyhow::bail!(
+                "Expected Bsc chain id 56, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::BscTestnet as u8 && chain_id.as_u64() != 97 {
+            anyhow::bail!(
+                "Expected Bsc chain id 97, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        
         info!(
             "Connected to Eth chain: {}, Bridge chain id: {}",
             chain_id.as_u64(),
@@ -421,11 +444,15 @@ pub struct BridgeClientConfig {
     pub metrics_port: u16,
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub bsc_client: Arc<EthClient<MeteredEthHttpProvier>>,
     pub db_path: PathBuf,
     pub eth_contracts: Vec<EthAddress>,
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
+    pub bsc_contracts: Vec<EthAddress>,
+    pub bsc_contracts_start_block_fallback: u64,
+    pub bsc_contracts_start_block_override: Option<u64>,
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
     // The following fields are used for AML checking authorization key
     pub aml_key: String,
