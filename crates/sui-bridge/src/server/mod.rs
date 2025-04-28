@@ -47,8 +47,11 @@ pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
 pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
+pub const BSC_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/bsc/sui/:tx_hash/:event_index";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
+pub const SUI_TO_BSC_TX_PATH: &str = "/sign/bridge_tx/sui/bsc/:tx_digest/:event_index";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
+pub const SUI_TO_BSC_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/bsc/send/back/:tx_digest/:event_index";
 pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
     "/sign/update_committee_blocklist/:chain_id/:nonce/:type/:keys";
@@ -134,8 +137,11 @@ pub(crate) fn make_router(
         .route(PING_PATH, get(ping))
         .route(METRICS_KEY_PATH, get(metrics_key_fetch))
         .route(ETH_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
+        .route(BSC_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
         .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
+        .route(SUI_TO_BSC_TX_PATH, get(handle_sui_tx_digest))
         .route(SUI_TO_ETH_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
+        .route(SUI_TO_BSC_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
         .route(EXTERNAL_TO_SUI_TX_PATH, get(handle_external_coin_tx_digest))
         .route(
             COMMITTEE_BLOCKLIST_UPDATE_PATH,
