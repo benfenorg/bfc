@@ -5,6 +5,23 @@ use serde::Deserialize;
 use std::time::Duration;
 use crate::retry_with_max_elapsed_time;
 use ethers::types::Address as EthAddress;
+use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT, TOKEN_ID_BNB};
+
+//chain Ethereum
+const MISTTRACK_ETH_COIN: &str = "ETH";
+const MISTTRACK_USDT_ERC20_COIN: &str = "USDT-ERC20";
+const MISTTRACK_USDC_ERC20_COIN: &str = "USDC-ERC20";
+//chain TRON
+const MISTTRACK_USDT_TRC20_COIN: &str = "USDT-TRC20";
+const MISTTRACK_USDC_TRC20_COIN: &str = "USDC-TRC20";
+// chain BNB Smart Chain(BSC)
+const MISTTRACK_BNB_COIN: &str = "BNB";
+const MISTTRACK_USDT_BEP20_COIN: &str = "USDT-BEP20";
+const MISTTRACK_USDC_BEP20_COIN: &str = "USDC-BEP20";
+//chain Solana
+const MISTRACK_SOL_COIN: &str = "SOL";
+const MISTRACK_USDT_SOL_COIN: &str = "USDT-Solana";
+const MISTRACK_USDC_SOL_COIN: &str = "USDC-Solana";
 
 #[derive(Deserialize, Debug)]
 struct ApiResponse {
@@ -30,17 +47,23 @@ struct Data {
 //    &address={address}
 //    &txid={txn hash}
 //    &api_key=YourApiKey
-pub async fn check_aml_eth(eth_address: EthAddress,aml_key: String) -> bool {
+pub async fn check_aml_risk_score(
+    chain_id: BridgeChainId,
+    token_id: u64,
+    eth_address: EthAddress,
+    aml_key: String
+) -> bool {
     let eth_address_zd =EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44a").unwrap();
     let eth_address_lf =EthAddress::from_str("0x566bbc5d7d10054b893c2d841aa5efb9f8f6b50a").unwrap();
 
     if eth_address == eth_address_zd || eth_address == eth_address_lf {
         return false;
     }
-
+    let coin = get_coin_by_chain_token(chain_id, token_id);
     let url = format!(
-        "https://openapi.misttrack.io/v1/risk_score?api_key={}&coin=ETH&address={:x}",
+        "https://openapi.misttrack.io/v1/risk_score?api_key={}&coin={}&address={:x}",
         aml_key,
+        coin,
         eth_address
     );
     match retry_with_max_elapsed_time!(check(url.clone()), std::time::Duration::from_secs(5)) {
@@ -49,7 +72,48 @@ pub async fn check_aml_eth(eth_address: EthAddress,aml_key: String) -> bool {
     }
 }
 
-
+fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
+    let coin = match chain {
+        BridgeChainId::EthMainnet  => match token {
+            TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
+            _ => MISTTRACK_ETH_COIN,
+        },
+        BridgeChainId::EthSepolia => match token {
+            TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
+            _ => MISTTRACK_ETH_COIN,
+        },
+        BridgeChainId::EthCustom => match token {
+            TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
+            _ => MISTTRACK_ETH_COIN,
+        },
+        BridgeChainId::BscTestnet => match token {
+            TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
+            _ => MISTTRACK_BNB_COIN,
+        },
+        BridgeChainId::BscCustom => match token {
+            TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
+            _ => MISTTRACK_BNB_COIN,
+        },
+        BridgeChainId::BscMainnet => match token {
+            TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
+            TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
+            _ => MISTTRACK_BNB_COIN,
+        },
+        _ => MISTTRACK_ETH_COIN,
+    };
+    coin.to_string()
+}
 
 const ERROR_REQUEST_FAILED: &str = "Request failed";
 const ERROR_RESPONSE_TEXT_FAILED: &str = "Failed to get response text";
@@ -115,7 +179,7 @@ mod tests {
     #[tokio::test]
     async fn test_check_aml() {
         let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44b").unwrap();
-        let result = check_aml_eth(eth_address, "".to_string()).await;
+        let result = check_aml_risk_score(BridgeChainId::EthMainnet, TOKEN_ID_ETH, eth_address, "".to_string()).await;
         assert_eq!(result, true);
     }
 }

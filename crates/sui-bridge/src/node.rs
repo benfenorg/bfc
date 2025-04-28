@@ -627,6 +627,13 @@ mod tests {
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
             },
+            bsc: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: None,
+                eth_contracts_start_block_override: None,
+            },
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: false,
@@ -689,6 +696,13 @@ mod tests {
                 }),
             },
             eth: EthConfig {
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+            bsc: EthConfig {//fixme
                 eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                 eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
@@ -786,6 +800,13 @@ mod tests {
                 }),
             },
             eth: EthConfig {
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: Some(0),
+            },
+            bsc: EthConfig {//fixme
                 eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                 eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,

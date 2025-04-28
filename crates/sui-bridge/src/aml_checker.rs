@@ -6,7 +6,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiT
 use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_eth, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
@@ -96,8 +96,12 @@ P: SuiClientInner + 'static,{
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
                     let tx_hash = action_inner.eth_tx_hash.as_bytes().to_vec();
-                    let is_passed = check_aml_eth(eth_address, aml_key.clone()).await;
-                    // let is_passed = false;
+                    let is_passed = check_aml_risk_score(
+                        action_inner.eth_bridge_event.eth_chain_id,
+                        action_inner.eth_bridge_event.token_id,
+                        eth_address,
+                        aml_key.clone()
+                    ).await;
                     info!("aml checker eth address:{:?} is_passed: {:?} tx_hash: {:?}", &eth_address, &is_passed, &tx_hash);
                     if is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
