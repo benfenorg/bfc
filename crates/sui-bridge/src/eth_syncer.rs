@@ -52,7 +52,6 @@ where
         metrics: Arc<BridgeMetrics>,
     ) -> BridgeResult<(
         Vec<JoinHandle<()>>,
-        mysten_metrics::metered_channel::Receiver<(EthAddress, u64, Vec<EthLog>)>,
         watch::Receiver<u64>,
     )> {
         let last_finalized_block = self.eth_client.get_last_finalized_block_id().await?;
@@ -84,7 +83,7 @@ where
                 )
             ));
         }
-        Ok((task_handles, self.event_rx, last_finalized_block_rx))
+        Ok((task_handles, last_finalized_block_rx))
     }
 
     async fn run_finalized_block_refresh_task(
@@ -252,14 +251,14 @@ mod tests {
             777,
             vec![log.clone()],
         );
-        let (eth_evnets_tx, _) = mysten_metrics::metered_channel::channel(
+        let (eth_evnets_tx,mut logs_rx) = mysten_metrics::metered_channel::channel(
             ETH_EVENTS_CHANNEL_SIZE,
             &mysten_metrics::get_metrics()
                 .unwrap()
                 .channel_inflight
                 .with_label_values(&["eth_events_queue"]),
         );
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
+        let (_handles, mut finalized_block_rx) =
             EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
@@ -348,14 +347,14 @@ mod tests {
             198,
             vec![log2.clone()],
         );
-        let (eth_evnets_tx, _) = mysten_metrics::metered_channel::channel(
+        let (eth_evnets_tx,mut logs_rx) = mysten_metrics::metered_channel::channel(
             ETH_EVENTS_CHANNEL_SIZE,
             &mysten_metrics::get_metrics()
                 .unwrap()
                 .channel_inflight
                 .with_label_values(&["eth_events_queue"]),
         );
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
+        let (_handles, mut finalized_block_rx) =
             EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
@@ -491,14 +490,14 @@ mod tests {
             last_finalized_block,
             vec![log2.clone()],
         );
-        let (eth_evnets_tx, _) = mysten_metrics::metered_channel::channel(
+        let (eth_evnets_tx, mut logs_rx) = mysten_metrics::metered_channel::channel(
             ETH_EVENTS_CHANNEL_SIZE,
             &mysten_metrics::get_metrics()
                 .unwrap()
                 .channel_inflight
                 .with_label_values(&["eth_events_queue"]),
         );
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
+        let (_handles, mut finalized_block_rx) =
             EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
