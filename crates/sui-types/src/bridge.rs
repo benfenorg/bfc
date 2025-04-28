@@ -107,6 +107,9 @@ pub enum BridgeChainId {
     // benfen btc
     BtcMainnet = 20,
     BtcTestnet = 21,
+
+    BscMainnet = 30,
+    BscTestnet = 31,
 }
 
 impl BridgeChainId {

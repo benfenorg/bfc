@@ -115,6 +115,8 @@ pub struct BridgeNodeConfig {
     pub sui: SuiConfig,
     /// Eth configuration
     pub eth: EthConfig,
+    /// Bsc configuration
+    pub bsc: EthConfig,
     /// AML key used for AML checking
     pub aml_key: String,
     /// Network key used for metrics pushing
@@ -184,6 +186,7 @@ impl BridgeNodeConfig {
         }
 
         let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
+        let (bsc_client, bsc_contracts) = self.prepare_for_eth(metrics.clone()).await?;
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -252,9 +255,9 @@ impl BridgeNodeConfig {
             bsc_contracts,
             bsc_contracts_start_block_fallback: self
                 .bsc
-                .bsc_contracts_start_block_fallback
+                .eth_contracts_start_block_fallback
                 .unwrap(),
-            bsc_contracts_start_block_override: self.bsc.bsc_contracts_start_block_override,
+            bsc_contracts_start_block_override: self.bsc.eth_contracts_start_block_override,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -309,6 +312,19 @@ impl BridgeNodeConfig {
                 chain_id.as_u64()
             );
         }
+        if bridge_chain_id == BridgeChainId::BscMainnet as u8 && chain_id.as_u64() != 56 {
+            anyhow::bail!(
+                "Expected Bsc chain id 56, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::BscTestnet as u8 && chain_id.as_u64() != 97 {
+            anyhow::bail!(
+                "Expected Bsc chain id 97, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        
         info!(
             "Connected to Eth chain: {}, Bridge chain id: {}",
             chain_id.as_u64(),

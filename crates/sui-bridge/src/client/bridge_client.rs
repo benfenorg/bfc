@@ -56,10 +56,13 @@ impl BridgeClient {
                 "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
-            BridgeAction::EthSendBackBridgeAction(e) => format!(
-                "sign/bridge_tx/sui/eth/send/back/{}/{}",
-                e.sui_tx_digest, e.sui_tx_event_index
-            ),
+            BridgeAction::EthSendBackBridgeAction(e) =>{
+                // e.sui_bridge_event.eth_chain_id
+                format!(
+                    "sign/bridge_tx/sui/eth/send/back/{}/{}",
+                    e.sui_tx_digest, e.sui_tx_event_index
+                )
+            } ,
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
                 e.sui_tx_digest,

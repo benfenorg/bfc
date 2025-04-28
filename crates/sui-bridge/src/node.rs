@@ -250,22 +250,22 @@ async fn start_client_components(
     let sui_client = client_config.sui_client.clone();
 
     let mut all_handles = vec![];
-    let (eth_evnets_tx, eth_events_rx) = mysten_metrics::metered_channel::channel(
+    let (evm_evnets_tx, evm_events_rx) = mysten_metrics::metered_channel::channel(
         1000,
         &mysten_metrics::get_metrics()
             .unwrap()
             .channel_inflight
-            .with_label_values(&["eth_events_queue"]),
+            .with_label_values(&["evm_events_queue"]),
     );
     let (task_handles, _, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), eth_evnets_tx.clone())
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
 
     let (task_handles, _, _) =
-        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, eth_evnets_tx)
+        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx)
             .run(metrics.clone())
             .await
             .expect("Failed to start bsc syncer");
@@ -346,7 +346,7 @@ async fn start_client_components(
     let orchestrator = BridgeOrchestrator::new(
         sui_client,
         sui_events_rx,
-        eth_events_rx,
+        evm_events_rx,
         store.clone(),
         sui_monitor_tx,
         eth_monitor_tx,
