@@ -36,7 +36,7 @@ use self::{
     validator::ValidatorValidateMetadataBcsCostParams,
     curve::CurveDxCostParams
 };
-use crate::crypto::group_ops;
+use crate::crypto::{group_ops, hfe_ops};
 use crate::crypto::group_ops::GroupOpsCostParams;
 use crate::crypto::poseidon::PoseidonBN254CostParams;
 use crate::crypto::zklogin;
@@ -1072,6 +1072,12 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             "ecdsa_k1",
             "secp256k1_keypair_from_seed",
             make_native!(ecdsa_k1::secp256k1_keypair_from_seed),
+        ),
+
+        (
+            "hfe_ops",
+            "hfe_ops_add",
+            make_native!(hfe_ops::hfe_ops_add),
         ),
     ];
     let sui_framework_natives_iter =
