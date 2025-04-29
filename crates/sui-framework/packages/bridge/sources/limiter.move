@@ -229,6 +229,11 @@ module bridge::limiter {
             chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet()),
             500_000 * USD_VALUE_MULTIPLIER
         );
+        // 50w limit on Sui -> BSC mainnet
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
 
         // MAX limit for testnet and devnet
         transfer_limits.insert(
@@ -248,6 +253,27 @@ module bridge::limiter {
 
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::eth_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_custom()),
             MAX_TRANSFER_LIMIT
         );
 
