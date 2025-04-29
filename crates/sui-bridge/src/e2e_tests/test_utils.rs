@@ -555,11 +555,12 @@ pub(crate) async fn deploy_sol_contract(
     let mut committee_member_stake = vec![stake; node_len];
     // Adjust it so that the total stake is equal to TOTAL_VOTING_POWER
     committee_member_stake[node_len - 1] = TOTAL_VOTING_POWER - stake * (node_len as u64 - 1);
+    //todo: param source_chain_id @lifei
     let deploy_config = SolDeployConfig {
         committee_member_stake: committee_member_stake.clone(),
         committee_members: committee_members.clone(),
         min_committee_stake_required: 10000,
-        source_chain_id: 12,
+        source_chain_id: 32,
         supported_chain_ids: vec![1, 2, 3],
         supported_chain_limits_in_dollars: vec![
             1000000000000000,

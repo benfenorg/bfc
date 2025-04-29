@@ -716,10 +716,16 @@ pub fn is_route_valid(one: BridgeChainId, other: BridgeChainId) -> bool {
     if one == BridgeChainId::SuiMainnet {
         return other == BridgeChainId::EthMainnet;
     }
+    if one == BridgeChainId::BscMainnet {
+        return other == BridgeChainId::EthMainnet;
+    }
     if other == BridgeChainId::EthMainnet {
         return one == BridgeChainId::SuiMainnet;
     }
     if other == BridgeChainId::SuiMainnet {
+        return one == BridgeChainId::EthMainnet;
+    }
+    if other == BridgeChainId::BscMainnet {
         return one == BridgeChainId::EthMainnet;
     }
     true

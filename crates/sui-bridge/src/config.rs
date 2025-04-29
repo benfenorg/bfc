@@ -293,10 +293,11 @@ impl BridgeNodeConfig {
         // If bridge chain id is Eth Mainent or Sepolia, we expect to see chain
         // identifier to match accordingly.
         let bridge_chain_id: u8 = config.chain_id().call().await?;
-        if self.eth.eth_bridge_chain_id != bridge_chain_id {
+        if self.eth.eth_bridge_chain_id != bridge_chain_id && self.bsc.eth_bridge_chain_id != bridge_chain_id {
             return Err(anyhow!(
-                "Bridge chain id mismatch: expected {}, but connected to {}",
+                "Bridgex chain id mismatch: expected {} or {}, but connected to {}",
                 self.eth.eth_bridge_chain_id,
+                self.bsc.eth_bridge_chain_id,
                 bridge_chain_id
             ));
         }
