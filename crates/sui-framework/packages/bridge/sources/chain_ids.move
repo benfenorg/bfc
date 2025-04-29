@@ -47,7 +47,7 @@ module bridge::chain_ids {
 
     public fun bsc_mainnet(): u8 { BscMainnet }
     public fun bsc_testnet(): u8 { BscTestnet }
-    public fun bsc_custom(): u8 { BscCustom }
+    public fun bsc_custom(): u8  { BscCustom  }
 
     public use fun route_source as BridgeRoute.source;
     public fun route_source(route: &BridgeRoute): &u8 {
@@ -176,13 +176,20 @@ module bridge::chain_ids {
             BridgeRoute { source: EthCustom, destination: SuiTestnet },
             BridgeRoute { source: EthCustom, destination: SuiCustom },
 
-            BridgeRoute {source: SuiMainnet, destination: BscMainnet},
-            BridgeRoute {source: BscMainnet, destination: SuiMainnet},
 
-            BridgeRoute {source: SuiTestnet, destination: BscTestnet},
-            BridgeRoute {source: BscTestnet, destination: SuiTestnet},
-            BridgeRoute {source: SuiCustom, destination: BscTestnet},
-            BridgeRoute {source: BscTestnet, destination: SuiCustom},
+
+
+            BridgeRoute { source: SuiMainnet, destination: BscMainnet },
+            BridgeRoute { source: BscMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: BscTestnet },
+            BridgeRoute { source: SuiTestnet, destination: BscCustom },
+            BridgeRoute { source: SuiCustom, destination: BscTestnet },
+            BridgeRoute { source: SuiCustom, destination: BscCustom },
+            BridgeRoute { source: BscTestnet, destination: SuiTestnet },
+            BridgeRoute { source: BscTestnet, destination: SuiCustom },
+            BridgeRoute { source: BscCustom, destination: SuiTestnet },
+            BridgeRoute { source: BscCustom, destination: SuiCustom },
         ];
         let mut size = valid_routes.length();
         while (size > 0) {

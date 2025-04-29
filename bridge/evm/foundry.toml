@@ -11,7 +11,7 @@ fs_permissions = [{ access = "read", path = "/"}]
 gas_reports = ["SuiBridge"]
 ffi = true
 
-[fmt] 
+[fmt]
 line_length = 100
 
 [fuzz]
@@ -25,6 +25,8 @@ anvil = "http://localhost:8545"
 [etherscan]
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
 mainnet = { key = "${ETHERSCAN_API_KEY}" }
+97 = { key = "${ETHERSCAN_API_KEY}" }
+56 = { key = "${ETHERSCAN_API_KEY}" }
 
 [dependencies]
 forge-std = "1.9.2"

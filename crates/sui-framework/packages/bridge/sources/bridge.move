@@ -84,6 +84,7 @@ module bridge::bridge {
         target_address: vector<u8>,
         token_type: u64,
         amount: u64,
+        benfen_amount: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -140,6 +141,7 @@ module bridge::bridge {
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
     const EUnpassedWitnessSignature: u64=33;
+    const EInvalidChainIDAndTokenIDExpect: u64 = 34;
 
     const EUnauthorisedUpdateLimit: u64 = 40;
     const EInvalidMintAmount: u64 = 41;
@@ -349,6 +351,9 @@ module bridge::bridge {
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(token_id != 5, EUseSendBusd);
 
+        assert!(!(token_id==6 && (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom())),EInvalidChainIDAndTokenIDExpect);
+        assert!(!(token_id==2 && (target_chain==chain_ids::bsc_mainnet() || target_chain==chain_ids::bsc_testnet() || target_chain==chain_ids::bsc_custom())),EInvalidChainIDAndTokenIDExpect);
+
         // create bridge message
         let message = message::create_token_bridge_message(
             inner.chain_id,
@@ -385,6 +390,8 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
+                benfen_amount: token_amount,
+
             },
         );
     }
@@ -410,7 +417,14 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
-        let token_amount = token.balance().value()/1000u64;
+        let benfen_amount=token.balance().value();
+
+        let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
+             token.balance().value()/1000u64
+        }else{
+             token.balance().value()
+        };
+
         assert!(token_amount > 0, ETokenValueIsZero);
 
         // create bridge message
@@ -449,6 +463,7 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
+                benfen_amount: benfen_amount,
             },
         );
     }
