@@ -191,7 +191,6 @@ pub fn generate_bridge_node_config_and_write_to_file(
     path: &PathBuf,
     run_client: bool,
 ) -> Result<(), anyhow::Error> {
-    //todo: add bsc config @lifei
     let mut config = BridgeNodeConfig {
         server_listen_port: 9191,
         metrics_port: 9184,
