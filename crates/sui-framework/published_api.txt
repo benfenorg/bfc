@@ -1315,6 +1315,12 @@ blake2b256
 keccak256
 	public fun
 	0x2::hash
+hfe_ops_add
+	public fun
+	0x2::hfe_ops
+split_data
+	public fun
+	0x2::hfe_ops
 hash_to_input
 	public fun
 	0x2::vdf
