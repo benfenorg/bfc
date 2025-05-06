@@ -3,12 +3,15 @@ module sui::hfe_ops_test {
     use sui::hfe_ops;
     #[test]
     fun test_hfe_ops_add() {
-        let pk1 = x"0227322b3a891a0a280d6bc1fb2cbb23d28f54906fd6407f5f741f6def5762609a";
-        let pk2 = x"0227322b3a891a0a280d6bc1fb2cbb23d28f54906fd6407f5f741f6def5762609b";
+        let result = hfe_ops::hfe_ops_add(2, 3);
+        assert!(result == 5);
+    }
 
-        let result = hfe_ops::hfe_ops_add(&pk1, &pk2);
-        assert!(result == false);
-
+    #[test]
+    fun test_split_data() {
+        let pk1 = x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
+        let result = hfe_ops::split_data(&pk1, 3, 1);
+        assert!(result.length() != 0);
     }
 }
 

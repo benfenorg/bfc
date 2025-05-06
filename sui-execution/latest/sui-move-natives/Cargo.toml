@@ -13,7 +13,9 @@ bcs.workspace = true
 indexmap.workspace = true
 smallvec.workspace = true
 rand = { workspace = true, features = ["small_rng"] }
-
+sha2 = "0.10.6"
+hmac = "0.12"
+rand_chacha = "0.3"
 fastcrypto-zkp.workspace = true
 fastcrypto-vdf.workspace = true
 fastcrypto.workspace = true
