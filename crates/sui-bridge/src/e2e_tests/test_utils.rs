@@ -178,7 +178,7 @@ impl BridgeTestClusterBuilder {
         self
     }
 
-    pub async fn build2(self) {
+    pub async fn build_eth_env(self) {
         init_all_struct_tags();
         std::env::set_var("__TEST_ONLY_CONSENSUS_USE_LONG_MIN_ROUND_DELAY", "1");
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
@@ -189,7 +189,7 @@ impl BridgeTestClusterBuilder {
             bridge_keys.push(kp.copy());
             bridge_keys_copy.push(kp);
         }
-        Self::start_eth_env(bridge_keys).await;
+        Self::start_eth_env(bridge_keys, self.eth_chain_id).await;
     }
 
     pub async fn build(self) -> BridgeTestCluster {
@@ -204,7 +204,7 @@ impl BridgeTestClusterBuilder {
             bridge_keys_copy.push(kp);
         }
         let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys));
-        let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy));
+        let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
         let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
@@ -257,7 +257,7 @@ impl BridgeTestClusterBuilder {
         test_cluster
     }
 
-    async fn start_eth_env(bridge_keys: Vec<BridgeAuthorityKeyPair>) -> EthBridgeEnvironment {
+    async fn start_eth_env(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> EthBridgeEnvironment {
         let anvil_port = get_available_port("127.0.0.1");
         let anvil_url = format!("http://127.0.0.1:{anvil_port}");
         let mut eth_environment = EthBridgeEnvironment::new(&anvil_url, anvil_port)
@@ -270,7 +270,7 @@ impl BridgeTestClusterBuilder {
             .await
             .unwrap_or_else(|e| panic!("Failed to get eth signer from anvil at {anvil_url}: {e}"));
         let deployed_contracts =
-            deploy_sol_contract(&anvil_url, eth_signer, bridge_keys, eth_pk_hex).await;
+            deploy_sol_contract(&anvil_url, eth_signer, bridge_keys, eth_pk_hex, eth_chain_id).await;
         info!("Deployed contracts: {:?}", deployed_contracts);
         eth_environment.contracts = Some(deployed_contracts);
         eth_environment
@@ -533,6 +533,7 @@ pub(crate) async fn deploy_sol_contract(
     eth_signer: EthSigner,
     bridge_authority_keys: Vec<BridgeAuthorityKeyPair>,
     eth_private_key_hex: String,
+    eth_chain_id: BridgeChainId,
 ) -> DeployedSolContracts {
     let sol_path = format!("{}/../../bridge/evm", env!("CARGO_MANIFEST_DIR"));
 
@@ -555,12 +556,11 @@ pub(crate) async fn deploy_sol_contract(
     let mut committee_member_stake = vec![stake; node_len];
     // Adjust it so that the total stake is equal to TOTAL_VOTING_POWER
     committee_member_stake[node_len - 1] = TOTAL_VOTING_POWER - stake * (node_len as u64 - 1);
-    //todo: param source_chain_id @lifei
     let deploy_config = SolDeployConfig {
         committee_member_stake: committee_member_stake.clone(),
         committee_members: committee_members.clone(),
         min_committee_stake_required: 10000,
-        source_chain_id: 32,
+        source_chain_id: eth_chain_id as u64,
         supported_chain_ids: vec![1, 2, 3],
         supported_chain_limits_in_dollars: vec![
             1000000000000000,

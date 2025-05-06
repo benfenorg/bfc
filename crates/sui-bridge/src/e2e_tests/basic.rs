@@ -58,9 +58,10 @@ async fn test_test_cluster_builder() {
     telemetry_subscribers::init_for_testing();
     BridgeTestClusterBuilder::new()
         .with_eth_env(true)
+        .with_eth_chain_id(BridgeChainId::BscCustom)
         .with_bridge_cluster(true)
         .with_num_validators(3)
-        .build2()
+        .build_eth_env()
         .await;
 }
 
