@@ -24,7 +24,7 @@ contract DeployBridge is Script {
         config.sourceChainId = abi.decode(vm.parseJson(json, ".sourceChainId"), (uint256));
         config.supportedChainIds = abi.decode(vm.parseJson(json, ".supportedChainIds"), (uint256[]));
         config.supportedChainLimitsInDollars = abi.decode(vm.parseJson(json, ".supportedChainLimitsInDollars"), (uint256[]));
-        config.maxUsdLimit = abi.decode(vm.parseJson(json, ".maxUsdLimit"), (uint64));
+        config.maxUsdLimit = abi.decode(vm.parseJson(json, ".maxUsdLimit"), (uint256));
         config.tokenPrices = abi.decode(vm.parseJson(json, ".tokenPrices"), (uint256[]));
         config.supportedTokens = abi.decode(vm.parseJson(json, ".supportedTokens"), (address[]));
         config.tokenIds = abi.decode(vm.parseJson(json, ".tokenIds"), (uint256[]));
@@ -187,7 +187,7 @@ contract DeployBridge is Script {
         for (uint256 i; i < deployConfig.supportedChainLimitsInDollars.length; i++) {
             chainLimits[i] = uint64(deployConfig.supportedChainLimitsInDollars[i]);
         }
-        uint64 maxUsdLimit=deployConfig.maxUsdLimit;
+        uint256 maxUsdLimit=deployConfig.maxUsdLimit;
 
         address limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
@@ -224,6 +224,7 @@ contract DeployBridge is Script {
         console.log("[Deployed] ETH:", BridgeConfig(bridgeConfig).tokenAddressOf(2));
         console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
         console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
+        console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
 
         vm.stopBroadcast();
     }
@@ -241,7 +242,7 @@ struct DeployConfig {
     uint256 sourceChainId;
     uint256[] supportedChainIds;
     uint256[] supportedChainLimitsInDollars;
-    uint64 maxUsdLimit;
+    uint256 maxUsdLimit;
     address[] supportedTokens;
     uint256[] tokenPrices;
     uint256[] tokenIds;
