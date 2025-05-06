@@ -17,7 +17,7 @@ const EOverflow: u64 = 1;
 /// For when trying to withdraw more than there is.
 const ENotEnough: u64 = 2;
 /// Sender is not @0x0 the system address.
-const ENotSystemAddress: u64 = 3;
+//const ENotSystemAddress: u64 = 3;
 /// System operation performed for a coin other than SUI
 //const ENotSUI: u64 = 4;
 
@@ -123,7 +123,7 @@ public fun destroy_zero<T>(balance: Annoymos_Balance<T>) {
         encode_data: _,
         version: _,
         balance_type: _,
-        value } = balance;
+        value: _ } = balance;
 }
 
 
