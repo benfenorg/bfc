@@ -223,7 +223,9 @@ module sui::annoymous_coin {
         ctx: &mut TxContext
     ): (TreasuryCap<T>, CoinMetadata<T>) {
         // Make sure there's only one instance of the type T
-        assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
+
+        //todo: open witness for ABFC
+        //assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
 
         (
             TreasuryCap {
