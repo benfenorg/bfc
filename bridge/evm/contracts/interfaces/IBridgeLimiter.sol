@@ -23,7 +23,7 @@ interface IBridgeLimiter {
         view
         returns (bool);
 
-    function getUsdMaxLimit()external view returns (uint64 limit);
+    function getUsdMaxLimit()external view returns (uint256 limit);
 
 
     // We no longer emit this event but keep it here for ABI compatibility.

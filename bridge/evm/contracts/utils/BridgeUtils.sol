@@ -70,6 +70,7 @@ library BridgeUtils {
     uint64 public constant ETH = 2;
     uint64 public constant USDC = 3;
     uint64 public constant USDT = 4;
+    uint64 public constant BNB = 6;
 
     string public constant MESSAGE_PREFIX = "SUI_BRIDGE_MESSAGE";
 

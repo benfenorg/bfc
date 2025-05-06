@@ -218,8 +218,8 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         // Adjust the amount
         uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
-            IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
-            config.tokenSuiDecimalOf(BridgeUtils.ETH),
+            IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
+            config.tokenSuiDecimalOf(BridgeUtils.BNB),
             amount
         );
 
@@ -227,7 +227,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             config.chainID(),
             nonces[BridgeUtils.TOKEN_TRANSFER],
             destinationChainID,
-            BridgeUtils.ETH,
+            BridgeUtils.BNB,
             suiAdjustedAmount,
             msg.sender,
             recipientAddress
@@ -256,7 +256,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         require(tokenAddress != address(0), "SuiBridge: Unsupported token");
 
         // transfer eth if token type is eth
-        if (tokenID == BridgeUtils.ETH) {
+        if (tokenID == BridgeUtils.BNB) {
             vault.transferETH(payable(recipientAddress), amount);
         } else {
             // transfer tokens from vault to target address

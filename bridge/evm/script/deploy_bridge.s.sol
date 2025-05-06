@@ -40,7 +40,7 @@ contract DeployBridge is Script {
         string memory chainID = Strings.toString(block.chainid);
         bytes32 chainIDHash = keccak256(abi.encode(chainID));
         bool isLocal = chainIDHash != keccak256(abi.encode("11155111"))
-            && chainIDHash != keccak256(abi.encode("1"));
+            && chainIDHash != keccak256(abi.encode("1"))&& chainIDHash != keccak256(abi.encode("97")) &&  chainIDHash != keccak256(abi.encode("56"));
         string memory root = vm.projectRoot();
         string memory path = string.concat(root, "/deploy_configs/", chainID, ".json");
         // If this is local deployment, we override the path if OVERRIDE_CONFIG_PATH is set.
