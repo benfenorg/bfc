@@ -58,6 +58,7 @@ module bridge::bridge_env {
     use bridge::usdt::{Self, USDT};
     use std::ascii::String;
     use std::type_name;
+    use bridge::bnb::{Self, BNB};
     use sui::address;
     use sui::clock::Clock;
     use sui::coin::{Self, Coin, CoinMetadata, TreasuryCap};
@@ -85,6 +86,8 @@ module bridge::bridge_env {
     const USDC_ID: u64 = 3;
     const USDT_ID: u64 = 4;
     const TEST_TOKEN_ID: u64 = 5;
+    const BNB_ID: u64 = 6;
+
 
     public fun btc_id(): u64 {
         BTC_ID
@@ -104,6 +107,10 @@ module bridge::bridge_env {
 
     public fun test_token_id(): u64 {
         TEST_TOKEN_ID
+    }
+
+    public fun bnb_id(): u64 {
+        BNB_ID
     }
 
     //
@@ -186,6 +193,7 @@ module bridge::bridge_env {
         usdc_coins: Coin<USDC>,
         usdt_coins: Coin<USDT>,
         test_coins: Coin<TEST_TOKEN>,
+        bnb_coins: Coin<BNB>,
     }
 
     // HotPotato to access shared state
@@ -232,12 +240,14 @@ module bridge::bridge_env {
         let usdc_coins = coin::zero<USDC>(ctx);
         let usdt_coins = coin::zero<USDT>(ctx);
         let test_coins = coin::zero<TEST_TOKEN>(ctx);
+        let bnb_coins = coin::zero<BNB>(ctx);
         let vault = Vault {
             btc_coins,
             eth_coins,
             usdc_coins,
             usdt_coins,
             test_coins,
+            bnb_coins,
         };
         BridgeEnv {
             scenario,
@@ -291,7 +301,7 @@ module bridge::bridge_env {
 
     // Set up an environment with 3 validators, a bridge with
     // a treasury and a committee with all 3 validators.
-    // The treasury will contain 4 tokens: ETH, BTC, USDT, USDC.
+    // The treasury will contain 5 tokens: ETH, BTC, USDT, USDC, BNB.
     // Save the Bridge as a shared object.
     public fun create_bridge_default(env: &mut BridgeEnv) {
         let validators = vector[
@@ -322,7 +332,7 @@ module bridge::bridge_env {
     }
 
     // Create a bridge and set up a treasury.
-    // The treasury will contain 4 tokens: ETH, BTC, USDT, USDC.
+    // The treasury will contain 4 tokens: ETH, BTC, USDT, USDC, BNB.
     // Save the Bridge as a shared object.
     // No operation on the validators.
     public fun create_bridge(env: &mut BridgeEnv, sender: address) {
@@ -378,14 +388,14 @@ module bridge::bridge_env {
         test_scenario::return_shared(system_state);
     }
 
-    // Set up a treasury with 4 tokens: ETH, BTC, USDT, USDC.
+    // Set up a treasury with 4 tokens: ETH, BTC, USDT, USDC, BNB.
     public fun setup_treasury(env: &mut BridgeEnv, sender: address) {
         env.register_default_tokens(sender);
         env.add_default_tokens(sender);
         env.load_vault(sender);
     }
 
-    // Register 4 tokens with the Bridge: ETH, BTC, USDT, USDC.
+    // Register 4 tokens with the Bridge: ETH, BTC, USDT, USDC, BNB.
     fun register_default_tokens(env: &mut BridgeEnv, sender: address) {
         env.scenario.next_tx(sender);
         let mut bridge = env.scenario.take_shared<Bridge>();
@@ -434,6 +444,18 @@ module bridge::bridge_env {
             &metadata,
         );
         destroy(metadata);
+        // BNB
+        let (
+            upgrade_cap,
+            treasury_cap,
+            metadata,
+        ) = bnb::create_bridge_token(env.scenario.ctx());
+        bridge.register_foreign_token<BNB>(
+            treasury_cap,
+            upgrade_cap,
+            &metadata,
+        );
+        destroy(metadata);
 
         test_scenario::return_shared(bridge);
     }
@@ -446,7 +468,7 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
-    // Add the 4 tokens previously registered: ETH, BTC, USDT, USDC.
+    // Add the 4 tokens previously registered: ETH, BTC, USDT, USDC, BNB.
     fun add_default_tokens(env: &mut BridgeEnv, sender: address) {
         let scenario = &mut env.scenario;
         scenario.next_tx(sender);
@@ -456,14 +478,15 @@ module bridge::bridge_env {
             env.chain_id,
             bridge.get_seq_num_for(message_types::add_tokens_on_sui()),
             false,
-            vector[BTC_ID, ETH_ID, USDC_ID, USDT_ID],
+            vector[BTC_ID, ETH_ID, USDC_ID, USDT_ID, BNB_ID],
             vector[
                 type_name::get<BTC>().into_string(),
                 type_name::get<ETH>().into_string(),
                 type_name::get<USDC>().into_string(),
                 type_name::get<USDT>().into_string(),
+                type_name::get<BNB>().into_string(),
             ],
-            vector[1000, 100, 1, 1],
+            vector[1000, 100, 1, 1, 60],
         );
         let signatures = env.sign_message(add_token_message);
         bridge.execute_system_message(add_token_message, signatures);
@@ -1791,6 +1814,12 @@ module bridge::bridge_env {
         env.vault.usdt_coins.split(amount, ctx)
     }
 
+    public fun get_bnb(env: &mut BridgeEnv, amount: u64): Coin<BNB> {
+        let scenario = &mut env.scenario;
+        let ctx = scenario.ctx();
+        env.vault.bnb_coins.split(amount, ctx)
+    }
+
     public fun limits(env: &mut BridgeEnv, dest: u8): u64 {
         let scenario = env.scenario();
         scenario.next_tx(@0x0);
@@ -1860,12 +1889,14 @@ module bridge::bridge_env {
             usdc_coins,
             usdt_coins,
             test_coins,
+            bnb_coins,
         } = vault;
         btc_coins.burn_for_testing();
         eth_coins.burn_for_testing();
         usdc_coins.burn_for_testing();
         usdt_coins.burn_for_testing();
         test_coins.burn_for_testing();
+        bnb_coins.burn_for_testing();
     }
 
     // Load the vault with some coins
@@ -1878,6 +1909,7 @@ module bridge::bridge_env {
         vault.eth_coins.join(mint_some(&mut bridge, scenario.ctx()));
         vault.usdc_coins.join(mint_some(&mut bridge, scenario.ctx()));
         vault.usdt_coins.join(mint_some(&mut bridge, scenario.ctx()));
+        vault.bnb_coins.join(mint_some(&mut bridge, scenario.ctx()));
         test_scenario::return_shared(bridge);
     }
 
@@ -2076,6 +2108,43 @@ module bridge::usdt {
         );
 
         let type_name = type_name::get<USDT>();
+        let address_bytes = hex::decode(
+            ascii::into_bytes(type_name::get_address(&type_name)),
+        );
+        let coin_id = address::from_bytes(address_bytes).to_id();
+        let upgrade_cap = test_publish(coin_id, ctx);
+
+        (upgrade_cap, treasury_cap, metadata)
+    }
+}
+
+#[test_only]
+module bridge::bnb {
+    use std::ascii;
+    use std::type_name;
+    use sui::address;
+    use sui::coin::{CoinMetadata, TreasuryCap, create_currency};
+    use sui::hex;
+    use sui::package::{UpgradeCap, test_publish};
+    use sui::test_utils::create_one_time_witness;
+
+    public struct BNB has drop {}
+
+    public fun create_bridge_token(
+        ctx: &mut TxContext,
+    ): (UpgradeCap, TreasuryCap<BNB>, CoinMetadata<BNB>) {
+        let otw = create_one_time_witness<BNB>();
+        let (treasury_cap, metadata) = create_currency(
+            otw,
+            8,
+            b"BNB",
+            b"BSC",
+            b"bridge BSC token",
+            option::none(),
+            ctx,
+        );
+
+        let type_name = type_name::get<BNB>();
         let address_bytes = hex::decode(
             ascii::into_bytes(type_name::get_address(&type_name)),
         );
