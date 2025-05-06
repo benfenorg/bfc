@@ -7,22 +7,22 @@
 module sui::annoymous_coin {
     use std::string;
     use std::ascii;
-    use sui::balance::{Self, Balance, Supply};
+    use sui::annoymous_balance::{Self, Annoymos_Balance, Supply};
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
 
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
-    public use fun sui::pay::split_vec as Annoymous_Coin.split_vec;
+    public use fun sui::annoymous_pay::split_vec as Annoymous_Coin.split_vec;
 
     // Allows calling `.join_vec(coins)` on `coin`
-    public use fun sui::pay::join_vec as Annoymous_Coin.join_vec;
+    public use fun sui::annoymous_pay::join_vec as Annoymous_Coin.join_vec;
 
     // Allows calling `.split_and_transfer(amount, recipient, ctx)` on `coin`
-    public use fun sui::pay::split_and_transfer as Annoymous_Coin.split_and_transfer;
+    public use fun sui::annoymous_pay::split_and_transfer as Annoymous_Coin.split_and_transfer;
 
     // Allows calling `.divide_and_keep(n, ctx)` on `coin`
-    public use fun sui::pay::divide_and_keep as Annoymous_Coin.divide_and_keep;
+    public use fun sui::annoymous_pay::divide_and_keep as Annoymous_Coin.divide_and_keep;
 
     /// A type passed to create_supply is not a one-time witness.
     const EBadWitness: u64 = 0;
@@ -38,7 +38,7 @@ module sui::annoymous_coin {
     /// A coin of type `T` worth `value`. Transferable and storable
     public struct Annoymous_Coin<phantom T> has key, store {
         id: UID,
-        balance: Balance<T>
+        balance: Annoymos_Balance<T>
     }
 
     /// Each Coin type T created through `create_currency` function will have a
@@ -91,7 +91,7 @@ module sui::annoymous_coin {
 
     /// Return the total number of `T`'s in circulation.
     public fun total_supply<T>(cap: &TreasuryCap<T>): u64 {
-        balance::supply_value(&cap.total_supply)
+        annoymous_balance::supply_value(&cap.total_supply)
     }
 
     /// Unwrap `TreasuryCap` getting the `Supply`.
@@ -122,22 +122,22 @@ module sui::annoymous_coin {
     }
 
     /// Get immutable reference to the balance of a coin.
-    public fun balance<T>(coin: &Annoymous_Coin<T>): &Balance<T> {
+    public fun balance<T>(coin: &Annoymous_Coin<T>): &Annoymos_Balance<T> {
         &coin.balance
     }
 
     /// Get a mutable reference to the balance of a coin.
-    public fun balance_mut<T>(coin: &mut Annoymous_Coin<T>): &mut Balance<T> {
+    public fun balance_mut<T>(coin: &mut Annoymous_Coin<T>): &mut Annoymos_Balance<T> {
         &mut coin.balance
     }
 
     /// Wrap a balance into a Coin to make it transferable.
-    public fun from_balance<T>(balance: Balance<T>, ctx: &mut TxContext): Annoymous_Coin<T> {
+    public fun from_balance<T>(balance: Annoymos_Balance<T>, ctx: &mut TxContext): Annoymous_Coin<T> {
         Annoymous_Coin { id: object::new(ctx), balance }
     }
 
     /// Destruct a Coin wrapper and keep the balance.
-    public fun into_balance<T>(coin: Annoymous_Coin<T>): Balance<T> {
+    public fun into_balance<T>(coin: Annoymous_Coin<T>): Annoymos_Balance<T> {
         let Annoymous_Coin { id, balance } = coin;
         id.delete();
         balance
@@ -146,7 +146,7 @@ module sui::annoymous_coin {
     /// Take a `Coin` worth of `value` from `Balance`.
     /// Aborts if `value > balance.value`
     public fun take<T>(
-        balance: &mut Balance<T>, value: u64, ctx: &mut TxContext,
+        balance: &mut Annoymos_Balance<T>, value: u64, ctx: &mut TxContext,
     ): Annoymous_Coin<T> {
         Annoymous_Coin {
             id: object::new(ctx),
@@ -155,7 +155,7 @@ module sui::annoymous_coin {
     }
 
     /// Put a `Coin<T>` to the `Balance<T>`.
-    public fun put<T>(balance: &mut Balance<T>, coin: Annoymous_Coin<T>) {
+    public fun put<T>(balance: &mut Annoymos_Balance<T>, coin: Annoymous_Coin<T>) {
         balance.join(into_balance(coin));
     }
 
@@ -198,7 +198,7 @@ module sui::annoymous_coin {
     /// Make any Coin with a zero value. Useful for placeholding
     /// bids/payments or preemptively making empty balances.
     public fun zero<T>(ctx: &mut TxContext): Annoymous_Coin<T> {
-        Annoymous_Coin { id: object::new(ctx), balance: balance::zero() }
+        Annoymous_Coin { id: object::new(ctx), balance: annoymous_balance::zero() }
     }
 
     /// Destroy a coin with value zero
@@ -228,7 +228,7 @@ module sui::annoymous_coin {
         (
             TreasuryCap {
                 id: object::new(ctx),
-                total_supply: balance::create_supply(witness)
+                total_supply: annoymous_balance::create_supply(witness)
             },
             CoinMetadata {
                 id: object::new(ctx),
@@ -315,7 +315,7 @@ module sui::annoymous_coin {
     /// Aborts if `value` + `cap.total_supply` >= U64_MAX
     public fun mint_balance<T>(
         cap: &mut TreasuryCap<T>, value: u64
-    ): Balance<T> {
+    ): Annoymos_Balance<T> {
         cap.total_supply.increase_supply(value)
     }
 
@@ -486,7 +486,7 @@ module sui::annoymous_coin {
     #[test_only]
     /// Mint coins of any type for (obviously!) testing purposes only
     public fun mint_for_testing<T>(value: u64, ctx: &mut TxContext): Annoymous_Coin<T> {
-        Annoymous_Coin { id: object::new(ctx), balance: balance::create_for_testing(value) }
+        Annoymous_Coin { id: object::new(ctx), balance: annoymous_balance::create_for_testing(value) }
     }
 
     #[test_only]
@@ -504,7 +504,7 @@ module sui::annoymous_coin {
     ): TreasuryCap<T> {
         TreasuryCap {
             id: object::new(ctx),
-            total_supply: balance::create_supply_for_testing()
+            total_supply: annoymous_balance::create_supply_for_testing()
         }
     }
 

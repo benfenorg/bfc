@@ -8,7 +8,7 @@ module sui::annoymous_balance;
 use sui::vec_set;
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
-public use fun sui::coin::from_balance as Balance.into_coin;
+public use fun sui::annoymous_coin::from_balance as Annoymos_Balance.into_coin;
 
 /// For when trying to destroy a non-zero balance.
 const ENonZero: u64 = 0;
@@ -28,14 +28,15 @@ public struct Supply<phantom T> has store, drop {
     value: u64,
 }
 
-public enum Annoymous_Balance_Type {
+public enum Annoymous_Balance_Type has store, drop {
 
     BALANCE_TYPE_FHE,
     BALANCE_TYPE_SHARING,
 }
 
 /// Storable balance - an inner struct of a Coin type.
-/// Can be used to store coins which don't need the key ability.
+/// Can be use
+/// d to store coins which don't need the key ability.
 public struct Annoymos_Balance<phantom T> has store {
     balance_type:Annoymous_Balance_Type,
     value: u64,
@@ -44,10 +45,13 @@ public struct Annoymos_Balance<phantom T> has store {
 }
 
 public fun create_by_value<T>(value: u64) : Annoymos_Balance<T> {
-    let encode_data = vec_set::VecSet::empty<u8>();
+    let encode_data = vec_set::empty<u8>();
     let balance_type = Annoymous_Balance_Type::BALANCE_TYPE_FHE;
     let version = 0;
-    Annoymos_Balance { value, encode_data, balance_type, version }
+    Annoymos_Balance { value: value,
+        encode_data,
+        balance_type: balance_type,
+        version:version }
 }
 /// Get the amount stored in a `Balance`.
 public fun value<T>(self: &Annoymos_Balance<T>): u64 {
@@ -122,33 +126,6 @@ public fun destroy_zero<T>(balance: Annoymos_Balance<T>) {
         value } = balance;
 }
 
-#[allow(unused_const)]
-const SUI_TYPE_NAME: vector<u8> =
-    b"0000000000000000000000000000000000000000000000000000000000000002::bfc::BFC";
-
-#[allow(unused_function)]
-/// CAUTION: this function creates a `Balance` without increasing the supply.
-/// It should only be called by the epoch change system txn to create staking rewards,
-/// and nowhere else.
-fun create_staking_rewards<T>(value: u64, ctx: &TxContext): Annoymos_Balance<T> {
-    assert!(ctx.sender() == @0x0, ENotSystemAddress);
-    //assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
-    create_by_value(value)
-}
-
-#[allow(unused_function)]
-/// CAUTION: this function destroys a `Balance` without decreasing the supply.
-/// It should only be called by the epoch change system txn to destroy storage rebates,
-/// and nowhere else.
-fun destroy_storage_rebates<T>(self: Annoymos_Balance<T>, ctx: &TxContext) {
-    assert!(ctx.sender() == @0x0, ENotSystemAddress);
-    //assert!(std::type_name::get<T>().into_string().into_bytes() == SUI_TYPE_NAME, ENotSUI);
-    let Annoymos_Balance {
-        encode_data: _,
-        version: _,
-        balance_type: _,
-        value } = self;
-}
 
 /// Destroy a `Supply` preventing any further minting and burning.
 public(package) fun destroy_supply<T>(self: Supply<T>): u64 {

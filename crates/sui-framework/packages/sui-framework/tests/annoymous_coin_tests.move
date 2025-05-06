@@ -3,8 +3,8 @@
 
 #[test_only, allow(deprecated_usage)]
 module sui::annoymous_coin_tests {
-    use sui::coin::{Self, Coin};
-    use sui::pay;
+    use sui::annoymous_coin::{Self, Annoymous_Coin};
+    use sui::annoymous_pay;
     use sui::url;
     use sui::test_scenario;
     use sui::deny_list;
@@ -20,7 +20,7 @@ module sui::annoymous_coin_tests {
         contains_next_epoch: bool,
         ctx: &TxContext,
     ) {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_contains_next_epoch as contains_next_epoch,
             deny_list_v2_contains_current_epoch as contains_current_epoch,
         };
@@ -34,7 +34,7 @@ module sui::annoymous_coin_tests {
         paused_next_epoch: bool,
         ctx: &TxContext,
     ) {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_is_global_pause_enabled_next_epoch as is_global_pause_enabled_next_epoch,
             deny_list_v2_is_global_pause_enabled_current_epoch
                 as is_global_pause_enabled_current_epoch,
@@ -53,7 +53,7 @@ module sui::annoymous_coin_tests {
         let mut scenario = test_scenario::begin(TEST_ADDR);
         let ctx = scenario.ctx();
         let witness = COIN_TESTS{};
-        let (treasury, mut metadata) = coin::create_currency(
+        let (treasury, mut metadata) = annoymous_coin::create_currency(
 		witness,
 		6,
 		b"COIN_TESTS",
@@ -100,7 +100,7 @@ module sui::annoymous_coin_tests {
     fun coin_tests_mint() {
         let mut scenario = test_scenario::begin(TEST_ADDR);
         let witness = COIN_TESTS{};
-        let (mut treasury, metadata) = coin::create_currency(
+        let (mut treasury, metadata) = annoymous_coin::create_currency(
 		witness,
 		6,
 		b"COIN_TESTS",
@@ -111,17 +111,17 @@ module sui::annoymous_coin_tests {
 	);
 
         let balance = treasury.mint_balance<COIN_TESTS>(1000);
-        let coin = coin::from_balance(balance, scenario.ctx());
+        let coin = annoymous_coin::from_balance(balance, scenario.ctx());
         let value = coin.value();
         assert!(value == 1000);
-        pay::keep(coin, scenario.ctx());
+        annoymous_pay::keep(coin, scenario.ctx());
 
-        coin::mint_and_transfer<COIN_TESTS>(&mut treasury, 42, TEST_ADDR, scenario.ctx());
+        annoymous_coin::mint_and_transfer<COIN_TESTS>(&mut treasury, 42, TEST_ADDR, scenario.ctx());
         scenario.next_epoch(TEST_ADDR); // needed or else we won't have a value for `most_recent_id_for_address` coming up next.
-        let coin = scenario.take_from_address<Coin<COIN_TESTS>>(TEST_ADDR);
+        let coin = scenario.take_from_address<Annoymous_Coin<COIN_TESTS>>(TEST_ADDR);
         let value = coin.value();
         assert!(value == 42);
-        pay::keep(coin, scenario.ctx());
+        annoymous_pay::keep(coin, scenario.ctx());
 
         transfer::public_freeze_object(metadata);
         transfer::public_transfer(treasury, scenario.ctx().sender());
@@ -135,7 +135,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency(
             witness,
             6,
             b"COIN_TESTS",
@@ -150,28 +150,28 @@ module sui::annoymous_coin_tests {
             // test freezing an address
             scenario.next_tx(TEST_ADDR);
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            coin::deny_list_remove(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            annoymous_coin::deny_list_remove(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
             test_scenario::return_shared(deny_list);
         };
         {
             // test freezing an address over multiple "transactions"
             scenario.next_tx(TEST_ADDR);
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @200, scenario.ctx());
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @200, scenario.ctx());
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
             test_scenario::return_shared(deny_list);
 
             scenario.next_tx(TEST_ADDR);
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
-            coin::deny_list_remove(&mut deny_list, &mut deny_cap, @200, scenario.ctx());
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            annoymous_coin::deny_list_remove(&mut deny_list, &mut deny_cap, @200, scenario.ctx());
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
             test_scenario::return_shared(deny_list);
         };
         transfer::public_freeze_object(deny_cap);
@@ -185,7 +185,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency(
             witness,
             6,
             b"COIN_TESTS",
@@ -200,12 +200,12 @@ module sui::annoymous_coin_tests {
             // test freezing an address
             scenario.next_tx(TEST_ADDR);
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            coin::deny_list_remove(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            annoymous_coin::deny_list_remove(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
             test_scenario::return_shared(deny_list);
         };
         transfer::public_freeze_object(deny_cap);
@@ -214,7 +214,7 @@ module sui::annoymous_coin_tests {
 
     #[test]
     fun deny_list_v2() {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_add as add,
             deny_list_v2_remove as remove,
         };
@@ -223,7 +223,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
@@ -289,7 +289,7 @@ module sui::annoymous_coin_tests {
 
     #[test]
     fun deny_list_v2_global_pause() {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_add as add,
             deny_list_v2_remove as remove,
             deny_list_v2_enable_global_pause as enable_global_pause,
@@ -300,7 +300,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
@@ -366,7 +366,7 @@ module sui::annoymous_coin_tests {
 
     #[test]
     fun deny_list_v2_double_add() {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_add as add,
             deny_list_v2_remove as remove,
         };
@@ -375,7 +375,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
@@ -404,14 +404,14 @@ module sui::annoymous_coin_tests {
         scenario.end();
     }
 
-    #[test, expected_failure(abort_code = sui::coin::EGlobalPauseNotAllowed)]
+    #[test, expected_failure(abort_code = sui::annoymous_coin::EGlobalPauseNotAllowed)]
     fun deny_list_v2_global_pause_not_allowed_enable() {
         let mut scenario = test_scenario::begin(@0);
         deny_list::create_for_test(scenario.ctx());
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (_treasury, mut deny_cap, _metadata) = coin::create_regulated_currency_v2(
+        let (_treasury, mut deny_cap, _metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
@@ -422,18 +422,18 @@ module sui::annoymous_coin_tests {
             scenario.ctx(),
         );
         let mut deny_list: deny_list::DenyList = scenario.take_shared();
-        coin::deny_list_v2_enable_global_pause(&mut deny_list, &mut deny_cap, scenario.ctx());
+        annoymous_coin::deny_list_v2_enable_global_pause(&mut deny_list, &mut deny_cap, scenario.ctx());
         abort 0
     }
 
-    #[test, expected_failure(abort_code = sui::coin::EGlobalPauseNotAllowed)]
+    #[test, expected_failure(abort_code = sui::annoymous_coin::EGlobalPauseNotAllowed)]
     fun deny_list_v2_global_pause_not_allowed_disable() {
         let mut scenario = test_scenario::begin(@0);
         deny_list::create_for_test(scenario.ctx());
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (_treasury, mut deny_cap, _metadata) = coin::create_regulated_currency_v2(
+        let (_treasury, mut deny_cap, _metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
@@ -444,7 +444,7 @@ module sui::annoymous_coin_tests {
             scenario.ctx(),
         );
         let mut deny_list: deny_list::DenyList = scenario.take_shared();
-        coin::deny_list_v2_disable_global_pause(&mut deny_list, &mut deny_cap, scenario.ctx());
+        annoymous_coin::deny_list_v2_disable_global_pause(&mut deny_list, &mut deny_cap, scenario.ctx());
         abort 0
     }
 
@@ -456,7 +456,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency(
             witness,
             6,
             b"COIN_TESTS",
@@ -473,9 +473,9 @@ module sui::annoymous_coin_tests {
             // test freezing an address
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
             let ctx = scenario.ctx();
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, ctx);
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @200, ctx);
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @300, ctx);
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, ctx);
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @200, ctx);
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @300, ctx);
             assert_status(&deny_list, @100, /* current */ false, /* next */ false, ctx);
             assert_status(&deny_list, @200, /* current */ false, /* next */ false, ctx);
             assert_status(&deny_list, @300, /* current */ false, /* next */ false, ctx);
@@ -485,13 +485,13 @@ module sui::annoymous_coin_tests {
         {
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
             let ctx = scenario.ctx();
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @300));
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @300));
             assert_status(&deny_list, @100, /* current */ false, /* next */ false, ctx);
             assert_status(&deny_list, @200, /* current */ false, /* next */ false, ctx);
             assert_status(&deny_list, @300, /* current */ false, /* next */ false, ctx);
-            deny_cap_v2 = coin::migrate_regulated_currency_to_v2(&mut deny_list, deny_cap, true, ctx);
+            deny_cap_v2 = annoymous_coin::migrate_regulated_currency_to_v2(&mut deny_list, deny_cap, true, ctx);
             assert_status(&deny_list, @100, /* current */ false, /* next */ true, ctx);
             assert_status(&deny_list, @200, /* current */ false, /* next */ true, ctx);
             assert_status(&deny_list, @300, /* current */ false, /* next */ true, ctx);
@@ -501,9 +501,9 @@ module sui::annoymous_coin_tests {
         {
             let deny_list: deny_list::DenyList = scenario.take_shared();
             let ctx = scenario.ctx();
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @300));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @200));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @300));
             assert_status(&deny_list, @100, /* current */ true, /* next */ true, ctx);
             assert_status(&deny_list, @200, /* current */ true, /* next */ true, ctx);
             assert_status(&deny_list, @300, /* current */ true, /* next */ true, ctx);
@@ -513,14 +513,14 @@ module sui::annoymous_coin_tests {
         scenario.end();
     }
 
-    #[test, expected_failure(abort_code = sui::coin::EGlobalPauseNotAllowed)]
+    #[test, expected_failure(abort_code = sui::annoymous_coin::EGlobalPauseNotAllowed)]
     fun migrate_regulated_currency_to_v2_disallow_global_pause() {
         let mut scenario = test_scenario::begin(@0);
         deny_list::create_for_test(scenario.ctx());
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency(
             witness,
             6,
             b"COIN_TESTS",
@@ -536,35 +536,35 @@ module sui::annoymous_coin_tests {
         {
             // test freezing an address
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
+            annoymous_coin::deny_list_add(&mut deny_list, &mut deny_cap, @100, scenario.ctx());
             test_scenario::return_shared(deny_list);
         };
         scenario.next_tx(TEST_ADDR);
         {
             let mut deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
             assert_status(&deny_list, @100, /* current */ false, /* next */ false, scenario.ctx());
-            deny_cap_v2 = coin::migrate_regulated_currency_to_v2(&mut deny_list, deny_cap, false, scenario.ctx());
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            deny_cap_v2 = annoymous_coin::migrate_regulated_currency_to_v2(&mut deny_list, deny_cap, false, scenario.ctx());
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
             assert_status(&deny_list, @100, /* current */ false, /* next */ true, scenario.ctx());
             test_scenario::return_shared(deny_list);
         };
         scenario.next_epoch(TEST_ADDR);
         {
             let deny_list: deny_list::DenyList = scenario.take_shared();
-            assert!(!coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
+            assert!(!annoymous_coin::deny_list_contains<COIN_TESTS>(&deny_list, @100));
             assert_status(&deny_list, @100, /* current */ true, /* next */ true, scenario.ctx());
             test_scenario::return_shared(deny_list);
         };
         scenario.next_tx(TEST_ADDR);
         let mut deny_list: deny_list::DenyList = scenario.take_shared();
-        coin::deny_list_v2_enable_global_pause(&mut deny_list, &mut deny_cap_v2, scenario.ctx());
+        annoymous_coin::deny_list_v2_enable_global_pause(&mut deny_list, &mut deny_cap_v2, scenario.ctx());
         abort 0
     }
 
     #[test]
     fun deny_list_v2_add_remove() {
-        use sui::coin::{
+        use sui::annoymous_coin::{
             deny_list_v2_add as add,
             deny_list_v2_remove as remove,
         };
@@ -573,7 +573,7 @@ module sui::annoymous_coin_tests {
         scenario.next_tx(TEST_ADDR);
 
         let witness = COIN_TESTS {};
-        let (treasury, mut deny_cap, metadata) = coin::create_regulated_currency_v2(
+        let (treasury, mut deny_cap, metadata) = annoymous_coin::create_regulated_currency_v2(
             witness,
             6,
             b"COIN_TESTS",
