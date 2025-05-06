@@ -368,16 +368,6 @@ The index into the deny list vector for the <code>sui::coin::Coin</code> type.
 
 
 
-<a name="0x2_coin_EBadWitness"></a>
-
-A type passed to create_supply is not a one-time witness.
-
-
-<pre><code><b>const</b> <a href="../sui-framework/coin.md#0x2_coin_EBadWitness">EBadWitness</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 0;
-</code></pre>
-
-
-
 <a name="0x2_coin_EGlobalPauseNotAllowed"></a>
 
 
@@ -393,6 +383,16 @@ Invalid arguments are passed to a function.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/coin.md#0x2_coin_EInvalidArg">EInvalidArg</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
+<a name="0x2_coin_EBadWitness"></a>
+
+A type passed to create_supply is not a one-time witness.
+
+
+<pre><code><b>const</b> <a href="../sui-framework/coin.md#0x2_coin_EBadWitness">EBadWitness</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 0;
 </code></pre>
 
 

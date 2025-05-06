@@ -8,6 +8,7 @@ title: Module `0xc8::bfc_system`
 -  [Constants](#@Constants_0)
 -  [Function `create_stake_manager_key`](#0xc8_bfc_system_create_stake_manager_key)
 -  [Function `unstake_manager_key`](#0xc8_bfc_system_unstake_manager_key)
+-  [Function `allocate_abfc`](#0xc8_bfc_system_allocate_abfc)
 -  [Function `create`](#0xc8_bfc_system_create)
 -  [Function `change_round`](#0xc8_bfc_system_change_round)
 -  [Function `bfc_round`](#0xc8_bfc_system_bfc_round)
@@ -87,6 +88,9 @@ title: Module `0xc8::bfc_system`
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
 <b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
+<b>use</b> <a href="../sui-framework/anonymous_bfc.md#0x2_abfc">0x2::abfc</a>;
+<b>use</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance">0x2::anonymous_balance</a>;
+<b>use</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">0x2::anonymous_coin</a>;
 <b>use</b> <a href="../sui-framework/balance.md#0x2_balance">0x2::balance</a>;
 <b>use</b> <a href="../sui-framework/bfc.md#0x2_bfc">0x2::bfc</a>;
 <b>use</b> <a href="../sui-framework/clock.md#0x2_clock">0x2::clock</a>;
@@ -226,6 +230,34 @@ title: Module `0xc8::bfc_system`
                                      token: ManagerKeyBfc,
                                      ctx: &<b>mut</b> TxContext) {
     <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_unstake_manager_key">bfc_system_state_inner::unstake_manager_key</a>(key, token, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xc8_bfc_system_allocate_abfc"></a>
+
+## Function `allocate_abfc`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(abfc_balance: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;, admin: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(
+    abfc_balance: Anonymos_Balance&lt;ABFC&gt;,
+    admin: <b>address</b>,
+    ctx: &<b>mut</b> TxContext
+){
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(abfc_balance.into_coin(ctx), admin);
 }
 </code></pre>
 

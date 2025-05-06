@@ -42,6 +42,7 @@ pub const TX_CONTEXT_MODULE_NAME: Symbol = symbol!("tx_context");
 pub const TX_CONTEXT_TYPE_NAME: Symbol = symbol!("TxContext");
 pub const SUI_MODULE_NAME: Symbol = symbol!("sui");
 pub const BFC_MODULE_NAME: Symbol = symbol!("bfc");
+pub const ABFC_MODULE_NAME: Symbol = symbol!("abfc");
 pub const BARS_MODULE_NAME: Symbol = symbol!("bars");
 pub const BEUR_MODULE_NAME: Symbol = symbol!("beur");
 pub const BKRW_MODULE_NAME: Symbol = symbol!("bkrw");

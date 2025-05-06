@@ -3136,7 +3136,7 @@ impl ProtocolConfig {
                 }
 
                 71 => {
-                    cfg.feature_flags.anonymous_coin_open = true;
+                    cfg.feature_flags.anonymous_coin_open = false;
                 }
                 // Use this template when making changes:
                 //

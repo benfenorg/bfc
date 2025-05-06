@@ -1030,6 +1030,10 @@ fn otw_special_cases(context: &Context) -> bool {
         || context
         .current_module()
         .value
+        .is(&SUI_ADDR_VALUE, ABFC_MODULE_NAME)
+        || context
+        .current_module()
+        .value
         .is(&BFC_SYSTEM_ADDR_VALUE, BARS_MODULE_NAME)
         || context
         .current_module()

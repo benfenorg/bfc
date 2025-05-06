@@ -25,7 +25,7 @@ module sui::anonymous_coin {
     public use fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
 
     /// A type passed to create_supply is not a one-time witness.
-    const EBadWitness: u64 = 0;
+    //const EBadWitness: u64 = 0;
     /// Invalid arguments are passed to a function.
     const EInvalidArg: u64 = 1;
     /// Trying to split a coin more times than its balance allows.

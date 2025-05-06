@@ -14,3 +14,6 @@ Note: The gas metering for native functions is currently a WIP; use a dummy valu
 
 #test for move annoymous_coin
 bfc move test annoymous
+
+======================
+UPDATE=1 cargo test -p sui-framework --test build-system-packages

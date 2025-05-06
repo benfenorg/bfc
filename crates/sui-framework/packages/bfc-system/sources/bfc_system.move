@@ -2,7 +2,6 @@ module bfc_system::bfc_system {
     use std::ascii;
     use sui::abfc::ABFC;
     use sui::anonymous_balance::Anonymos_Balance;
-    use sui::anonymous_bfc::ABFC;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -71,9 +70,10 @@ module bfc_system::bfc_system {
 
     public(package) fun allocate_abfc(
         abfc_balance: Anonymos_Balance<ABFC>,
-        admin: address
+        admin: address,
+        ctx: &mut TxContext
     ){
-        transfer::public_transfer(abfc_balance, admin);
+        transfer::public_transfer(abfc_balance.into_coin(ctx), admin);
     }
 
     public(package) fun create(
