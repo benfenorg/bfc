@@ -4,11 +4,11 @@
 /// A storable handler for Balances in general. Is used in the `Coin`
 /// module to allow balance operations and can be used to implement
 /// custom coins with `Supply` and `Balance`s.
-module sui::annoymous_balance;
+module sui::anonymous_balance;
 use sui::vec_set;
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
-public use fun sui::annoymous_coin::from_balance as Annoymos_Balance.into_coin;
+public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
 
 /// For when trying to destroy a non-zero balance.
 const ENonZero: u64 = 0;
@@ -28,7 +28,7 @@ public struct Supply<phantom T> has store, drop {
     value: u64,
 }
 
-public enum Annoymous_Balance_Type has store, drop {
+public enum Anonymous_Balance_Type has store, drop {
 
     BALANCE_TYPE_FHE,
     BALANCE_TYPE_SHARING,
@@ -37,24 +37,24 @@ public enum Annoymous_Balance_Type has store, drop {
 /// Storable balance - an inner struct of a Coin type.
 /// Can be use
 /// d to store coins which don't need the key ability.
-public struct Annoymos_Balance<phantom T> has store {
-    balance_type:Annoymous_Balance_Type,
+public struct Anonymos_Balance<phantom T> has store {
+    balance_type: Anonymous_Balance_Type,
     value: u64,
     encode_data: vec_set::VecSet<u8>,
     version: u8,
 }
 
-public fun create_by_value<T>(value: u64) : Annoymos_Balance<T> {
+public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
     let encode_data = vec_set::empty<u8>();
-    let balance_type = Annoymous_Balance_Type::BALANCE_TYPE_FHE;
+    let balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     let version = 0;
-    Annoymos_Balance { value: value,
+    Anonymos_Balance { value: value,
         encode_data,
         balance_type: balance_type,
         version:version }
 }
 /// Get the amount stored in a `Balance`.
-public fun value<T>(self: &Annoymos_Balance<T>): u64 {
+public fun value<T>(self: &Anonymos_Balance<T>): u64 {
     self.value
 }
 
@@ -69,15 +69,15 @@ public fun create_supply<T: drop>(_: T): Supply<T> {
 }
 
 /// Increase supply by `value` and create a new `Balance<T>` with this value.
-public fun increase_supply<T>(self: &mut Supply<T>, value: u64): Annoymos_Balance<T> {
+public fun increase_supply<T>(self: &mut Supply<T>, value: u64): Anonymos_Balance<T> {
     assert!(value < (18446744073709551615u64 - self.value), EOverflow);
     self.value = self.value + value;
     create_by_value(value)
 }
 
 /// Burn a Balance<T> and decrease Supply<T>.
-public fun decrease_supply<T>(self: &mut Supply<T>, balance: Annoymos_Balance<T>): u64 {
-    let Annoymos_Balance {
+public fun decrease_supply<T>(self: &mut Supply<T>, balance: Anonymos_Balance<T>): u64 {
+    let Anonymos_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
@@ -88,13 +88,13 @@ public fun decrease_supply<T>(self: &mut Supply<T>, balance: Annoymos_Balance<T>
 }
 
 /// Create a zero `Balance` for type `T`.
-public fun zero<T>(): Annoymos_Balance<T> {
+public fun zero<T>(): Anonymos_Balance<T> {
     create_by_value(0)
 }
 
 /// Join two balances together.
-public fun join<T>(self: &mut Annoymos_Balance<T>, balance: Annoymos_Balance<T>): u64 {
-    let Annoymos_Balance {
+public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>): u64 {
+    let Anonymos_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
@@ -104,22 +104,22 @@ public fun join<T>(self: &mut Annoymos_Balance<T>, balance: Annoymos_Balance<T>)
 }
 
 /// Split a `Balance` and take a sub balance from it.
-public fun split<T>(self: &mut Annoymos_Balance<T>, value: u64): Annoymos_Balance<T> {
+public fun split<T>(self: &mut Anonymos_Balance<T>, value: u64): Anonymos_Balance<T> {
     assert!(self.value >= value, ENotEnough);
     self.value = self.value - value;
     create_by_value(value)
 }
 
 /// Withdraw all balance. After this the remaining balance must be 0.
-public fun withdraw_all<T>(self: &mut Annoymos_Balance<T>): Annoymos_Balance<T> {
+public fun withdraw_all<T>(self: &mut Anonymos_Balance<T>): Anonymos_Balance<T> {
     let value = self.value;
     split(self, value)
 }
 
 /// Destroy a zero `Balance`.
-public fun destroy_zero<T>(balance: Annoymos_Balance<T>) {
+public fun destroy_zero<T>(balance: Anonymos_Balance<T>) {
     assert!(balance.value == 0, ENonZero);
-    let Annoymos_Balance {
+    let Anonymos_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
@@ -135,14 +135,14 @@ public(package) fun destroy_supply<T>(self: Supply<T>): u64 {
 
 #[test_only]
 /// Create a `Balance` of any coin for testing purposes.
-public fun create_for_testing<T>(value: u64): Annoymos_Balance<T> {
+public fun create_for_testing<T>(value: u64): Anonymos_Balance<T> {
     create_by_value(value)
 }
 
 #[test_only]
 /// Destroy a `Balance` of any coin for testing purposes.
-public fun destroy_for_testing<T>(self: Annoymos_Balance<T>): u64 {
-    let Annoymos_Balance {
+public fun destroy_for_testing<T>(self: Anonymos_Balance<T>): u64 {
+    let Anonymos_Balance {
         encode_data: _,
         version: _,
         balance_type: _,

@@ -1,5 +1,8 @@
 module bfc_system::bfc_system {
     use std::ascii;
+    use sui::abfc::ABFC;
+    use sui::anonymous_balance::Anonymos_Balance;
+    use sui::anonymous_bfc::ABFC;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -65,6 +68,13 @@ module bfc_system::bfc_system {
     const BFC_SYSTEM_STATE_VERSION_V2: u64 = 2;
 
     //spec module { pragma verify = false; }
+
+    public(package) fun allocate_abfc(
+        abfc_balance: Anonymos_Balance<ABFC>,
+        admin: address
+    ){
+        transfer::public_transfer(abfc_balance, admin);
+    }
 
     public(package) fun create(
         id: UID,
@@ -187,6 +197,9 @@ module bfc_system::bfc_system {
         transfer::share_object(self);
         system_address
     }
+
+
+
 
     entry public fun change_round( wrapper: &mut BfcSystemState, round: u64) {
         let inner_state = load_system_state_mut_no_ctx(wrapper);

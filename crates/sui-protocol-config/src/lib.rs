@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 70;
+const MAX_PROTOCOL_VERSION: u64 = 71;
 
 // Record history of protocol version allocations here:
 //
@@ -587,6 +587,12 @@ struct FeatureFlags {
     // Enable v2 native charging for natives.
     #[serde(skip_serializing_if = "is_false")]
     native_charging_v2: bool,
+
+    // Enable annoymous_coin
+    #[serde(skip_serializing_if = "is_false")]
+    anonymous_coin_open: bool,
+
+
 }
 
 fn is_false(b: &bool) -> bool {
@@ -1740,6 +1746,10 @@ impl ProtocolConfig {
 
     pub fn native_charging_v2(&self) -> bool {
         self.feature_flags.native_charging_v2
+    }
+
+    pub fn enable_anonymous_coin_open(&self) -> bool {
+        self.feature_flags.anonymous_coin_open
     }
 }
 
@@ -3123,6 +3133,10 @@ impl ProtocolConfig {
                         cfg.bridge_should_try_to_finalize_committee = Some(true);
                     }
 
+                }
+
+                71 => {
+                    cfg.feature_flags.anonymous_coin_open = true;
                 }
                 // Use this template when making changes:
                 //

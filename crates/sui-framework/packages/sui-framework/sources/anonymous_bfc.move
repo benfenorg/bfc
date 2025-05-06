@@ -1,10 +1,10 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-module sui::annoymous_bfc;
+module sui::abfc;
 
-use sui::annoymous_balance::Annoymos_Balance;
-use sui::annoymous_coin;
+use sui::anonymous_balance::Anonymos_Balance;
+use sui::anonymous_coin;
 
     const EAlreadyMinted: u64 = 0;
     /// Sender is not @0x0 the system address.
@@ -30,11 +30,11 @@ use sui::annoymous_coin;
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
-    fun new(ctx: &mut TxContext): Annoymos_Balance<ABFC> {
+    fun new(ctx: &mut TxContext): Anonymos_Balance<ABFC> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
-        let (treasury, metadata) = annoymous_coin::create_currency(
+        let (treasury, metadata) = anonymous_coin::create_currency(
             ABFC{},
             9,
             b"ABFC",
@@ -51,7 +51,7 @@ use sui::annoymous_coin;
         total_sui
     }
 
-    public entry fun transfer(c: annoymous_coin::Annoymous_Coin<ABFC>, recipient: address) {
+    public entry fun transfer(c: anonymous_coin::Anonymous_Coin<ABFC>, recipient: address) {
         transfer::public_transfer(c, recipient)
     }
 }

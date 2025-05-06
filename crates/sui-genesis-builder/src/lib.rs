@@ -1473,6 +1473,8 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
+
+
         // Step 5: Run genesis.
         // The first argument is the system state uid we got from step 1 and the second one is the SUI supply we
         // got from step 3.
@@ -1671,6 +1673,29 @@ pub fn generate_genesis_system_object(
             vec![],
             arguments,
         );
+
+        if protocol_config.enable_anonymous_coin_open() {
+            let abfc_supply = builder.programmable_move_call(
+                SUI_FRAMEWORK_ADDRESS.into(),
+                ident_str!("abfc").to_owned(),
+                ident_str!("new").to_owned(),
+                vec![],
+                vec![],
+            );
+
+            let address = builder
+                .input(CallArg::Pure(UID::new(ObjectID::from(SUI_FRAMEWORK_ADDRESS)).to_bcs_bytes()))
+                .unwrap();
+            let arguments = vec![abfc_supply, address];
+            builder.programmable_move_call(
+                BFC_SYSTEM_ADDRESS.into(),
+                ident_str!("bfc_system").to_owned(),
+                ident_str!("allocate_abfc").to_owned(),
+                vec![],
+                arguments,
+            );
+        }
+
 
         builder.finish()
     };
