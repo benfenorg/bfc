@@ -185,8 +185,8 @@ impl BridgeNodeConfig {
             ));
         }
 
-        let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
-        let (bsc_client, bsc_contracts) = self.prepare_for_eth(metrics.clone()).await?;
+        let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone(), true).await?;
+        let (bsc_client, bsc_contracts) = self.prepare_for_eth(metrics.clone(), false).await?;
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -266,13 +266,26 @@ impl BridgeNodeConfig {
     async fn prepare_for_eth(
         &self,
         metrics: Arc<BridgeMetrics>,
+        is_eth: bool,
     ) -> anyhow::Result<(Arc<EthClient<MeteredEthHttpProvier>>, Vec<EthAddress>)> {
-        let bridge_proxy_address = EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?;
-        let provider = Arc::new(
-            new_metered_eth_provider(&self.eth.eth_rpc_url, metrics.clone())
-                .unwrap()
-                .interval(std::time::Duration::from_millis(2000)),
-        );
+        let bridge_proxy_address = if is_eth {
+            EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?
+        } else {
+            EthAddress::from_str(&self.bsc.eth_bridge_proxy_address)?
+        };
+        let provider = if is_eth {
+            Arc::new(
+                new_metered_eth_provider(&self.eth.eth_rpc_url, metrics.clone())
+                    .unwrap()
+                    .interval(std::time::Duration::from_millis(2000)),
+            )
+        } else {
+            Arc::new(
+                new_metered_eth_provider(&self.bsc.eth_rpc_url, metrics.clone())
+                    .unwrap()
+                    .interval(std::time::Duration::from_millis(2000)),
+            )
+        };   
         let chain_id = provider.get_chainid().await?;
         let (
             committee_address,
