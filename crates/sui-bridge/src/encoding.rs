@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::types::AddTokensOnEvmAction;
+use crate::types::{AddTokensOnEvmAction, SetMintBusdLimitAction};
 use crate::types::AddTokensOnSuiAction;
 use crate::types::AddExternalCoinAdminAction;
 use crate::types::RemoveExternalCoinAdminAction;
@@ -38,6 +38,7 @@ pub const ADD_EXTERNAL_COIN_TARGET_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_EXTERNAL_COIN_TARGET_MESSAGE_VERSION: u8 = 1;
 pub const EMERGENCY_BUTTON_MESSAGE_VERSION: u8 = 1;
 pub const LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
+pub const MINT_BUSD_LIMIT_MESSAGE_VERSION: u8 = 1;
 pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const EVM_CONTRACT_UPGRADE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_SUI_MESSAGE_VERSION: u8 = 1;
@@ -378,6 +379,31 @@ impl BridgeMessageEncoding for LimitUpdateAction {
         bytes.push(self.sending_chain_id as u8);
         // Add new usd limit
         bytes.extend_from_slice(&self.new_usd_limit.to_be_bytes());
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for SetMintBusdLimitAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::MintBusdLimit as u8);
+        // Add message version
+        bytes.push(MINT_BUSD_LIMIT_MESSAGE_VERSION);
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add modify cap id
+        bytes.extend_from_slice(&bcs::to_bytes(&self.modify_cap_id).unwrap());
+        // Add new limit
+        bytes.extend_from_slice(&self.new_limit.to_be_bytes());
         bytes
     }
 }
