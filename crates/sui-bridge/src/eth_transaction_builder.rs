@@ -59,6 +59,9 @@ pub async fn build_eth_transaction(
             build_limit_update_approve_transaction(contract_address, signer, action.clone(), sigs)
                 .await
         }
+        BridgeAction::SetMintBusdLimitAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AssetPriceUpdateAction(action) => {
             build_asset_price_update_approve_transaction(
                 contract_address,

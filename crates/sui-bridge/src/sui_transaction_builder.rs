@@ -93,6 +93,16 @@ pub fn build_sui_transaction(
             bridge_object_arg,
             rgp,
         ),
+        BridgeAction::SetMintBusdLimitAction(a) => {
+            build_set_max_mint_busd_amount_transaction(
+                client_address,
+                gas_object_ref,
+                bridge_object_arg,
+                a.modify_cap_id,
+                a.new_limit,
+                rgp,
+            )
+        }
         BridgeAction::AssetPriceUpdateAction(_) => build_asset_price_update_approve_transaction(
             client_address,
             gas_object_ref,
@@ -735,6 +745,41 @@ fn build_limit_update_approve_transaction(
         vec![arg_bridge, arg_msg, arg_signatures],
     );
 
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+//set_max_mint_busd_amount
+fn build_set_max_mint_busd_amount_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    bridge_object_arg: ObjectArg,
+    bfc_system_modify_cap: ObjectRef,
+    new_limit: u64,
+    rgp: u64,
+) -> BridgeResult<TransactionData> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_bridge = builder.obj(bridge_object_arg)?;
+    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT)?;
+    let cap_obj = builder
+        .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap)))?;
+    let new_limit = builder.pure(new_limit)?;
+
+    CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap));
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("set_max_mint_busd_amount").to_owned(),
+        vec![],
+        vec![arg_bridge, system_obj, cap_obj, new_limit],
+    );
     let pt = builder.finish();
 
     Ok(TransactionData::new_programmable(

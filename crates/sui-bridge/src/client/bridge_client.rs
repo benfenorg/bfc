@@ -121,6 +121,9 @@ impl BridgeClient {
                 let new_usd_limit = a.new_usd_limit.to_string();
                 format!("sign/update_limit/{chain_id}/{nonce}/{sending_chain_id}/{new_usd_limit}")
             }
+            BridgeAction::SetMintBusdLimitAction(_) => {
+                unreachable!();
+            }
             BridgeAction::AssetPriceUpdateAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();

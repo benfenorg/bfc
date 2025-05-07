@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
-use sui_bridge::types::RefundAdminAction;
+use sui_bridge::types::{RefundAdminAction, SetMintBusdLimitAction};
 use std::path::PathBuf;
 use std::str::FromStr;
 use std::sync::Arc;
@@ -172,6 +172,15 @@ pub enum GovernanceClientCommands {
         #[clap(name = "new-usd-limit", long)]
         new_usd_limit: u64,
     },
+    #[clap(name = "set-mint-busd-limit")]
+    SetMintBusdLimit {
+        #[clap(name = "chain", long)]
+        chain: u8,
+        #[clap(name = "modify-cap-id", long)]
+        modify_cap_id: ObjectID,
+        #[clap(name = "new-limit", long)]
+        new_limit: u64,
+    },
     #[clap(name = "update-asset-price")]
     UpdateAssetPrice {
         #[clap(name = "nonce", long)]
@@ -277,7 +286,11 @@ pub enum GovernanceClientCommands {
     },
 }
 
-pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> BridgeAction {
+pub fn make_action(
+    chain_id: BridgeChainId,
+    cmd: &GovernanceClientCommands,
+    cap_object_ref: Option<ObjectRef>,
+) -> BridgeAction {
     match cmd {
         GovernanceClientCommands::EmergencyButton { nonce, action_type } => {
             BridgeAction::EmergencyAction(EmergencyAction {
@@ -318,6 +331,18 @@ pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> B
                 chain_id,
                 sending_chain_id,
                 new_usd_limit: *new_usd_limit,
+            })
+        }
+        GovernanceClientCommands::SetMintBusdLimit {
+            chain,
+            modify_cap_id,
+            new_limit,
+        } => {
+            let chain_id = BridgeChainId::try_from(*chain).expect("Invalid chain id");
+            BridgeAction::SetMintBusdLimitAction(SetMintBusdLimitAction {
+                chain_id,
+                modify_cap_id: cap_object_ref.unwrap(),
+                new_limit: *new_limit,
             })
         }
         GovernanceClientCommands::UpdateAssetPrice {
@@ -506,6 +531,7 @@ pub fn select_contract_address(
             config.eth_bridge_committee_proxy_address
         }
         GovernanceClientCommands::UpdateLimit { .. } => config.eth_bridge_limiter_proxy_address,
+        GovernanceClientCommands::SetMintBusdLimit { .. } => unreachable!(),
         GovernanceClientCommands::UpdateAssetPrice { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpgradeEVMContract { proxy_address, .. } => *proxy_address,
         GovernanceClientCommands::AddExternalCoinAdmin {.. } => unreachable!(),
