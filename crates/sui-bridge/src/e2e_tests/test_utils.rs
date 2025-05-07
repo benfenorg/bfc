@@ -203,7 +203,7 @@ impl BridgeTestClusterBuilder {
             bridge_keys.push(kp.copy());
             bridge_keys_copy.push(kp);
         }
-        let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys));
+        let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys,self.eth_chain_id));
         let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
         let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
@@ -244,10 +244,11 @@ impl BridgeTestClusterBuilder {
         }
     }
 
-    async fn start_test_cluster(bridge_keys: Vec<BridgeAuthorityKeyPair>) -> TestClusterWrapper {
+    async fn start_test_cluster(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> TestClusterWrapper {
         let test_cluster = TestClusterWrapperBuilder::new()
             .with_bridge_authority_keys(bridge_keys)
             .with_deploy_tokens(true)
+            .with_eth_chain_id(eth_chain_id)
             .build()
             .await;
         info!("Test cluster built");
@@ -916,6 +917,7 @@ pub struct TestClusterWrapperBuilder {
     protocol_version: u64,
     bridge_authority_keys: Vec<BridgeAuthorityKeyPair>,
     deploy_tokens: bool,
+    eth_chain_id: BridgeChainId,
 }
 
 impl TestClusterWrapperBuilder {
@@ -924,6 +926,7 @@ impl TestClusterWrapperBuilder {
             protocol_version: BRIDGE_ENABLE_PROTOCOL_VERSION,
             bridge_authority_keys: vec![],
             deploy_tokens: false,
+            eth_chain_id: BridgeChainId::EthCustom,
         }
     }
 
@@ -939,6 +942,11 @@ impl TestClusterWrapperBuilder {
 
     pub fn with_deploy_tokens(mut self, deploy_tokens: bool) -> Self {
         self.deploy_tokens = deploy_tokens;
+        self
+    }
+
+    pub fn with_eth_chain_id(mut self, eth_chain_id: BridgeChainId) -> Self {
+        self.eth_chain_id = eth_chain_id;
         self
     }
 
@@ -1042,19 +1050,30 @@ impl TestClusterWrapperBuilder {
         }
 
         if self.deploy_tokens {
-            let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,100_000_000u64];
-            let action = publish_and_register_coins_return_add_coins_on_sui_action(
-                test_cluster.wallet(),
-                bridge_arg,
+            let token_paths = if self.eth_chain_id == BridgeChainId::EthCustom {
                 vec![
                     Path::new("../../bridge/move/tokens/btc").into(),
                     Path::new("../../bridge/move/tokens/eth").into(),
                     Path::new("../../bridge/move/tokens/usdc").into(),
                     Path::new("../../bridge/move/tokens/usdt").into(),
                     Path::new("../../bridge/move/tokens/busd").into(),
-                ],
+                ]
+            } else {
+                vec![
+                    Path::new("../../bridge/move/tokens/btc").into(),
+                    Path::new("../../bridge/move/tokens/eth").into(),
+                    Path::new("../../bridge/move/tokens/usdc_bsc").into(),
+                    Path::new("../../bridge/move/tokens/usdt_bsc").into(),
+                    Path::new("../../bridge/move/tokens/busd").into(),
+                ]
+            };
+            let timer = Instant::now();
+            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD];
+            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,100_000_000u64];
+            let action = publish_and_register_coins_return_add_coins_on_sui_action(
+                test_cluster.wallet(),
+                bridge_arg,
+                token_paths,
                 token_ids,
                 token_prices,
                 0,
