@@ -297,7 +297,7 @@ impl BridgeNodeConfig {
         ) = get_eth_contract_addresses(bridge_proxy_address, &provider).await?;
         let config = EthBridgeConfig::new(config_address, provider.clone());
 
-        if self.run_client && self.eth.eth_contracts_start_block_fallback.is_none() {
+        if self.run_client && (self.eth.eth_contracts_start_block_fallback.is_none() || self.bsc.eth_contracts_start_block_fallback.is_none()) {
             return Err(anyhow!(
                 "eth_contracts_start_block_fallback is required when run_client is true"
             ));
@@ -345,20 +345,38 @@ impl BridgeNodeConfig {
             bridge_chain_id,
         );
 
-        let eth_client = Arc::new(
-            EthClient::<MeteredEthHttpProvier>::new(
-                &self.eth.eth_rpc_url,
-                HashSet::from_iter(vec![
-                    bridge_proxy_address,
-                    committee_address,
-                    config_address,
-                    limiter_address,
-                    vault_address,
-                ]),
-                metrics,
+        let eth_client = 
+        if is_eth {
+            Arc::new(
+                EthClient::<MeteredEthHttpProvier>::new(
+                    &self.eth.eth_rpc_url,
+                    HashSet::from_iter(vec![
+                        bridge_proxy_address,
+                        committee_address,
+                        config_address,
+                        limiter_address,
+                        vault_address,
+                    ]),
+                    metrics,
+                )
+                .await?,
             )
-            .await?,
-        );
+        } else {
+            Arc::new(
+                EthClient::<MeteredEthHttpProvier>::new(
+                    &self.bsc.eth_rpc_url,
+                    HashSet::from_iter(vec![
+                        bridge_proxy_address,
+                        committee_address,
+                        config_address,
+                        limiter_address,
+                        vault_address,
+                    ]),
+                    metrics,
+                )
+                .await?,
+            )
+        };
         let contract_addresses = vec![
             bridge_proxy_address,
             committee_address,
