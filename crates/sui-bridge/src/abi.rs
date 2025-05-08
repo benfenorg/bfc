@@ -196,10 +196,6 @@ impl EthToSuiTokenBridgeV1 {
     pub fn set_event_idx(&mut self, event_idx: u8) {
         self.event_idx = event_idx;
     }
-
-    pub fn stable_coin_convertor(&self) -> (u64, u64) {
-        (TOKEN_ID_BUSD, self.sui_adjusted_amount * 1000)
-    }
 }
 
 impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
