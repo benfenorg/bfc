@@ -494,7 +494,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             EthActionVerifier {
                 eth_client: eth_client.clone(),
-                bsc_client: eth_client.clone(),
+                bsc_client: bsc_client.clone(),
             },
             metrics.clone(),
         )
