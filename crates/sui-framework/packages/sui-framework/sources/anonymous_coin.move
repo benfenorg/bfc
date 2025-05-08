@@ -11,6 +11,8 @@ module sui::anonymous_coin {
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
+    use sui::coin;
+    use sui::coin::Coin;
 
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
@@ -39,7 +41,26 @@ module sui::anonymous_coin {
     public struct Anonymous_Coin<phantom T> has key, store {
         id: UID,
         balance: Anonymos_Balance<T>
+
     }
+
+
+    public struct SwapPool<phantom T1, phantom T2> has key, store{
+        id: UID,
+        coin1: Anonymous_Coin<T1>,
+        coin2: Coin<T2>,
+        swap_rate: u64,
+        max_availalbe: u64, //current max convert  T2 normal amount...
+    }
+
+    public fun swap_in<T1, T2>(coin: Anonymous_Coin<T1>) : Coin<T2>{
+
+        Coin::zero(ctx)
+    }
+    public fun swap_out<T1, T2>(coin: Coin<T2>) : Anonymous_Coin<T1>{
+        zero(ctx)
+    }
+
 
     /// Each Coin type T created through `create_currency` function will have a
     /// unique instance of CoinMetadata<T> that stores the metadata for this coin type.
@@ -214,15 +235,15 @@ module sui::anonymous_coin {
     /// `T` to the caller. Can only be called with a `one-time-witness`
     /// type, ensuring that there's only one `TreasuryCap` per `T`.
     //#[lint_warn("skip otw check....todo: open witness for annoymous_coin!!!!")]
-    public fun create_currency<T: drop>(
-        witness: T,
+    public fun create_currency<T1: drop, T2:drop>(
+        witness: T1,
         decimals: u8,
         symbol: vector<u8>,
         name: vector<u8>,
         description: vector<u8>,
         icon_url: Option<Url>,
         ctx: &mut TxContext
-    ): (TreasuryCap<T>, CoinMetadata<T>) {
+    ): (TreasuryCap<T1>, CoinMetadata<T1>, SwapPool<T1, T2>) {
         // Make sure there's only one instance of the type T
 
 
@@ -241,9 +262,19 @@ module sui::anonymous_coin {
                 symbol: ascii::string(symbol),
                 description: string::utf8(description),
                 icon_url
+            },
+            SwapPool<T1,T2>{
+                id: object::new(ctx),
+                coin1: zero(ctx),
+                coin2: coin::zero(ctx),
+                swap_rate: 1,
+                max_availalbe: 0,
             }
         )
     }
+
+
+
 
     /// This creates a new currency, via `create_currency`, but with an extra capability that
     /// allows for specific addresses to have their coins frozen. When an address is added to the
