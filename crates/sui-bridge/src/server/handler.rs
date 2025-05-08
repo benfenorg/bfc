@@ -664,14 +664,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = sui_signer_with_cache
-            .get_cache_entry((sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -688,7 +688,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -699,11 +699,11 @@ mod tests {
         // Mock an non-cacheable error such as rpc error
         sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
         sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0, sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -711,12 +711,12 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert!(matches!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await,
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -755,11 +755,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx_2))
+            .sign((0,sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -768,14 +768,14 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx_2))
+                .sign((0,sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
@@ -798,14 +798,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = external_signer_with_cache
-            .get_cache_entry((sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -815,7 +815,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -826,11 +826,11 @@ mod tests {
         // Mock an non-cacheable error such as rpc error
         sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
         external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -838,12 +838,12 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert!(matches!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await,
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -883,11 +883,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx_2))
+            .sign((0,sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -896,14 +896,14 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx_2))
+                .sign((0,sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
@@ -920,8 +920,13 @@ mod tests {
             eth_mock_provider.clone(),
             HashSet::from_iter(vec![contract_address]),
         );
+        let bsc_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
+            bsc_client: Arc::new(bsc_client),
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =
@@ -931,14 +936,14 @@ mod tests {
         let eth_tx_hash = TxHash::random();
         let eth_event_idx = 42;
         assert!(eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await
             .is_none());
         let entry = eth_signer_with_cache
-            .get_cache_entry((eth_tx_hash, eth_event_idx))
+            .get_cache_entry((0, eth_tx_hash, eth_event_idx))
             .await;
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await;
         // first unwrap should not pacic because the entry should have been inserted by `get_cache_entry`
         assert!(entry_.unwrap().lock().await.is_none());
@@ -948,7 +953,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action.clone()));
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap(),
@@ -973,11 +978,11 @@ mod tests {
         mock_last_finalized_block(&eth_mock_provider, log.block_number.unwrap().as_u64());
 
         eth_signer_with_cache
-            .sign((eth_tx_hash, eth_event_idx))
+            .sign((0, eth_tx_hash, eth_event_idx))
             .await
             .unwrap();
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await;
         entry_.unwrap().lock().await.clone().unwrap().unwrap();
     }

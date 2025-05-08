@@ -14,6 +14,8 @@ use ethers::types::TxHash;
 use ethers::types::{Block, Filter};
 use tap::TapFallible;
 
+use std::str::FromStr;
+
 #[cfg(test)]
 use crate::eth_mock_provider::EthMockProvider;
 use ethers::types::Address as EthAddress;
@@ -84,8 +86,14 @@ where
             .provider
             .get_transaction_receipt(tx_hash)
             .await
-            .map_err(BridgeError::from)?
-            .ok_or(BridgeError::TxNotFound)?;
+            .map_err(|e| {
+                tracing::error!("Failed to get transaction receipt: {:?}", e);
+                BridgeError::from(e)
+            })?
+            .ok_or_else(|| {
+                tracing::error!("Transaction not found: {:?}", tx_hash);
+                BridgeError::TxNotFound
+            })?;
         let receipt_block_num = receipt.block_number.ok_or(BridgeError::ProviderError(
             "Provider returns log without block_number".into(),
         ))?;
@@ -429,5 +437,45 @@ mod tests {
             .await
             .unwrap();
         assert_eq!(action, bridge_action);
+    }
+
+    #[tokio::test]
+    async fn test_get_finalized_bridge_action_maybe_for_bsc() {
+        telemetry_subscribers::init_for_testing();
+        let prometheus_registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
+
+        let provider = Arc::new(
+            new_metered_eth_provider("https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde", metrics.clone())
+                .unwrap()
+                .interval(std::time::Duration::from_millis(2000)),
+        );
+        let chain_id = provider.get_chainid().await.unwrap();
+        println!("chain_id: {:?}", chain_id);
+    
+        let bridge_proxy_address = EthAddress::from_str("0xA8a439965f219c037E82d722436D2Cd8396c23B3").unwrap();
+        let committee_address = EthAddress::from_str("0xd7Ab6E4CA83fCf07359b7252C4Dd48450FB20C23").unwrap();
+        let config_address = EthAddress::from_str("0xbAeE80b2ea5a7559bfb6c61B3d8B88ecD5125802").unwrap();
+        let limiter_address = EthAddress::from_str("0x2c1F7990d429B8aec80fF7B2388089EcB2Bd71b4").unwrap();
+        let vault_address = EthAddress::from_str("0x2ae9692a7c07396A334Cf28f5624FFbD8d91A37B").unwrap();
+
+        let client = Arc::new(
+            EthClient::<MeteredEthHttpProvier>::new(
+                "https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde",
+                HashSet::from_iter(vec![
+                    bridge_proxy_address,
+                    committee_address,
+                    config_address,
+                    limiter_address,
+                    vault_address,
+                ]),
+                metrics,
+            )
+            .await.unwrap(),
+        );
+
+        let result = client.get_finalized_bridge_action_maybe(TxHash::from_str("0xfa2cdc9e3e8a011f78b0ee160933f4520ede246dc73a190b4849635b1402d6e0").unwrap(), 1).await.unwrap();
+        println!("result: {:?}", result);
+        
     }
 }
