@@ -82,6 +82,8 @@ where
         tx_hash: TxHash,
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
+        let chain_id = self.provider.get_chainid().await?;
+        tracing::info!("bbking chain_id: {:?}", chain_id);
         let receipt = self
             .provider
             .get_transaction_receipt(tx_hash)
