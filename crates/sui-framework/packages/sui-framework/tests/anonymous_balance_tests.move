@@ -3,6 +3,7 @@
 
 #[test_only]
 module sui::anonymous_coin_balance_tests {
+    use std::debug;
     use sui::test_scenario;
     use sui::anonymous_pay;
     use sui::anonymous_coin;
@@ -43,9 +44,12 @@ module sui::anonymous_coin_balance_tests {
         let mut balance = anonymous_balance::zero<ABFC>();
         let another = anonymous_balance::create_for_testing(1000);
 
+
+
         balance.join(another);
 
         assert!(balance.value() == 1000);
+        debug::print(balance.get_encode_data());
 
         let balance1 = balance.split(333);
         let balance2 = balance.split(333);

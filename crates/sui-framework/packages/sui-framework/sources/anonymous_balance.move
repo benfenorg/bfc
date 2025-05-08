@@ -5,7 +5,8 @@
 /// module to allow balance operations and can be used to implement
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
-use sui::vec_set;
+use std::string::{Self, String};
+use std::ascii::into_bytes;
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
@@ -40,15 +41,41 @@ public enum Anonymous_Balance_Type has store, drop {
 public struct Anonymos_Balance<phantom T> has store {
     balance_type: Anonymous_Balance_Type,
     value: u64,
-    encode_data: vec_set::VecSet<u8>,
+    encode_data: String,
     version: u8,
 }
 
+ public fun convert_to_string(mut value: u64): vector<u8> {
+        if (value == 0) {
+            return string::utf8(b"0").into_bytes()
+        };
+        let mut buffer = vector::empty<u8>();
+        while (value != 0) {
+            vector::push_back(&mut buffer, ((48 + value % 10) as u8));
+            value = value / 10;
+        };
+        vector::reverse(&mut buffer);
+        string::utf8(buffer).into_bytes()
+    }
+
+
+
 public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
-    let encode_data = vec_set::empty<u8>();
+    let encode_data = string::utf8(b"");
     let balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     let version = 0;
-    Anonymos_Balance { value: value,
+
+    let value1 = value/2;
+    let value2 = value/2;
+
+    string::append_utf8(&mut encode_data, convert_to_string(value1));
+    string::append_utf8(&mut encode_data, b",");
+    string::append_utf8(&mut encode_data, convert_to_string(value2));
+
+
+
+    Anonymos_Balance {
+        value: value,
         encode_data,
         balance_type: balance_type,
         version:version }
@@ -56,6 +83,11 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
 /// Get the amount stored in a `Balance`.
 public fun value<T>(self: &Anonymos_Balance<T>): u64 {
     self.value
+}
+
+
+public fun get_encode_data<T>(self: &Anonymos_Balance<T>): String {
+    self.encode_data
 }
 
 /// Get the `Supply` value.

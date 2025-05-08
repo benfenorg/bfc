@@ -235,7 +235,7 @@ module sui::anonymous_coin {
     /// `T` to the caller. Can only be called with a `one-time-witness`
     /// type, ensuring that there's only one `TreasuryCap` per `T`.
     //#[lint_warn("skip otw check....todo: open witness for annoymous_coin!!!!")]
-    public fun create_currency<T1: drop, T2:drop>(
+    public fun create_currency<T1: drop>(
         witness: T1,
         decimals: u8,
         symbol: vector<u8>,
@@ -243,7 +243,7 @@ module sui::anonymous_coin {
         description: vector<u8>,
         icon_url: Option<Url>,
         ctx: &mut TxContext
-    ): (TreasuryCap<T1>, CoinMetadata<T1>, SwapPool<T1, T2>) {
+    ): (TreasuryCap<T1>, CoinMetadata<T1>) {
         // Make sure there's only one instance of the type T
 
 
@@ -263,13 +263,7 @@ module sui::anonymous_coin {
                 description: string::utf8(description),
                 icon_url
             },
-            SwapPool<T1,T2>{
-                id: object::new(ctx),
-                coin1: zero(ctx),
-                coin2: coin::zero(ctx),
-                swap_rate: 1,
-                max_availalbe: 0,
-            }
+
         )
     }
 
