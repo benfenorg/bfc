@@ -90,6 +90,7 @@ pub async fn run_bridge_node(
     let mut handles = vec![];
 
     // Start watchdog
+    //fixme
     let eth_provider = server_config.eth_client.provider();
     let eth_bridge_proxy_address = server_config.eth_bridge_proxy_address;
     let sui_client = server_config.sui_client.clone();
@@ -143,6 +144,7 @@ pub async fn run_bridge_node(
             server_config.key,
             server_config.sui_client,
             server_config.eth_client,
+            server_config.bsc_client,
             server_config.approved_governance_actions,
             metrics.clone(),
         ),

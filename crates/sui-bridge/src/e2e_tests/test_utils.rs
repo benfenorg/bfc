@@ -181,7 +181,6 @@ impl BridgeTestClusterBuilder {
     pub async fn build_eth_env(self) {
         init_all_struct_tags();
         std::env::set_var("__TEST_ONLY_CONSENSUS_USE_LONG_MIN_ROUND_DELAY", "1");
-        let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut bridge_keys = vec![];
         let mut bridge_keys_copy = vec![];
         for _ in 0..self.num_validators {

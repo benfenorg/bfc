@@ -133,6 +133,16 @@ impl BridgeChainId {
             BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom
         )
     }
+    pub fn is_eth_by_id(id: u8) -> bool {
+        let eth_mainnet = BridgeChainId::EthMainnet as u8;
+        let eth_sepolia = BridgeChainId::EthSepolia as u8;
+        id == eth_mainnet || id == eth_sepolia
+    }
+    pub fn is_bsc_by_id(id: u8) -> bool {
+        let bsc_mainnet = BridgeChainId::BscMainnet as u8;
+        let bsc_testnet = BridgeChainId::BscTestnet as u8;
+        id == bsc_mainnet || id == bsc_testnet
+    }
 }
 
 pub fn get_bridge_obj_initial_shared_version(

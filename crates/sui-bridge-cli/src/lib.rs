@@ -335,7 +335,7 @@ pub fn make_action(
         }
         GovernanceClientCommands::SetMintBusdLimit {
             chain,
-            modify_cap_id,
+            modify_cap_id: _,
             new_limit,
         } => {
             let chain_id = BridgeChainId::try_from(*chain).expect("Invalid chain id");

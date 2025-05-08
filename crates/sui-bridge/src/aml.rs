@@ -12,15 +12,20 @@ const MISTTRACK_ETH_COIN: &str = "ETH";
 const MISTTRACK_USDT_ERC20_COIN: &str = "USDT-ERC20";
 const MISTTRACK_USDC_ERC20_COIN: &str = "USDC-ERC20";
 //chain TRON
+#[allow(unused)]
 const MISTTRACK_USDT_TRC20_COIN: &str = "USDT-TRC20";
+#[allow(unused)]
 const MISTTRACK_USDC_TRC20_COIN: &str = "USDC-TRC20";
 // chain BNB Smart Chain(BSC)
 const MISTTRACK_BNB_COIN: &str = "BNB";
 const MISTTRACK_USDT_BEP20_COIN: &str = "USDT-BEP20";
 const MISTTRACK_USDC_BEP20_COIN: &str = "USDC-BEP20";
 //chain Solana
+#[allow(unused)]
 const MISTRACK_SOL_COIN: &str = "SOL";
+#[allow(unused)]
 const MISTRACK_USDT_SOL_COIN: &str = "USDT-Solana";
+#[allow(unused)]
 const MISTRACK_USDC_SOL_COIN: &str = "USDC-Solana";
 
 #[derive(Deserialize, Debug)]

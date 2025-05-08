@@ -12,7 +12,7 @@ use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
 use crate::types::EthLog;
 use ethers::types::{Address as EthAddress, H160};
-use mysten_metrics::metered_channel::{Receiver, Sender};
+use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::collections::HashMap;
 use std::sync::Arc;

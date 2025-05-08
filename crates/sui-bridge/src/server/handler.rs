@@ -23,7 +23,8 @@ use sui_types::digests::TransactionDigest;
 use tap::TapFallible;
 use tokio::sync::{oneshot, Mutex};
 use tracing::info;
-
+use sui_types::bridge::BridgeChainId;
+use sui_types::bridge::BridgeChainId::SuiMainnet;
 use super::governance_verifier::GovernanceVerifier;
 
 #[async_trait]
@@ -33,6 +34,7 @@ pub trait BridgeRequestHandlerTrait {
     /// that emitted the bridge event and the Event index in that transaction
     async fn handle_eth_tx_hash(
         &self,
+        chain_id: u8,
         tx_hash_hex: String,
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
@@ -77,11 +79,13 @@ struct SuiActionVerifier<C> {
 
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
+    bsc_client: Arc<EthClient<P>>,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
+    bsc_client: Arc<EthClient<P>>,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -89,7 +93,7 @@ struct ExternalCoinVerifier<C> {
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TransactionDigest, u16)> for SuiActionVerifier<C>
+impl<C> ActionVerifier<(u8, TransactionDigest, u16)> for SuiActionVerifier<C>
 where
     C: SuiClientInner + Send + Sync + 'static,
 {
@@ -97,8 +101,8 @@ where
         "SuiActionVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         self.sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
             .await
@@ -107,7 +111,7 @@ where
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TxHash, u16)> for EthActionVerifier<C>
+impl<C> ActionVerifier<(u8, TxHash, u16)> for EthActionVerifier<C>
 where
     C: JsonRpcClient + Send + Sync + 'static,
 {
@@ -115,17 +119,24 @@ where
         "EthActionVerifier"
     }
 
-    async fn verify(&self, key: (TxHash, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_hash, event_idx) = key;
-        self.eth_client
-            .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-            .await
-            .tap_ok(|action| info!("Eth action found: {:?}", action))
+    async fn verify(&self, key: (u8, TxHash, u16)) -> BridgeResult<BridgeAction> {
+        let (chain_id, tx_hash, event_idx) = key;
+       if BridgeChainId::is_eth_by_id(chain_id) {
+           self.eth_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Eth action found: {:?}", action))
+       }else {
+           self.bsc_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("BSC action found: {:?}", action))
+       }
     }
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TransactionDigest, u16)> for ExternalCoinVerifier<C>
+impl<C> ActionVerifier<(u8, TransactionDigest, u16)> for ExternalCoinVerifier<C>
 where
     C: SuiClientInner + Send + Sync + 'static,
 {
@@ -133,8 +144,8 @@ where
         "ExternalCoinVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         let result = self
             .sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
@@ -177,7 +188,7 @@ where
 }
 
 #[async_trait::async_trait]
-impl<C, P> ActionVerifier<(TransactionDigest, u16)> for SendBackActionVerifier<C, P>
+impl<C, P> ActionVerifier<(u8, TransactionDigest, u16)> for SendBackActionVerifier<C, P>
 where
     C: SuiClientInner + Send + Sync + 'static,
     P: JsonRpcClient + Send + Sync + 'static,
@@ -186,8 +197,8 @@ where
         "SendBackActionVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         let result = self
             .sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
@@ -201,10 +212,15 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let tx_hash = U256::from_big_endian(&tx_hash_bytes);
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
-            let result = self
-                .eth_client
-                .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                .await;
+            let result = if send_back_action.sui_bridge_event.eth_chain_id.is_eth_chain() {
+                self.eth_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else {
+                self.bsc_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            };
             if let Err(e) = result {
                 return Err(e);
             }
@@ -384,19 +400,19 @@ where
 
 pub struct BridgeRequestHandler {
     sui_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     external_coin_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     send_back_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     eth_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TxHash, u16),
+        (u8, TxHash, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     governance_signer_tx: mysten_metrics::metered_channel::Sender<(
@@ -413,6 +429,7 @@ impl BridgeRequestHandler {
         signer: BridgeAuthorityKeyPair,
         sui_client: Arc<SuiClient<SC>>,
         eth_client: Arc<EthClient<EP>>,
+        bsc_client: Arc<EthClient<EP>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
     ) -> Self {
@@ -477,6 +494,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             EthActionVerifier {
                 eth_client: eth_client.clone(),
+                bsc_client: eth_client.clone(),
             },
             metrics.clone(),
         )
@@ -493,6 +511,7 @@ impl BridgeRequestHandler {
             SendBackActionVerifier {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
+                bsc_client: bsc_client.clone(),
             },
             metrics.clone(),
         )
@@ -512,6 +531,7 @@ impl BridgeRequestHandler {
 impl BridgeRequestHandlerTrait for BridgeRequestHandler {
     async fn handle_eth_tx_hash(
         &self,
+        chain_id: u8,
         tx_hash_hex: String,
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError> {
@@ -519,7 +539,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
 
         let (tx, rx) = oneshot::channel();
         self.eth_signer_tx
-            .send(((tx_hash, event_idx), tx))
+            .send(((chain_id, tx_hash, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server eth signing channel is closed"));
         let signed_action = rx
@@ -537,7 +557,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.sui_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
@@ -555,7 +575,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.send_back_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
@@ -573,7 +593,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.external_coin_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
