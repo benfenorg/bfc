@@ -34,17 +34,19 @@ use sui::anonymous_coin;
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
+
         let (treasury, metadata) = anonymous_coin::create_currency(
             ABFC{},
             9,
             b"ABFC",
-            b"ABFC",
+            b"ABfc",
             // TODO: add appropriate description and logo url
             b"",
             option::none(),
             ctx
         );
         transfer::public_freeze_object(metadata);
+
         let mut supply = treasury.treasury_into_supply();
         let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST);
         supply.destroy_supply();

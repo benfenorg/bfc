@@ -11,7 +11,6 @@ module sui::anonymous_coin {
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
-    use sui::coin;
     use sui::coin::Coin;
 
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
@@ -21,10 +20,13 @@ module sui::anonymous_coin {
     public use fun sui::anonymous_pay::join_vec as Anonymous_Coin.join_vec;
 
     // Allows calling `.split_and_transfer(amount, recipient, ctx)` on `coin`
+
     public use fun sui::anonymous_pay::split_and_transfer as Anonymous_Coin.split_and_transfer;
 
     // Allows calling `.divide_and_keep(n, ctx)` on `coin`
-    public use fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
+
+
+    //fun sui::anonymous_pay::divide_and_keep as Anonymous_Coin.divide_and_keep;
 
     /// A type passed to create_supply is not a one-time witness.
     //const EBadWitness: u64 = 0;
@@ -38,28 +40,35 @@ module sui::anonymous_coin {
     const EGlobalPauseNotAllowed: u64 = 3;
 
     /// A coin of type `T` worth `value`. Transferable and storable
-    public struct Anonymous_Coin<phantom T> has key, store {
+    public struct Anonymous_Coin<phantom T> has key, store{
         id: UID,
         balance: Anonymos_Balance<T>
 
     }
 
-
-    public struct SwapPool<phantom T1, phantom T2> has key, store{
-        id: UID,
+    #[allow(unused_field)]
+    public struct SwapPool<phantom T1, phantom T2> has store{
         coin1: Anonymous_Coin<T1>,
         coin2: Coin<T2>,
         swap_rate: u64,
         max_availalbe: u64, //current max convert  T2 normal amount...
     }
 
-    public fun swap_in<T1, T2>(coin: Anonymous_Coin<T1>) : Coin<T2>{
+    public fun bind_swap_pool<T1: store, T2: store>(anonymous_coin: Anonymous_Coin<T1>,  coin: Coin<T2>): SwapPool<T1, T2> {
+        SwapPool {
+            coin1: anonymous_coin,
+            coin2: coin,
+            swap_rate: 1,
+            max_availalbe: 10000,
+        }
+    }
 
-        Coin::zero(ctx)
-    }
-    public fun swap_out<T1, T2>(coin: Coin<T2>) : Anonymous_Coin<T1>{
-        zero(ctx)
-    }
+    // public fun swap_in<T1, T2>(_coin: Anonymous_Coin<T1>) : Coin<T2>{
+    //     Coin::zero<T2>(ctx)
+    // }
+    // public fun swap_out<T1, T2>(_coin: Coin<T2>) : Anonymous_Coin<T1>{
+    //     Coin::zero<T1>(ctx)
+    // }
 
 
     /// Each Coin type T created through `create_currency` function will have a
@@ -107,7 +116,6 @@ module sui::anonymous_coin {
         id: UID,
         allow_global_pause: bool,
     }
-
     // === Supply <-> TreasuryCap morphing and accessors  ===
 
     /// Return the total number of `T`'s in circulation.
@@ -235,18 +243,16 @@ module sui::anonymous_coin {
     /// `T` to the caller. Can only be called with a `one-time-witness`
     /// type, ensuring that there's only one `TreasuryCap` per `T`.
     //#[lint_warn("skip otw check....todo: open witness for annoymous_coin!!!!")]
-    public fun create_currency<T1: drop>(
-        witness: T1,
+    public fun create_currency<T: drop>(
+        witness: T,
         decimals: u8,
         symbol: vector<u8>,
         name: vector<u8>,
         description: vector<u8>,
         icon_url: Option<Url>,
         ctx: &mut TxContext
-    ): (TreasuryCap<T1>, CoinMetadata<T1>) {
+    ): (TreasuryCap<T>, CoinMetadata<T>) {
         // Make sure there's only one instance of the type T
-
-
         //todo: open witness for ABFC
         //assert!(sui::types::is_one_time_witness(&witness), EBadWitness);
 
@@ -262,8 +268,7 @@ module sui::anonymous_coin {
                 symbol: ascii::string(symbol),
                 description: string::utf8(description),
                 icon_url
-            },
-
+            }
         )
     }
 

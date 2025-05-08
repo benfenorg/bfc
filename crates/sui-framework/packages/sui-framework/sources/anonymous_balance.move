@@ -6,7 +6,6 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use std::string::{Self, String};
-use std::ascii::into_bytes;
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
@@ -61,16 +60,16 @@ public struct Anonymos_Balance<phantom T> has store {
 
 
 public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
-    let encode_data = string::utf8(b"");
+    let mut encode_data = string::utf8(b"");
     let balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     let version = 0;
 
     let value1 = value/2;
     let value2 = value/2;
 
-    string::append_utf8(&mut encode_data, convert_to_string(value1));
-    string::append_utf8(&mut encode_data, b",");
-    string::append_utf8(&mut encode_data, convert_to_string(value2));
+    string::append_utf8(&encode_data, convert_to_string(value1));
+    string::append_utf8(&encode_data, b",");
+    string::append_utf8(&encode_data, convert_to_string(value2));
 
 
 
