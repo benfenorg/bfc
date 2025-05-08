@@ -222,6 +222,8 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
 impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
     type Error = BridgeError;
     fn try_from(msg: &EthToSuiTokenBridgeV1) -> BridgeResult<Self> {
+        //only eth chain need to adjust
+        let need_adjust = (msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT) && msg.eth_chain_id.is_eth_chain();
         Ok(Self {
             nonce: msg.nonce,
             sui_chain_id: msg.sui_chain_id,
@@ -233,7 +235,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             } else {
                 msg.token_id
             },
-            sui_adjusted_amount: if msg.token_id == TOKEN_ID_USDC || msg.token_id == TOKEN_ID_USDT {
+            sui_adjusted_amount: if need_adjust {
                 msg.sui_adjusted_amount.checked_mul(1000).unwrap_or(msg.sui_adjusted_amount)
             } else {
                 msg.sui_adjusted_amount
