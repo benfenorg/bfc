@@ -83,7 +83,8 @@ impl BridgeClient {
                     )
                 }else{
                     format!(
-                        "sign/bridge_tx/bsc/sui/{}/{}",
+                        "sign/bridge_tx/{}/sui/{}/{}",
+                        e.eth_bridge_event.eth_chain_id as u8,
                         Hex::encode(e.eth_tx_hash.0),
                         e.eth_event_index
                     )
