@@ -82,20 +82,12 @@ where
         tx_hash: TxHash,
         event_idx: u16,
     ) -> BridgeResult<BridgeAction> {
-        let chain_id = self.provider.get_chainid().await?;
-        tracing::info!("bbking chain_id: {:?}", chain_id);
         let receipt = self
             .provider
             .get_transaction_receipt(tx_hash)
             .await
-            .map_err(|e| {
-                tracing::error!("Failed to get transaction receipt: {:?}", e);
-                BridgeError::from(e)
-            })?
-            .ok_or_else(|| {
-                tracing::error!("Transaction not found: {:?}", tx_hash);
-                BridgeError::TxNotFound
-            })?;
+            .map_err(BridgeError::from)?
+            .ok_or(BridgeError::TxNotFound)?;
         let receipt_block_num = receipt.block_number.ok_or(BridgeError::ProviderError(
             "Provider returns log without block_number".into(),
         ))?;
