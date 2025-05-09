@@ -5716,6 +5716,15 @@ btc_mainnet
 btc_testnet
 	public fun
 	0xb::chain_ids
+bsc_mainnet
+	public fun
+	0xb::chain_ids
+bsc_testnet
+	public fun
+	0xb::chain_ids
+bsc_custom
+	public fun
+	0xb::chain_ids
 route_source
 	public fun
 	0xb::chain_ids

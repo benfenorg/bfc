@@ -292,6 +292,12 @@ title: Module `0xb::bridge`
 <dd>
 
 </dd>
+<dt>
+<code>benfen_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
 </dl>
 
 
@@ -1172,6 +1178,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EInvalidChainIDAndTokenIDExpect"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 34;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EInvalidEvmAddress"></a>
 
 
@@ -1653,6 +1668,9 @@ title: Module `0xb::bridge`
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="bridge.md#0xb_bridge_EUseSendBusd">EUseSendBusd</a>);
 
+    <b>assert</b>!(!(token_id==6 && (target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>())),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(!(token_id==2 && (target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>())),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
     <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
         inner.chain_id,
@@ -1689,6 +1707,8 @@ title: Module `0xb::bridge`
             target_address,
             token_type: token_id,
             amount: token_amount,
+            benfen_amount: token_amount,
+
         },
     );
 }
@@ -1734,7 +1754,14 @@ title: Module `0xb::bridge`
     // <b>let</b> token_id_origin = inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.token_id&lt;T&gt;();
     // <b>assert</b>!(token_id_origin == 5, <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     <b>let</b> token_id = token_id_expect;
-    <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value()/1000u64;
+    <b>let</b> benfen_amount=token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
+
+    <b>let</b> token_amount=<b>if</b> (target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>()) {
+         token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value()/1000u64
+    }<b>else</b>{
+         token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value()
+    };
+
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
 
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
@@ -1773,6 +1800,7 @@ title: Module `0xb::bridge`
             target_address,
             token_type: token_id,
             amount: token_amount,
+            benfen_amount: benfen_amount,
         },
     );
 }
