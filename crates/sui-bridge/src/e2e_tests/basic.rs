@@ -1150,7 +1150,7 @@ async fn test_bridge_usdt_to_sui() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1255,7 +1255,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1359,7 +1359,7 @@ async fn test_eth_to_sui_limit() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1442,7 +1442,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1493,7 +1493,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         timer.elapsed()
     );
 
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()

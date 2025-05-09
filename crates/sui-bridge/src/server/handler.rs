@@ -735,6 +735,7 @@ mod tests {
             target_address: EthAddress::random().as_bytes().to_vec(),
             token_type: TOKEN_ID_USDC,
             amount_sui_adjusted: 12345,
+            benfen_amount: 12345,
         };
 
         init_all_struct_tags();
