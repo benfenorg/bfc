@@ -54,7 +54,7 @@ use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
-async fn test_test_cluster_builder() {
+async fn test_eth_test_cluster_builder() {
     telemetry_subscribers::init_for_testing();
     BridgeTestClusterBuilder::new()
         .with_eth_env(true)

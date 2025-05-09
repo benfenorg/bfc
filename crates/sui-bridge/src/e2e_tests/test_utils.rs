@@ -609,7 +609,12 @@ pub(crate) async fn deploy_sol_contract(
         .arg("clean")
         .status()
         .expect("Failed to execute `forge clean`");
-
+    let chain_id_anvil = if eth_chain_id.is_eth_chain(){
+        "31337"
+    }else {
+        "31339"
+    };
+    info!("chain_id_anvil: {:?}", chain_id_anvil);
     let mut child=Command::new("forge")
     .current_dir(sol_path)
     .arg("script")
@@ -619,7 +624,7 @@ pub(crate) async fn deploy_sol_contract(
     .arg("--broadcast")
     .arg("--ffi")
     .arg("--chain")
-    .arg("31337")
+    .arg(chain_id_anvil)
     .stdout(std::process::Stdio::piped()) // Capture stdout
     .stderr(std::process::Stdio::piped()) // Capture stderr
     .spawn()
