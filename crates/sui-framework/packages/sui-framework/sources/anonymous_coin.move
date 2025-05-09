@@ -11,7 +11,8 @@ module sui::anonymous_coin {
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
-    use sui::coin::Coin;
+    use sui::coin::{Self, Coin};
+
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
 
@@ -64,14 +65,21 @@ module sui::anonymous_coin {
         })
     }
 
-    // entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, swap_pool :SwapPool<T1, T2>) : Coin<T2>{
-    //     //Coin::zero<T2>(ctx)
-    //
-    // }
-    //
-    // entry public fun swap_in<T1, T2>(coin: Coin<T2>, swappool :SwapPool<T1, T2>) : Anonymous_Coin<T1>{
-    //     Coin::zero<T1>(ctx)
-    // }
+    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext) {
+        let value = anonymous_coin.balance.value();
+        join(&mut swap_pool.coin1, anonymous_coin);
+        let new_coin =coin::split(&mut swap_pool.coin2, value , ctx);
+        transfer::share_object(swap_pool);
+        transfer::public_transfer(new_coin, tx_context::sender(ctx))
+    }
+
+    entry public fun swap_in<T1, T2>(coin: Coin<T2>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext){
+        let value = coin::balance(&coin).value();
+        coin::join(&mut swap_pool.coin2, coin);
+        let new_coin =split(&mut swap_pool.coin1, value , ctx);
+        transfer::share_object(swap_pool);
+        transfer::public_transfer(new_coin, tx_context::sender(ctx))
+    }
 
 
     /// Each Coin type T created through `create_currency` function will have a
