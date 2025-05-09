@@ -275,8 +275,8 @@ async fn test_bridge_from_bsc_to_sui() {
         .unwrap()
         .data
         .iter()
-        .find(|c| c.coin_type.contains("ETH"))
-        .expect("Recipient should have received ETH coin now")
+        .find(|c| c.coin_type.contains("BNB"))
+        .expect("Recipient should have received BNB coin now")
         .clone();
     assert_eq!(eth_coin.balance, sui_amount);
     info!(

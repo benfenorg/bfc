@@ -94,7 +94,7 @@ contract DeployBridge is Script {
             deployConfig.suiDecimals[3] = 6;
             deployConfig.suiDecimals[4] = 6;
             deployConfig.suiDecimals[5] = 9;
-            deployConfig.suiDecimals[6] = 18;
+            deployConfig.suiDecimals[6] = 8;
         }
 
         // convert supported chains from uint256 to uint8
