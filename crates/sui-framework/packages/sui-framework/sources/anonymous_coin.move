@@ -12,7 +12,6 @@ module sui::anonymous_coin {
     use sui::deny_list::DenyList;
     use std::type_name;
     use sui::coin::Coin;
-
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
 
@@ -47,26 +46,30 @@ module sui::anonymous_coin {
     }
 
     #[allow(unused_field)]
-    public struct SwapPool<phantom T1, phantom T2> has store{
+    public struct SwapPool<phantom T1, phantom T2> has store, key{
+        id: UID,
         coin1: Anonymous_Coin<T1>,
         coin2: Coin<T2>,
         swap_rate: u64,
         max_availalbe: u64, //current max convert  T2 normal amount...
     }
 
-    public fun bind_swap_pool<T1: store, T2: store>(anonymous_coin: Anonymous_Coin<T1>,  coin: Coin<T2>): SwapPool<T1, T2> {
-        SwapPool {
+    entry public fun bind_swap_pool<T1: store, T2: store>(anonymous_coin: Anonymous_Coin<T1>,  coin: Coin<T2>, ctx: &mut TxContext) {
+        transfer::share_object(SwapPool {
+            id: object::new(ctx),
             coin1: anonymous_coin,
             coin2: coin,
             swap_rate: 1,
             max_availalbe: 10000,
-        }
+        })
     }
 
-    // public fun swap_in<T1, T2>(_coin: Anonymous_Coin<T1>) : Coin<T2>{
-    //     Coin::zero<T2>(ctx)
+    // entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, swap_pool :SwapPool<T1, T2>) : Coin<T2>{
+    //     //Coin::zero<T2>(ctx)
+    //
     // }
-    // public fun swap_out<T1, T2>(_coin: Coin<T2>) : Anonymous_Coin<T1>{
+    //
+    // entry public fun swap_in<T1, T2>(coin: Coin<T2>, swappool :SwapPool<T1, T2>) : Anonymous_Coin<T1>{
     //     Coin::zero<T1>(ctx)
     // }
 

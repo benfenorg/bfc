@@ -67,9 +67,9 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
     let value1 = value/2;
     let value2 = value/2;
 
-    string::append_utf8(&encode_data, convert_to_string(value1));
-    string::append_utf8(&encode_data, b",");
-    string::append_utf8(&encode_data, convert_to_string(value2));
+    string::append_utf8(&mut encode_data, convert_to_string(value1));
+    string::append_utf8(&mut encode_data, b",");
+    string::append_utf8(&mut encode_data, convert_to_string(value2));
 
 
 
