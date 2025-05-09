@@ -610,7 +610,23 @@ pub(crate) async fn deploy_sol_contract(
         .status()
         .expect("Failed to execute `forge clean`");
 
-    let mut child = Command::new("forge")
+    let mut child=if eth_chain_id== BridgeChainId::BscCustom {
+        Command::new("forge")
+        .current_dir(sol_path)
+        .arg("script")
+        .arg("script/deploy_bridge.s.sol")
+        .arg("--fork-url")
+        .arg(anvil_url)
+        .arg("--broadcast")
+        .arg("--ffi")
+        .arg("--chain")
+        .arg("97")
+        .stdout(std::process::Stdio::piped()) // Capture stdout
+        .stderr(std::process::Stdio::piped()) // Capture stderr
+        .spawn()
+        .unwrap()
+    }else{
+        Command::new("forge")
         .current_dir(sol_path)
         .arg("script")
         .arg("script/deploy_bridge.s.sol")
@@ -623,7 +639,8 @@ pub(crate) async fn deploy_sol_contract(
         .stdout(std::process::Stdio::piped()) // Capture stdout
         .stderr(std::process::Stdio::piped()) // Capture stderr
         .spawn()
-        .unwrap();
+        .unwrap()
+    };
 
     let mut stdout = child.stdout.take().expect("Failed to open stdout");
     let mut stderr = child.stderr.take().expect("Failed to open stderr");
