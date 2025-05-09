@@ -51,7 +51,7 @@ use sui_json_rpc_types::TransactionFilter;
 use sui_sdk::wallet_context::WalletContext;
 use sui_test_transaction_builder::TestTransactionBuilder;
 use sui_types::base_types::{ObjectID, ObjectRef};
-use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BUSD};
+use sui_types::bridge::{get_bridge_obj_initial_shared_version, TOKEN_ID_BNB, TOKEN_ID_BUSD};
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTrait;
@@ -1288,7 +1288,11 @@ pub async fn initiate_bridge_eth_to_sui(
     let sui_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-    let token_id = TOKEN_ID_ETH;
+    let token_id = if eth_chain_id.is_bsc_chain() {
+        TOKEN_ID_BNB
+    } else {
+        TOKEN_ID_ETH
+    };
 
     let sui_amount = (U256::from(amount) * U256::exp10(8)).as_u64(); // DP for Ether on Sui
 
