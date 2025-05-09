@@ -216,23 +216,39 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         // Adjust the amount to emit.
         IBridgeConfig config = committee.config();
 
-        // Adjust the amount
-        uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
-            IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
-            config.tokenSuiDecimalOf(BridgeUtils.BNB),
-            amount
-        );
-
-        emit TokensDeposited(
-            config.chainID(),
-            nonces[BridgeUtils.TOKEN_TRANSFER],
-            destinationChainID,
-            BridgeUtils.BNB,
-            suiAdjustedAmount,
-            msg.sender,
-            recipientAddress
-        );
-
+        if committee.config().chainID() == 30 || committee.config().chainID() == 31 || committee.config().chainID() == 32{
+            // Adjust the amount
+            uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.BNB),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.BNB,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+        }else{
+             // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.ETH),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.ETH,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+        }
         // increment token transfer nonce
         nonces[BridgeUtils.TOKEN_TRANSFER]++;
     }
@@ -255,14 +271,24 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         // Check that the token address is supported
         require(tokenAddress != address(0), "SuiBridge: Unsupported token");
 
-        // transfer eth if token type is eth
-        if (tokenID == BridgeUtils.BNB) {
-            vault.transferETH(payable(recipientAddress), amount);
-        } else {
-            // transfer tokens from vault to target address
-            vault.transferERC20(tokenAddress, recipientAddress, amount);
-        }
+        if committee.config().chainID() == 30 || committee.config().chainID() == 31 || committee.config().chainID() == 32{
+             // transfer eth if token type is eth
+            if (tokenID == BridgeUtils.BNB) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
 
+        }else {
+            if (tokenID == BridgeUtils.ETH) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+
+        }
         // update amount bridged
         limiter.recordBridgeTransfers(sendingChainID, tokenID, amount);
     }
