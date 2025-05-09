@@ -572,7 +572,7 @@ pub(crate) async fn deploy_sol_contract(
         supported_tokens: vec![], // this is set up in the deploy script
         token_ids: vec![],        // this is set up in the deploy script
         sui_decimals: vec![],     // this is set up in the deploy script
-        token_prices: vec![12800, 432518900, 25969600, 10000, 10000],
+        token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000],
         weth: "".to_string(), // this is set up in the deploy script
         maxUsdLimit: 500000000000000,
     };
@@ -610,37 +610,20 @@ pub(crate) async fn deploy_sol_contract(
         .status()
         .expect("Failed to execute `forge clean`");
 
-    let mut child=if eth_chain_id== BridgeChainId::BscCustom {
-        Command::new("forge")
-        .current_dir(sol_path)
-        .arg("script")
-        .arg("script/deploy_bridge.s.sol")
-        .arg("--fork-url")
-        .arg(anvil_url)
-        .arg("--broadcast")
-        .arg("--ffi")
-        .arg("--chain")
-        .arg("97")
-        .stdout(std::process::Stdio::piped()) // Capture stdout
-        .stderr(std::process::Stdio::piped()) // Capture stderr
-        .spawn()
-        .unwrap()
-    }else{
-        Command::new("forge")
-        .current_dir(sol_path)
-        .arg("script")
-        .arg("script/deploy_bridge.s.sol")
-        .arg("--fork-url")
-        .arg(anvil_url)
-        .arg("--broadcast")
-        .arg("--ffi")
-        .arg("--chain")
-        .arg("31337")
-        .stdout(std::process::Stdio::piped()) // Capture stdout
-        .stderr(std::process::Stdio::piped()) // Capture stderr
-        .spawn()
-        .unwrap()
-    };
+    let mut child=Command::new("forge")
+    .current_dir(sol_path)
+    .arg("script")
+    .arg("script/deploy_bridge.s.sol")
+    .arg("--fork-url")
+    .arg(anvil_url)
+    .arg("--broadcast")
+    .arg("--ffi")
+    .arg("--chain")
+    .arg("31337")
+    .stdout(std::process::Stdio::piped()) // Capture stdout
+    .stderr(std::process::Stdio::piped()) // Capture stderr
+    .spawn()
+    .unwrap();
 
     let mut stdout = child.stdout.take().expect("Failed to open stdout");
     let mut stderr = child.stderr.take().expect("Failed to open stderr");
@@ -1069,26 +1052,17 @@ impl TestClusterWrapperBuilder {
         }
 
         if self.deploy_tokens {
-            let token_paths = if self.eth_chain_id == BridgeChainId::EthCustom {
-                vec![
-                    Path::new("../../bridge/move/tokens/btc").into(),
-                    Path::new("../../bridge/move/tokens/eth").into(),
-                    Path::new("../../bridge/move/tokens/usdc").into(),
-                    Path::new("../../bridge/move/tokens/usdt").into(),
-                    Path::new("../../bridge/move/tokens/busd").into(),
-                ]
-            } else {
-                vec![
-                    Path::new("../../bridge/move/tokens/btc").into(),
-                    Path::new("../../bridge/move/tokens/eth").into(),
-                    Path::new("../../bridge/move/tokens/usdc_bsc").into(),
-                    Path::new("../../bridge/move/tokens/usdt_bsc").into(),
-                    Path::new("../../bridge/move/tokens/busd").into(),
-                ]
-            };
+            let token_paths = vec![
+                Path::new("../../bridge/move/tokens/btc").into(),
+                Path::new("../../bridge/move/tokens/eth").into(),
+                Path::new("../../bridge/move/tokens/usdc").into(),
+                Path::new("../../bridge/move/tokens/usdt").into(),
+                Path::new("../../bridge/move/tokens/busd").into(),
+                Path::new("../../bridge/move/tokens/bnb").into(),
+            ];
             let timer = Instant::now();
-            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD];
-            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,100_000_000u64];
+            let token_ids = vec![TOKEN_ID_BTC, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT,TOKEN_ID_BUSD,TOKEN_ID_BNB];
+            let token_prices = vec![500_000_000u64, 30_000_000u64, 1_000u64, 1_000u64,100_000_000u64,100_000_000u64];
             let action = publish_and_register_coins_return_add_coins_on_sui_action(
                 test_cluster.wallet(),
                 bridge_arg,

@@ -75,6 +75,42 @@ contract MockKA is ERC20 {
     function testSkip() public {}
 }
 
+contract MockBUSD is ERC20 {
+    constructor() ERC20("BUSD", "BUSD") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address form, uint256 amount) public virtual {
+        _burn(form, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 9;
+    }
+
+    function testSkip() public {}
+}
+
+contract MockBNB is ERC20 {
+    constructor() ERC20("BNB", "BNB") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address form, uint256 amount) public virtual {
+        _burn(form, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 18;
+    }
+
+    function testSkip() public {}
+}
+
 contract WETH {
     string public name = "Wrapped Ether";
     string public symbol = "WETH";

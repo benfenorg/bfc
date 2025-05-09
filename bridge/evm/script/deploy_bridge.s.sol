@@ -63,29 +63,38 @@ contract DeployBridge is Script {
             MockUSDC USDC = new MockUSDC();
             MockUSDT USDT = new MockUSDT();
             MockKA KA = new MockKA();
+            MockBUSD BUSD = new MockBUSD();
+            MockBNB BNB = new MockBNB();
             console.log("[Deployed] KA:", address(KA));
+            console.log("[Deployed] BNB:", address(BNB));
 
             // update deployConfig with test values
-            deployConfig.supportedTokens = new address[](5);
+            deployConfig.supportedTokens = new address[](7);
             deployConfig.supportedTokens[0] = address(0);
             deployConfig.supportedTokens[1] = address(wBTC);
             deployConfig.supportedTokens[2] = deployConfig.weth;
             deployConfig.supportedTokens[3] = address(USDC);
             deployConfig.supportedTokens[4] = address(USDT);
-
-            deployConfig.tokenIds = new uint256[](5);
+            deployConfig.supportedTokens[5] = address(BUSD);
+            deployConfig.supportedTokens[6] = address(BNB);
+            
+            deployConfig.tokenIds = new uint256[](7);
             deployConfig.tokenIds[0] = 0;
             deployConfig.tokenIds[1] = 1;
             deployConfig.tokenIds[2] = 2;
             deployConfig.tokenIds[3] = 3;
             deployConfig.tokenIds[4] = 4;
+            deployConfig.tokenIds[5] = 5;
+            deployConfig.tokenIds[6] = 6;
 
-            deployConfig.suiDecimals = new uint256[](5);
+            deployConfig.suiDecimals = new uint256[](7);
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
             deployConfig.suiDecimals[3] = 6;
             deployConfig.suiDecimals[4] = 6;
+            deployConfig.suiDecimals[5] = 9;
+            deployConfig.suiDecimals[6] = 18;
         }
 
         // convert supported chains from uint256 to uint8
