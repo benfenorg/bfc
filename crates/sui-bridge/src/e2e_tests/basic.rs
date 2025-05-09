@@ -65,6 +65,34 @@ async fn test_test_cluster_builder() {
         .await;
 }
 
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_sui_test_cluster_builder() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_keys = vec![];
+        // let mut bridge_keys_copy = vec![];
+        for _ in 0..3 {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+            // bridge_keys_copy.push(kp);
+        }
+    let test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .with_eth_chain_id(BridgeChainId::BscCustom)
+            .build()
+            .await;
+        info!("Test cluster built");
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+}
+
+
+
+
+
+
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_from_eth_to_sui_to_eth() {
     telemetry_subscribers::init_for_testing();
@@ -221,7 +249,7 @@ async fn test_bridge_from_bsc_to_sui() {
         .unwrap();
 
     let sui_address = bridge_test_cluster.sui_user_address();
-    let amount = 42;
+    let amount = 17;
     let sui_amount = amount * 100_000_000;
 
     initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0, false)
