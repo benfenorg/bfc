@@ -97,6 +97,7 @@ const BRIDGE_LIMITER_NAME: &str = "BridgeLimiter";
 const BRIDGE_VAULT_NAME: &str = "BridgeVault";
 const BTC_NAME: &str = "BTC";
 const ETH_NAME: &str = "ETH";
+const BNB_NAME: &str = "BNB";
 const USDC_NAME: &str = "USDC";
 const USDT_NAME: &str = "USDT";
 const KA_NAME: &str = "KA";
@@ -496,6 +497,7 @@ pub struct DeployedSolContracts {
     pub bridge_config: EthAddress,
     pub btc: EthAddress,
     pub eth: EthAddress,
+    pub bnb: EthAddress,
     pub usdc: EthAddress,
     pub usdt: EthAddress,
     pub ka: EthAddress,
@@ -608,7 +610,23 @@ pub(crate) async fn deploy_sol_contract(
         .status()
         .expect("Failed to execute `forge clean`");
 
-    let mut child = Command::new("forge")
+    let mut child=if eth_chain_id== BridgeChainId::BscCustom {
+        Command::new("forge")
+        .current_dir(sol_path)
+        .arg("script")
+        .arg("script/deploy_bridge.s.sol")
+        .arg("--fork-url")
+        .arg(anvil_url)
+        .arg("--broadcast")
+        .arg("--ffi")
+        .arg("--chain")
+        .arg("97")
+        .stdout(std::process::Stdio::piped()) // Capture stdout
+        .stderr(std::process::Stdio::piped()) // Capture stderr
+        .spawn()
+        .unwrap()
+    }else{
+        Command::new("forge")
         .current_dir(sol_path)
         .arg("script")
         .arg("script/deploy_bridge.s.sol")
@@ -621,7 +639,8 @@ pub(crate) async fn deploy_sol_contract(
         .stdout(std::process::Stdio::piped()) // Capture stdout
         .stderr(std::process::Stdio::piped()) // Capture stderr
         .spawn()
-        .unwrap();
+        .unwrap()
+    };
 
     let mut stdout = child.stdout.take().expect("Failed to open stdout");
     let mut stderr = child.stderr.take().expect("Failed to open stderr");
@@ -668,6 +687,7 @@ pub(crate) async fn deploy_sol_contract(
         bridge_vault: deployed_contracts.remove(BRIDGE_VAULT_NAME).unwrap(),
         btc: deployed_contracts.remove(BTC_NAME).unwrap(),
         eth: deployed_contracts.remove(ETH_NAME).unwrap(),
+        bnb: deployed_contracts.remove(BNB_NAME).unwrap(),
         usdc: deployed_contracts.remove(USDC_NAME).unwrap(),
         usdt: deployed_contracts.remove(USDT_NAME).unwrap(),
         ka: deployed_contracts.remove(KA_NAME).unwrap(),
@@ -1462,7 +1482,7 @@ pub async fn initiate_bridge_sui_to_eth(
             sui_amount/1000
         );
     };
-    
+
 
     // Wait for the bridge action to be approved
     wait_for_transfer_action_status(
