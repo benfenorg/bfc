@@ -59,9 +59,17 @@ contract DeployBridge is Script {
             deployConfig.weth = address(new WETH());
 
             // deploy mock tokens
+            IERC20 USDC;
+            IERC20 USDT;
+
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                USDC = new MockUSDC();
+                USDT = new MockUSDT();
+            }else{
+                USDC = new MockBNBUSDC();
+                USDT = new MockBNBUSDT();
+            }
             MockWBTC wBTC = new MockWBTC();
-            MockUSDC USDC = new MockUSDC();
-            MockUSDT USDT = new MockUSDT();
             MockKA KA = new MockKA();
             MockBUSD BUSD = new MockBUSD();
             MockBNB BNB = new MockBNB();
@@ -77,7 +85,7 @@ contract DeployBridge is Script {
             deployConfig.supportedTokens[4] = address(USDT);
             deployConfig.supportedTokens[5] = address(BUSD);
             deployConfig.supportedTokens[6] = address(BNB);
-            
+
             deployConfig.tokenIds = new uint256[](7);
             deployConfig.tokenIds[0] = 0;
             deployConfig.tokenIds[1] = 1;
@@ -91,10 +99,18 @@ contract DeployBridge is Script {
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
-            deployConfig.suiDecimals[3] = 6;
-            deployConfig.suiDecimals[4] = 6;
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                console.log("bbking1");
+                deployConfig.suiDecimals[3] = 6;
+                deployConfig.suiDecimals[4] = 6;
+            }else{
+                console.log("bbking2");
+                deployConfig.suiDecimals[3] = 9;
+                deployConfig.suiDecimals[4] = 9;
+            }
+
             deployConfig.suiDecimals[5] = 9;
-            deployConfig.suiDecimals[6] = 18;
+            deployConfig.suiDecimals[6] = 8;
         }
 
         // convert supported chains from uint256 to uint8

@@ -54,7 +54,7 @@ use sui_types::{TypeTag, SUI_BRIDGE_OBJECT_ID};
 use tracing::info;
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
-async fn test_test_cluster_builder() {
+async fn test_eth_test_cluster_builder() {
     telemetry_subscribers::init_for_testing();
     BridgeTestClusterBuilder::new()
         .with_eth_env(true)
@@ -64,6 +64,34 @@ async fn test_test_cluster_builder() {
         .build_eth_env()
         .await;
 }
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_sui_test_cluster_builder() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_keys = vec![];
+        // let mut bridge_keys_copy = vec![];
+        for _ in 0..3 {
+            let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
+            bridge_keys.push(kp);
+            // bridge_keys_copy.push(kp);
+        }
+    let test_cluster = TestClusterWrapperBuilder::new()
+            .with_bridge_authority_keys(bridge_keys)
+            .with_deploy_tokens(true)
+            .with_eth_chain_id(BridgeChainId::BscCustom)
+            .build()
+            .await;
+        info!("Test cluster built");
+        test_cluster
+            .trigger_reconfiguration_if_not_yet_and_assert_bridge_committee_initialized()
+            .await;
+}
+
+
+
+
+
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_bridge_from_eth_to_sui_to_eth() {
@@ -221,7 +249,7 @@ async fn test_bridge_from_bsc_to_sui() {
         .unwrap();
 
     let sui_address = bridge_test_cluster.sui_user_address();
-    let amount = 42;
+    let amount = 17;
     let sui_amount = amount * 100_000_000;
 
     initiate_bridge_eth_to_sui(&bridge_test_cluster, amount, 0, false)
@@ -247,8 +275,8 @@ async fn test_bridge_from_bsc_to_sui() {
         .unwrap()
         .data
         .iter()
-        .find(|c| c.coin_type.contains("ETH"))
-        .expect("Recipient should have received ETH coin now")
+        .find(|c| c.coin_type.contains("BNB"))
+        .expect("Recipient should have received BNB coin now")
         .clone();
     assert_eq!(eth_coin.balance, sui_amount);
     info!(
@@ -1122,7 +1150,7 @@ async fn test_bridge_usdt_to_sui() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1227,7 +1255,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1241,7 +1269,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
     let new_token_erc_address = bridge_test_cluster.contracts().usdt;
     initiate_bridge_erc20_to_sui(
         &bridge_test_cluster,
-        100,
+        3,
         new_token_erc_address,
         TOKEN_ID_USDT,
         0,
@@ -1272,7 +1300,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
         .find(|c| c.coin_type.contains("BUSD"))
         .expect("Recipient should have received BUSD coin now")
         .clone();
-    assert_eq!(busd_coin.balance, 100_000_000_000);
+    assert_eq!(busd_coin.balance, 3_000_000_000);
     info!(
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
@@ -1289,7 +1317,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
         eth_address_1,
         busd_coin.object_ref(),
         nonce,
-        100_000_000_000,
+        3_000_000_000,
         TOKEN_ID_USDT,
     )
     .await
@@ -1331,7 +1359,7 @@ async fn test_eth_to_sui_limit() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1414,7 +1442,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         .get_treasury_summary()
         .await
         .unwrap();
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1465,7 +1493,7 @@ async fn test_eth_to_sui_limit_with_new_token() {
         timer.elapsed()
     );
 
-    assert_eq!(treasury_summary.id_token_type_map.len(), 5); // 4 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
     let (_id, _type) = treasury_summary
         .id_token_type_map
         .iter()

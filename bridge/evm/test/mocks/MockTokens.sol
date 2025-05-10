@@ -21,6 +21,43 @@ contract MockWBTC is ERC20 {
     function testSkip() public {}
 }
 
+contract MockBNBUSDC is ERC20 {
+    constructor() ERC20("USD Coin", "USDC") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address form, uint256 amount) public virtual {
+        _burn(form, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 18;
+    }
+
+    function testSkip() public {}
+}
+
+contract MockBNBUSDT is ERC20 {
+    constructor() ERC20("Tether", "USDT") {}
+
+    function mint(address to, uint256 amount) public virtual {
+        _mint(to, amount);
+    }
+
+    function burn(address form, uint256 amount) public virtual {
+        _burn(form, amount);
+    }
+
+    function decimals() public view virtual override returns (uint8) {
+        return 18;
+    }
+
+    function testSkip() public {}
+}
+
+
 contract MockUSDC is ERC20 {
     constructor() ERC20("USD Coin", "USDC") {}
 
