@@ -24,7 +24,7 @@ use shared_crypto::intent::IntentScope;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use strum_macros::Display;
-use sui_types::base_types::{ObjectRef, SuiAddress};
+use sui_types::base_types::SuiAddress;
 use sui_types::bridge::{
     BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT
 };
@@ -222,7 +222,6 @@ pub enum BridgeActionType {
     RemoveExternalCoinWitness = 14,
     AddExternalCoinTarget = 15,
     RemoveExternalCoinTarget = 16,
-    MintBusdLimit = 17,
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -358,14 +357,6 @@ pub struct LimitUpdateAction {
     // 4 decimal places, namely 1 USD = 10000
     pub new_usd_limit: u64,
 }
-
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
-pub struct SetMintBusdLimitAction {
-    pub chain_id: BridgeChainId,
-    pub modify_cap_id: ObjectRef,
-    pub new_limit: u64,
-}
-
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AssetPriceUpdateAction {
     pub nonce: u64,
@@ -468,7 +459,6 @@ pub enum BridgeAction {
     RefundAdminAction(RefundAdminAction),
     EmergencyAction(EmergencyAction),
     LimitUpdateAction(LimitUpdateAction),
-    SetMintBusdLimitAction(SetMintBusdLimitAction),
     AssetPriceUpdateAction(AssetPriceUpdateAction),
     EvmContractUpgradeAction(EvmContractUpgradeAction),
     AddExternalCoinAdminAction(AddExternalCoinAdminAction),
@@ -506,7 +496,6 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(a) => a.chain_id,
             BridgeAction::EmergencyAction(a) => a.chain_id,
             BridgeAction::LimitUpdateAction(a) => a.chain_id,
-            BridgeAction::SetMintBusdLimitAction(a) => a.chain_id,
             BridgeAction::AssetPriceUpdateAction(a) => a.chain_id,
             BridgeAction::EvmContractUpgradeAction(a) => a.chain_id,
             BridgeAction::AddExternalCoinAdminAction(a) => a.chain_id,
@@ -527,7 +516,6 @@ impl BridgeAction {
             BridgeActionType::UpdateCommitteeBlocklist => true,
             BridgeActionType::EmergencyButton => true,
             BridgeActionType::LimitUpdate => true,
-            BridgeActionType::MintBusdLimit => false,
             BridgeActionType::AssetPriceUpdate => true,
             BridgeActionType::EvmContractUpgrade => true,
             BridgeActionType::AddExternalCoinAdmin => true,
@@ -552,7 +540,6 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(_) => BridgeActionType::UpdateCommitteeBlocklist,
             BridgeAction::EmergencyAction(_) => BridgeActionType::EmergencyButton,
             BridgeAction::LimitUpdateAction(_) => BridgeActionType::LimitUpdate,
-            BridgeAction::SetMintBusdLimitAction(_) => BridgeActionType::MintBusdLimit,
             BridgeAction::AssetPriceUpdateAction(_) => BridgeActionType::AssetPriceUpdate,
             BridgeAction::EvmContractUpgradeAction(_) => BridgeActionType::EvmContractUpgrade,
             BridgeAction::AddExternalCoinAdminAction(_) => BridgeActionType::AddExternalCoinAdmin,
@@ -577,7 +564,6 @@ impl BridgeAction {
             BridgeAction::BlocklistCommitteeAction(a) => a.nonce,
             BridgeAction::EmergencyAction(a) => a.nonce,
             BridgeAction::LimitUpdateAction(a) => a.nonce,
-            BridgeAction::SetMintBusdLimitAction(_) => 0,
             BridgeAction::AssetPriceUpdateAction(a) => a.nonce,
             BridgeAction::EvmContractUpgradeAction(a) => a.nonce,
             BridgeAction::AddExternalCoinAdminAction(a) => a.nonce,
@@ -604,7 +590,6 @@ impl BridgeAction {
                 EmergencyActionType::Unpause => APPROVAL_THRESHOLD_EMERGENCY_UNPAUSE,
             },
             BridgeAction::LimitUpdateAction(_) => APPROVAL_THRESHOLD_LIMIT_UPDATE,
-            BridgeAction::SetMintBusdLimitAction(_) => 0,
             BridgeAction::AssetPriceUpdateAction(_) => APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
             BridgeAction::EvmContractUpgradeAction(_) => APPROVAL_THRESHOLD_EVM_CONTRACT_UPGRADE,
             BridgeAction::AddExternalCoinAdminAction(_) => APPROVAL_THRESHOLD_EXTERNAL_COIN_ADMIN,

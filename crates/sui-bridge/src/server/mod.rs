@@ -58,6 +58,8 @@ pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
 pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
 pub const LIMIT_UPDATE_PATH: &str =
     "/sign/update_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
+pub const MINT_BUSD_LIMIT_PATH: &str =
+    "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
     "/sign/update_asset_price/:chain_id/:nonce/:token_id/:new_usd_price";
 pub const EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA: &str =
@@ -149,6 +151,7 @@ pub(crate) fn make_router(
         )
         .route(EMERGENCY_BUTTON_PATH, get(handle_emergency_action))
         .route(LIMIT_UPDATE_PATH, get(handle_limit_update_action))
+        .route(MINT_BUSD_LIMIT_PATH, get(handle_limit_update_action))
         .route(
             ASSET_PRICE_UPDATE_PATH,
             get(handle_asset_price_update_action),

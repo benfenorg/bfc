@@ -14,8 +14,6 @@ use ethers::types::TxHash;
 use ethers::types::{Block, Filter};
 use tap::TapFallible;
 
-use std::str::FromStr;
-
 #[cfg(test)]
 use crate::eth_mock_provider::EthMockProvider;
 use ethers::types::Address as EthAddress;
@@ -290,6 +288,7 @@ where
 mod tests {
     use ethers::types::{Address as EthAddress, Log, TransactionReceipt, U64};
     use prometheus::Registry;
+    use std::str::FromStr;
 
     use super::*;
     use crate::test_utils::{get_test_log_and_action, mock_last_finalized_block};

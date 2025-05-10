@@ -25,7 +25,7 @@ use sui_bridge::utils::{
     generate_bridge_client_key_and_write_to_file, generate_bridge_node_config_and_write_to_file,
 };
 use sui_bridge::utils::{get_eth_contracts, EthBridgeContracts};
-use sui_bridge_cli::{make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand, GovernanceClientCommands, LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR};
+use sui_bridge_cli::{make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand, LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR};
 use sui_config::Config;
 use sui_sdk::SuiClient as SuiSdkClient;
 use sui_sdk::SuiClientBuilder;
@@ -112,14 +112,7 @@ async fn main() -> anyhow::Result<()> {
                     chain_id, sui_chain_id
                 );
                 // Create BridgeAction
-
-                let sui_action = if let GovernanceClientCommands::SetMintBusdLimit
-                    { modify_cap_id, .. } = &cmd {
-                    let cap_object_ref = sui_bridge_client.get_cap_object_ref(modify_cap_id.clone()).await?;
-                    make_action(sui_chain_id, &cmd, Some(cap_object_ref))
-                } else {
-                    make_action(sui_chain_id, &cmd, None)
-                };
+                let sui_action = make_action(sui_chain_id, &cmd);
                 println!("Action to execute on Sui: {:?}", sui_action);
                 let certified_action = agg
                     .request_committee_signatures(sui_action)
@@ -170,7 +163,7 @@ async fn main() -> anyhow::Result<()> {
             // TODO assert chain id returned from rpc matches chain_id
             let eth_signer_client = config.eth_signer();
             // Create BridgeAction
-            let eth_action = make_action(chain_id, &cmd, None);
+            let eth_action = make_action(chain_id, &cmd);
             println!("Action to execute on Eth: {:?}", eth_action);
             // Create Eth Signer Client
             // TODO if a validator is blocklisted on eth, ignore their signatures?
