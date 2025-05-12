@@ -155,7 +155,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             "SuiBridge: Insufficient allowance"
         );
         if (tokenID == BridgeUtils.USDC || tokenID == BridgeUtils.USDT) {
-            require(amount < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
+            require(limiter.calculateAmountInUSD(tokenID, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
         }
 
         // calculate old vault balance
