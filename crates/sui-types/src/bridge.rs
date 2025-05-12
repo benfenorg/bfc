@@ -112,6 +112,21 @@ pub enum BridgeChainId {
     BscMainnet = 30,
     BscTestnet = 31,
     BscCustom = 32,
+    OPMainnet = 33,
+    OPTestnet = 34,
+    OPCustom = 35,
+    ArbMainnet = 36,
+    ArbTestnet = 37,
+    ArbCustom = 38,
+    PolMainnet = 39,
+    PolTestnet = 40,
+    PolCustom = 41,
+    BaseMainnet = 42,
+    BaseTestnet = 43,
+    BaseCustom = 44,
+    AvaxMainnet = 45,
+    AvaxTestnet = 46,
+    AvaxCustom = 47,
 }
 
 impl BridgeChainId {
@@ -133,6 +148,42 @@ impl BridgeChainId {
             BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom
         )
     }
+
+    pub fn is_op_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom
+        )
+    }
+
+    pub fn is_arb_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom
+        )
+    }
+
+    pub fn is_pol_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom
+        )
+    }
+
+    pub fn is_base_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom
+        )
+    }
+
+    pub fn is_avax_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom
+        )
+    }
+    
     pub fn is_eth_by_id(id: u8) -> bool {
         let eth_mainnet = BridgeChainId::EthMainnet as u8;
         let eth_sepolia = BridgeChainId::EthSepolia as u8;

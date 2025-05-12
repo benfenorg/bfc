@@ -248,7 +248,18 @@ async fn start_client_components(
         client_config.bsc_contracts_start_block_fallback,
         client_config.bsc_contracts_start_block_override,
     );
-
+    let base_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.base_contracts,
+        client_config.base_contracts_start_block_fallback,
+        client_config.base_contracts_start_block_override,
+    );
+    let optimism_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.optimism_contracts,
+        client_config.optimism_contracts_start_block_fallback,
+        client_config.optimism_contracts_start_block_override,
+    );
     let sui_client = client_config.sui_client.clone();
 
     let mut all_handles = vec![];
@@ -267,10 +278,24 @@ async fn start_client_components(
     all_handles.extend(task_handles);
 
     let (task_handles, _) =
-        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx)
+        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start bsc syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _) =
+        EthSyncer::new(client_config.base_client.clone(), base_contracts_to_watch, evm_evnets_tx.clone())
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start base syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _) =
+        EthSyncer::new(client_config.optimism_client.clone(), optimism_contracts_to_watch, evm_evnets_tx.clone())
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start optimism syncer");
     all_handles.extend(task_handles);
 
     let (task_handles, sui_events_rx) = SuiSyncer::new(
