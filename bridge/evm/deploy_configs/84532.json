@@ -12,7 +12,7 @@
         "0x1a464f460169d7143fcb9c64b9abf578aa4a06ba"
     ],
     "minCommitteeStakeRequired": 10000,
-    "sourceChainId": 32,
+    "sourceChainId": 11,
     "supportedChainIds": [
         1,
         2
@@ -21,10 +21,34 @@
         500000000000000,
         500000000000000
     ],
-    "maxUsdLimit": 50000000000000000000,
-    "supportedTokens": [],
-    "tokenPrices": [],
-    "tokenIds": [],
-    "suiDecimals": [],
-    "weth": "0x0000000000000000000000000000000000000000"
+    "maxUsdLimit": 500000000000000,
+    "supportedTokens": [
+        "0x0000000000000000000000000000000000000000",
+        "0x0112D7B36726B3077b72DDb457A9f9c94D9cd71c",
+        "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14",
+        "0x80bF6fb931C8eB99Ab32aeD543ACCFd168fd2a47",
+        "0x4302b99c1DE4de1ceC3eAedAbf88b8ee6Fceb614"
+    ],
+    "tokenPrices": [
+        234000000,
+        8359600000000,
+        186000000000,
+        100000000,
+        100000000
+    ],
+    "tokenIds": [
+        0,
+        1,
+        2,
+        3,
+        4
+    ],
+    "suiDecimals": [
+        9,
+        8,
+        8,
+        9,
+        9
+    ],
+    "weth": "0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14"
 }
