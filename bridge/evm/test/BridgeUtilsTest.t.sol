@@ -25,6 +25,17 @@ contract BridgeUtilsTest is BridgeBaseTest {
         BridgeUtils.convertSuiToERC20Decimal(10, 11, 100);
     }
 
+    function testConvertERC20ToSuiDecimalWithETHLtSui() public {
+        uint256 usdAmount=1*1000000;
+
+        uint64 suiAmount = BridgeUtils.convertERC20ToSuiDecimal(
+            6,
+            9,
+            usdAmount
+        );
+        assertEq(suiAmount, 1_000_000_000);
+    }
+
     function testConvertERC20ToSuiDecimal() public {
         // ETH
         assertEq(IERC20Metadata(wETH).decimals(), 18);

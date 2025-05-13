@@ -18,6 +18,23 @@ module bridge::chain_ids {
     const BscMainnet: u8 = 30;
     const BscTestnet: u8 = 31;
     const BscCustom: u8 = 32;
+    const OPMainnet: u8 = 33;
+    const OPTestnet: u8 = 34;
+    const OPCustom: u8 = 35;
+    const ArbMainnet: u8 = 36;
+    const ArbTestnet: u8 = 37;
+    const ArbCustom: u8 = 38;
+    const PolMainnet: u8 = 39;
+    const PolTestnet: u8 = 40;
+    const PolCustom: u8 = 41;
+    const BaseMainnet: u8 = 42;
+    const BaseTestnet: u8 = 43;
+    const BaseCustom: u8 = 44;
+    const AvaxMainnet: u8 = 45;
+    const AvaxTestnet: u8 = 46;
+    const AvaxCustom: u8 = 47;
+
+
 
     const EInvalidBridgeRoute: u64 = 0;
 
