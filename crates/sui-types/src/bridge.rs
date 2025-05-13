@@ -177,6 +177,13 @@ impl BridgeChainId {
         )
     }
 
+    pub fn is_optimism_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom
+        )
+    }
+
     pub fn is_avax_chain(&self) -> bool {
         matches!(
             self,
