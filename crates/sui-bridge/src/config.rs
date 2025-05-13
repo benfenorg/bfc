@@ -289,16 +289,22 @@ impl BridgeNodeConfig {
         metrics: Arc<BridgeMetrics>,
         evm_chain_id: BridgeChainId,
     ) -> anyhow::Result<(Arc<EthClient<MeteredEthHttpProvier>>, Vec<EthAddress>)> {
-        let (bridge_proxy_address, eth_rpc_url) = if evm_chain_id.is_eth_chain() {
-            (EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?,&self.eth.eth_rpc_url)
-        } else if evm_chain_id.is_bsc_chain() {
-            (EthAddress::from_str(&self.bsc.eth_bridge_proxy_address)?,&self.bsc.eth_rpc_url)
-        } else if evm_chain_id.is_base_chain() {
-            (EthAddress::from_str(&self.base.eth_bridge_proxy_address)?,&self.base.eth_rpc_url)
-        } else if evm_chain_id.is_optimism_chain() {
-            (EthAddress::from_str(&self.optimism.eth_bridge_proxy_address)?,&self.optimism.eth_rpc_url)
-        } else {
-            anyhow::bail!("Unsupported evm chain id: {}", evm_chain_id);
+        let (bridge_proxy_address, eth_rpc_url) = match evm_chain_id {
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
+                (EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?,&self.eth.eth_rpc_url)
+            }
+            BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom => {
+                (EthAddress::from_str(&self.bsc.eth_bridge_proxy_address)?,&self.bsc.eth_rpc_url)
+            }
+            BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom => {
+                (EthAddress::from_str(&self.base.eth_bridge_proxy_address)?,&self.base.eth_rpc_url)
+            }
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom => {
+                (EthAddress::from_str(&self.optimism.eth_bridge_proxy_address)?,&self.optimism.eth_rpc_url)
+            }
+            _ => {
+                anyhow::bail!("Unsupported evm chain id: {}", evm_chain_id);
+            }
         };
         let provider = Arc::new(
                 new_metered_eth_provider(&eth_rpc_url, metrics.clone())
