@@ -5725,6 +5725,24 @@ bsc_testnet
 bsc_custom
 	public fun
 	0xb::chain_ids
+base_mainnet
+	public fun
+	0xb::chain_ids
+base_testnet
+	public fun
+	0xb::chain_ids
+base_custom
+	public fun
+	0xb::chain_ids
+op_mainnet
+	public fun
+	0xb::chain_ids
+op_testnet
+	public fun
+	0xb::chain_ids
+op_custom
+	public fun
+	0xb::chain_ids
 route_source
 	public fun
 	0xb::chain_ids
@@ -6130,6 +6148,78 @@ update_asset_notional_price
 get_token_metadata
 	fun
 	0xb::treasury
+TokenInfo
+	public struct
+	0xb::tokenlist
+BridgeTokenList
+	public struct
+	0xb::tokenlist
+new_tokenlist_registry
+	public(package) fun
+	0xb::tokenlist
+new
+	public(package) fun
+	0xb::tokenlist
+initial_token_list
+	public(package) fun
+	0xb::tokenlist
+borrow
+	public(package) fun
+	0xb::tokenlist
+borrow_mut
+	public(package) fun
+	0xb::tokenlist
+init_token_list_config
+	fun
+	0xb::tokenlist
+add_token_to_benfen
+	public(package) fun
+	0xb::tokenlist
+add_token_from_benfen
+	public(package) fun
+	0xb::tokenlist
+remove_token_to_benfen
+	public(package) fun
+	0xb::tokenlist
+remove_token_from_benfen
+	public(package) fun
+	0xb::tokenlist
+add_benfen_token
+	public(package) fun
+	0xb::tokenlist
+remove_benfen_token
+	public(package) fun
+	0xb::tokenlist
+get_benfen_token_id
+	public fun
+	0xb::tokenlist
+add_token_info
+	public(package) fun
+	0xb::tokenlist
+remove_token_info
+	public(package) fun
+	0xb::tokenlist
+get_token_info
+	public fun
+	0xb::tokenlist
+is_supported_to_benfen
+	public fun
+	0xb::tokenlist
+is_supported_from_benfen
+	public fun
+	0xb::tokenlist
+is_exist_token_info
+	public fun
+	0xb::tokenlist
+is_exist_token_info_internal
+	fun
+	0xb::tokenlist
+is_supported_to_benfen_internal
+	fun
+	0xb::tokenlist
+is_supported_from_benfen_internal
+	fun
+	0xb::tokenlist
 TransferLimiter
 	public struct
 	0xb::limiter
@@ -6273,6 +6363,9 @@ create
 	0xb::bridge
 init_bridge_committee
 	fun
+	0xb::bridge
+migrate
+	public fun
 	0xb::bridge
 committee_registration
 	public fun
