@@ -302,12 +302,11 @@ module bridge::bridge {
     }
 
 
-    public fun migrate(
+    entry public fun migrate(
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx)
-        //init config
     }
 
     //////////////////////////////////////////////////////
