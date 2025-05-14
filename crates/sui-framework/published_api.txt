@@ -6169,7 +6169,7 @@ borrow
 borrow_mut
 	public(package) fun
 	0xb::tokenlist
-init_token_list_config
+empty
 	fun
 	0xb::tokenlist
 add_token_to_benfen
@@ -6183,15 +6183,6 @@ remove_token_to_benfen
 	0xb::tokenlist
 remove_token_from_benfen
 	public(package) fun
-	0xb::tokenlist
-add_benfen_token
-	public(package) fun
-	0xb::tokenlist
-remove_benfen_token
-	public(package) fun
-	0xb::tokenlist
-get_benfen_token_id
-	public fun
 	0xb::tokenlist
 add_token_info
 	public(package) fun
@@ -6365,7 +6356,7 @@ init_bridge_committee
 	fun
 	0xb::bridge
 migrate
-	public fun
+	public entry fun
 	0xb::bridge
 committee_registration
 	public fun
@@ -6443,6 +6434,9 @@ load_inner
 	fun
 	0xb::bridge
 load_inner_mut
+	fun
+	0xb::bridge
+load_inner_mut_and_uid
 	fun
 	0xb::bridge
 claim_token_internal

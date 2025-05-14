@@ -683,9 +683,16 @@ title: Module `0xb::chain_ids`
         id == <a href="chain_ids.md#0xb_chain_ids_EthMainnet">EthMainnet</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_EthSepolia">EthSepolia</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_EthCustom">EthCustom</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_BscMainnet">BscMainnet</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>,
+
         <a href="chain_ids.md#0xb_chain_ids_EInvalidBridgeRoute">EInvalidBridgeRoute</a>
     )
 }
@@ -733,16 +740,42 @@ title: Module `0xb::chain_ids`
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_EthCustom">EthCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
 
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscMainnet">BscMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscMainnet">BscMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+
 
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a> },
+
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
-        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> }
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> }
     ]
 }
 </code></pre>

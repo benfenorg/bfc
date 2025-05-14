@@ -53,6 +53,7 @@ title: Module `0xb::bridge`
 -  [Function `multi_signature_passed`](#0xb_bridge_multi_signature_passed)
 -  [Function `load_inner`](#0xb_bridge_load_inner)
 -  [Function `load_inner_mut`](#0xb_bridge_load_inner_mut)
+-  [Function `load_inner_mut_and_uid`](#0xb_bridge_load_inner_mut_and_uid)
 -  [Function `claim_token_internal`](#0xb_bridge_claim_token_internal)
 -  [Function `claim_stable_token_internal`](#0xb_bridge_claim_stable_token_internal)
 -  [Function `execute_emergency_op`](#0xb_bridge_execute_emergency_op)
@@ -1234,15 +1235,6 @@ title: Module `0xb::bridge`
 
 
 
-<a name="0xb_bridge_EInvalidTokenListTokenID"></a>
-
-
-
-<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidTokenListTokenID">EInvalidTokenListTokenID</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 51;
-</code></pre>
-
-
-
 <a name="0xb_bridge_EInvalidTxHash"></a>
 
 
@@ -1565,7 +1557,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1574,12 +1566,11 @@ title: Module `0xb::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
+<pre><code>entry <b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
     <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx)
-    //init <a href="../sui-framework/config.md#0x2_config">config</a>
 }
 </code></pre>
 
@@ -1696,10 +1687,7 @@ title: Module `0xb::bridge`
     token: Coin&lt;T&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> benfen_token_id=<a href="tokenlist.md#0xb_tokenlist_get_benfen_token_id">tokenlist::get_benfen_token_id</a>&lt;T&gt;(&<a href="bridge.md#0xb_bridge">bridge</a>.id);
-    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(&<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, benfen_token_id),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
-
-    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> (inner,parent_id) = <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
     <b>assert</b>!(target_address.length() == <a href="bridge.md#0xb_bridge_EVM_ADDRESS_LENGTH">EVM_ADDRESS_LENGTH</a>, <a href="bridge.md#0xb_bridge_EInvalidEvmAddress">EInvalidEvmAddress</a>);
@@ -1709,7 +1697,8 @@ title: Module `0xb::bridge`
     <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="bridge.md#0xb_bridge_EUseSendBusd">EUseSendBusd</a>);
-    <b>assert</b>!(token_id==benfen_token_id,<a href="bridge.md#0xb_bridge_EInvalidTokenListTokenID">EInvalidTokenListTokenID</a>);
+
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
 
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
     <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
@@ -2952,6 +2941,35 @@ title: Module `0xb::bridge`
     <b>let</b> inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a> = <a href="bridge.md#0xb_bridge">bridge</a>.inner.load_value_mut();
     <b>assert</b>!(inner.bridge_version == version, <a href="bridge.md#0xb_bridge_EWrongInnerVersion">EWrongInnerVersion</a>);
     inner
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_load_inner_mut_and_uid"></a>
+
+## Function `load_inner_mut_and_uid`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>): (&<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">bridge::BridgeInner</a>, &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>): (&<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a> ,&<b>mut</b> UID){
+    <b>let</b> version = <a href="bridge.md#0xb_bridge">bridge</a>.inner.version();
+    // TODO: Replace this <b>with</b> a lazy <b>update</b> function when we add a new version of the inner <a href="../sui-framework/object.md#0x2_object">object</a>.
+    <b>assert</b>!(version == <a href="bridge.md#0xb_bridge_CURRENT_VERSION">CURRENT_VERSION</a>, <a href="bridge.md#0xb_bridge_EWrongInnerVersion">EWrongInnerVersion</a>);
+    <b>let</b> inner: &<b>mut</b> <a href="bridge.md#0xb_bridge_BridgeInner">BridgeInner</a> = <a href="bridge.md#0xb_bridge">bridge</a>.inner.load_value_mut();
+    <b>assert</b>!(inner.bridge_version == version, <a href="bridge.md#0xb_bridge_EWrongInnerVersion">EWrongInnerVersion</a>);
+    (inner,&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id)
 }
 </code></pre>
 

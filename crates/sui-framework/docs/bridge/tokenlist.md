@@ -12,14 +12,11 @@ title: Module `0xb::tokenlist`
 -  [Function `initial_token_list`](#0xb_tokenlist_initial_token_list)
 -  [Function `borrow`](#0xb_tokenlist_borrow)
 -  [Function `borrow_mut`](#0xb_tokenlist_borrow_mut)
--  [Function `init_token_list_config`](#0xb_tokenlist_init_token_list_config)
+-  [Function `empty`](#0xb_tokenlist_empty)
 -  [Function `add_token_to_benfen`](#0xb_tokenlist_add_token_to_benfen)
 -  [Function `add_token_from_benfen`](#0xb_tokenlist_add_token_from_benfen)
 -  [Function `remove_token_to_benfen`](#0xb_tokenlist_remove_token_to_benfen)
 -  [Function `remove_token_from_benfen`](#0xb_tokenlist_remove_token_from_benfen)
--  [Function `add_benfen_token`](#0xb_tokenlist_add_benfen_token)
--  [Function `remove_benfen_token`](#0xb_tokenlist_remove_benfen_token)
--  [Function `get_benfen_token_id`](#0xb_tokenlist_get_benfen_token_id)
 -  [Function `add_token_info`](#0xb_tokenlist_add_token_info)
 -  [Function `remove_token_info`](#0xb_tokenlist_remove_token_info)
 -  [Function `get_token_info`](#0xb_tokenlist_get_token_info)
@@ -31,9 +28,7 @@ title: Module `0xb::tokenlist`
 -  [Function `is_supported_from_benfen_internal`](#0xb_tokenlist_is_supported_from_benfen_internal)
 
 
-<pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
-<b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
-<b>use</b> <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
+<pre><code><b>use</b> <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
 <b>use</b> <a href="../sui-framework/object.md#0x2_object">0x2::object</a>;
 <b>use</b> <a href="../sui-framework/table.md#0x2_table">0x2::table</a>;
 <b>use</b> <a href="../sui-framework/tx_context.md#0x2_tx_context">0x2::tx_context</a>;
@@ -77,12 +72,6 @@ Metadata for a bridged token.
 <dd>
  Number of decimal places used by the token.
 </dd>
-<dt>
-<code>addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;</code>
-</dt>
-<dd>
-
-</dd>
 </dl>
 
 
@@ -125,12 +114,6 @@ including those that can be transferred from or to the Benfen chain.
 <dd>
  Metadata for supported tokens.
  Mapping: chain_id => (token_id => TokenInfo)
-</dd>
-<dt>
-<code>benfen_tokens: <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">tokenlist::TokenInfo</a>&gt;</code>
-</dt>
-<dd>
-
 </dd>
 </dl>
 
@@ -219,12 +202,11 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
 
 
 <pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_new">new</a>(ctx: &<b>mut</b> TxContext): <a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">BridgeTokenList</a> {
-    <b>let</b> (from_benfen, to_benfen, tokens,benfen_tokens) = <a href="tokenlist.md#0xb_tokenlist_init_token_list_config">init_token_list_config</a>(ctx);
+    <b>let</b> (from_benfen, to_benfen, tokens) = <a href="tokenlist.md#0xb_tokenlist_empty">empty</a>(ctx);
     <a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">BridgeTokenList</a> {
         from_benfen,
         to_benfen,
         tokens,
-        benfen_tokens,
     }
 }
 </code></pre>
@@ -249,6 +231,11 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
 
 
 <pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_initial_token_list">initial_token_list</a>(parent_id: &<b>mut</b> UID,ctx: &<b>mut</b> TxContext){
+    //btc cross in benfen
+    //bitcoin
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
+
     //eth cross in benfen
     //eth
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
@@ -322,6 +309,12 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
+
+
+    //cross out  bitcoin
+    //bitcoin
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
 
 
     //cross out eth
@@ -451,14 +444,14 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
 
 </details>
 
-<a name="0xb_tokenlist_init_token_list_config"></a>
+<a name="0xb_tokenlist_empty"></a>
 
-## Function `init_token_list_config`
+## Function `empty`
 
 Internal helper to initialize nested tables.
 
 
-<pre><code><b>fun</b> <a href="tokenlist.md#0xb_tokenlist_init_token_list_config">init_token_list_config</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">tokenlist::TokenInfo</a>&gt;&gt;, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/type_name.md#0x1_type_name_TypeName">type_name::TypeName</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">tokenlist::TokenInfo</a>&gt;)
+<pre><code><b>fun</b> <a href="tokenlist.md#0xb_tokenlist_empty">empty</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): (<a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="../sui-framework/table.md#0x2_table_Table">table::Table</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">tokenlist::TokenInfo</a>&gt;&gt;)
 </code></pre>
 
 
@@ -467,19 +460,17 @@ Internal helper to initialize nested tables.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="tokenlist.md#0xb_tokenlist_init_token_list_config">init_token_list_config</a>(
+<pre><code><b>fun</b> <a href="tokenlist.md#0xb_tokenlist_empty">empty</a>(
     ctx: &<b>mut</b> TxContext
 ): (
     Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;,
     Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;,
     Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">TokenInfo</a>&gt;&gt;,
-    Table&lt;TypeName,<a href="tokenlist.md#0xb_tokenlist_TokenInfo">TokenInfo</a>&gt;,
 ) {
     <b>let</b> from_benfen = <a href="../sui-framework/table.md#0x2_table_new">table::new</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;(ctx);
     <b>let</b> to_benfen = <a href="../sui-framework/table.md#0x2_table_new">table::new</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bool&gt;&gt;(ctx);
     <b>let</b> tokens = <a href="../sui-framework/table.md#0x2_table_new">table::new</a>&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, Table&lt;<a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TokenInfo">TokenInfo</a>&gt;&gt;(ctx);
-    <b>let</b> benfen_tokens=<a href="../sui-framework/table.md#0x2_table_new">table::new</a>&lt;TypeName,<a href="tokenlist.md#0xb_tokenlist_TokenInfo">TokenInfo</a>&gt;(ctx);
-    (from_benfen, to_benfen, tokens,benfen_tokens)
+    (from_benfen, to_benfen, tokens)
 }
 </code></pre>
 
@@ -627,103 +618,6 @@ Removes a token from the **from Benfen** supported list.
 
 </details>
 
-<a name="0xb_tokenlist_add_benfen_token"></a>
-
-## Function `add_benfen_token`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_add_benfen_token">add_benfen_token</a>&lt;CoinType&gt;(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, decimal: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_add_benfen_token">add_benfen_token</a>&lt;CoinType&gt;(
-    parent_id: &<b>mut</b> UID,
-    token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    decimal: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-){
-      <b>let</b> coin_type=<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;CoinType&gt;();
-      <b>let</b> self=<a href="tokenlist.md#0xb_tokenlist_borrow_mut">borrow_mut</a>(parent_id);
-      <b>if</b> (!self.benfen_tokens.contains(coin_type)){
-        <b>let</b> addr=coin_type.into_string().into_bytes();
-        <b>let</b> info = <a href="tokenlist.md#0xb_tokenlist_TokenInfo">TokenInfo</a> {
-            chain_id: 0,
-            token_id,
-            decimal,
-            addr,
-        };
-        self.benfen_tokens.add(coin_type, info)
-      }
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xb_tokenlist_remove_benfen_token"></a>
-
-## Function `remove_benfen_token`
-
-
-
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_remove_benfen_token">remove_benfen_token</a>&lt;CoinType&gt;(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_remove_benfen_token">remove_benfen_token</a>&lt;CoinType&gt;(
-   parent_id: &<b>mut</b> UID,
-){
-     <b>let</b> coin_type=<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;CoinType&gt;();
-     <b>let</b> self=<a href="tokenlist.md#0xb_tokenlist_borrow_mut">borrow_mut</a>(parent_id);
-     <b>if</b> (self.benfen_tokens.contains(coin_type)){
-       self.benfen_tokens.remove(coin_type);
-     };
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0xb_tokenlist_get_benfen_token_id"></a>
-
-## Function `get_benfen_token_id`
-
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_benfen_token_id">get_benfen_token_id</a>&lt;CoinType&gt;(parent_id: &<a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_benfen_token_id">get_benfen_token_id</a>&lt;CoinType&gt;(
-     parent_id: &UID,
-): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
-    <b>let</b> coin_type=<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;CoinType&gt;();
-    <b>let</b> self=<a href="tokenlist.md#0xb_tokenlist_borrow">borrow</a>(parent_id);
-    self.benfen_tokens.<a href="tokenlist.md#0xb_tokenlist_borrow">borrow</a>(coin_type).token_id
-}
-</code></pre>
-
-
-
-</details>
-
 <a name="0xb_tokenlist_add_token_info"></a>
 
 ## Function `add_token_info`
@@ -731,7 +625,7 @@ Removes a token from the **from Benfen** supported list.
 Adds token metadata if not already present.
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_add_token_info">add_token_info</a>(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, chain_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, decimal: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_add_token_info">add_token_info</a>(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, chain_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, decimal: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -745,7 +639,6 @@ Adds token metadata if not already present.
     chain_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     decimal: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
-    addr: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
     <b>let</b> self=<a href="tokenlist.md#0xb_tokenlist_borrow_mut">borrow_mut</a>(parent_id);
@@ -757,7 +650,6 @@ Adds token metadata if not already present.
             chain_id,
             token_id,
             decimal,
-            addr,
         };
         self.tokens.<a href="tokenlist.md#0xb_tokenlist_borrow_mut">borrow_mut</a>(chain_id).add(token_id, info);
     };
@@ -851,7 +743,6 @@ Fetches metadata of a specific token. Panics if not found.
     parnet_id: &UID,
     chain_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
-
 ):bool{
     <b>let</b> self=<a href="tokenlist.md#0xb_tokenlist_borrow">borrow</a>(parnet_id);
     self.<a href="tokenlist.md#0xb_tokenlist_is_supported_to_benfen_internal">is_supported_to_benfen_internal</a>(chain_id,token_id)

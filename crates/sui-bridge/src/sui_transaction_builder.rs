@@ -1288,7 +1288,7 @@ pub fn build_add_tokenlist_transaction(
         client_address,
         vec![*gas_object_ref],
         pt,
-        100_000_000,
+        1_000_000_000,
         rgp,
     ))
 
