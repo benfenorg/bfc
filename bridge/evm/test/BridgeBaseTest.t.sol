@@ -7,7 +7,7 @@ import "openzeppelin-foundry-upgrades/Options.sol";
 import "../contracts/BridgeCommittee.sol";
 import "../contracts/vault/eth/BridgeVault.sol";
 import "../contracts/BridgeLimiter.sol";
-import {SuiBridge} from"../../contracts/bridge/eth/EthSuiBridge.sol";
+import {SuiBridge} from"../contracts/bridge/eth/EthSuiBridge.sol";
 import "../contracts/BridgeConfig.sol";
 
 contract BridgeBaseTest is Test {
@@ -175,7 +175,7 @@ contract BridgeBaseTest is Test {
         // deploy bridge =====================================================================
 
         address _suiBridge = Upgrades.deployUUPSProxy(
-            "SuiBridge.sol",
+            "EthSuiBridge.sol",
             abi.encodeCall(
                 SuiBridge.initialize, (address(committee), address(vault), address(limiter))
             ),
