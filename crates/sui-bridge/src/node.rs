@@ -145,6 +145,8 @@ pub async fn run_bridge_node(
             server_config.sui_client,
             server_config.eth_client,
             server_config.bsc_client,
+            server_config.base_client,
+            server_config.optimism_client,
             server_config.approved_governance_actions,
             metrics.clone(),
         ),

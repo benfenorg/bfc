@@ -224,6 +224,8 @@ impl BridgeNodeConfig {
             sui_client: sui_client.clone(),
             eth_client: eth_client.clone(),
             bsc_client: bsc_client.clone(),
+            base_client: base_client.clone(),
+            optimism_client: optimism_client.clone(),
             approved_governance_actions,
         };
         if !self.run_client {
@@ -498,6 +500,8 @@ pub struct BridgeServerConfig {
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
     pub bsc_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub base_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub optimism_client: Arc<EthClient<MeteredEthHttpProvier>>,
     /// A list of approved governance actions. Action in this list will be signed when requested by client.
     pub approved_governance_actions: Vec<BridgeAction>,
 }

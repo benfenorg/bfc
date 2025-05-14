@@ -194,12 +194,26 @@ impl BridgeChainId {
     pub fn is_eth_by_id(id: u8) -> bool {
         let eth_mainnet = BridgeChainId::EthMainnet as u8;
         let eth_sepolia = BridgeChainId::EthSepolia as u8;
-        id == eth_mainnet || id == eth_sepolia
+        let eth_custom = BridgeChainId::EthCustom as u8;
+        id == eth_mainnet || id == eth_sepolia || id == eth_custom
     }
     pub fn is_bsc_by_id(id: u8) -> bool {
         let bsc_mainnet = BridgeChainId::BscMainnet as u8;
         let bsc_testnet = BridgeChainId::BscTestnet as u8;
-        id == bsc_mainnet || id == bsc_testnet
+        let bsc_custom = BridgeChainId::BscCustom as u8;
+        id == bsc_mainnet || id == bsc_testnet || id == bsc_custom
+    }
+    pub fn is_op_by_id(id: u8) -> bool {
+        let op_mainnet = BridgeChainId::OPMainnet as u8;
+        let op_testnet = BridgeChainId::OPTestnet as u8;
+        let op_custom = BridgeChainId::OPCustom as u8;
+        id == op_mainnet || id == op_testnet || id == op_custom
+    }
+    pub fn is_base_by_id(id: u8) -> bool {
+        let base_mainnet = BridgeChainId::BaseMainnet as u8;
+        let base_testnet = BridgeChainId::BaseTestnet as u8;
+        let base_custom = BridgeChainId::BaseCustom as u8;
+        id == base_mainnet || id == base_testnet || id == base_custom
     }
 }
 

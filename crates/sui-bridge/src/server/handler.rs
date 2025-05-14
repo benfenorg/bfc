@@ -80,12 +80,16 @@ struct SuiActionVerifier<C> {
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
     bsc_client: Arc<EthClient<P>>,
+    base_client: Arc<EthClient<P>>,
+    optimism_client: Arc<EthClient<P>>,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     bsc_client: Arc<EthClient<P>>,
+    base_client: Arc<EthClient<P>>,
+    optimism_client: Arc<EthClient<P>>,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -126,12 +130,28 @@ where
                .get_finalized_bridge_action_maybe(tx_hash, event_idx)
                .await
                .tap_ok(|action| info!("Eth action found: {:?}", action))
-       }else {
+       }else if BridgeChainId::is_bsc_by_id(chain_id) {
            self.bsc_client
                .get_finalized_bridge_action_maybe(tx_hash, event_idx)
                .await
                .tap_ok(|action| info!("BSC action found: {:?}", action))
+       }else if BridgeChainId::is_base_by_id(chain_id) {
+           self.base_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Base action found: {:?}", action))
+       }else if BridgeChainId::is_op_by_id(chain_id) {
+           self.optimism_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Optimism action found: {:?}", action))
        }
+       else {
+              return Err(BridgeError::Generic(format!(
+                "Unsupported chain id: {}",
+                chain_id
+              )));
+         }
     }
 }
 
@@ -216,10 +236,23 @@ where
                 self.eth_client
                     .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
                     .await
-            } else {
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_bsc_chain() {
                 self.bsc_client
                     .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
                     .await
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_base_chain() {
+                self.base_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_optimism_chain() {
+                self.optimism_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else {
+                return Err(BridgeError::Generic(format!(
+                    "Unsupported chain id: {}",
+                    send_back_action.sui_bridge_event.eth_chain_id
+                )));
             };
             if let Err(e) = result {
                 return Err(e);
@@ -430,6 +463,8 @@ impl BridgeRequestHandler {
         sui_client: Arc<SuiClient<SC>>,
         eth_client: Arc<EthClient<EP>>,
         bsc_client: Arc<EthClient<EP>>,
+        base_client: Arc<EthClient<EP>>,
+        optimism_client: Arc<EthClient<EP>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
     ) -> Self {
@@ -495,6 +530,8 @@ impl BridgeRequestHandler {
             EthActionVerifier {
                 eth_client: eth_client.clone(),
                 bsc_client: bsc_client.clone(),
+                base_client: base_client.clone(),
+                optimism_client: optimism_client.clone(),
             },
             metrics.clone(),
         )
@@ -512,6 +549,8 @@ impl BridgeRequestHandler {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
                 bsc_client: bsc_client.clone(),
+                base_client: base_client.clone(),
+                optimism_client: optimism_client.clone(),
             },
             metrics.clone(),
         )
@@ -925,9 +964,20 @@ mod tests {
             eth_mock_provider.clone(),
             HashSet::from_iter(vec![contract_address]),
         );
+        let base_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
+        let optimism_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
             bsc_client: Arc::new(bsc_client),
+            base_client: Arc::new(base_client),
+            optimism_client: Arc::new(optimism_client),
+
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =
