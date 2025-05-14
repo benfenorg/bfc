@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./BridgeBaseTest.t.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "../contracts/interfaces/ISuiBridge.sol";
+import "../contracts/interfaces/bridge/eth/ISuiBridge.sol";
 import "./mocks/MockSuiBridgeV2.sol";
 
 contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {

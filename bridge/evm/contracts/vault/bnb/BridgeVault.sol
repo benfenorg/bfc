@@ -5,27 +5,26 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
-import "./interfaces/IBridgeVault.sol";
-import "./interfaces/IWETH9.sol";
-
+import "./../../interfaces/vault/bnb/IBridgeVault.sol";
+import "./../../interfaces/IWBNB.sol";
 /// @title BridgeVault
-/// @notice A contract that acts as a vault for transferring ERC20 tokens and ETH. It enables the owner
+/// @notice A contract that acts as a vault for transferring ERC20 tokens and BNB. It enables the owner
 /// (intended to be the SuiBridge contract) to transfer tokens to a target address. It also supports
-/// unwrapping WETH (Wrapped Ether) and transferring the unwrapped ETH.
+/// unwrapping WBNB (Wrapped Ether) and transferring the unwrapped BNB.
 /// @dev The contract is initialized with the deployer as the owner. The ownership is intended to be
 /// transferred to the SuiBridge contract after the bridge contract is deployed.
 contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
 
-    IWETH9 public immutable wETH;
+    IWBNB public immutable wBNB;
 
     /* ========== CONSTRUCTOR ========== */
 
     /// @notice Constructor function for the BridgeVault contract.
-    /// @param _wETH The address of the Wrapped Ether (WETH) contract.
-    constructor(address _wETH) Ownable(msg.sender) ReentrancyGuard() {
-        // Set the WETH address
-        wETH = IWETH9(_wETH);
+    /// @param _wBNB The address of the Wrapped Ether (WBNB) contract.
+    constructor(address _wBNB) Ownable(msg.sender) ReentrancyGuard() {
+        // Set the WBNB address
+        wBNB = IWBNB(_wBNB);
     }
 
     /// @notice Transfers ERC20 tokens from the contract to a target address. Only the owner of
@@ -44,30 +43,30 @@ contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
         SafeERC20.safeTransfer(IERC20(tokenAddress), recipientAddress, amount);
     }
 
-    /// @notice Unwraps stored wrapped ETH and transfers the newly withdrawn ETH to the provided target
+    /// @notice Unwraps stored wrapped BNB and transfers the newly withdrawn BNB to the provided target
     /// address. Only the owner of the contract can call this function.
     /// @dev This function is intended to only be called by the SuiBridge contract.
-    /// @param recipientAddress The address to transfer the ETH to.
-    /// @param amount The amount of ETH to transfer.
-    function transferETH(address payable recipientAddress, uint256 amount)
+    /// @param recipientAddress The address to transfer the BNB to.
+    /// @param amount The amount of BNB to transfer.
+    function transferBNB(address payable recipientAddress, uint256 amount)
         external
         override
         onlyOwner
         nonReentrant
     {
-        // Unwrap the WETH
-        wETH.withdraw(amount);
+        // Unwrap the WBNB
+        wBNB.withdraw(amount);
 
-        // Transfer the unwrapped ETH to the target address
+        // Transfer the unwrapped BNB to the target address
         (bool success,) = recipientAddress.call{value: amount}("");
-        require(success, "ETH transfer failed");
+        require(success, "BNB transfer failed");
     }
 
     /// @notice Wraps as eth sent to this contract.
-    /// @dev skip if sender is wETH contract to avoid infinite loop.
+    /// @dev skip if sender is wBNB contract to avoid infinite loop.
     receive() external payable {
-        if (msg.sender != address(wETH)) {
-            wETH.deposit{value: msg.value}();
+        if (msg.sender != address(wBNB)) {
+            wBNB.deposit{value: msg.value}();
         }
     }
 }

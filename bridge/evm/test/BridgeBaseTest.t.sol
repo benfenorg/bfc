@@ -5,9 +5,9 @@ import "forge-std/Test.sol";
 import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "openzeppelin-foundry-upgrades/Options.sol";
 import "../contracts/BridgeCommittee.sol";
-import "../contracts/BridgeVault.sol";
+import "../contracts/vault/eth/BridgeVault.sol";
 import "../contracts/BridgeLimiter.sol";
-import "../contracts/SuiBridge.sol";
+import {SuiBridge} from"../../contracts/bridge/eth/EthSuiBridge.sol";
 import "../contracts/BridgeConfig.sol";
 
 contract BridgeBaseTest is Test {

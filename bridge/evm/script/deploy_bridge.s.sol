@@ -7,10 +7,17 @@ import {Upgrades} from "openzeppelin-foundry-upgrades/Upgrades.sol";
 import "openzeppelin-foundry-upgrades/Options.sol";
 import "@openzeppelin/contracts/utils/Strings.sol";
 import "../contracts/BridgeCommittee.sol";
-import "../contracts/BridgeVault.sol";
+import {BridgeVault as BNBBridgeVault} from "../contracts/vault/bnb/BridgeVault.sol";
+import {BridgeVault as ETHBridgeVault} from "../contracts/vault/eth/BridgeVault.sol";
+
+import {SuiBridge as BNBSuiBridge}from"../contracts/bridge/bnb/BnbSuiBridge.sol";
+import {SuiBridge as ETHSuiBridge}from"../contracts/bridge/eth/EthSuiBridge.sol";
+
+
 import "../contracts/BridgeConfig.sol";
 import "../contracts/BridgeLimiter.sol";
-import "../contracts/SuiBridge.sol";
+
+
 import "../test/mocks/MockTokens.sol";
 
 contract DeployBridge is Script {
@@ -64,12 +71,13 @@ contract DeployBridge is Script {
             IERC20 USDC;
             IERC20 USDT;
 
-            if (chainIDHash == keccak256(abi.encode("31337"))){
-                USDC = new MockUSDC();
-                USDT = new MockUSDT();
-            }else{
+            if (chainIDHash == keccak256(abi.encode("31339"))){
                 USDC = new MockBNBUSDC();
                 USDT = new MockBNBUSDT();
+            }else{
+                USDC = new MockUSDC();
+                USDT = new MockUSDT();
+
             }
             MockWBTC wBTC = new MockWBTC();
             MockKA KA = new MockKA();
@@ -101,14 +109,12 @@ contract DeployBridge is Script {
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
-            if (chainIDHash == keccak256(abi.encode("31337"))){
-                console.log("bbking1");
-                deployConfig.suiDecimals[3] = 6;
-                deployConfig.suiDecimals[4] = 6;
-            }else{
-                console.log("bbking2");
+            if (chainIDHash == keccak256(abi.encode("31339"))){
                 deployConfig.suiDecimals[3] = 9;
                 deployConfig.suiDecimals[4] = 9;
+            }else{
+                deployConfig.suiDecimals[3] = 6;
+                deployConfig.suiDecimals[4] = 6;
             }
 
             deployConfig.suiDecimals[5] = 9;
@@ -202,9 +208,6 @@ contract DeployBridge is Script {
             BridgeCommittee(Upgrades.getImplementationAddress(bridgeCommittee));
         committeeImplementation.initializeConfig(address(bridgeConfig));
 
-        // deploy vault =============================================================================
-
-        BridgeVault vault = new BridgeVault(deployConfig.weth);
 
         // deploy limiter ===========================================================================
 
@@ -227,31 +230,69 @@ contract DeployBridge is Script {
         uint8[] memory _destinationChains = new uint8[](1);
         _destinationChains[0] = 1;
 
-        // deploy Sui Bridge ========================================================================
+       if (
+        keccak256(abi.encode(Strings.toString(block.chainid))) == keccak256(abi.encode("56")) ||
+        keccak256(abi.encode(Strings.toString(block.chainid))) == keccak256(abi.encode("97")) ||
+        keccak256(abi.encode(Strings.toString(block.chainid))) == keccak256(abi.encode("31339"))
+    ){
+            // deploy vault =============================================================================
+            BNBBridgeVault vault = new BNBBridgeVault(deployConfig.weth);
+             // deploy Sui Bridge ========================================================================
+            address suiBridge = Upgrades.deployUUPSProxy(
+                "BnbSuiBridge.sol",
+                abi.encodeCall(BNBSuiBridge.initialize, (bridgeCommittee, address(vault), limiter)),
+                opts
+            );
+            // transfer vault ownership to bridge
+            vault.transferOwnership(suiBridge);
+            // transfer limiter ownership to bridge
+            BridgeLimiter instance = BridgeLimiter(limiter);
+            instance.transferOwnership(suiBridge);
 
-        address suiBridge = Upgrades.deployUUPSProxy(
-            "SuiBridge.sol",
-            abi.encodeCall(SuiBridge.initialize, (bridgeCommittee, address(vault), limiter)),
-            opts
-        );
+            // print deployed addresses for post deployment setup
+            console.log("[Deployed] BridgeConfig:", bridgeConfig);
+            console.log("[Deployed] SuiBridge:", suiBridge);
+            console.log("[Deployed] BridgeLimiter:", limiter);
+            console.log("[Deployed] BridgeCommittee:", bridgeCommittee);
+            console.log("[Deployed] BridgeVault:", address(vault));
+            console.log("[Deployed] BTC:", BridgeConfig(bridgeConfig).tokenAddressOf(1));
+            console.log("[Deployed] ETH:", BridgeConfig(bridgeConfig).tokenAddressOf(2));
+            console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
+            console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
+            console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
 
-        // transfer vault ownership to bridge
-        vault.transferOwnership(suiBridge);
-        // transfer limiter ownership to bridge
-        BridgeLimiter instance = BridgeLimiter(limiter);
-        instance.transferOwnership(suiBridge);
+        }else{
 
-        // print deployed addresses for post deployment setup
-        console.log("[Deployed] BridgeConfig:", bridgeConfig);
-        console.log("[Deployed] SuiBridge:", suiBridge);
-        console.log("[Deployed] BridgeLimiter:", limiter);
-        console.log("[Deployed] BridgeCommittee:", bridgeCommittee);
-        console.log("[Deployed] BridgeVault:", address(vault));
-        console.log("[Deployed] BTC:", BridgeConfig(bridgeConfig).tokenAddressOf(1));
-        console.log("[Deployed] ETH:", BridgeConfig(bridgeConfig).tokenAddressOf(2));
-        console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
-        console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
-        console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
+            // deploy vault =============================================================================
+            ETHBridgeVault vault = new ETHBridgeVault(deployConfig.weth);
+             // deploy Sui Bridge ========================================================================
+            address suiBridge = Upgrades.deployUUPSProxy(
+                "EthSuiBridge.sol",
+                abi.encodeCall(ETHSuiBridge.initialize, (bridgeCommittee, address(vault), limiter)),
+                opts
+            );
+            // transfer vault ownership to bridge
+            vault.transferOwnership(suiBridge);
+
+             // transfer limiter ownership to bridge
+            BridgeLimiter instance = BridgeLimiter(limiter);
+            instance.transferOwnership(suiBridge);
+
+            // print deployed addresses for post deployment setup
+            console.log("[Deployed] BridgeConfig:", bridgeConfig);
+            console.log("[Deployed] SuiBridge:", suiBridge);
+            console.log("[Deployed] BridgeLimiter:", limiter);
+            console.log("[Deployed] BridgeCommittee:", bridgeCommittee);
+            console.log("[Deployed] BridgeVault:", address(vault));
+            console.log("[Deployed] BTC:", BridgeConfig(bridgeConfig).tokenAddressOf(1));
+            console.log("[Deployed] ETH:", BridgeConfig(bridgeConfig).tokenAddressOf(2));
+            console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
+            console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
+            console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
+        }
+
+
+
 
         vm.stopBroadcast();
     }
