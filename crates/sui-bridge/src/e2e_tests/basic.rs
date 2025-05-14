@@ -1341,6 +1341,111 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
 }
 
 #[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_bridge_usdt_to_sui_from_op() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_eth_chain_id(BridgeChainId::OPCustom)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let timer = std::time::Instant::now();
+
+    // let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let treasury_summary = bridge_test_cluster
+        .bridge_client()
+        .get_treasury_summary()
+        .await
+        .unwrap();
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
+    let (_id, _type) = treasury_summary
+        .id_token_type_map
+        .iter()
+        .find(|(id, _)| id == &TOKEN_ID_USDT)
+        .unwrap();
+    let (_type, _metadata) = treasury_summary
+        .supported_tokens
+        .iter()
+        .find(|(_type_, _)| _type == _type_)
+        .unwrap();
+    let new_token_erc_address = bridge_test_cluster.contracts().usdt;
+    initiate_bridge_erc20_to_sui(
+        &bridge_test_cluster,
+        3,
+        new_token_erc_address,
+        TOKEN_ID_USDT,
+        0,
+    )
+    .await
+    .unwrap();
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                TokenTransferApproved.get().unwrap().clone(),
+                TokenTransferClaimed.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await; // There are exactly 1 approved and 1 claimed event
+    assert_eq!(events.len(), 2);
+    sleep(Duration::from_secs(10));
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let all_coins = bridge_test_cluster
+        .sui_client()
+        .coin_read_api()
+        .get_all_coins(sui_address, None, None)
+        .await
+        .unwrap()
+        .data;
+    let busd_coin = all_coins
+        .iter()
+        .find(|c| c.coin_type.contains("BUSD"))
+        .expect("Recipient should have received BUSD coin now")
+        .clone();
+    assert_eq!(busd_coin.balance, 3_000_000_000);
+    info!(
+        "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
+        timer.elapsed()
+    );
+
+    let timer = std::time::Instant::now();
+
+    // Now let the recipient send the coin back to ETH
+    let eth_address_1 = EthAddress::random();
+    let nonce = 0;
+
+    let _sui_to_eth_bridge_action = initiate_bridge_sui_to_eth(
+        &bridge_test_cluster,
+        eth_address_1,
+        busd_coin.object_ref(),
+        nonce,
+        3_000_000_000,
+        TOKEN_ID_USDT,
+    )
+    .await
+    .unwrap();
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                SuiToEthTokenBridgeV1.get().unwrap().clone(),
+                TokenTransferApproved.get().unwrap().clone(),
+                TokenTransferClaimed.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await;
+    // There are exactly 1 deposit and 1 approved event
+    assert_eq!(events.len(), 2);
+    info!(
+        "[Timer] Sui to Eth bridge transfer approved in {:?}",
+        timer.elapsed()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
 async fn test_eth_to_sui_limit() {
     telemetry_subscribers::init_for_testing();
     let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
