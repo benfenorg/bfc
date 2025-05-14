@@ -275,7 +275,7 @@ fun test_register_foreign_token_bad_upgrade_cap() {
 fun test_execute_send_token() {
     let mut env = create_env(chain_ids::sui_testnet());
     env.create_bridge_default();
-    let btc: Coin<BTC> = env.get_btc(1);
+    let btc: Coin<ETH> = env.get_eth(1);
     let eth_address = x"0000000000000000000000000000000000000000";
     env.send_token(@0xABCD, chain_ids::eth_sepolia(), eth_address, btc);
     env.destroy_env();

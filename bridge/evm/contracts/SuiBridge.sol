@@ -232,7 +232,44 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 msg.sender,
                 recipientAddress
             );
-        }else{
+        }else if (committee.config().chainID() == 39 || committee.config().chainID() == 40 || committee.config().chainID() == 41){
+            //POL
+             // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.POL)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.POL),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.POL,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+
+        }else if (committee.config().chainID() == 45 || committee.config().chainID() == 46 || committee.config().chainID() == 47){
+              //AVAX
+              // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.AVAX)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.AVAX),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.AVAX,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+
+        }
+        else{
              // Adjust the amount
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
@@ -280,6 +317,23 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 vault.transferERC20(tokenAddress, recipientAddress, amount);
             }
 
+        }else if  (committee.config().chainID() == 39 || committee.config().chainID() == 40 || committee.config().chainID() == 41){
+            //POL
+            if (tokenID == BridgeUtils.POL) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+
+        }else if (committee.config().chainID() == 45 || committee.config().chainID() == 46 || committee.config().chainID() == 47){
+            //AVAX
+            if (tokenID == BridgeUtils.AVAX) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
         }else {
             if (tokenID == BridgeUtils.ETH) {
                 vault.transferETH(payable(recipientAddress), amount);

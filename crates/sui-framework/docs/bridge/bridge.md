@@ -26,6 +26,7 @@ title: Module `0xb::bridge`
 -  [Constants](#@Constants_0)
 -  [Function `create`](#0xb_bridge_create)
 -  [Function `init_bridge_committee`](#0xb_bridge_init_bridge_committee)
+-  [Function `migrate`](#0xb_bridge_migrate)
 -  [Function `committee_registration`](#0xb_bridge_committee_registration)
 -  [Function `update_node_url`](#0xb_bridge_update_node_url)
 -  [Function `register_foreign_token`](#0xb_bridge_register_foreign_token)
@@ -94,6 +95,7 @@ title: Module `0xb::bridge`
 <b>use</b> <a href="limiter.md#0xb_limiter">0xb::limiter</a>;
 <b>use</b> <a href="message.md#0xb_message">0xb::message</a>;
 <b>use</b> <a href="message_types.md#0xb_message_types">0xb::message_types</a>;
+<b>use</b> <a href="tokenlist.md#0xb_tokenlist">0xb::tokenlist</a>;
 <b>use</b> <a href="treasury.md#0xb_treasury">0xb::treasury</a>;
 <b>use</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system">0xc8::bfc_system</a>;
 <b>use</b> <a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner">0xc8::bfc_system_state_inner</a>;
@@ -1232,6 +1234,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EInvalidTokenListTokenID"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidTokenListTokenID">EInvalidTokenListTokenID</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 51;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EInvalidTxHash"></a>
 
 
@@ -1548,6 +1559,34 @@ title: Module `0xb::bridge`
 
 </details>
 
+<a name="0xb_bridge_migrate"></a>
+
+## Function `migrate`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    ctx: &<b>mut</b> TxContext
+){
+    <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx)
+    //init <a href="../sui-framework/config.md#0x2_config">config</a>
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_bridge_committee_registration"></a>
 
 ## Function `committee_registration`
@@ -1657,6 +1696,9 @@ title: Module `0xb::bridge`
     token: Coin&lt;T&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
+    <b>let</b> benfen_token_id=<a href="tokenlist.md#0xb_tokenlist_get_benfen_token_id">tokenlist::get_benfen_token_id</a>&lt;T&gt;(&<a href="bridge.md#0xb_bridge">bridge</a>.id);
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(&<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, benfen_token_id),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
@@ -1667,9 +1709,7 @@ title: Module `0xb::bridge`
     <b>let</b> token_amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
     <b>assert</b>!(token_amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="bridge.md#0xb_bridge_EUseSendBusd">EUseSendBusd</a>);
-
-    <b>assert</b>!(!(token_id==6 && (target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>())),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
-    <b>assert</b>!(!(token_id==2 && (target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>())),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(token_id==benfen_token_id,<a href="bridge.md#0xb_bridge_EInvalidTokenListTokenID">EInvalidTokenListTokenID</a>);
 
     // create <a href="bridge.md#0xb_bridge">bridge</a> <a href="message.md#0xb_message">message</a>
     <b>let</b> <a href="message.md#0xb_message">message</a> = <a href="message.md#0xb_message_create_token_bridge_message">message::create_token_bridge_message</a>(
@@ -1742,6 +1782,8 @@ title: Module `0xb::bridge`
     token_id_expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     ctx: &<b>mut</b> TxContext
 ) {
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(&<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id_expect),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+
     <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);

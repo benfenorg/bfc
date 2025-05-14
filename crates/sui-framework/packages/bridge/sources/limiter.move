@@ -235,6 +235,17 @@ module bridge::limiter {
         500_000 * USD_VALUE_MULTIPLIER
         );
 
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::base_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
+
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::op_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
+
+
         // MAX limit for testnet and devnet
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::eth_sepolia(), chain_ids::sui_testnet()),
@@ -274,6 +285,49 @@ module bridge::limiter {
 
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_custom()),
             MAX_TRANSFER_LIMIT
         );
 
