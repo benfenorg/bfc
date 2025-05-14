@@ -30,7 +30,7 @@ module bridge::message_tests {
     };
     use sui::bcs;
 
-    const INVALID_CHAIN: u8 = 42;
+    const INVALID_CHAIN: u8 = 100;
 
     #[test]
     fun test_message_serialization_sui_to_eth() {
@@ -268,7 +268,7 @@ module bridge::message_tests {
     #[test]
     fun test_refund_admin_message_serialization() {
         let sui_address = ascii::string(b"3428f2dade3808572aa7ce9ad35dfc90fa3c950e0d94c6a133112d019d9a4e12");
-        
+
         let refund_admin_message = create_refund_admin_message(
             chain_ids::sui_testnet(), // source chain
             10, // seq_num
@@ -481,14 +481,14 @@ module bridge::message_tests {
         let payload = add_tokens_on_sui_message.extract_add_tokens_on_sui();
         assert!(payload.is_native() == false);
         assert!(
-            payload.token_ids() == vector[treasury.token_id<BTC>(), treasury.token_id<ETH>()], 
+            payload.token_ids() == vector[treasury.token_id<BTC>(), treasury.token_id<ETH>()],
         );
         assert!(
-            payload.token_type_names() == 
+            payload.token_type_names() ==
                 vector[
-                    ascii::string(b"28ac483b6f2b62dd58abdf0bbc3f86900d86bbdc710c704ba0b33b7f1c4b43c8::btc::BTC"), 
+                    ascii::string(b"28ac483b6f2b62dd58abdf0bbc3f86900d86bbdc710c704ba0b33b7f1c4b43c8::btc::BTC"),
                     ascii::string(b"0xbd69a54e7c754a332804f325307c6627c06631dc41037239707e3242bc542e99::eth::ETH"),
-                ], 
+                ],
         );
         assert!(payload.token_prices() == vector[100, 100]);
         assert!(

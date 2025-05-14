@@ -59,6 +59,7 @@ module bridge::bridge_env {
     use std::ascii::String;
     use std::type_name;
     use bridge::bnb::{Self, BNB};
+    use bridge::op::{ OP};
     use sui::address;
     use sui::clock::Clock;
     use sui::coin::{Self, Coin, CoinMetadata, TreasuryCap};
@@ -87,6 +88,7 @@ module bridge::bridge_env {
     const USDT_ID: u64 = 4;
     const TEST_TOKEN_ID: u64 = 5;
     const BNB_ID: u64 = 6;
+    const OP_ID: u64=7;
 
 
     public fun btc_id(): u64 {
@@ -111,6 +113,10 @@ module bridge::bridge_env {
 
     public fun bnb_id(): u64 {
         BNB_ID
+    }
+
+    public fun op_id(): u64{
+        OP_ID
     }
 
     //
@@ -194,6 +200,7 @@ module bridge::bridge_env {
         usdt_coins: Coin<USDT>,
         test_coins: Coin<TEST_TOKEN>,
         bnb_coins: Coin<BNB>,
+        op_coins: Coin<OP>,
     }
 
     // HotPotato to access shared state
@@ -241,6 +248,7 @@ module bridge::bridge_env {
         let usdt_coins = coin::zero<USDT>(ctx);
         let test_coins = coin::zero<TEST_TOKEN>(ctx);
         let bnb_coins = coin::zero<BNB>(ctx);
+        let op_coins=coin::zero<OP>(ctx);
         let vault = Vault {
             btc_coins,
             eth_coins,
@@ -248,6 +256,7 @@ module bridge::bridge_env {
             usdt_coins,
             test_coins,
             bnb_coins,
+            op_coins
         };
         BridgeEnv {
             scenario,
@@ -327,6 +336,7 @@ module bridge::bridge_env {
         env.create_bridge(sender);
         env.register_committee();
         env.init_committee(sender);
+        env.add_tokenlist(sender);
         env.setup_treasury(sender);
         env.add_refund_admin(@0xABCD)
     }
@@ -339,6 +349,14 @@ module bridge::bridge_env {
         env.scenario.next_tx(sender);
         let ctx = env.scenario.ctx();
         create_bridge_for_testing(object::new(ctx), env.chain_id, ctx);
+    }
+
+    public fun add_tokenlist(env: &mut BridgeEnv, sender: address){
+        env.scenario.next_tx(sender);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let ctx = env.scenario.ctx();
+        bridge.migrate(ctx);
+        test_scenario::return_shared(bridge);
     }
 
     // Register 3 committee members (validators `@0xA`, `@0xB`, `@0xC`)
@@ -1890,6 +1908,7 @@ module bridge::bridge_env {
             usdt_coins,
             test_coins,
             bnb_coins,
+            op_coins
         } = vault;
         btc_coins.burn_for_testing();
         eth_coins.burn_for_testing();
@@ -1897,6 +1916,7 @@ module bridge::bridge_env {
         usdt_coins.burn_for_testing();
         test_coins.burn_for_testing();
         bnb_coins.burn_for_testing();
+        op_coins.burn_for_testing();
     }
 
     // Load the vault with some coins
@@ -2145,6 +2165,44 @@ module bridge::bnb {
         );
 
         let type_name = type_name::get<BNB>();
+        let address_bytes = hex::decode(
+            ascii::into_bytes(type_name::get_address(&type_name)),
+        );
+        let coin_id = address::from_bytes(address_bytes).to_id();
+        let upgrade_cap = test_publish(coin_id, ctx);
+
+        (upgrade_cap, treasury_cap, metadata)
+    }
+}
+
+
+#[test_only]
+module bridge::op {
+    use std::ascii;
+    use std::type_name;
+    use sui::address;
+    use sui::coin::{CoinMetadata, TreasuryCap, create_currency};
+    use sui::hex;
+    use sui::package::{UpgradeCap, test_publish};
+    use sui::test_utils::create_one_time_witness;
+
+    public struct OP has drop {}
+
+    public fun create_bridge_token(
+        ctx: &mut TxContext,
+    ): (UpgradeCap, TreasuryCap<OP>, CoinMetadata<OP>) {
+        let otw = create_one_time_witness<OP>();
+        let (treasury_cap, metadata) = create_currency(
+            otw,
+            8,
+            b"OP",
+            b"OP",
+            b"bridge OP token",
+            option::none(),
+            ctx,
+        );
+
+        let type_name = type_name::get<OP>();
         let address_bytes = hex::decode(
             ascii::into_bytes(type_name::get_address(&type_name)),
         );

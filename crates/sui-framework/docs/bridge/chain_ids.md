@@ -17,6 +17,12 @@ title: Module `0xb::chain_ids`
 -  [Function `bsc_mainnet`](#0xb_chain_ids_bsc_mainnet)
 -  [Function `bsc_testnet`](#0xb_chain_ids_bsc_testnet)
 -  [Function `bsc_custom`](#0xb_chain_ids_bsc_custom)
+-  [Function `base_mainnet`](#0xb_chain_ids_base_mainnet)
+-  [Function `base_testnet`](#0xb_chain_ids_base_testnet)
+-  [Function `base_custom`](#0xb_chain_ids_base_custom)
+-  [Function `op_mainnet`](#0xb_chain_ids_op_mainnet)
+-  [Function `op_testnet`](#0xb_chain_ids_op_testnet)
+-  [Function `op_custom`](#0xb_chain_ids_op_custom)
 -  [Function `route_source`](#0xb_chain_ids_route_source)
 -  [Function `route_destination`](#0xb_chain_ids_route_destination)
 -  [Function `assert_valid_chain_id`](#0xb_chain_ids_assert_valid_chain_id)
@@ -66,6 +72,33 @@ title: Module `0xb::chain_ids`
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0xb_chain_ids_BaseCustom"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>: u8 = 44;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_BaseMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a>: u8 = 42;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_BaseTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a>: u8 = 43;
+</code></pre>
+
 
 
 <a name="0xb_chain_ids_BscCustom"></a>
@@ -145,6 +178,33 @@ title: Module `0xb::chain_ids`
 
 
 <pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_EthSepolia">EthSepolia</a>: u8 = 11;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_OPCustom"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a>: u8 = 35;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_OPMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a>: u8 = 33;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_OPTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a>: u8 = 34;
 </code></pre>
 
 
@@ -412,6 +472,138 @@ title: Module `0xb::chain_ids`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_bsc_custom">bsc_custom</a>(): u8  { <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>  }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_base_mainnet"></a>
+
+## Function `base_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_mainnet">base_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_mainnet">base_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_base_testnet"></a>
+
+## Function `base_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_testnet">base_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_testnet">base_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_base_custom"></a>
+
+## Function `base_custom`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_custom">base_custom</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_base_custom">base_custom</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_op_mainnet"></a>
+
+## Function `op_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_mainnet">op_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_mainnet">op_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_op_testnet"></a>
+
+## Function `op_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_testnet">op_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_testnet">op_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_op_custom"></a>
+
+## Function `op_custom`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_custom">op_custom</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_op_custom">op_custom</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a> }
 </code></pre>
 
 
