@@ -52,6 +52,8 @@ pub const BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("create_add_tokens_on_sui_message");
 pub const BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("execute_system_message");
+pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr =
+    ident_str!("migrate");
 
 pub const BRIDGE_SUPPORTED_ASSET: &[&str] = &["btc", "eth", "usdc", "usdt"];
 
@@ -191,7 +193,7 @@ impl BridgeChainId {
             BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom
         )
     }
-    
+
     pub fn is_eth_by_id(id: u8) -> bool {
         let eth_mainnet = BridgeChainId::EthMainnet as u8;
         let eth_sepolia = BridgeChainId::EthSepolia as u8;
