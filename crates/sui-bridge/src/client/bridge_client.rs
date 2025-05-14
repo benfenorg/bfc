@@ -53,7 +53,7 @@ impl BridgeClient {
     fn bridge_action_to_path(event: &BridgeAction) -> String {
         match event {
             BridgeAction::SuiToEthBridgeAction(e) => format!(
-                "sign/bridge_tx/sui/eth/{}/{}",
+                "sign/bridge_tx/sui/evm/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
@@ -533,7 +533,7 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/sui/eth/{}/{}",
+                "sign/bridge_tx/sui/evm/{}/{}",
                 sui_tx_digest, sui_tx_event_index
             )
         );
@@ -559,7 +559,8 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
+                "sign/bridge_tx/evm/sui/{}/{}/{}",
+                BridgeChainId::EthSepolia as u8,
                 Hex::encode(eth_tx_hash.0),
                 eth_event_index
             )

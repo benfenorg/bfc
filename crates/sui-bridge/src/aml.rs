@@ -20,6 +20,26 @@ const MISTTRACK_USDC_TRC20_COIN: &str = "USDC-TRC20";
 const MISTTRACK_BNB_COIN: &str = "BNB";
 const MISTTRACK_USDT_BEP20_COIN: &str = "USDT-BEP20";
 const MISTTRACK_USDC_BEP20_COIN: &str = "USDC-BEP20";
+//chain Optimism
+const MISTTRACK_ETH_OP_COIN: &str = "ETH-Optimism";
+const MISTTRACK_USDT_OP_COIN: &str = "USDT-Optimism";
+const MISTTRACK_USDC_OP_COIN: &str = "USDC-Optimism";
+//chain Base
+const MISTTRACK_ETH_BASE_COIN: &str = "ETH-Base";
+const MISTTRACK_USDT_BASE_COIN: &str = "USDT-Base";
+const MISTTRACK_USDC_BASE_COIN: &str = "USDC-Base";
+//chain Arbitrum
+const MISTTRACK_ETH_ARBITRUM_COIN: &str = "ETH-Arbitrum";
+const MISTTRACK_USDT_ARBITRUM_COIN: &str = "USDT-Arbitrum";
+const MISTTRACK_USDC_ARBITRUM_COIN: &str = "USDC-Arbitrum";
+//chain Avalanche
+const MISTTRACK_AVAX_AVALANCHE_COIN: &str = "AVAX-Avalanche";
+const MISTTRACK_USDT_AVALANCHE_COIN: &str = "USDT-Avalanche";
+const MISTTRACK_USDC_AVALANCHE_COIN: &str = "USDC-Avalanche";
+//chain Polygon
+const MISTTRACK_POL_COIN: &str = "POL-Polygon";
+const MISTTRACK_USDT_POLYGON_COIN: &str = "USDT-Polygon";
+const MISTTRACK_USDC_POLYGON_COIN: &str = "USDC-Polygon";
 //chain Solana
 #[allow(unused)]
 const MISTRACK_SOL_COIN: &str = "SOL";
@@ -79,41 +99,42 @@ pub async fn check_aml_risk_score(
 
 fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
     let coin = match chain {
-        BridgeChainId::EthMainnet  => match token {
+        BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => match token {
             TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
             TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
             TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
             _ => MISTTRACK_ETH_COIN,
         },
-        BridgeChainId::EthSepolia => match token {
-            TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
-            TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
-            TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
-            _ => MISTTRACK_ETH_COIN,
-        },
-        BridgeChainId::EthCustom => match token {
-            TOKEN_ID_ETH => MISTTRACK_ETH_COIN,
-            TOKEN_ID_USDT => MISTTRACK_USDT_ERC20_COIN,
-            TOKEN_ID_USDC => MISTTRACK_USDC_ERC20_COIN,
-            _ => MISTTRACK_ETH_COIN,
-        },
-        BridgeChainId::BscTestnet => match token {
+        BridgeChainId::BscTestnet | BridgeChainId::BscCustom | BridgeChainId::BscMainnet => match token {
             TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
             TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
             TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
             _ => MISTTRACK_BNB_COIN,
         },
-        BridgeChainId::BscCustom => match token {
-            TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
-            TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
-            TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
-            _ => MISTTRACK_BNB_COIN,
+        BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom=> match token {
+            TOKEN_ID_USDT => MISTTRACK_USDT_POLYGON_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_POLYGON_COIN,
+            _ => MISTTRACK_POL_COIN,
         },
-        BridgeChainId::BscMainnet => match token {
-            TOKEN_ID_BNB => MISTTRACK_BNB_COIN,
-            TOKEN_ID_USDT => MISTTRACK_USDT_BEP20_COIN,
-            TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
-            _ => MISTTRACK_BNB_COIN,
+        BridgeChainId::AvaxMainnet | BridgeChainId::AvaxCustom | BridgeChainId::AvaxTestnet => match token {
+            TOKEN_ID_USDT => MISTTRACK_USDT_AVALANCHE_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_AVALANCHE_COIN,
+            _ => MISTTRACK_AVAX_AVALANCHE_COIN,
+        },
+        BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom => match token {
+            TOKEN_ID_USDT => MISTTRACK_USDT_ARBITRUM_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_ARBITRUM_COIN,
+            _ => MISTTRACK_ETH_ARBITRUM_COIN,
+        },
+        BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom => match token {
+            TOKEN_ID_USDT => MISTTRACK_USDT_OP_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_OP_COIN,
+            _ => MISTTRACK_ETH_OP_COIN,
+        },
+        BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet |BridgeChainId::BaseCustom => match token {
+            TOKEN_ID_USDT => MISTTRACK_USDT_BASE_COIN,
+            TOKEN_ID_USDC => MISTTRACK_USDC_BASE_COIN,
+            _ => MISTTRACK_ETH_BASE_COIN,
         },
         _ => MISTTRACK_ETH_COIN,
     };
