@@ -135,10 +135,6 @@ module bridge::tokenlist {
         add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,2,ctx);
         add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,2,ctx);
 
-        //op
-        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,7,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,7,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,7,ctx);
 
 
         //cross out  bitcoin
@@ -213,11 +209,6 @@ module bridge::tokenlist {
         add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,2,ctx);
         add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,2,ctx);
         add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,2,ctx);
-
-        //op
-        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,7,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,7,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,7,ctx);
 
     }
 
