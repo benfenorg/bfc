@@ -3,7 +3,7 @@ pragma solidity ^0.8.20;
 
 import "./BridgeBaseTest.t.sol";
 import "@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol";
-import "../contracts/interfaces/bridge/eth/ISuiBridge.sol";
+import "../contracts/interfaces/ISuiBridge.sol";
 import "./mocks/MockSuiBridgeV2.sol";
 
 contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
@@ -156,8 +156,8 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
     function testTransferWETHWithValidSignatures() public {
         // Fill vault with WETH
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
-        // IWNative(wETH).withdraw(1 ether);
+        IWETH9(wETH).deposit{value: 10 ether}();
+        // IWETH9(wETH).withdraw(1 ether);
         IERC20(wETH).transfer(address(vault), 10 ether);
         // Create transfer payload
         uint8 senderAddressLength = 32;
@@ -406,14 +406,14 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
     function testBridgeEthInvalidRecipientAddress() public {
         vm.expectRevert(bytes("SuiBridge: Invalid recipient address length"));
-        bridge.bridgeNativeToken{value: 1 ether}(
+        bridge.bridgeETH{value: 1 ether}(
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3", 0
         );
     }
 
     function testBridgeWETH() public {
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
+        IWETH9(wETH).deposit{value: 10 ether}();
         IERC20(wETH).approve(address(bridge), 10 ether);
         assertEq(IERC20(wETH).balanceOf(address(vault)), 0);
         uint256 balance = IERC20(wETH).balanceOf(deployer);
@@ -602,7 +602,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4"
         );
 
-        bridge.bridgeNativeToken{value: 1 ether}(
+        bridge.bridgeETH{value: 1 ether}(
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0
         );
         assertEq(IERC20(wETH).balanceOf(address(vault)), 1 ether);
@@ -617,7 +617,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
         vault.transferOwnership(address(reentrantAttack));
         // Fill vault with WETH
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
+        IWETH9(wETH).deposit{value: 10 ether}();
         IERC20(wETH).transfer(address(vault), 10 ether);
         vm.expectRevert("ETH transfer failed");
         reentrantAttack.attack();
@@ -636,7 +636,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
     function testSuiBridgeInvalidEthDecimalConversion() public {
         vm.expectRevert(bytes("BridgeUtils: Insufficient amount provided"));
-        bridge.bridgeNativeToken{value: 1}(
+        bridge.bridgeETH{value: 1}(
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0
         );
     }
@@ -653,7 +653,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
     function testSuiBridgeInvalidETHTransfer() public {
         vm.expectRevert(bytes("BridgeUtils: Insufficient amount provided"));
-        bridge.bridgeNativeToken{value: 0}(
+        bridge.bridgeETH{value: 0}(
             hex"06bb77410cd326430fa2036c8282dbb54a6f8640cea16ef5eff32d638718b3e4", 0
         );
     }
@@ -738,7 +738,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         // Fill vault with WETH
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
+        IWETH9(wETH).deposit{value: 10 ether}();
         IERC20(wETH).transfer(address(vault), 10 ether);
         address recipientAddress = 0xb18f79Fe671db47393315fFDB377Da4Ea1B7AF96;
 
@@ -1088,7 +1088,7 @@ contract SuiBridgeTest is BridgeBaseTest, ISuiBridge {
 
         // Fill vault with WETH
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
+        IWETH9(wETH).deposit{value: 10 ether}();
         IERC20(wETH).transfer(address(vault), 10 ether);
 
         bytes memory payload =
@@ -1127,12 +1127,12 @@ contract ReentrantAttack {
     receive() external payable {
         if (!attackInitiated) {
             attackInitiated = true;
-            vault.transferNativeToken(payable(address(this)), 100);
+            vault.transferETH(payable(address(this)), 100);
         }
     }
 
     function attack() external payable {
         attackInitiated = false;
-        vault.transferNativeToken(payable(address(this)), 100);
+        vault.transferETH(payable(address(this)), 100);
     }
 }

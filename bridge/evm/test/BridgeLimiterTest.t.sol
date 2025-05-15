@@ -406,7 +406,7 @@ contract BridgeLimiterTest is BridgeBaseTest {
 
         // Fill vault with WETH
         changePrank(deployer);
-        IWNative(wETH).deposit{value: 10 ether}();
+        IWETH9(wETH).deposit{value: 10 ether}();
         IERC20(wETH).transfer(address(vault), 10 ether);
         // sending chain: 01 (sendingChainID), new limit: 99_900 * USD_VALUE_MULTIPLIER
         bytes memory payload = hex"0100000915fa66bc00";

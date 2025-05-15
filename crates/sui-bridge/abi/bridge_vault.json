@@ -3,7 +3,7 @@
         "type": "constructor",
         "inputs": [
             {
-                "name": "_wNative",
+                "name": "_wETH",
                 "type": "address",
                 "internalType": "address"
             }
@@ -59,7 +59,7 @@
     },
     {
         "type": "function",
-        "name": "transferNativeToken",
+        "name": "transferETH",
         "inputs": [
             {
                 "name": "recipientAddress",
@@ -90,13 +90,13 @@
     },
     {
         "type": "function",
-        "name": "wNative",
+        "name": "wETH",
         "inputs": [],
         "outputs": [
             {
                 "name": "",
                 "type": "address",
-                "internalType": "contract IWNative"
+                "internalType": "contract IWETH9"
             }
         ],
         "stateMutability": "view"

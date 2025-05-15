@@ -42,7 +42,7 @@
     },
     {
         "type": "function",
-        "name": "bridgeNativeToken",
+        "name": "bridgeETH",
         "inputs": [
             {
                 "name": "recipientAddress",
