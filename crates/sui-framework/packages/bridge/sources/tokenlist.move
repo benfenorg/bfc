@@ -1,3 +1,4 @@
+#[allow(unused_const)]
 module bridge::tokenlist {
 
     use sui::table::{Self, Table};
