@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./../../interfaces/vault/eth/IBridgeVault.sol";
-import "./../../interfaces/IWETH9.sol";
+import "./../../interfaces/IWNative.sol";
 
 /// @title BridgeVault
 /// @notice A contract that acts as a vault for transferring ERC20 tokens and ETH. It enables the owner
@@ -17,15 +17,15 @@ import "./../../interfaces/IWETH9.sol";
 contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
 
-    IWETH9 public immutable wETH;
+    IWNative public immutable wNative;
 
     /* ========== CONSTRUCTOR ========== */
 
     /// @notice Constructor function for the BridgeVault contract.
-    /// @param _wETH The address of the Wrapped Ether (WETH) contract.
-    constructor(address _wETH) Ownable(msg.sender) ReentrancyGuard() {
+    /// @param _wNative The address of the Wrapped Ether (WETH) contract.
+    constructor(address _wNative) Ownable(msg.sender) ReentrancyGuard() {
         // Set the WETH address
-        wETH = IWETH9(_wETH);
+        wNative = IWNative(_wNative);
     }
 
     /// @notice Transfers ERC20 tokens from the contract to a target address. Only the owner of
@@ -49,14 +49,14 @@ contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /// @dev This function is intended to only be called by the SuiBridge contract.
     /// @param recipientAddress The address to transfer the ETH to.
     /// @param amount The amount of ETH to transfer.
-    function transferETH(address payable recipientAddress, uint256 amount)
+    function transferNativeToken(address payable recipientAddress, uint256 amount)
         external
         override
         onlyOwner
         nonReentrant
     {
         // Unwrap the WETH
-        wETH.withdraw(amount);
+        wNative.withdraw(amount);
 
         // Transfer the unwrapped ETH to the target address
         (bool success,) = recipientAddress.call{value: amount}("");
@@ -66,8 +66,8 @@ contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /// @notice Wraps as eth sent to this contract.
     /// @dev skip if sender is wETH contract to avoid infinite loop.
     receive() external payable {
-        if (msg.sender != address(wETH)) {
-            wETH.deposit{value: msg.value}();
+        if (msg.sender != address(wNative)) {
+            wNative.deposit{value: msg.value}();
         }
     }
 }

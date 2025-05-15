@@ -195,7 +195,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
     /// @dev The provided destinationChainID must be supported.
     /// @param recipientAddress The address on the destination chain where Eth will be sent.
     /// @param destinationChainID The ID of the destination chain.
-    function bridgeETH(bytes memory recipientAddress, uint8 destinationChainID)
+    function bridgeNativeToken(bytes memory recipientAddress, uint8 destinationChainID)
         external
         payable
         whenNotPaused
@@ -254,7 +254,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
         require(tokenAddress != address(0), "SuiBridge: Unsupported token");
 
         if (tokenID == BridgeUtils.ETH) {
-            vault.transferETH(payable(recipientAddress), amount);
+            vault.transferNativeToken(payable(recipientAddress), amount);
         } else {
             // transfer tokens from vault to target address
             vault.transferERC20(tokenAddress, recipientAddress, amount);

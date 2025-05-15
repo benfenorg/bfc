@@ -13,5 +13,5 @@ interface IBridgeVault {
     /// @notice Transfers BNB from the BridgeVault contract to a target address.
     /// @param recipientAddress The address to transfer the BNB to.
     /// @param amount The amount of BNB to transfer.
-    function transferBNB(address payable recipientAddress, uint256 amount) external;
+    function transferNativeToken(address payable recipientAddress, uint256 amount) external;
 }
