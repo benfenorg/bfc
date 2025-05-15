@@ -162,21 +162,33 @@ library BridgeUtils {
     /// @param suiDecimal The sui decimal value for the token.
     /// @param amount The Sui amount of the tokens to convert to ERC20.
     /// @return ERC20 converted amount.
-    function convertSuiToERC20Decimal(uint8 erc20Decimal, uint8 suiDecimal, uint64 amount)
-        internal
-        pure
-        returns (uint256)
-    {
+    function convertSuiToERC20Decimal(
+        uint8 erc20Decimal,
+        uint8 suiDecimal,
+        uint64 amount
+    ) internal pure returns (uint256) {
+        require(amount > 0, "BridgeUtils: Amount must be greater than zero");
+
         if (suiDecimal == erc20Decimal) {
             return uint256(amount);
         }
 
-        require(erc20Decimal > suiDecimal, "BridgeUtils: Invalid Sui decimal");
+        uint256 adjustedAmount;
+        if (erc20Decimal > suiDecimal) {
+            // Upscale: increase precision
+            uint256 factor = 10 ** (erc20Decimal - suiDecimal);
+            adjustedAmount = uint256(amount) * factor;
+        } else {
+            // Downscale: reduce precision, may lose precision
+            uint256 factor = 10 ** (suiDecimal - erc20Decimal);
+            adjustedAmount = uint256(amount) / factor;
 
-        // Difference in decimal places
-        uint256 factor = 10 ** (erc20Decimal - suiDecimal);
-        return uint256(amount * factor);
+            require(adjustedAmount > 0, "BridgeUtils: Resulting amount too small");
+        }
+
+        return adjustedAmount;
     }
+
 
     /// @notice Decodes a token transfer payload from bytes to a TokenTransferPayload struct.
     /// @dev The function will revert if the payload length is invalid.
