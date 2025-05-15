@@ -18,7 +18,7 @@ use tracing::{info, warn};
 
 /// The minimum and maximum protocol versions supported by this build.
 const MIN_PROTOCOL_VERSION: u64 = 1;
-const MAX_PROTOCOL_VERSION: u64 = 70;
+const MAX_PROTOCOL_VERSION: u64 = 71;
 
 // Record history of protocol version allocations here:
 //
@@ -3122,6 +3122,10 @@ impl ProtocolConfig {
                         cfg.feature_flags.bridge = true;
                         cfg.bridge_should_try_to_finalize_committee = Some(true);
                     }
+
+                }
+
+                71 => {
 
                 }
                 // Use this template when making changes:
