@@ -245,6 +245,21 @@ module bridge::limiter {
         500_000 * USD_VALUE_MULTIPLIER
         );
 
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::pol_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
+
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::arb_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
+
+        transfer_limits.insert(
+        chain_ids::get_route(chain_ids::avax_mainnet(), chain_ids::sui_mainnet()),
+        500_000 * USD_VALUE_MULTIPLIER
+        );
+
 
         // MAX limit for testnet and devnet
         transfer_limits.insert(
@@ -328,6 +343,66 @@ module bridge::limiter {
 
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        transfer_limits.insert(
+            chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_custom()),
             MAX_TRANSFER_LIMIT
         );
 
