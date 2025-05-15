@@ -143,10 +143,6 @@ module bridge::tokenlist {
         add_token_to_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_to_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_to_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_ETH, ctx);
-        // pol
-        add_token_to_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_POL, ctx);
-        add_token_to_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_POL, ctx);
-        add_token_to_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_POL, ctx);
         //arbitrum cross in benfen
         //usdc
         add_token_to_benfen(parent_id, chain_ids::arb_mainnet() as u64,TOKEN_ID_USDC, ctx);
@@ -256,10 +252,6 @@ module bridge::tokenlist {
         add_token_from_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_ETH, ctx);
         add_token_from_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_ETH, ctx);
-        // pol
-        add_token_from_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_POL, ctx);
-        add_token_from_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_POL, ctx);
-        add_token_from_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_POL, ctx);
 
         //cross out arbitrum
         //usdc
