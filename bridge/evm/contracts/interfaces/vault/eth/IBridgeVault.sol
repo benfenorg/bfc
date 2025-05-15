@@ -13,5 +13,5 @@ interface IBridgeVault {
     /// @notice Transfers ETH from the BridgeVault contract to a target address.
     /// @param recipientAddress The address to transfer the ETH to.
     /// @param amount The amount of ETH to transfer.
-    function transferETH(address payable recipientAddress, uint256 amount) external;
+    function transferNativeToken(address payable recipientAddress, uint256 amount) external;
 }

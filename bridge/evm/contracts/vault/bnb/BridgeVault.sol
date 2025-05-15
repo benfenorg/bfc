@@ -6,7 +6,7 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import "./../../interfaces/vault/bnb/IBridgeVault.sol";
-import "./../../interfaces/IWBNB.sol";
+import "./../../interfaces/IWNative.sol";
 /// @title BridgeVault
 /// @notice A contract that acts as a vault for transferring ERC20 tokens and BNB. It enables the owner
 /// (intended to be the SuiBridge contract) to transfer tokens to a target address. It also supports
@@ -16,15 +16,15 @@ import "./../../interfaces/IWBNB.sol";
 contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /* ========== STATE VARIABLES ========== */
 
-    IWBNB public immutable wBNB;
+    IWNative public immutable wNative;
 
     /* ========== CONSTRUCTOR ========== */
 
     /// @notice Constructor function for the BridgeVault contract.
-    /// @param _wBNB The address of the Wrapped Ether (WBNB) contract.
-    constructor(address _wBNB) Ownable(msg.sender) ReentrancyGuard() {
+    /// @param _wNative The address of the Wrapped Native Token (_wNative) contract.
+    constructor(address _wNative) Ownable(msg.sender) ReentrancyGuard() {
         // Set the WBNB address
-        wBNB = IWBNB(_wBNB);
+        wNative = IWNative(_wNative);
     }
 
     /// @notice Transfers ERC20 tokens from the contract to a target address. Only the owner of
@@ -48,14 +48,14 @@ contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /// @dev This function is intended to only be called by the SuiBridge contract.
     /// @param recipientAddress The address to transfer the BNB to.
     /// @param amount The amount of BNB to transfer.
-    function transferBNB(address payable recipientAddress, uint256 amount)
+    function transferNativeToken(address payable recipientAddress, uint256 amount)
         external
         override
         onlyOwner
         nonReentrant
     {
         // Unwrap the WBNB
-        wBNB.withdraw(amount);
+        wNative.withdraw(amount);
 
         // Transfer the unwrapped BNB to the target address
         (bool success,) = recipientAddress.call{value: amount}("");
@@ -65,8 +65,8 @@ contract BridgeVault is Ownable, IBridgeVault, ReentrancyGuard {
     /// @notice Wraps as eth sent to this contract.
     /// @dev skip if sender is wBNB contract to avoid infinite loop.
     receive() external payable {
-        if (msg.sender != address(wBNB)) {
-            wBNB.deposit{value: msg.value}();
+        if (msg.sender != address(wNative)) {
+            wNative.deposit{value: msg.value}();
         }
     }
 }
