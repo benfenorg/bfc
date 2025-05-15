@@ -5,6 +5,18 @@ module bridge::tokenlist {
 
     use bridge::chain_ids;
 
+    // const for initial token ids
+    const TOKEN_ID_SUI: u64 = 0;
+    const TOKEN_ID_BTC: u64 = 1;
+    const TOKEN_ID_ETH: u64 = 2;
+    const TOKEN_ID_USDC: u64 = 3;
+    const TOKEN_ID_USDT: u64 = 4;
+    const TOKEN_ID_BUSD: u64 = 5;
+    const TOKEN_ID_BNB: u64 = 6;
+    const TOKEN_ID_OP: u64 = 7;
+    const TOKEN_ID_POL: u64 = 8;
+
+
     const KEY: vector<u8> = b"bridge_token_list";
 
     const EChainIDAndTokenIDNotExist: u64=0;
@@ -63,153 +75,218 @@ module bridge::tokenlist {
     public(package) fun initial_token_list(parent_id: &mut UID,ctx: &mut TxContext){
         //btc cross in benfen
         //bitcoin
-        add_token_to_benfen(parent_id,chain_ids::btc_mainnet() as u64,1,ctx);
-        add_token_to_benfen(parent_id,chain_ids::btc_testnet() as u64,1,ctx);
-
+        add_token_to_benfen(parent_id, chain_ids::btc_mainnet() as u64, TOKEN_ID_BTC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::btc_testnet() as u64, TOKEN_ID_BTC, ctx);
         //eth cross in benfen
         //eth
-        add_token_to_benfen(parent_id,chain_ids::eth_mainnet() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_sepolia() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_custom() as u64,2,ctx);
-
+        add_token_to_benfen(parent_id, chain_ids::eth_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::eth_sepolia() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::eth_custom() as u64, TOKEN_ID_ETH, ctx);
         //usdc
-        add_token_to_benfen(parent_id,chain_ids::eth_mainnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_sepolia() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_custom() as u64,3,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::eth_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::eth_sepolia() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::eth_custom() as u64,TOKEN_ID_USDC,ctx);
         //usdt
-        add_token_to_benfen(parent_id,chain_ids::eth_mainnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_sepolia() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::eth_custom() as u64,4,ctx);
-
-
-
+        add_token_to_benfen(parent_id,chain_ids::eth_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::eth_sepolia() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::eth_custom() as u64,TOKEN_ID_USDT,ctx);
         //bsc cross in  benfen
         //usdc
-        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,3,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_USDC,ctx);
         //usdt
-        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,4,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_USDT,ctx);
         //bnb
-        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,6,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,6,ctx);
-        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,6,ctx);
-
-
+        add_token_to_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_BNB,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_BNB,ctx);
+        add_token_to_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_BNB,ctx);
         //base cross in benfen
         //usdc
-        add_token_to_benfen(parent_id,chain_ids::base_mainnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_testnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_custom() as u64,3,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::base_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::base_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::base_custom() as u64,TOKEN_ID_USDC,ctx);
         //usdt
-        add_token_to_benfen(parent_id,chain_ids::base_mainnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_testnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_custom() as u64,4,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::base_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::base_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::base_custom() as u64,TOKEN_ID_USDT,ctx);
         //eth
-        add_token_to_benfen(parent_id,chain_ids::base_mainnet() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_testnet() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::base_custom() as u64,2,ctx);
-
-
-
+        add_token_to_benfen(parent_id, chain_ids::base_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::base_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::base_custom() as u64, TOKEN_ID_ETH, ctx);
         //op cross in  benfen
         //usdc
-        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,3,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,3,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,TOKEN_ID_USDC,ctx);
         //usdt
-        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,4,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,4,ctx);
-
+        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,TOKEN_ID_USDT,ctx);
         //eth
-        add_token_to_benfen(parent_id,chain_ids::op_mainnet() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_testnet() as u64,2,ctx);
-        add_token_to_benfen(parent_id,chain_ids::op_custom() as u64,2,ctx);
-
-
+        add_token_to_benfen(parent_id, chain_ids::op_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::op_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::op_custom() as u64, TOKEN_ID_ETH, ctx);
+        // polygon cross in  benfen
+        //usdc
+        add_token_to_benfen(parent_id, chain_ids::pol_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_to_benfen(parent_id,chain_ids::pol_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::pol_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::pol_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_to_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_ETH, ctx);
+        // pol
+        add_token_to_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_POL, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_POL, ctx);
+        add_token_to_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_POL, ctx);
+        //arbitrum cross in benfen
+        //usdc
+        add_token_to_benfen(parent_id, chain_ids::arb_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::arb_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::arb_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_to_benfen(parent_id,chain_ids::arb_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::arb_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::arb_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_to_benfen(parent_id, chain_ids::arb_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::arb_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::arb_custom() as u64, TOKEN_ID_ETH, ctx);
+        //avalanche cross in benfen
+        //usdc
+        add_token_to_benfen(parent_id, chain_ids::avax_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::avax_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_to_benfen(parent_id, chain_ids::avax_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_to_benfen(parent_id,chain_ids::avax_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::avax_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_to_benfen(parent_id,chain_ids::avax_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_to_benfen(parent_id, chain_ids::avax_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::avax_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_to_benfen(parent_id, chain_ids::avax_custom() as u64, TOKEN_ID_ETH, ctx);
 
         //cross out  bitcoin
         //bitcoin
-        add_token_from_benfen(parent_id,chain_ids::btc_mainnet() as u64,1,ctx);
-        add_token_from_benfen(parent_id,chain_ids::btc_testnet() as u64,1,ctx);
-
+        add_token_from_benfen(parent_id,chain_ids::btc_mainnet() as u64,TOKEN_ID_BTC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::btc_testnet() as u64,TOKEN_ID_BTC,ctx);
 
         //cross out eth
         //eth
-        add_token_from_benfen(parent_id,chain_ids::eth_mainnet() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_sepolia() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_custom() as u64,2,ctx);
+        add_token_from_benfen(parent_id, chain_ids::eth_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::eth_sepolia() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::eth_custom() as u64, TOKEN_ID_ETH, ctx);
 
         //usdc
-        add_token_from_benfen(parent_id,chain_ids::eth_mainnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_sepolia() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_custom() as u64,3,ctx);
+        add_token_from_benfen(parent_id,chain_ids::eth_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::eth_sepolia() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::eth_custom() as u64,TOKEN_ID_USDC,ctx);
 
         //usdt
-        add_token_from_benfen(parent_id,chain_ids::eth_mainnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_sepolia() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::eth_custom() as u64,4,ctx);
-
+        add_token_from_benfen(parent_id,chain_ids::eth_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::eth_sepolia() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::eth_custom() as u64,TOKEN_ID_USDT,ctx);
 
         //cross out bsc
         //usdc
-        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,3,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_USDC,ctx);
 
         //usdt
-        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,4,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_USDT,ctx);
 
         //bnb
-        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,6,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,6,ctx);
-        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,6,ctx);
-
+        add_token_from_benfen(parent_id,chain_ids::bsc_mainnet() as u64,TOKEN_ID_BNB,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_testnet() as u64,TOKEN_ID_BNB,ctx);
+        add_token_from_benfen(parent_id,chain_ids::bsc_custom() as u64,TOKEN_ID_BNB,ctx);
 
         //cross out base
         //usdc
-        add_token_from_benfen(parent_id,chain_ids::base_mainnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_testnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_custom() as u64,3,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_custom() as u64,TOKEN_ID_USDC,ctx);
 
         //usdt
-        add_token_from_benfen(parent_id,chain_ids::base_mainnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_testnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_custom() as u64,4,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::base_custom() as u64,TOKEN_ID_USDT,ctx);
 
         //eth
-        add_token_from_benfen(parent_id,chain_ids::base_mainnet() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_testnet() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::base_custom() as u64,2,ctx);
-
+        add_token_from_benfen(parent_id, chain_ids::base_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::base_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::base_custom() as u64, TOKEN_ID_ETH, ctx);
 
         //cross out op
         //usdc
-        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,3,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,3,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,TOKEN_ID_USDC,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,TOKEN_ID_USDC,ctx);
 
         //usdt
-        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,4,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,4,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,TOKEN_ID_USDT,ctx);
 
         //eth
-        add_token_from_benfen(parent_id,chain_ids::op_mainnet() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_testnet() as u64,2,ctx);
-        add_token_from_benfen(parent_id,chain_ids::op_custom() as u64,2,ctx);
+        add_token_from_benfen(parent_id, chain_ids::op_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::op_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::op_custom() as u64, TOKEN_ID_ETH, ctx);
 
+        //cross out polygon
+        //usdc
+        add_token_from_benfen(parent_id, chain_ids::pol_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_from_benfen(parent_id,chain_ids::pol_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::pol_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::pol_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_from_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_ETH, ctx);
+        // pol
+        add_token_from_benfen(parent_id, chain_ids::pol_mainnet() as u64, TOKEN_ID_POL, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_testnet() as u64, TOKEN_ID_POL, ctx);
+        add_token_from_benfen(parent_id, chain_ids::pol_custom() as u64, TOKEN_ID_POL, ctx);
+
+        //cross out arbitrum
+        //usdc
+        add_token_from_benfen(parent_id, chain_ids::arb_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::arb_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::arb_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_from_benfen(parent_id,chain_ids::arb_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::arb_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::arb_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_from_benfen(parent_id, chain_ids::arb_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::arb_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::arb_custom() as u64, TOKEN_ID_ETH, ctx);
+
+        //cross out avalanche
+        //usdc
+        add_token_from_benfen(parent_id, chain_ids::avax_mainnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::avax_testnet() as u64,TOKEN_ID_USDC, ctx);
+        add_token_from_benfen(parent_id, chain_ids::avax_custom() as u64,TOKEN_ID_USDC, ctx);
+        //usdt
+        add_token_from_benfen(parent_id,chain_ids::avax_mainnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::avax_testnet() as u64,TOKEN_ID_USDT,ctx);
+        add_token_from_benfen(parent_id,chain_ids::avax_custom() as u64,TOKEN_ID_USDT,ctx);
+        //eth
+        add_token_from_benfen(parent_id, chain_ids::avax_mainnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::avax_testnet() as u64, TOKEN_ID_ETH, ctx);
+        add_token_from_benfen(parent_id, chain_ids::avax_custom() as u64, TOKEN_ID_ETH, ctx);
     }
 
     public(package) fun borrow(parent_id: &UID): &BridgeTokenList{

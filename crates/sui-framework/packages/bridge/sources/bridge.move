@@ -302,7 +302,7 @@ module bridge::bridge {
     }
 
 
-    entry public fun migrate(
+    public entry fun migrate(
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
