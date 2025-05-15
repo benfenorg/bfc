@@ -494,6 +494,36 @@ module bridge::tokenlist {
         *inner.borrow(token_id)
     }
 
+    public fun get_sui_token_id(): u64{
+        TOKEN_ID_SUI
+    }
+    public fun get_btc_token_id(): u64{
+        TOKEN_ID_BTC
+    }
+    public fun get_eth_token_id(): u64{
+        TOKEN_ID_ETH
+    }
+    public fun get_usdc_token_id(): u64{
+        TOKEN_ID_USDC
+    }
+
+    public fun get_usdt_token_id(): u64{
+        TOKEN_ID_USDT
+    }
+    public fun get_busd_token_id(): u64{
+        TOKEN_ID_BUSD
+    }
+    public fun get_bnb_token_id(): u64{
+        TOKEN_ID_BNB
+    }
+    public fun get_op_token_id(): u64{
+        TOKEN_ID_OP
+    }
+    public fun get_pol_token_id(): u64{
+        TOKEN_ID_POL
+    }
+
+
 
     #[test_only]
     public(package) fun new_tokenlist_registry_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {

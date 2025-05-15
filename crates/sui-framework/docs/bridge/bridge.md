@@ -1566,7 +1566,7 @@ title: Module `0xb::bridge`
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
+<pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){

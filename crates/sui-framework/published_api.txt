@@ -5743,6 +5743,33 @@ op_testnet
 op_custom
 	public fun
 	0xb::chain_ids
+arb_mainnet
+	public fun
+	0xb::chain_ids
+arb_testnet
+	public fun
+	0xb::chain_ids
+arb_custom
+	public fun
+	0xb::chain_ids
+pol_mainnet
+	public fun
+	0xb::chain_ids
+pol_testnet
+	public fun
+	0xb::chain_ids
+pol_custom
+	public fun
+	0xb::chain_ids
+avax_mainnet
+	public fun
+	0xb::chain_ids
+avax_testnet
+	public fun
+	0xb::chain_ids
+avax_custom
+	public fun
+	0xb::chain_ids
 route_source
 	public fun
 	0xb::chain_ids
@@ -6210,6 +6237,33 @@ is_supported_to_benfen_internal
 	0xb::tokenlist
 is_supported_from_benfen_internal
 	fun
+	0xb::tokenlist
+get_sui_token_id
+	public fun
+	0xb::tokenlist
+get_btc_token_id
+	public fun
+	0xb::tokenlist
+get_eth_token_id
+	public fun
+	0xb::tokenlist
+get_usdc_token_id
+	public fun
+	0xb::tokenlist
+get_usdt_token_id
+	public fun
+	0xb::tokenlist
+get_busd_token_id
+	public fun
+	0xb::tokenlist
+get_bnb_token_id
+	public fun
+	0xb::tokenlist
+get_op_token_id
+	public fun
+	0xb::tokenlist
+get_pol_token_id
+	public fun
 	0xb::tokenlist
 TransferLimiter
 	public struct

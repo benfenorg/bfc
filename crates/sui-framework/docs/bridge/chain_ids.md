@@ -23,6 +23,15 @@ title: Module `0xb::chain_ids`
 -  [Function `op_mainnet`](#0xb_chain_ids_op_mainnet)
 -  [Function `op_testnet`](#0xb_chain_ids_op_testnet)
 -  [Function `op_custom`](#0xb_chain_ids_op_custom)
+-  [Function `arb_mainnet`](#0xb_chain_ids_arb_mainnet)
+-  [Function `arb_testnet`](#0xb_chain_ids_arb_testnet)
+-  [Function `arb_custom`](#0xb_chain_ids_arb_custom)
+-  [Function `pol_mainnet`](#0xb_chain_ids_pol_mainnet)
+-  [Function `pol_testnet`](#0xb_chain_ids_pol_testnet)
+-  [Function `pol_custom`](#0xb_chain_ids_pol_custom)
+-  [Function `avax_mainnet`](#0xb_chain_ids_avax_mainnet)
+-  [Function `avax_testnet`](#0xb_chain_ids_avax_testnet)
+-  [Function `avax_custom`](#0xb_chain_ids_avax_custom)
 -  [Function `route_source`](#0xb_chain_ids_route_source)
 -  [Function `route_destination`](#0xb_chain_ids_route_destination)
 -  [Function `assert_valid_chain_id`](#0xb_chain_ids_assert_valid_chain_id)
@@ -72,6 +81,60 @@ title: Module `0xb::chain_ids`
 <a name="@Constants_0"></a>
 
 ## Constants
+
+
+<a name="0xb_chain_ids_ArbCustom"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a>: u8 = 38;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_ArbMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_ArbMainnet">ArbMainnet</a>: u8 = 36;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_ArbTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a>: u8 = 37;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_AvaxCustom"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a>: u8 = 47;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_AvaxMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_AvaxMainnet">AvaxMainnet</a>: u8 = 45;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_AvaxTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a>: u8 = 46;
+</code></pre>
+
 
 
 <a name="0xb_chain_ids_BaseCustom"></a>
@@ -205,6 +268,33 @@ title: Module `0xb::chain_ids`
 
 
 <pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_OPTestnet">OPTestnet</a>: u8 = 34;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_PolCustom"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a>: u8 = 41;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_PolMainnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_PolMainnet">PolMainnet</a>: u8 = 39;
+</code></pre>
+
+
+
+<a name="0xb_chain_ids_PolTestnet"></a>
+
+
+
+<pre><code><b>const</b> <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a>: u8 = 40;
 </code></pre>
 
 
@@ -610,6 +700,204 @@ title: Module `0xb::chain_ids`
 
 </details>
 
+<a name="0xb_chain_ids_arb_mainnet"></a>
+
+## Function `arb_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">arb_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">arb_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_ArbMainnet">ArbMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_arb_testnet"></a>
+
+## Function `arb_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_testnet">arb_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_testnet">arb_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_arb_custom"></a>
+
+## Function `arb_custom`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_custom">arb_custom</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_arb_custom">arb_custom</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_pol_mainnet"></a>
+
+## Function `pol_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">pol_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">pol_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_PolMainnet">PolMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_pol_testnet"></a>
+
+## Function `pol_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_testnet">pol_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_testnet">pol_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_pol_custom"></a>
+
+## Function `pol_custom`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_custom">pol_custom</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_pol_custom">pol_custom</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_avax_mainnet"></a>
+
+## Function `avax_mainnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">avax_mainnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">avax_mainnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_AvaxMainnet">AvaxMainnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_avax_testnet"></a>
+
+## Function `avax_testnet`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_testnet">avax_testnet</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_testnet">avax_testnet</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_chain_ids_avax_custom"></a>
+
+## Function `avax_custom`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_custom">avax_custom</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="chain_ids.md#0xb_chain_ids_avax_custom">avax_custom</a>(): u8 { <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a> }
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_chain_ids_route_source"></a>
 
 ## Function `route_source`
@@ -691,7 +979,16 @@ title: Module `0xb::chain_ids`
         id == <a href="chain_ids.md#0xb_chain_ids_OPCustom">OPCustom</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_BscMainnet">BscMainnet</a> ||
         id == <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a> ||
-        id == <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>,
+        id == <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_ArbMainnet">ArbMainnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_PolMainnet">PolMainnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_AvaxMainnet">AvaxMainnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a> ||
+        id == <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a>,
 
         <a href="chain_ids.md#0xb_chain_ids_EInvalidBridgeRoute">EInvalidBridgeRoute</a>
     )
@@ -745,7 +1042,12 @@ title: Module `0xb::chain_ids`
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscMainnet">BscMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_OPMainnet">OPMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseMainnet">BaseMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
-
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_ArbMainnet">ArbMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_PolMainnet">PolMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_AvaxMainnet">AvaxMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_ArbMainnet">ArbMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_PolMainnet">PolMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_AvaxMainnet">AvaxMainnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiMainnet">SuiMainnet</a> },
 
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a> },
@@ -762,6 +1064,21 @@ title: Module `0xb::chain_ids`
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a> },
 
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a> },
+
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscTestnet">BscTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BscCustom">BscCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
@@ -775,7 +1092,23 @@ title: Module `0xb::chain_ids`
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseTestnet">BaseTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
         <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
-        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> }
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_BaseCustom">BaseCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_ArbTestnet">ArbTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_ArbCustom">ArbCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_PolTestnet">PolTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_PolCustom">PolCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_AvaxTestnet">AvaxTestnet</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiTestnet">SuiTestnet</a> },
+        <a href="chain_ids.md#0xb_chain_ids_BridgeRoute">BridgeRoute</a> { source: <a href="chain_ids.md#0xb_chain_ids_AvaxCustom">AvaxCustom</a>, destination: <a href="chain_ids.md#0xb_chain_ids_SuiCustom">SuiCustom</a> },
+
     ]
 }
 </code></pre>

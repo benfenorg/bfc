@@ -26,6 +26,15 @@ title: Module `0xb::tokenlist`
 -  [Function `is_exist_token_info_internal`](#0xb_tokenlist_is_exist_token_info_internal)
 -  [Function `is_supported_to_benfen_internal`](#0xb_tokenlist_is_supported_to_benfen_internal)
 -  [Function `is_supported_from_benfen_internal`](#0xb_tokenlist_is_supported_from_benfen_internal)
+-  [Function `get_sui_token_id`](#0xb_tokenlist_get_sui_token_id)
+-  [Function `get_btc_token_id`](#0xb_tokenlist_get_btc_token_id)
+-  [Function `get_eth_token_id`](#0xb_tokenlist_get_eth_token_id)
+-  [Function `get_usdc_token_id`](#0xb_tokenlist_get_usdc_token_id)
+-  [Function `get_usdt_token_id`](#0xb_tokenlist_get_usdt_token_id)
+-  [Function `get_busd_token_id`](#0xb_tokenlist_get_busd_token_id)
+-  [Function `get_bnb_token_id`](#0xb_tokenlist_get_bnb_token_id)
+-  [Function `get_op_token_id`](#0xb_tokenlist_get_op_token_id)
+-  [Function `get_pol_token_id`](#0xb_tokenlist_get_pol_token_id)
 
 
 <pre><code><b>use</b> <a href="../sui-framework/dynamic_field.md#0x2_dynamic_field">0x2::dynamic_field</a>;
@@ -152,6 +161,87 @@ including those that can be transferred from or to the Benfen chain.
 
 
 
+<a name="0xb_tokenlist_TOKEN_ID_BNB"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 6;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_BTC"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_BUSD"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 5;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_ETH"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 2;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_OP"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_OP">TOKEN_ID_OP</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 7;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_POL"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 8;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_SUI"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_SUI">TOKEN_ID_SUI</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 0;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_USDC"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 3;
+</code></pre>
+
+
+
+<a name="0xb_tokenlist_TOKEN_ID_USDT"></a>
+
+
+
+<pre><code><b>const</b> <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4;
+</code></pre>
+
+
+
 <a name="0xb_tokenlist_new_tokenlist_registry"></a>
 
 ## Function `new_tokenlist_registry`
@@ -233,162 +323,218 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
 <pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_initial_token_list">initial_token_list</a>(parent_id: &<b>mut</b> UID,ctx: &<b>mut</b> TxContext){
     //btc cross in benfen
     //bitcoin
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>, ctx);
     //eth cross in benfen
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-
-
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
     //bsc cross in  benfen
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
     //bnb
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
     //base cross in benfen
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-
-
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     //op cross in  benfen
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-
-    //op
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    // polygon cross in  benfen
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    // pol
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
+    //arbitrum cross in benfen
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    //avalanche cross in benfen
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
 
     //cross out  bitcoin
     //bitcoin
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,1,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_mainnet">chain_ids::btc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_btc_testnet">chain_ids::btc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>,ctx);
 
     //cross out eth
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
 
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
 
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
 
     //cross out bsc
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
 
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
 
     //bnb
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,6,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>,ctx);
 
     //cross out base
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
 
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
 
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
 
     //cross out op
     //usdc
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,3,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>,ctx);
 
     //usdt
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,4,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
 
     //eth
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,2,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
 
-    //op
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,7,ctx);
+    //cross out polygon
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    // pol
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
 
+    //cross out arbitrum
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+
+    //cross out avalanche
+    //usdc
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+    //usdt
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id,<a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>,ctx);
+    //eth
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
 }
 </code></pre>
 
@@ -910,6 +1056,222 @@ Checks whether a token is supported for bridging **from** Benfen.
         <b>return</b> <b>false</b>
     };
     *inner.<a href="tokenlist.md#0xb_tokenlist_borrow">borrow</a>(token_id)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_sui_token_id"></a>
+
+## Function `get_sui_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_sui_token_id">get_sui_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_sui_token_id">get_sui_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_SUI">TOKEN_ID_SUI</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_btc_token_id"></a>
+
+## Function `get_btc_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_btc_token_id">get_btc_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_btc_token_id">get_btc_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BTC">TOKEN_ID_BTC</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_eth_token_id"></a>
+
+## Function `get_eth_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_eth_token_id">get_eth_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_eth_token_id">get_eth_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_usdc_token_id"></a>
+
+## Function `get_usdc_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_usdc_token_id">get_usdc_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_usdc_token_id">get_usdc_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_usdt_token_id"></a>
+
+## Function `get_usdt_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_usdt_token_id">get_usdt_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_usdt_token_id">get_usdt_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_busd_token_id"></a>
+
+## Function `get_busd_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_busd_token_id">get_busd_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_busd_token_id">get_busd_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BUSD">TOKEN_ID_BUSD</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_bnb_token_id"></a>
+
+## Function `get_bnb_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_bnb_token_id">get_bnb_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_bnb_token_id">get_bnb_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_BNB">TOKEN_ID_BNB</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_op_token_id"></a>
+
+## Function `get_op_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_op_token_id">get_op_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_op_token_id">get_op_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_OP">TOKEN_ID_OP</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_tokenlist_get_pol_token_id"></a>
+
+## Function `get_pol_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_pol_token_id">get_pol_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="tokenlist.md#0xb_tokenlist_get_pol_token_id">get_pol_token_id</a>(): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>{
+    <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>
 }
 </code></pre>
 
