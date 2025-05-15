@@ -83,6 +83,8 @@ pub const TOKEN_ID_USDC: u64 = 3;
 pub const TOKEN_ID_USDT: u64 = 4;
 pub const TOKEN_ID_BUSD: u64 = 5;
 pub const TOKEN_ID_BNB: u64 = 6;
+pub const TOKEN_ID_OP: u64 = 7;
+pub const TOKEN_ID_POL: u64 = 8;
 
 #[derive(
     Debug,
@@ -114,18 +116,23 @@ pub enum BridgeChainId {
     BscMainnet = 30,
     BscTestnet = 31,
     BscCustom = 32,
+
     OPMainnet = 33,
     OPTestnet = 34,
     OPCustom = 35,
+
     ArbMainnet = 36,
     ArbTestnet = 37,
     ArbCustom = 38,
+
     PolMainnet = 39,
     PolTestnet = 40,
     PolCustom = 41,
+
     BaseMainnet = 42,
     BaseTestnet = 43,
     BaseCustom = 44,
+
     AvaxMainnet = 45,
     AvaxTestnet = 46,
     AvaxCustom = 47,
