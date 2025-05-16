@@ -127,7 +127,7 @@ pub async fn get_eth_contract_addresses<P: ethers::providers::JsonRpcClient + 's
     let vault = EthBridgeVault::new(vault_address, provider.clone());
     let weth_address: EthAddress = vault.w_eth().call().await?;
     let usdt_address: EthAddress = bridge_config.token_address_of(4).call().await?;
-
+    info!("get_eth_contract_addresses success chain_id: {:?}", chain_id);
     Ok((
         committee_address,
         limiter_address,
