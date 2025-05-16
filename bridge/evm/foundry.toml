@@ -10,6 +10,8 @@ extra_output = ["storageLayout"]
 fs_permissions = [{ access = "read", path = "/"}]
 gas_reports = ["SuiBridge"]
 ffi = true
+optimizer = true
+optimizer_runs = 200
 
 [fmt]
 line_length = 100
