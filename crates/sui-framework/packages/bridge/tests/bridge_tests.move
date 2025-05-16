@@ -56,6 +56,7 @@ use sui::test_utils::destroy;
 use std::ascii;
 use sui::ecdsa_k1;
 use sui::hash;
+use std::unit_test::assert_eq;
 
 // common error start code for unexpected errors in tests (assertions).
 // If more than one assert in a test needs to use an unexpected error code,
@@ -1428,4 +1429,55 @@ fun change_url_bad_sender() {
         .bridge_ref_mut()
         .update_node_url(b"<url_here>", env.scenario().ctx());
     abort 0
+}
+
+#[test]
+fun read_router_limit(){
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    let bridge = env.bridge(@0x0);
+    let limits=bridge.bridge_ref().test_load_limiter();
+    let bsc_route = chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet());
+    let op_route = chain_ids::get_route(chain_ids::op_mainnet(), chain_ids::sui_mainnet());
+    let base_route = chain_ids::get_route(chain_ids::base_mainnet(), chain_ids::sui_mainnet());
+    assert_eq!(limits.get_route_limit(&bsc_route), 1_000_000_000 * 100000000);
+    assert_eq!(limits.get_route_limit(&op_route), 1_000_000_000 * 100000000);
+    assert_eq!(limits.get_route_limit(&base_route), 1_000_000_000 * 100000000);
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+#[
+    expected_failure(
+        abort_code = bridge::tokenlist::EBridgeTokenListRegistryAlreadyExists,
+    ),
+]
+fun test_twice_call_migrate(){
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    let mut bridge = env.bridge(@0x0);
+    let bridge_inner=bridge.bridge_ref_mut();
+    bridge_inner.migrate(env.scenario().ctx());
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_get_available_claim_amount_for_router_limit(){
+   let chain_id = chain_ids::sui_mainnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    let mut bridge = env.bridge(@0x0);
+    let bridge_inner=bridge.bridge_ref_mut();
+
+    bridge_inner.get_available_claim_amount<USDC>(chain_ids::bsc_mainnet());
+    bridge_inner.get_available_claim_amount<USDC>(chain_ids::op_mainnet());
+    bridge_inner.get_available_claim_amount<USDC>(chain_ids::base_mainnet());
+
+    bridge.return_bridge();
+    env.destroy_env();
 }
