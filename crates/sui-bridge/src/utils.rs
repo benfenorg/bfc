@@ -25,6 +25,7 @@ use fastcrypto::secp256k1::Secp256k1KeyPair;
 use fastcrypto::traits::EncodeDecodeBase64;
 use fastcrypto::traits::KeyPair;
 use futures::future::join_all;
+use tracing::info;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -116,15 +117,25 @@ pub async fn get_eth_contract_addresses<P: ethers::providers::JsonRpcClient + 's
     EthAddress,
 )> {
     let sui_bridge = EthSuiBridge::new(bridge_proxy_address, provider.clone());
+    info!("bbking100 sui_bridge: {:?}", sui_bridge);
     let committee_address: EthAddress = sui_bridge.committee().call().await?;
+    info!("bbking100 committee_address: {:?}", committee_address);
     let committee = EthBridgeCommittee::new(committee_address, provider.clone());
+    info!("bbking100 committee: {:?}", committee);
     let config_address: EthAddress = committee.config().call().await?;
+    info!("bbking100 config_address: {:?}", config_address);
     let bridge_config = EthBridgeConfig::new(config_address, provider.clone());
+    info!("bbking100 bridge_config: {:?}", bridge_config);
     let limiter_address: EthAddress = sui_bridge.limiter().call().await?;
+    info!("bbking100 limiter_address: {:?}", limiter_address);
     let vault_address: EthAddress = sui_bridge.vault().call().await?;
+    info!("bbking100 vault_address: {:?}", vault_address);
     let vault = EthBridgeVault::new(vault_address, provider.clone());
+    info!("bbking100 vault: {:?}", vault);
     let weth_address: EthAddress = vault.w_eth().call().await?;
+    info!("bbking100 weth_address: {:?}", weth_address);
     let usdt_address: EthAddress = bridge_config.token_address_of(4).call().await?;
+    info!("bbking100 usdt_address: {:?}", usdt_address);
 
     Ok((
         committee_address,
