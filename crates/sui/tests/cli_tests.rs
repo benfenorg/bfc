@@ -121,7 +121,7 @@ async fn sim_test_genesis() -> Result<(), anyhow::Error> {
 
     assert!(!wallet_conf.envs.is_empty());
 
-    assert_eq!(5, wallet_conf.keystore.addresses().len());
+    assert_eq!(10, wallet_conf.keystore.addresses().len());
 
     // Genesis 2nd time should fail
     let result = SuiCommand::Genesis {
@@ -2553,7 +2553,7 @@ async fn sim_test_new_address_command_by_flag() -> Result<(), anyhow::Error> {
             .iter()
             .filter(|k| k.flag() == Ed25519SuiSignature::SCHEME.flag())
             .count(),
-        5
+        10
     );
 
     SuiClientCommands::NewAddress {
