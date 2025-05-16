@@ -1570,7 +1570,8 @@ title: Module `0xb::bridge`
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
-    <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx)
+    <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
+    <a href="limiter.md#0xb_limiter_update_transfer_limits">limiter::update_transfer_limits</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>).<a href="limiter.md#0xb_limiter">limiter</a>);
 }
 </code></pre>
 

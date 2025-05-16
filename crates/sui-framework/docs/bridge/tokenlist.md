@@ -390,10 +390,6 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
-    // pol
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
     //arbitrum cross in benfen
     //usdc
     <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,<a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
@@ -503,10 +499,6 @@ Initializes an empty <code><a href="tokenlist.md#0xb_tokenlist_BridgeTokenList">
     <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
-    // pol
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
-    <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>() <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, <a href="tokenlist.md#0xb_tokenlist_TOKEN_ID_POL">TOKEN_ID_POL</a>, ctx);
 
     //cross out arbitrum
     //usdc
