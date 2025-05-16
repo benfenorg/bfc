@@ -386,7 +386,7 @@ impl BridgeNodeConfig {
         }
         if bridge_chain_id == BridgeChainId::OPTestnet as u8 && chain_id.as_u64() != 420 {
             anyhow::bail!(
-                "Expected Optimism chain id 420, but connected to {}",
+                "Expected Optimism chain id 11155420, but connected to {}",
                 chain_id.as_u64()
             );
         }
