@@ -623,6 +623,8 @@ pub(crate) async fn deploy_sol_contract(
     .arg(anvil_url)
     .arg("--broadcast")
     .arg("--ffi")
+     .arg("--code-size-limit")
+     .arg("10000000")
     .arg("--chain")
     .arg(chain_id_anvil)
     .stdout(std::process::Stdio::piped()) // Capture stdout
