@@ -6304,6 +6304,9 @@ adjust_transfer_records
 initial_transfer_limits
 	fun
 	0xb::limiter
+update_transfer_limits
+	public(package) fun
+	0xb::limiter
 BlocklistValidatorEvent
 	public struct
 	0xb::committee
