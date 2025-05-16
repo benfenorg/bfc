@@ -301,12 +301,12 @@ module bridge::bridge {
         }
     }
 
-
     public entry fun migrate(
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
-        tokenlist::new_tokenlist_registry(&mut bridge.id, ctx)
+        tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
+        limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
     }
 
     //////////////////////////////////////////////////////
@@ -1639,6 +1639,11 @@ module bridge::bridge {
     #[test_only]
     public fun test_load_inner(bridge: &Bridge): &BridgeInner {
         bridge.load_inner()
+    }
+
+    #[test_only]
+    public fun test_load_limiter(bridge: &Bridge): &TransferLimiter {
+        &bridge.load_inner().limiter
     }
 
     #[test_only]
