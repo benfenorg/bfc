@@ -527,7 +527,7 @@ struct SolDeployConfig {
     sui_decimals: Vec<u64>,
     token_prices: Vec<u64>,
     weth: String,
-    maxUsdLimit: u64,
+    max_usd_limit: u64,
 }
 
 pub(crate) async fn deploy_sol_contract(
@@ -574,7 +574,7 @@ pub(crate) async fn deploy_sol_contract(
         sui_decimals: vec![],     // this is set up in the deploy script
         token_prices: vec![12800, 432518900, 25969600, 10000, 10000, 10000, 10000],
         weth: "".to_string(), // this is set up in the deploy script
-        maxUsdLimit: u64::MAX,
+        max_usd_limit: u64::MAX,
     };
 
     let serialized_config = serde_json::to_string_pretty(&deploy_config).unwrap();
@@ -623,8 +623,6 @@ pub(crate) async fn deploy_sol_contract(
     .arg(anvil_url)
     .arg("--broadcast")
     .arg("--ffi")
-     .arg("--code-size-limit")
-     .arg("10000000")
     .arg("--chain")
     .arg(chain_id_anvil)
     .stdout(std::process::Stdio::piped()) // Capture stdout
