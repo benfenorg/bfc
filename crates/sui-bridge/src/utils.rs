@@ -116,26 +116,27 @@ pub async fn get_eth_contract_addresses<P: ethers::providers::JsonRpcClient + 's
     EthAddress,
     EthAddress,
 )> {
+    let chain_id = provider.get_chainid().await?;
     let sui_bridge = EthSuiBridge::new(bridge_proxy_address, provider.clone());
-    info!("bbking100 sui_bridge: {:?}", sui_bridge);
+    info!("bbking100 sui_bridge: {:?} chain_id: {:?}", sui_bridge, chain_id);
     let committee_address: EthAddress = sui_bridge.committee().call().await?;
-    info!("bbking100 committee_address: {:?}", committee_address);
+    info!("bbking100 committee_address: {:?} chain_id: {:?}", committee_address, chain_id);
     let committee = EthBridgeCommittee::new(committee_address, provider.clone());
-    info!("bbking100 committee: {:?}", committee);
+    info!("bbking100 committee: {:?} chain_id: {:?}", committee, chain_id);
     let config_address: EthAddress = committee.config().call().await?;
-    info!("bbking100 config_address: {:?}", config_address);
+    info!("bbking100 config_address: {:?} chain_id: {:?}", config_address, chain_id);
     let bridge_config = EthBridgeConfig::new(config_address, provider.clone());
-    info!("bbking100 bridge_config: {:?}", bridge_config);
+    info!("bbking100 bridge_config: {:?} chain_id: {:?}", bridge_config, chain_id);
     let limiter_address: EthAddress = sui_bridge.limiter().call().await?;
-    info!("bbking100 limiter_address: {:?}", limiter_address);
+    info!("bbking100 limiter_address: {:?} chain_id: {:?}", limiter_address, chain_id);
     let vault_address: EthAddress = sui_bridge.vault().call().await?;
-    info!("bbking100 vault_address: {:?}", vault_address);
+    info!("bbking100 vault_address: {:?} chain_id: {:?}", vault_address, chain_id);
     let vault = EthBridgeVault::new(vault_address, provider.clone());
-    info!("bbking100 vault: {:?}", vault);
+    info!("bbking100 vault: {:?} chain_id: {:?}", vault, chain_id);
     let weth_address: EthAddress = vault.w_eth().call().await?;
-    info!("bbking100 weth_address: {:?}", weth_address);
+    info!("bbking100 weth_address: {:?} chain_id: {:?}", weth_address, chain_id);
     let usdt_address: EthAddress = bridge_config.token_address_of(4).call().await?;
-    info!("bbking100 usdt_address: {:?}", usdt_address);
+    info!("bbking100 usdt_address: {:?} chain_id: {:?}", usdt_address, chain_id);
 
     Ok((
         committee_address,
