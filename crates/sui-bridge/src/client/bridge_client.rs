@@ -58,8 +58,8 @@ impl BridgeClient {
             ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
                 format!(
-                    "sign/bridge_tx/sui/evm/send/back/{}/{}/{}",
-                    e.sui_bridge_event.eth_chain_id as u8, e.sui_tx_digest, e.sui_tx_event_index
+                    "sign/bridge_tx/sui/evm/send/back/{}/{}",
+                    e.sui_tx_digest, e.sui_tx_event_index
                 )
             },
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
