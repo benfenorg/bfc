@@ -652,6 +652,7 @@ pub mod tests {
             target_address: sanitized_event.eth_address.as_bytes().to_vec(),
             token_type: sanitized_event.token_id,
             amount_sui_adjusted: sanitized_event.amount_sui_adjusted,
+            benfen_amount: 0,
         };
 
         let tx_digest = TransactionDigest::random();
@@ -814,6 +815,7 @@ pub mod tests {
             target_address: EthAddress::random().as_bytes().to_vec(),
             token_type: TOKEN_ID_SUI,
             amount_sui_adjusted: 0,
+            benfen_amount: 0,
         };
         match EmittedSuiToEthTokenBridgeV1::try_from(emitted_event).unwrap_err() {
             BridgeError::ZeroValueBridgeTransfer(_) => (),

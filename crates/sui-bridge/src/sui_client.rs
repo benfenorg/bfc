@@ -1062,6 +1062,7 @@ mod tests {
             target_address: sanitized_event_1.eth_address.as_bytes().to_vec(),
             token_type: sanitized_event_1.token_id,
             amount_sui_adjusted: sanitized_event_1.amount_sui_adjusted,
+            benfen_amount: 0,
         };
 
         let mut sui_event_1 = SuiEvent::random_for_testing();
