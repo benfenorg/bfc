@@ -1029,11 +1029,11 @@ mod tests {
         mock_last_finalized_block(&eth_mock_provider, log.block_number.unwrap().as_u64());
 
         eth_signer_with_cache
-            .sign((0, eth_tx_hash, eth_event_idx))
+            .sign((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx))
             .await
             .unwrap();
         let entry_ = eth_signer_with_cache
-            .get_testing_only((0, eth_tx_hash, eth_event_idx))
+            .get_testing_only((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx))
             .await;
         entry_.unwrap().lock().await.clone().unwrap().unwrap();
     }
