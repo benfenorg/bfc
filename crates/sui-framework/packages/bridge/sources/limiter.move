@@ -229,7 +229,6 @@ module bridge::limiter {
             chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet()),
             500_000 * USD_VALUE_MULTIPLIER
         );
-
         // MAX limit for testnet and devnet
         transfer_limits.insert(
             chain_ids::get_route(chain_ids::eth_sepolia(), chain_ids::sui_testnet()),
@@ -250,10 +249,167 @@ module bridge::limiter {
             chain_ids::get_route(chain_ids::eth_custom(), chain_ids::sui_custom()),
             MAX_TRANSFER_LIMIT
         );
-
         transfer_limits
     }
 
+    public(package) fun update_transfer_limits(self: &mut TransferLimiter)
+    {
+        // 1B limit on Sui -> BSC mainnet
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+        // 1B limit on Sui -> Base mainnet
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::base_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::op_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::pol_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::arb_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::avax_mainnet(), chain_ids::sui_mainnet()),
+            1_000_000_000 * USD_VALUE_MULTIPLIER
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_testnet()),
+            MAX_TRANSFER_LIMIT
+        );
+
+        self.update_route_limit(
+            &chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_custom()),
+            MAX_TRANSFER_LIMIT
+        );
+    }
     //////////////////////////////////////////////////////
     // Test functions
     //

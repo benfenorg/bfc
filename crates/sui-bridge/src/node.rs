@@ -90,6 +90,7 @@ pub async fn run_bridge_node(
     let mut handles = vec![];
 
     // Start watchdog
+    //fixme
     let eth_provider = server_config.eth_client.provider();
     let eth_bridge_proxy_address = server_config.eth_bridge_proxy_address;
     let sui_client = server_config.sui_client.clone();
@@ -143,6 +144,9 @@ pub async fn run_bridge_node(
             server_config.key,
             server_config.sui_client,
             server_config.eth_client,
+            server_config.bsc_client,
+            server_config.base_client,
+            server_config.optimism_client,
             server_config.approved_governance_actions,
             metrics.clone(),
         ),
@@ -233,21 +237,67 @@ async fn start_client_components(
         &store,
         client_config.sui_bridge_module_last_processed_event_id_override,
     );
+    
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
         &client_config.eth_contracts,
         client_config.eth_contracts_start_block_fallback,
         client_config.eth_contracts_start_block_override,
     );
-
+    let bsc_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.bsc_contracts,
+        client_config.bsc_contracts_start_block_fallback,
+        client_config.bsc_contracts_start_block_override,
+    );
+    let base_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.base_contracts,
+        client_config.base_contracts_start_block_fallback,
+        client_config.base_contracts_start_block_override,
+    );
+    let optimism_contracts_to_watch = get_eth_contracts_to_watch(
+        &store,
+        &client_config.optimism_contracts,
+        client_config.optimism_contracts_start_block_fallback,
+        client_config.optimism_contracts_start_block_override,
+    );
     let sui_client = client_config.sui_client.clone();
 
     let mut all_handles = vec![];
-    let (task_handles, eth_events_rx, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch)
+    let (evm_evnets_tx, evm_events_rx) = mysten_metrics::metered_channel::channel(
+        1000,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["evm_events_queue"]),
+    );
+    let (task_handles, _) =
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _) =
+        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx.clone())
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start bsc syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _) =
+        EthSyncer::new(client_config.base_client.clone(), base_contracts_to_watch, evm_evnets_tx.clone())
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start base syncer");
+    all_handles.extend(task_handles);
+
+    let (task_handles, _) =
+        EthSyncer::new(client_config.optimism_client.clone(), optimism_contracts_to_watch, evm_evnets_tx.clone())
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start optimism syncer");
     all_handles.extend(task_handles);
 
     let (task_handles, sui_events_rx) = SuiSyncer::new(
@@ -325,7 +375,7 @@ async fn start_client_components(
     let orchestrator = BridgeOrchestrator::new(
         sui_client,
         sui_events_rx,
-        eth_events_rx,
+        evm_events_rx,
         store.clone(),
         sui_monitor_tx,
         eth_monitor_tx,
@@ -606,6 +656,27 @@ mod tests {
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
             },
+            bsc: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: None,
+                eth_contracts_start_block_override: None,
+            },
+            base: EthConfig {
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
+                eth_contracts_start_block_fallback: None,
+                eth_contracts_start_block_override: None,
+            },
+            optimism: EthConfig {
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
+                eth_contracts_start_block_fallback: None,
+                eth_contracts_start_block_override: None,
+            },
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: false,
@@ -671,6 +742,27 @@ mod tests {
                 eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                 eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+            bsc: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+            base: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+            optimism: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
             },
@@ -770,6 +862,27 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: Some(0),
+            },
+            bsc: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: Some(0),
+            },
+            base: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+            optimism: EthConfig {//fixme
+                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
             },
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],

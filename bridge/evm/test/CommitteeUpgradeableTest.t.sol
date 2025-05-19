@@ -4,6 +4,7 @@ pragma solidity ^0.8.20;
 import {ERC1967Utils} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Utils.sol";
 import "./mocks/MockSuiBridgeV2.sol";
 import "../contracts/BridgeCommittee.sol";
+
 import "../contracts/SuiBridge.sol";
 import "./BridgeBaseTest.t.sol";
 

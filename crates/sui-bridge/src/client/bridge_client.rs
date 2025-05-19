@@ -53,23 +53,28 @@ impl BridgeClient {
     fn bridge_action_to_path(event: &BridgeAction) -> String {
         match event {
             BridgeAction::SuiToEthBridgeAction(e) => format!(
-                "sign/bridge_tx/sui/eth/{}/{}",
+                "sign/bridge_tx/sui/evm/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
-            BridgeAction::EthSendBackBridgeAction(e) => format!(
-                "sign/bridge_tx/sui/eth/send/back/{}/{}",
-                e.sui_tx_digest, e.sui_tx_event_index
-            ),
+            BridgeAction::EthSendBackBridgeAction(e) =>{
+                format!(
+                    "sign/bridge_tx/sui/evm/send/back/{}/{}",
+                    e.sui_tx_digest, e.sui_tx_event_index
+                )
+            },
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
                 e.sui_tx_digest,
                 e.sui_tx_event_index
             ),
-            BridgeAction::EthToSuiBridgeAction(e) => format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
-                Hex::encode(e.eth_tx_hash.0),
-                e.eth_event_index
-            ),
+            BridgeAction::EthToSuiBridgeAction(e) => {
+                format!(
+                    "sign/bridge_tx/evm/sui/{}/{}/{}",
+                    e.eth_bridge_event.eth_chain_id as u8,
+                    Hex::encode(e.eth_tx_hash.0),
+                    e.eth_event_index
+                )
+            },
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
                 let nonce = a.nonce.to_string();
@@ -528,7 +533,7 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/sui/eth/{}/{}",
+                "sign/bridge_tx/sui/evm/{}/{}",
                 sui_tx_digest, sui_tx_event_index
             )
         );
@@ -554,7 +559,8 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/eth/sui/{}/{}",
+                "sign/bridge_tx/evm/sui/{}/{}/{}",
+                BridgeChainId::EthSepolia as u8,
                 Hex::encode(eth_tx_hash.0),
                 eth_event_index
             )

@@ -133,6 +133,13 @@ where
         .await
     }
 
+    pub async fn get_cap_object_ref(
+        &self,
+        cap_id: ObjectID,
+    ) -> anyhow::Result<ObjectRef> {
+        self.inner.get_cap_object_ref(cap_id).await
+    }
+
     /// Query emitted Events that are defined in the given Move Module.
     pub async fn query_events_by_module(
         &self,
@@ -537,6 +544,10 @@ pub trait SuiClientInner: Send + Sync {
         &self,
         gas_object_id: ObjectID,
     ) -> (GasCoin, ObjectRef, Owner);
+    async fn get_cap_object_ref(
+        &self,
+        cap_id: ObjectID,
+    ) -> anyhow::Result<ObjectRef>;
 }
 
 #[async_trait]
@@ -584,6 +595,21 @@ impl SuiClientInner for SuiSdkClient {
             initial_shared_version: SequenceNumber::from_u64(initial_shared_version),
             mutable: true,
         })
+    }
+    async fn get_cap_object_ref(
+        &self,
+        cap_id: ObjectID,
+    ) -> anyhow::Result<ObjectRef> {
+        let cap_obj_ref = self
+            .read_api()
+            .get_object_with_options(
+                cap_id,
+                SuiObjectDataOptions::default().with_owner(),
+            )
+            .await?
+            .object_ref_if_exists()
+            .ok_or_else(|| anyhow!("Cap {} does not exist", cap_id))?;
+        Ok::<ObjectRef, anyhow::Error>(cap_obj_ref)
     }
 
     async fn get_bridge_summary(&self) -> Result<BridgeSummary, Self::Error> {
@@ -1062,6 +1088,7 @@ mod tests {
             target_address: sanitized_event_1.eth_address.as_bytes().to_vec(),
             token_type: sanitized_event_1.token_id,
             amount_sui_adjusted: sanitized_event_1.amount_sui_adjusted,
+            benfen_amount: sanitized_event_1.amount_sui_adjusted,
         };
 
         let mut sui_event_1 = SuiEvent::random_for_testing();

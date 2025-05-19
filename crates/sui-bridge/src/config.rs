@@ -115,6 +115,12 @@ pub struct BridgeNodeConfig {
     pub sui: SuiConfig,
     /// Eth configuration
     pub eth: EthConfig,
+    /// Bsc configuration
+    pub bsc: EthConfig,
+    /// Base configuration
+    pub base: EthConfig,
+    /// Optimism configuration
+    pub optimism: EthConfig,
     /// AML key used for AML checking
     pub aml_key: String,
     /// Network key used for metrics pushing
@@ -183,7 +189,10 @@ impl BridgeNodeConfig {
             ));
         }
 
-        let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
+        let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone(), BridgeChainId::EthMainnet).await?;
+        let (bsc_client, bsc_contracts) = self.prepare_for_eth(metrics.clone(), BridgeChainId::BscMainnet).await?;
+        let (base_client, base_contracts) = self.prepare_for_eth(metrics.clone(), BridgeChainId::BaseMainnet).await?;
+        let (optimism_client, optimism_contracts) = self.prepare_for_eth(metrics.clone(), BridgeChainId::OPMainnet).await?;
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -214,6 +223,9 @@ impl BridgeNodeConfig {
             server_listen_port: self.server_listen_port,
             sui_client: sui_client.clone(),
             eth_client: eth_client.clone(),
+            bsc_client: bsc_client.clone(),
+            base_client: base_client.clone(),
+            optimism_client: optimism_client.clone(),
             approved_governance_actions,
         };
         if !self.run_client {
@@ -248,6 +260,27 @@ impl BridgeNodeConfig {
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
             aml_key: self.aml_key.clone(),
+            bsc_client: bsc_client.clone(),
+            bsc_contracts,
+            bsc_contracts_start_block_fallback: self
+                .bsc
+                .eth_contracts_start_block_fallback
+                .unwrap(),
+            bsc_contracts_start_block_override: self.bsc.eth_contracts_start_block_override,
+            base_client: base_client.clone(),
+            base_contracts,
+            base_contracts_start_block_fallback: self
+                .base
+                .eth_contracts_start_block_fallback
+                .unwrap(),
+            base_contracts_start_block_override: self.base.eth_contracts_start_block_override,
+            optimism_client: optimism_client.clone(),
+            optimism_contracts,
+            optimism_contracts_start_block_fallback: self
+                .optimism
+                .eth_contracts_start_block_fallback
+                .unwrap(),
+            optimism_contracts_start_block_override: self.optimism.eth_contracts_start_block_override,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -256,13 +289,30 @@ impl BridgeNodeConfig {
     async fn prepare_for_eth(
         &self,
         metrics: Arc<BridgeMetrics>,
+        evm_chain_id: BridgeChainId,
     ) -> anyhow::Result<(Arc<EthClient<MeteredEthHttpProvier>>, Vec<EthAddress>)> {
-        let bridge_proxy_address = EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?;
+        let (bridge_proxy_address, eth_rpc_url) = match evm_chain_id {
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
+                (EthAddress::from_str(&self.eth.eth_bridge_proxy_address)?,&self.eth.eth_rpc_url)
+            }
+            BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom => {
+                (EthAddress::from_str(&self.bsc.eth_bridge_proxy_address)?,&self.bsc.eth_rpc_url)
+            }
+            BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom => {
+                (EthAddress::from_str(&self.base.eth_bridge_proxy_address)?,&self.base.eth_rpc_url)
+            }
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom => {
+                (EthAddress::from_str(&self.optimism.eth_bridge_proxy_address)?,&self.optimism.eth_rpc_url)
+            }
+            _ => {
+                anyhow::bail!("Unsupported evm chain id: {}", evm_chain_id);
+            }
+        };
         let provider = Arc::new(
-            new_metered_eth_provider(&self.eth.eth_rpc_url, metrics.clone())
+                new_metered_eth_provider(&eth_rpc_url, metrics.clone())
                 .unwrap()
                 .interval(std::time::Duration::from_millis(2000)),
-        );
+        );   
         let chain_id = provider.get_chainid().await?;
         let (
             committee_address,
@@ -274,7 +324,7 @@ impl BridgeNodeConfig {
         ) = get_eth_contract_addresses(bridge_proxy_address, &provider).await?;
         let config = EthBridgeConfig::new(config_address, provider.clone());
 
-        if self.run_client && self.eth.eth_contracts_start_block_fallback.is_none() {
+        if self.run_client && (self.eth.eth_contracts_start_block_fallback.is_none() || self.bsc.eth_contracts_start_block_fallback.is_none()) {
             return Err(anyhow!(
                 "eth_contracts_start_block_fallback is required when run_client is true"
             ));
@@ -283,10 +333,11 @@ impl BridgeNodeConfig {
         // If bridge chain id is Eth Mainent or Sepolia, we expect to see chain
         // identifier to match accordingly.
         let bridge_chain_id: u8 = config.chain_id().call().await?;
-        if self.eth.eth_bridge_chain_id != bridge_chain_id {
+        if self.eth.eth_bridge_chain_id != bridge_chain_id && self.bsc.eth_bridge_chain_id != bridge_chain_id && self.base.eth_bridge_chain_id != bridge_chain_id && self.optimism.eth_bridge_chain_id != bridge_chain_id {
             return Err(anyhow!(
-                "Bridge chain id mismatch: expected {}, but connected to {}",
+                "Bridgex chain id mismatch: expected {} or {}, but connected to {}",
                 self.eth.eth_bridge_chain_id,
+                self.bsc.eth_bridge_chain_id,
                 bridge_chain_id
             ));
         }
@@ -302,6 +353,44 @@ impl BridgeNodeConfig {
                 chain_id.as_u64()
             );
         }
+        if bridge_chain_id == BridgeChainId::BscMainnet as u8 && chain_id.as_u64() != 56 {
+            anyhow::bail!(
+                "Expected Bsc chain id 56, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::BscTestnet as u8 && chain_id.as_u64() != 97 {
+            anyhow::bail!(
+                "Expected Bsc chain id 97, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        //todo: check chain id @lifei
+        if bridge_chain_id == BridgeChainId::BaseMainnet as u8 && chain_id.as_u64() != 8453 {
+            anyhow::bail!(
+                "Expected Base chain id 8453, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::BaseTestnet as u8 && chain_id.as_u64() != 84532 {
+            anyhow::bail!(
+                "Expected Base chain id 84532, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::OPMainnet as u8 && chain_id.as_u64() != 10 {
+            anyhow::bail!(
+                "Expected Optimism chain id 10, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        if bridge_chain_id == BridgeChainId::OPTestnet as u8 && chain_id.as_u64() != 11155420 {
+            anyhow::bail!(
+                "Expected Optimism chain id 11155420, but connected to {}",
+                chain_id.as_u64()
+            );
+        }
+        
         info!(
             "Connected to Eth chain: {}, Bridge chain id: {}",
             chain_id.as_u64(),
@@ -310,7 +399,7 @@ impl BridgeNodeConfig {
 
         let eth_client = Arc::new(
             EthClient::<MeteredEthHttpProvier>::new(
-                &self.eth.eth_rpc_url,
+                &eth_rpc_url,
                 HashSet::from_iter(vec![
                     bridge_proxy_address,
                     committee_address,
@@ -410,6 +499,9 @@ pub struct BridgeServerConfig {
     pub metrics_port: u16,
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub bsc_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub base_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub optimism_client: Arc<EthClient<MeteredEthHttpProvier>>,
     /// A list of approved governance actions. Action in this list will be signed when requested by client.
     pub approved_governance_actions: Vec<BridgeAction>,
 }
@@ -421,11 +513,23 @@ pub struct BridgeClientConfig {
     pub metrics_port: u16,
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub bsc_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub base_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub optimism_client: Arc<EthClient<MeteredEthHttpProvier>>,
     pub db_path: PathBuf,
     pub eth_contracts: Vec<EthAddress>,
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
+    pub bsc_contracts: Vec<EthAddress>,
+    pub base_contracts: Vec<EthAddress>,
+    pub optimism_contracts: Vec<EthAddress>,
+    pub bsc_contracts_start_block_fallback: u64,
+    pub bsc_contracts_start_block_override: Option<u64>,
+    pub base_contracts_start_block_fallback: u64,
+    pub base_contracts_start_block_override: Option<u64>,
+    pub optimism_contracts_start_block_fallback: u64,
+    pub optimism_contracts_start_block_override: Option<u64>,
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
     // The following fields are used for AML checking authorization key
     pub aml_key: String,

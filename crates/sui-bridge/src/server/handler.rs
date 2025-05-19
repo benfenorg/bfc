@@ -23,7 +23,8 @@ use sui_types::digests::TransactionDigest;
 use tap::TapFallible;
 use tokio::sync::{oneshot, Mutex};
 use tracing::info;
-
+use sui_types::bridge::BridgeChainId;
+use sui_types::bridge::BridgeChainId::SuiMainnet;
 use super::governance_verifier::GovernanceVerifier;
 
 #[async_trait]
@@ -33,6 +34,7 @@ pub trait BridgeRequestHandlerTrait {
     /// that emitted the bridge event and the Event index in that transaction
     async fn handle_eth_tx_hash(
         &self,
+        chain_id: u8,
         tx_hash_hex: String,
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError>;
@@ -77,11 +79,17 @@ struct SuiActionVerifier<C> {
 
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
+    bsc_client: Arc<EthClient<P>>,
+    base_client: Arc<EthClient<P>>,
+    optimism_client: Arc<EthClient<P>>,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
+    bsc_client: Arc<EthClient<P>>,
+    base_client: Arc<EthClient<P>>,
+    optimism_client: Arc<EthClient<P>>,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -89,7 +97,7 @@ struct ExternalCoinVerifier<C> {
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TransactionDigest, u16)> for SuiActionVerifier<C>
+impl<C> ActionVerifier<(u8, TransactionDigest, u16)> for SuiActionVerifier<C>
 where
     C: SuiClientInner + Send + Sync + 'static,
 {
@@ -97,8 +105,8 @@ where
         "SuiActionVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         self.sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
             .await
@@ -107,7 +115,7 @@ where
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TxHash, u16)> for EthActionVerifier<C>
+impl<C> ActionVerifier<(u8, TxHash, u16)> for EthActionVerifier<C>
 where
     C: JsonRpcClient + Send + Sync + 'static,
 {
@@ -115,17 +123,40 @@ where
         "EthActionVerifier"
     }
 
-    async fn verify(&self, key: (TxHash, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_hash, event_idx) = key;
-        self.eth_client
-            .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-            .await
-            .tap_ok(|action| info!("Eth action found: {:?}", action))
+    async fn verify(&self, key: (u8, TxHash, u16)) -> BridgeResult<BridgeAction> {
+        let (chain_id, tx_hash, event_idx) = key;
+       if BridgeChainId::is_eth_by_id(chain_id) {
+           self.eth_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Eth action found: {:?}", action))
+       }else if BridgeChainId::is_bsc_by_id(chain_id) {
+           self.bsc_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("BSC action found: {:?}", action))
+       }else if BridgeChainId::is_base_by_id(chain_id) {
+           self.base_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Base action found: {:?}", action))
+       }else if BridgeChainId::is_op_by_id(chain_id) {
+           self.optimism_client
+               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+               .await
+               .tap_ok(|action| info!("Optimism action found: {:?}", action))
+       }
+       else {
+              return Err(BridgeError::Generic(format!(
+                "Unsupported chain id: {}",
+                chain_id
+              )));
+         }
     }
 }
 
 #[async_trait::async_trait]
-impl<C> ActionVerifier<(TransactionDigest, u16)> for ExternalCoinVerifier<C>
+impl<C> ActionVerifier<(u8, TransactionDigest, u16)> for ExternalCoinVerifier<C>
 where
     C: SuiClientInner + Send + Sync + 'static,
 {
@@ -133,8 +164,8 @@ where
         "ExternalCoinVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         let result = self
             .sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
@@ -177,7 +208,7 @@ where
 }
 
 #[async_trait::async_trait]
-impl<C, P> ActionVerifier<(TransactionDigest, u16)> for SendBackActionVerifier<C, P>
+impl<C, P> ActionVerifier<(u8, TransactionDigest, u16)> for SendBackActionVerifier<C, P>
 where
     C: SuiClientInner + Send + Sync + 'static,
     P: JsonRpcClient + Send + Sync + 'static,
@@ -186,8 +217,8 @@ where
         "SendBackActionVerifier"
     }
 
-    async fn verify(&self, key: (TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
-        let (tx_digest, event_idx) = key;
+    async fn verify(&self, key: (u8, TransactionDigest, u16)) -> BridgeResult<BridgeAction> {
+        let (_, tx_digest, event_idx) = key;
         let result = self
             .sui_client
             .get_bridge_action_by_tx_digest_and_event_idx_maybe(&tx_digest, event_idx)
@@ -201,10 +232,28 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let tx_hash = U256::from_big_endian(&tx_hash_bytes);
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
-            let result = self
-                .eth_client
-                .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                .await;
+            let result = if send_back_action.sui_bridge_event.eth_chain_id.is_eth_chain() {
+                self.eth_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_bsc_chain() {
+                self.bsc_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_base_chain() {
+                self.base_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else if send_back_action.sui_bridge_event.eth_chain_id.is_optimism_chain() {
+                self.optimism_client
+                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                    .await
+            } else {
+                return Err(BridgeError::Generic(format!(
+                    "Unsupported chain id: {}",
+                    send_back_action.sui_bridge_event.eth_chain_id
+                )));
+            };
             if let Err(e) = result {
                 return Err(e);
             }
@@ -384,19 +433,19 @@ where
 
 pub struct BridgeRequestHandler {
     sui_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     external_coin_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     send_back_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TransactionDigest, u16),
+        (u8, TransactionDigest, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     eth_signer_tx: mysten_metrics::metered_channel::Sender<(
-        (TxHash, u16),
+        (u8, TxHash, u16),
         oneshot::Sender<BridgeResult<SignedBridgeAction>>,
     )>,
     governance_signer_tx: mysten_metrics::metered_channel::Sender<(
@@ -413,6 +462,9 @@ impl BridgeRequestHandler {
         signer: BridgeAuthorityKeyPair,
         sui_client: Arc<SuiClient<SC>>,
         eth_client: Arc<EthClient<EP>>,
+        bsc_client: Arc<EthClient<EP>>,
+        base_client: Arc<EthClient<EP>>,
+        optimism_client: Arc<EthClient<EP>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
     ) -> Self {
@@ -477,6 +529,9 @@ impl BridgeRequestHandler {
             signer.clone(),
             EthActionVerifier {
                 eth_client: eth_client.clone(),
+                bsc_client: bsc_client.clone(),
+                base_client: base_client.clone(),
+                optimism_client: optimism_client.clone(),
             },
             metrics.clone(),
         )
@@ -493,6 +548,9 @@ impl BridgeRequestHandler {
             SendBackActionVerifier {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
+                bsc_client: bsc_client.clone(),
+                base_client: base_client.clone(),
+                optimism_client: optimism_client.clone(),
             },
             metrics.clone(),
         )
@@ -512,6 +570,7 @@ impl BridgeRequestHandler {
 impl BridgeRequestHandlerTrait for BridgeRequestHandler {
     async fn handle_eth_tx_hash(
         &self,
+        chain_id: u8,
         tx_hash_hex: String,
         event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError> {
@@ -519,7 +578,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
 
         let (tx, rx) = oneshot::channel();
         self.eth_signer_tx
-            .send(((tx_hash, event_idx), tx))
+            .send(((chain_id, tx_hash, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server eth signing channel is closed"));
         let signed_action = rx
@@ -537,7 +596,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.sui_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
@@ -555,7 +614,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.send_back_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
@@ -573,7 +632,7 @@ impl BridgeRequestHandlerTrait for BridgeRequestHandler {
             .map_err(|_e| BridgeError::InvalidTxHash)?;
         let (tx, rx) = oneshot::channel();
         self.external_coin_signer_tx
-            .send(((tx_digest, event_idx), tx))
+            .send(((SuiMainnet as u8, tx_digest, event_idx), tx))
             .await
             .unwrap_or_else(|_| panic!("Server sui signing channel is closed"));
         let signed_action = rx
@@ -644,14 +703,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = sui_signer_with_cache
-            .get_cache_entry((sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -668,7 +727,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -679,11 +738,11 @@ mod tests {
         // Mock an non-cacheable error such as rpc error
         sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
         sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0, sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -691,12 +750,12 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert!(matches!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await,
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -715,6 +774,7 @@ mod tests {
             target_address: EthAddress::random().as_bytes().to_vec(),
             token_type: TOKEN_ID_USDC,
             amount_sui_adjusted: 12345,
+            benfen_amount: 12345,
         };
 
         init_all_struct_tags();
@@ -735,11 +795,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = sui_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx_2))
+            .sign((0,sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -748,14 +808,14 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             sui_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx_2))
+                .sign((0,sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
@@ -778,14 +838,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = external_signer_with_cache
-            .get_cache_entry((sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -795,7 +855,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -806,11 +866,11 @@ mod tests {
         // Mock an non-cacheable error such as rpc error
         sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
         external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -818,12 +878,12 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert!(matches!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await,
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = external_signer_with_cache
-            .get_testing_only((sui_tx_digest, sui_event_idx))
+            .get_testing_only((0,sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -863,11 +923,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx_2))
+            .sign((0,sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -876,14 +936,14 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx))
+                .sign((0,sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             external_signer_with_cache
-                .sign((sui_tx_digest, sui_event_idx_2))
+                .sign((0,sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
@@ -900,8 +960,24 @@ mod tests {
             eth_mock_provider.clone(),
             HashSet::from_iter(vec![contract_address]),
         );
+        let bsc_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
+        let base_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
+        let optimism_client = EthClient::new_mocked(
+            eth_mock_provider.clone(),
+            HashSet::from_iter(vec![contract_address]),
+        );
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
+            bsc_client: Arc::new(bsc_client),
+            base_client: Arc::new(base_client),
+            optimism_client: Arc::new(optimism_client),
+
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =
@@ -911,14 +987,14 @@ mod tests {
         let eth_tx_hash = TxHash::random();
         let eth_event_idx = 42;
         assert!(eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await
             .is_none());
         let entry = eth_signer_with_cache
-            .get_cache_entry((eth_tx_hash, eth_event_idx))
+            .get_cache_entry((0, eth_tx_hash, eth_event_idx))
             .await;
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await;
         // first unwrap should not pacic because the entry should have been inserted by `get_cache_entry`
         assert!(entry_.unwrap().lock().await.is_none());
@@ -928,7 +1004,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action.clone()));
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((0, eth_tx_hash, eth_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap(),
@@ -953,11 +1029,11 @@ mod tests {
         mock_last_finalized_block(&eth_mock_provider, log.block_number.unwrap().as_u64());
 
         eth_signer_with_cache
-            .sign((eth_tx_hash, eth_event_idx))
+            .sign((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx))
             .await
             .unwrap();
         let entry_ = eth_signer_with_cache
-            .get_testing_only((eth_tx_hash, eth_event_idx))
+            .get_testing_only((BridgeChainId::EthCustom as u8, eth_tx_hash, eth_event_idx))
             .await;
         entry_.unwrap().lock().await.clone().unwrap().unwrap();
     }

@@ -1,0 +1,72 @@
+{
+    "committeeMemberStake": [
+        403,
+        319,
+        378,
+        1000,
+        921,
+        406,
+        276,
+        386,
+        1000,
+        917,
+        463,
+        702,
+        348,
+        396,
+        1000,
+        435,
+        326,
+        324
+    ],
+    "committeeMembers": [
+        "0x1e68e0af10acafdc624c5b6bf68ddcc9ad51f2f5",
+        "0x18bb550c7e3676fc6446c3eace2299bb9456b176",
+        "0xc3752d2aa557f49b0df4ede19aef63852487ff0c",
+        "0x1f5842aeb792cfa05f1f8212f8f3fb2e0db120f8",
+        "0x000d1cc6d7f4950d18f36ff26756f90ed3af7bf0",
+        "0x0ea58557af6db58e331f46ca04430341a6ac07f4",
+        "0x773e9918bc92dd145007808b8684af182b37b95a",
+        "0x93c95283356df7161edfd518a665451df6d80e13",
+        "0x921731539b2728681cc68bc6fd266cb91d8c2cb9",
+        "0xebb73382083244d4ed7b342f45dcdad7016b73d1",
+        "0x0efa6f1935b9acf0109d459a397710232a13241d",
+        "0xd5e57273971c6871d627541cf9a48116ffd1004d",
+        "0x5d2723c7e3fbeb5992150833826cec6cb22cb6f4",
+        "0x0e0f8bdca27363d4d0541d93237a6eef2de989db",
+        "0x06a3a15017930d99cd93a047f3390742a5029c32",
+        "0xff95d9d7f4e5ef8a0b1240da47836bab8646841d",
+        "0x11ed432fbe1cf26690eb19458c3c1028ad105a35",
+        "0x4142b95b0f9153989cb9e0ee4379e1725f336e70"
+    ],
+    "minCommitteeStakeRequired": 9133,
+    "sourceChainId": 10,
+    "supportedChainIds": [
+        0
+    ],
+    "supportedChainLimitsInDollars": [
+        50000000000000
+    ],
+    "maxUsdLimit": 100000000000,
+    "tokenIds": [
+        2,
+        3,
+        4
+    ],
+    "supportedTokens": [
+        "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
+        "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+    ],
+    "tokenPrices": [
+        180000000000,
+        100000000,
+        100000000
+    ],
+    "suiDecimals": [
+        8,
+        6,
+        6
+    ],
+    "weth": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+}

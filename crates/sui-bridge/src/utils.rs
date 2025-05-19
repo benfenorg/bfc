@@ -25,6 +25,7 @@ use fastcrypto::secp256k1::Secp256k1KeyPair;
 use fastcrypto::traits::EncodeDecodeBase64;
 use fastcrypto::traits::KeyPair;
 use futures::future::join_all;
+use tracing::info;
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -115,6 +116,7 @@ pub async fn get_eth_contract_addresses<P: ethers::providers::JsonRpcClient + 's
     EthAddress,
     EthAddress,
 )> {
+    let chain_id = provider.get_chainid().await?;
     let sui_bridge = EthSuiBridge::new(bridge_proxy_address, provider.clone());
     let committee_address: EthAddress = sui_bridge.committee().call().await?;
     let committee = EthBridgeCommittee::new(committee_address, provider.clone());
@@ -125,7 +127,7 @@ pub async fn get_eth_contract_addresses<P: ethers::providers::JsonRpcClient + 's
     let vault = EthBridgeVault::new(vault_address, provider.clone());
     let weth_address: EthAddress = vault.w_eth().call().await?;
     let usdt_address: EthAddress = bridge_config.token_address_of(4).call().await?;
-
+    info!("get_eth_contract_addresses success chain_id: {:?}", chain_id);
     Ok((
         committee_address,
         limiter_address,
@@ -206,6 +208,27 @@ pub fn generate_bridge_node_config_and_write_to_file(
             eth_rpc_url: "your_eth_rpc_url".to_string(),
             eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
             eth_bridge_chain_id: BridgeChainId::EthSepolia as u8,
+            eth_contracts_start_block_fallback: Some(0),
+            eth_contracts_start_block_override: None,
+        },
+        bsc: EthConfig {
+            eth_rpc_url: "your_bsc_rpc_url".to_string(),
+            eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+            eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
+            eth_contracts_start_block_fallback: Some(0),
+            eth_contracts_start_block_override: None,
+        },
+        base: EthConfig {
+            eth_rpc_url: "your_base_rpc_url".to_string(),
+            eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+            eth_bridge_chain_id: BridgeChainId::BaseTestnet as u8,
+            eth_contracts_start_block_fallback: Some(0),
+            eth_contracts_start_block_override: None,
+        },
+        optimism: EthConfig {
+            eth_rpc_url: "your_optimism_rpc_url".to_string(),
+            eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+            eth_bridge_chain_id: BridgeChainId::OPTestnet as u8,
             eth_contracts_start_block_fallback: Some(0),
             eth_contracts_start_block_override: None,
         },

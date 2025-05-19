@@ -155,7 +155,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
             "SuiBridge: Insufficient allowance"
         );
         if (tokenID == BridgeUtils.USDC || tokenID == BridgeUtils.USDT) {
-            require(amount < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
+            require(limiter.calculateAmountInUSD(tokenID, amount) < limiter.getUsdMaxLimit(), "SuiBridge: USD Exceed Limit");
         }
 
         // calculate old vault balance
@@ -215,24 +215,78 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         // Adjust the amount to emit.
         IBridgeConfig config = committee.config();
+        uint8 chainid=committee.config().chainID();
 
-        // Adjust the amount
-        uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
-            IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
-            config.tokenSuiDecimalOf(BridgeUtils.ETH),
-            amount
-        );
+        if (chainid == 30 || chainid == 31 || chainid == 32){
+            // Adjust the amount
+            uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.BNB),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.BNB,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+        }else if (chainid == 39 || chainid == 40 || chainid == 41){
+            //POL
+             // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.POL)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.POL),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.POL,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
 
-        emit TokensDeposited(
-            config.chainID(),
-            nonces[BridgeUtils.TOKEN_TRANSFER],
-            destinationChainID,
-            BridgeUtils.ETH,
-            suiAdjustedAmount,
-            msg.sender,
-            recipientAddress
-        );
+        }else if (chainid == 45 || chainid == 46 || chainid == 47){
+              //AVAX
+              // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.AVAX)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.AVAX),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.AVAX,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
 
+        }
+        else{
+             // Adjust the amount
+             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
+                IERC20Metadata(config.tokenAddressOf(BridgeUtils.ETH)).decimals(),
+                config.tokenSuiDecimalOf(BridgeUtils.ETH),
+                amount
+             );
+             emit TokensDeposited(
+                config.chainID(),
+                nonces[BridgeUtils.TOKEN_TRANSFER],
+                destinationChainID,
+                BridgeUtils.ETH,
+                suiAdjustedAmount,
+                msg.sender,
+                recipientAddress
+            );
+        }
         // increment token transfer nonce
         nonces[BridgeUtils.TOKEN_TRANSFER]++;
     }
@@ -254,15 +308,43 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         // Check that the token address is supported
         require(tokenAddress != address(0), "SuiBridge: Unsupported token");
+        uint8 chainid=committee.config().chainID();
 
-        // transfer eth if token type is eth
-        if (tokenID == BridgeUtils.ETH) {
-            vault.transferETH(payable(recipientAddress), amount);
-        } else {
-            // transfer tokens from vault to target address
-            vault.transferERC20(tokenAddress, recipientAddress, amount);
+        if (chainid == 30 || chainid == 31 || chainid == 32){
+             // transfer eth if token type is eth
+            if (tokenID == BridgeUtils.BNB) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+
+        }else if  (chainid == 39 || chainid == 40 || chainid == 41){
+            //POL
+            if (tokenID == BridgeUtils.POL) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+
+        }else if (chainid == 45 || chainid == 46 || chainid == 47){
+            //AVAX
+            if (tokenID == BridgeUtils.AVAX) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+        }else {
+            if (tokenID == BridgeUtils.ETH) {
+                vault.transferETH(payable(recipientAddress), amount);
+            } else {
+                // transfer tokens from vault to target address
+                vault.transferERC20(tokenAddress, recipientAddress, amount);
+            }
+
         }
-
         // update amount bridged
         limiter.recordBridgeTransfers(sendingChainID, tokenID, amount);
     }

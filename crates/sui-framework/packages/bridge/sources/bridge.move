@@ -25,6 +25,7 @@ module bridge::bridge {
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         to_parsed_token_transfer_message,
     };
+    use bridge::tokenlist;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
@@ -84,6 +85,7 @@ module bridge::bridge {
         target_address: vector<u8>,
         token_type: u64,
         amount: u64,
+        benfen_amount: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -140,6 +142,7 @@ module bridge::bridge {
     const EUnknownExternalCoinOrSender: u64 = 31;
     const EUnpassedMultiSignature: u64 = 32;
     const EUnpassedWitnessSignature: u64=33;
+    const EInvalidChainIDAndTokenIDExpect: u64 = 34;
 
     const EUnauthorisedUpdateLimit: u64 = 40;
     const EInvalidMintAmount: u64 = 41;
@@ -298,6 +301,14 @@ module bridge::bridge {
         }
     }
 
+    public entry fun migrate(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ){
+        tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
+        limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
+    }
+
     //////////////////////////////////////////////////////
     // Public functions
     //
@@ -338,7 +349,7 @@ module bridge::bridge {
         token: Coin<T>,
         ctx: &mut TxContext
     ) {
-        let inner = load_inner_mut(bridge);
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
@@ -348,6 +359,8 @@ module bridge::bridge {
         let token_amount = token.balance().value();
         assert!(token_amount > 0, ETokenValueIsZero);
         assert!(token_id != 5, EUseSendBusd);
+
+        assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
 
         // create bridge message
         let message = message::create_token_bridge_message(
@@ -385,6 +398,8 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
+                benfen_amount: token_amount,
+
             },
         );
     }
@@ -398,6 +413,8 @@ module bridge::bridge {
         token_id_expect: u64,
         ctx: &mut TxContext
     ) {
+        assert!(tokenlist::is_supported_from_benfen(&bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+
         let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
@@ -410,7 +427,14 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
-        let token_amount = token.balance().value()/1000u64;
+        let benfen_amount=token.balance().value();
+
+        let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
+             token.balance().value()/1000u64
+        }else{
+             token.balance().value()
+        };
+
         assert!(token_amount > 0, ETokenValueIsZero);
 
         // create bridge message
@@ -449,6 +473,7 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
+                benfen_amount: benfen_amount,
             },
         );
     }
@@ -1164,6 +1189,15 @@ module bridge::bridge {
         inner
     }
 
+    fun load_inner_mut_and_uid(bridge: &mut Bridge): (&mut BridgeInner ,&mut UID){
+        let version = bridge.inner.version();
+        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+        let inner: &mut BridgeInner = bridge.inner.load_value_mut();
+        assert!(inner.bridge_version == version, EWrongInnerVersion);
+        (inner,&mut bridge.id)
+    }
+
     // Claim token from approved bridge message
     // Returns Some(Coin) if coin can be claimed. If already claimed, return None
     fun claim_token_internal<T>(
@@ -1605,6 +1639,11 @@ module bridge::bridge {
     #[test_only]
     public fun test_load_inner(bridge: &Bridge): &BridgeInner {
         bridge.load_inner()
+    }
+
+    #[test_only]
+    public fun test_load_limiter(bridge: &Bridge): &TransferLimiter {
+        &bridge.load_inner().limiter
     }
 
     #[test_only]

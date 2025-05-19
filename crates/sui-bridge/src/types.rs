@@ -357,7 +357,6 @@ pub struct LimitUpdateAction {
     // 4 decimal places, namely 1 USD = 10000
     pub new_usd_limit: u64,
 }
-
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq, Hash)]
 pub struct AssetPriceUpdateAction {
     pub nonce: u64,
@@ -716,10 +715,16 @@ pub fn is_route_valid(one: BridgeChainId, other: BridgeChainId) -> bool {
     if one == BridgeChainId::SuiMainnet {
         return other == BridgeChainId::EthMainnet;
     }
+    if one == BridgeChainId::BscMainnet {
+        return other == BridgeChainId::EthMainnet;
+    }
     if other == BridgeChainId::EthMainnet {
         return one == BridgeChainId::SuiMainnet;
     }
     if other == BridgeChainId::SuiMainnet {
+        return one == BridgeChainId::EthMainnet;
+    }
+    if other == BridgeChainId::BscMainnet {
         return one == BridgeChainId::EthMainnet;
     }
     true
