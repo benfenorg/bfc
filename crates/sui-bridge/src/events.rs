@@ -45,6 +45,7 @@ pub struct MoveTokenDepositedEvent {
     pub target_address: Vec<u8>,
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
+    pub benfen_amount: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
