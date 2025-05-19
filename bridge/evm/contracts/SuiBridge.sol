@@ -215,8 +215,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         // Adjust the amount to emit.
         IBridgeConfig config = committee.config();
+        uint8 chainid=committee.config().chainID();
 
-        if (committee.config().chainID() == 30 || committee.config().chainID() == 31 || committee.config().chainID() == 32){
+        if (chainid == 30 || chainid == 31 || chainid == 32){
             // Adjust the amount
             uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
                 IERC20Metadata(config.tokenAddressOf(BridgeUtils.BNB)).decimals(),
@@ -232,7 +233,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 msg.sender,
                 recipientAddress
             );
-        }else if (committee.config().chainID() == 39 || committee.config().chainID() == 40 || committee.config().chainID() == 41){
+        }else if (chainid == 39 || chainid == 40 || chainid == 41){
             //POL
              // Adjust the amount
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
@@ -250,7 +251,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 recipientAddress
             );
 
-        }else if (committee.config().chainID() == 45 || committee.config().chainID() == 46 || committee.config().chainID() == 47){
+        }else if (chainid == 45 || chainid == 46 || chainid == 47){
               //AVAX
               // Adjust the amount
              uint64 suiAdjustedAmount = BridgeUtils.convertERC20ToSuiDecimal(
@@ -307,8 +308,9 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
 
         // Check that the token address is supported
         require(tokenAddress != address(0), "SuiBridge: Unsupported token");
+        uint8 chainid=committee.config().chainID();
 
-        if (committee.config().chainID() == 30 || committee.config().chainID() == 31 || committee.config().chainID() == 32){
+        if (chainid == 30 || chainid == 31 || chainid == 32){
              // transfer eth if token type is eth
             if (tokenID == BridgeUtils.BNB) {
                 vault.transferETH(payable(recipientAddress), amount);
@@ -317,7 +319,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 vault.transferERC20(tokenAddress, recipientAddress, amount);
             }
 
-        }else if  (committee.config().chainID() == 39 || committee.config().chainID() == 40 || committee.config().chainID() == 41){
+        }else if  (chainid == 39 || chainid == 40 || chainid == 41){
             //POL
             if (tokenID == BridgeUtils.POL) {
                 vault.transferETH(payable(recipientAddress), amount);
@@ -326,7 +328,7 @@ contract SuiBridge is ISuiBridge, CommitteeUpgradeable, PausableUpgradeable {
                 vault.transferERC20(tokenAddress, recipientAddress, amount);
             }
 
-        }else if (committee.config().chainID() == 45 || committee.config().chainID() == 46 || committee.config().chainID() == 47){
+        }else if (chainid == 45 || chainid == 46 || chainid == 47){
             //AVAX
             if (tokenID == BridgeUtils.AVAX) {
                 vault.transferETH(payable(recipientAddress), amount);
