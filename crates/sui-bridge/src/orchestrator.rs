@@ -16,7 +16,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::BridgeOrchestratorTables;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{BridgeAction, EthLog};
+use crate::types::{EthLog};
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
@@ -379,6 +379,41 @@ mod tests {
             );
             break;
         }
+    }
+
+    #[tokio::test]
+    async fn test_sui_pending_acitons() {
+        let (
+            _sui_events_tx,
+            _sui_events_rx,
+            _eth_events_tx,
+            _eth_events_rx,
+            _sui_monitor_tx,
+            _sui_monitor_rx,
+            _eth_monitor_tx,
+            _eth_monitor_rx,
+            _sui_client,
+            store,
+        ) = setup();
+
+        let (_, bridge_action) = get_test_external_coin_event_and_action(
+            Identifier::from_str("test1").unwrap(),
+            "1".into(),
+        );
+        store.insert_pending_actions(&vec![bridge_action.clone()]).unwrap();
+        assert_eq!(store.get_all_pending_actions().len(), 1);
+
+        let (_, bridge_action) = get_test_external_coin_event_and_action(
+            Identifier::from_str("test2").unwrap(),
+            "2".into(),
+        );
+        store.insert_pending_actions(&vec![bridge_action.clone()]).unwrap();
+        let (_, bridge_action) = get_test_external_coin_event_and_action(
+            Identifier::from_str("test3").unwrap(),
+            "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2".into(),
+        );
+        store.insert_pending_actions(&vec![bridge_action.clone()]).unwrap();
+        assert_eq!(store.get_all_pending_actions().len(), 2);
     }
 
     #[tokio::test]
