@@ -17,11 +17,11 @@
         1,
         2
     ],
-    "supportedChainLimitsInDollars": [
-        500000000000000,
-        500000000000000
-    ],
-    "maxUsdLimit": 50000000000000000000,
+"supportedChainLimitsInDollars": [
+    10000000000,
+    10000000000
+],
+"maxUsdLimit": 5000000000,
     "supportedTokens": [
         "0x512D876EA78EE65E95766Ee7Ac9f7F03378443ad",
         "0x1f6bA36ceFC01e2ABcd2C36940c109208d686252",
