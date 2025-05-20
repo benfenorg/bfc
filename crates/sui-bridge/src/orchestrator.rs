@@ -16,7 +16,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::BridgeOrchestratorTables;
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::EthLog;
+use crate::types::{BridgeAction, EthLog};
 use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
@@ -303,7 +303,7 @@ where
 #[cfg(test)]
 mod tests {
     use crate::{
-        events::tests::get_test_external_coin_event_and_action, test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action}, types::BridgeActionDigest
+        events::tests::get_test_external_coin_event_and_action, test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action}, types::BridgeActionDigest,
     };
     use ethers::types::{Address as EthAddress, TxHash};
     use prometheus::Registry;
@@ -417,17 +417,47 @@ mod tests {
 
         // external action 
         let identifier = Identifier::from_str("test_external_watcher_task").unwrap();
-        let (sui_event, bridge_action) = get_test_external_coin_event_and_action(identifier.clone());
+        let (sui_event, bridge_action) = get_test_external_coin_event_and_action(identifier.clone(), "test1".into());
         sui_events_tx
             .send((identifier.clone(), vec![sui_event.clone()]))
             .await
             .unwrap();
-
         // Executor should have received the action
         assert_eq!(
             executor_requested_action_rx.recv().await.unwrap(),
             bridge_action.digest()
         );
+
+        let identifier = Identifier::from_str("test_external_watcher_task1").unwrap();
+        let (sui_event, bridge_action) = get_test_external_coin_event_and_action(identifier.clone(), "test2".into());
+        sui_events_tx
+            .send((identifier.clone(), vec![sui_event.clone()]))
+            .await
+            .unwrap();
+        // Executor should have received the action
+        assert_eq!(
+            executor_requested_action_rx.recv().await.unwrap(),
+            bridge_action.digest()
+        );
+
+        // error external action
+        {
+            let identifier = Identifier::from_str("test_external_watcher_task2").unwrap();
+            let (sui_event, bridge_action) = get_test_external_coin_event_and_action(
+                identifier.clone(),
+                "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2".into(),
+            );
+            sui_events_tx
+                .send((identifier.clone(), vec![sui_event.clone()]))
+                .await
+                .unwrap();
+            // Executor should have received the action
+            assert_eq!(
+                executor_requested_action_rx.recv().await.unwrap(),
+                bridge_action.digest()
+            );
+        }
+
         
         let start = std::time::Instant::now();
         
@@ -440,7 +470,7 @@ mod tests {
                 tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
                 continue;
             }
-            assert_eq!(actions.len(), 1);
+            assert_eq!(actions.len(), 2);
             let action = actions.get(&bridge_action.digest()).unwrap();
             assert_eq!(action, &bridge_action);
             assert_eq!(
