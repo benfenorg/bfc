@@ -23,6 +23,7 @@ move-proc-macros.workspace = true
 
 # wasm support (requires js feature of getrandom)
 getrandom = { workspace = true, features = ["js"], optional = true }
+tracing = "0.1.41"
 
 [dev-dependencies]
 proptest.workspace = true

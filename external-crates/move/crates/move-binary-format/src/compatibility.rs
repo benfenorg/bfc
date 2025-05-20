@@ -98,7 +98,10 @@ impl Compatibility {
     /// Check compatibility for `new_module` relative to old module `old_module`.
     pub fn check(&self, old_module: &Module, new_module: &Module) -> PartialVMResult<()> {
         self.check_with_mode::<ExecutionCompatibilityMode>(old_module, new_module)
-            .map_err(|_| PartialVMError::new(StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE))
+            .map_err(|e| {
+                tracing::error!("result is {:?}",e);
+                PartialVMError::new(StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE)
+            })
     }
 
     pub fn check_with_mode<M: CompatibilityMode>(
