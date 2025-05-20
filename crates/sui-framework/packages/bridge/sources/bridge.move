@@ -424,7 +424,12 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
-        let token_amount=token.balance().value();
+        let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
+             token.balance().value()/1000u64
+        }else{
+             token.balance().value()
+        };
+
 
         assert!(token_amount > 0, ETokenValueIsZero);
 
