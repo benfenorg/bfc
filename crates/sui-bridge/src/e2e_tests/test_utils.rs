@@ -1690,9 +1690,9 @@ pub async fn initiate_bridge_erc20_to_sui(
     let sui_recipient_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-
+    info!("bbking sui_chain_id: {:?} eth_chain_id: {:?}", sui_chain_id, eth_chain_id);
     info!(
-        "Depositing ERC20 (token id:{}, token_address: {}) to Solidity contract",
+        "Depositing ERC20 before (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
     let contract = EthSuiBridge::new(
@@ -1729,7 +1729,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         sui_recipient_address.to_vec()
     );
     info!(
-        "Deposited ERC20 (token id:{}, token_address: {}) to Solidity contract",
+        "Deposited ERC20 after (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
 
