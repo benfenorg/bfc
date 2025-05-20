@@ -47,7 +47,7 @@
     "supportedChainLimitsInDollars": [
         100000000000000000
     ],
-    "maxUsdLimit": 100000000000000,
+    "maxUsdLimit": 1000000000000000,
     "tokenIds": [
         2,
         3,
