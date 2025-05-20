@@ -85,7 +85,6 @@ module bridge::bridge {
         target_address: vector<u8>,
         token_type: u64,
         amount: u64,
-        benfen_amount: u64,
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -398,8 +397,6 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
-                benfen_amount: token_amount,
-
             },
         );
     }
@@ -427,7 +424,7 @@ module bridge::bridge {
         // let token_id_origin = inner.treasury.token_id<T>();
         // assert!(token_id_origin == 5, EOnlySupportBusd);
         let token_id = token_id_expect;
-        let benfen_amount=token.balance().value();
+        //let benfen_amount=token.balance().value();
 
         let token_amount=if (target_chain==chain_ids::eth_mainnet() || target_chain==chain_ids::eth_sepolia() || target_chain==chain_ids::eth_custom()) {
              token.balance().value()/1000u64
@@ -473,7 +470,6 @@ module bridge::bridge {
                 target_address,
                 token_type: token_id,
                 amount: token_amount,
-                benfen_amount: benfen_amount,
             },
         );
     }
