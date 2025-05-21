@@ -98,10 +98,7 @@ impl Compatibility {
     /// Check compatibility for `new_module` relative to old module `old_module`.
     pub fn check(&self, old_module: &Module, new_module: &Module) -> PartialVMResult<()> {
         self.check_with_mode::<ExecutionCompatibilityMode>(old_module, new_module)
-            .map_err(|e| {
-                tracing::error!("result is {:?}",e);
-                PartialVMError::new(StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE)
-            })
+            .map_err(|_| PartialVMError::new(StatusCode::BACKWARD_INCOMPATIBLE_MODULE_UPDATE))
     }
 
     pub fn check_with_mode<M: CompatibilityMode>(
@@ -153,7 +150,6 @@ impl Compatibility {
                 // choose that changing the name (but not position or type) of a field is
                 // compatible. The VM does not care about the name of a field
                 // (it's purely informational), but clients presumably do.
-
                 context.struct_field_mismatch(name, old_struct, new_struct);
             }
         }
@@ -163,7 +159,6 @@ impl Compatibility {
                 // Enum not present in new. Existing modules that depend on this enum will fail to link with the new version of the module.
                 // Also, enum layout cannot be guaranteed transitively, because after
                 // removing the enum, it could be re-added later with a different layout.
-
                 context.enum_missing(name, old_enum);
                 continue;
             };
