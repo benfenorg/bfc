@@ -127,7 +127,6 @@ impl Compatibility {
                 // Struct not present in new . Existing modules that depend on this struct will fail to link with the new version of the module.
                 // Also, struct layout cannot be guaranteed transitively, because after
                 // removing the struct, it could be re-added later with a different layout.
-                tracing::error!("struct_missing {:?}",name);
                 context.struct_missing(name, old_struct);
                 continue;
             };
@@ -137,7 +136,6 @@ impl Compatibility {
                 old_struct.abilities,
                 new_struct.abilities,
             ) {
-                tracing::error!("datatype_abilities_compatible {:?}",name);
                 context.struct_ability_mismatch(name, old_struct, new_struct);
             }
 
@@ -146,7 +144,6 @@ impl Compatibility {
                 &old_struct.type_parameters,
                 &new_struct.type_parameters,
             ) {
-                tracing::error!("struct_type_param_mismatch {:?}",name);
                 context.struct_type_param_mismatch(name, old_struct, new_struct);
             }
             if new_struct.fields != old_struct.fields {
@@ -156,7 +153,7 @@ impl Compatibility {
                 // choose that changing the name (but not position or type) of a field is
                 // compatible. The VM does not care about the name of a field
                 // (it's purely informational), but clients presumably do.
-                tracing::error!("structs fields are not compatible {:?}",name);
+
                 context.struct_field_mismatch(name, old_struct, new_struct);
             }
         }
@@ -166,7 +163,7 @@ impl Compatibility {
                 // Enum not present in new. Existing modules that depend on this enum will fail to link with the new version of the module.
                 // Also, enum layout cannot be guaranteed transitively, because after
                 // removing the enum, it could be re-added later with a different layout.
-                tracing::error!("enum_missing {:?}",name);
+
                 context.enum_missing(name, old_enum);
                 continue;
             };
@@ -176,7 +173,6 @@ impl Compatibility {
                 old_enum.abilities,
                 new_enum.abilities,
             ) {
-                tracing::error!("enum_ability_mismatch {:?}",name);
                 context.enum_ability_mismatch(name, old_enum, new_enum);
             }
 
@@ -185,7 +181,6 @@ impl Compatibility {
                 &old_enum.type_parameters,
                 &new_enum.type_parameters,
             ) {
-                tracing::error!("enum_type_param_mismatch {:?}",name);
                 context.enum_type_param_mismatch(name, old_enum, new_enum);
             }
 
@@ -197,7 +192,6 @@ impl Compatibility {
                 // If the new enum has fewer variants than the old one, datatype_layout is false
                 // and we don't need to check the rest of the variants.
                 let Some(new_variant) = new_enum.variants.get(tag) else {
-                    tracing::error!("enum_variant_missing {:?}",name);
                     context.enum_variant_missing(name, old_enum, tag);
                     continue;
                 };
@@ -207,8 +201,6 @@ impl Compatibility {
                     // type) of a variant is compatible. The VM does not care about the name of a
                     // variant if it's non-public (it's purely informational), but clients
                     // presumably would.
-                    tracing::error!("enum_variant_missing {:?}",name);
-
                     context.enum_variant_mismatch(name, old_enum, new_enum, tag);
                 }
                 if new_variant.fields != old_variant.fields {
@@ -218,8 +210,6 @@ impl Compatibility {
                     // choose that changing the name (but not position or type) of a field is
                     // compatible. The VM does not care about the name of a field
                     // (it's purely informational), but clients presumably do.
-                    tracing::error!("enum_variant_missing {:?}",name);
-
                     context.enum_variant_mismatch(name, old_enum, new_enum, tag);
                 }
             }
@@ -239,7 +229,6 @@ impl Compatibility {
                 } else if old_func.is_entry && self.check_private_entry_linking {
                     // This must be a private entry function. So set the link breakage if we're
                     // checking for that.
-                    tracing::error!("function_missing_entry {:?}",name);
                     context.function_missing_entry(name, old_func);
                 }
                 continue;
@@ -249,7 +238,6 @@ impl Compatibility {
             if old_func.visibility == Visibility::Public
                 && new_func.visibility != Visibility::Public
             {
-                tracing::error!("function_lost_public_visibility {:?}",name);
                 context.function_lost_public_visibility(name, old_func);
             }
 
@@ -260,12 +248,8 @@ impl Compatibility {
                 && old_func.visibility != Visibility::Private
                 && old_func.is_entry != new_func.is_entry
             {
-                tracing::error!("function_entry_compatibility 1 {:?}",name);
-
                 context.function_entry_compatibility(name, old_func, new_func);
             } else if old_func.is_entry && !new_func.is_entry {
-                tracing::error!("function_entry_compatibility 2 {:?}",name);
-
                 context.function_entry_compatibility(name, old_func, new_func);
             }
 
@@ -277,7 +261,6 @@ impl Compatibility {
                 &new_func.type_parameters,
             )
             {
-                tracing::error!("function_signature_mismatch {:?}",name);
                 context.function_signature_mismatch(name, old_func, new_func);
             }
         }
