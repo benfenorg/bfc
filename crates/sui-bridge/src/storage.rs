@@ -4,6 +4,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
+use tracing::info;
 use sui_types::Identifier;
 
 use sui_types::event::EventID;
@@ -149,7 +150,24 @@ impl BridgeOrchestratorTables {
     }
 
     pub fn get_all_pending_actions(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
-        self.pending_actions.unbounded_iter().collect()
+        self.pending_actions.unbounded_iter().filter(
+            |(_, action)| {
+                // readme： filter pending actions by tx_hash
+                if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action {
+                    let tx_hash = &external_action.sui_bridge_event.tx_hash;
+                    // hard code fix for some bug
+                    // 2025-05-19T08:31:54.571195Z ERROR sui_bridge::btc_query: Invalid txn_id len != 64: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2"
+                    if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
+                        info!( "filter pending actions by tx_hash for hard code fix bug, sui_hash {} tx_hash: {}",
+                        &external_action.sui_tx_digest, tx_hash);
+                        // TODO: delete it from pending_actions storage
+
+                        return false
+                    }
+                }
+                true
+            },
+        ).collect()
     }
 
     pub fn get_all_pending_actions_4_aml(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
