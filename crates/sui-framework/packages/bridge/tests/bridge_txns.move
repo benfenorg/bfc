@@ -12,6 +12,7 @@ use bridge::bridge_env::{
     create_env,
     create_validator,
     eth_id,
+    bnb_id,
     limit_exceeded,
     register_test_token,
     test_token_id
@@ -311,6 +312,7 @@ fun test_system_messages() {
     env.create_bridge_default();
 
     env.update_asset_price(addr, eth_id(), 735);
+    env.update_asset_price(addr, bnb_id(), 70);
 
     env.register_test_token();
     env.add_tokens(

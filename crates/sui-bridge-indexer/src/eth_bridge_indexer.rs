@@ -333,7 +333,14 @@ async fn loop_retrieve_and_process_live_finalized_logs(
             .iter()
             .map(|address| (*address, starting_checkpoint)),
     );
-    let (_, mut eth_events_rx, _) = EthSyncer::new(client.clone(), eth_contracts_to_watch)
+    let (eth_evnets_tx,mut eth_events_rx) = mysten_metrics::metered_channel::channel(
+        1000,
+        &mysten_metrics::get_metrics()
+            .unwrap()
+            .channel_inflight
+            .with_label_values(&["eth_events_queue"]),
+    );
+    let (_, _) = EthSyncer::new(client.clone(), eth_contracts_to_watch,eth_evnets_tx)
         .run(bridge_metrics.clone())
         .await
         .expect("Failed to start eth syncer");

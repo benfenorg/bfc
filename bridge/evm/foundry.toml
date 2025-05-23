@@ -10,8 +10,10 @@ extra_output = ["storageLayout"]
 fs_permissions = [{ access = "read", path = "/"}]
 gas_reports = ["SuiBridge"]
 ffi = true
+optimizer = true
+optimizer_runs = 200
 
-[fmt] 
+[fmt]
 line_length = 100
 
 [fuzz]
@@ -25,6 +27,10 @@ anvil = "http://localhost:8545"
 [etherscan]
 sepolia = { key = "${ETHERSCAN_API_KEY}" }
 mainnet = { key = "${ETHERSCAN_API_KEY}" }
+97 = { key = "${ETHERSCAN_API_KEY}" }
+56 = { key = "${ETHERSCAN_API_KEY}" }
+10 = { key = "${ETHERSCAN_API_KEY}" }
+8453 = { key = "${ETHERSCAN_API_KEY}" }
 
 [dependencies]
 forge-std = "1.9.2"

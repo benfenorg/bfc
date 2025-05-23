@@ -679,12 +679,12 @@ pub mod tests {
         (event, bridge_action)
     }
 
-    pub fn get_test_external_coin_event_and_action(identifier: Identifier) -> (SuiEvent, BridgeAction) {
+    pub fn get_test_external_coin_event_and_action(identifier: Identifier, tx_hash: String) -> (SuiEvent, BridgeAction) {
         init_all_struct_tags(); // Ensure all tags are initialized
         let sanitized_event = EmittedExternalDepositStartBridgeV1 {
             nonce: 1,
             token_id: TOKEN_ID_BTC,
-            tx_hash: "test hash".into(),
+            tx_hash: tx_hash.clone(),
             source_chain: BridgeChainId::BtcTestnet,
             target_chain: BridgeChainId::SuiCustom,
             source_address: vec![],
@@ -710,7 +710,7 @@ pub mod tests {
             sui_bridge_event: EmittedExternalDepositStartBridgeV1 {
                 nonce: 1,
                 token_id: TOKEN_ID_BTC,
-                tx_hash: "test hash".into(),
+                tx_hash,
                 source_chain: BridgeChainId::BtcTestnet,
                 target_chain: BridgeChainId::SuiCustom,
                 source_address: vec![],

@@ -11,7 +11,8 @@ use crate::eth_client::EthClient;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
 use crate::types::EthLog;
-use ethers::types::Address as EthAddress;
+use ethers::types::{Address as EthAddress, H160};
+use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -27,6 +28,7 @@ const FINALIZED_BLOCK_QUERY_INTERVAL: Duration = Duration::from_secs(5);
 pub struct EthSyncer<P> {
     eth_client: Arc<EthClient<P>>,
     contract_addresses: EthTargetAddresses,
+    event_tx: Sender<(H160,u64,Vec<EthLog>)>,
 }
 
 /// Map from contract address to their start block.
@@ -37,10 +39,11 @@ impl<P> EthSyncer<P>
 where
     P: ethers::providers::JsonRpcClient + 'static,
 {
-    pub fn new(eth_client: Arc<EthClient<P>>, contract_addresses: EthTargetAddresses) -> Self {
+    pub fn new(eth_client: Arc<EthClient<P>>, contract_addresses: EthTargetAddresses, event_tx: Sender<(H160,u64,Vec<EthLog>)>) -> Self {
         Self {
             eth_client,
             contract_addresses,
+            event_tx,
         }
     }
 
@@ -49,16 +52,8 @@ where
         metrics: Arc<BridgeMetrics>,
     ) -> BridgeResult<(
         Vec<JoinHandle<()>>,
-        mysten_metrics::metered_channel::Receiver<(EthAddress, u64, Vec<EthLog>)>,
         watch::Receiver<u64>,
     )> {
-        let (eth_evnets_tx, eth_events_rx) = mysten_metrics::metered_channel::channel(
-            ETH_EVENTS_CHANNEL_SIZE,
-            &mysten_metrics::get_metrics()
-                .unwrap()
-                .channel_inflight
-                .with_label_values(&["eth_events_queue"]),
-        );
         let last_finalized_block = self.eth_client.get_last_finalized_block_id().await?;
         let (last_finalized_block_tx, last_finalized_block_rx) =
             watch::channel(last_finalized_block);
@@ -73,7 +68,7 @@ where
             )
         ));
         for (contract_address, start_block) in self.contract_addresses {
-            let eth_evnets_tx_clone = eth_evnets_tx.clone();
+            let eth_evnets_tx_clone = self.event_tx.clone();
             let last_finalized_block_rx_clone = last_finalized_block_rx.clone();
             let eth_client_clone = self.eth_client.clone();
             let metrics_clone = metrics.clone();
@@ -88,7 +83,7 @@ where
                 )
             ));
         }
-        Ok((task_handles, eth_events_rx, last_finalized_block_rx))
+        Ok((task_handles, last_finalized_block_rx))
     }
 
     async fn run_finalized_block_refresh_task(
@@ -256,8 +251,15 @@ mod tests {
             777,
             vec![log.clone()],
         );
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses)
+        let (eth_evnets_tx,mut logs_rx) = mysten_metrics::metered_channel::channel(
+            ETH_EVENTS_CHANNEL_SIZE,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["eth_events_queue"]),
+        );
+        let (_handles, mut finalized_block_rx) =
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();
@@ -345,9 +347,15 @@ mod tests {
             198,
             vec![log2.clone()],
         );
-
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses)
+        let (eth_evnets_tx,mut logs_rx) = mysten_metrics::metered_channel::channel(
+            ETH_EVENTS_CHANNEL_SIZE,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["eth_events_queue"]),
+        );
+        let (_handles, mut finalized_block_rx) =
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();
@@ -482,9 +490,15 @@ mod tests {
             last_finalized_block,
             vec![log2.clone()],
         );
-
-        let (_handles, mut logs_rx, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses)
+        let (eth_evnets_tx, mut logs_rx) = mysten_metrics::metered_channel::channel(
+            ETH_EVENTS_CHANNEL_SIZE,
+            &mysten_metrics::get_metrics()
+                .unwrap()
+                .channel_inflight
+                .with_label_values(&["eth_events_queue"]),
+        );
+        let (_handles, mut finalized_block_rx) =
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();

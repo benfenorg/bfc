@@ -1,0 +1,46 @@
+{
+    "committeeMemberStake": [
+        2500,
+        2500,
+        2500,
+        2500
+    ],
+    "committeeMembers": [
+        "0xc861b2e82f269ba22ea11d2f53b18711640c602b",
+        "0xbaab90bb17ce595c050dbe7a0ba3441b0deaedc9",
+        "0xe76b6477e173f76235c86bfb40bc9bb27cb2f14d",
+        "0x1a464f460169d7143fcb9c64b9abf578aa4a06ba"
+    ],
+    "minCommitteeStakeRequired": 10000,
+    "sourceChainId": 31,
+    "supportedChainIds": [
+        1,
+        2
+    ],
+"supportedChainLimitsInDollars": [
+    10000000000,
+    10000000000
+],
+"maxUsdLimit": 5000000000,
+    "supportedTokens": [
+        "0x512D876EA78EE65E95766Ee7Ac9f7F03378443ad",
+        "0x1f6bA36ceFC01e2ABcd2C36940c109208d686252",
+        "0x1d4cdd8683bab5fb640e150c0f2f06118ca9c607"
+    ],
+    "tokenPrices": [
+        100000000,
+        100000000,
+        60000000000
+    ],
+    "tokenIds": [
+        3,
+        4,
+        6
+    ],
+    "suiDecimals": [
+        9,
+        9,
+        8
+    ],
+    "weth": "0x1d4cdd8683bab5fb640e150c0f2f06118ca9c607"
+}

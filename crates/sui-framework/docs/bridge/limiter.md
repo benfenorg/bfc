@@ -18,6 +18,7 @@ title: Module `0xb::limiter`
 -  [Function `current_hour_since_epoch`](#0xb_limiter_current_hour_since_epoch)
 -  [Function `adjust_transfer_records`](#0xb_limiter_adjust_transfer_records)
 -  [Function `initial_transfer_limits`](#0xb_limiter_initial_transfer_limits)
+-  [Function `update_transfer_limits`](#0xb_limiter_update_transfer_limits)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
@@ -560,7 +561,6 @@ title: Module `0xb::limiter`
         <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_eth_mainnet">chain_ids::eth_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
         500_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
     );
-
     // MAX limit for testnet and devnet
     transfer_limits.insert(
         <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_eth_sepolia">chain_ids::eth_sepolia</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
@@ -581,8 +581,186 @@ title: Module `0xb::limiter`
         <a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_eth_custom">chain_ids::eth_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
         <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
     );
-
     transfer_limits
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_limiter_update_transfer_limits"></a>
+
+## Function `update_transfer_limits`
+
+
+
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="limiter.md#0xb_limiter_update_transfer_limits">update_transfer_limits</a>(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">limiter::TransferLimiter</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(<a href="../sui-framework/package.md#0x2_package">package</a>) <b>fun</b> <a href="limiter.md#0xb_limiter_update_transfer_limits">update_transfer_limits</a>(self: &<b>mut</b> <a href="limiter.md#0xb_limiter_TransferLimiter">TransferLimiter</a>)
+{
+    // 1B limit on Sui -&gt; BSC mainnet
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+    // 1B limit on Sui -&gt; Base mainnet
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_base_mainnet">chain_ids::base_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_op_mainnet">chain_ids::op_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_mainnet">chain_ids::bsc_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_pol_mainnet">chain_ids::pol_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_arb_mainnet">chain_ids::arb_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>()),
+        1_000_000_000 * <a href="limiter.md#0xb_limiter_USD_VALUE_MULTIPLIER">USD_VALUE_MULTIPLIER</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_testnet">chain_ids::bsc_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_bsc_custom">chain_ids::bsc_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_base_testnet">chain_ids::base_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_base_custom">chain_ids::base_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_op_testnet">chain_ids::op_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_op_custom">chain_ids::op_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_pol_testnet">chain_ids::pol_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_pol_custom">chain_ids::pol_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_arb_testnet">chain_ids::arb_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_arb_custom">chain_ids::arb_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_avax_testnet">chain_ids::avax_testnet</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
+
+    self.<a href="limiter.md#0xb_limiter_update_route_limit">update_route_limit</a>(
+        &<a href="chain_ids.md#0xb_chain_ids_get_route">chain_ids::get_route</a>(<a href="chain_ids.md#0xb_chain_ids_avax_custom">chain_ids::avax_custom</a>(), <a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()),
+        <a href="limiter.md#0xb_limiter_MAX_TRANSFER_LIMIT">MAX_TRANSFER_LIMIT</a>
+    );
 }
 </code></pre>
 

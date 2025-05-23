@@ -24,7 +24,7 @@ contract DeployBridge is Script {
         config.sourceChainId = abi.decode(vm.parseJson(json, ".sourceChainId"), (uint256));
         config.supportedChainIds = abi.decode(vm.parseJson(json, ".supportedChainIds"), (uint256[]));
         config.supportedChainLimitsInDollars = abi.decode(vm.parseJson(json, ".supportedChainLimitsInDollars"), (uint256[]));
-        config.maxUsdLimit = abi.decode(vm.parseJson(json, ".maxUsdLimit"), (uint64));
+        config.maxUsdLimit = abi.decode(vm.parseJson(json, ".maxUsdLimit"), (uint256));
         config.tokenPrices = abi.decode(vm.parseJson(json, ".tokenPrices"), (uint256[]));
         config.supportedTokens = abi.decode(vm.parseJson(json, ".supportedTokens"), (address[]));
         config.tokenIds = abi.decode(vm.parseJson(json, ".tokenIds"), (uint256[]));
@@ -40,7 +40,10 @@ contract DeployBridge is Script {
         string memory chainID = Strings.toString(block.chainid);
         bytes32 chainIDHash = keccak256(abi.encode(chainID));
         bool isLocal = chainIDHash != keccak256(abi.encode("11155111"))
-            && chainIDHash != keccak256(abi.encode("1"));
+            && chainIDHash != keccak256(abi.encode("1"))&& chainIDHash != keccak256(abi.encode("97")) &&  chainIDHash != keccak256(abi.encode("56"))
+            && chainIDHash != keccak256(abi.encode("421614")) && chainIDHash != keccak256(abi.encode("84532")) && chainIDHash != keccak256(abi.encode("11155420"))
+            && chainIDHash != keccak256(abi.encode("43113"))&& chainIDHash != keccak256(abi.encode("80002"))
+            && chainIDHash != keccak256(abi.encode("8453"))&& chainIDHash != keccak256(abi.encode("10"));
         string memory root = vm.projectRoot();
         string memory path = string.concat(root, "/deploy_configs/", chainID, ".json");
         // If this is local deployment, we override the path if OVERRIDE_CONFIG_PATH is set.
@@ -59,33 +62,58 @@ contract DeployBridge is Script {
             deployConfig.weth = address(new WETH());
 
             // deploy mock tokens
+            IERC20 USDC;
+            IERC20 USDT;
+
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                USDC = new MockUSDC();
+                USDT = new MockUSDT();
+            }else{
+                USDC = new MockBNBUSDC();
+                USDT = new MockBNBUSDT();
+            }
             MockWBTC wBTC = new MockWBTC();
-            MockUSDC USDC = new MockUSDC();
-            MockUSDT USDT = new MockUSDT();
             MockKA KA = new MockKA();
+            MockBUSD BUSD = new MockBUSD();
+            MockBNB BNB = new MockBNB();
             console.log("[Deployed] KA:", address(KA));
+            console.log("[Deployed] BNB:", address(BNB));
 
             // update deployConfig with test values
-            deployConfig.supportedTokens = new address[](5);
+            deployConfig.supportedTokens = new address[](7);
             deployConfig.supportedTokens[0] = address(0);
             deployConfig.supportedTokens[1] = address(wBTC);
             deployConfig.supportedTokens[2] = deployConfig.weth;
             deployConfig.supportedTokens[3] = address(USDC);
             deployConfig.supportedTokens[4] = address(USDT);
+            deployConfig.supportedTokens[5] = address(BUSD);
+            deployConfig.supportedTokens[6] = address(BNB);
 
-            deployConfig.tokenIds = new uint256[](5);
+            deployConfig.tokenIds = new uint256[](7);
             deployConfig.tokenIds[0] = 0;
             deployConfig.tokenIds[1] = 1;
             deployConfig.tokenIds[2] = 2;
             deployConfig.tokenIds[3] = 3;
             deployConfig.tokenIds[4] = 4;
+            deployConfig.tokenIds[5] = 5;
+            deployConfig.tokenIds[6] = 6;
 
-            deployConfig.suiDecimals = new uint256[](5);
+            deployConfig.suiDecimals = new uint256[](7);
             deployConfig.suiDecimals[0] = 9;
             deployConfig.suiDecimals[1] = 8;
             deployConfig.suiDecimals[2] = 8;
-            deployConfig.suiDecimals[3] = 6;
-            deployConfig.suiDecimals[4] = 6;
+            if (chainIDHash == keccak256(abi.encode("31337"))){
+                console.log("bbking1");
+                deployConfig.suiDecimals[3] = 6;
+                deployConfig.suiDecimals[4] = 6;
+            }else{
+                console.log("bbking2");
+                deployConfig.suiDecimals[3] = 9;
+                deployConfig.suiDecimals[4] = 9;
+            }
+
+            deployConfig.suiDecimals[5] = 9;
+            deployConfig.suiDecimals[6] = 8;
         }
 
         // convert supported chains from uint256 to uint8
@@ -187,7 +215,7 @@ contract DeployBridge is Script {
         for (uint256 i; i < deployConfig.supportedChainLimitsInDollars.length; i++) {
             chainLimits[i] = uint64(deployConfig.supportedChainLimitsInDollars[i]);
         }
-        uint64 maxUsdLimit=deployConfig.maxUsdLimit;
+        uint256 maxUsdLimit=deployConfig.maxUsdLimit;
 
         address limiter = Upgrades.deployUUPSProxy(
             "BridgeLimiter.sol",
@@ -224,6 +252,7 @@ contract DeployBridge is Script {
         console.log("[Deployed] ETH:", BridgeConfig(bridgeConfig).tokenAddressOf(2));
         console.log("[Deployed] USDC:", BridgeConfig(bridgeConfig).tokenAddressOf(3));
         console.log("[Deployed] USDT:", BridgeConfig(bridgeConfig).tokenAddressOf(4));
+        console.log("[Deployed] BNB:", BridgeConfig(bridgeConfig).tokenAddressOf(6));
 
         vm.stopBroadcast();
     }
@@ -241,7 +270,7 @@ struct DeployConfig {
     uint256 sourceChainId;
     uint256[] supportedChainIds;
     uint256[] supportedChainLimitsInDollars;
-    uint64 maxUsdLimit;
+    uint256 maxUsdLimit;
     address[] supportedTokens;
     uint256[] tokenPrices;
     uint256[] tokenIds;

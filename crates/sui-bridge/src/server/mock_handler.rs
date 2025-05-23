@@ -87,6 +87,7 @@ impl Default for BridgeRequestMockHandler {
 impl BridgeRequestHandlerTrait for BridgeRequestMockHandler {
     async fn handle_eth_tx_hash(
         &self,
+        _chain_id: u8,
         _tx_hash_hex: String,
         _event_idx: u16,
     ) -> Result<Json<SignedBridgeAction>, BridgeError> {

@@ -53,7 +53,7 @@ contract BridgeBaseTest is Test {
 
     uint8 public chainID = 1;
     uint64 totalLimit = 1_000_000 * USD_VALUE_MULTIPLIER;
-    uint64 maxUSDLimit=100 * 1000000;
+    uint64 maxUSDLimit=100 * 100000000;
 
     uint16 minStakeRequired = 10000;
 

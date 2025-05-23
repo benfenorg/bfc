@@ -292,7 +292,7 @@ pub struct AccountConfig {
 
 pub const DEFAULT_GAS_AMOUNT: u64 = 3_000_000_000_000_000;
 pub const DEFAULT_NUMBER_OF_AUTHORITIES: usize = 4;
-const DEFAULT_NUMBER_OF_ACCOUNT: usize = 5;
+const DEFAULT_NUMBER_OF_ACCOUNT: usize = 10;
 pub const DEFAULT_NUMBER_OF_OBJECT_PER_ACCOUNT: usize = 5;
 
 impl GenesisConfig {
