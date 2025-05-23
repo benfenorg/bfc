@@ -977,7 +977,7 @@ mod tests {
             vec![sui_event_1.clone()],
         );
         let signed_1 = external_signer_with_cache
-            .sign((sui_tx_digest, sui_event_idx))
+            .sign((0,sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
     }
