@@ -990,7 +990,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
     // Register tokens on Sui
-    let token_id = 6;
+    let token_id = 7;
     let token_sui_decimal = 9; // this needs to match ka.move
     let token_price = 10000;
     let sender = bridge_test_cluster.sui_user_address();
@@ -1081,7 +1081,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         .await
         .unwrap();
     dbg!(&treasury_summary.id_token_type_map);
-    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 5 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 7); // 5 + 1 new token
     let (id, _type) = treasury_summary
         .id_token_type_map
         .iter()
@@ -1110,7 +1110,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         .unwrap();
     let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
     assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
-
+    info!("New token added on EVM");
     // Verify new tokens are added on EVM
     let (address, dp, price) = bridge_test_cluster
         .eth_env()
@@ -1119,7 +1119,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
     assert_eq!(address, new_token_erc_address);
     assert_eq!(dp, 9);
     assert_eq!(price, token_price);
-
+    info!("New token added on EVM");
     initiate_bridge_erc20_to_sui(
         &bridge_test_cluster,
         100,

@@ -47,6 +47,7 @@ pub struct EthConfig {
     pub eth_bridge_proxy_address: String,
     /// The expected BridgeChainId on Eth side.
     pub eth_bridge_chain_id: u8,
+    pub eth_enabled: bool,
     /// The starting block for EthSyncer to monitor eth contracts.
     /// It is required when `run_client` is true. Usually this is
     /// the block number when the bridge contracts are deployed.
@@ -281,6 +282,10 @@ impl BridgeNodeConfig {
                 .eth_contracts_start_block_fallback
                 .unwrap(),
             optimism_contracts_start_block_override: self.optimism.eth_contracts_start_block_override,
+            eth_enabled: self.eth.eth_enabled,
+            bsc_enabled: self.bsc.eth_enabled,
+            base_enabled: self.base.eth_enabled,
+            optimism_enabled: self.optimism.eth_enabled,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -516,6 +521,10 @@ pub struct BridgeClientConfig {
     pub bsc_client: Arc<EthClient<MeteredEthHttpProvier>>,
     pub base_client: Arc<EthClient<MeteredEthHttpProvier>>,
     pub optimism_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub eth_enabled: bool,
+    pub bsc_enabled: bool,
+    pub base_enabled: bool,
+    pub optimism_enabled: bool,
     pub db_path: PathBuf,
     pub eth_contracts: Vec<EthAddress>,
     // See `BridgeNodeConfig` for the explanation of following two fields.

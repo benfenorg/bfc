@@ -3207,6 +3207,8 @@ impl ProtocolConfig {
                 71 => {
                 }
                 72 => {
+                }
+                73 => {
                     cfg.sip_45_consensus_amplification_threshold = Some(5);
 
                     // Enable bursts for congestion control. (10x the per-commit budget)
@@ -3220,8 +3222,6 @@ impl ProtocolConfig {
                     cfg.max_gas_price = Some(50_000_000_000);
 
                     cfg.feature_flags.variant_nodes = true;
-                }
-                73 => {
                     // Enable new marker table version.
                     cfg.use_object_per_epoch_marker_table_v2 = Some(true);
 

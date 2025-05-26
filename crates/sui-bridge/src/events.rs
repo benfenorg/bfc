@@ -45,7 +45,6 @@ pub struct MoveTokenDepositedEvent {
     pub target_address: Vec<u8>,
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
-    pub benfen_amount: u64,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
@@ -652,7 +651,6 @@ pub mod tests {
             target_address: sanitized_event.eth_address.as_bytes().to_vec(),
             token_type: sanitized_event.token_id,
             amount_sui_adjusted: sanitized_event.amount_sui_adjusted,
-            benfen_amount: sanitized_event.amount_sui_adjusted,
         };
 
         let tx_digest = TransactionDigest::random();
@@ -681,12 +679,12 @@ pub mod tests {
         (event, bridge_action)
     }
 
-    pub fn get_test_external_coin_event_and_action(identifier: Identifier) -> (SuiEvent, BridgeAction) {
+    pub fn get_test_external_coin_event_and_action(identifier: Identifier, tx_hash: String) -> (SuiEvent, BridgeAction) {
         init_all_struct_tags(); // Ensure all tags are initialized
         let sanitized_event = EmittedExternalDepositStartBridgeV1 {
             nonce: 1,
             token_id: TOKEN_ID_BTC,
-            tx_hash: "test hash".into(),
+            tx_hash: tx_hash.clone(),
             source_chain: BridgeChainId::BtcTestnet,
             target_chain: BridgeChainId::SuiCustom,
             source_address: vec![],
@@ -712,7 +710,7 @@ pub mod tests {
             sui_bridge_event: EmittedExternalDepositStartBridgeV1 {
                 nonce: 1,
                 token_id: TOKEN_ID_BTC,
-                tx_hash: "test hash".into(),
+                tx_hash,
                 source_chain: BridgeChainId::BtcTestnet,
                 target_chain: BridgeChainId::SuiCustom,
                 source_address: vec![],
@@ -815,7 +813,6 @@ pub mod tests {
             target_address: EthAddress::random().as_bytes().to_vec(),
             token_type: TOKEN_ID_SUI,
             amount_sui_adjusted: 0,
-            benfen_amount: 0,
         };
         match EmittedSuiToEthTokenBridgeV1::try_from(emitted_event).unwrap_err() {
             BridgeError::ZeroValueBridgeTransfer(_) => (),

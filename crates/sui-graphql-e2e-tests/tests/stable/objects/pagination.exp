@@ -48,19 +48,19 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IDsQ0U6Iv/UZ/qRJTulOBF/ZALVORgQEJ9y1vC4gdYzBAQAAAAAAAAA="
+            "cursor": "IAmNZlyZyf6szA5bT4PtJj4EvMha4SKWxgI5Sx82r9euAQAAAAAAAAA="
           },
           {
-            "cursor": "IEnxp2+NFfu/3eejgIJ73T46h8pmfo05qDf8geGe5kHNAQAAAAAAAAA="
+            "cursor": "IBzOF68jnA0CyML4xTQ4uzGjVNndQZiOIUiVndswghCxAQAAAAAAAAA="
           },
           {
-            "cursor": "IGaUAVrhjahSYc9iq3Ev8BdqHsiwVRNG5tLN6uqqbsPxAQAAAAAAAAA="
+            "cursor": "IEIo2STA9SPVzipxBitqREPFFX+bR8+THWMo0RoH/PINAQAAAAAAAAA="
           },
           {
-            "cursor": "IHQo7dpE/i5kWm6SYdP/z01dzd7u2mc2CtWHuHTxa2CBAQAAAAAAAAA="
+            "cursor": "IHcmRdHth+fy1fPFzvv1vuYeVXmyXSLr4gd6dNduUYWhAQAAAAAAAAA="
           },
           {
-            "cursor": "INGv8E2Y4My/lERzmkLtpthxsIUw9JjPfMZeazqQJm7mAQAAAAAAAAA="
+            "cursor": "IOxb99Uy4BUfNcEGc1CbAdHk7RBrH3/hJvZNDNCh6hFXAQAAAAAAAAA="
           }
         ]
       }
@@ -76,10 +76,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IDsQ0U6Iv/UZ/qRJTulOBF/ZALVORgQEJ9y1vC4gdYzBAQAAAAAAAAA="
+            "cursor": "IAmNZlyZyf6szA5bT4PtJj4EvMha4SKWxgI5Sx82r9euAQAAAAAAAAA="
           },
           {
-            "cursor": "IEnxp2+NFfu/3eejgIJ73T46h8pmfo05qDf8geGe5kHNAQAAAAAAAAA="
+            "cursor": "IBzOF68jnA0CyML4xTQ4uzGjVNndQZiOIUiVndswghCxAQAAAAAAAAA="
           }
         ]
       }
@@ -95,7 +95,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "INGv8E2Y4My/lERzmkLtpthxsIUw9JjPfMZeazqQJm7mAQAAAAAAAAA="
+            "cursor": "IBzOF68jnA0CyML4xTQ4uzGjVNndQZiOIUiVndswghCxAQAAAAAAAAA="
+          },
+          {
+            "cursor": "IEIo2STA9SPVzipxBitqREPFFX+bR8+THWMo0RoH/PINAQAAAAAAAAA="
           }
         ]
       }
@@ -121,7 +124,11 @@ Response: {
   "data": {
     "address": {
       "objects": {
-        "edges": []
+        "edges": [
+          {
+            "cursor": "IAmNZlyZyf6szA5bT4PtJj4EvMha4SKWxgI5Sx82r9euAQAAAAAAAAA="
+          }
+        ]
       }
     }
   }
@@ -135,10 +142,10 @@ Response: {
       "objects": {
         "edges": [
           {
-            "cursor": "IHQo7dpE/i5kWm6SYdP/z01dzd7u2mc2CtWHuHTxa2CBAQAAAAAAAAA="
+            "cursor": "IHcmRdHth+fy1fPFzvv1vuYeVXmyXSLr4gd6dNduUYWhAQAAAAAAAAA="
           },
           {
-            "cursor": "INGv8E2Y4My/lERzmkLtpthxsIUw9JjPfMZeazqQJm7mAQAAAAAAAAA="
+            "cursor": "IOxb99Uy4BUfNcEGc1CbAdHk7RBrH3/hJvZNDNCh6hFXAQAAAAAAAAA="
           }
         ]
       }

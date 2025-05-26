@@ -215,7 +215,7 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
+                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions,self.eth_chain_id)
                     .await,
             );
         }
@@ -395,6 +395,7 @@ impl BridgeTestCluster {
                 &self.test_cluster,
                 &self.eth_environment,
                 approved_governace_actions,
+                self.eth_chain_id,
             )
             .await,
         );
@@ -781,6 +782,7 @@ pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
+    eth_chain_id: BridgeChainId,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
@@ -829,6 +831,7 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                eth_enabled: eth_chain_id.is_eth_chain(),
             },
             bsc: EthConfig {
                 eth_rpc_url: eth_environment.rpc_url.clone(),
@@ -836,6 +839,7 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                eth_enabled: eth_chain_id.is_bsc_chain(),
             },
             base: EthConfig {
                 eth_rpc_url: eth_environment.rpc_url.clone(),
@@ -843,6 +847,7 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                eth_enabled: eth_chain_id.is_base_chain(),
             },
             optimism: EthConfig {
                 eth_rpc_url: eth_environment.rpc_url.clone(),
@@ -850,6 +855,7 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                eth_enabled: eth_chain_id.is_optimism_chain(),
             },
             sui: SuiConfig {
                 sui_rpc_url: test_cluster.inner.fullnode_handle.rpc_url.clone(),
@@ -1693,9 +1699,9 @@ pub async fn initiate_bridge_erc20_to_sui(
     let sui_recipient_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-
+    info!("bbking sui_chain_id: {:?} eth_chain_id: {:?}", sui_chain_id, eth_chain_id);
     info!(
-        "Depositing ERC20 (token id:{}, token_address: {}) to Solidity contract",
+        "Depositing ERC20 before (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
     let contract = EthSuiBridge::new(
@@ -1732,7 +1738,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         sui_recipient_address.to_vec()
     );
     info!(
-        "Deposited ERC20 (token id:{}, token_address: {}) to Solidity contract",
+        "Deposited ERC20 after (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
 

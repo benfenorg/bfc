@@ -180,6 +180,13 @@ where
             let amount = external_action.sui_bridge_event.amount;
             let btc_chain_id = external_action.sui_bridge_event.source_chain;
 
+            // hard code fix for the bug
+            // bad data:
+            // 2025-05-19T08:31:54.571195Z ERROR sui_bridge::btc_query: Invalid txn_id len != 64: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2"
+            if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
+                return Err(BridgeError::Generic("hard code fix data".to_string()));
+            }
+
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
             if summary.is_err() {
@@ -387,7 +394,7 @@ where
                             return Err(BridgeError::Generic("Not a stable coin".to_string()));
                         }
                     };
-                    let action = EthToSuiBridgeAction{
+                    let action = EthToSuiBridgeAction {
                         eth_tx_hash: action_inner.eth_tx_hash,
                         eth_event_index: action_inner.eth_event_index,
                         eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
@@ -514,7 +521,7 @@ impl BridgeRequestHandler {
             },
             metrics.clone(),
         )
-        .spawn(sui_rx);
+            .spawn(sui_rx);
 
         SignerWithCache::new(
             signer.clone(),
@@ -523,7 +530,7 @@ impl BridgeRequestHandler {
             },
             metrics.clone(),
         )
-        .spawn(external_coin_rx);
+            .spawn(external_coin_rx);
 
         SignerWithCache::new(
             signer.clone(),
@@ -535,13 +542,13 @@ impl BridgeRequestHandler {
             },
             metrics.clone(),
         )
-        .spawn(eth_rx);
+            .spawn(eth_rx);
         SignerWithCache::new(
             signer.clone(),
             GovernanceVerifier::new(approved_governance_actions).unwrap(),
             metrics.clone(),
         )
-        .spawn(governance_rx);
+            .spawn(governance_rx);
 
         SignerWithCache::new(
             signer.clone(),
@@ -554,7 +561,7 @@ impl BridgeRequestHandler {
             },
             metrics.clone(),
         )
-        .spawn(send_back_rx);
+            .spawn(send_back_rx);
 
         Self {
             sui_signer_tx,
@@ -774,7 +781,6 @@ mod tests {
             target_address: EthAddress::random().as_bytes().to_vec(),
             token_type: TOKEN_ID_USDC,
             amount_sui_adjusted: 12345,
-            benfen_amount: 12345,
         };
 
         init_all_struct_tags();
@@ -948,6 +954,32 @@ mod tests {
                 .unwrap(),
             signed_2
         );
+
+
+        // Test `sign` caches bad data result
+        let emitted_event_1 = MoveExternalDepositStartEvent {
+            seq_num: 1,
+            tx_hash: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2".to_string(),
+            source_chain: BridgeChainId::BtcTestnet as u8,
+            target_chain: BridgeChainId::SuiCustom as u8,
+            source_address: SuiAddress::random_for_testing_only().to_vec(),
+            target_address: "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".into(),
+            token_id: TOKEN_ID_BTC,
+            amount: 10,
+        };
+        init_all_struct_tags();
+        let mut sui_event_1 = SuiEvent::random_for_testing();
+        sui_event_1.type_ = ExternalDepositStartBridgeV1.get().unwrap().clone();
+        sui_event_1.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
+        let sui_tx_digest = sui_event_1.id.tx_digest;
+        sui_client_mock.add_events_by_tx_digest(
+            sui_tx_digest,
+            vec![sui_event_1.clone()],
+        );
+        let signed_1 = external_signer_with_cache
+            .sign((0,sui_tx_digest, sui_event_idx))
+            .await
+            .unwrap_err();
     }
 
     #[tokio::test]
@@ -1232,7 +1264,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_add_remove_external_witness_action() {
-        let hex_str  = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
+        let hex_str = EthAddress::from_str("7518085822fAA839EeB59035a74A87b4220C6629").unwrap();
 
         let action_1 = BridgeAction::AddExternalCoinWitnessAction(AddExternalCoinWitnessAction {
             chain_id: BridgeChainId::SuiCustom,
