@@ -40,6 +40,8 @@ public enum Anonymous_Balance_Type has store, drop {
 public struct Anonymos_Balance<phantom T> has store {
     balance_type: Anonymous_Balance_Type,
     value: u64,
+    value1: u64,
+    value2: u64,
     encode_data: String,
     version: u8,
 }
@@ -75,6 +77,8 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
 
     Anonymos_Balance {
         value: value,
+        value1: value1,
+        value2: value2,
         encode_data,
         balance_type: balance_type,
         version:version }
@@ -83,7 +87,13 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
 public fun value<T>(self: &Anonymos_Balance<T>): u64 {
     self.value
 }
+public fun value1<T>(self: &Anonymos_Balance<T>): u64 {
+    self.value1
+}
 
+public fun value2<T>(self: &Anonymos_Balance<T>): u64 {
+    self.value2
+}
 
 public fun get_encode_data<T>(self: &Anonymos_Balance<T>): String {
     self.encode_data
@@ -112,6 +122,8 @@ public fun decrease_supply<T>(self: &mut Supply<T>, balance: Anonymos_Balance<T>
         encode_data: _,
         version: _,
         balance_type: _,
+        value1: _,
+        value2: _,
         value } = balance;
     assert!(self.value >= value, EOverflow);
     self.value = self.value - value;
@@ -123,14 +135,28 @@ public fun zero<T>(): Anonymos_Balance<T> {
     create_by_value(0)
 }
 
+fun update_encode_data<T>(self: &mut Anonymos_Balance<T>) {
+    self.value1 = self.value/2;
+    self.value2 = self.value - self.value1;
+
+    let mut encode_data = string::utf8(b"");
+    string::append_utf8(&mut encode_data, convert_to_string(self.value1));
+    string::append_utf8(&mut encode_data, b",");
+    string::append_utf8(&mut encode_data, convert_to_string(self.value2));
+    self.encode_data = encode_data;
+}
 /// Join two balances together.
 public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>): u64 {
     let Anonymos_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
+        value1,
+        value2,
         value } = balance;
+
     self.value = self.value + value;
+    self.update_encode_data();
     self.value
 }
 
@@ -138,6 +164,9 @@ public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>)
 public fun split<T>(self: &mut Anonymos_Balance<T>, value: u64): Anonymos_Balance<T> {
     assert!(self.value >= value, ENotEnough);
     self.value = self.value - value;
+
+    self.update_encode_data();
+
     create_by_value(value)
 }
 
@@ -154,6 +183,8 @@ public fun destroy_zero<T>(balance: Anonymos_Balance<T>) {
         encode_data: _,
         version: _,
         balance_type: _,
+        value1: _,
+        value2: _,
         value: _ } = balance;
 }
 
@@ -177,6 +208,8 @@ public fun destroy_for_testing<T>(self: Anonymos_Balance<T>): u64 {
         encode_data: _,
         version: _,
         balance_type: _,
+        value1: _,
+        value2: _,
         value } = self;
     value
 }

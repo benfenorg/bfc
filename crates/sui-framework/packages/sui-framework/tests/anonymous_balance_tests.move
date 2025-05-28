@@ -10,7 +10,7 @@ module sui::anonymous_coin_balance_tests {
     use sui::anonymous_balance;
     use sui::test_utils;
 
-    use sui::anonymous_bfc::ABFC;
+    use sui::abfc::ABFC;
 
     #[test]
     fun type_morphing() {
@@ -29,6 +29,9 @@ module sui::anonymous_coin_balance_tests {
         assert!(sub_balance.value() == 50);
         assert!(coin.value() == 50);
 
+        debug::print(&sub_balance.get_encode_data());
+        //debug::print(&coin.into_balance().get_encode_data());
+
         let mut balance = coin.into_balance();
         balance.join(sub_balance);
 
@@ -42,6 +45,8 @@ module sui::anonymous_coin_balance_tests {
     #[test]
     fun test_balance() {
         let mut balance = anonymous_balance::zero<ABFC>();
+        debug::print(&b"balance before join()".to_string());
+        debug::print(&balance.get_encode_data());
         let another = anonymous_balance::create_for_testing(1000);
 
 
@@ -49,11 +54,19 @@ module sui::anonymous_coin_balance_tests {
         balance.join(another);
 
         assert!(balance.value() == 1000);
-        debug::print(balance.get_encode_data());
+        debug::print(&b"balance after join()".to_string());
+        debug::print(&balance.get_encode_data());
+        debug::print(&balance.value1());
+        debug::print(&balance.value2());
+
 
         let balance1 = balance.split(333);
         let balance2 = balance.split(333);
         let balance3 = balance.split(334);
+        debug::print(&b"balance after split()".to_string());
+        debug::print(&balance1.get_encode_data());
+        debug::print(&balance3.get_encode_data());
+
 
         balance.destroy_zero();
 
