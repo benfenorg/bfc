@@ -18,11 +18,11 @@ use move_vm_types::natives::function::NativeResult;
 use move_vm_types::pop_arg;
 use move_vm_types::values::Value;
 use smallvec::smallvec;
-use sui_protocol_config::ProtocolConfigValue::u64;
 use crate::NativesCostTable;
 use move_vm_types::{
     values::{VectorRef},
 };
+
 
 type HmacSha256 = Hmac<Sha256>;
 pub fn hfe_ops_add(
@@ -60,7 +60,7 @@ pub fn hfe_ops_add(
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::u8(result)]
+        smallvec![Value::u64(result)]
     ))
 
     //Err(_) => Ok(NativeResult::err(context.gas_used(), INVALID_INPUT)),
@@ -98,7 +98,7 @@ pub fn hfe_ops_minus(
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::vector_u8(vec![result1, result2])]
+        smallvec![Value::u64(result)]
     ))
 
 }
@@ -135,7 +135,7 @@ pub fn hfe_ops_multiplied(
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::vector_u8(vec![result1, result2])]
+        smallvec![Value::u64(result1)]
     ))
 }
 
