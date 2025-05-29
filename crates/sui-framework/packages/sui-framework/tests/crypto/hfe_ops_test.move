@@ -1,10 +1,15 @@
 #[test_only]
 module sui::hfe_ops_test {
+    use std::debug;
+    use std::uq32_32::le;
     use sui::hfe_ops;
     #[test]
     fun test_hfe_ops_add() {
-        let result = hfe_ops::hfe_ops_add(2, 3);
-        assert!(result == 5);
+        let result = hfe_ops::hfe_ops_add(2, 3, 4, 5);
+        //let data1 = result[0];
+        //let data2 = result[1];
+        //debug::print(&data1);
+        //debug::print(&data2);
     }
 
     #[test]

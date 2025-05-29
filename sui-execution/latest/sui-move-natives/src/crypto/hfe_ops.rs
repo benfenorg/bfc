@@ -44,17 +44,144 @@ pub fn hfe_ops_add(
         ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
     );
 
-    let number1 = pop_arg!(args, u8);
-    let number2 = pop_arg!(args, u8);
+    let number4 = pop_arg!(args, u64);
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, u64);
+    let number1 = pop_arg!(args, u64);
+
+
+    let data1 = number1 + number2;
+    let data2 = number3 + number4;
+
+    let result = data1 + data2;
+    let result1 = result / 2;
+    let result2 = result - result1;
 
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::u8(number1 + number2)],
+        smallvec![Value::u8(result)]
     ))
 
     //Err(_) => Ok(NativeResult::err(context.gas_used(), INVALID_INPUT)),
 }
+
+pub fn hfe_ops_minus(
+    context: &mut NativeContext,
+    ty_args: Vec<Type>,
+    mut args: VecDeque<Value>,
+) -> PartialVMResult<NativeResult>{
+    let ed25519_verify_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .ed25519_verify_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+    );
+
+    let number4 = pop_arg!(args, u64);
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, u64);
+    let number1 = pop_arg!(args, u64);
+
+    let data1 = number1 + number2;
+    let data2 = number3 + number4;
+    let result = data1 - data2;
+
+
+    let result1 = result / 2;
+    let result2 = result - result1;
+
+    let cost = context.gas_used();
+    Ok(NativeResult::ok(
+        cost,
+        smallvec![Value::vector_u8(vec![result1, result2])]
+    ))
+
+}
+pub fn hfe_ops_multiplied(
+    context: &mut NativeContext,
+    ty_args: Vec<Type>,
+    mut args: VecDeque<Value>,
+) -> PartialVMResult<NativeResult>{
+    let ed25519_verify_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .ed25519_verify_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+    );
+
+    let number4 = pop_arg!(args, u64);
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, u64);
+    let number1 = pop_arg!(args, u64);
+
+
+    let data1 = number1 + number2;
+    let data2 = number3 + number4;
+    let result = data1 * data2;
+
+    let result1 = result / 2;
+    let result2 = result - result1;
+
+
+    let cost = context.gas_used();
+    Ok(NativeResult::ok(
+        cost,
+        smallvec![Value::vector_u8(vec![result1, result2])]
+    ))
+}
+
+
+pub fn hfe_ops_compare(
+    context: &mut NativeContext,
+    ty_args: Vec<Type>,
+    mut args: VecDeque<Value>,
+) -> PartialVMResult<NativeResult>{
+    let ed25519_verify_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .ed25519_verify_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+    );
+
+
+    let number4 = pop_arg!(args, u64);
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, u64);
+    let number1 = pop_arg!(args, u64);
+
+
+    let data1 = number1 + number2;
+    let data2 = number3 + number4;
+    let mut result = 0;
+    if data1 > data2 {
+        result = 1;
+    }
+    if data1 < data2 {
+        result = 2;
+    }
+
+    let cost = context.gas_used();
+    Ok(NativeResult::ok(
+        cost,
+        smallvec![Value::u8(result)],
+    ))
+}
+
+
+
 
 pub fn split_data(context: &mut NativeContext,
                   ty_args: Vec<Type>,

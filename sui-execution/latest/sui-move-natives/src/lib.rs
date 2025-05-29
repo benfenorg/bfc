@@ -1081,6 +1081,23 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
         ),
         (
             "hfe_ops",
+            "hfe_ops_minus",
+            make_native!(hfe_ops::hfe_ops_minus),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_multiplied",
+            make_native!(hfe_ops::hfe_ops_multiplied),
+        ),
+        (
+            "hfe_ops",
+            "hfe_ops_compare",
+            make_native!(hfe_ops::hfe_ops_compare),
+        ),
+
+
+        (
+            "hfe_ops",
             "split_data",
             make_native!(hfe_ops::split_data),
         ),
