@@ -96,6 +96,11 @@ P: SuiClientInner + 'static,{
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
                     let tx_hash = action_inner.eth_tx_hash.as_bytes().to_vec();
+                    let skip_aml_check = if action_inner.eth_event_index > u8::MAX as u16 {
+                        true
+                    } else {
+                        false
+                    };
                     let is_passed = check_aml_risk_score(
                         action_inner.eth_bridge_event.eth_chain_id,
                         action_inner.eth_bridge_event.token_id,
@@ -103,7 +108,7 @@ P: SuiClientInner + 'static,{
                         aml_key.clone()
                     ).await;
                     info!("aml checker eth address:{:?} is_passed: {:?} tx_hash: {:?}", &eth_address, &is_passed, &tx_hash);
-                    if is_passed {
+                    if skip_aml_check || is_passed {
                         store.insert_pending_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
                             panic!("Write to DB should not fail: {:?}", e);
                         });
