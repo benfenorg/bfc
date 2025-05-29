@@ -11,7 +11,7 @@ module sui::anonymous_coin {
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
-    use sui::coin::{Self, Coin};
+    use sui::coin::{Coin, Self};
 
     // Allows calling `.split_vec(amounts, ctx)` on `coin`
     public use fun sui::anonymous_pay::split_vec as Anonymous_Coin.split_vec;
@@ -49,17 +49,17 @@ module sui::anonymous_coin {
     #[allow(unused_field)]
     public struct SwapPool<phantom T1, phantom T2> has store, key{
         id: UID,
-        coin1: Anonymous_Coin<T1>,
-        coin2: Coin<T2>,
+        anonymous_coin: Anonymous_Coin<T1>,
+        normal_coin: Coin<T2>,
         swap_rate: u64,
-        max_availalbe: u64, //current max convert  T2 normal amount...
+        max_availalbe:u64, //current max convert  T2 normal amount...
     }
 
-    entry public fun bind_swap_pool<T1: store, T2: store>(anonymous_coin: Anonymous_Coin<T1>,  coin: Coin<T2>, ctx: &mut TxContext) {
+    public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
         transfer::share_object(SwapPool {
             id: object::new(ctx),
-            coin1: anonymous_coin,
-            coin2: coin,
+            anonymous_coin,
+            normal_coin: coin,
             swap_rate: 1,
             max_availalbe: 10000,
         })
@@ -67,16 +67,16 @@ module sui::anonymous_coin {
 
     entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext) {
         let value = anonymous_coin.balance.value();
-        join(&mut swap_pool.coin1, anonymous_coin);
-        let new_coin =coin::split(&mut swap_pool.coin2, value , ctx);
+        join(&mut swap_pool.anonymous_coin, anonymous_coin);
+        let new_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
         transfer::share_object(swap_pool);
         transfer::public_transfer(new_coin, tx_context::sender(ctx))
     }
 
     entry public fun swap_in<T1, T2>(coin: Coin<T2>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext){
         let value = coin::balance(&coin).value();
-        coin::join(&mut swap_pool.coin2, coin);
-        let new_coin =split(&mut swap_pool.coin1, value , ctx);
+        coin::join(&mut swap_pool.normal_coin, coin);
+        let new_coin =split(&mut swap_pool.anonymous_coin, value , ctx);
         transfer::share_object(swap_pool);
         transfer::public_transfer(new_coin, tx_context::sender(ctx))
     }
