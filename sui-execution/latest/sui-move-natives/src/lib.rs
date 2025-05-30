@@ -65,6 +65,7 @@ use sui_protocol_config::ProtocolConfig;
 use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
+use tracing::info;
 
 mod address;
 mod config;

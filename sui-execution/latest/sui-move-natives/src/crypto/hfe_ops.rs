@@ -22,6 +22,7 @@ use move_vm_types::{
 };
 
 use std::collections::VecDeque;
+use tracing::info;
 use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber},
     object::Owner,
