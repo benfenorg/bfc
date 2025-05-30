@@ -151,8 +151,8 @@ public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>)
         encode_data: _,
         version: _,
         balance_type: _,
-        value1,
-        value2,
+        value1: _,
+        value2: _,
         value } = balance;
 
     self.value = self.value + value;

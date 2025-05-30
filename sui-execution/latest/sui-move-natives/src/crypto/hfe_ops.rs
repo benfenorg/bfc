@@ -4,7 +4,6 @@
  * native fun
 
  */
-use std::collections::VecDeque;
 use rand_chacha::ChaChaRng;
 use rand::Rng;
 use rand::SeedableRng;
@@ -13,17 +12,20 @@ use sha2::{Sha256, Digest};
 use move_binary_format::errors::PartialVMResult;
 use move_vm_runtime::native_charge_gas_early_exit;
 use move_vm_runtime::native_functions::NativeContext;
-use move_vm_types::loaded_data::runtime_types::Type;
-use move_vm_types::natives::function::NativeResult;
-use move_vm_types::pop_arg;
-use move_vm_types::values::Value;
 use smallvec::smallvec;
 use crate::NativesCostTable;
 use move_vm_types::{
     values::{VectorRef},
 };
+use move_vm_types::{
+    loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg, values::Value,
+};
 
-
+use std::collections::VecDeque;
+use sui_types::{
+    base_types::{MoveObjectType, ObjectID, SequenceNumber},
+    object::Owner,
+};
 type HmacSha256 = Hmac<Sha256>;
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -57,13 +59,11 @@ pub fn hfe_ops_add(
     let result1 = result / 2;
     let result2 = result - result1;
 
-    let cost = context.gas_used();
+     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::u64(result)]
+        smallvec![Value::vector_u64(vec![result1, result2])]
     ))
-
-    //Err(_) => Ok(NativeResult::err(context.gas_used(), INVALID_INPUT)),
 }
 
 pub fn hfe_ops_minus(
@@ -98,9 +98,8 @@ pub fn hfe_ops_minus(
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::u64(result)]
+        smallvec![Value::vector_u64(vec![result1, result2])]
     ))
-
 }
 pub fn hfe_ops_multiplied(
     context: &mut NativeContext,
@@ -122,8 +121,6 @@ pub fn hfe_ops_multiplied(
     let number3 = pop_arg!(args, u64);
     let number2 = pop_arg!(args, u64);
     let number1 = pop_arg!(args, u64);
-
-
     let data1 = number1 + number2;
     let data2 = number3 + number4;
     let result = data1 * data2;
@@ -135,7 +132,7 @@ pub fn hfe_ops_multiplied(
     let cost = context.gas_used();
     Ok(NativeResult::ok(
         cost,
-        smallvec![Value::u64(result1)]
+        smallvec![Value::vector_u64(vec![result1, result2])]
     ))
 }
 
