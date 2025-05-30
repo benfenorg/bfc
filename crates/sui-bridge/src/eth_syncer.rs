@@ -158,6 +158,17 @@ where
                 start_block + ETH_LOG_QUERY_MAX_BLOCK_RANGE - 1,
                 new_finalized_block,
             );
+
+            tracing::info!(
+                    contract_address=?contract_address,
+                    "[DEBUG]get_events_in_range chain_id:{} new_finalized_block:{} end_block:{}  new_finalized_block:{} (start_block + ETH_LOG_QUERY_MAX_BLOCK_RANGE - 1):{}",
+                    chain_id,
+                    new_finalized_block,
+                    end_block,
+                    new_finalized_block,
+                    start_block + ETH_LOG_QUERY_MAX_BLOCK_RANGE - 1
+
+                );
             more_blocks = end_block < new_finalized_block;
             let timer = Instant::now();
             let Ok(Ok(events)) = retry_with_max_elapsed_time!(
