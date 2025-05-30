@@ -46,8 +46,11 @@ pub const PING_PATH: &str = "/ping";
 pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
-pub const EVM_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/evm/sui/:chain_id/:tx_hash/:event_index";
+pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
+pub const EVM_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index";
+pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
 pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/:tx_digest/:event_index";
+pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
 pub const SUI_TO_EVM_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/evm/send/back/:tx_digest/:event_index";
 pub const EXTERNAL_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/external/sui/:tx_digest/:event_index";
 pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
@@ -55,6 +58,8 @@ pub const COMMITTEE_BLOCKLIST_UPDATE_PATH: &str =
 pub const EMERGENCY_BUTTON_PATH: &str = "/sign/emergency_button/:chain_id/:nonce/:type";
 pub const LIMIT_UPDATE_PATH: &str =
     "/sign/update_limit/:chain_id/:nonce/:sending_chain_id/:new_usd_limit";
+pub const MINT_BUSD_LIMIT_PATH: &str =
+    "/sign/mint_busd_limit/:chain_id/:modify_cap/:new_limit";
 pub const ASSET_PRICE_UPDATE_PATH: &str =
     "/sign/update_asset_price/:chain_id/:nonce/:token_id/:new_usd_price";
 pub const EVM_CONTRACT_UPGRADE_PATH_WITH_CALLDATA: &str =
@@ -133,8 +138,11 @@ pub(crate) fn make_router(
         .route("/", get(health_check))
         .route(PING_PATH, get(ping))
         .route(METRICS_KEY_PATH, get(metrics_key_fetch))
+        .route(ETH_TO_SUI_TX_PATH, get(handle_eth_tx_hash))
         .route(EVM_TO_SUI_TX_PATH, get(handle_evm_tx_hash))
+        .route(SUI_TO_ETH_TX_PATH, get(handle_sui_tx_digest))
         .route(SUI_TO_EVM_TX_PATH, get(handle_sui_tx_digest))
+        .route(SUI_TO_ETH_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
         .route(SUI_TO_EVM_SEND_BACK_TX_PATH, get(handle_send_back_tx_digest))
         .route(EXTERNAL_TO_SUI_TX_PATH, get(handle_external_coin_tx_digest))
         .route(
@@ -143,6 +151,7 @@ pub(crate) fn make_router(
         )
         .route(EMERGENCY_BUTTON_PATH, get(handle_emergency_action))
         .route(LIMIT_UPDATE_PATH, get(handle_limit_update_action))
+        .route(MINT_BUSD_LIMIT_PATH, get(handle_limit_update_action))
         .route(
             ASSET_PRICE_UPDATE_PATH,
             get(handle_asset_price_update_action),
@@ -208,7 +217,23 @@ async fn metrics_key_fetch(
     Ok(Json(metadata.metrics_pubkey.clone()))
 }
 
-#[instrument(level = "error", skip_all, fields(chain_id=chain_id, tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
+#[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
+async fn handle_eth_tx_hash(
+    Path((tx_hash_hex, event_idx)): Path<(String, u16)>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let sig = handler.handle_eth_tx_hash(BridgeChainId::EthMainnet as u8, tx_hash_hex, event_idx).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
 async fn handle_evm_tx_hash(
     Path((chain_id, tx_hash_hex, event_idx)): Path<(u8, String, u16)>,
     State((handler, metrics, _metadata)): State<(
@@ -221,7 +246,7 @@ async fn handle_evm_tx_hash(
         let sig = handler.handle_eth_tx_hash(chain_id, tx_hash_hex, event_idx).await?;
         Ok(sig)
     };
-    with_metrics!(metrics.clone(), "handle_evm_tx_hash", future).await
+    with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
 }
 
 #[instrument(level = "error", skip_all, fields(tx_digest_base58=tx_digest_base58, event_idx=event_idx))]

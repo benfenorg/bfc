@@ -149,7 +149,7 @@ impl SuiMockClient {
 
     async fn get_cap_object_ref(
         &self,
-        cap_id: ObjectID,
+        _cap_id: ObjectID,
     ) -> anyhow::Result<ObjectRef> {
         //todo: @suoyuan
         Err(anyhow::anyhow!("Not implemented"))

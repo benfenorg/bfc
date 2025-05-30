@@ -53,14 +53,21 @@ impl BridgeClient {
     fn bridge_action_to_path(event: &BridgeAction) -> String {
         match event {
             BridgeAction::SuiToEthBridgeAction(e) => format!(
-                "sign/bridge_tx/sui/evm/{}/{}",
+                "sign/bridge_tx/sui/eth/{}/{}",
                 e.sui_tx_digest, e.sui_tx_event_index
             ),
             BridgeAction::EthSendBackBridgeAction(e) =>{
-                format!(
-                    "sign/bridge_tx/sui/evm/send/back/{}/{}",
-                    e.sui_tx_digest, e.sui_tx_event_index
-                )
+                if e.sui_bridge_event.eth_chain_id.is_eth_chain(){
+                    format!(
+                        "sign/bridge_tx/sui/eth/send/back/{}/{}",
+                        e.sui_tx_digest, e.sui_tx_event_index
+                    )
+                }else{
+                    format!(
+                        "sign/bridge_tx/sui/evm/send/back/{}/{}",
+                        e.sui_tx_digest, e.sui_tx_event_index
+                    )
+                }
             },
             BridgeAction::ExternalDepositStartBridgeAction(e) => format!(
                 "sign/bridge_tx/external/sui/{}/{}",
@@ -68,12 +75,20 @@ impl BridgeClient {
                 e.sui_tx_event_index
             ),
             BridgeAction::EthToSuiBridgeAction(e) => {
-                format!(
-                    "sign/bridge_tx/evm/sui/{}/{}/{}",
-                    e.eth_bridge_event.eth_chain_id as u8,
-                    Hex::encode(e.eth_tx_hash.0),
-                    e.eth_event_index
-                )
+                if e.eth_bridge_event.eth_chain_id.is_eth_chain(){
+                    format!(
+                        "sign/bridge_tx/eth/sui/{}/{}",
+                        Hex::encode(e.eth_tx_hash.0),
+                        e.eth_event_index
+                    )
+                }else{
+                    format!(
+                        "sign/bridge_tx/evm/{}/sui/{}/{}",
+                        e.eth_bridge_event.eth_chain_id as u8,
+                        Hex::encode(e.eth_tx_hash.0),
+                        e.eth_event_index
+                    )
+                }
             },
             BridgeAction::BlocklistCommitteeAction(a) => {
                 let chain_id = (a.chain_id as u8).to_string();
@@ -533,7 +548,7 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/sui/evm/{}/{}",
+                "sign/bridge_tx/sui/eth/{}/{}",
                 sui_tx_digest, sui_tx_event_index
             )
         );
@@ -559,8 +574,7 @@ mod tests {
         assert_eq!(
             BridgeClient::bridge_action_to_path(&action),
             format!(
-                "sign/bridge_tx/evm/sui/{}/{}/{}",
-                BridgeChainId::EthSepolia as u8,
+                "sign/bridge_tx/eth/sui/{}/{}",
                 Hex::encode(eth_tx_hash.0),
                 eth_event_index
             )

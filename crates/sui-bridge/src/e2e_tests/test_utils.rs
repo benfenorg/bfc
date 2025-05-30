@@ -215,7 +215,7 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions,self.eth_chain_id)
+                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
                     .await,
             );
         }
@@ -395,7 +395,6 @@ impl BridgeTestCluster {
                 &self.test_cluster,
                 &self.eth_environment,
                 approved_governace_actions,
-                self.eth_chain_id,
             )
             .await,
         );
@@ -624,8 +623,6 @@ pub(crate) async fn deploy_sol_contract(
     .arg(anvil_url)
     .arg("--broadcast")
     .arg("--ffi")
-     .arg("--code-size-limit")
-     .arg("10000000")
     .arg("--chain")
     .arg(chain_id_anvil)
     .stdout(std::process::Stdio::piped()) // Capture stdout
@@ -779,7 +776,6 @@ pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
-    eth_chain_id: BridgeChainId,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
@@ -828,32 +824,16 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
-                eth_enabled: eth_chain_id.is_eth_chain(),
             },
-            bsc: EthConfig {
-                eth_rpc_url: eth_environment.rpc_url.clone(),
-                eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
-                eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: eth_chain_id.is_bsc_chain(),
-            },
-            base: EthConfig {
-                eth_rpc_url: eth_environment.rpc_url.clone(),
-                eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
-                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: eth_chain_id.is_base_chain(),
-            },
-            optimism: EthConfig {
-                eth_rpc_url: eth_environment.rpc_url.clone(),
-                eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
-                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: eth_chain_id.is_optimism_chain(),
-            },
+            evm: vec![
+                EthConfig {
+                    eth_rpc_url: eth_environment.rpc_url.clone(),
+                    eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
+                    eth_contracts_start_block_fallback: Some(0),
+                    eth_contracts_start_block_override: None,
+                },
+            ],
             sui: SuiConfig {
                 sui_rpc_url: test_cluster.inner.fullnode_handle.rpc_url.clone(),
                 sui_bridge_chain_id: BridgeChainId::SuiCustom as u8,
@@ -1092,13 +1072,13 @@ impl TestClusterWrapperBuilder {
             bridge_arg,
             ref_gas_price,
         )
-        .unwrap();
+            .unwrap();
 
         let response = test_cluster.sign_and_execute_transaction(&tx).await;
-            assert_eq!(
-                response.effects.unwrap().status(),
-                &SuiExecutionStatus::Success
-            );
+        assert_eq!(
+            response.effects.unwrap().status(),
+            &SuiExecutionStatus::Success
+        );
         info!("add tokenlist took {:?} secs", timer.elapsed().as_secs());
 
         if self.deploy_tokens {
@@ -1332,10 +1312,10 @@ pub async fn initiate_bridge_eth_to_sui(
     let sui_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-    let token_id = if eth_chain_id.is_bsc_chain() {
-        TOKEN_ID_BNB
-    } else {
+    let token_id = if eth_chain_id.is_eth_chain() {
         TOKEN_ID_ETH
+    } else {
+        TOKEN_ID_BNB
     };
 
     let sui_amount = (U256::from(amount) * U256::exp10(8)).as_u64(); // DP for Ether on Sui
@@ -1494,7 +1474,7 @@ pub async fn initiate_bridge_sui_to_eth(
     );
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
-
+    
     if expect_token_id == TOKEN_ID_ETH  {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(
@@ -1507,7 +1487,7 @@ pub async fn initiate_bridge_sui_to_eth(
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount/1000
-            );
+            );    
         } else {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
@@ -1696,9 +1676,9 @@ pub async fn initiate_bridge_erc20_to_sui(
     let sui_recipient_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
-    info!("bbking sui_chain_id: {:?} eth_chain_id: {:?}", sui_chain_id, eth_chain_id);
+
     info!(
-        "Depositing ERC20 before (token id:{}, token_address: {}) to Solidity contract",
+        "Depositing ERC20 (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
     let contract = EthSuiBridge::new(
@@ -1735,7 +1715,7 @@ pub async fn initiate_bridge_erc20_to_sui(
         sui_recipient_address.to_vec()
     );
     info!(
-        "Deposited ERC20 after (token id:{}, token_address: {}) to Solidity contract",
+        "Deposited ERC20 (token id:{}, token_address: {}) to Solidity contract",
         token_id, token_address
     );
 

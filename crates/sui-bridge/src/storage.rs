@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::info;
+use tracing::{debug, info};
 use sui_types::Identifier;
 
 use sui_types::event::EventID;
@@ -17,6 +17,9 @@ use typed_store::Map;
 use crate::error::{BridgeError, BridgeResult};
 use crate::types::{BridgeAction, BridgeActionDigest};
 
+
+pub type EthSyncerCursorsKey = (ethers::types::Address, u64);
+
 #[derive(DBMapUtils)]
 pub struct BridgeOrchestratorTables {
     /// pending BridgeActions that orchestrator received but not yet executed
@@ -24,7 +27,7 @@ pub struct BridgeOrchestratorTables {
     /// module identifier to the last processed EventID
     pub(crate) sui_syncer_cursors: DBMap<Identifier, EventID>,
     /// contract address to the last processed block
-    pub(crate) eth_syncer_cursors: DBMap<ethers::types::Address, u64>,
+    pub(crate) eth_syncer_cursors: DBMap<EthSyncerCursorsKey, u64>,
     /// pending actions that are waiting for aml check
     pub(crate) pending_aml_checked_actions: DBMap<BridgeActionDigest, BridgeAction>,
 }
@@ -40,6 +43,18 @@ impl BridgeOrchestratorTables {
     }
 
     pub(crate) fn insert_pending_actions(&self, actions: &[BridgeAction]) -> BridgeResult<()> {
+        for action in actions.clone() {
+            match action {
+                BridgeAction::EthSendBackBridgeAction(a) => {
+                    info!("[DEBUG] insert_pending_actions EthSendBackBridgeAction: {:#?}", a);
+                }
+                BridgeAction::EthToSuiBridgeAction(a) => {
+                    info!("[DEBUG] insert_pending_actions EthToSuiBridgeAction: {:#?}", a);
+                }
+                _ => (),
+            };
+        }
+
         let mut batch = self.pending_actions.batch();
         batch
             .insert_batch(
@@ -131,13 +146,18 @@ impl BridgeOrchestratorTables {
 
     pub(crate) fn update_eth_event_cursor(
         &self,
-        contract_address: ethers::types::Address,
+        key: EthSyncerCursorsKey,
         cursor: u64,
     ) -> BridgeResult<()> {
+        let (_, chain_id) = key.clone();
+        // if (chain_id == 11155420) {
+        //     info!("[DEBUG]  update_eth_event_cursor: key: {:?}, cursor: {}, current:{:?}", key, cursor, &self.get_eth_event_cursors(&[key.clone()]));
+        // }
+
         let mut batch = self.eth_syncer_cursors.batch();
 
         batch
-            .insert_batch(&self.eth_syncer_cursors, [(contract_address, cursor)])
+            .insert_batch(&self.eth_syncer_cursors, [(key, cursor)])
             .map_err(|e| {
                 BridgeError::StorageError(format!(
                     "Coudln't insert into eth_syncer_cursors: {:?}",
@@ -165,13 +185,21 @@ impl BridgeOrchestratorTables {
                         return false
                     }
                 }
+
+                info!("[DEBUG] pending_actions: {:#?}", action);
+
                 true
             },
         ).collect()
     }
 
     pub fn get_all_pending_actions_4_aml(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
-        self.pending_aml_checked_actions.unbounded_iter().collect()
+        self.pending_aml_checked_actions.unbounded_iter().filter(
+            |(_, action)| {
+                info!("[DEBUG]  get_all_pending_actions_4_aml: {:#?}", action);
+                true
+            },
+        ).collect()
     }
 
     pub fn get_sui_event_cursors(
@@ -185,10 +213,10 @@ impl BridgeOrchestratorTables {
 
     pub fn get_eth_event_cursors(
         &self,
-        contract_addresses: &[ethers::types::Address],
+        keys: &[EthSyncerCursorsKey],
     ) -> BridgeResult<Vec<Option<u64>>> {
         self.eth_syncer_cursors
-            .multi_get(contract_addresses)
+            .multi_get(keys)
             .map_err(|e| {
                 BridgeError::StorageError(format!("Couldn't get sui_syncer_cursors: {:?}", e))
             })
@@ -198,7 +226,7 @@ impl BridgeOrchestratorTables {
 #[cfg(test)]
 mod tests {
     use std::str::FromStr;
-
+    use sui_types::bridge::BridgeChainId;
     use sui_types::digests::TransactionDigest;
 
     use crate::test_utils::get_test_sui_to_eth_bridge_action;
@@ -279,15 +307,15 @@ mod tests {
         let eth_contract_address = ethers::types::Address::random();
         let eth_block_num = 199999u64;
         assert!(store
-            .get_eth_event_cursors(&[eth_contract_address])
+            .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64)])
             .unwrap()[0]
             .is_none());
         store
-            .update_eth_event_cursor(eth_contract_address, eth_block_num)
+            .update_eth_event_cursor((eth_contract_address, BridgeChainId::EthCustom as u64), eth_block_num)
             .unwrap();
         assert_eq!(
             store
-                .get_eth_event_cursors(&[eth_contract_address])
+                .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64)])
                 .unwrap()[0]
                 .unwrap(),
             eth_block_num

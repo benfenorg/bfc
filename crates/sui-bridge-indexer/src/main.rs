@@ -3,7 +3,7 @@
 
 use anyhow::Result;
 use clap::*;
-use ethers::types::Address as EthAddress;
+use ethers::types::{Address as EthAddress, U256};
 use prometheus::Registry;
 use std::collections::HashSet;
 use std::env;
@@ -89,6 +89,7 @@ async fn main() -> Result<()> {
             &config.eth_rpc_url,
             HashSet::from_iter(vec![]), // dummy
             bridge_metrics.clone(),
+            U256::from(0),
         )
         .await?,
     );

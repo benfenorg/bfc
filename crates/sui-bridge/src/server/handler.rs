@@ -3,6 +3,7 @@
 
 #![allow(clippy::type_complexity)]
 
+use std::collections::BTreeMap;
 use crate::btc_query::check_btc_txn;
 use crate::abi::EthToSuiTokenBridgeV1;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
@@ -23,6 +24,7 @@ use sui_types::digests::TransactionDigest;
 use tap::TapFallible;
 use tokio::sync::{oneshot, Mutex};
 use tracing::info;
+use tracing::log::error;
 use sui_types::bridge::BridgeChainId;
 use sui_types::bridge::BridgeChainId::SuiMainnet;
 use super::governance_verifier::GovernanceVerifier;
@@ -79,17 +81,13 @@ struct SuiActionVerifier<C> {
 
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
-    bsc_client: Arc<EthClient<P>>,
-    base_client: Arc<EthClient<P>>,
-    optimism_client: Arc<EthClient<P>>,
+    evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
-    bsc_client: Arc<EthClient<P>>,
-    base_client: Arc<EthClient<P>>,
-    optimism_client: Arc<EthClient<P>>,
+    evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -125,33 +123,39 @@ where
 
     async fn verify(&self, key: (u8, TxHash, u16)) -> BridgeResult<BridgeAction> {
         let (chain_id, tx_hash, event_idx) = key;
-       if BridgeChainId::is_eth_by_id(chain_id) {
-           self.eth_client
-               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-               .await
-               .tap_ok(|action| info!("Eth action found: {:?}", action))
-       }else if BridgeChainId::is_bsc_by_id(chain_id) {
-           self.bsc_client
-               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-               .await
-               .tap_ok(|action| info!("BSC action found: {:?}", action))
-       }else if BridgeChainId::is_base_by_id(chain_id) {
-           self.base_client
-               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-               .await
-               .tap_ok(|action| info!("Base action found: {:?}", action))
-       }else if BridgeChainId::is_op_by_id(chain_id) {
-           self.optimism_client
-               .get_finalized_bridge_action_maybe(tx_hash, event_idx)
-               .await
-               .tap_ok(|action| info!("Optimism action found: {:?}", action))
-       }
-       else {
-              return Err(BridgeError::Generic(format!(
-                "Unsupported chain id: {}",
-                chain_id
-              )));
-         }
+        let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
+        match bridge_chain_id {
+            BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
+            BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                unreachable!()
+            }
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
+                self.eth_client
+                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .await
+                    .tap_ok(|action| info!("Eth action found: {:?}", action))
+            }
+
+            // Add all other evm chains here
+            BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom |
+            BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom |
+            BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom |
+            BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom |
+            BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom |
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom => {
+                let client = self.evm_clients.get(&bridge_chain_id);
+                if client.is_none() {
+                    error!( "ERC20 client not found chain id  {:?}", bridge_chain_id);
+                    return Err(BridgeError::Generic(format!("ERC20 client not found chain id  {:?}", bridge_chain_id).to_string()));
+                }
+
+                let client = client.unwrap();
+                client
+                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .await
+                    .tap_ok(|action| info!("ERC20 action found: {:?}", action))
+            }
+        }
     }
 }
 
@@ -179,13 +183,6 @@ where
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
             let btc_chain_id = external_action.sui_bridge_event.source_chain;
-
-            // hard code fix for the bug
-            // bad data:
-            // 2025-05-19T08:31:54.571195Z ERROR sui_bridge::btc_query: Invalid txn_id len != 64: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2"
-            if tx_hash == "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2" {
-                return Err(BridgeError::Generic("hard code fix data".to_string()));
-            }
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -239,28 +236,39 @@ where
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let tx_hash = U256::from_big_endian(&tx_hash_bytes);
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
-            let result = if send_back_action.sui_bridge_event.eth_chain_id.is_eth_chain() {
-                self.eth_client
-                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                    .await
-            } else if send_back_action.sui_bridge_event.eth_chain_id.is_bsc_chain() {
-                self.bsc_client
-                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                    .await
-            } else if send_back_action.sui_bridge_event.eth_chain_id.is_base_chain() {
-                self.base_client
-                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                    .await
-            } else if send_back_action.sui_bridge_event.eth_chain_id.is_optimism_chain() {
-                self.optimism_client
-                    .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
-                    .await
-            } else {
-                return Err(BridgeError::Generic(format!(
-                    "Unsupported chain id: {}",
-                    send_back_action.sui_bridge_event.eth_chain_id
-                )));
+
+            let result = match send_back_action.sui_bridge_event.eth_chain_id {
+                BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
+                BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                    unreachable!()
+                }
+                BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
+                    self.eth_client
+                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .await
+                }
+
+                // Add all other evm chains here
+                BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom |
+                BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom |
+                BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom |
+                BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom |
+                BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom |
+                BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom => {
+                    let client = self.evm_clients.get(&send_back_action.sui_bridge_event.eth_chain_id);
+                    if client.is_none() {
+                        error!( "ERC20 client not found chain id  {:?}", send_back_action.sui_bridge_event.eth_chain_id);
+                        return Err(BridgeError::Generic(format!("ERC20 client not found chain id  {:?}", send_back_action.sui_bridge_event.eth_chain_id).to_string()));
+                    }
+
+                    let client = client.unwrap();
+                    client
+                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .await
+                }
             };
+
+
             if let Err(e) = result {
                 return Err(e);
             }
@@ -469,9 +477,7 @@ impl BridgeRequestHandler {
         signer: BridgeAuthorityKeyPair,
         sui_client: Arc<SuiClient<SC>>,
         eth_client: Arc<EthClient<EP>>,
-        bsc_client: Arc<EthClient<EP>>,
-        base_client: Arc<EthClient<EP>>,
-        optimism_client: Arc<EthClient<EP>>,
+        evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<EP>>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
     ) -> Self {
@@ -536,9 +542,7 @@ impl BridgeRequestHandler {
             signer.clone(),
             EthActionVerifier {
                 eth_client: eth_client.clone(),
-                bsc_client: bsc_client.clone(),
-                base_client: base_client.clone(),
-                optimism_client: optimism_client.clone(),
+                evm_clients: evm_clients.clone(),
             },
             metrics.clone(),
         )
@@ -555,9 +559,7 @@ impl BridgeRequestHandler {
             SendBackActionVerifier {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
-                bsc_client: bsc_client.clone(),
-                base_client: base_client.clone(),
-                optimism_client: optimism_client.clone(),
+                evm_clients: evm_clients.clone(),
             },
             metrics.clone(),
         )
@@ -710,14 +712,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(sui_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = sui_signer_with_cache
-            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0, sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = sui_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -734,7 +736,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -762,7 +764,7 @@ mod tests {
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = sui_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -801,11 +803,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = sui_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx))
+            .sign((0, sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = sui_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx_2))
+            .sign((0, sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -814,14 +816,14 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             sui_signer_with_cache
-                .sign((0,sui_tx_digest, sui_event_idx))
+                .sign((0, sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             sui_signer_with_cache
-                .sign((0,sui_tx_digest, sui_event_idx_2))
+                .sign((0, sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
@@ -844,14 +846,14 @@ mod tests {
         let sui_tx_digest = TransactionDigest::random();
         let sui_event_idx = 42;
         assert!(external_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await
             .is_none());
         let entry = external_signer_with_cache
-            .get_cache_entry((0,sui_tx_digest, sui_event_idx))
+            .get_cache_entry((0, sui_tx_digest, sui_event_idx))
             .await;
         let entry_ = external_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -861,7 +863,7 @@ mod tests {
         let signed_action = SignedBridgeAction::new_from_data_and_sig(action.clone(), sig);
         entry.lock().await.replace(Ok(signed_action));
         let entry_ = external_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_some());
 
@@ -872,11 +874,11 @@ mod tests {
         // Mock an non-cacheable error such as rpc error
         sui_client_mock.add_events_by_tx_digest_error(sui_tx_digest);
         external_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx))
+            .sign((0, sui_tx_digest, sui_event_idx))
             .await
             .unwrap_err();
         let entry_ = external_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert!(entry_.unwrap().lock().await.is_none());
 
@@ -889,7 +891,7 @@ mod tests {
             Err(BridgeError::NoBridgeEventsInTxPosition)
         ));
         let entry_ = external_signer_with_cache
-            .get_testing_only((0,sui_tx_digest, sui_event_idx))
+            .get_testing_only((0, sui_tx_digest, sui_event_idx))
             .await;
         assert_eq!(
             entry_.unwrap().lock().await.clone().unwrap().unwrap_err(),
@@ -929,11 +931,11 @@ mod tests {
             vec![sui_event_1.clone(), sui_event_2.clone()],
         );
         let signed_1 = external_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx))
+            .sign((0, sui_tx_digest, sui_event_idx))
             .await
             .unwrap();
         let signed_2 = external_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx_2))
+            .sign((0, sui_tx_digest, sui_event_idx_2))
             .await
             .unwrap();
 
@@ -942,44 +944,18 @@ mod tests {
         sui_client_mock.add_events_by_tx_digest(sui_tx_digest, vec![]);
         assert_eq!(
             external_signer_with_cache
-                .sign((0,sui_tx_digest, sui_event_idx))
+                .sign((0, sui_tx_digest, sui_event_idx))
                 .await
                 .unwrap(),
             signed_1
         );
         assert_eq!(
             external_signer_with_cache
-                .sign((0,sui_tx_digest, sui_event_idx_2))
+                .sign((0, sui_tx_digest, sui_event_idx_2))
                 .await
                 .unwrap(),
             signed_2
         );
-
-
-        // Test `sign` caches bad data result
-        let emitted_event_1 = MoveExternalDepositStartEvent {
-            seq_num: 1,
-            tx_hash: "abb26e297b0d347834a99b9fdf43d40c828532740b4c643b607192a83dd86340#result-2".to_string(),
-            source_chain: BridgeChainId::BtcTestnet as u8,
-            target_chain: BridgeChainId::SuiCustom as u8,
-            source_address: SuiAddress::random_for_testing_only().to_vec(),
-            target_address: "tb1p3436xedsqrxfd3gqr3rcrgavytgtrus83plndht05afsssw23q3sxejagc".into(),
-            token_id: TOKEN_ID_BTC,
-            amount: 10,
-        };
-        init_all_struct_tags();
-        let mut sui_event_1 = SuiEvent::random_for_testing();
-        sui_event_1.type_ = ExternalDepositStartBridgeV1.get().unwrap().clone();
-        sui_event_1.bcs = BcsEvent::new(bcs::to_bytes(&emitted_event_1).unwrap());
-        let sui_tx_digest = sui_event_1.id.tx_digest;
-        sui_client_mock.add_events_by_tx_digest(
-            sui_tx_digest,
-            vec![sui_event_1.clone()],
-        );
-        let signed_1 = external_signer_with_cache
-            .sign((0,sui_tx_digest, sui_event_idx))
-            .await
-            .unwrap_err();
     }
 
     #[tokio::test]
@@ -992,24 +968,10 @@ mod tests {
             eth_mock_provider.clone(),
             HashSet::from_iter(vec![contract_address]),
         );
-        let bsc_client = EthClient::new_mocked(
-            eth_mock_provider.clone(),
-            HashSet::from_iter(vec![contract_address]),
-        );
-        let base_client = EthClient::new_mocked(
-            eth_mock_provider.clone(),
-            HashSet::from_iter(vec![contract_address]),
-        );
-        let optimism_client = EthClient::new_mocked(
-            eth_mock_provider.clone(),
-            HashSet::from_iter(vec![contract_address]),
-        );
+
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
-            bsc_client: Arc::new(bsc_client),
-            base_client: Arc::new(base_client),
-            optimism_client: Arc::new(optimism_client),
-
+            evm_clients: Default::default(),
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =

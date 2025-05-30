@@ -14,21 +14,21 @@ use crate::aml_checker::{AMLCheckerTrait, AMLCheckerWrapper};
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
-use crate::storage::BridgeOrchestratorTables;
+use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{EthLog};
-use ethers::types::Address as EthAddress;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
+use sui_types::bridge::BridgeChainId;
 
 pub struct BridgeOrchestrator<C> {
     _sui_client: Arc<SuiClient<C>>,
     sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthAddress, u64, Vec<EthLog>)>,
+    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
     store: Arc<BridgeOrchestratorTables>,
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -42,7 +42,7 @@ where
     pub fn new(
         sui_client: Arc<SuiClient<C>>,
         sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthAddress, u64, Vec<EthLog>)>,
+        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
         store: Arc<BridgeOrchestratorTables>,
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -104,6 +104,8 @@ where
             .into_values()
             .collect::<Vec<_>>();
         for action in actions4aml {
+            info!("[DEBUG] for aml checker action: {:#?}", action);
+
             let aml_checker_sender_clone = aml_checker_sender.clone();
             submit_to_aml_checker(&aml_checker_sender_clone,action)
                 .await
@@ -218,7 +220,7 @@ where
         _executor_tx: mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
         aml_checker_tx: mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
         mut eth_events_rx: mysten_metrics::metered_channel::Receiver<(
-            ethers::types::Address,
+            EthSyncerCursorsKey,
             u64,
             Vec<EthLog>,
         )>,
@@ -226,10 +228,10 @@ where
         metrics: Arc<BridgeMetrics>,
     ) {
         info!("Starting eth watcher task");
-        while let Some((contract, end_block, logs)) = eth_events_rx.recv().await {
+        while let Some((key, end_block, logs)) = eth_events_rx.recv().await {
             if logs.is_empty() {
                 store
-                    .update_eth_event_cursor(contract, end_block)
+                    .update_eth_event_cursor( key, end_block)
                     .expect("Store operation should not fail");
                 continue;
             }
@@ -283,8 +285,8 @@ where
                     .inc_by(actions.len() as u64);
                 // Write action to pending WAL
                 store
-                .insert_pending_aml_checked_actions(&actions)
-                .expect("Store operation should not fail");
+                    .insert_pending_aml_checked_actions(&actions)
+                    .expect("Store operation should not fail");
                 // Execution will remove the pending actions from DB when the action is completed.
                 for action in actions {
                     submit_to_aml_checker(&aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
@@ -292,7 +294,7 @@ where
             }
 
             store
-                .update_eth_event_cursor(contract, end_block)
+                .update_eth_event_cursor(key, end_block)
                 .expect("Store operation should not fail");
         }
         panic!("Eth event channel was closed");
@@ -345,8 +347,8 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor,aml_checker)
-        .await;
+            .run(executor,aml_checker)
+            .await;
 
         let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
         let (sui_event, bridge_action) = get_test_sui_event_and_action(identifier.clone());
@@ -447,10 +449,10 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor,aml_checker)
-        .await;
+            .run(executor,aml_checker)
+            .await;
 
-        // external action 
+        // external action
         let identifier = Identifier::from_str("test_external_watcher_task").unwrap();
         let (sui_event, bridge_action) = get_test_external_coin_event_and_action(identifier.clone(), "test1".into());
         sui_events_tx
@@ -493,9 +495,9 @@ mod tests {
             );
         }
 
-        
+
         let start = std::time::Instant::now();
-        
+
         loop {
             let actions = store.get_all_pending_actions();
             if actions.is_empty() {
@@ -548,8 +550,8 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor,aml_checker)
-        .await;
+            .run(executor,aml_checker)
+            .await;
         let address = EthAddress::random();
         let (log, bridge_action) = get_test_log_and_action(address, TxHash::random(), 10);
         let log_index_in_tx = 10;
@@ -563,7 +565,7 @@ mod tests {
         let end_block_num = log_block_num + 15;
 
         eth_events_tx
-            .send((address, end_block_num, vec![eth_log.clone()]))
+            .send(((address, BridgeChainId::EthCustom as u64), end_block_num, vec![eth_log.clone()]))
             .await
             .unwrap();
 
@@ -586,7 +588,7 @@ mod tests {
             let action = actions.get(&bridge_action.digest()).unwrap();
             assert_eq!(action, &bridge_action);
             assert_eq!(
-                store.get_eth_event_cursors(&[address]).unwrap()[0].unwrap(),
+                store.get_eth_event_cursors(&[(address, BridgeChainId::EthCustom as u64)]).unwrap()[0].unwrap(),
                 end_block_num,
             );
             break;
@@ -637,8 +639,8 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-        .run(executor,aml_checker)
-        .await;
+            .run(executor,aml_checker)
+            .await;
 
         // Executor should have received the action
         let mut digests = std::collections::HashSet::new();
@@ -653,8 +655,8 @@ mod tests {
     fn setup() -> (
         mysten_metrics::metered_channel::Sender<(Identifier, Vec<SuiEvent>)>,
         mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        mysten_metrics::metered_channel::Sender<(EthAddress, u64, Vec<EthLog>)>,
-        mysten_metrics::metered_channel::Receiver<(EthAddress, u64, Vec<EthLog>)>,
+        mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
         mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -787,8 +789,8 @@ mod tests {
             let handles = tokio::spawn(async move {
                 while let Some(action) = rx.recv().await {
                     submit_to_executor(&executor_sender, action.0)
-                    .await
-                    .unwrap();
+                        .await
+                        .unwrap();
                 }
             });
             (vec![handles], tx)

@@ -10,7 +10,7 @@ use crate::metered_eth_provider::{new_metered_eth_provider, MeteredEthHttpProvie
 use crate::metrics::BridgeMetrics;
 use crate::types::{BridgeAction, EthLog, RawEthLog};
 use ethers::providers::{JsonRpcClient, Middleware, Provider};
-use ethers::types::TxHash;
+use ethers::types::{TxHash, U256};
 use ethers::types::{Block, Filter};
 use tap::TapFallible;
 
@@ -20,6 +20,7 @@ use ethers::types::Address as EthAddress;
 pub struct EthClient<P> {
     provider: Provider<P>,
     contract_addresses: HashSet<EthAddress>,
+    chain_id: U256,
 }
 
 impl EthClient<MeteredEthHttpProvier> {
@@ -27,11 +28,13 @@ impl EthClient<MeteredEthHttpProvier> {
         provider_url: &str,
         contract_addresses: HashSet<EthAddress>,
         metrics: Arc<BridgeMetrics>,
+        chain_id: U256,
     ) -> anyhow::Result<Self> {
         let provider = new_metered_eth_provider(provider_url, metrics)?;
         let self_ = Self {
             provider,
             contract_addresses,
+            chain_id,
         };
         self_.describe().await?;
         Ok(self_)
@@ -49,6 +52,7 @@ impl EthClient<EthMockProvider> {
         Self {
             provider,
             contract_addresses,
+            chain_id: Default::default(),
         }
     }
 }
@@ -60,6 +64,10 @@ where
     pub async fn get_chain_id(&self) -> Result<u64, anyhow::Error> {
         let chain_id = self.provider.get_chainid().await?;
         Ok(chain_id.as_u64())
+    }
+
+    pub async fn get_chain_id_local(&self) -> Result<u64, anyhow::Error> {
+        Ok(self.chain_id.as_u64())
     }
 
     // TODO assert chain identifier
@@ -439,7 +447,7 @@ mod tests {
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
 
         let provider = Arc::new(
-            new_metered_eth_provider("https://bsc-testnet.drpc.org", metrics.clone())
+            new_metered_eth_provider("https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde", metrics.clone())
                 .unwrap()
                 .interval(std::time::Duration::from_millis(2000)),
         );
@@ -454,7 +462,7 @@ mod tests {
 
         let client = Arc::new(
             EthClient::<MeteredEthHttpProvier>::new(
-                "https://bsc-testnet.drpc.org",
+                "https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde",
                 HashSet::from_iter(vec![
                     bridge_proxy_address,
                     committee_address,
@@ -463,6 +471,7 @@ mod tests {
                     vault_address,
                 ]),
                 metrics,
+                chain_id,
             )
             .await.unwrap(),
         );

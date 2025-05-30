@@ -50,6 +50,7 @@ use sui_types::{
 };
 use tokio::task::JoinHandle;
 use tracing::info;
+use crate::storage::EthSyncerCursorsKey;
 
 pub async fn run_bridge_node(
     config: BridgeNodeConfig,
@@ -121,7 +122,7 @@ pub async fn run_bridge_node(
             committee_keys_to_names,
             metrics.clone(),
         )
-        .await?;
+            .await?;
         handles.extend(client_components);
     }
 
@@ -144,9 +145,7 @@ pub async fn run_bridge_node(
             server_config.key,
             server_config.sui_client,
             server_config.eth_client,
-            server_config.bsc_client,
-            server_config.base_client,
-            server_config.optimism_client,
+            server_config.evm_clients,
             server_config.approved_governance_actions,
             metrics.clone(),
         ),
@@ -181,8 +180,8 @@ async fn start_watchdog(
         VaultAsset::WETH,
         watchdog_metrics.eth_vault_balance.clone(),
     )
-    .await
-    .unwrap_or_else(|e| panic!("Failed to create eth vault balance: {}", e));
+        .await
+        .unwrap_or_else(|e| panic!("Failed to create eth vault balance: {}", e));
     let usdt_vault_balance = EthereumVaultBalance::new(
         eth_provider.clone(),
         vault_address,
@@ -190,8 +189,8 @@ async fn start_watchdog(
         VaultAsset::USDT,
         watchdog_metrics.usdt_vault_balance.clone(),
     )
-    .await
-    .unwrap_or_else(|e| panic!("Failed to create usdt vault balance: {}", e));
+        .await
+        .unwrap_or_else(|e| panic!("Failed to create usdt vault balance: {}", e));
 
     let eth_bridge_status = EthBridgeStatus::new(
         eth_provider,
@@ -237,31 +236,16 @@ async fn start_client_components(
         &store,
         client_config.sui_bridge_module_last_processed_event_id_override,
     );
-    
+
+    let chain_id = client_config.eth_client.get_chain_id().await?;
+    let keys = client_config.eth_contracts.iter().map(|k| (*k, chain_id)).collect::<Vec<_>>();
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
-        &client_config.eth_contracts,
+        &keys,
         client_config.eth_contracts_start_block_fallback,
         client_config.eth_contracts_start_block_override,
     );
-    let bsc_contracts_to_watch = get_eth_contracts_to_watch(
-        &store,
-        &client_config.bsc_contracts,
-        client_config.bsc_contracts_start_block_fallback,
-        client_config.bsc_contracts_start_block_override,
-    );
-    let base_contracts_to_watch = get_eth_contracts_to_watch(
-        &store,
-        &client_config.base_contracts,
-        client_config.base_contracts_start_block_fallback,
-        client_config.base_contracts_start_block_override,
-    );
-    let optimism_contracts_to_watch = get_eth_contracts_to_watch(
-        &store,
-        &client_config.optimism_contracts,
-        client_config.optimism_contracts_start_block_fallback,
-        client_config.optimism_contracts_start_block_override,
-    );
+
     let sui_client = client_config.sui_client.clone();
 
     let mut all_handles = vec![];
@@ -272,36 +256,34 @@ async fn start_client_components(
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
-    if client_config.eth_enabled {
-        let (task_handles, _) =
+    let (task_handles, _) =
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone())
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
-        all_handles.extend(task_handles);
-    }
-    if client_config.bsc_enabled {
+    all_handles.extend(task_handles);
+
+    for (chain_id, evm_client_config) in client_config.evm_client_configs {
+        info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
+        let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
+
+        let eth_chain_id = client_config.eth_client.get_chain_id().await?;
+        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id)).collect::<Vec<_>>();
+        let evm_contracts_to_watch = get_eth_contracts_to_watch(
+            &store,
+            &keys,
+            evm_client_config.contracts_start_block_fallback,
+            evm_client_config.contracts_start_block_override,
+        );
+
+        info!("chain_id: {}, evm_contracts_to_watch: {:#?}", chain_id, evm_contracts_to_watch);
+
+
         let (task_handles, _) =
-        EthSyncer::new(client_config.bsc_client.clone(), bsc_contracts_to_watch, evm_evnets_tx.clone())
-            .run(metrics.clone())
-            .await
-            .expect("Failed to start bsc syncer");
-        all_handles.extend(task_handles);
-    }
-    if client_config.base_enabled {
-        let (task_handles, _) =
-        EthSyncer::new(client_config.base_client.clone(), base_contracts_to_watch, evm_evnets_tx.clone())
-            .run(metrics.clone())
-            .await
-            .expect("Failed to start base syncer");
-        all_handles.extend(task_handles);
-    }
-    if client_config.optimism_enabled {
-        let (task_handles, _) =
-        EthSyncer::new(client_config.optimism_client.clone(), optimism_contracts_to_watch, evm_evnets_tx.clone())
-            .run(metrics.clone())
-            .await
-            .expect("Failed to start optimism syncer");
+            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone())
+                .run(metrics.clone())
+                .await
+                .expect("Failed to start evm syncer");
         all_handles.extend(task_handles);
     }
 
@@ -310,9 +292,9 @@ async fn start_client_components(
         sui_modules_to_watch,
         metrics.clone(),
     )
-    .run(Duration::from_secs(2))
-    .await
-    .expect("Failed to start sui syncer");
+        .run(Duration::from_secs(2))
+        .await
+        .expect("Failed to start sui syncer");
     all_handles.extend(task_handles);
 
     let bridge_auth_agg = Arc::new(ArcSwap::from(Arc::new(BridgeAuthorityAggregator::new(
@@ -353,7 +335,7 @@ async fn start_client_components(
         bridge_pause_rx,
         metrics.clone(),
     )
-    .await;
+        .await;
 
     let aml_checker = AMLChecker::new(
         store.clone(),
@@ -364,7 +346,7 @@ async fn start_client_components(
         metrics.clone(),
         client_config.aml_key,
     )
-    .await;
+        .await;
 
     let monitor = BridgeMonitor::new(
         sui_client.clone(),
@@ -431,12 +413,13 @@ fn get_sui_modules_to_watch(
 
 fn get_eth_contracts_to_watch(
     store: &std::sync::Arc<BridgeOrchestratorTables>,
-    eth_contracts: &[EthAddress],
+    keys: &[EthSyncerCursorsKey],
     eth_contracts_start_block_fallback: u64,
     eth_contracts_start_block_override: Option<u64>,
 ) -> HashMap<EthAddress, u64> {
+    let eth_contracts = keys.iter().map(|key| key.0).collect::<Vec<_>>();
     let stored_eth_cursors = store
-        .get_eth_event_cursors(eth_contracts)
+        .get_eth_event_cursors(keys)
         .expect("Failed to get eth event cursors from storage");
     let mut eth_contracts_to_watch = HashMap::new();
     for (contract, stored_cursor) in eth_contracts.iter().zip(stored_eth_cursors) {
@@ -501,7 +484,8 @@ mod tests {
         let store = BridgeOrchestratorTables::new(temp_dir.path());
 
         // No override, no watermark found in DB, use fallback
-        let contracts = get_eth_contracts_to_watch(&store, &eth_contracts, 10, None);
+        let keys = eth_contracts.iter().map(|contract| (*contract, BridgeChainId::EthCustom as u64)).collect::<Vec<_>>();
+        let contracts = get_eth_contracts_to_watch(&store, &keys, 10, None);
         assert_eq!(
             contracts,
             vec![(eth_contracts[0], 10), (eth_contracts[1], 10)]
@@ -510,7 +494,7 @@ mod tests {
         );
 
         // no watermark found in DB, use override
-        let contracts = get_eth_contracts_to_watch(&store, &eth_contracts, 10, Some(420));
+        let contracts = get_eth_contracts_to_watch(&store, &keys, 10, Some(420));
         assert_eq!(
             contracts,
             vec![(eth_contracts[0], 420), (eth_contracts[1], 420)]
@@ -519,14 +503,14 @@ mod tests {
         );
 
         store
-            .update_eth_event_cursor(eth_contracts[0], 100)
+            .update_eth_event_cursor((eth_contracts[0], BridgeChainId::EthCustom as u64), 100)
             .unwrap();
         store
-            .update_eth_event_cursor(eth_contracts[1], 102)
+            .update_eth_event_cursor((eth_contracts[1], BridgeChainId::EthCustom as u64), 102)
             .unwrap();
 
         // No override, found watermarks in DB, use +1
-        let contracts = get_eth_contracts_to_watch(&store, &eth_contracts, 10, None);
+        let contracts = get_eth_contracts_to_watch(&store, &keys, 10, None);
         assert_eq!(
             contracts,
             vec![(eth_contracts[0], 101), (eth_contracts[1], 103)]
@@ -535,7 +519,7 @@ mod tests {
         );
 
         // use override
-        let contracts = get_eth_contracts_to_watch(&store, &eth_contracts, 10, Some(200));
+        let contracts = get_eth_contracts_to_watch(&store, &keys, 10, Some(200));
         assert_eq!(
             contracts,
             vec![(eth_contracts[0], 200), (eth_contracts[1], 200)]
@@ -564,8 +548,8 @@ mod tests {
                 (treasury_module.clone(), None),
                 (limiter_module.clone(), None)
             ]
-            .into_iter()
-            .collect::<HashMap<_, _>>()
+                .into_iter()
+                .collect::<HashMap<_, _>>()
         );
 
         // no stored watermark, use override
@@ -582,8 +566,8 @@ mod tests {
                 (treasury_module.clone(), Some(override_cursor)),
                 (limiter_module.clone(), Some(override_cursor))
             ]
-            .into_iter()
-            .collect::<HashMap<_, _>>()
+                .into_iter()
+                .collect::<HashMap<_, _>>()
         );
 
         // No override, found stored watermark for `bridge` module, use stored watermark for `bridge`
@@ -604,8 +588,8 @@ mod tests {
                 (treasury_module.clone(), None),
                 (limiter_module.clone(), None)
             ]
-            .into_iter()
-            .collect::<HashMap<_, _>>()
+                .into_iter()
+                .collect::<HashMap<_, _>>()
         );
 
         // found stored watermark, use override
@@ -625,8 +609,8 @@ mod tests {
                 (treasury_module.clone(), Some(override_cursor)),
                 (limiter_module.clone(), Some(override_cursor))
             ]
-            .into_iter()
-            .collect::<HashMap<_, _>>()
+                .into_iter()
+                .collect::<HashMap<_, _>>()
         );
     }
 
@@ -660,32 +644,16 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
-                eth_enabled: true,
             },
-            bsc: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                eth_contracts_start_block_fallback: None,
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
-            base: EthConfig {
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
-                eth_contracts_start_block_fallback: None,
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
-            optimism: EthConfig {
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
-                eth_contracts_start_block_fallback: None,
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
+            evm: vec![
+                EthConfig {
+                    eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                    eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_contracts_start_block_fallback: None,
+                    eth_contracts_start_block_override: None,
+                },
+            ],
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: false,
@@ -700,8 +668,8 @@ mod tests {
             BridgeNodePublicMetadata::empty_for_testing(),
             Registry::new(),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
 
         let server_url = format!("http://127.0.0.1:{}", server_listen_port);
         // Now we expect to see the server to be up and running.
@@ -753,32 +721,16 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
-                eth_enabled: true,
             },
-            bsc: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
-            base: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
-            optimism: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
+            evm: vec![
+                EthConfig {
+                    eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                    eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_contracts_start_block_fallback: Some(0),
+                    eth_contracts_start_block_override: None,
+                },
+            ],
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: true,
@@ -802,8 +754,8 @@ mod tests {
             &sui_key_pair,
             "MINT-BUSD-BRIDGE-KEY",
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
         sleep(Duration::from_secs(10)).await;
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -811,8 +763,8 @@ mod tests {
             BridgeNodePublicMetadata::empty_for_testing(),
             Registry::new(),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
 
         let server_url = format!("http://127.0.0.1:{}", server_listen_port);
         // Now we expect to see the server to be up and running.
@@ -875,32 +827,16 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: Some(0),
-                eth_enabled: true,
             },
-            bsc: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: Some(0),
-                eth_enabled: false,
-            },
-            base: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::BaseCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
-            optimism: EthConfig {//fixme
-                eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
-                eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
-                eth_bridge_chain_id: BridgeChainId::OPCustom as u8,
-                eth_contracts_start_block_fallback: Some(0),
-                eth_contracts_start_block_override: None,
-                eth_enabled: false,
-            },
+            evm: vec![
+                EthConfig {
+                    eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
+                    eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
+                    eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
+                    eth_contracts_start_block_fallback: Some(0),
+                    eth_contracts_start_block_override: Some(0),
+                },
+            ],
             aml_key: "test_key".to_string(), //fixme
             approved_governance_actions: vec![],
             run_client: true,
@@ -923,8 +859,8 @@ mod tests {
             &sui_key_pair,
             "MINT-BUSD-BRIDGE-KEY",
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
         sleep(Duration::from_secs(10)).await;
 
         // Spawn bridge node in memory
@@ -933,8 +869,8 @@ mod tests {
             BridgeNodePublicMetadata::empty_for_testing(),
             Registry::new(),
         )
-        .await
-        .unwrap();
+            .await
+            .unwrap();
 
         let server_url = format!("http://127.0.0.1:{}", server_listen_port);
         // Now we expect to see the server to be up and running.

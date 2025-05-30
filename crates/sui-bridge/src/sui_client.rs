@@ -369,7 +369,7 @@ where
                     .sui_rpc_errors
                     .with_label_values(&["get_external_token_transfer_action_onchain_status"])
                     .inc();
-
+                
                 error!("Failed to get external token onchain status for tx_hash: {}", tx_hash.clone());
 
                 continue;
@@ -935,8 +935,8 @@ where
             Identifier::new(function_name).unwrap(),
             vec![],
             vec![
-                Argument::Input(0),
-                Argument::Input(1),
+                Argument::Input(0), 
+                Argument::Input(1), 
                 Argument::Input(2),
                 Argument::Input(3),
                 Argument::Input(4),
