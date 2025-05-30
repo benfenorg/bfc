@@ -14877,6 +14877,7 @@ version = "0.1.0"
 dependencies = [
  "bcs",
  "better_any",
+ "dirs 4.0.0",
  "fastcrypto",
  "fastcrypto-vdf",
  "fastcrypto-zkp",
@@ -14891,6 +14892,7 @@ dependencies = [
  "rand_chacha 0.3.1",
  "sha2 0.10.8",
  "smallvec",
+ "sui-config",
  "sui-protocol-config",
  "sui-types",
  "tracing",

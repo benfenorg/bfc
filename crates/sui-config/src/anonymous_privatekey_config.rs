@@ -33,7 +33,7 @@ impl AnonymousPrivateKeyConfig {
         let yaml_value: serde_yaml::Value = serde_yaml::from_str(&content)?;
         
         let private_key = yaml_value
-            .get("anonymous_privatekey")
+            .get("anonymous-privatekey")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
             

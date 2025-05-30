@@ -1,4 +1,4 @@
 
 # Anonymous private key configuration
-anonymous_privatekey: "your-private-key-here"
+anonymous-privatekey: "your-private-key-here"
 

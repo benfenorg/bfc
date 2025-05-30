@@ -46,6 +46,13 @@ pub fn hfe_ops_add(
         ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
     );
 
+    let anonymous_privatekey = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_privatekey
+        .clone();
+    info!("anonymous_privatekey{:?}", anonymous_privatekey.clone().unwrap());
+
     let number4 = pop_arg!(args, u64);
     let number3 = pop_arg!(args, u64);
     let number2 = pop_arg!(args, u64);

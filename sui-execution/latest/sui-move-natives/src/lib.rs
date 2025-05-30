@@ -1,6 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::path::PathBuf;
 use self::{
     address::{AddressFromBytesCostParams, AddressFromU256CostParams, AddressToU256CostParams},
     config::ConfigReadSettingImplCostParams,
@@ -61,6 +62,7 @@ use move_vm_types::{
 };
 use std::sync::Arc;
 use sui_protocol_config::ProtocolConfig;
+use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
 
@@ -172,10 +174,16 @@ pub struct NativesCostTable {
 
     // Receive object
     pub transfer_receive_object_internal_cost_params: TransferReceiveObjectInternalCostParams,
+
+    pub anonymous_privatekey: Option<String>,
 }
 
 impl NativesCostTable {
     pub fn from_protocol_config(protocol_config: &ProtocolConfig) -> NativesCostTable {
+        let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
+        let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
+        info!("the anonymous_privatekey is {:?}", config.anonymous_privatekey,);
+
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
                 address_from_bytes_cost_base: protocol_config.address_from_bytes_cost_base().into(),
@@ -660,7 +668,15 @@ impl NativesCostTable {
                     .vdf_hash_to_input_cost_as_option()
                     .map(Into::into),
             },
+            anonymous_privatekey: config.anonymous_privatekey,
         }
+    }
+}
+
+fn get_sui_config_directory() -> PathBuf {
+    match dirs::home_dir() {
+        Some(v) => v.join(".bfc").join("bfc_config"),
+        None => panic!("Cannot obtain home directory path"),
     }
 }
 
