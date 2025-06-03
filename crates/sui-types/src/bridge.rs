@@ -712,38 +712,3 @@ pub struct MoveTypeParsedTokenTransferMessage {
     pub payload: Vec<u8>,
     pub parsed_payload: MoveTypeTokenTransferPayload,
 }
-
-
-#[derive(
-    Debug,
-    Serialize,
-    Deserialize,
-    PartialEq,
-    Eq,
-    Clone,
-    Copy,
-    TryFromPrimitive,
-    JsonSchema,
-    Hash,
-    Display,
-    PartialOrd,
-    Ord,
-)]
-#[repr(u8)]
-pub enum FastPathSelector {
-    Latest = 0,
-    Safe = 1,
-    Finalized = 2,
-}
-
-impl FastPathSelector {
-    pub fn select(token_id:u64,amount:u64) -> FastPathSelector {
-        if TOKEN_ID_BUSD==token_id && amount<= FAST_PATH_THREASHOLD_LATEST_BUSD {
-            FastPathSelector::Latest
-        }else if TOKEN_ID_BUSD==token_id && amount<= FAST_PATH_THREASHOLD_SAFE_BUSD  {
-            FastPathSelector::Safe
-        }else {
-            FastPathSelector::Finalized
-        }
-    }
-}

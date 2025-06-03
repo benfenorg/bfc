@@ -11,14 +11,17 @@ use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
 use crate::aml_checker::{AMLCheckerTrait, AMLCheckerWrapper};
+use crate::config::BridgeClientConfig;
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
+use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metrics::BridgeMetrics;
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, ETHLogWrapper};
 use mysten_metrics::spawn_logged_monitored_task;
-use sui_types::bridge::FastPathSelector;
+use sui_types::bridge::TOKEN_ID_BUSD;
+// use sui_types::bridge::FastPathSelector;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
@@ -63,6 +66,7 @@ where
         self,
         bridge_action_executor: impl BridgeActionExecutorTrait,
         aml_checker: impl AMLCheckerTrait,
+        fast_path_config:FastPathConfig,
     ) -> Vec<JoinHandle<()>> {
         tracing::info!("Starting BridgeOrchestrator");
         let mut task_handles = vec![];
@@ -120,6 +124,7 @@ where
             self.eth_events_rx,
             self.eth_monitor_tx,
             metrics_clone,
+            fast_path_config,
         )));
 
         task_handles
@@ -226,6 +231,7 @@ where
         )>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_config: FastPathConfig,
     ) {
         info!("Starting eth watcher task");
         while let Some((key, end_block, log_wrapper)) = eth_events_rx.recv().await {
@@ -284,8 +290,9 @@ where
                 for action in &actions {
                     match &action {
                         BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                            // fast path selector
-                            let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount);
+                            // fast path selector                            
+                            let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
+                            let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
                             match fast_path_selector  {
                                 FastPathSelector::Latest => {
                                     fast_path_actions.push(action.clone());
@@ -349,6 +356,8 @@ async fn process_pending_actions(store: &Arc<BridgeOrchestratorTables>, aml_chec
     }
 }
 
+
+
 #[cfg(test)]
 mod tests {
     use crate::{
@@ -363,7 +372,6 @@ mod tests {
     use crate::events::init_all_struct_tags;
     use crate::test_utils::get_test_sui_to_eth_bridge_action;
     use crate::{events::tests::get_test_sui_event_and_action, sui_mock_client::SuiMockClient};
-    use sui_types::bridge::BridgeChainId;
 
     #[tokio::test]
     async fn test_sui_watcher_task() {
@@ -381,6 +389,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -396,7 +405,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
@@ -445,6 +454,7 @@ mod tests {
             _eth_monitor_rx,
             _sui_client,
             store,
+            _fast_path_config,
         ) = setup();
 
         let (_, bridge_action) = get_test_external_coin_event_and_action(
@@ -483,6 +493,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -498,7 +509,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         // external action
@@ -584,6 +595,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -599,7 +611,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
         let address = EthAddress::random();
         let (log, bridge_action) = get_test_log_and_action(address, TxHash::random(), 10);
@@ -658,6 +670,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -688,7 +701,7 @@ mod tests {
             eth_monitor_tx,
             metrics,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         // Executor should have received the action
@@ -712,6 +725,7 @@ mod tests {
         mysten_metrics::metered_channel::Receiver<EthBridgeEvent>,
         SuiClient<SuiMockClient>,
         Arc<BridgeOrchestratorTables>,
+        FastPathConfig,
     ) {
         telemetry_subscribers::init_for_testing();
         let registry = Registry::new();
@@ -754,6 +768,7 @@ mod tests {
                 .channel_inflight
                 .with_label_values(&["eth_monitor_queue"]),
         );
+        let fast_path_config = FastPathConfig::init_for_testing();
         (
             sui_events_tx,
             sui_events_rx,
@@ -765,6 +780,7 @@ mod tests {
             eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         )
     }
 

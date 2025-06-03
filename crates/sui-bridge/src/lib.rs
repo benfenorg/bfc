@@ -28,6 +28,8 @@ pub mod sui_transaction_builder;
 pub mod types;
 pub mod utils;
 
+pub mod fast_path; // Add this line
+
 #[cfg(any(feature = "test-utils", test))]
 pub(crate) mod eth_mock_provider;
 

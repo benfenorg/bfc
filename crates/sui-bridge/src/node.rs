@@ -3,6 +3,7 @@
 
 use crate::config::WatchdogConfig;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
+use crate::fast_path::FastPathConfig;
 use crate::metered_eth_provider::MeteredEthHttpProvier;
 use crate::sui_bridge_watchdog::eth_bridge_status::EthBridgeStatus;
 use crate::sui_bridge_watchdog::eth_vault_balance::{EthereumVaultBalance, VaultAsset};
@@ -230,6 +231,7 @@ async fn start_client_components(
     committee_keys_to_names: Arc<BTreeMap<BridgeAuthorityPublicKeyBytes, String>>,
     metrics: Arc<BridgeMetrics>,
 ) -> anyhow::Result<Vec<JoinHandle<()>>> {
+    let fast_path_config = FastPathConfig::init_from_client_config(&client_config);
     let store: std::sync::Arc<BridgeOrchestratorTables> =
         BridgeOrchestratorTables::new(&client_config.db_path.join("client"));
     let sui_modules_to_watch = get_sui_modules_to_watch(
@@ -242,14 +244,6 @@ async fn start_client_components(
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
         &keys,
-        client_config.eth_contracts_start_block_fallback,
-        client_config.eth_contracts_start_block_override,
-    );
-
-    let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,true)).collect::<Vec<_>>();
-    let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
-        &store,
-        &keys_fast_path,
         client_config.eth_contracts_start_block_fallback,
         client_config.eth_contracts_start_block_override,
     );
@@ -270,13 +264,22 @@ async fn start_client_components(
             .await
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
-    //todo: load from config @lifei
-    let (task_handles, _) =
+    if client_config.eth_enable_quick_settle {
+        let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,true)).collect::<Vec<_>>();
+        let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
+            &store,
+            &keys_fast_path,
+            client_config.eth_contracts_start_block_fallback,
+            client_config.eth_contracts_start_block_override,
+        );
+        let (task_handles, _) =
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),true)
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
-    all_handles.extend(task_handles);
+        all_handles.extend(task_handles);
+    }
+    
 
     for (chain_id, evm_client_config) in client_config.evm_client_configs {
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
@@ -360,7 +363,7 @@ async fn start_client_components(
         client_config.gas_object_ref.0,
         client_config.key.copy(),
         metrics.clone(),
-        client_config.aml_key,
+        client_config.aml_key.clone(),
     )
         .await;
 
@@ -385,7 +388,7 @@ async fn start_client_components(
         metrics,
     );
 
-    all_handles.extend(orchestrator.run(bridge_action_executor, aml_checker).await);
+    all_handles.extend(orchestrator.run(bridge_action_executor, aml_checker,fast_path_config).await);
     Ok(all_handles)
 }
 
