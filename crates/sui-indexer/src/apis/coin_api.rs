@@ -141,16 +141,16 @@ impl CoinReadApiServer for CoinReadApi {
         }
     }
 
-    async fn get_anonymous_add(&self, value1: u64, value2: u64) -> RpcResult<u64> {
+    async fn get_anonymous_add(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
         todo!()
     }
-    async fn get_anonymous_minus(&self, value1: u64, value2: u64) -> RpcResult<u64> {
+    async fn get_anonymous_minus(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
         todo!()
     }
-    async fn get_anonymous_multiply(&self, value1: u64, value2: u64) -> RpcResult<u64> {
+    async fn get_anonymous_multiply(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
         todo!()
     }
-    async fn get_anonymous_compare(&self, value1: u64, value2: u64) -> RpcResult<u8> {
+    async fn get_anonymous_compare(&self, _value1: u64, _value2: u64) -> RpcResult<u8> {
         todo!()
     }
     

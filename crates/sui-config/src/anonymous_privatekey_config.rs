@@ -11,6 +11,11 @@ pub struct AnonymousPrivateKeyConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
     pub anonymous_privatekey: Option<String>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub anonymous_rpc: Option<Vec<String>>,
+
 }
 
 
@@ -27,6 +32,21 @@ impl AnonymousPrivateKeyConfig {
         self.anonymous_privatekey = Some(key);
     }
 
+    pub fn get_anonymous_rpc(&self) -> Option<Vec<String>> {
+        self.anonymous_rpc.clone()
+    }
+
+    pub fn set_anonymous_rpc(&mut self, rpc_urls: Vec<String>) {
+        self.anonymous_rpc = Some(rpc_urls);
+    }
+
+    pub fn add_anonymous_rpc(&mut self, rpc_url: String) {
+        match &mut self.anonymous_rpc {
+            Some(urls) => urls.push(rpc_url),
+            None => self.anonymous_rpc = Some(vec![rpc_url]),
+        }
+    }
+
     /// Load configuration from YAML file
     pub fn from_yaml_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content = fs::read_to_string(path)?;
@@ -36,8 +56,21 @@ impl AnonymousPrivateKeyConfig {
             .get("anonymous-privatekey")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
+        
+        let anonymous_rpc = yaml_value
+            .get("anonymous-rpc")
+            .and_then(|v| v.as_sequence())
+            .map(|seq| {
+                seq.iter()
+                    .filter_map(|item| item.as_str())
+                    .map(|s| s.to_string())
+                    .collect::<Vec<String>>()
+            });
             
-        Ok(AnonymousPrivateKeyConfig { anonymous_privatekey: private_key })
+        Ok(AnonymousPrivateKeyConfig { 
+            anonymous_privatekey: private_key,
+            anonymous_rpc,
+        })
     }
 
     pub fn save<P: AsRef<Path>>(&self, path: P) -> anyhow::Result<(), anyhow::Error> {

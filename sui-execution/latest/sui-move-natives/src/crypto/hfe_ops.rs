@@ -53,6 +53,7 @@ pub fn hfe_ops_add(
         .anonymous_privatekey
         .clone();
     info!("anonymous_privatekey{:?}", anonymous_privatekey.clone().unwrap());
+    info!("anonymous_rpc{:?}", context.extensions().get::<NativesCostTable>().anonymous_rpc.clone());
 
     let number4 = pop_arg!(args, u64);
     let number3 = pop_arg!(args, u64);
