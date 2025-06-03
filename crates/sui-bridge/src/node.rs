@@ -238,10 +238,18 @@ async fn start_client_components(
     );
 
     let chain_id = client_config.eth_client.get_chain_id().await?;
-    let keys = client_config.eth_contracts.iter().map(|k| (*k, chain_id)).collect::<Vec<_>>();
+    let keys = client_config.eth_contracts.iter().map(|k| (*k, chain_id,false)).collect::<Vec<_>>();
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
         &keys,
+        client_config.eth_contracts_start_block_fallback,
+        client_config.eth_contracts_start_block_override,
+    );
+
+    let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,true)).collect::<Vec<_>>();
+    let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
+        &store,
+        &keys_fast_path,
         client_config.eth_contracts_start_block_fallback,
         client_config.eth_contracts_start_block_override,
     );
@@ -262,13 +270,21 @@ async fn start_client_components(
             .await
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
+    //todo: load from config @lifei
+    let (task_handles, _) =
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),true)
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start eth syncer");
+    all_handles.extend(task_handles);
 
     for (chain_id, evm_client_config) in client_config.evm_client_configs {
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
         let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
 
         let eth_chain_id = client_config.eth_client.get_chain_id().await?;
-        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id)).collect::<Vec<_>>();
+        //todo: support fast path for evm client @lifei
+        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id,false)).collect::<Vec<_>>();
         let evm_contracts_to_watch = get_eth_contracts_to_watch(
             &store,
             &keys,
@@ -484,7 +500,7 @@ mod tests {
         let store = BridgeOrchestratorTables::new(temp_dir.path());
 
         // No override, no watermark found in DB, use fallback
-        let keys = eth_contracts.iter().map(|contract| (*contract, BridgeChainId::EthCustom as u64)).collect::<Vec<_>>();
+        let keys = eth_contracts.iter().map(|contract| (*contract, BridgeChainId::EthCustom as u64,false)).collect::<Vec<_>>();
         let contracts = get_eth_contracts_to_watch(&store, &keys, 10, None);
         assert_eq!(
             contracts,
@@ -503,10 +519,10 @@ mod tests {
         );
 
         store
-            .update_eth_event_cursor((eth_contracts[0], BridgeChainId::EthCustom as u64), 100)
+            .update_eth_event_cursor((eth_contracts[0], BridgeChainId::EthCustom as u64,false), 100)
             .unwrap();
         store
-            .update_eth_event_cursor((eth_contracts[1], BridgeChainId::EthCustom as u64), 102)
+            .update_eth_event_cursor((eth_contracts[1], BridgeChainId::EthCustom as u64,false), 102)
             .unwrap();
 
         // No override, found watermarks in DB, use +1

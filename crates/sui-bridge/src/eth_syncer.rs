@@ -196,7 +196,7 @@ where
             // are complete per block height. Namely, we should never send a partial list
             // of events for a block. Otherwise, we may end up missing events.
             events_sender
-                .send(((contract_address, chain_id), end_block, ETHLogWrapper{ fast_path_enabled, logs: events }))
+                .send(((contract_address, chain_id,fast_path_enabled), end_block, ETHLogWrapper{ fast_path_enabled, logs: events }))
                 .await
                 .expect("All Eth event channel receivers are closed");
             if len != 0 {
