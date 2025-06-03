@@ -139,6 +139,34 @@ where
         Ok(number.as_u64())
     }
 
+    pub async fn get_safe_block_id(&self) -> BridgeResult<u64> {
+        let block: Result<Option<Block<ethers::types::TxHash>>, ethers::prelude::ProviderError> =
+            self.provider
+                .request("eth_getBlockByNumber", ("safe", false))
+                .await;
+        let block = block?.ok_or(BridgeError::TransientProviderError(
+            "Provider fails to return last finalized block".into(),
+        ))?;
+        let number = block.number.ok_or(BridgeError::TransientProviderError(
+            "Provider returns block without number".into(),
+        ))?;
+        Ok(number.as_u64())
+    }
+
+    pub async fn get_latest_block_id(&self) -> BridgeResult<u64> {
+        let block: Result<Option<Block<ethers::types::TxHash>>, ethers::prelude::ProviderError> =
+            self.provider
+                .request("eth_getBlockByNumber", ("latest", false))
+                .await;
+        let block = block?.ok_or(BridgeError::TransientProviderError(
+            "Provider fails to return last finalized block".into(),
+        ))?;
+        let number = block.number.ok_or(BridgeError::TransientProviderError(
+            "Provider returns block without number".into(),
+        ))?;
+        Ok(number.as_u64())
+    }
+
     // Note: query may fail if range is too big. Callsite is responsible
     // for chunking the query.
     pub async fn get_events_in_range(

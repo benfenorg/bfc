@@ -86,6 +86,11 @@ pub const TOKEN_ID_BNB: u64 = 6;
 pub const TOKEN_ID_OP: u64 = 7;
 pub const TOKEN_ID_POL: u64 = 8;
 
+// const for fast path
+pub const FAST_PATH_THREASHOLD_LATEST_BUSD: u64 = 100_000_000_000;
+pub const FAST_PATH_THREASHOLD_SAFE_BUSD: u64 = 10000_000_000_000;
+
+
 #[derive(
     Debug,
     Serialize,
@@ -706,4 +711,39 @@ pub struct MoveTypeParsedTokenTransferMessage {
     pub source_chain: u8,
     pub payload: Vec<u8>,
     pub parsed_payload: MoveTypeTokenTransferPayload,
+}
+
+
+#[derive(
+    Debug,
+    Serialize,
+    Deserialize,
+    PartialEq,
+    Eq,
+    Clone,
+    Copy,
+    TryFromPrimitive,
+    JsonSchema,
+    Hash,
+    Display,
+    PartialOrd,
+    Ord,
+)]
+#[repr(u8)]
+pub enum FastPathSelector {
+    Latest = 0,
+    Safe = 1,
+    Finalized = 2,
+}
+
+impl FastPathSelector {
+    pub fn select(token_id:u64,amount:u64) -> FastPathSelector {
+        if TOKEN_ID_BUSD==token_id && amount<= FAST_PATH_THREASHOLD_LATEST_BUSD {
+            FastPathSelector::Latest
+        }else if TOKEN_ID_BUSD==token_id && amount<= FAST_PATH_THREASHOLD_SAFE_BUSD  {
+            FastPathSelector::Safe
+        }else {
+            FastPathSelector::Finalized
+        }
+    }
 }
