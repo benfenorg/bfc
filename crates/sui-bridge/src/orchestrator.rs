@@ -565,7 +565,7 @@ mod tests {
         let end_block_num = log_block_num + 15;
 
         eth_events_tx
-            .send(((address, BridgeChainId::EthCustom as u64), end_block_num, vec![eth_log.clone()]))
+            .send(((address, BridgeChainId::EthCustom as u64), end_block_num, ETHLogWrapper{ fast_path_enabled: false, logs: vec![eth_log.clone()] }))
             .await
             .unwrap();
 
@@ -655,8 +655,8 @@ mod tests {
     fn setup() -> (
         mysten_metrics::metered_channel::Sender<(Identifier, Vec<SuiEvent>)>,
         mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
-        mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+        mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Sender<EthBridgeEvent>,

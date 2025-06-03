@@ -286,7 +286,7 @@ mod tests {
         let (contract_address, end_block, received_logs) = logs_rx.recv().await.unwrap();
         assert_eq!(contract_address.0, EthAddress::zero());
         assert_eq!(end_block, 777);
-        assert_eq!(received_logs, vec![eth_log.clone()]);
+        assert_eq!(received_logs.logs, vec![eth_log.clone()]);
         assert_eq!(logs_rx.try_recv().unwrap_err(), TryRecvError::Empty);
 
         mock_get_logs(
@@ -303,7 +303,7 @@ mod tests {
         let (contract_address, end_block, received_logs) = logs_rx.recv().await.unwrap();
         assert_eq!(contract_address.0, EthAddress::zero());
         assert_eq!(end_block, 888);
-        assert_eq!(received_logs, vec![eth_log]);
+        assert_eq!(received_logs.logs, vec![eth_log]);
         assert_eq!(logs_rx.try_recv().unwrap_err(), TryRecvError::Empty);
 
         Ok(())
@@ -381,7 +381,7 @@ mod tests {
         assert_eq!(*finalized_block_rx.borrow(), 198);
         let (_contract_address, end_block, received_logs) = logs_rx.recv().await.unwrap();
         assert_eq!(end_block, 198);
-        assert_eq!(received_logs, vec![eth_log1.clone()]);
+        assert_eq!(received_logs.logs, vec![eth_log1.clone()]);
         // log2 should not be received as another_address's start block is 200.
         assert_eq!(logs_rx.try_recv().unwrap_err(), TryRecvError::Empty);
 
@@ -430,10 +430,10 @@ mod tests {
         finalized_block_rx.changed().await.unwrap();
         assert_eq!(*finalized_block_rx.borrow(), 400);
         let mut logs_set = HashSet::new();
-        logs_rx.recv().await.unwrap().2.into_iter().for_each(|log| {
+        logs_rx.recv().await.unwrap().2.logs.into_iter().for_each(|log| {
             logs_set.insert(format!("{:?}", log));
         });
-        logs_rx.recv().await.unwrap().2.into_iter().for_each(|log| {
+        logs_rx.recv().await.unwrap().2.logs.into_iter().for_each(|log| {
             logs_set.insert(format!("{:?}", log));
         });
         assert_eq!(
@@ -524,11 +524,11 @@ mod tests {
         let (contract_address, end_block, received_logs) = logs_rx.recv().await.unwrap();
         assert_eq!(contract_address.0, EthAddress::zero());
         assert_eq!(end_block, start_block + ETH_LOG_QUERY_MAX_BLOCK_RANGE - 1);
-        assert_eq!(received_logs, vec![eth_log.clone()]);
+        assert_eq!(received_logs.logs, vec![eth_log.clone()]);
         let (contract_address, end_block, received_logs) = logs_rx.recv().await.unwrap();
         assert_eq!(contract_address.0, EthAddress::zero());
         assert_eq!(end_block, last_finalized_block);
-        assert_eq!(received_logs, vec![eth_log2.clone()]);
+        assert_eq!(received_logs.logs, vec![eth_log2.clone()]);
         Ok(())
     }
 }
