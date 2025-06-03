@@ -1,9 +1,10 @@
 use std::sync::Arc;
 
+use arc_swap::cache;
 use mysten_metrics::spawn_logged_monitored_task;
 use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse};
-use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
+use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, bridge::{FastPathSelector, FAST_PATH_THREASHOLD_LATEST_BUSD, TOKEN_ID_BUSD}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
 use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
@@ -97,6 +98,18 @@ where
             match &bridge_action {
                 BridgeAction::EthToSuiBridgeAction(action_inner) => {
                     let eth_address = action_inner.eth_bridge_event.eth_address;
+                    // fast path selector
+                    let fastPath = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount);
+                    match fastPath  {
+                        FastPathSelector::Latest => {
+                            //latest
+                        }
+                        _ => {
+                            store.insert_pending_fast_path_actions(&[bridge_action.clone()]).unwrap_or_else(|e| {
+                                panic!("Write to DB should not fail: {:?}", e);
+                            });
+                        }
+                    }
                     let skip_aml_check = if action_inner.eth_event_index > u8::MAX as u16 {
                         true
                     } else {

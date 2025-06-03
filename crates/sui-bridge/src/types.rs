@@ -700,6 +700,12 @@ impl EthEvent for RawEthLog {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct ETHLogWrapper {
+    pub fast_path_enabled: bool,
+    pub logs: Vec<EthLog>
+}
+
 /// Check if the bridge route is valid
 /// Only mainnet can bridge to mainnet, other than that we do not care.
 pub fn is_route_valid(one: BridgeChainId, other: BridgeChainId) -> bool {

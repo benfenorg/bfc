@@ -257,7 +257,7 @@ async fn start_client_components(
             .with_label_values(&["evm_events_queue"]),
     );
     let (task_handles, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone())
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),false)
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
@@ -280,7 +280,7 @@ async fn start_client_components(
 
 
         let (task_handles, _) =
-            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone())
+            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone(),false)
                 .run(metrics.clone())
                 .await
                 .expect("Failed to start evm syncer");

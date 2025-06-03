@@ -16,7 +16,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{EthLog};
+use crate::types::{ETHLogWrapper, EthLog};
 use mysten_metrics::spawn_logged_monitored_task;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
@@ -28,7 +28,7 @@ use sui_types::bridge::BridgeChainId;
 pub struct BridgeOrchestrator<C> {
     _sui_client: Arc<SuiClient<C>>,
     sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
     store: Arc<BridgeOrchestratorTables>,
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -42,7 +42,7 @@ where
     pub fn new(
         sui_client: Arc<SuiClient<C>>,
         sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         store: Arc<BridgeOrchestratorTables>,
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
@@ -222,32 +222,32 @@ where
         mut eth_events_rx: mysten_metrics::metered_channel::Receiver<(
             EthSyncerCursorsKey,
             u64,
-            Vec<EthLog>,
+            ETHLogWrapper,
         )>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
     ) {
         info!("Starting eth watcher task");
-        while let Some((key, end_block, logs)) = eth_events_rx.recv().await {
-            if logs.is_empty() {
+        while let Some((key, end_block, log_wrapper)) = eth_events_rx.recv().await {
+            if log_wrapper.logs.is_empty() {
                 store
                     .update_eth_event_cursor( key, end_block)
                     .expect("Store operation should not fail");
                 continue;
             }
 
-            info!("Received {} Eth events", logs.len());
+            info!("Received {} Eth events", log_wrapper.logs.len());
             metrics
                 .eth_watcher_received_events
-                .inc_by(logs.len() as u64);
+                .inc_by(log_wrapper.logs.len() as u64);
 
-            let bridge_events = logs
+            let bridge_events = log_wrapper.logs
                 .iter()
                 .map(EthBridgeEvent::try_from_eth_log)
                 .collect::<Vec<_>>();
 
             let mut actions = vec![];
-            for (log, opt_bridge_event) in logs.iter().zip(bridge_events) {
+            for (log, opt_bridge_event) in log_wrapper.logs.iter().zip(bridge_events) {
                 if opt_bridge_event.is_none() {
                     // TODO: we probably should not miss any events, log for now.
                     metrics.eth_watcher_unrecognized_events.inc();

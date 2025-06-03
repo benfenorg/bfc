@@ -10,8 +10,9 @@ use crate::error::BridgeResult;
 use crate::eth_client::EthClient;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
-use crate::types::EthLog;
+use crate::types::{ETHLogWrapper, EthLog};
 use ethers::types::{Address as EthAddress};
+use futures::FutureExt;
 use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::collections::HashMap;
@@ -29,7 +30,8 @@ const FINALIZED_BLOCK_QUERY_INTERVAL: Duration = Duration::from_secs(5);
 pub struct EthSyncer<P> {
     eth_client: Arc<EthClient<P>>,
     contract_addresses: EthTargetAddresses,
-    event_tx: Sender<(EthSyncerCursorsKey,u64,Vec<EthLog>)>,
+    event_tx: Sender<(EthSyncerCursorsKey,u64,ETHLogWrapper)>,
+    fast_path_enabled:bool,
 }
 
 /// Map from contract address to their start block.
@@ -40,11 +42,12 @@ impl<P> EthSyncer<P>
 where
     P: ethers::providers::JsonRpcClient + 'static,
 {
-    pub fn new(eth_client: Arc<EthClient<P>>, contract_addresses: EthTargetAddresses, event_tx: Sender<(EthSyncerCursorsKey,u64,Vec<EthLog>)>) -> Self {
+    pub fn new(eth_client: Arc<EthClient<P>>, contract_addresses: EthTargetAddresses, event_tx: Sender<(EthSyncerCursorsKey,u64,ETHLogWrapper)>,fast_path_enabled:bool) -> Self {
         Self {
             eth_client,
             contract_addresses,
             event_tx,
+            fast_path_enabled,
         }
     }
 
@@ -65,7 +68,8 @@ where
             Self::run_finalized_block_refresh_task(
                 last_finalized_block_tx,
                 eth_client_clone,
-                metrics_clone
+                metrics_clone,
+                self.fast_path_enabled,
             )
         ));
         for (contract_address, start_block) in self.contract_addresses {
@@ -81,6 +85,7 @@ where
                     eth_evnets_tx_clone,
                     eth_client_clone,
                     metrics_clone,
+                    self.fast_path_enabled,
                 )
             ));
         }
@@ -91,24 +96,29 @@ where
         last_finalized_block_sender: watch::Sender<u64>,
         eth_client: Arc<EthClient<P>>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_enabled:bool,
     ) {
         tracing::info!("Starting finalized block refresh task.");
         let mut last_block_number = 0;
         let mut interval = time::interval(FINALIZED_BLOCK_QUERY_INTERVAL);
         interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
+        let chain_id = eth_client.get_chain_id_local().await.unwrap();
         loop {
             interval.tick().await;
             // TODO: allow to pass custom initial interval
             let Ok(Ok(new_value)) = retry_with_max_elapsed_time!(
-                eth_client.get_last_finalized_block_id(),
+                if fast_path_enabled {
+                    eth_client.get_latest_block_id().boxed()
+                }else{
+                    eth_client.get_last_finalized_block_id().boxed()
+                },
                 time::Duration::from_secs(600)
             ) else {
                 error!("Failed to get last finalized block from eth client after retry");
                 continue;
             };
-            tracing::debug!("Last finalized block: {}", new_value);
+            tracing::debug!("Last finalized block: {} chain_id:{} fast_path:{}", new_value,chain_id.clone(),fast_path_enabled);
             metrics.last_finalized_eth_block.set(new_value as i64);
-
             if new_value > last_block_number {
                 last_finalized_block_sender
                     .send(new_value)
@@ -126,9 +136,10 @@ where
         contract_address: EthAddress,
         mut start_block: u64,
         mut last_finalized_block_receiver: watch::Receiver<u64>,
-        events_sender: mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        events_sender: mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         eth_client: Arc<EthClient<P>>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_enabled:bool,
     ) {
         tracing::info!(contract_address=?contract_address, "Starting eth events listening task from block {start_block}");
         let contract_address_str = contract_address.to_string();
@@ -146,10 +157,11 @@ where
             if new_finalized_block < start_block {
                 tracing::info!(
                     contract_address=?contract_address,
-                    "New finalized block {} is smaller than start block {}, ignore chain_id: {}",
+                    "New finalized block {} is smaller than start block {}, ignore chain_id: {} fast_path_enabled:{}",
                     new_finalized_block,
                     start_block,
                     chain_id,
+                    fast_path_enabled,
                 );
                 continue;
             }
@@ -184,7 +196,7 @@ where
             // are complete per block height. Namely, we should never send a partial list
             // of events for a block. Otherwise, we may end up missing events.
             events_sender
-                .send(((contract_address, chain_id), end_block, events))
+                .send(((contract_address, chain_id), end_block, ETHLogWrapper{ fast_path_enabled, logs: events }))
                 .await
                 .expect("All Eth event channel receivers are closed");
             if len != 0 {
@@ -263,7 +275,7 @@ mod tests {
                 .with_label_values(&["eth_events_queue"]),
         );
         let (_handles, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx,false)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();
@@ -359,7 +371,7 @@ mod tests {
                 .with_label_values(&["eth_events_queue"]),
         );
         let (_handles, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx,false)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();
@@ -502,7 +514,7 @@ mod tests {
                 .with_label_values(&["eth_events_queue"]),
         );
         let (_handles, mut finalized_block_rx) =
-            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx)
+            EthSyncer::new(Arc::new(client), addresses, eth_evnets_tx,false)
                 .run(Arc::new(BridgeMetrics::new_for_testing()))
                 .await
                 .unwrap();
