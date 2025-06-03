@@ -363,6 +363,7 @@ mod tests {
     use crate::events::init_all_struct_tags;
     use crate::test_utils::get_test_sui_to_eth_bridge_action;
     use crate::{events::tests::get_test_sui_event_and_action, sui_mock_client::SuiMockClient};
+    use sui_types::bridge::BridgeChainId;
 
     #[tokio::test]
     async fn test_sui_watcher_task() {

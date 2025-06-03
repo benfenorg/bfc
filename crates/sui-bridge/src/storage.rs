@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::info;
 use sui_types::Identifier;
 
 use sui_types::event::EventID;
@@ -45,7 +45,7 @@ impl BridgeOrchestratorTables {
     }
 
     pub(crate) fn insert_pending_actions(&self, actions: &[BridgeAction]) -> BridgeResult<()> {
-        for action in actions.clone() {
+        for action in actions {
             match action {
                 BridgeAction::EthSendBackBridgeAction(a) => {
                     info!("[DEBUG] insert_pending_actions EthSendBackBridgeAction: {:#?}", a);

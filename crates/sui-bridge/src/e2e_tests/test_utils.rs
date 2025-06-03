@@ -824,6 +824,9 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                latest_quick_settle_threshold: None,
+                safe_quick_settle_threshold: None,
+                enable_quick_settle: false,
             },
             evm: vec![
                 EthConfig {
@@ -832,6 +835,9 @@ pub(crate) async fn start_bridge_cluster(
                     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
+                    latest_quick_settle_threshold: None,
+                    safe_quick_settle_threshold: None,
+                    enable_quick_settle: false,
                 },
             ],
             sui: SuiConfig {
