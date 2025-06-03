@@ -258,45 +258,7 @@ impl CoinReadApiServer for CoinReadApi {
         })
     }
 
-    #[instrument(skip(self))]
-    async fn get_anonymous_add(
-        &self,
-        value1: u64,
-        value2: u64,
-    ) -> RpcResult<u64>{
-        with_tracing!(async move {
-            info!("Anonymous add called with values: {}, {}", value1, value2);
-            Ok(value1 + value2)
-        })
-    }
 
-    #[instrument(skip(self))]
-    async fn get_anonymous_compare(&self, value1: u64, value2: u64) -> RpcResult<u8> {
-        with_tracing!(async move {
-            info!("Anonymous compare called with values: {}, {}", value1, value2);
-            if value1 > value2 {
-                Ok(1) // value1 is greater than value2
-            } else if value1 < value2 {
-                Ok(2) // value1 is less than value2
-            } else {
-                Ok(0) // values are equal
-            }
-        })
-    }
-    #[instrument(skip(self))]
-    async fn get_anonymous_multiply(&self, value1: u64, value2: u64) -> RpcResult<u64> {
-        with_tracing!(async move {
-            info!("Anonymous multiply called with values: {}, {}", value1, value2);
-            Ok(value1 * value2)
-        })
-    }
-    #[instrument(skip(self))]
-    async fn get_anonymous_minus(&self, value1: u64, value2: u64) -> RpcResult<u64> {
-        with_tracing!(async move {
-            info!("Anonymous minus called with values: {}, {}", value1, value2);
-            Ok(value1 - value2)
-        })
-    }
 
 }
 

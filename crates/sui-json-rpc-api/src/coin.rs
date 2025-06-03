@@ -74,33 +74,8 @@ pub trait CoinReadApi {
     ) -> RpcResult<Supply>;
 
 
-    #[method(name = "getAnonymousAdd")]
-    async fn get_anonymous_add(
-        &self,
-        value1: u64,
-        value2: u64,
-    ) -> RpcResult<u64>;
-
-    #[method(name = "getAnonymousMinus")]
-    async fn get_anonymous_minus(
-        &self,
-        value1: u64,
-        value2: u64,
-    ) -> RpcResult<u64>;
-
-    #[method(name = "getAnonymousMultiply")]
-    async fn get_anonymous_multiply(
-        &self,
-        value1: u64,
-        value2: u64,
-    ) -> RpcResult<u64>;
 
 
-    #[method(name = "getAnonymousCompare")]
-    async fn get_anonymous_compare(
-        &self,
-        value1: u64,
-        value2: u64,
-    ) -> RpcResult<u8>;
+
 
 }

@@ -1299,7 +1299,7 @@ pub async fn genesis(
 
     let mut annnoymous_config = AnonymousPrivateKeyConfig::new();
     annnoymous_config.set_private_key("0x_this_is_a_private_key".to_string());
-    annnoymous_config.set_anonymous_rpc(vec!["rpc1".parse()?, "rpc2".parse()?]);
+    annnoymous_config.set_anonymous_rpc(vec!["http://127.0.0.1:9010/rpc".parse()?, "rpc2".parse()?]);
     annnoymous_config.save(sui_config_dir.join(BFC_ANNOYMOUS_CONFIG))?;
 
     Ok(())

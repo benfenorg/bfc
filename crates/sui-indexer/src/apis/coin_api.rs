@@ -141,19 +141,7 @@ impl CoinReadApiServer for CoinReadApi {
         }
     }
 
-    async fn get_anonymous_add(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
-        todo!()
-    }
-    async fn get_anonymous_minus(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
-        todo!()
-    }
-    async fn get_anonymous_multiply(&self, _value1: u64, _value2: u64) -> RpcResult<u64> {
-        todo!()
-    }
-    async fn get_anonymous_compare(&self, _value1: u64, _value2: u64) -> RpcResult<u8> {
-        todo!()
-    }
-    
+
 }
 
 impl SuiRpcModule for CoinReadApi {
