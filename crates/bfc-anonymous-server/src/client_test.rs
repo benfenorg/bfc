@@ -26,7 +26,6 @@ impl AnonymousClient {
         }
     }
 
-    /// 发送JSON-RPC请求
     async fn send_rpc_request(
         &self,
         method: &str,
@@ -160,102 +159,16 @@ impl AnonymousClient {
         }
     }
 
-    /// 运行所有测试
-    pub async fn run_all_tests(&self) -> Vec<TestResult> {
-        let mut results = Vec::new();
 
-        let ping_result = self.test_ping().await;
-        if let Some(ref response) = ping_result.response {
-            if let Some(result) = response.get("result") {
-                if let Some(message) = result.get("message") {
-                    println!("Ping result: {}", message.as_str().unwrap_or("unknown"));
-                }
-            }
-            println!("Full response: {}", serde_json::to_string_pretty(response).unwrap_or_default());
-        }
-        results.push(ping_result);
-        
-        // 测试加法
-        println!("test : 10 + 5");
-        let add_result = self.test_add(10, 5).await;
-        if let Some(ref response) = add_result.response {
-            if let Some(result) = response.get("result") {
-                if let Some(calc_result) = result.get("result") {
-                    println!("Add result: {}", calc_result.as_u64().unwrap_or(0));
-                }
-            }
-            println!("Full response: {}", serde_json::to_string_pretty(response).unwrap_or_default());
-        }
-        results.push(add_result);
-        println!();
-
-        // 测试减法
-        println!(" test: 10 - 3");
-        let minus_result = self.test_minus(10, 3).await;
-        if let Some(ref response) = minus_result.response {
-            if let Some(result) = response.get("result") {
-                if let Some(calc_result) = result.get("result") {
-                    println!("Minus result: {}", calc_result.as_u64().unwrap_or(0));
-                }
-            }
-            println!("Full response: {}", serde_json::to_string_pretty(response).unwrap_or_default());
-        }
-        results.push(minus_result);
-        println!();
-
-        // 测试乘法
-        println!("test: 6 * 7");
-        let multiply_result = self.test_multiply(6, 7).await;
-        if let Some(ref response) = multiply_result.response {
-            if let Some(result) = response.get("result") {
-                if let Some(calc_result) = result.get("result") {
-                    println!("Multiply result: {}", calc_result.as_u64().unwrap_or(0));
-                }
-            }
-            println!("Full response: {}", serde_json::to_string_pretty(response).unwrap_or_default());
-        }
-        results.push(multiply_result);
-        println!();
-
-        // 测试比较
-        println!("test: 8 vs 5");
-        let compare_result = self.test_compare(8, 5).await;
-        if let Some(ref response) = compare_result.response {
-            if let Some(result) = response.get("result") {
-                if let Some(calc_result) = result.get("result") {
-                    let comparison = calc_result.as_u64().unwrap_or(0);
-                    let comparison_text = match comparison {
-                        0 => "equal",
-                        1 => "first > second",
-                        2 => "first < second",
-                        _ => "unknown"
-                    };
-                    println!("Compare result: {} ({})", comparison, comparison_text);
-                }
-            }
-            println!("Full response: {}", serde_json::to_string_pretty(response).unwrap_or_default());
-        }
-        results.push(compare_result);
-        println!();
-
-        // 统计结果
-        let success_count = results.iter().filter(|r| r.success).count();
-        let total_count = results.len();
-        
-        println!("{}", "=".repeat(50));
-        
-    
-        results
-    }
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     // 创建客户端实例
-    let client = AnonymousClient::new("http://localhost:3030");
+    let client = AnonymousClient::new("http://localhost:9010");
     
     // 运行所有测试
-    let _results = client.run_all_tests().await;
+    //let _results = client.run_all_tests().await;
     
     Ok(())
 }

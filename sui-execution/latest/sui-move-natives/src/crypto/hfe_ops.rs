@@ -18,10 +18,13 @@ use move_vm_types::{
     values::{VectorRef},
 };
 use move_vm_types::{
-    loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg, values::Value,
+    loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
 };
 
 use std::collections::VecDeque;
+use std::error::Error;
+use serde_json::{json};
+use serde_json::Value as JsonValue;
 use tracing::info;
 use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber},
@@ -268,4 +271,93 @@ fn derive_shard_key(shard_id: usize, key: Vec<u8>) -> Vec<u8> {
         .expect("HMAC can take key of any size");
     hmac.update(&shard_id.to_be_bytes());
     hmac.finalize().into_bytes().to_vec()
+}
+
+struct AnonymousClient {
+    base_url: String,
+    client: reqwest::Client,
+}
+
+impl AnonymousClient {
+    pub fn new(base_url: &str) -> Self {
+        Self {
+            base_url: base_url.to_string(),
+            client: reqwest::Client::new(),
+        }
+    }
+
+    async fn send_rpc_request(
+        &self,
+        method: &str,
+        params: JsonValue,
+        id: u64,
+    ) -> Result<JsonValue, Box<dyn Error>> {
+        let request_body = json!({
+            "jsonrpc": "2.0",
+            "method": method,
+            "params": params,
+            "id": id
+        });
+
+        let response = self
+            .client
+            .post(&format!("{}/rpc", self.base_url))
+            .header("Content-Type", "application/json")
+            .json(&request_body)
+            .send()
+            .await?;
+
+        let response_text = response.text().await?;
+        let response_json: JsonValue = serde_json::from_str(&response_text)?;
+
+        Ok(response_json)
+    }
+
+
+}
+
+async fn test_get_anonymous_add() -> (){
+    let client = AnonymousClient::new("http://localhost:9010");
+    let params: JsonValue = json!({
+            "value1": 2,
+            "value2": 3
+        });
+    let response = client.send_rpc_request("bfcx_getAnonymousAdd", params.clone(), 1).await;
+    match response {
+        Ok(value) => {
+            println!("Response: {}", value);
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+        }
+    }
+    let response = client.send_rpc_request("bfcx_getAnonymousMinus", params.clone(), 1).await;
+    match response {
+        Ok(value) => {
+            println!("Response: {}", value);
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+        }
+    }
+    let response = client.send_rpc_request("bfcx_getAnonymousMultiplied", params.clone(), 1).await;
+    match response {
+        Ok(value) => {
+            println!("Response: {}", value);
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+        }
+    }
+
+    let response = client.send_rpc_request("bfcx_getAnonymousCompare", params, 1).await;
+    match response {
+        Ok(value) => {
+            println!("Response: {}", value);
+        }
+        Err(e) => {
+            eprintln!("Error: {}", e);
+        }
+    }
+
 }
