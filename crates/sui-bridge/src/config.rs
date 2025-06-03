@@ -62,6 +62,12 @@ pub struct EthConfig {
     /// reprocess the events from this block number every time it starts.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub eth_contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub latest_quick_settle_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub safe_quick_settle_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub enable_quick_settle: bool,
 }
 
 #[serde_as]
@@ -245,6 +251,9 @@ impl BridgeNodeConfig {
                     contracts: evm_contracts.get(&chain_id).unwrap().clone(),
                     contracts_start_block_fallback: evm_config.eth_contracts_start_block_fallback.unwrap(),
                     contracts_start_block_override: evm_config.eth_contracts_start_block_override,
+                    latest_quick_settle_threshold: evm_config.latest_quick_settle_threshold,
+                    safe_quick_settle_threshold: evm_config.safe_quick_settle_threshold,
+                    enable_quick_settle: evm_config.enable_quick_settle,
                 },
             );
         }
@@ -267,6 +276,9 @@ impl BridgeNodeConfig {
             sui_bridge_module_last_processed_event_id_override: self
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
+            eth_latest_quick_settle_threshold: self.eth.latest_quick_settle_threshold,
+            eth_safe_quick_settle_threshold: self.eth.safe_quick_settle_threshold,
+            eth_enable_quick_settle: self.eth.enable_quick_settle,
             aml_key: self.aml_key.clone(),
             evm_clients,
             evm_client_configs,
@@ -532,6 +544,12 @@ pub struct BridgeClientConfig {
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub eth_latest_quick_settle_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub eth_safe_quick_settle_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub eth_enable_quick_settle: bool,
 
     pub evm_client_configs: BTreeMap<BridgeChainId, BridgeClientEvmConfig>,
 
@@ -546,6 +564,12 @@ pub struct BridgeClientEvmConfig {
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub contracts_start_block_fallback: u64,
     pub contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub latest_quick_settle_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub safe_quick_settle_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub enable_quick_settle: bool,
 }
 
 

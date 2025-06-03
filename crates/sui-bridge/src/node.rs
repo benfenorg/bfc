@@ -644,6 +644,9 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
+                latest_quick_settle_threshold: None,
+                safe_quick_settle_threshold: None,
+                enable_quick_settle: false,
             },
             evm: vec![
                 EthConfig {
@@ -652,9 +655,12 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: None,
                     eth_contracts_start_block_override: None,
+                    latest_quick_settle_threshold: None,
+                    safe_quick_settle_threshold: None,
+                    enable_quick_settle: false,
                 },
             ],
-            aml_key: "test_key".to_string(), //fixme
+            aml_key: "test_key".to_string(),
             approved_governance_actions: vec![],
             run_client: false,
             db_path: None,
@@ -721,6 +727,9 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                latest_quick_settle_threshold: None,
+                safe_quick_settle_threshold: None,
+                enable_quick_settle: false,
             },
             evm: vec![
                 EthConfig {
@@ -729,9 +738,12 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
+                    latest_quick_settle_threshold: None,
+                    safe_quick_settle_threshold: None,
+                    enable_quick_settle: false,
                 },
             ],
-            aml_key: "test_key".to_string(), //fixme
+            aml_key: "test_key".to_string(),
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),
@@ -827,6 +839,9 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: Some(0),
+                latest_quick_settle_threshold: None,
+                safe_quick_settle_threshold: None,
+                enable_quick_settle: false,
             },
             evm: vec![
                 EthConfig {
@@ -835,9 +850,12 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: Some(0),
+                    latest_quick_settle_threshold: None,
+                    safe_quick_settle_threshold: None,
+                    enable_quick_settle: false,
                 },
             ],
-            aml_key: "test_key".to_string(), //fixme
+            aml_key: "test_key".to_string(),
             approved_governance_actions: vec![],
             run_client: true,
             db_path: Some(db_path),

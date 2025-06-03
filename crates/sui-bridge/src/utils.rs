@@ -208,6 +208,9 @@ pub fn generate_bridge_node_config_and_write_to_file(
             eth_bridge_chain_id: BridgeChainId::EthSepolia as u8,
             eth_contracts_start_block_fallback: Some(0),
             eth_contracts_start_block_override: None,
+            latest_quick_settle_threshold: None,
+            safe_quick_settle_threshold: None,
+            enable_quick_settle: false,
         },
         evm: vec![
             EthConfig {
@@ -216,6 +219,9 @@ pub fn generate_bridge_node_config_and_write_to_file(
                 eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                latest_quick_settle_threshold: None,
+                safe_quick_settle_threshold: None,
+                enable_quick_settle: false,
             },
         ],
         aml_key: "your_aml_key".to_string(),

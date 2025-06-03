@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::info;
 use sui_types::Identifier;
 
 use sui_types::event::EventID;
@@ -43,7 +43,7 @@ impl BridgeOrchestratorTables {
     }
 
     pub(crate) fn insert_pending_actions(&self, actions: &[BridgeAction]) -> BridgeResult<()> {
-        for action in actions.clone() {
+        for action in actions {
             match action {
                 BridgeAction::EthSendBackBridgeAction(a) => {
                     info!("[DEBUG] insert_pending_actions EthSendBackBridgeAction: {:#?}", a);
@@ -149,7 +149,7 @@ impl BridgeOrchestratorTables {
         key: EthSyncerCursorsKey,
         cursor: u64,
     ) -> BridgeResult<()> {
-        let (_, chain_id) = key.clone();
+        // let (_, chain_id) = key.clone();
         // if (chain_id == 11155420) {
         //     info!("[DEBUG]  update_eth_event_cursor: key: {:?}, cursor: {}, current:{:?}", key, cursor, &self.get_eth_event_cursors(&[key.clone()]));
         // }
