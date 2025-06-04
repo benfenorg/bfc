@@ -333,20 +333,6 @@ async fn process_normal_actions(store: &Arc<BridgeOrchestratorTables>, aml_check
     }
 }
 
-async fn process_pending_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>) {
-    if !actions.is_empty() {
-        info!("Received {} actions from Eth: {:?}", actions.len(), actions);
-        metrics
-            .eth_watcher_received_actions
-            .inc_by(actions.len() as u64);
-        // Write action to pending WAL
-        store.insert_pending_fast_path_actions(&actions)
-            .expect("Store operation should not fail");
-    }
-}
-
-
-
 #[cfg(test)]
 mod tests {
     use crate::{

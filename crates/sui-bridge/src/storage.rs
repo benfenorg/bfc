@@ -31,8 +31,6 @@ pub struct BridgeOrchestratorTables {
     pub(crate) eth_syncer_cursors: DBMap<EthSyncerCursorsKey, u64>,
     /// pending actions that are waiting for aml check
     pub(crate) pending_aml_checked_actions: DBMap<BridgeActionDigest, BridgeAction>,
-    /// pending actions that are waiting for fast path
-    pub(crate) pending_fast_path_actions: DBMap<BridgeActionDigest, BridgeAction>,
 }
 
 impl BridgeOrchestratorTables {
@@ -87,27 +85,6 @@ impl BridgeOrchestratorTables {
             .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
     }
 
-    pub(crate) fn insert_pending_fast_path_actions(
-        &self,
-        actions: &[BridgeAction],
-    ) -> BridgeResult<()> {
-        let mut batch = self.pending_fast_path_actions.batch();
-        batch
-            .insert_batch(
-                &self.pending_fast_path_actions,
-                actions.iter().map(|a| (a.digest(), a)),
-            )
-            .map_err(|e| {
-                BridgeError::StorageError(format!(
-                    "Couldn't insert into pending_fast_path_checked_actions: {:?}",
-                    e
-                ))
-            })?;
-        batch
-            .write()
-            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
-    }
-
     pub(crate) fn insert_pending_aml_checked_actions(
         &self,
         actions: &[BridgeAction],
@@ -139,24 +116,6 @@ impl BridgeOrchestratorTables {
             .map_err(|e| {
                 BridgeError::StorageError(format!(
                     "Couldn't delete from pending_aml_checked_actions: {:?}",
-                    e
-                ))
-            })?;
-        batch
-            .write()
-            .map_err(|e| BridgeError::StorageError(format!("Couldn't write batch: {:?}", e)))
-    }
-
-    pub(crate) fn remove_fast_path_actions(
-        &self,
-        actions: &[BridgeActionDigest],
-    ) -> BridgeResult<()> {
-        let mut batch = self.pending_fast_path_actions.batch();
-        batch
-            .delete_batch(&self.pending_fast_path_actions, actions)
-            .map_err(|e| {
-                BridgeError::StorageError(format!(
-                    "Couldn't delete from pending_fast_path_actions: {:?}",
                     e
                 ))
             })?;
@@ -239,15 +198,6 @@ impl BridgeOrchestratorTables {
         self.pending_aml_checked_actions.unbounded_iter().filter(
             |(_, action)| {
                 info!("[DEBUG]  get_all_pending_actions_4_aml: {:#?}", action);
-                true
-            },
-        ).collect()
-    }
-
-    pub fn get_all_pending_actions_4_fast_path(&self) -> HashMap<BridgeActionDigest, BridgeAction> {
-        self.pending_fast_path_actions.unbounded_iter().filter(
-            |(_, action)| {
-                info!("[DEBUG]  get_all_pending_actions_4_fast_path: {:#?}", action);
                 true
             },
         ).collect()
