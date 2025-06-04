@@ -18,7 +18,6 @@ struct AnonymousClient {
 }
 
 impl AnonymousClient {
-    /// 创建新的客户端实例
     pub fn new(base_url: &str) -> Self {
         Self {
             base_url: base_url.to_string(),
@@ -162,16 +161,7 @@ impl AnonymousClient {
 
 }
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn Error>> {
-    // 创建客户端实例
-    let client = AnonymousClient::new("http://localhost:9010");
-    
-    // 运行所有测试
-    //let _results = client.run_all_tests().await;
-    
-    Ok(())
-}
+
 
 #[cfg(test)]
 mod tests {

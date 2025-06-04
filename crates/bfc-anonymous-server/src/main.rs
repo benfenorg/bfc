@@ -1,4 +1,5 @@
 mod client_test;
+mod database;
 
 use std::collections::HashMap;
 use std::convert::Infallible;
