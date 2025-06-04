@@ -240,7 +240,7 @@ where
                 continue;
             }
 
-            info!("Received {} Eth events", log_wrapper.logs.len());
+            info!("Received {} Eth events,fast path selector:{}", log_wrapper.logs.len(),log_wrapper.fast_path_selector);
             metrics
                 .eth_watcher_received_events
                 .inc_by(log_wrapper.logs.len() as u64);
@@ -260,7 +260,7 @@ where
                 }
                 // Unwrap safe: checked above
                 let bridge_event = opt_bridge_event.unwrap();
-                info!("Observed Eth bridge event: {:?}", bridge_event);
+                info!("Observed Eth bridge event: {:?} fast path selector:{:?}", bridge_event,log_wrapper.fast_path_selector);
 
                 // Send event to monitor
                 eth_monitor_tx
@@ -301,9 +301,11 @@ where
                 }
             }
             if!fast_path_actions.is_empty() {
+                info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
                 process_normal_actions(&store, &aml_checker_tx, &metrics, fast_path_actions).await;
             };
             if !log_wrapper.fast_path_selector.is_finalized() {
+                info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
                 process_normal_actions(&store, &aml_checker_tx, &metrics, actions).await;
             }
             store
@@ -317,7 +319,6 @@ where
 
 async fn process_normal_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>) {
     if !actions.is_empty() {
-        info!("Received {} actions from Eth: {:?}", actions.len(), actions);
         metrics
             .eth_watcher_received_actions
             .inc_by(actions.len() as u64);

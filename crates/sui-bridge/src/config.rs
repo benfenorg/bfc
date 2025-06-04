@@ -15,6 +15,7 @@ use anyhow::anyhow;
 use ethers::providers::Middleware;
 use ethers::types::Address as EthAddress;
 use futures::{future, StreamExt};
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::BTreeMap;
@@ -348,6 +349,7 @@ impl BridgeNodeConfig {
                         ]),
                         metrics.clone(),
                         chain_id,
+                        BridgeChainId::try_from_primitive(evm_config.eth_bridge_chain_id).unwrap(),
                     )
                         .await?,
                 )
@@ -437,6 +439,7 @@ impl BridgeNodeConfig {
                 ]),
                 metrics,
                 chain_id,
+                BridgeChainId::try_from_primitive(self.eth.eth_bridge_chain_id).unwrap(),
             )
                 .await?,
         );

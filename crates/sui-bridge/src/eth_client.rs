@@ -12,6 +12,7 @@ use crate::types::{BridgeAction, EthLog, RawEthLog};
 use ethers::providers::{JsonRpcClient, Middleware, Provider};
 use ethers::types::{TxHash, U256};
 use ethers::types::{Block, Filter};
+use sui_types::bridge::BridgeChainId;
 use tap::TapFallible;
 
 #[cfg(test)]
@@ -21,6 +22,7 @@ pub struct EthClient<P> {
     provider: Provider<P>,
     contract_addresses: HashSet<EthAddress>,
     chain_id: U256,
+    bridge_chain_id:BridgeChainId,
 }
 
 impl EthClient<MeteredEthHttpProvier> {
@@ -29,12 +31,14 @@ impl EthClient<MeteredEthHttpProvier> {
         contract_addresses: HashSet<EthAddress>,
         metrics: Arc<BridgeMetrics>,
         chain_id: U256,
+        bridge_chain_id:BridgeChainId,
     ) -> anyhow::Result<Self> {
         let provider = new_metered_eth_provider(provider_url, metrics)?;
         let self_ = Self {
             provider,
             contract_addresses,
             chain_id,
+            bridge_chain_id,
         };
         self_.describe().await?;
         Ok(self_)
@@ -53,6 +57,7 @@ impl EthClient<EthMockProvider> {
             provider,
             contract_addresses,
             chain_id: Default::default(),
+            bridge_chain_id:BridgeChainId::EthCustom,
         }
     }
 }
@@ -68,6 +73,10 @@ where
 
     pub async fn get_chain_id_local(&self) -> Result<u64, anyhow::Error> {
         Ok(self.chain_id.as_u64())
+    }
+
+    pub async fn get_bridge_chain_id(&self) -> BridgeChainId {
+        self.bridge_chain_id
     }
 
     // TODO assert chain identifier
@@ -500,6 +509,7 @@ mod tests {
                 ]),
                 metrics,
                 chain_id,
+                BridgeChainId::BscCustom,
             )
             .await.unwrap(),
         );

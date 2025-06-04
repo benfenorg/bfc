@@ -13,7 +13,7 @@ use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
 use crate::types::ETHLogWrapper;
 use ethers::types::{Address as EthAddress};
-use futures::FutureExt;
+use futures::channel;
 use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::collections::HashMap;
@@ -25,7 +25,7 @@ use tracing::error;
 use crate::storage::EthSyncerCursorsKey;
 
 const ETH_LOG_QUERY_MAX_BLOCK_RANGE: u64 = 1000;
-const FINALIZED_BLOCK_QUERY_INTERVAL: Duration = Duration::from_secs(5);
+const FINALIZED_BLOCK_QUERY_INTERVAL: Duration = Duration::from_secs(10);
 
 pub struct EthSyncer<P> {
     eth_client: Arc<EthClient<P>>,
@@ -102,7 +102,7 @@ where
         let mut last_block_number = 0;
         let mut interval = time::interval(FINALIZED_BLOCK_QUERY_INTERVAL);
         interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
-        let chain_id = eth_client.get_chain_id_local().await.unwrap();
+        let bridge_chain_id = eth_client.get_bridge_chain_id().await;
         loop {
             interval.tick().await;
             // TODO: allow to pass custom initial interval
@@ -110,17 +110,16 @@ where
                 Self::get_block_id(fast_path_selector,eth_client.clone()),
                 time::Duration::from_secs(600)
             ) else {
-                error!("Failed to get last finalized block from eth client after retry");
+                error!("Failed to get last finalized block from eth client after retry chain_id: {} fast_path_enabled:{}", bridge_chain_id,fast_path_selector);
                 continue;
             };
-            tracing::debug!("Last finalized block: {} chain_id:{} fast_path:{}", new_value,chain_id.clone(),fast_path_selector);
+            tracing::debug!("Last finalized block: {} chain_id:{} fast_path:{}", new_value,bridge_chain_id,fast_path_selector);
             metrics.last_finalized_eth_block.set(new_value as i64);
             if new_value > last_block_number {
                 last_finalized_block_sender
                     .send(new_value)
-                    .expect("last_finalized_block channel receiver is closed");
-                let chain_id = eth_client.get_chain_id_local().await.unwrap();
-                tracing::info!("[support evm compatible] chain id: {}, Observed new finalized eth block: {}, ", chain_id, new_value);
+                    .expect(&format!("last_finalized_block channel receiver is closed chain_id: {} fast_path_enabled:{}",bridge_chain_id,fast_path_selector));
+                tracing::info!("[support evm compatible] chain id: {}, Observed new finalized eth block: {}, ", bridge_chain_id, new_value);
                 last_block_number = new_value;
             }
         }
@@ -145,7 +144,8 @@ where
         metrics: Arc<BridgeMetrics>,
         fast_path_selector:FastPathSelector,
     ) {
-        tracing::info!(contract_address=?contract_address, "Starting eth events listening task from block {start_block}");
+        let bridge_chain_id = eth_client.get_bridge_chain_id().await;
+        tracing::info!(contract_address=?contract_address, "Starting eth events listening task from block {start_block} bridge chain id: {} fast_path_enabled:{}", bridge_chain_id,fast_path_selector);
         let contract_address_str = contract_address.to_string();
         let mut more_blocks = false;
         loop {
@@ -154,17 +154,16 @@ where
                 last_finalized_block_receiver
                     .changed()
                     .await
-                    .expect("last_finalized_block channel sender is closed");
+                    .expect(&format!("last_finalized_block channel sender is closed chain_id: {} fast_path_enabled:{}",bridge_chain_id,fast_path_selector));
             }
             let new_finalized_block = *last_finalized_block_receiver.borrow();
-            let chain_id = eth_client.get_chain_id_local().await.unwrap();
             if new_finalized_block < start_block {
                 tracing::info!(
                     contract_address=?contract_address,
                     "New finalized block {} is smaller than start block {}, ignore chain_id: {} fast_path_enabled:{}",
                     new_finalized_block,
                     start_block,
-                    chain_id,
+                    bridge_chain_id,
                     fast_path_selector,
                 );
                 continue;
@@ -180,7 +179,7 @@ where
                 eth_client.get_events_in_range(contract_address, start_block, end_block),
                 Duration::from_secs(600)
             ) else {
-                error!("Failed to get events from eth client after retry");
+                error!("Failed to get events from eth client after retry bridge chain id: {} fast_path_enabled:{}", bridge_chain_id,fast_path_selector);
                 continue;
             };
             tracing::debug!(
@@ -199,6 +198,7 @@ where
             // Note 2: it's extremely critical to make sure the Logs we send via this channel
             // are complete per block height. Namely, we should never send a partial list
             // of events for a block. Otherwise, we may end up missing events.
+            let chain_id= eth_client.get_chain_id_local().await.unwrap();
             events_sender
                 .send(((contract_address, chain_id,fast_path_selector), end_block, ETHLogWrapper{ fast_path_selector, logs: events }))
                 .await
