@@ -8,6 +8,8 @@ use clap::Parser;
 use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 use warp::Filter;
+use tracing_subscriber::fmt;
+
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -76,7 +78,11 @@ struct AnonymousCompareParams {
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     // 初始化日志
-    tracing_subscriber::fmt::init();
+    //todo: 1. import annoymous private key ,
+    // open log system.
+    let subscriber = fmt::Subscriber::new();
+    tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
+
 
     let args = Args::parse();
     let addr: SocketAddr = format!("{}:{}", args.host, args.port).parse()?;
