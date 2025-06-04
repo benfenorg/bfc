@@ -3,7 +3,7 @@
 
 use crate::config::WatchdogConfig;
 use crate::crypto::BridgeAuthorityPublicKeyBytes;
-use crate::fast_path::FastPathConfig;
+use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metered_eth_provider::MeteredEthHttpProvier;
 use crate::sui_bridge_watchdog::eth_bridge_status::EthBridgeStatus;
 use crate::sui_bridge_watchdog::eth_vault_balance::{EthereumVaultBalance, VaultAsset};
@@ -52,6 +52,8 @@ use sui_types::{
 use tokio::task::JoinHandle;
 use tracing::info;
 use crate::storage::EthSyncerCursorsKey;
+
+const ETH_EVENTS_CHANNEL_SIZE: usize = 1000;
 
 pub async fn run_bridge_node(
     config: BridgeNodeConfig,
@@ -240,7 +242,7 @@ async fn start_client_components(
     );
 
     let chain_id = client_config.eth_client.get_chain_id().await?;
-    let keys = client_config.eth_contracts.iter().map(|k| (*k, chain_id,false)).collect::<Vec<_>>();
+    let keys = client_config.eth_contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
     let eth_contracts_to_watch = get_eth_contracts_to_watch(
         &store,
         &keys,
@@ -252,20 +254,20 @@ async fn start_client_components(
 
     let mut all_handles = vec![];
     let (evm_evnets_tx, evm_events_rx) = mysten_metrics::metered_channel::channel(
-        1000,
+        ETH_EVENTS_CHANNEL_SIZE,
         &mysten_metrics::get_metrics()
             .unwrap()
             .channel_inflight
             .with_label_values(&["evm_events_queue"]),
     );
     let (task_handles, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),false)
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),FastPathSelector::Finalized)
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
     all_handles.extend(task_handles);
-    if client_config.eth_enable_quick_settle {
-        let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,true)).collect::<Vec<_>>();
+    if client_config.eth_enable_fast_path_latest {
+        let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
         let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
             &store,
             &keys_fast_path,
@@ -273,7 +275,23 @@ async fn start_client_components(
             client_config.eth_contracts_start_block_override,
         );
         let (task_handles, _) =
-        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),true)
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Latest)
+            .run(metrics.clone())
+            .await
+            .expect("Failed to start eth syncer");
+        all_handles.extend(task_handles);
+    }
+
+    if client_config.eth_enable_fast_path_safe {
+        let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Safe)).collect::<Vec<_>>();
+        let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
+            &store,
+            &keys_fast_path,
+            client_config.eth_contracts_start_block_fallback,
+            client_config.eth_contracts_start_block_override,
+        );
+        let (task_handles, _) =
+        EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Safe)
             .run(metrics.clone())
             .await
             .expect("Failed to start eth syncer");
@@ -287,7 +305,7 @@ async fn start_client_components(
 
         let eth_chain_id = client_config.eth_client.get_chain_id().await?;
         //todo: support fast path for evm client @lifei
-        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id,false)).collect::<Vec<_>>();
+        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
         let evm_contracts_to_watch = get_eth_contracts_to_watch(
             &store,
             &keys,
@@ -299,7 +317,7 @@ async fn start_client_components(
 
 
         let (task_handles, _) =
-            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone(),false)
+            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone(),FastPathSelector::Finalized)
                 .run(metrics.clone())
                 .await
                 .expect("Failed to start evm syncer");
@@ -503,7 +521,7 @@ mod tests {
         let store = BridgeOrchestratorTables::new(temp_dir.path());
 
         // No override, no watermark found in DB, use fallback
-        let keys = eth_contracts.iter().map(|contract| (*contract, BridgeChainId::EthCustom as u64,false)).collect::<Vec<_>>();
+        let keys = eth_contracts.iter().map(|contract| (*contract, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized)).collect::<Vec<_>>();
         let contracts = get_eth_contracts_to_watch(&store, &keys, 10, None);
         assert_eq!(
             contracts,
@@ -522,10 +540,10 @@ mod tests {
         );
 
         store
-            .update_eth_event_cursor((eth_contracts[0], BridgeChainId::EthCustom as u64,false), 100)
+            .update_eth_event_cursor((eth_contracts[0], BridgeChainId::EthCustom as u64,FastPathSelector::Finalized), 100)
             .unwrap();
         store
-            .update_eth_event_cursor((eth_contracts[1], BridgeChainId::EthCustom as u64,false), 102)
+            .update_eth_event_cursor((eth_contracts[1], BridgeChainId::EthCustom as u64,FastPathSelector::Finalized), 102)
             .unwrap();
 
         // No override, found watermarks in DB, use +1
@@ -663,9 +681,10 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: None,
                 eth_contracts_start_block_override: None,
-                latest_quick_settle_threshold: None,
-                safe_quick_settle_threshold: None,
-                enable_quick_settle: false,
+                latest_fast_path_threshold: None,
+                safe_fast_path_threshold: None,
+                enable_fast_path_latest: false,
+                enable_fast_path_safe: false,
             },
             evm: vec![
                 EthConfig {
@@ -674,9 +693,10 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: None,
                     eth_contracts_start_block_override: None,
-                    latest_quick_settle_threshold: None,
-                    safe_quick_settle_threshold: None,
-                    enable_quick_settle: false,
+                    latest_fast_path_threshold: None,
+                    safe_fast_path_threshold: None,
+                    enable_fast_path_latest: false,
+                    enable_fast_path_safe: false,
                 },
             ],
             aml_key: "test_key".to_string(),
@@ -746,9 +766,10 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
-                latest_quick_settle_threshold: None,
-                safe_quick_settle_threshold: None,
-                enable_quick_settle: false,
+                latest_fast_path_threshold: None,
+                safe_fast_path_threshold: None,
+                enable_fast_path_latest: false,
+                enable_fast_path_safe: false,
             },
             evm: vec![
                 EthConfig {
@@ -757,9 +778,10 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
-                    latest_quick_settle_threshold: None,
-                    safe_quick_settle_threshold: None,
-                    enable_quick_settle: false,
+                    latest_fast_path_threshold: None,
+                    safe_fast_path_threshold: None,
+                    enable_fast_path_latest: false,
+                    enable_fast_path_safe: false,
                 },
             ],
             aml_key: "test_key".to_string(),
@@ -858,9 +880,10 @@ mod tests {
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: Some(0),
-                latest_quick_settle_threshold: None,
-                safe_quick_settle_threshold: None,
-                enable_quick_settle: false,
+                latest_fast_path_threshold: None,
+                safe_fast_path_threshold: None,
+                enable_fast_path_latest: false,
+                enable_fast_path_safe: false,
             },
             evm: vec![
                 EthConfig {
@@ -869,9 +892,10 @@ mod tests {
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: Some(0),
-                    latest_quick_settle_threshold: None,
-                    safe_quick_settle_threshold: None,
-                    enable_quick_settle: false,
+                    latest_fast_path_threshold: None,
+                    safe_fast_path_threshold: None,
+                    enable_fast_path_latest: false,
+                    enable_fast_path_safe: false,
                 },
             ],
             aml_key: "test_key".to_string(),

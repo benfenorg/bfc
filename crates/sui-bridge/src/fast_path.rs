@@ -1,6 +1,6 @@
 use std::collections::BTreeMap;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD};
-
+use strum_macros::Display;
 use crate::config::BridgeClientConfig;
 
 #[derive(
@@ -12,6 +12,9 @@ use crate::config::BridgeClientConfig;
     Hash,
     PartialOrd,
     Ord,
+    Display,
+    serde::Serialize,
+    serde::Deserialize,
 )]
 #[repr(u8)]
 pub enum FastPathSelector {
@@ -30,6 +33,13 @@ impl FastPathSelector {
             FastPathSelector::Finalized
         }
     }
+
+    pub fn is_finalized(self) -> bool {
+        match self {
+            FastPathSelector::Latest | FastPathSelector::Safe => false,
+            FastPathSelector::Finalized => true,
+        }
+    }
 }
 pub struct FastPathConfig {
     pub items:BTreeMap<BridgeChainId,FastPathConfigItem>,
@@ -37,7 +47,8 @@ pub struct FastPathConfig {
 
 pub struct FastPathConfigItem {
     pub chain_id:BridgeChainId,
-    pub enable:bool,
+    pub enable_latest:bool,
+    pub enable_safe:bool,
     pub threshold_safe:u64,
     pub threshold_latest:u64,
 }
@@ -45,7 +56,8 @@ impl Default for FastPathConfigItem {
     fn default() -> Self {
         Self {
             chain_id: BridgeChainId::EthMainnet,
-            enable: false,
+            enable_latest: false,
+            enable_safe: false,
             threshold_safe: 0,
             threshold_latest: 0,
         }
@@ -55,7 +67,8 @@ impl Default for &FastPathConfigItem {
     fn default() -> Self {
         &FastPathConfigItem {
             chain_id: BridgeChainId::EthMainnet,
-            enable: false,
+            enable_latest: false,
+            enable_safe: false,
             threshold_safe: 0,
             threshold_latest: 0,
         }
@@ -74,7 +87,8 @@ impl FastPathConfig{
             BridgeChainId::BscCustom,
             FastPathConfigItem {
                 chain_id: BridgeChainId::BscCustom,
-                enable: true,
+                enable_latest: true,
+                enable_safe: true,
                 threshold_safe: 1000 * busd_decimal,
                 threshold_latest: 100 * busd_decimal,
             },
@@ -85,7 +99,8 @@ impl FastPathConfig{
             BridgeChainId::EthCustom,
             FastPathConfigItem {
                 chain_id: BridgeChainId::EthCustom,
-                enable: true,
+                enable_latest: true,
+                enable_safe: true,
                 threshold_safe: 1000 * busd_decimal,
                 threshold_latest: 100 * busd_decimal,
             },
@@ -102,27 +117,30 @@ impl FastPathConfig{
             BridgeChainId::EthMainnet,
             FastPathConfigItem {
                 chain_id: BridgeChainId::EthMainnet,
-                enable: client_config.eth_enable_quick_settle,
-                threshold_safe: client_config.eth_safe_quick_settle_threshold.unwrap_or(0),
-                threshold_latest: client_config.eth_latest_quick_settle_threshold.unwrap_or(0),
+                enable_latest: client_config.eth_enable_fast_path_latest,
+                enable_safe: client_config.eth_enable_fast_path_safe,
+                threshold_safe: client_config.eth_safe_fast_path_threshold.unwrap_or(0),
+                threshold_latest: client_config.eth_latest_fast_path_threshold.unwrap_or(0),
             },
         );
         items.insert(
             BridgeChainId::EthSepolia,
             FastPathConfigItem {
                 chain_id: BridgeChainId::EthSepolia,
-                enable: client_config.eth_enable_quick_settle,
-                threshold_safe: client_config.eth_safe_quick_settle_threshold.unwrap_or(0),
-                threshold_latest: client_config.eth_latest_quick_settle_threshold.unwrap_or(0),
+                enable_latest: client_config.eth_enable_fast_path_latest,
+                enable_safe: client_config.eth_enable_fast_path_safe,
+                threshold_safe: client_config.eth_safe_fast_path_threshold.unwrap_or(0),
+                threshold_latest: client_config.eth_latest_fast_path_threshold.unwrap_or(0),
             },
         );
         items.insert(
             BridgeChainId::EthCustom,
             FastPathConfigItem {
                 chain_id: BridgeChainId::EthCustom,
-                enable: client_config.eth_enable_quick_settle,
-                threshold_safe: client_config.eth_safe_quick_settle_threshold.unwrap_or(0),
-                threshold_latest: client_config.eth_latest_quick_settle_threshold.unwrap_or(0),
+                enable_latest: client_config.eth_enable_fast_path_latest,
+                enable_safe: client_config.eth_enable_fast_path_safe,
+                threshold_safe: client_config.eth_safe_fast_path_threshold.unwrap_or(0),
+                threshold_latest: client_config.eth_latest_fast_path_threshold.unwrap_or(0),
             },
         );
         // 遍历配置中的所有链
@@ -132,9 +150,10 @@ impl FastPathConfig{
                 chain_config.0.clone(),
                 FastPathConfigItem {
                     chain_id: chain_config.0.clone(),
-                    enable: chain_config.1.enable_quick_settle,
-                    threshold_safe: chain_config.1.safe_quick_settle_threshold.unwrap_or(0),
-                    threshold_latest: chain_config.1.latest_quick_settle_threshold.unwrap_or(0),
+                    enable_latest: chain_config.1.enable_fast_path_latest,
+                    enable_safe: chain_config.1.enable_fast_path_safe,
+                    threshold_safe: chain_config.1.safe_fast_path_threshold.unwrap_or(0),
+                    threshold_latest: chain_config.1.latest_fast_path_threshold.unwrap_or(0),
                 },
             );
         }

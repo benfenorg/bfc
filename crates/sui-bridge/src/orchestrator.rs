@@ -11,7 +11,7 @@ use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
 use crate::aml_checker::{AMLCheckerTrait, AMLCheckerWrapper};
-use crate::config::BridgeClientConfig;
+// use crate::config::BridgeClientConfig;
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
 use crate::fast_path::{FastPathConfig, FastPathSelector};
@@ -20,7 +20,7 @@ use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, ETHLogWrapper};
 use mysten_metrics::spawn_logged_monitored_task;
-use sui_types::bridge::TOKEN_ID_BUSD;
+// use sui_types::bridge::TOKEN_ID_BUSD;
 // use sui_types::bridge::FastPathSelector;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
@@ -108,8 +108,6 @@ where
             .into_values()
             .collect::<Vec<_>>();
         for action in actions4aml {
-            info!("[DEBUG] for aml checker action: {:#?}", action);
-
             let aml_checker_sender_clone = aml_checker_sender.clone();
             submit_to_aml_checker(&aml_checker_sender_clone,action)
                 .await
@@ -285,21 +283,15 @@ where
                 }
             }
             let mut fast_path_actions=vec![];
-            let mut slow_path_actions=vec![];
-            if log_wrapper.fast_path_enabled && !&actions.is_empty() {
+            if !log_wrapper.fast_path_selector.is_finalized() && !&actions.is_empty() {
                 for action in &actions {
                     match &action {
                         BridgeAction::EthToSuiBridgeAction(action_inner) => {
                             // fast path selector                            
                             let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
                             let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
-                            match fast_path_selector  {
-                                FastPathSelector::Latest => {
-                                    fast_path_actions.push(action.clone());
-                                }
-                                _ => {
-                                    slow_path_actions.push(action.clone());
-                                }
+                            if fast_path_selector == log_wrapper.fast_path_selector {
+                                fast_path_actions.push(action.clone());
                             }
                         }
                         _ => {
@@ -310,14 +302,10 @@ where
             }
             if!fast_path_actions.is_empty() {
                 process_normal_actions(&store, &aml_checker_tx, &metrics, fast_path_actions).await;
-            }
-            if!slow_path_actions.is_empty() {
-                process_pending_actions(&store, &aml_checker_tx, &metrics, slow_path_actions).await;
-            }
-            if !log_wrapper.fast_path_enabled {
+            };
+            if !log_wrapper.fast_path_selector.is_finalized() {
                 process_normal_actions(&store, &aml_checker_tx, &metrics, actions).await;
             }
-
             store
                 .update_eth_event_cursor(key, end_block)
                 .expect("Store operation should not fail");
@@ -626,7 +614,7 @@ mod tests {
         let end_block_num = log_block_num + 15;
 
         eth_events_tx
-            .send(((address, BridgeChainId::EthCustom as u64,false), end_block_num, ETHLogWrapper{ fast_path_enabled: false, logs: vec![eth_log.clone()] }))
+            .send(((address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized), end_block_num, ETHLogWrapper{ fast_path_selector: FastPathSelector::Finalized, logs: vec![eth_log.clone()] }))
             .await
             .unwrap();
 
@@ -649,7 +637,7 @@ mod tests {
             let action = actions.get(&bridge_action.digest()).unwrap();
             assert_eq!(action, &bridge_action);
             assert_eq!(
-                store.get_eth_event_cursors(&[(address, BridgeChainId::EthCustom as u64,false)]).unwrap()[0].unwrap(),
+                store.get_eth_event_cursors(&[(address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized)]).unwrap()[0].unwrap(),
                 end_block_num,
             );
             break;

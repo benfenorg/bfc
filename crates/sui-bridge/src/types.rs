@@ -9,6 +9,7 @@ use crate::crypto::{
 use crate::encoding::BridgeMessageEncoding;
 use crate::error::{BridgeError, BridgeResult};
 use crate::events::{EmittedEthTokenSendBackBridgeV1, EmittedSuiToEthTokenBridgeV1, EmittedExternalDepositStartBridgeV1};
+use crate::fast_path::FastPathSelector;
 use enum_dispatch::enum_dispatch;
 use ethers::types::Address as EthAddress;
 use ethers::types::Log;
@@ -702,7 +703,7 @@ impl EthEvent for RawEthLog {
 
 #[derive(Debug, Clone)]
 pub struct ETHLogWrapper {
-    pub fast_path_enabled: bool,
+    pub fast_path_selector: FastPathSelector,
     pub logs: Vec<EthLog>
 }
 
