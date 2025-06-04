@@ -80,6 +80,8 @@ async fn main() -> anyhow::Result<()> {
     // 初始化日志
     //todo: 1. import annoymous private key ,
     // open log system.
+    // db cache system.
+    //
     let subscriber = fmt::Subscriber::new();
     tracing::subscriber::set_global_default(subscriber).expect("Failed to set tracing subscriber");
 
