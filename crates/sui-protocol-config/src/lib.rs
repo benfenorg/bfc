@@ -1129,6 +1129,10 @@ pub struct ProtocolConfig {
     ed25519_ed25519_verify_msg_cost_per_byte: Option<u64>,
     ed25519_ed25519_verify_msg_cost_per_block: Option<u64>,
 
+    // anonymous compute cost
+    anonymous_compute_cost_base: Option<u64>,
+
+
     // groth16::prepare_verifying_key
     groth16_prepare_verifying_key_bls12381_cost_base: Option<u64>,
     groth16_prepare_verifying_key_bn254_cost_base: Option<u64>,
@@ -2113,6 +2117,9 @@ impl ProtocolConfig {
             ed25519_ed25519_verify_cost_base: Some(52),
             ed25519_ed25519_verify_msg_cost_per_byte: Some(2),
             ed25519_ed25519_verify_msg_cost_per_block: Some(2),
+
+            // anonymous compute cost
+            anonymous_compute_cost_base: Some(52),
 
             // groth16::prepare_verifying_key
             groth16_prepare_verifying_key_bls12381_cost_base: Some(52),
@@ -3137,6 +3144,8 @@ impl ProtocolConfig {
 
                 71 => {
                     cfg.feature_flags.anonymous_coin_open = true;
+
+                    cfg.anonymous_compute_cost_base = Some(2000);
                 }
                 // Use this template when making changes:
                 //

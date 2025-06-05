@@ -23,6 +23,7 @@ use move_vm_types::{
 
 use std::collections::VecDeque;
 use std::error::Error;
+use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
 use tracing::info;
@@ -30,6 +31,13 @@ use sui_types::{
     base_types::{MoveObjectType, ObjectID, SequenceNumber},
     object::Owner,
 };
+
+#[derive(Clone)]
+pub struct AnonymousComputeCostParams {
+    /// Base cost for invoking the `anonymous compute` function
+    pub anonymous_compute_cost_base: InternalGas,
+}
+
 type HmacSha256 = Hmac<Sha256>;
 pub fn hfe_ops_add(
     context: &mut NativeContext,
@@ -39,15 +47,15 @@ pub fn hfe_ops_add(
 
     //todo: design hfe ops cost table.
     // Load the cost parameters from the protocol config
-    let ed25519_verify_cost_params = &context
+    let anonymous_compute_cost = &context
         .extensions()
         .get::<NativesCostTable>()
-        .ed25519_verify_cost_params
+        .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
-        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+        anonymous_compute_cost.anonymous_compute_cost_base
     );
 
     let anonymous_privatekey = &context
@@ -83,15 +91,15 @@ pub fn hfe_ops_minus(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
-    let ed25519_verify_cost_params = &context
+    let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
-        .ed25519_verify_cost_params
+        .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
-        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+        anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
     let number4 = pop_arg!(args, u64);
@@ -118,15 +126,15 @@ pub fn hfe_ops_multiplied(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
-    let ed25519_verify_cost_params = &context
+    let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
-        .ed25519_verify_cost_params
+        .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
-        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+        anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
     let number4 = pop_arg!(args, u64);
@@ -154,15 +162,15 @@ pub fn hfe_ops_compare(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
-    let ed25519_verify_cost_params = &context
+    let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
-        .ed25519_verify_cost_params
+        .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
-        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+        anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
 
@@ -196,15 +204,15 @@ pub fn split_data(context: &mut NativeContext,
                   ty_args: Vec<Type>,
                   mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
-    let ed25519_verify_cost_params = &context
+    let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
-        .ed25519_verify_cost_params
+        .anonymous_compute_cost_params
         .clone();
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
-        ed25519_verify_cost_params.ed25519_ed25519_verify_cost_base
+        anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
     let index = pop_arg!(args, u8);

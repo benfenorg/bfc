@@ -66,6 +66,7 @@ use sui_config::anonymous_privatekey_config::AnonymousPrivateKeyConfig;
 use sui_types::{MOVE_STDLIB_ADDRESS, SUI_FRAMEWORK_ADDRESS, SUI_SYSTEM_ADDRESS};
 use transfer::TransferReceiveObjectInternalCostParams;
 use tracing::info;
+use crate::crypto::hfe_ops::AnonymousComputeCostParams;
 
 mod address;
 mod config;
@@ -178,6 +179,8 @@ pub struct NativesCostTable {
 
     pub anonymous_privatekey: Option<String>,
     pub anonymous_rpc: Option<Vec<String>>,
+    // anonymous_cost
+    pub anonymous_compute_cost_params: AnonymousComputeCostParams,
 
 }
 
@@ -674,6 +677,11 @@ impl NativesCostTable {
             },
             anonymous_privatekey: config.anonymous_privatekey,
             anonymous_rpc: config.anonymous_rpc,
+            anonymous_compute_cost_params: AnonymousComputeCostParams {
+                anonymous_compute_cost_base: protocol_config
+                    .anonymous_compute_cost_base()
+                    .into(),
+            },
         }
     }
 }
