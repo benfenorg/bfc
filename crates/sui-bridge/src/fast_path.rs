@@ -1,7 +1,7 @@
 use std::collections::BTreeMap;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD};
 use strum_macros::Display;
-use crate::config::BridgeClientConfig;
+use crate::{config::BridgeClientConfig, types::BridgeAction};
 
 #[derive(
     Debug,
@@ -34,6 +34,40 @@ impl FastPathSelector {
         }
     }
 
+    pub fn select_by_action(bridge_action:BridgeAction,config:&FastPathConfig) -> FastPathSelector {
+        match bridge_action {
+            BridgeAction::EthToSuiBridgeAction(action) => {
+                let config_item = config.items.get(&action.eth_bridge_event.eth_chain_id);
+                if config_item.is_none() {
+                    return FastPathSelector::Finalized;
+                }
+                let config_item = config_item.unwrap();
+                if TOKEN_ID_BUSD==action.eth_bridge_event.token_id && action.eth_bridge_event.sui_adjusted_amount<= config_item.threshold_latest {
+                    FastPathSelector::Latest
+                }else if TOKEN_ID_BUSD==action.eth_bridge_event.token_id && action.eth_bridge_event.sui_adjusted_amount<= config_item.threshold_safe  {
+                    FastPathSelector::Safe
+                }else { 
+                    FastPathSelector::Finalized
+                }
+            }
+            BridgeAction::EthSendBackBridgeAction(action) => {
+                let config_item = config.items.get(&action.sui_bridge_event.eth_chain_id);
+                if config_item.is_none() {
+                    return FastPathSelector::Finalized;
+                }
+                let config_item = config_item.unwrap();
+                if TOKEN_ID_BUSD==action.sui_bridge_event.token_id && action.sui_bridge_event.amount_sui_adjusted<= config_item.threshold_latest {
+                    FastPathSelector::Latest
+                }else if TOKEN_ID_BUSD==action.sui_bridge_event.token_id && action.sui_bridge_event.amount_sui_adjusted<= config_item.threshold_safe  {
+                    FastPathSelector::Safe
+                }else { 
+                    FastPathSelector::Finalized
+                }
+            }
+            _ => FastPathSelector::Finalized,
+        }
+    }
+
     pub fn is_finalized(self) -> bool {
         match self {
             FastPathSelector::Latest | FastPathSelector::Safe => false,
@@ -41,10 +75,21 @@ impl FastPathSelector {
         }
     }
 }
+#[derive(Clone)]
 pub struct FastPathConfig {
     pub items:BTreeMap<BridgeChainId,FastPathConfigItem>,
 }
 
+impl Default for FastPathConfig {
+    fn default() -> Self {
+        Self {
+            items: BTreeMap::new()
+        }
+    }
+}
+
+
+#[derive(Clone)]
 pub struct FastPathConfigItem {
     pub chain_id:BridgeChainId,
     pub enable_latest:bool,

@@ -9,6 +9,7 @@ use crate::abi::EthToSuiTokenBridgeV1;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
 use crate::error::{BridgeError, BridgeResult};
 use crate::eth_client::EthClient;
+use crate::fast_path::FastPathConfig;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
@@ -82,12 +83,14 @@ struct SuiActionVerifier<C> {
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
+    fast_path_config: FastPathConfig,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
+    fast_path_config: FastPathConfig,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -131,7 +134,7 @@ where
             }
             BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
                 self.eth_client
-                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone())
                     .await
                     .tap_ok(|action| info!("Eth action found: {:?}", action))
             }
@@ -151,7 +154,7 @@ where
 
                 let client = client.unwrap();
                 client
-                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone())
                     .await
                     .tap_ok(|action| info!("ERC20 action found: {:?}", action))
             }
@@ -244,7 +247,7 @@ where
                 }
                 BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
                     self.eth_client
-                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .get_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx, self.fast_path_config.clone())
                         .await
                 }
 
@@ -263,7 +266,7 @@ where
 
                     let client = client.unwrap();
                     client
-                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .get_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx, self.fast_path_config.clone())
                         .await
                 }
             };
@@ -480,6 +483,7 @@ impl BridgeRequestHandler {
         evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<EP>>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_config: FastPathConfig,
     ) -> Self {
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
@@ -543,6 +547,7 @@ impl BridgeRequestHandler {
             EthActionVerifier {
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
+                fast_path_config: fast_path_config.clone(),
             },
             metrics.clone(),
         )
@@ -560,6 +565,7 @@ impl BridgeRequestHandler {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
+                fast_path_config: fast_path_config.clone(),
             },
             metrics.clone(),
         )

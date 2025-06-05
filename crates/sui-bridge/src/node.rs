@@ -115,8 +115,10 @@ pub async fn run_bridge_node(
         .get_latest_sui_system_state()
         .await?;
 
+    let mut fast_path_config = FastPathConfig::default();
     // Start Client
     if let Some(client_config) = client_config {
+        fast_path_config = FastPathConfig::init_from_client_config(&client_config);
         let committee_keys_to_names =
             Arc::new(get_validator_names_by_pub_keys(&committee, &sui_system).await);
         let client_components = start_client_components(
@@ -124,6 +126,7 @@ pub async fn run_bridge_node(
             committee.clone(),
             committee_keys_to_names,
             metrics.clone(),
+            fast_path_config.clone(),
         )
             .await?;
         handles.extend(client_components);
@@ -151,6 +154,7 @@ pub async fn run_bridge_node(
             server_config.evm_clients,
             server_config.approved_governance_actions,
             metrics.clone(),
+            fast_path_config
         ),
         metrics,
         Arc::new(metadata),
@@ -232,8 +236,9 @@ async fn start_client_components(
     committee: Arc<BridgeCommittee>,
     committee_keys_to_names: Arc<BTreeMap<BridgeAuthorityPublicKeyBytes, String>>,
     metrics: Arc<BridgeMetrics>,
+    fast_path_config: FastPathConfig,
 ) -> anyhow::Result<Vec<JoinHandle<()>>> {
-    let fast_path_config = FastPathConfig::init_from_client_config(&client_config);
+    // let fast_path_config = FastPathConfig::init_from_client_config(&client_config);
     let store: std::sync::Arc<BridgeOrchestratorTables> =
         BridgeOrchestratorTables::new(&client_config.db_path.join("client"));
     let sui_modules_to_watch = get_sui_modules_to_watch(

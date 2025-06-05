@@ -6,6 +6,7 @@ use std::sync::Arc;
 
 use crate::abi::EthBridgeEvent;
 use crate::error::{BridgeError, BridgeResult};
+use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metered_eth_provider::{new_metered_eth_provider, MeteredEthHttpProvier};
 use crate::metrics::BridgeMetrics;
 use crate::types::{BridgeAction, EthLog, RawEthLog};
@@ -134,6 +135,57 @@ where
             .ok_or(BridgeError::BridgeEventNotActionable)
     }
 
+    /// Returns BridgeAction from an Eth Transaction with transaction hash
+    /// and the event index. If event is declared in an unrecognized
+    /// contract, return error.
+    pub async fn get_bridge_action_maybe(
+        &self,
+        tx_hash: TxHash,
+        event_idx: u16,
+        fast_path_config: FastPathConfig,
+    ) -> BridgeResult<BridgeAction> {
+        let receipt = self
+            .provider
+            .get_transaction_receipt(tx_hash)
+            .await
+            .map_err(BridgeError::from)?
+            .ok_or(BridgeError::TxNotFound)?;
+        let receipt_block_num = receipt.block_number.ok_or(BridgeError::ProviderError(
+            "Provider returns log without block_number".into(),
+        ))?;
+        let log = receipt
+            .logs
+            .get(event_idx as usize)
+            .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
+
+        // Ignore events emitted from unrecognized contracts
+        if !self.contract_addresses.contains(&log.address) {
+            return Err(BridgeError::BridgeEventInUnrecognizedEthContract);
+        }
+
+        let eth_log = EthLog {
+            block_number: receipt_block_num.as_u64(),
+            tx_hash,
+            log_index_in_tx: event_idx,
+            log: log.clone(),
+        };
+        let bridge_event = EthBridgeEvent::try_from_eth_log(&eth_log)
+            .ok_or(BridgeError::NoBridgeEventsInTxPosition)?;
+        let bridge_action = bridge_event
+            .try_into_bridge_action(tx_hash, event_idx)?
+            .ok_or(BridgeError::BridgeEventNotActionable)?;
+
+        //fast path check
+        let fast_path_selector = FastPathSelector::select_by_action(bridge_action.clone(), &fast_path_config);
+        // TODO: save the latest finalized block id so we don't have to query it every time
+        let last_block_id = self.get_block_id_by_fast_path_selector(fast_path_selector).await?;
+        if receipt_block_num.as_u64() > last_block_id {
+            return Err(BridgeError::TxNotFinalized);
+        }
+
+        Ok(bridge_action)
+    }
+
     pub async fn get_last_finalized_block_id(&self) -> BridgeResult<u64> {
         let block: Result<Option<Block<ethers::types::TxHash>>, ethers::prelude::ProviderError> =
             self.provider
@@ -174,6 +226,14 @@ where
             "Provider returns block without number".into(),
         ))?;
         Ok(number.as_u64())
+    }
+
+    pub async fn get_block_id_by_fast_path_selector(&self, fast_path_selector: FastPathSelector) -> BridgeResult<u64> {
+        match fast_path_selector {
+            FastPathSelector::Latest => self.get_latest_block_id().await,
+            FastPathSelector::Safe => self.get_safe_block_id().await,
+            FastPathSelector::Finalized => self.get_last_finalized_block_id().await,
+        }
     }
 
     // Note: query may fail if range is too big. Callsite is responsible
@@ -374,7 +434,7 @@ mod tests {
             .unwrap();
 
         let error = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 0)
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
             .await
             .unwrap_err();
         match error {
@@ -386,7 +446,7 @@ mod tests {
         mock_last_finalized_block(&mock_provider, 778);
 
         let error = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 2)
+            .get_bridge_action_maybe(eth_tx_hash, 2, FastPathConfig::default())
             .await
             .unwrap_err();
         // Receipt only has 2 logs
@@ -396,7 +456,7 @@ mod tests {
         };
 
         let error = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 0)
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
             .await
             .unwrap_err();
         // Same, `log` is not a BridgeEvent
@@ -406,7 +466,7 @@ mod tests {
         };
 
         let action = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 1)
+            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default())
             .await
             .unwrap();
         assert_eq!(action, bridge_action);
@@ -448,7 +508,7 @@ mod tests {
             .unwrap();
 
         let error = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 0)
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
             .await
             .unwrap_err();
         match error {
@@ -471,7 +531,7 @@ mod tests {
             )
             .unwrap();
         let action = client
-            .get_finalized_bridge_action_maybe(eth_tx_hash, 0)
+            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
             .await
             .unwrap();
         assert_eq!(action, bridge_action);
@@ -514,7 +574,7 @@ mod tests {
             .await.unwrap(),
         );
 
-        let result = client.get_finalized_bridge_action_maybe(TxHash::from_str("0xfa2cdc9e3e8a011f78b0ee160933f4520ede246dc73a190b4849635b1402d6e0").unwrap(), 1).await.unwrap();
+        let result = client.get_bridge_action_maybe(TxHash::from_str("0xfa2cdc9e3e8a011f78b0ee160933f4520ede246dc73a190b4849635b1402d6e0").unwrap(), 1, FastPathConfig::default()).await.unwrap();
         println!("result: {:?}", result);
         
     }
