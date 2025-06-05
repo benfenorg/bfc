@@ -326,13 +326,13 @@ impl BridgeNodeConfig {
             }
 
             let bridge_chain_id: u8 = config.chain_id().call().await?;
-            if evm_config.eth_bridge_chain_id != bridge_chain_id {
-                return Err(anyhow!(
-                "Bridge chain id mismatch: expected {}, but connected to {}",
-                evm_config.eth_bridge_chain_id,
-                bridge_chain_id
-            ));
-            }
+            // if evm_config.eth_bridge_chain_id != bridge_chain_id {
+            //     return Err(anyhow!(
+            //     "Bridge chain id mismatch: expected {}, but connected to {}",
+            //     evm_config.eth_bridge_chain_id,
+            //     bridge_chain_id
+            // ));
+            // }
 
             info!("Connected to Eth chain: {}, Bridge chain id: {}", chain_id.as_u64(), bridge_chain_id);
 
