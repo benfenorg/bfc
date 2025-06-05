@@ -111,6 +111,7 @@ pub struct BridgeTestCluster {
     pub test_cluster: TestClusterWrapper,
     bridge_client: SuiBridgeClient,
     eth_environment: EthBridgeEnvironment,
+    evm_environment: EthBridgeEnvironment,
     bridge_node_handles: Option<Vec<JoinHandle<()>>>,
     approved_governance_actions_for_next_start: Option<Vec<Vec<BridgeAction>>>,
     bridge_tx_cursor: Option<TransactionDigest>,
@@ -124,6 +125,7 @@ pub struct BridgeTestClusterBuilder {
     num_validators: usize,
     approved_governance_actions: Option<Vec<Vec<BridgeAction>>>,
     eth_chain_id: BridgeChainId,
+    evm_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
 }
 
@@ -141,6 +143,7 @@ impl BridgeTestClusterBuilder {
             num_validators: 4,
             approved_governance_actions: None,
             eth_chain_id: BridgeChainId::EthCustom,
+            evm_chain_id: BridgeChainId::BscCustom,
             sui_chain_id: BridgeChainId::SuiCustom,
         }
     }
@@ -198,16 +201,22 @@ impl BridgeTestClusterBuilder {
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut bridge_keys = vec![];
         let mut bridge_keys_copy = vec![];
+        let mut bridge_keys_copy2 = vec![];
         for _ in 0..self.num_validators {
             let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
             bridge_keys.push(kp.copy());
-            bridge_keys_copy.push(kp);
+            bridge_keys_copy.push(kp.copy());
+            bridge_keys_copy2.push(kp);
+
         }
         let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys,self.eth_chain_id));
         let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
-        let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
+        let start_evm_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy2,self.evm_chain_id));
+        let (start_cluster_res, start_eth_env_res, start_evm_env_res)
+            = join!(start_cluster_task, start_eth_env_task, start_evm_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
+        let evm_environment = start_evm_env_res.unwrap();
         let mut bridge_node_handles = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
@@ -215,7 +224,7 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
+                start_bridge_cluster(&test_cluster, &eth_environment, &evm_environment, approved_governace_actions)
                     .await,
             );
         }
@@ -236,6 +245,7 @@ impl BridgeTestClusterBuilder {
             test_cluster,
             bridge_client,
             eth_environment,
+            evm_environment,
             bridge_node_handles,
             approved_governance_actions_for_next_start: self.approved_governance_actions,
             bridge_tx_cursor: None,
@@ -261,7 +271,7 @@ impl BridgeTestClusterBuilder {
     async fn start_eth_env(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> EthBridgeEnvironment {
         let anvil_port = get_available_port("127.0.0.1");
         let anvil_url = format!("http://127.0.0.1:{anvil_port}");
-        let mut eth_environment = EthBridgeEnvironment::new(&anvil_url, anvil_port)
+        let mut eth_environment = EthBridgeEnvironment::new_with_chain_id(&anvil_url, anvil_port, eth_chain_id as u64)
             .await
             .unwrap();
         // Give anvil a bit of time to start
@@ -316,6 +326,10 @@ impl BridgeTestCluster {
 
     pub fn eth_env(&self) -> &EthBridgeEnvironment {
         &self.eth_environment
+    }
+
+    pub fn evm_evn(&self) -> &EthBridgeEnvironment {
+        &self.evm_environment
     }
 
     pub fn contracts(&self) -> &DeployedSolContracts {
@@ -394,6 +408,7 @@ impl BridgeTestCluster {
             start_bridge_cluster(
                 &self.test_cluster,
                 &self.eth_environment,
+                &self.evm_environment,
                 approved_governace_actions,
             )
             .await,
@@ -616,19 +631,21 @@ pub(crate) async fn deploy_sol_contract(
     };
     info!("chain_id_anvil: {:?}", chain_id_anvil);
     let mut child=Command::new("forge")
-    .current_dir(sol_path)
-    .arg("script")
-    .arg("script/deploy_bridge.s.sol")
-    .arg("--fork-url")
-    .arg(anvil_url)
-    .arg("--broadcast")
-    .arg("--ffi")
-    .arg("--chain")
-    .arg(chain_id_anvil)
-    .stdout(std::process::Stdio::piped()) // Capture stdout
-    .stderr(std::process::Stdio::piped()) // Capture stderr
-    .spawn()
-    .unwrap();
+        .current_dir(sol_path)
+        .arg("script")
+        .arg("script/deploy_bridge.s.sol")
+        .arg("--fork-url")
+        .arg(anvil_url)
+        .arg("--broadcast")
+        .arg("--ffi")
+        .arg("--code-size-limit")
+        .arg("10000000")
+        .arg("--chain")
+        .arg(chain_id_anvil)
+        .stdout(std::process::Stdio::piped()) // Capture stdout
+        .stderr(std::process::Stdio::piped()) // Capture stderr
+        .spawn()
+        .unwrap();
 
     let mut stdout = child.stdout.take().expect("Failed to open stdout");
     let mut stderr = child.stderr.take().expect("Failed to open stderr");
@@ -715,6 +732,7 @@ pub struct EthBridgeEnvironment {
 }
 
 impl EthBridgeEnvironment {
+    #[allow(unused)]
     async fn new(anvil_url: &str, anvil_port: u16) -> anyhow::Result<EthBridgeEnvironment> {
         // Start eth node with anvil
         let eth_environment_process = std::process::Command::new("anvil")
@@ -724,6 +742,30 @@ impl EthBridgeEnvironment {
             .arg("1") // 1 second block time
             .arg("--slots-in-an-epoch")
             .arg("1") // 1 slots in an epoch
+            .spawn()
+            .expect("Failed to start anvil");
+
+        Ok(EthBridgeEnvironment {
+            rpc_url: anvil_url.to_string(),
+            process: eth_environment_process,
+            contracts: None,
+        })
+    }
+
+    async fn new_with_chain_id(
+        anvil_url: &str,
+        anvil_port: u16,
+        chain_id: u64) -> anyhow::Result<EthBridgeEnvironment> {
+        // Start eth node with anvil
+        let eth_environment_process = std::process::Command::new("anvil")
+            .arg("--port")
+            .arg(anvil_port.to_string())
+            .arg("--block-time")
+            .arg("1") // 1 second block time
+            .arg("--slots-in-an-epoch")
+            .arg("1") // 1 slots in an epoch
+            .arg("--chain-id")
+            .arg(chain_id.to_string())
             .spawn()
             .expect("Failed to start anvil");
 
@@ -775,6 +817,7 @@ impl Drop for EthBridgeEnvironment {
 pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
+    evm_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
@@ -790,6 +833,12 @@ pub(crate) async fn start_bridge_cluster(
     );
 
     let eth_bridge_contract_address = eth_environment
+        .contracts
+        .as_ref()
+        .unwrap()
+        .sui_bridge_addrress_hex();
+
+    let evm_bridge_contract_address = evm_environment
         .contracts
         .as_ref()
         .unwrap()
@@ -831,8 +880,8 @@ pub(crate) async fn start_bridge_cluster(
             },
             evm: vec![
                 EthConfig {
-                    eth_rpc_url: eth_environment.rpc_url.clone(),
-                    eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
+                    eth_rpc_url: evm_environment.rpc_url.clone(),
+                    eth_bridge_proxy_address: evm_bridge_contract_address.clone(),
                     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
@@ -1320,6 +1369,7 @@ pub async fn initiate_bridge_eth_to_sui(
     let sui_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
+    info!("Sui address eth_chain_id: {:?} {:?}, {:?}", sui_address, eth_chain_id, eth_signer);
     let token_id = if eth_chain_id.is_eth_chain() {
         TOKEN_ID_ETH
     } else {

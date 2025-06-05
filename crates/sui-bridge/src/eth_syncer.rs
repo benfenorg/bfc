@@ -13,7 +13,6 @@ use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
 use crate::types::ETHLogWrapper;
 use ethers::types::{Address as EthAddress};
-use futures::channel;
 use mysten_metrics::metered_channel::Sender;
 use mysten_metrics::spawn_logged_monitored_task;
 use std::collections::HashMap;

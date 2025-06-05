@@ -1,13 +1,12 @@
 use std::sync::Arc;
 
-use arc_swap::cache;
 use mysten_metrics::spawn_logged_monitored_task;
 use shared_crypto::intent::{Intent, IntentMessage};
 use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiTransactionBlockResponse};
-use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, bridge::{FAST_PATH_THREASHOLD_LATEST_BUSD, TOKEN_ID_BUSD}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
+use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
