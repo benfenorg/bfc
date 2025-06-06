@@ -65,20 +65,20 @@ module sui::anonymous_coin {
         })
     }
 
-    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext) {
+    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, ctx: &mut TxContext) {
         let value = anonymous_coin.balance.value();
         join(&mut swap_pool.anonymous_coin, anonymous_coin);
         let new_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
-        transfer::share_object(swap_pool);
-        transfer::public_transfer(new_coin, tx_context::sender(ctx))
+        //transfer::share_object(swap_pool);
+        transfer::public_transfer(new_coin, tx_context::sender(ctx));
     }
 
-    entry public fun swap_in<T1, T2>(coin: Coin<T2>, mut swap_pool :SwapPool<T1, T2>, ctx: &mut TxContext){
+    entry public fun swap_in<T1, T2>(coin: Coin<T2>,  swap_pool : & mut SwapPool<T1, T2>, ctx: &mut TxContext){
         let value = coin::balance(&coin).value();
         coin::join(&mut swap_pool.normal_coin, coin);
         let new_coin =split(&mut swap_pool.anonymous_coin, value , ctx);
-        transfer::share_object(swap_pool);
-        transfer::public_transfer(new_coin, tx_context::sender(ctx))
+        //transfer::share_object(swap_pool);
+        transfer::public_transfer(new_coin, tx_context::sender(ctx));
     }
 
 
