@@ -69,7 +69,7 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
 
     //todo: use hfe_ops to split the value into two parts
     let value1 = value/2;
-    let value2 = value/2;
+    let value2 = value - value1;
 
     string::append_utf8(&mut encode_data, convert_to_string(value1));
     string::append_utf8(&mut encode_data, b",");
