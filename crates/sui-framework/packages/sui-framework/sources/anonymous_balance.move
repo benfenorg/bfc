@@ -6,6 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use std::string::{Self, String};
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus};
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
@@ -66,6 +67,7 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
     let balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     let version = 0;
 
+    //todo: use hfe_ops to split the value into two parts
     let value1 = value/2;
     let value2 = value/2;
 
@@ -136,9 +138,7 @@ public fun zero<T>(): Anonymos_Balance<T> {
 }
 
 fun update_encode_data<T>(self: &mut Anonymos_Balance<T>) {
-    self.value1 = self.value/2;
-    self.value2 = self.value - self.value1;
-
+    // Update the encode data based on the current value1 and value2
     let mut encode_data = string::utf8(b"");
     string::append_utf8(&mut encode_data, convert_to_string(self.value1));
     string::append_utf8(&mut encode_data, b",");
@@ -151,11 +151,16 @@ public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>)
         encode_data: _,
         version: _,
         balance_type: _,
-        value1: _,
-        value2: _,
+        value1: value1,
+        value2: value2,
         value } = balance;
 
     self.value = self.value + value;
+    let result =  hfe_ops_add(self.value1, self.value2, value1, value2);
+    self.value1 = result[0];
+    self.value2 = result[1];
+
+
     self.update_encode_data();
     self.value
 }
@@ -164,6 +169,10 @@ public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>)
 public fun split<T>(self: &mut Anonymos_Balance<T>, value: u64): Anonymos_Balance<T> {
     assert!(self.value >= value, ENotEnough);
     self.value = self.value - value;
+
+    let result = hfe_ops_minus(self.value1, self.value2, value/2, value/2);
+    self.value1 = result[0];
+    self.value2 = result[1];
 
     self.update_encode_data();
 
