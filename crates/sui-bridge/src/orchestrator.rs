@@ -290,6 +290,7 @@ where
                             // fast path selector                            
                             let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
                             let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
+                            info!("fast path selector: {:?},{:?},config: {:?},action: {:?}", fast_path_selector,log_wrapper.fast_path_selector,config,action_inner);
                             if fast_path_selector == log_wrapper.fast_path_selector {
                                 fast_path_actions.push(action.clone());
                             }

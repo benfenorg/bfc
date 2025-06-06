@@ -1,5 +1,5 @@
 use std::collections::BTreeMap;
-use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD};
+use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use strum_macros::Display;
 use crate::{config::BridgeClientConfig, types::BridgeAction};
 
@@ -25,9 +25,10 @@ pub enum FastPathSelector {
 
 impl FastPathSelector {
     pub fn select(token_id:u64,amount:u64,config:&FastPathConfigItem) -> FastPathSelector {
-        if TOKEN_ID_BUSD==token_id && amount<= config.threshold_latest {
+        let is_stable_coin = TOKEN_ID_USDT==token_id || TOKEN_ID_USDC==token_id || TOKEN_ID_BUSD==token_id;
+        if is_stable_coin && amount<= config.threshold_latest {
             FastPathSelector::Latest
-        }else if TOKEN_ID_BUSD==token_id && amount<= config.threshold_safe  {
+        }else if is_stable_coin && amount<= config.threshold_safe  {
             FastPathSelector::Safe
         }else {
             FastPathSelector::Finalized
