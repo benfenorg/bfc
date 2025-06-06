@@ -36,6 +36,11 @@ module bridge::bridge {
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
 
+
+    //  stable coin id
+    const TOKEN_ID_USDC: u64 = 3;
+    const TOKEN_ID_USDT: u64 = 4;
+
     const MESSAGE_VERSION: u8 = 1;
 
     // Transfer Status
@@ -1000,6 +1005,127 @@ module bridge::bridge {
                 amount,
             },
         )
+    }
+
+    public fun approval_and_claimed_external_busd_coin<T>(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+        bfc_system_state: &mut BfcSystemState,
+        cap: &BfcSystemModifyCap,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        let token_payload = message.extract_token_bridge_payload();
+        let target_chain = token_payload.token_target_chain();
+        assert!(
+            message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+            EUnexpectedChainID,
+        );
+
+        let coin_type = type_name::into_string(type_name::get<T>());
+        // check records
+        let tx_hash = ascii::string(token_payload.token_tx_hash());
+        let source_chain = message.source_chain();
+        let target_chain = token_payload.token_target_chain();
+        let source_address = token_payload.token_sender_address();
+        let target_address = token_payload.token_target_address();
+        let amount = token_payload.token_amount();
+        let key = ExternalBridgeMessageKey{
+            source_chain,
+            source_address,
+            target_address,
+            amount,
+            tx_hash,
+        };
+        if (inner.external_bridge_records.contains(key)) {
+            emit(ExternalDepositedApprovedEvent{
+                tx_hash,
+                coin_type,
+                source_chain: source_chain,
+                target_chain: target_chain,
+                source_address: source_address,
+                target_address: target_address,
+                amount: token_payload.token_amount(),
+            });
+
+            return
+        };
+
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, address::from_bytes(target_address), ctx);
+
+        inner.external_bridge_records.push_back(
+            key,
+            ExternalBridgeRecord {
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+                verified_signatures: option::some(signatures),
+                claimed: true,
+            },
+        );
+
+        emit(
+            ExternalDepositedEvent {
+                tx_hash,
+                coin_type,
+                source_chain,
+                target_chain: inner.chain_id,
+                source_address,
+                target_address,
+                amount,
+            },
+        )
+    }
+
+    public fun withdraw_external_busd_coin<T>(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token: Coin<T>,
+        token_id_expect: u64,
+        bfc_system_state: &mut BfcSystemState,
+        ctx: &mut TxContext
+    ) {
+        // assert!(tokenlist::is_supported_from_benfen(
+        //     &bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+        assert!(token_id_expect == TOKEN_ID_USDC || token_id_expect == TOKEN_ID_USDT, EInvalidTokenIdExpect);
+        assert!(type_name::get<T>() == type_name::get<BUSD>(), EOnlySupportBusd);
+        let coin_type = if (token_id_expect == TOKEN_ID_USDC) {
+                                    ascii::string(b"USDC")
+                                } else {
+                                    ascii::string(b"USDT")
+                                };
+
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+
+        let amount = token.balance().value();
+        assert!(amount > 0, ETokenValueIsZero);
+
+        bfc_system_state.burn_stable(token, ctx);
+
+        // emit event
+        emit(
+            ExternalWithdrawEvent {
+                coin_type,
+                source_chain: inner.chain_id,
+                target_chain,
+                source_address: address::to_bytes(ctx.sender()),
+                target_address,
+                amount,
+            },
+        );
     }
 
     public fun withdraw_external_coin<T>(

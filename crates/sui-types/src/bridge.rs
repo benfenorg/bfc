@@ -138,6 +138,18 @@ pub enum BridgeChainId {
     AvaxMainnet = 45,
     AvaxTestnet = 46,
     AvaxCustom = 47,
+
+    TronMainnet = 48,
+    TronTestnet = 49,
+
+    SolanaMainnet = 50,
+    SolanaTestnet = 51,
+
+    LTCMainnet = 52,
+    LTCTestnet = 53,
+
+    DogeMainnet = 54,
+    DogeTestnet = 55,
 }
 
 impl BridgeChainId {

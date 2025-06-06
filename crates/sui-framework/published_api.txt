@@ -5770,6 +5770,12 @@ avax_testnet
 avax_custom
 	public fun
 	0xb::chain_ids
+tron_mainnet
+	public fun
+	0xb::chain_ids
+tron_testnet
+	public fun
+	0xb::chain_ids
 route_source
 	public fun
 	0xb::chain_ids
@@ -6467,6 +6473,12 @@ deposit_external_coin
 	public fun
 	0xb::bridge
 approval_and_claimed_external_coin
+	public fun
+	0xb::bridge
+approval_and_claimed_external_busd_coin
+	public fun
+	0xb::bridge
+withdraw_external_busd_coin
 	public fun
 	0xb::bridge
 withdraw_external_coin
