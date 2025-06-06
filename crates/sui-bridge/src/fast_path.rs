@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_BUSD, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use strum_macros::Display;
+use tracing::info;
 use crate::{config::BridgeClientConfig, types::BridgeAction};
 
 #[derive(
@@ -40,6 +41,7 @@ impl FastPathSelector {
         match bridge_action {
             BridgeAction::EthToSuiBridgeAction(action) => {
                 let config_item = config.items.get(&action.eth_bridge_event.eth_chain_id);
+                info!("bbking config_item: {:?} config: {:?}", config_item,config.items);
                 if config_item.is_none() {
                     return FastPathSelector::Finalized;
                 }
