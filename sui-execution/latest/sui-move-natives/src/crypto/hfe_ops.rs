@@ -458,12 +458,8 @@ impl AnonymousClient {
             .json(&request_body)
             .send()?;
 
-        println!("send_rpc_request 0 {:?} base_url{:?}", request_body, self.base_url);
         let response_text = response.text()?;
-        println!("send_rpc_request 1 {:?}", response_text);
-
         let response_json: JsonValue = serde_json::from_str(&response_text)?;
-        println!("send_rpc_request 2");
 
         Ok(response_json)
     }

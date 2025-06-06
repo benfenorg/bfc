@@ -190,7 +190,7 @@ impl NativesCostTable {
         let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
         info!("the anonymous_privatekey is {:?}", config.anonymous_privatekey,);
-        info!("from_protocol_config the anonymous_rpc is {:?}", config.anonymous_rpc);
+        info!("the anonymous_rpc is {:?}", config.anonymous_rpc);
 
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {

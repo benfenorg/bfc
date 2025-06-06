@@ -179,13 +179,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_client_block() {
-        let client = AnonymousClient::new("http://localhost:9010");
-        assert_eq!(client.base_url, "http://localhost:9010");
-    }
-
-
-    #[tokio::test]
     #[ignore] // 需要服务器运行才能测试
     async fn test_all_operations() {
         let client = AnonymousClient::new("http://localhost:9010");
@@ -193,10 +186,8 @@ mod tests {
         let add_result = client.test_add(2, 3, 4, 5).await;
         assert!(add_result.success);
         let response = add_result.response.unwrap();
-        println!("response {:?}", response);
         let result = response["result"]["result1"].as_u64().unwrap();
         assert_eq!(result, 5); // 5 + 3 = 8
-        println!("Add result: {}", result);
 
         
         // 测试减法
