@@ -80,7 +80,7 @@ pub async fn run_bridge_node(
             metadata.version,
             &sui_chain_identifier,
             &eth_chain_identifier.to_string(),
-            client_config.is_some(),
+            client_config.as_ref().unwrap().run_client,
         ))
         .unwrap();
 
@@ -115,10 +115,10 @@ pub async fn run_bridge_node(
         .get_latest_sui_system_state()
         .await?;
 
-    let mut fast_path_config = FastPathConfig::default();
     // Start Client
-    if let Some(client_config) = client_config {
-        fast_path_config = FastPathConfig::init_from_client_config(&client_config);
+    let client_config = client_config.unwrap();
+    let fast_path_config = FastPathConfig::init_from_client_config(&client_config);
+    if client_config.run_client {
         let committee_keys_to_names =
             Arc::new(get_validator_names_by_pub_keys(&committee, &sui_system).await);
         let client_components = start_client_components(

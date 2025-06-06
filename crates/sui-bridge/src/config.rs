@@ -229,9 +229,9 @@ impl BridgeNodeConfig {
             evm_clients: evm_clients.clone(),
             approved_governance_actions,
         };
-        if !self.run_client {
-            return Ok((bridge_server_config, None));
-        }
+        // if !self.run_client {
+        //     return Ok((bridge_server_config, None));
+        // }
 
         // If client is enabled, prepare client config
         let (bridge_client_key, client_sui_address, gas_object_ref) =
@@ -286,6 +286,7 @@ impl BridgeNodeConfig {
             aml_key: self.aml_key.clone(),
             evm_clients,
             evm_client_configs,
+            run_client: self.run_client,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -563,6 +564,7 @@ pub struct BridgeClientConfig {
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
     // The following fields are used for AML checking authorization key
     pub aml_key: String,
+    pub run_client: bool,
 }
 
 #[derive(Debug)]
