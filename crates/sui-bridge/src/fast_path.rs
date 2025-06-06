@@ -90,7 +90,7 @@ impl Default for FastPathConfig {
 }
 
 
-#[derive(Clone)]
+#[derive(Clone,Debug)]
 pub struct FastPathConfigItem {
     pub chain_id:BridgeChainId,
     pub enable_latest:bool,
