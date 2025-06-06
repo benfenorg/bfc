@@ -179,13 +179,6 @@ mod tests {
     }
 
     #[tokio::test]
-    async fn test_client_block() {
-        let client = AnonymousClient::new("http://localhost:9010");
-        assert_eq!(client.base_url, "http://localhost:9010");
-    }
-
-
-    #[tokio::test]
     #[ignore] // 需要服务器运行才能测试
     async fn test_all_operations() {
         let client = AnonymousClient::new("http://localhost:9010");

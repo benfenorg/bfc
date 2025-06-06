@@ -173,7 +173,6 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
 }
 
 async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
-    println!("handle_anonymous_add here");
     match request.params {
         Some(params) => {
             match serde_json::from_value::<AnonymousAddParams>(params) {
