@@ -1,5 +1,5 @@
 ---
 anonymous-privatekey: "0x_this_is_a_private_key"
 anonymous-rpc:
-  - rpc1
-  - rpc2
+  - "http://localhost:9010"
+  - "http://localhost:9010"

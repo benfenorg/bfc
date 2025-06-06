@@ -16,6 +16,9 @@ pub struct AnonymousPrivateKeyConfig {
     #[arg(long)]
     pub anonymous_rpc: Option<Vec<String>>,
 
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub enable_anonymous_rpc: Option<bool>,
 }
 
 
@@ -30,6 +33,10 @@ impl AnonymousPrivateKeyConfig {
 
     pub fn set_private_key(&mut self, key: String) {
         self.anonymous_privatekey = Some(key);
+    }
+
+    pub fn enable_anonymous_rpc(&mut self, key: bool) {
+        self.enable_anonymous_rpc = Some(key);
     }
 
     pub fn get_anonymous_rpc(&self) -> Option<Vec<String>> {
@@ -56,6 +63,10 @@ impl AnonymousPrivateKeyConfig {
             .get("anonymous-privatekey")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string());
+
+        let enable_anonymous_rpc = yaml_value
+            .get("enable-anonymous-rpc")
+            .and_then(|v| v.as_bool());
         
         let anonymous_rpc = yaml_value
             .get("anonymous-rpc")
@@ -70,6 +81,7 @@ impl AnonymousPrivateKeyConfig {
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
             anonymous_rpc,
+            enable_anonymous_rpc,
         })
     }
 
@@ -98,7 +110,8 @@ mod tests {
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
             .expect("Failed to load config from yaml file");
         println!("the config key is {:?}", config.anonymous_privatekey);
-        
+        println!("the anonymous_rpc is {:?}", config.anonymous_rpc);
+
         // 验证私钥是否正确加载
         assert!(config.anonymous_privatekey.is_some());
         assert_eq!(config.anonymous_privatekey.unwrap(), "your-private-key-here");

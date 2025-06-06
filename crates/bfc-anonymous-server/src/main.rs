@@ -51,18 +51,24 @@ struct JsonRpcError {
 struct AnonymousAddParams {
     value1: u64,
     value2: u64,
+    value3: u64,
+    value4: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousMinusParams {
     value1: u64,
     value2: u64,
+    value3: u64,
+    value4: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
 struct AnonymousMultiplyParams {
     value1: u64,
     value2: u64,
+    value3: u64,
+    value4: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -167,18 +173,22 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
 }
 
 async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
+    println!("handle_anonymous_add here");
     match request.params {
         Some(params) => {
             match serde_json::from_value::<AnonymousAddParams>(params) {
                 Ok(add_params) => {
-                    let result = add_params.value1 + add_params.value2;
-                    info!("Anonymous add: {} + {} = {}", add_params.value1, add_params.value2, result);
-                    
+                    let result1 = add_params.value1 + add_params.value2;
+                    info!("Anonymous add: {} + {} = {}", add_params.value1, add_params.value2, result1);
+
+                    let result2 = add_params.value3 + add_params.value4;
+                    info!("Anonymous add: {} + {} = {}", add_params.value3, add_params.value4, result2);
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
-                            "result": result,
+                            "result1": result1,
+                            "result2": result2,
                             "operation": "anonymous_add",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),
@@ -220,14 +230,17 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousMinusParams>(params) {
                 Ok(minus_params) => {
-                    let result = minus_params.value1 - minus_params.value2;
-                    info!("Anonymous minus: {} - {} = {}", minus_params.value1, minus_params.value2, result);
-                    
+                    let result1 = minus_params.value1 - minus_params.value2;
+                    info!("Anonymous minus: {} - {} = {}", minus_params.value1, minus_params.value2, result1);
+
+                    let result2 = minus_params.value3 - minus_params.value4;
+                    info!("Anonymous minus: {} - {} = {}", minus_params.value3, minus_params.value4, result2);
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
-                            "result": result,
+                            "result1": result1,
+                            "result2": result1,
                             "operation": "anonymous_minus",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),
@@ -269,14 +282,18 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousMultiplyParams>(params) {
                 Ok(multiply_params) => {
-                    let result = multiply_params.value1 * multiply_params.value2;
-                    info!("Anonymous multiply: {} * {} = {}", multiply_params.value1, multiply_params.value2, result);
-                    
+                    let result1 = multiply_params.value1 * multiply_params.value2;
+                    info!("Anonymous multiply: {} * {} = {}", multiply_params.value1, multiply_params.value2, result1);
+
+                    let result2 = multiply_params.value3 * multiply_params.value4;
+                    info!("Anonymous multiply: {} * {} = {}", multiply_params.value1, multiply_params.value2, result2);
+
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
-                            "result": result,
+                            "result1": result1,
+                            "result2": result2,
                             "operation": "anonymous_multiply",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),

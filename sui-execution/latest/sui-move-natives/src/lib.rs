@@ -182,6 +182,7 @@ pub struct NativesCostTable {
     // anonymous_cost
     pub anonymous_compute_cost_params: AnonymousComputeCostParams,
 
+    pub enable_anonymous_rpc: Option<bool>,
 }
 
 impl NativesCostTable {
@@ -189,7 +190,7 @@ impl NativesCostTable {
         let path = get_sui_config_directory().join("bfc_anonymous_config.yaml");
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path).unwrap_or(AnonymousPrivateKeyConfig::default());
         info!("the anonymous_privatekey is {:?}", config.anonymous_privatekey,);
-        info!("the anonymous_rpc is {:?}", config.anonymous_rpc,);
+        info!("from_protocol_config the anonymous_rpc is {:?}", config.anonymous_rpc);
 
         Self {
             address_from_bytes_cost_params: AddressFromBytesCostParams {
@@ -682,6 +683,7 @@ impl NativesCostTable {
                     .anonymous_compute_cost_base()
                     .into(),
             },
+            enable_anonymous_rpc: config.enable_anonymous_rpc,
         }
     }
 }

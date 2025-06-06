@@ -1,4 +1,7 @@
 
 # Anonymous private key configuration
 anonymous-privatekey: "your-private-key-here"
-
+enable-anonymous-rpc: true
+anonymous-rpc:
+  - "http://localhost:9010"
+  - "http://localhost:9010"

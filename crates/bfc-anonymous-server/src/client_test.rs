@@ -53,10 +53,12 @@ impl AnonymousClient {
     }
 
     /// 测试加法操作
-    pub async fn test_add(&self, value1: i32, value2: i32) -> TestResult {
+    pub async fn test_add(&self, value1: i32, value2: i32, value3: i32, value4: i32) -> TestResult {
         let params = json!({
             "value1": value1,
-            "value2": value2
+            "value2": value2,
+            "value3": value3,
+            "value4": value4,
         });
 
         match self.send_rpc_request("bfcx_getAnonymousAdd", params, 1).await {
@@ -75,10 +77,12 @@ impl AnonymousClient {
         }
     }
 
-    pub async fn test_minus(&self, value1: i32, value2: i32) -> TestResult {
+    pub async fn test_minus(&self, value1: i32, value2: i32, value3: i32, value4: i32) -> TestResult {
         let params = json!({
             "value1": value1,
-            "value2": value2
+            "value2": value2,
+            "value3": value3,
+            "value4": value4,
         });
 
         match self.send_rpc_request("bfcx_getAnonymousMinus", params, 2).await {
@@ -175,24 +179,31 @@ mod tests {
     }
 
     #[tokio::test]
+    async fn test_client_block() {
+        let client = AnonymousClient::new("http://localhost:9010");
+        assert_eq!(client.base_url, "http://localhost:9010");
+    }
+
+
+    #[tokio::test]
     #[ignore] // 需要服务器运行才能测试
     async fn test_all_operations() {
         let client = AnonymousClient::new("http://localhost:9010");
-        
         // 测试加法
-        let add_result = client.test_add(5, 3).await;
+        let add_result = client.test_add(2, 3, 4, 5).await;
         assert!(add_result.success);
         let response = add_result.response.unwrap();
-        let result = response["result"]["result"].as_u64().unwrap();
-        assert_eq!(result, 8); // 5 + 3 = 8
+        println!("response {:?}", response);
+        let result = response["result"]["result1"].as_u64().unwrap();
+        assert_eq!(result, 5); // 5 + 3 = 8
         println!("Add result: {}", result);
 
         
         // 测试减法
-        let minus_result = client.test_minus(10, 4).await;
+        let minus_result = client.test_minus(10, 4, 3, 2).await;
         assert!(minus_result.success);
         let response = minus_result.response.unwrap();
-        let result = response["result"]["result"].as_u64().unwrap();
+        let result = response["result"]["result1"].as_u64().unwrap();
         assert_eq!(result, 6); // 10 - 4 = 6
         println!("Minus result: {}", result);
 
@@ -201,7 +212,7 @@ mod tests {
         let multiply_result = client.test_multiply(3, 4).await;
         assert!(multiply_result.success);
         let response = multiply_result.response.unwrap();
-        let result = response["result"]["result"].as_u64().unwrap();
+        let result = response["result"]["result1"].as_u64().unwrap();
         assert_eq!(result, 12); // 3 * 4 = 12
         println!("Multiply result: {}", result);
 
