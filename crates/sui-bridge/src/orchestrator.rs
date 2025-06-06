@@ -290,9 +290,11 @@ where
                             // fast path selector                            
                             let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
                             let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
-                            info!("fast path selector: {:?},{:?},config: {:?},action: {:?}", fast_path_selector,log_wrapper.fast_path_selector,config,action_inner);
                             if fast_path_selector == log_wrapper.fast_path_selector {
+                                info!("fast path selector match,expect {:?} actual {:?},action: {:?}",log_wrapper.fast_path_selector,fast_path_selector,action_inner);
                                 fast_path_actions.push(action.clone());
+                            }else{
+                                info!("fast path selector not match,expect {:?} actual {:?},action: {:?}",log_wrapper.fast_path_selector,fast_path_selector,action_inner);
                             }
                         }
                         _ => {
@@ -305,7 +307,7 @@ where
                 info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
                 process_normal_actions(&store, &aml_checker_tx, &metrics, fast_path_actions).await;
             };
-            if !log_wrapper.fast_path_selector.is_finalized() {
+            if log_wrapper.fast_path_selector.is_finalized() {
                 info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
                 process_normal_actions(&store, &aml_checker_tx, &metrics, actions).await;
             }
