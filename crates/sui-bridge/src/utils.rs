@@ -315,7 +315,6 @@ pub async fn publish_and_register_coins_return_add_coins_on_sui_action(
     let mut token_type_names = vec![];
     let mut register_tasks = vec![];
     for (response, sender) in publish_coin_responses.into_iter().zip(senders.clone()) {
-        dbg!(&response);
         let response = response.unwrap().unwrap();
         assert_eq!(
             response.effects.unwrap().status(),
