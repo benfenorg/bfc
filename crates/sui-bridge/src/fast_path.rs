@@ -25,7 +25,8 @@ pub enum FastPathSelector {
 
 impl FastPathSelector {
     pub fn select(token_id:u64,amount:u64,config:&FastPathConfigItem) -> FastPathSelector {
-        let is_stable_coin = TOKEN_ID_USDT==token_id || TOKEN_ID_USDC==token_id || TOKEN_ID_BUSD==token_id;
+        let amount=Self::get_sui_adjusted_amount(token_id,amount,config.chain_id);
+        let is_stable_coin = Self::is_stable_coin(token_id);
         if is_stable_coin && amount<= config.threshold_latest {
             FastPathSelector::Latest
         }else if is_stable_coin && amount<= config.threshold_safe  {
@@ -43,9 +44,11 @@ impl FastPathSelector {
                     return FastPathSelector::Finalized;
                 }
                 let config_item = config_item.unwrap();
-                if TOKEN_ID_BUSD==action.eth_bridge_event.token_id && action.eth_bridge_event.sui_adjusted_amount<= config_item.threshold_latest {
+                let is_stable_coin = Self::is_stable_coin(action.eth_bridge_event.token_id);
+                let sui_adjusted_amount=Self::get_sui_adjusted_amount(action.eth_bridge_event.token_id,action.eth_bridge_event.sui_adjusted_amount,action.eth_bridge_event.eth_chain_id);
+                if is_stable_coin && sui_adjusted_amount<= config_item.threshold_latest {
                     FastPathSelector::Latest
-                }else if TOKEN_ID_BUSD==action.eth_bridge_event.token_id && action.eth_bridge_event.sui_adjusted_amount<= config_item.threshold_safe  {
+                }else if is_stable_coin && sui_adjusted_amount<= config_item.threshold_safe  {
                     FastPathSelector::Safe
                 }else { 
                     FastPathSelector::Finalized
@@ -57,15 +60,30 @@ impl FastPathSelector {
                     return FastPathSelector::Finalized;
                 }
                 let config_item = config_item.unwrap();
-                if TOKEN_ID_BUSD==action.sui_bridge_event.token_id && action.sui_bridge_event.amount_sui_adjusted<= config_item.threshold_latest {
+                let is_stable_coin = Self::is_stable_coin(action.sui_bridge_event.token_id);
+                let amount_sui_adjusted=Self::get_sui_adjusted_amount(action.sui_bridge_event.token_id,action.sui_bridge_event.amount_sui_adjusted,action.sui_bridge_event.eth_chain_id);
+                if is_stable_coin && amount_sui_adjusted<= config_item.threshold_latest {
                     FastPathSelector::Latest
-                }else if TOKEN_ID_BUSD==action.sui_bridge_event.token_id && action.sui_bridge_event.amount_sui_adjusted<= config_item.threshold_safe  {
+                }else if is_stable_coin && amount_sui_adjusted<= config_item.threshold_safe  {
                     FastPathSelector::Safe
                 }else { 
                     FastPathSelector::Finalized
                 }
             }
             _ => FastPathSelector::Finalized,
+        }
+    }
+
+    pub fn is_stable_coin(token_id:u64) -> bool {
+        TOKEN_ID_USDT==token_id || TOKEN_ID_USDC==token_id || TOKEN_ID_BUSD==token_id
+    }
+
+    pub fn get_sui_adjusted_amount(token_id:u64,amount:u64,chain_id:BridgeChainId) -> u64 {
+        let need_adjust = (token_id == TOKEN_ID_USDC || token_id == TOKEN_ID_USDT) && chain_id.is_eth_chain();
+        if need_adjust {
+            amount.checked_mul(1000).unwrap_or(amount)
+        } else {
+            amount
         }
     }
 
