@@ -4,3 +4,4 @@ anonymous-rpc:
   - "http://localhost:9010"
   - "http://localhost:9010"
 enable-anonymous-rpc: true
+

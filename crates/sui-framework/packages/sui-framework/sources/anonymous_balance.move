@@ -6,7 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use std::string::{Self, String};
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus};
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, split_value};
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
@@ -68,8 +68,12 @@ public fun create_by_value<T>(value: u64) : Anonymos_Balance<T> {
     let version = 0;
 
     //todo: use hfe_ops to split the value into two parts
-    let value1 = value/2;
-    let value2 = value - value1;
+    // let value1 = value/2;
+    // let value2 = value - value1;
+
+    let result =  split_value(value);
+    let value1 = result[0];
+    let value2 = result[1];
 
     string::append_utf8(&mut encode_data, convert_to_string(value1));
     string::append_utf8(&mut encode_data, b",");

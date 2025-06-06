@@ -33,3 +33,6 @@ public native fun split_data(
     index: u8,
 ): vector<u8>;
 
+public native fun split_value(
+    value: u64,
+): vector<u64>;

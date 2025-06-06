@@ -1315,21 +1315,6 @@ blake2b256
 keccak256
 	public fun
 	0x2::hash
-hfe_ops_add
-	public fun
-	0x2::hfe_ops
-hfe_ops_minus
-	public fun
-	0x2::hfe_ops
-hfe_ops_multiplied
-	public fun
-	0x2::hfe_ops
-hfe_ops_compare
-	public fun
-	0x2::hfe_ops
-split_data
-	public fun
-	0x2::hfe_ops
 hash_to_input
 	public fun
 	0x2::vdf
@@ -2071,6 +2056,24 @@ deny_list_remove
 deny_list_contains
 	public fun
 	0x2::coin
+hfe_ops_add
+	public fun
+	0x2::hfe_ops
+hfe_ops_minus
+	public fun
+	0x2::hfe_ops
+hfe_ops_multiplied
+	public fun
+	0x2::hfe_ops
+hfe_ops_compare
+	public fun
+	0x2::hfe_ops
+split_data
+	public fun
+	0x2::hfe_ops
+split_value
+	public fun
+	0x2::hfe_ops
 Supply
 	public struct
 	0x2::anonymous_balance

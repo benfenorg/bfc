@@ -32,6 +32,7 @@ custom coins with <code><a href="../sui-framework/anonymous_balance.md#0x2_anony
 
 <pre><code><b>use</b> <a href="../move-stdlib/string.md#0x1_string">0x1::string</a>;
 <b>use</b> <a href="../move-stdlib/vector.md#0x1_vector">0x1::vector</a>;
+<b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">0x2::hfe_ops</a>;
 </code></pre>
 
 
@@ -248,8 +249,13 @@ For when an overflow is happening on Supply operations.
     <b>let</b> balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     <b>let</b> version = 0;
 
-    <b>let</b> value1 = value/2;
-    <b>let</b> value2 = value/2;
+    //todo: <b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">hfe_ops</a> <b>to</b> split the value into two parts
+    // <b>let</b> value1 = value/2;
+    // <b>let</b> value2 = value - value1;
+
+    <b>let</b> result =  split_value(value);
+    <b>let</b> value1 = result[0];
+    <b>let</b> value2 = result[1];
 
     <a href="../move-stdlib/string.md#0x1_string_append_utf8">string::append_utf8</a>(&<b>mut</b> encode_data, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_convert_to_string">convert_to_string</a>(value1));
     <a href="../move-stdlib/string.md#0x1_string_append_utf8">string::append_utf8</a>(&<b>mut</b> encode_data, b",");
@@ -520,9 +526,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 
 
 <pre><code><b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;) {
-    self.value1 = self.value/2;
-    self.value2 = self.value - self.value1;
-
+    // Update the encode data based on the current value1 and value2
     <b>let</b> <b>mut</b> encode_data = <a href="../move-stdlib/string.md#0x1_string_utf8">string::utf8</a>(b"");
     <a href="../move-stdlib/string.md#0x1_string_append_utf8">string::append_utf8</a>(&<b>mut</b> encode_data, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_convert_to_string">convert_to_string</a>(self.value1));
     <a href="../move-stdlib/string.md#0x1_string_append_utf8">string::append_utf8</a>(&<b>mut</b> encode_data, b",");
@@ -556,11 +560,16 @@ Join two balances together.
         encode_data: _,
         version: _,
         balance_type: _,
-        value1: _,
-        value2: _,
+        value1: value1,
+        value2: value2,
         value } = <a href="../sui-framework/balance.md#0x2_balance">balance</a>;
 
     self.value = self.value + value;
+    <b>let</b> result =  hfe_ops_add(self.value1, self.value2, value1, value2);
+    self.value1 = result[0];
+    self.value2 = result[1];
+
+
     self.<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>();
     self.value
 }
@@ -589,6 +598,10 @@ Split a <code>Balance</code> and take a sub balance from it.
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
     <b>assert</b>!(self.value &gt;= value, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
     self.value = self.value - value;
+
+    <b>let</b> result = hfe_ops_minus(self.value1, self.value2, value/2, value/2);
+    self.value1 = result[0];
+    self.value2 = result[1];
 
     self.<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>();
 

@@ -249,8 +249,32 @@ pub fn hfe_ops_compare(
     ))
 }
 
+pub fn split_value(context: &mut NativeContext,
+                  ty_args: Vec<Type>,
+                  mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
+    let anonymous_compute_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_compute_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        anonymous_compute_cost_params.anonymous_compute_cost_base
+    );
 
+    let value = pop_arg!(args, u64);
+
+    let value1 = value/2;
+    let value2 = value - value1;
+    let cost = context.gas_used();
+
+    Ok(NativeResult::ok(
+        cost,
+        smallvec![Value::vector_u64(vec![value1, value2])],
+    ))
+}
 
 pub fn split_data(context: &mut NativeContext,
                   ty_args: Vec<Type>,
@@ -460,7 +484,6 @@ impl AnonymousClient {
 
         let response_text = response.text()?;
         let response_json: JsonValue = serde_json::from_str(&response_text)?;
-
         Ok(response_json)
     }
 }

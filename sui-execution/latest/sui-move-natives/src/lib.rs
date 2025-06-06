@@ -683,6 +683,7 @@ impl NativesCostTable {
                     .anonymous_compute_cost_base()
                     .into(),
             },
+
             enable_anonymous_rpc: config.enable_anonymous_rpc,
         }
     }
@@ -1131,6 +1132,12 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
             "hfe_ops",
             "split_data",
             make_native!(hfe_ops::split_data),
+        ),
+
+        (
+            "hfe_ops",
+            "split_value",
+            make_native!(hfe_ops::split_value),
         ),
     ];
     let sui_framework_natives_iter =
