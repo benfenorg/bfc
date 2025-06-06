@@ -111,7 +111,6 @@ pub struct BridgeTestCluster {
     pub test_cluster: TestClusterWrapper,
     bridge_client: SuiBridgeClient,
     eth_environment: EthBridgeEnvironment,
-    evm_environment: EthBridgeEnvironment,
     bridge_node_handles: Option<Vec<JoinHandle<()>>>,
     approved_governance_actions_for_next_start: Option<Vec<Vec<BridgeAction>>>,
     bridge_tx_cursor: Option<TransactionDigest>,
@@ -125,7 +124,6 @@ pub struct BridgeTestClusterBuilder {
     num_validators: usize,
     approved_governance_actions: Option<Vec<Vec<BridgeAction>>>,
     eth_chain_id: BridgeChainId,
-    evm_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
 }
 
@@ -143,7 +141,6 @@ impl BridgeTestClusterBuilder {
             num_validators: 4,
             approved_governance_actions: None,
             eth_chain_id: BridgeChainId::EthCustom,
-            evm_chain_id: BridgeChainId::BscCustom,
             sui_chain_id: BridgeChainId::SuiCustom,
         }
     }
@@ -211,12 +208,10 @@ impl BridgeTestClusterBuilder {
         }
         let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys,self.eth_chain_id));
         let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
-        let start_evm_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy2,self.evm_chain_id));
-        let (start_cluster_res, start_eth_env_res, start_evm_env_res)
-            = join!(start_cluster_task, start_eth_env_task, start_evm_env_task);
+        let (start_cluster_res, start_eth_env_res)
+            = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
-        let evm_environment = start_evm_env_res.unwrap();
         let mut bridge_node_handles = None;
         if self.with_bridge_cluster {
             let approved_governace_actions = self
@@ -224,7 +219,7 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, &evm_environment, approved_governace_actions)
+                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
                     .await,
             );
         }
@@ -245,7 +240,6 @@ impl BridgeTestClusterBuilder {
             test_cluster,
             bridge_client,
             eth_environment,
-            evm_environment,
             bridge_node_handles,
             approved_governance_actions_for_next_start: self.approved_governance_actions,
             bridge_tx_cursor: None,
@@ -290,6 +284,7 @@ impl BridgeTestClusterBuilder {
 
 impl BridgeTestCluster {
     pub async fn get_eth_signer_and_private_key(&self) -> anyhow::Result<(EthSigner, String)> {
+        // if self.
         self.eth_environment.get_signer(TEST_PK).await
     }
 
@@ -326,10 +321,6 @@ impl BridgeTestCluster {
 
     pub fn eth_env(&self) -> &EthBridgeEnvironment {
         &self.eth_environment
-    }
-
-    pub fn evm_evn(&self) -> &EthBridgeEnvironment {
-        &self.evm_environment
     }
 
     pub fn contracts(&self) -> &DeployedSolContracts {
@@ -408,7 +399,6 @@ impl BridgeTestCluster {
             start_bridge_cluster(
                 &self.test_cluster,
                 &self.eth_environment,
-                &self.evm_environment,
                 approved_governace_actions,
             )
             .await,
@@ -817,7 +807,6 @@ impl Drop for EthBridgeEnvironment {
 pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
-    evm_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
@@ -833,12 +822,6 @@ pub(crate) async fn start_bridge_cluster(
     );
 
     let eth_bridge_contract_address = eth_environment
-        .contracts
-        .as_ref()
-        .unwrap()
-        .sui_bridge_addrress_hex();
-
-    let evm_bridge_contract_address = evm_environment
         .contracts
         .as_ref()
         .unwrap()
@@ -879,17 +862,17 @@ pub(crate) async fn start_bridge_cluster(
                 enable_fast_path_safe: false,
             },
             evm: vec![
-                EthConfig {
-                    eth_rpc_url: evm_environment.rpc_url.clone(),
-                    eth_bridge_proxy_address: evm_bridge_contract_address.clone(),
-                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
-                    eth_contracts_start_block_fallback: Some(0),
-                    eth_contracts_start_block_override: None,
-                    latest_fast_path_threshold: None,
-                    safe_fast_path_threshold: None,
-                    enable_fast_path_latest: false,
-                    enable_fast_path_safe: false,
-                },
+                // EthConfig {
+                //     eth_rpc_url: evm_environment.rpc_url.clone(),
+                //     eth_bridge_proxy_address: evm_bridge_contract_address.clone(),
+                //     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
+                //     eth_contracts_start_block_fallback: Some(0),
+                //     eth_contracts_start_block_override: None,
+                //     latest_fast_path_threshold: None,
+                //     safe_fast_path_threshold: None,
+                //     enable_fast_path_latest: false,
+                //     enable_fast_path_safe: false,
+                // },
             ],
             sui: SuiConfig {
                 sui_rpc_url: test_cluster.inner.fullnode_handle.rpc_url.clone(),
@@ -1407,8 +1390,8 @@ pub async fn initiate_bridge_eth_to_sui(
     assert_eq!(eth_bridge_event.sender_address, eth_address);
     assert_eq!(eth_bridge_event.recipient_address, sui_address.to_vec());
     info!(
-        "Deposited Eth to Solidity contract, block: {:?}",
-        tx_receipt.block_number
+        "Deposited Eth to Solidity contract, block: {:?} {:?} {:?}",
+        tx_receipt.block_number, eth_bridge_event, tx_receipt
     );
 
     if refund {

@@ -978,6 +978,7 @@ mod tests {
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
             evm_clients: Default::default(),
+            fast_path_config: Default::default(),
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =
