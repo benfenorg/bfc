@@ -194,7 +194,20 @@ impl BridgeNodeConfig {
         }
 
         let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
-        let (evm_clients, evm_contracts) = self.prepare_for_evm(metrics.clone()).await?;
+        let (mut evm_clients, mut evm_contracts) = self.prepare_for_evm(metrics.clone()).await?;
+        if BridgeChainId::is_custom_chain_by_id(self.eth.eth_bridge_chain_id) {
+            // Custom chains use eth config from BridgeNodeConfig
+            // We need to insert the eth client and contracts for custom chain
+            // so that it can be used in the bridge server.
+            evm_clients.insert(
+                BridgeChainId::BscCustom,
+                eth_client.clone(),
+            );
+            evm_contracts.insert(
+                BridgeChainId::BscCustom,
+                eth_contracts.clone(),
+            );
+        }
 
         let bridge_summary = sui_client
             .get_bridge_summary()
@@ -300,6 +313,10 @@ impl BridgeNodeConfig {
         let mut eth_contracts: BTreeMap<BridgeChainId, Vec<EthAddress>> = BTreeMap::new();
 
         for evm_config in &self.evm {
+            if BridgeChainId::is_custom_chain_by_id(evm_config.eth_bridge_chain_id) {
+                // custom chains use eth config from BridgeNodeConfig
+                continue;
+            }
             let bridge_proxy_address =
                 EthAddress::from_str(&evm_config.eth_bridge_proxy_address)?;
 

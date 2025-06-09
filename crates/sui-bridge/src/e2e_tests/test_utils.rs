@@ -862,17 +862,17 @@ pub(crate) async fn start_bridge_cluster(
                 enable_fast_path_safe: false,
             },
             evm: vec![
-                // EthConfig {
-                //     eth_rpc_url: evm_environment.rpc_url.clone(),
-                //     eth_bridge_proxy_address: evm_bridge_contract_address.clone(),
-                //     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
-                //     eth_contracts_start_block_fallback: Some(0),
-                //     eth_contracts_start_block_override: None,
-                //     latest_fast_path_threshold: None,
-                //     safe_fast_path_threshold: None,
-                //     enable_fast_path_latest: false,
-                //     enable_fast_path_safe: false,
-                // },
+                EthConfig {
+                    eth_rpc_url: eth_environment.rpc_url.clone(),
+                    eth_bridge_proxy_address: eth_bridge_contract_address.clone(),
+                    eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
+                    eth_contracts_start_block_fallback: Some(0),
+                    eth_contracts_start_block_override: None,
+                    latest_fast_path_threshold: None,
+                    safe_fast_path_threshold: None,
+                    enable_fast_path_latest: false,
+                    enable_fast_path_safe: false,
+                },
             ],
             sui: SuiConfig {
                 sui_rpc_url: test_cluster.inner.fullnode_handle.rpc_url.clone(),

@@ -232,6 +232,17 @@ impl BridgeChainId {
         let base_custom = BridgeChainId::BaseCustom as u8;
         id == base_mainnet || id == base_testnet || id == base_custom
     }
+
+    pub fn is_custom_chain_by_id(id: u8) -> bool {
+        id == BridgeChainId::BscCustom as u8
+            || id == BridgeChainId::SuiCustom as u8
+            || id == BridgeChainId::EthCustom as u8
+            || id == BridgeChainId::OPCustom as u8
+            || id == BridgeChainId::ArbCustom as u8
+            || id == BridgeChainId::PolCustom as u8
+            || id == BridgeChainId::BaseCustom as u8
+            || id == BridgeChainId::AvaxCustom as u8
+    }
 }
 
 pub fn get_bridge_obj_initial_shared_version(
