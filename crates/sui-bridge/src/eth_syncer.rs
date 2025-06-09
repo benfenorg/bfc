@@ -97,7 +97,7 @@ where
         metrics: Arc<BridgeMetrics>,
         fast_path_selector:FastPathSelector,
     ) {
-        tracing::info!("Starting finalized block refresh task.");
+        tracing::info!("Starting finalized block refresh task. bridge chain id: {} fast_path_selector: {}", eth_client.get_bridge_chain_id().await,fast_path_selector);
         let mut last_block_number = 0;
         let mut interval = time::interval(FINALIZED_BLOCK_QUERY_INTERVAL);
         interval.set_missed_tick_behavior(time::MissedTickBehavior::Skip);
