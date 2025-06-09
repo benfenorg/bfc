@@ -1,7 +1,6 @@
 mod client_test;
 mod database;
 
-use std::collections::HashMap;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
@@ -170,6 +169,19 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousAddParams>(params) {
                 Ok(add_params) => {
+                    if add_params.value1.checked_add(add_params.value2) == None
+                        || add_params.value3.checked_add(add_params.value4) == None {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32602,
+                                message: "Arithmetic overflow".to_string(),
+                                data: Some(serde_json::json!({"error": "arithmetic overflow"})),
+                            }),
+                        }
+                    }
                     let result1 = add_params.value1 + add_params.value2;
                     info!("Anonymous add: {} + {} = {}", add_params.value1, add_params.value2, result1);
 
@@ -222,17 +234,31 @@ async fn handle_anonymous_minus(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousMinusParams>(params) {
                 Ok(minus_params) => {
-                    let result1 = minus_params.value1 - minus_params.value2;
-                    info!("Anonymous minus: {} - {} = {}", minus_params.value1, minus_params.value2, result1);
 
-                    let result2 = minus_params.value3 - minus_params.value4;
-                    info!("Anonymous minus: {} - {} = {}", minus_params.value3, minus_params.value4, result2);
+                    let data1 = minus_params.value1 + minus_params.value2;
+                    let data2 = minus_params.value3 + minus_params.value4;
+
+                    if data1.checked_sub(data2) == None {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32602,
+                                message: "Arithmetic overflow".to_string(),
+                                data: Some(serde_json::json!({"error": "arithmetic overflow"})),
+                            }),
+                        };
+                    }
+                    let result = data1 - data2;
+                    let result1 = result / 2;
+                    let result2 = result - result1;
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
                         result: Some(serde_json::json!({
                             "result1": result1,
-                            "result2": result1,
+                            "result2": result2,
                             "operation": "anonymous_minus",
                             "timestamp": chrono::Utc::now().timestamp()
                         })),
@@ -274,11 +300,26 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousMultiplyParams>(params) {
                 Ok(multiply_params) => {
-                    let result1 = multiply_params.value1 * multiply_params.value2;
-                    info!("Anonymous multiply: {} * {} = {}", multiply_params.value1, multiply_params.value2, result1);
+                    let data1 = multiply_params.value1 + multiply_params.value2;
+                    let data2 = multiply_params.value3 + multiply_params.value4;
 
-                    let result2 = multiply_params.value3 * multiply_params.value4;
-                    info!("Anonymous multiply: {} * {} = {}", multiply_params.value1, multiply_params.value2, result2);
+                    if data1.checked_mul(data2) == None {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32602,
+                                message: "Arithmetic overflow".to_string(),
+                                data: Some(serde_json::json!({"error": "arithmetic overflow"})),
+                            }),
+                        };
+                    }
+
+                    let result = data1 * data2;
+
+                    let result1 = result / 2;
+                    let result2 = result - result1;
 
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),

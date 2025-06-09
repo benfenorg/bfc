@@ -35,6 +35,8 @@ pub struct AnonymousComputeCostParams {
 }
 
 type HmacSha256 = Hmac<Sha256>;
+pub const ARITHMETIC_OVERFLOW_ERROR: u64 = 1;
+
 
 
 pub fn hfe_ops_add(
@@ -83,6 +85,13 @@ pub fn hfe_ops_add(
             smallvec![Value::vector_u64(vec![result.value1, result.value2])]
         ))
     } else {
+        if number1.checked_add(number2) == None || number3.checked_add(number4) == None {
+            return Ok(NativeResult::err(
+                cost,
+                ARITHMETIC_OVERFLOW_ERROR,
+            ));
+        }
+
         let data1 = number1 + number2;
         let data2 = number3 + number4;
 
@@ -143,6 +152,13 @@ pub fn hfe_ops_minus(
     } else {
         let data1 = number1 + number2;
         let data2 = number3 + number4;
+
+        if data1.checked_sub(data2) == None {
+            return Ok(NativeResult::err(
+                cost,
+                ARITHMETIC_OVERFLOW_ERROR,
+            ));
+        }
         let result = data1 - data2;
 
 
@@ -200,6 +216,14 @@ pub fn hfe_ops_multiplied(
     } else {
         let data1 = number1 + number2;
         let data2 = number3 + number4;
+
+        if data1.checked_mul(data2) == None {
+            return Ok(NativeResult::err(
+                cost,
+                ARITHMETIC_OVERFLOW_ERROR,
+            ));
+        }
+
         let result = data1 * data2;
 
         let result1 = result / 2;

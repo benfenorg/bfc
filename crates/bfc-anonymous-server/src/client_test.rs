@@ -1,7 +1,6 @@
 use reqwest;
 use serde_json::{json, Value};
 use std::error::Error;
-use tokio;
 
 #[derive(Debug)]
 struct TestResult {

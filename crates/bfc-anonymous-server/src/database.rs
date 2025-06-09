@@ -1,6 +1,5 @@
-use rocksdb::{DB, Options, ColumnFamilyDescriptor, ColumnFamily, BoundColumnFamily};
+use rocksdb::{DB, Options, ColumnFamilyDescriptor};
 use std::sync::Arc;
-use serde::{Deserialize, Serialize};
 
 const DATA_COLUMN_FAMILY_V1: &str = "version1";
 const DATA_COLUMN_FAMILY_V2: &str = "version2";
