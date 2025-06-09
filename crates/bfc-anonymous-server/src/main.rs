@@ -169,8 +169,10 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousAddParams>(params) {
                 Ok(add_params) => {
-                    if add_params.value1.checked_add(add_params.value2) == None
-                        || add_params.value3.checked_add(add_params.value4) == None {
+                    let data1 = add_params.value1 + add_params.value2;
+                    let data2 = add_params.value3 + add_params.value4;
+
+                    if data1.checked_add(data2) == None {
                         return JsonRpcResponse {
                             jsonrpc: "2.0".to_string(),
                             id: request.id,
@@ -182,11 +184,9 @@ async fn handle_anonymous_add(request: JsonRpcRequest) -> JsonRpcResponse {
                             }),
                         }
                     }
-                    let result1 = add_params.value1 + add_params.value2;
-                    info!("Anonymous add: {} + {} = {}", add_params.value1, add_params.value2, result1);
-
-                    let result2 = add_params.value3 + add_params.value4;
-                    info!("Anonymous add: {} + {} = {}", add_params.value3, add_params.value4, result2);
+                    let result = data1 + data2;
+                    let result1 = result / 2;
+                    let result2 = result - result1;
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,
