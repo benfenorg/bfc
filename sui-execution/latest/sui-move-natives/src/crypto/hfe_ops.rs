@@ -27,10 +27,6 @@ use move_core_types::gas_algebra::InternalGas;
 use serde_json::{json};
 use serde_json::Value as JsonValue;
 use tracing::info;
-use sui_types::{
-    base_types::{MoveObjectType, ObjectID, SequenceNumber},
-    object::Owner,
-};
 
 #[derive(Clone)]
 pub struct AnonymousComputeCostParams {
