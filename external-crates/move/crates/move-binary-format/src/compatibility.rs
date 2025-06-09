@@ -150,7 +150,6 @@ impl Compatibility {
                 // choose that changing the name (but not position or type) of a field is
                 // compatible. The VM does not care about the name of a field
                 // (it's purely informational), but clients presumably do.
-
                 context.struct_field_mismatch(name, old_struct, new_struct);
             }
         }
@@ -160,7 +159,6 @@ impl Compatibility {
                 // Enum not present in new. Existing modules that depend on this enum will fail to link with the new version of the module.
                 // Also, enum layout cannot be guaranteed transitively, because after
                 // removing the enum, it could be re-added later with a different layout.
-
                 context.enum_missing(name, old_enum);
                 continue;
             };

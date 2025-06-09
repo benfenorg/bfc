@@ -25,10 +25,7 @@ use sui_bridge::utils::{
     generate_bridge_client_key_and_write_to_file, generate_bridge_node_config_and_write_to_file,
 };
 use sui_bridge::utils::{get_eth_contracts, EthBridgeContracts};
-use sui_bridge_cli::{
-    make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand,
-    LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR,
-};
+use sui_bridge_cli::{make_action, select_contract_address, Args, BridgeCliConfig, BridgeCommand, LoadedBridgeCliConfig, Network, SEPOLIA_BRIDGE_PROXY_ADDR};
 use sui_config::Config;
 use sui_sdk::SuiClient as SuiSdkClient;
 use sui_sdk::SuiClientBuilder;

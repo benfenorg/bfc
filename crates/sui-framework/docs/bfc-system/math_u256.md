@@ -121,8 +121,8 @@ title: Module `0xc8::math_u256`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bfc-system/math_u256.md#0xc8_math_u256_checked_shlw">checked_shlw</a>(n: u256): (u256, bool) {
-    <b>let</b> mask = 0xffffffffffffffff &lt;&lt; 192;
-    <b>if</b> (n &gt; mask) {
+    <b>let</b> mask = 1 &lt;&lt; 192;
+    <b>if</b> (n &gt;= mask) {
         (0, <b>true</b>)
     } <b>else</b> {
         ((n &lt;&lt; 64), <b>false</b>)

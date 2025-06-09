@@ -209,6 +209,15 @@ pub fn generate_bridge_node_config_and_write_to_file(
             eth_contracts_start_block_fallback: Some(0),
             eth_contracts_start_block_override: None,
         },
+        evm: vec![
+            EthConfig {
+                eth_rpc_url: "your_bsc_rpc_url".to_string(),
+                eth_bridge_proxy_address: "0x0000000000000000000000000000000000000000".to_string(),
+                eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
+                eth_contracts_start_block_fallback: Some(0),
+                eth_contracts_start_block_override: None,
+            },
+        ],
         aml_key: "your_aml_key".to_string(),
         approved_governance_actions: vec![],
         run_client,

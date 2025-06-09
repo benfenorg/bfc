@@ -22,7 +22,7 @@ use sui_bridge::abi::EthBridgeCommittee;
 use sui_bridge::abi::{eth_sui_bridge, EthSuiBridge};
 use sui_bridge::crypto::BridgeAuthorityPublicKeyBytes;
 use sui_bridge::error::BridgeResult;
-use sui_bridge::sui_client::SuiBridgeClient;
+use sui_bridge::sui_client::{SuiBridgeClient, SuiClientInner};
 use sui_bridge::types::BridgeAction;
 use sui_bridge::types::{
     AddTokensOnEvmAction, AddTokensOnSuiAction, AssetPriceUpdateAction, BlocklistCommitteeAction,
@@ -41,7 +41,7 @@ use sui_types::base_types::{ObjectID, ObjectRef};
 use sui_types::bridge::{BridgeChainId, BRIDGE_MODULE_NAME};
 use sui_types::crypto::{Signature, SuiKeyPair};
 use sui_types::programmable_transaction_builder::ProgrammableTransactionBuilder;
-use sui_types::transaction::{ObjectArg, Transaction, TransactionData};
+use sui_types::transaction::{CallArg, ObjectArg, Transaction, TransactionData};
 use sui_types::{TypeTag, BRIDGE_PACKAGE_ID};
 use tracing::info;
 
@@ -277,7 +277,10 @@ pub enum GovernanceClientCommands {
     },
 }
 
-pub fn make_action(chain_id: BridgeChainId, cmd: &GovernanceClientCommands) -> BridgeAction {
+pub fn make_action(
+    chain_id: BridgeChainId,
+    cmd: &GovernanceClientCommands,
+) -> BridgeAction {
     match cmd {
         GovernanceClientCommands::EmergencyButton { nonce, action_type } => {
             BridgeAction::EmergencyAction(EmergencyAction {
@@ -692,6 +695,13 @@ pub enum BridgeClientCommands {
         #[clap(long, default_value_t = true, action = clap::ArgAction::Set)]
         dry_run: bool,
     },
+    #[clap(name = "set-mint-busd-limit")]
+    SetMintBusdLimit {
+        #[clap(name = "modify-cap-id", long)]
+        modify_cap_id: ObjectID,
+        #[clap(name = "new-limit", long)]
+        new_limit: u64,
+    },
 }
 
 impl BridgeClientCommands {
@@ -751,8 +761,85 @@ impl BridgeClientCommands {
                 )
                 .await
             }
+            BridgeClientCommands::SetMintBusdLimit {
+                modify_cap_id,
+                new_limit,
+            } => {
+                set_busd_limit(
+                    modify_cap_id,
+                    new_limit,
+                    config,
+                    sui_bridge_client,
+                ).await
+            }
         }
     }
+}
+
+async fn set_busd_limit(
+    modify_cap_id: ObjectID,
+    new_limit: u64,
+    config: &LoadedBridgeCliConfig,
+    sui_bridge_client: SuiBridgeClient,
+) -> anyhow::Result<()> {
+    let sui_client = sui_bridge_client.sui_client();
+    let bridge_object_arg = sui_bridge_client
+        .get_mutable_bridge_object_arg_must_succeed()
+        .await;
+    let bfc_system_modify_cap = sui_client.
+        get_cap_object_ref(modify_cap_id)
+        .await?;
+    let rgp = sui_client
+        .governance_api()
+        .get_reference_gas_price()
+        .await
+        .unwrap();
+    let sender = SuiAddress::from(&config.sui_key.public());
+    let gas_obj_ref = sui_client
+        .coin_read_api()
+        .select_coins(sender, None, 1_000_000_000, vec![])
+        .await?
+        .first()
+        .ok_or(anyhow!("No coin found for address {}", sender))?
+        .object_ref();
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let arg_bridge = builder.obj(bridge_object_arg)?;
+    let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT)?;
+    let cap_obj = builder
+        .input(CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap)))?;
+    let new_limit = builder.pure(new_limit)?;
+
+    CallArg::Object(ObjectArg::ImmOrOwnedObject(bfc_system_modify_cap));
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("set_max_mint_busd_amount").to_owned(),
+        vec![],
+        vec![arg_bridge, system_obj, cap_obj, new_limit],
+    );
+    let pt = builder.finish();
+    let tx_data =
+        TransactionData::new_programmable(sender, vec![gas_obj_ref], pt, 100_000_000, rgp);
+    let sig = Signature::new_secure(
+        &IntentMessage::new(Intent::sui_transaction(), tx_data.clone()),
+        &config.sui_key,
+    );
+    let signed_tx = Transaction::from_data(tx_data, vec![sig]);
+    let tx_digest = *signed_tx.digest();
+    info!(?tx_digest, "set busd limit amount.");
+    let resp = sui_bridge_client
+        .execute_transaction_block_with_effects(signed_tx)
+        .await
+        .expect("Failed to execute set busd transaction block");
+    if !resp.status_ok().unwrap() {
+        return Err(anyhow!("Transaction {:?} failed: {:?}", tx_digest, resp));
+    }
+    let events = resp.events.unwrap();
+    info!(
+        ?tx_digest,
+        "Transaction succeeded. Events: {:?}", events
+    );
+    Ok(())
 }
 
 async fn deposit_on_sui(

@@ -52,6 +52,8 @@ pub const BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("create_add_tokens_on_sui_message");
 pub const BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("execute_system_message");
+pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr =
+    ident_str!("migrate");
 
 pub const BRIDGE_SUPPORTED_ASSET: &[&str] = &["btc", "eth", "usdc", "usdt"];
 
@@ -80,6 +82,9 @@ pub const TOKEN_ID_ETH: u64 = 2;
 pub const TOKEN_ID_USDC: u64 = 3;
 pub const TOKEN_ID_USDT: u64 = 4;
 pub const TOKEN_ID_BUSD: u64 = 5;
+pub const TOKEN_ID_BNB: u64 = 6;
+pub const TOKEN_ID_OP: u64 = 7;
+pub const TOKEN_ID_POL: u64 = 8;
 
 #[derive(
     Debug,
@@ -93,6 +98,8 @@ pub const TOKEN_ID_BUSD: u64 = 5;
     JsonSchema,
     Hash,
     Display,
+    PartialOrd,
+    Ord,
 )]
 #[repr(u8)]
 pub enum BridgeChainId {
@@ -107,6 +114,30 @@ pub enum BridgeChainId {
     // benfen btc
     BtcMainnet = 20,
     BtcTestnet = 21,
+
+    BscMainnet = 30,
+    BscTestnet = 31,
+    BscCustom = 32,
+
+    OPMainnet = 33,
+    OPTestnet = 34,
+    OPCustom = 35,
+
+    ArbMainnet = 36,
+    ArbTestnet = 37,
+    ArbCustom = 38,
+
+    PolMainnet = 39,
+    PolTestnet = 40,
+    PolCustom = 41,
+
+    BaseMainnet = 42,
+    BaseTestnet = 43,
+    BaseCustom = 44,
+
+    AvaxMainnet = 45,
+    AvaxTestnet = 46,
+    AvaxCustom = 47,
 }
 
 impl BridgeChainId {
@@ -115,6 +146,86 @@ impl BridgeChainId {
             self,
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom
         )
+    }
+    pub fn is_bsc_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::BscMainnet | BridgeChainId::BscTestnet | BridgeChainId::BscCustom
+        )
+    }
+    pub fn is_eth_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom
+        )
+    }
+
+    pub fn is_op_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom
+        )
+    }
+
+    pub fn is_arb_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::ArbMainnet | BridgeChainId::ArbTestnet | BridgeChainId::ArbCustom
+        )
+    }
+
+    pub fn is_pol_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom
+        )
+    }
+
+    pub fn is_base_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom
+        )
+    }
+
+
+    pub fn is_optimism_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::OPMainnet | BridgeChainId::OPTestnet | BridgeChainId::OPCustom
+        )
+    }
+
+    pub fn is_avax_chain(&self) -> bool {
+        matches!(
+            self,
+            BridgeChainId::AvaxMainnet | BridgeChainId::AvaxTestnet | BridgeChainId::AvaxCustom
+        )
+    }
+
+    pub fn is_eth_by_id(id: u8) -> bool {
+        let eth_mainnet = BridgeChainId::EthMainnet as u8;
+        let eth_sepolia = BridgeChainId::EthSepolia as u8;
+        let eth_custom = BridgeChainId::EthCustom as u8;
+        id == eth_mainnet || id == eth_sepolia || id == eth_custom
+    }
+    pub fn is_bsc_by_id(id: u8) -> bool {
+        let bsc_mainnet = BridgeChainId::BscMainnet as u8;
+        let bsc_testnet = BridgeChainId::BscTestnet as u8;
+        let bsc_custom = BridgeChainId::BscCustom as u8;
+        id == bsc_mainnet || id == bsc_testnet || id == bsc_custom
+    }
+    pub fn is_op_by_id(id: u8) -> bool {
+        let op_mainnet = BridgeChainId::OPMainnet as u8;
+        let op_testnet = BridgeChainId::OPTestnet as u8;
+        let op_custom = BridgeChainId::OPCustom as u8;
+        id == op_mainnet || id == op_testnet || id == op_custom
+    }
+    pub fn is_base_by_id(id: u8) -> bool {
+        let base_mainnet = BridgeChainId::BaseMainnet as u8;
+        let base_testnet = BridgeChainId::BaseTestnet as u8;
+        let base_custom = BridgeChainId::BaseCustom as u8;
+        id == base_mainnet || id == base_testnet || id == base_custom
     }
 }
 

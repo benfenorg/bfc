@@ -15,6 +15,32 @@ module bridge::chain_ids {
     const BtcMainnet: u8 = 20;
     const BtcTestnet: u8 = 21;
 
+    const BscMainnet: u8 = 30;
+    const BscTestnet: u8 = 31;
+    const BscCustom: u8 = 32;
+
+    const OPMainnet: u8 = 33;
+    const OPTestnet: u8 = 34;
+    const OPCustom: u8 = 35;
+
+    const ArbMainnet: u8 = 36;
+    const ArbTestnet: u8 = 37;
+    const ArbCustom: u8 = 38;
+
+    const PolMainnet: u8 = 39;
+    const PolTestnet: u8 = 40;
+    const PolCustom: u8 = 41;
+
+    const BaseMainnet: u8 = 42;
+    const BaseTestnet: u8 = 43;
+    const BaseCustom: u8 = 44;
+
+    const AvaxMainnet: u8 = 45;
+    const AvaxTestnet: u8 = 46;
+    const AvaxCustom: u8 = 47;
+
+
+
     const EInvalidBridgeRoute: u64 = 0;
 
     //////////////////////////////////////////////////////
@@ -41,6 +67,31 @@ module bridge::chain_ids {
     public fun btc_mainnet(): u8 { BtcMainnet }
     public fun btc_testnet(): u8 { BtcTestnet }
 
+    public fun bsc_mainnet(): u8 { BscMainnet }
+    public fun bsc_testnet(): u8 { BscTestnet }
+    public fun bsc_custom(): u8  { BscCustom  }
+
+
+    public fun base_mainnet(): u8 { BaseMainnet }
+    public fun base_testnet(): u8 { BaseTestnet }
+    public fun base_custom(): u8 { BaseCustom }
+
+    public fun op_mainnet(): u8 { OPMainnet }
+    public fun op_testnet(): u8 { OPTestnet }
+    public fun op_custom(): u8 { OPCustom }
+
+    public fun arb_mainnet(): u8 { ArbMainnet }
+    public fun arb_testnet(): u8 { ArbTestnet }
+    public fun arb_custom(): u8 { ArbCustom }
+
+    public fun pol_mainnet(): u8 { PolMainnet }
+    public fun pol_testnet(): u8 { PolTestnet }
+    public fun pol_custom(): u8 { PolCustom }
+
+    public fun avax_mainnet(): u8 { AvaxMainnet }
+    public fun avax_testnet(): u8 { AvaxTestnet }
+    public fun avax_custom(): u8 { AvaxCustom }
+
     public use fun route_source as BridgeRoute.source;
     public fun route_source(route: &BridgeRoute): &u8 {
         &route.source
@@ -60,7 +111,26 @@ module bridge::chain_ids {
             id == SuiCustom ||
             id == EthMainnet ||
             id == EthSepolia ||
-            id == EthCustom,
+            id == EthCustom ||
+            id == BaseMainnet ||
+            id == BaseTestnet ||
+            id == BaseCustom ||
+            id == OPMainnet ||
+            id == OPTestnet ||
+            id == OPCustom ||
+            id == BscMainnet ||
+            id == BscTestnet ||
+            id == BscCustom ||
+            id == ArbMainnet ||
+            id == ArbTestnet ||
+            id == ArbCustom ||
+            id == PolMainnet ||
+            id == PolTestnet ||
+            id == PolCustom ||
+            id == AvaxMainnet ||
+            id == AvaxTestnet ||
+            id == AvaxCustom,
+
             EInvalidBridgeRoute
         )
     }
@@ -85,7 +155,81 @@ module bridge::chain_ids {
             BridgeRoute { source: EthSepolia, destination: SuiTestnet },
             BridgeRoute { source: EthSepolia, destination: SuiCustom },
             BridgeRoute { source: EthCustom, destination: SuiTestnet },
-            BridgeRoute { source: EthCustom, destination: SuiCustom }
+            BridgeRoute { source: EthCustom, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: BscMainnet },
+            BridgeRoute { source: SuiMainnet, destination: OPMainnet },
+            BridgeRoute { source: SuiMainnet, destination: BaseMainnet },
+            BridgeRoute { source: BscMainnet, destination: SuiMainnet },
+            BridgeRoute { source: OPMainnet, destination: SuiMainnet },
+            BridgeRoute { source: BaseMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiMainnet, destination: ArbMainnet },
+            BridgeRoute { source: SuiMainnet, destination: PolMainnet },
+            BridgeRoute { source: SuiMainnet, destination: AvaxMainnet },
+            BridgeRoute { source: ArbMainnet, destination: SuiMainnet },
+            BridgeRoute { source: PolMainnet, destination: SuiMainnet },
+            BridgeRoute { source: AvaxMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: BscTestnet },
+            BridgeRoute { source: SuiTestnet, destination: BscCustom },
+            BridgeRoute { source: SuiCustom, destination: BscTestnet },
+            BridgeRoute { source: SuiCustom, destination: BscCustom },
+
+            BridgeRoute { source: SuiTestnet, destination: OPTestnet },
+            BridgeRoute { source: SuiTestnet, destination: OPCustom },
+            BridgeRoute { source: SuiCustom, destination: OPTestnet },
+            BridgeRoute { source: SuiCustom, destination: OPCustom },
+
+            BridgeRoute { source: SuiTestnet, destination: BaseTestnet },
+            BridgeRoute { source: SuiTestnet, destination: BaseCustom },
+            BridgeRoute { source: SuiCustom, destination: BaseTestnet },
+            BridgeRoute { source: SuiCustom, destination: BaseCustom },
+
+            BridgeRoute { source: SuiTestnet, destination: ArbTestnet },
+            BridgeRoute { source: SuiTestnet, destination: ArbCustom },
+            BridgeRoute { source: SuiCustom, destination: ArbTestnet },
+            BridgeRoute { source: SuiCustom, destination: ArbCustom },
+
+            BridgeRoute { source: SuiTestnet, destination: PolTestnet },
+            BridgeRoute { source: SuiTestnet, destination: PolCustom },
+            BridgeRoute { source: SuiCustom, destination: PolTestnet },
+            BridgeRoute { source: SuiCustom, destination: PolCustom },
+
+            BridgeRoute { source: SuiTestnet, destination: AvaxTestnet },
+            BridgeRoute { source: SuiTestnet, destination: AvaxCustom },
+            BridgeRoute { source: SuiCustom, destination: AvaxTestnet },
+            BridgeRoute { source: SuiCustom, destination: AvaxCustom },
+
+            BridgeRoute { source: BscTestnet, destination: SuiTestnet },
+            BridgeRoute { source: BscTestnet, destination: SuiCustom },
+            BridgeRoute { source: BscCustom, destination: SuiTestnet },
+            BridgeRoute { source: BscCustom, destination: SuiCustom },
+
+            BridgeRoute { source: OPTestnet, destination: SuiTestnet },
+            BridgeRoute { source: OPTestnet, destination: SuiCustom },
+            BridgeRoute { source: OPCustom, destination: SuiTestnet },
+            BridgeRoute { source: OPCustom, destination: SuiCustom },
+
+            BridgeRoute { source: BaseTestnet, destination: SuiTestnet },
+            BridgeRoute { source: BaseTestnet, destination: SuiCustom },
+            BridgeRoute { source: BaseCustom, destination: SuiTestnet },
+            BridgeRoute { source: BaseCustom, destination: SuiCustom },
+
+            BridgeRoute { source: ArbTestnet, destination: SuiTestnet },
+            BridgeRoute { source: ArbTestnet, destination: SuiCustom },
+            BridgeRoute { source: ArbCustom, destination: SuiTestnet },
+            BridgeRoute { source: ArbCustom, destination: SuiCustom },
+
+            BridgeRoute { source: PolTestnet, destination: SuiTestnet },
+            BridgeRoute { source: PolTestnet, destination: SuiCustom },
+            BridgeRoute { source: PolCustom, destination: SuiTestnet },
+            BridgeRoute { source: PolCustom, destination: SuiCustom },
+
+            BridgeRoute { source: AvaxTestnet, destination: SuiTestnet },
+            BridgeRoute { source: AvaxTestnet, destination: SuiCustom },
+            BridgeRoute { source: AvaxCustom, destination: SuiTestnet },
+            BridgeRoute { source: AvaxCustom, destination: SuiCustom },
+
         ]
     }
 
@@ -113,6 +257,24 @@ module bridge::chain_ids {
         assert_valid_chain_id(EthMainnet);
         assert_valid_chain_id(EthSepolia);
         assert_valid_chain_id(EthCustom);
+        assert_valid_chain_id(BscMainnet);
+        assert_valid_chain_id(BscTestnet);
+        assert_valid_chain_id(BscCustom);
+        assert_valid_chain_id(OPMainnet);
+        assert_valid_chain_id(OPTestnet);
+        assert_valid_chain_id(OPCustom);
+        assert_valid_chain_id(BaseMainnet);
+        assert_valid_chain_id(BaseTestnet);
+        assert_valid_chain_id(BaseCustom);
+        assert_valid_chain_id(ArbMainnet);
+        assert_valid_chain_id(ArbTestnet);
+        assert_valid_chain_id(ArbCustom);
+        assert_valid_chain_id(PolMainnet);
+        assert_valid_chain_id(PolTestnet);
+        assert_valid_chain_id(PolCustom);
+        assert_valid_chain_id(AvaxMainnet);
+        assert_valid_chain_id(AvaxTestnet);
+        assert_valid_chain_id(AvaxCustom);
     }
 
     #[test]
@@ -148,7 +310,62 @@ module bridge::chain_ids {
             BridgeRoute { source: EthSepolia, destination: SuiTestnet },
             BridgeRoute { source: EthSepolia, destination: SuiCustom },
             BridgeRoute { source: EthCustom, destination: SuiTestnet },
-            BridgeRoute { source: EthCustom, destination: SuiCustom }
+            BridgeRoute { source: EthCustom, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: BscMainnet },
+            BridgeRoute { source: BscMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: BscTestnet },
+            BridgeRoute { source: SuiTestnet, destination: BscCustom },
+            BridgeRoute { source: SuiCustom, destination: BscTestnet },
+            BridgeRoute { source: SuiCustom, destination: BscCustom },
+            BridgeRoute { source: BscTestnet, destination: SuiTestnet },
+            BridgeRoute { source: BscTestnet, destination: SuiCustom },
+            BridgeRoute { source: BscCustom, destination: SuiTestnet },
+            BridgeRoute { source: BscCustom, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: OPMainnet },
+            BridgeRoute { source: OPMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: OPTestnet },
+            BridgeRoute { source: SuiTestnet, destination: OPCustom },
+            BridgeRoute { source: SuiCustom, destination: OPTestnet },
+            BridgeRoute { source: SuiCustom, destination: OPCustom },
+            BridgeRoute { source: OPTestnet, destination: SuiTestnet },
+            BridgeRoute { source: OPTestnet, destination: SuiCustom },
+            BridgeRoute { source: OPCustom, destination: SuiTestnet },
+            BridgeRoute { source: OPCustom, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: BaseMainnet },
+            BridgeRoute { source: BaseMainnet, destination: SuiMainnet },
+
+            BridgeRoute { source: SuiTestnet, destination: BaseTestnet },
+            BridgeRoute { source: SuiTestnet, destination: BaseCustom },
+            BridgeRoute { source: SuiCustom, destination: BaseTestnet },
+            BridgeRoute { source: SuiCustom, destination: BaseCustom },
+            BridgeRoute { source: BaseTestnet, destination: SuiTestnet },
+            BridgeRoute { source: BaseTestnet, destination: SuiCustom },
+            BridgeRoute { source: BaseCustom, destination: SuiTestnet },
+            BridgeRoute { source: BaseCustom, destination: SuiCustom },
+
+            BridgeRoute { source: SuiMainnet, destination: ArbMainnet },
+            BridgeRoute { source: ArbMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiTestnet, destination: ArbTestnet },
+            BridgeRoute { source: SuiTestnet, destination: ArbCustom },
+            BridgeRoute { source: SuiCustom, destination: ArbTestnet },
+            BridgeRoute { source: SuiCustom, destination: ArbCustom },
+            BridgeRoute { source: ArbTestnet, destination: SuiTestnet },
+            BridgeRoute { source: ArbTestnet, destination: SuiCustom },
+            BridgeRoute { source: ArbCustom, destination: SuiTestnet },
+
+            BridgeRoute { source: PolMainnet, destination: SuiMainnet },
+            BridgeRoute { source: SuiMainnet, destination: PolMainnet },
+            BridgeRoute { source: PolTestnet, destination: SuiTestnet },
+            BridgeRoute { source: SuiTestnet, destination: PolTestnet },
+            BridgeRoute { source: PolCustom, destination: SuiTestnet },
+            BridgeRoute { source: SuiTestnet, destination: PolCustom },
+            BridgeRoute { source: SuiCustom, destination: PolTestnet },
+            BridgeRoute { source: SuiCustom, destination: PolCustom },
         ];
         let mut size = valid_routes.length();
         while (size > 0) {
@@ -182,6 +399,43 @@ module bridge::chain_ids {
         get_route(SuiMainnet, EthCustom);
     }
 
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_5() {
+        get_route(SuiMainnet, BscTestnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_6() {
+        get_route(SuiMainnet, BscCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_7() {
+        get_route(SuiMainnet, OPTestnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_8() {
+        get_route(SuiMainnet, OPCustom);
+    }
+
+     #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_9() {
+        get_route(SuiMainnet, BaseTestnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_sui_10() {
+        get_route(SuiMainnet, BaseCustom);
+    }
+
     #[test]
     #[expected_failure(abort_code = EInvalidBridgeRoute)]
     fun test_routes_err_eth_1() {
@@ -204,5 +458,78 @@ module bridge::chain_ids {
     #[expected_failure(abort_code = EInvalidBridgeRoute)]
     fun test_routes_err_eth_4() {
         get_route(EthMainnet, SuiTestnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_bsc_1() {
+        get_route(BscMainnet, BscMainnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_bsc_2() {
+        get_route(BscMainnet, BscCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_bsc_3() {
+        get_route(BscMainnet, SuiCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_bsc_4() {
+        get_route(BscMainnet, SuiTestnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_op_1() {
+        get_route(OPMainnet, OPMainnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_op_2() {
+        get_route(OPMainnet, OPCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_op_3() {
+        get_route(OPMainnet, SuiCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_op_4() {
+        get_route(OPMainnet, SuiTestnet);
+    }
+
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_base_1() {
+        get_route(BaseMainnet, BaseMainnet);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_base_2() {
+        get_route(BaseMainnet, BaseCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_base_3() {
+        get_route(BaseMainnet, SuiCustom);
+    }
+
+    #[test]
+    #[expected_failure(abort_code = EInvalidBridgeRoute)]
+    fun test_routes_err_base_4() {
+        get_route(BaseMainnet, SuiTestnet);
     }
 }

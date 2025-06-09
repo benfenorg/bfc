@@ -115,6 +115,8 @@ pub struct BridgeNodeConfig {
     pub sui: SuiConfig,
     /// Eth configuration
     pub eth: EthConfig,
+    /// List of evm
+    pub evm: Vec<EthConfig>,
     /// AML key used for AML checking
     pub aml_key: String,
     /// Network key used for metrics pushing
@@ -184,6 +186,8 @@ impl BridgeNodeConfig {
         }
 
         let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
+        let (evm_clients, evm_contracts) = self.prepare_for_evm(metrics.clone()).await?;
+
         let bridge_summary = sui_client
             .get_bridge_summary()
             .await
@@ -214,6 +218,7 @@ impl BridgeNodeConfig {
             server_listen_port: self.server_listen_port,
             sui_client: sui_client.clone(),
             eth_client: eth_client.clone(),
+            evm_clients: evm_clients.clone(),
             approved_governance_actions,
         };
         if !self.run_client {
@@ -228,6 +233,21 @@ impl BridgeNodeConfig {
             .db_path
             .clone()
             .ok_or(anyhow!("`db_path` is required when `run_client` is true"))?;
+
+        let mut evm_client_configs: BTreeMap<BridgeChainId, BridgeClientEvmConfig> = BTreeMap::new();
+        for evm_config in &self.evm {
+            info!("chain_id: {}, read evm_config: {:#?}", evm_config.eth_bridge_chain_id, evm_config);
+
+            let chain_id = BridgeChainId::try_from(evm_config.eth_bridge_chain_id)?;
+            evm_client_configs.insert(
+                chain_id.clone(),
+                BridgeClientEvmConfig {
+                    contracts: evm_contracts.get(&chain_id).unwrap().clone(),
+                    contracts_start_block_fallback: evm_config.eth_contracts_start_block_fallback.unwrap(),
+                    contracts_start_block_override: evm_config.eth_contracts_start_block_override,
+                },
+            );
+        }
 
         let bridge_client_config = BridgeClientConfig {
             sui_address: client_sui_address,
@@ -248,9 +268,89 @@ impl BridgeNodeConfig {
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
             aml_key: self.aml_key.clone(),
+            evm_clients,
+            evm_client_configs,
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
+    }
+
+    async fn prepare_for_evm(
+        &self,
+        metrics: Arc<BridgeMetrics>,
+    ) -> anyhow::Result<(BTreeMap<BridgeChainId, Arc<EthClient<MeteredEthHttpProvier>>>, BTreeMap<BridgeChainId, Vec<EthAddress>>)> {
+        let mut eth_clients: BTreeMap<BridgeChainId, Arc<EthClient<MeteredEthHttpProvier>>> = BTreeMap::new();
+        let mut eth_contracts: BTreeMap<BridgeChainId, Vec<EthAddress>> = BTreeMap::new();
+
+        for evm_config in &self.evm {
+            let bridge_proxy_address =
+                EthAddress::from_str(&evm_config.eth_bridge_proxy_address)?;
+
+            let provider =
+                Arc::new(
+                    new_metered_eth_provider(&evm_config.eth_rpc_url, metrics.clone())
+                        .unwrap()
+                        .interval(std::time::Duration::from_millis(2000)),
+                );
+            let chain_id = provider.get_chainid().await?;
+            let (
+                committee_address,
+                limiter_address,
+                vault_address,
+                config_address,
+                _weth_address,
+                _usdt_address,
+            ) = get_eth_contract_addresses(bridge_proxy_address, &provider).await?;
+            let config = EthBridgeConfig::new(config_address, provider.clone());
+
+            if self.run_client && evm_config.eth_contracts_start_block_fallback.is_none() {
+                return Err(anyhow!(
+                "eth_contracts_start_block_fallback is required when run_client is true"
+            ));
+            }
+
+            let bridge_chain_id: u8 = config.chain_id().call().await?;
+            if evm_config.eth_bridge_chain_id != bridge_chain_id {
+                return Err(anyhow!(
+                "Bridge chain id mismatch: expected {}, but connected to {}",
+                evm_config.eth_bridge_chain_id,
+                bridge_chain_id
+            ));
+            }
+
+            info!("Connected to Eth chain: {}, Bridge chain id: {}", chain_id.as_u64(), bridge_chain_id);
+
+            let eth_client =
+                Arc::new(
+                    EthClient::<MeteredEthHttpProvier>::new(
+                        &evm_config.eth_rpc_url,
+                        HashSet::from_iter(vec![
+                            bridge_proxy_address,
+                            committee_address,
+                            config_address,
+                            limiter_address,
+                            vault_address,
+                        ]),
+                        metrics.clone(),
+                        chain_id,
+                    )
+                        .await?,
+                )
+                ;
+            let contract_addresses = vec![
+                bridge_proxy_address,
+                committee_address,
+                config_address,
+                limiter_address,
+                vault_address,
+            ];
+
+            let chain_id = BridgeChainId::try_from(bridge_chain_id)?;
+            eth_clients.insert(chain_id, eth_client.clone());
+            eth_contracts.insert(chain_id, contract_addresses);
+        }
+
+        Ok((eth_clients, eth_contracts))
     }
 
     async fn prepare_for_eth(
@@ -283,13 +383,15 @@ impl BridgeNodeConfig {
         // If bridge chain id is Eth Mainent or Sepolia, we expect to see chain
         // identifier to match accordingly.
         let bridge_chain_id: u8 = config.chain_id().call().await?;
-        if self.eth.eth_bridge_chain_id != bridge_chain_id {
-            return Err(anyhow!(
-                "Bridge chain id mismatch: expected {}, but connected to {}",
-                self.eth.eth_bridge_chain_id,
-                bridge_chain_id
-            ));
-        }
+
+        // // TODO: BridgeTestCluster can't be used here, because it doesn't support evm contracts
+        // if self.eth.eth_bridge_chain_id != bridge_chain_id {
+        //     return Err(anyhow!(
+        //         "Bridge chain id mismatch: expected {}, but connected to {}",
+        //         self.eth.eth_bridge_chain_id,
+        //         bridge_chain_id
+        //     ));
+        // }
         if bridge_chain_id == BridgeChainId::EthMainnet as u8 && chain_id.as_u64() != 1 {
             anyhow::bail!(
                 "Expected Eth chain id 1, but connected to {}",
@@ -319,8 +421,9 @@ impl BridgeNodeConfig {
                     vault_address,
                 ]),
                 metrics,
+                chain_id,
             )
-            .await?,
+                .await?,
         );
         let contract_addresses = vec![
             bridge_proxy_address,
@@ -410,6 +513,7 @@ pub struct BridgeServerConfig {
     pub metrics_port: u16,
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<MeteredEthHttpProvier>>>,
     /// A list of approved governance actions. Action in this list will be signed when requested by client.
     pub approved_governance_actions: Vec<BridgeAction>,
 }
@@ -421,15 +525,29 @@ pub struct BridgeClientConfig {
     pub metrics_port: u16,
     pub sui_client: Arc<SuiClient<SuiSdkClient>>,
     pub eth_client: Arc<EthClient<MeteredEthHttpProvier>>,
+    pub evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<MeteredEthHttpProvier>>>,
+
     pub db_path: PathBuf,
     pub eth_contracts: Vec<EthAddress>,
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
+
+    pub evm_client_configs: BTreeMap<BridgeChainId, BridgeClientEvmConfig>,
+
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
     // The following fields are used for AML checking authorization key
     pub aml_key: String,
 }
+
+#[derive(Debug)]
+pub struct BridgeClientEvmConfig {
+    pub contracts: Vec<EthAddress>,
+    // See `BridgeNodeConfig` for the explanation of following two fields.
+    pub contracts_start_block_fallback: u64,
+    pub contracts_start_block_override: Option<u64>,
+}
+
 
 #[serde_as]
 #[derive(Clone, Debug, Deserialize, Serialize)]

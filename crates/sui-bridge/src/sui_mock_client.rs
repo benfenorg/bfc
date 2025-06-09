@@ -146,6 +146,15 @@ impl SuiMockClient {
     ) -> tokio::sync::broadcast::Receiver<TransactionDigest> {
         self.requested_transactions_tx.subscribe()
     }
+
+    async fn get_cap_object_ref(
+        &self,
+        _cap_id: ObjectID,
+    ) -> anyhow::Result<ObjectRef> {
+        //todo: @suoyuan
+        Err(anyhow::anyhow!("Not implemented"))
+    }
+
 }
 
 #[async_trait]
@@ -369,5 +378,13 @@ impl SuiClientInner for SuiMockClient {
                     gas_object_id
                 )
             })
+    }
+
+    async fn get_cap_object_ref(
+        &self,
+        cap_id: ObjectID,
+    ) -> anyhow::Result<ObjectRef> {
+        //todo: @suoyuan
+        Err(anyhow::anyhow!("Not implemented"))
     }
 }
