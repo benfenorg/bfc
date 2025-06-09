@@ -12,6 +12,8 @@ use crate::eth_client::EthClient;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
+use crate::tron_query::check_tron_txn;
+use crate::solana_query::check_solana_txn;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -209,23 +211,28 @@ where
                     }
                 }
                 BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
-                    // TODO:check tron txn
-                    unreachable!()
+                    // check tron txn
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
                 }
                 BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
-                    // TODO:check  solana txn
-                    unreachable!()
-
+                    // check solana txn
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
                 }
                 _ => {
                     return Err(BridgeError::Generic(
-                        format!("Unsupported BTC chain ID({})", chain_id)
+                        format!("Unsupported External Coin chain ID({})", chain_id)
                     ));
                 }
             }
 
             return Err(BridgeError::Generic(
-                format!("BTC txn({:#?}) is not valid", tx_hash)
+                format!("External Coin txn({:#?}) is not valid for chain {}", tx_hash, chain_id)
             ));
         }
 

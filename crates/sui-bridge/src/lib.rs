@@ -27,6 +27,8 @@ pub mod sui_syncer;
 pub mod sui_transaction_builder;
 pub mod types;
 pub mod utils;
+pub mod tron_query;
+pub mod solana_query;
 
 #[cfg(any(feature = "test-utils", test))]
 pub(crate) mod eth_mock_provider;
