@@ -307,7 +307,7 @@ async fn start_client_components(
     for (chain_id, evm_client_config) in client_config.evm_client_configs {
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
         let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
-        let evm_chain_id = client.get_chain_id().await?;
+        let evm_chain_id = client.get_chain_id_local().await?;
         //todo: support fast path for evm client @lifei
         let keys = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
         let evm_contracts_to_watch = get_eth_contracts_to_watch(
