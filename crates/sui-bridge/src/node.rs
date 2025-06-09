@@ -307,9 +307,9 @@ async fn start_client_components(
     for (chain_id, evm_client_config) in client_config.evm_client_configs {
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
         let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
-        let eth_chain_id = client_config.eth_client.get_chain_id().await?;
+        let evm_chain_id = client.get_chain_id().await?;
         //todo: support fast path for evm client @lifei
-        let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
+        let keys = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
         let evm_contracts_to_watch = get_eth_contracts_to_watch(
             &store,
             &keys,
@@ -327,7 +327,7 @@ async fn start_client_components(
                 .expect("Failed to start evm syncer finalized");
         all_handles.extend(task_handles);
         if evm_client_config.enable_fast_path_latest {
-            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
+            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
             let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
                 &store,
                 &keys_fast_path,
@@ -343,7 +343,7 @@ async fn start_client_components(
         }
     
         if evm_client_config.enable_fast_path_safe {
-            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Safe)).collect::<Vec<_>>();
+            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, evm_chain_id,FastPathSelector::Safe)).collect::<Vec<_>>();
             let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
                 &store,
                 &keys_fast_path,
