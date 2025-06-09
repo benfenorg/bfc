@@ -125,6 +125,10 @@ where
         let (chain_id, tx_hash, event_idx) = key;
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
         match bridge_chain_id {
+            BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+            BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+            BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+            BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
             BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                 unreachable!()
@@ -182,7 +186,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
-            let btc_chain_id = external_action.sui_bridge_event.source_chain;
+            let chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -195,11 +199,29 @@ where
             }
             info!("whitelist: {:#?}", &whitelist);
 
-            // check btc txn
-            let ok =
-                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
-            if ok {
-                return Ok(action_rs);
+
+            match chain_id {
+                BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                    // check btc txn
+                    let ok = check_btc_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
+                    // TODO:check tron txn
+                    unreachable!()
+                }
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
+                    // TODO:check  solana txn
+                    unreachable!()
+
+                }
+                _ => {
+                    return Err(BridgeError::Generic(
+                        format!("Unsupported BTC chain ID({})", chain_id)
+                    ));
+                }
             }
 
             return Err(BridgeError::Generic(
@@ -238,6 +260,10 @@ where
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
 
             let result = match send_back_action.sui_bridge_event.eth_chain_id {
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+                BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+                BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
                 BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
                 BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                     unreachable!()

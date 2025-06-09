@@ -140,6 +140,10 @@ fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
 
 
         // unsupported
+        BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+        BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+        BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+        BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
         BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
         BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet
         => {

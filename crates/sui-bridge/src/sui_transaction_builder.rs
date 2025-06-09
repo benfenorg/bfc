@@ -60,6 +60,7 @@ pub fn build_sui_transaction(
             action,
             bridge_object_arg,
             sui_token_type_tags,
+            admin_cap_arg,
             rgp,
         ),
         BridgeAction::SuiToEthBridgeAction(_) => build_token_bridge_approve_transaction(
@@ -169,6 +170,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     action: VerifiedCertifiedBridgeAction,
     bridge_object_arg: ObjectArg,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
+    admin_cap_arg: Option<ObjectArg>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
@@ -244,19 +246,41 @@ fn build_external_token_bridge_approve_and_claim_transaction(
         ))
     })?;
 
-    builder.programmable_move_call(
-        BRIDGE_PACKAGE_ID,
-        sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("approval_and_claimed_external_coin").to_owned(),
-        vec![
-            sui_token_type_tags
-            .get(&token_type)
-            .ok_or(BridgeError::UnknownTokenId(token_type))?
-            .clone()
-        ],
-        vec![arg_bridge, arg_msg, arg_signatures],
-    );
+    match token_type {
+        sui_types::bridge::TOKEN_ID_BUSD |
+        sui_types::bridge::TOKEN_ID_USDC |
+        sui_types::bridge::TOKEN_ID_USDT  => {
+            let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
 
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("approval_and_claimed_external_busd_coin").to_owned(),
+                vec![
+                    sui_token_type_tags
+                        .get(&token_type)
+                        .ok_or(BridgeError::UnknownTokenId(token_type))?
+                        .clone()
+                ],
+                vec![arg_bridge, arg_msg, arg_signatures, system_obj, admin_cap],
+            );
+        },
+        _ => {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("approval_and_claimed_external_coin").to_owned(),
+                vec![
+                    sui_token_type_tags
+                        .get(&token_type)
+                        .ok_or(BridgeError::UnknownTokenId(token_type))?
+                        .clone()
+                ],
+                vec![arg_bridge, arg_msg, arg_signatures],
+            );
+        },
+    }
 
     let pt = builder.finish();
 
