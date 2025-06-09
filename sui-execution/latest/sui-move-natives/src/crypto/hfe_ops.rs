@@ -321,7 +321,6 @@ pub fn split_data_to_shard(data: &[u8], n: usize) -> Vec<Vec<u8>> {
     seed.copy_from_slice(&key_hash);
     let mut rng = ChaChaRng::from_seed(seed);
 
-    // 1. 生成n-1个确定性随机分片
     let mut shards: Vec<Vec<u8>> = (0..n-1)
         .map(|_| {
             rng.clone().sample_iter(rand::distributions::Standard)
@@ -330,7 +329,6 @@ pub fn split_data_to_shard(data: &[u8], n: usize) -> Vec<Vec<u8>> {
         })
         .collect();
 
-    // 2. 计算最后一个分片：原始数据 XOR 所有随机分片 XOR 所有分片密钥
     let last_shard = shards.iter()
         .enumerate()
         .fold(data.to_vec(), |acc, (i, shard)| {
@@ -342,7 +340,6 @@ pub fn split_data_to_shard(data: &[u8], n: usize) -> Vec<Vec<u8>> {
                 .collect()
         });
 
-    // 最后一个分片还需要与自己的分片密钥XOR
     let last_shard_key = derive_shard_key(n-1, key.into());
     let last_shard = last_shard.iter()
         .zip(last_shard_key.iter().cycle())

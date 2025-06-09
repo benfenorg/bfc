@@ -84,7 +84,6 @@ struct AnonymousCompareParams {
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
-    // 初始化日志
     //todo: 1. import annoymous private key ,
     // open log system.
     // db cache system.
@@ -98,10 +97,8 @@ async fn main() -> anyhow::Result<()> {
 
     info!("Starting BFC Anonymous Server on {}", addr);
 
-    // 创建路由
     let routes = create_routes();
 
-    // 启动服务器
     warp::serve(routes)
         .run(addr)
         .await;
@@ -110,26 +107,22 @@ async fn main() -> anyhow::Result<()> {
 }
 
 fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
-    // CORS 配置
     let cors = warp::cors()
         .allow_any_origin()
         .allow_headers(vec!["content-type"])
         .allow_methods(vec!["POST", "GET", "OPTIONS"]);
 
-    // JSON-RPC 路由
     let rpc_route = warp::path("rpc")
         .and(warp::post())
         .and(warp::body::json())
         .and_then(handle_rpc_request)
         .with(cors.clone());
 
-    // 健康检查路由
     let health_route = warp::path("health")
         .and(warp::get())
         .map(|| warp::reply::with_status("OK", warp::http::StatusCode::OK))
         .with(cors.clone());
 
-    // 根路径信息
     let info_route = warp::path::end()
         .and(warp::get())
         .map(|| {

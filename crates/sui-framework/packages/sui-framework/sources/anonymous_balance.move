@@ -173,8 +173,9 @@ public fun join<T>(self: &mut Anonymos_Balance<T>, balance: Anonymos_Balance<T>)
 public fun split<T>(self: &mut Anonymos_Balance<T>, value: u64): Anonymos_Balance<T> {
     assert!(self.value >= value, ENotEnough);
     self.value = self.value - value;
-
-    let result = hfe_ops_minus(self.value1, self.value2, value/2, value/2);
+    let value3 = value/2;
+    let value4 = value - value3;
+    let result = hfe_ops_minus(self.value1, self.value2, value3, value4);
     self.value1 = result[0];
     self.value2 = result[1];
 
