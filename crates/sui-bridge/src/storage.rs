@@ -19,6 +19,7 @@ use crate::fast_path::FastPathSelector;
 use crate::types::{BridgeAction, BridgeActionDigest};
 
 //(address,chain_id,fast_path_enabled)
+//chain_id is the chain id of the evm chain,not the bridge chain id
 pub type EthSyncerCursorsKey = (ethers::types::Address, u64,FastPathSelector);
 
 #[derive(DBMapUtils)]
