@@ -112,7 +112,7 @@ where
                 error!("Failed to get last finalized block from eth client after retry chain_id: {} fast_path_enabled:{}", bridge_chain_id,fast_path_selector);
                 continue;
             };
-            tracing::debug!("Last finalized block: {} chain_id:{} fast_path:{}", new_value,bridge_chain_id,fast_path_selector);
+            tracing::info!("Last finalized block: {} chain_id:{} fast_path:{}", new_value,bridge_chain_id,fast_path_selector);
             metrics.last_finalized_eth_block.set(new_value as i64);
             if new_value > last_block_number {
                 last_finalized_block_sender
