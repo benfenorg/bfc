@@ -194,8 +194,6 @@ mod tests {
         assert_eq!(result, 6); // 10 - 4 = 6
         println!("Minus result: {}", result);
 
-
-        // 测试乘法
         let multiply_result = client.test_multiply(3, 4).await;
         assert!(multiply_result.success);
         let response = multiply_result.response.unwrap();
@@ -203,17 +201,13 @@ mod tests {
         assert_eq!(result, 12); // 3 * 4 = 12
         println!("Multiply result: {}", result);
 
-
-        // 测试比较
         let compare_result = client.test_compare(7, 5).await;
         assert!(compare_result.success);
         let response = compare_result.response.unwrap();
         let result = response["result"]["result"].as_u64().unwrap();
-        assert_eq!(result, 1); // 7 > 5, 所以返回1
+        assert_eq!(result, 1);
         println!("Compare result: {}", result);
 
-
-        // 测试ping
         let ping_result = client.test_ping().await;
         assert!(ping_result.success);
         let response = ping_result.response.unwrap();

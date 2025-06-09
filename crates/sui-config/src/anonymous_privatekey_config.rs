@@ -102,17 +102,14 @@ mod tests {
 
     #[test]
     fn test_from_yaml_file() {
-        // 构建到测试yaml文件的路径
         let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
         path.push("data/bfc_anonymous_config.yaml");
         
-        // 从yaml文件加载配置
         let config = AnonymousPrivateKeyConfig::from_yaml_file(&path)
             .expect("Failed to load config from yaml file");
         println!("the config key is {:?}", config.anonymous_privatekey);
         println!("the anonymous_rpc is {:?}", config.anonymous_rpc);
 
-        // 验证私钥是否正确加载
         assert!(config.anonymous_privatekey.is_some());
         assert_eq!(config.anonymous_privatekey.unwrap(), "your-private-key-here");
     }

@@ -598,8 +598,9 @@ Split a <code>Balance</code> and take a sub balance from it.
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
     <b>assert</b>!(self.value &gt;= value, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
     self.value = self.value - value;
-
-    <b>let</b> result = hfe_ops_minus(self.value1, self.value2, value/2, value/2);
+    <b>let</b> value3 = value/2;
+    <b>let</b> value4 = value - value3;
+    <b>let</b> result = hfe_ops_minus(self.value1, self.value2, value3, value4);
     self.value1 = result[0];
     self.value2 = result[1];
 
