@@ -11,7 +11,6 @@ struct TestResult {
     error: Option<String>,
 }
 
-/// HTTP客户端测试工具
 struct AnonymousClient {
     base_url: String,
     client: reqwest::Client,
@@ -52,7 +51,6 @@ impl AnonymousClient {
         Ok(response_json)
     }
 
-    /// 测试加法操作
     pub async fn test_add(&self, value1: i32, value2: i32, value3: i32, value4: i32) -> TestResult {
         let params = json!({
             "value1": value1,
@@ -179,10 +177,9 @@ mod tests {
     }
 
     #[tokio::test]
-    #[ignore] // 需要服务器运行才能测试
+    #[ignore]
     async fn test_all_operations() {
         let client = AnonymousClient::new("http://localhost:9010");
-        // 测试加法
         let add_result = client.test_add(2, 3, 4, 5).await;
         assert!(add_result.success);
         let response = add_result.response.unwrap();
@@ -190,7 +187,6 @@ mod tests {
         assert_eq!(result, 5); // 5 + 3 = 8
 
         
-        // 测试减法
         let minus_result = client.test_minus(10, 4, 3, 2).await;
         assert!(minus_result.success);
         let response = minus_result.response.unwrap();
