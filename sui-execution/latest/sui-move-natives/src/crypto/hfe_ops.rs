@@ -47,8 +47,8 @@ pub fn hfe_ops_add(
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
 
-    //todo: design hfe ops cost table.
-    // Load the cost parameters from the protocol config
+    //todo: add result overflow defense.
+
     let anonymous_compute_cost = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -105,6 +105,10 @@ pub fn hfe_ops_minus(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
+
+    ////todo: add result overflow defense.
+
+
     let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -159,6 +163,9 @@ pub fn hfe_ops_multiplied(
     ty_args: Vec<Type>,
     mut args: VecDeque<Value>,
 ) -> PartialVMResult<NativeResult>{
+
+    //todo: add result overflow defense.
+
     let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
@@ -252,6 +259,10 @@ pub fn hfe_ops_compare(
 pub fn split_value(context: &mut NativeContext,
                   ty_args: Vec<Type>,
                   mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
+
+
+    //todo: add result overflow defense.
+
 
     let anonymous_compute_cost_params = &context
         .extensions()
