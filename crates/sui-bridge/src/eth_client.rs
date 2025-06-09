@@ -437,7 +437,7 @@ mod tests {
             .unwrap();
 
         let error = client
-            .get_bridge_action_maybe(eth_tx_hash, 0, FastPathConfig::default())
+            .get_bridge_action_maybe(eth_tx_hash, 1, FastPathConfig::default())
             .await
             .unwrap_err();
         match error {
@@ -547,7 +547,7 @@ mod tests {
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));
 
         let provider = Arc::new(
-            new_metered_eth_provider("https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde", metrics.clone())
+            new_metered_eth_provider("https://bsc-testnet.drpc.org", metrics.clone())
                 .unwrap()
                 .interval(std::time::Duration::from_millis(2000)),
         );
@@ -562,7 +562,7 @@ mod tests {
 
         let client = Arc::new(
             EthClient::<MeteredEthHttpProvier>::new(
-                "https://serene-warmhearted-borough.bsc-testnet.quiknode.pro/8b2d01b7aaf9a6f285b0c3c26b36b7bd01f5dbde",
+                "https://bsc-testnet.drpc.org",
                 HashSet::from_iter(vec![
                     bridge_proxy_address,
                     committee_address,

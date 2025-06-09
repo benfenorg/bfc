@@ -694,6 +694,7 @@ mod tests {
 
         // prepare node config (server only)
         let tmp_dir = tempdir().unwrap().into_path();
+        let db_path = tmp_dir.join("client_db");
         let authority_key_path = "test_starting_bridge_node_bridge_authority_key";
         let server_listen_port = get_available_port("127.0.0.1");
         let base64_encoded = kp.encode_base64();
@@ -714,7 +715,7 @@ mod tests {
                 eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                 eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                eth_contracts_start_block_fallback: None,
+                eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
                 latest_fast_path_threshold: None,
                 safe_fast_path_threshold: None,
@@ -726,7 +727,7 @@ mod tests {
                     eth_rpc_url: bridge_test_cluster.eth_rpc_url(),
                     eth_bridge_proxy_address: bridge_test_cluster.sui_bridge_address(),
                     eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
-                    eth_contracts_start_block_fallback: None,
+                    eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
                     latest_fast_path_threshold: None,
                     safe_fast_path_threshold: None,
@@ -737,7 +738,7 @@ mod tests {
             aml_key: "test_key".to_string(),
             approved_governance_actions: vec![],
             run_client: false,
-            db_path: None,
+            db_path: Some(db_path),
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
