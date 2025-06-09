@@ -269,7 +269,7 @@ async fn start_client_components(
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch.clone(), evm_evnets_tx.clone(),FastPathSelector::Finalized)
             .run(metrics.clone())
             .await
-            .expect("Failed to start eth syncer");
+            .expect("Failed to start eth syncer finalized");
     all_handles.extend(task_handles);
     if client_config.eth_enable_fast_path_latest {
         let keys_fast_path = client_config.eth_contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
@@ -283,7 +283,7 @@ async fn start_client_components(
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Latest)
             .run(metrics.clone())
             .await
-            .expect("Failed to start eth syncer");
+            .expect("Failed to start eth syncer latest");
         all_handles.extend(task_handles);
     }
 
@@ -299,7 +299,7 @@ async fn start_client_components(
         EthSyncer::new(client_config.eth_client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Safe)
             .run(metrics.clone())
             .await
-            .expect("Failed to start eth syncer");
+            .expect("Failed to start eth syncer safe");
         all_handles.extend(task_handles);
     }
     
@@ -307,7 +307,6 @@ async fn start_client_components(
     for (chain_id, evm_client_config) in client_config.evm_client_configs {
         info!("chain_id: {}, evm_client_config: {:#?}", chain_id, evm_client_config);
         let client = client_config.evm_clients.get(&chain_id).unwrap().clone();
-
         let eth_chain_id = client_config.eth_client.get_chain_id().await?;
         //todo: support fast path for evm client @lifei
         let keys = evm_client_config.contracts.iter().map(|k| (*k, eth_chain_id,FastPathSelector::Finalized)).collect::<Vec<_>>();
@@ -322,11 +321,42 @@ async fn start_client_components(
 
 
         let (task_handles, _) =
-            EthSyncer::new(client, evm_contracts_to_watch, evm_evnets_tx.clone(),FastPathSelector::Finalized)
+            EthSyncer::new(client.clone(), evm_contracts_to_watch, evm_evnets_tx.clone(),FastPathSelector::Finalized)
                 .run(metrics.clone())
                 .await
-                .expect("Failed to start evm syncer");
+                .expect("Failed to start evm syncer finalized");
         all_handles.extend(task_handles);
+        if evm_client_config.enable_fast_path_latest {
+            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Latest)).collect::<Vec<_>>();
+            let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
+                &store,
+                &keys_fast_path,
+                evm_client_config.contracts_start_block_fallback,
+                evm_client_config.contracts_start_block_override,
+            );
+            let (task_handles, _) =
+            EthSyncer::new(client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Latest)
+                .run(metrics.clone())
+                .await
+                .expect("Failed to start evm syncer latest");
+            all_handles.extend(task_handles);
+        }
+    
+        if evm_client_config.enable_fast_path_safe {
+            let keys_fast_path = evm_client_config.contracts.iter().map(|k| (*k, chain_id,FastPathSelector::Safe)).collect::<Vec<_>>();
+            let eth_contracts_to_watch_fast_path = get_eth_contracts_to_watch(
+                &store,
+                &keys_fast_path,
+                evm_client_config.contracts_start_block_fallback,
+                evm_client_config.contracts_start_block_override,
+            );
+            let (task_handles, _) =
+            EthSyncer::new(client.clone(), eth_contracts_to_watch_fast_path.clone(), evm_evnets_tx.clone(),FastPathSelector::Safe)
+                .run(metrics.clone())
+                .await
+                .expect("Failed to start evm syncer safe");
+            all_handles.extend(task_handles);
+        }
     }
 
     let (task_handles, sui_events_rx) = SuiSyncer::new(
