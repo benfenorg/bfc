@@ -3,6 +3,7 @@
 
 pub mod abi;
 pub mod aml;
+pub mod user_limit;
 pub mod action_executor;
 pub mod btc_query;
 pub mod client;
