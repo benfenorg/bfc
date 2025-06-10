@@ -2,26 +2,23 @@
 pub mod schema;
 pub mod postgres_manager;
 
+use std::collections::HashMap;
+use std::sync::Mutex;
+use std::time::Instant;
 use sui_types::bridge::BridgeChainId;
 use ethers::types::Address as EthAddress;
 use crate::fast_path::FastPathSelector;
-use diesel::data_types::PgTimestamp;
 use diesel::{Identifiable, Insertable, Queryable, Selectable};
-use diesel::dsl::now;
-use diesel::dsl::sum;
 use diesel::dsl::sql;
 use diesel::sql_types::BigInt;
-use diesel::upsert::excluded;
-use diesel::{ExpressionMethods, QueryDsl, TextExpressionMethods};
-use diesel::{OptionalExtension, SelectableHelper};
-use diesel_async::scoped_futures::ScopedFutureExt;
-use diesel_async::AsyncConnection;
+use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
 
-use sui_types::base_types::TransactionDigest;
 use crate::user_limit::postgres_manager::{get_connection_pool, PgPool};
 use crate::user_limit::schema::{bridge_record, limit_config};
 use chrono::{Duration, Utc};
+use fastcrypto::encoding::{Hex, Encoding};
+use once_cell::sync::Lazy;
 use tracing::{error, info};
 
 #[derive(Queryable, Selectable, Insertable, Identifiable, Debug)]
@@ -42,6 +39,17 @@ pub struct LimitConfig {
     pub path: i32,
     pub limits: i64,
 }
+
+#[allow(unused)]
+struct RecordCache {
+    total: i64,
+    created_at: Instant,
+}
+
+#[allow(unused)]
+static RECORD_CACHE: Lazy<Mutex<HashMap<String, RecordCache>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+#[allow(unused)]
+const RECORD_VALIDITY: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
 
 
 pub struct UserLimitHandle {
@@ -82,9 +90,9 @@ impl UserLimitHandle {
                 "User limit exceeded: chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}, bridge_amount: {}, limit_config: {}",
                 chain_id, eth_address, path, amount, bridge_amount, limit_config
             );
-            return false; // Limit exceeded
+            return true; // Limit exceeded
         }
-        true
+        false
     }
 
     pub async fn record_user_limit(
@@ -95,7 +103,43 @@ impl UserLimitHandle {
         tx_hash: Vec<u8>,
         amount: u64,
     ) -> Result<(), anyhow::Error> {
-        //todo
+        use crate::user_limit::schema::bridge_record;
+        use diesel::insert_into;
+        let now_ms = Utc::now().timestamp_millis();
+
+        let new_record = BridgeRecord {
+            chain_id: chain_id as i32,
+            address: eth_address.as_bytes().to_vec(),
+            path: path as i32,
+            amount: amount as i64,
+            tx_hash,
+            timestamp_ms: now_ms,
+        };
+        let conn = &mut self.conn.get().await?;
+        let result = insert_into(bridge_record::table)
+            .values(&new_record)
+            .execute(conn)
+            .await?;
+        if result == 0 {
+            return Err(anyhow::anyhow!("Failed to insert user limit record, no rows affected"));
+        }
+        // Update the cache
+        {
+            let mut cache = RECORD_CACHE.lock().unwrap();
+            let key = format!("{}_{:x}_{}", chain_id as i32, eth_address, path as i32);
+            let entry = cache.entry(key).or_insert(RecordCache {
+                total: 0,
+                created_at: Instant::now(),
+            });
+            entry.total += amount as i64;
+            // entry.created_at = Instant::now();
+            info!("Cache updated for chain_id: {}, address: {:x}, path: {}, new total: {}",
+                chain_id as i32, eth_address, path as i32, entry.total
+            );
+        }
+        info!("User limit record inserted: chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}",
+            chain_id, eth_address, path, amount
+        );
         Ok(())
     }
 
@@ -109,24 +153,39 @@ impl UserLimitHandle {
          let now_ms = Utc::now().timestamp_millis();
          let since_ms = now_ms - Duration::hours(24).num_milliseconds();
 
+         {
+             let address_ = Hex::encode(eth_address);
+             let mut cache_map = RECORD_CACHE.lock().unwrap();
+             let key = format!("{}_{}_{}", chain_id_, address_, path_);
+             let mut is_expired = false;
+             cache_map.get(&key)
+                 .and_then(|cache_data| {
+                     if cache_data.created_at.elapsed() < RECORD_VALIDITY {
+                         Some(cache_data.total)
+                     } else {
+                         is_expired = true;
+                         None
+                     }
+                 })
+                 .map(|total| {
+                     info!("Using cached record for chain_id: {}, address: {}, path: {}", chain_id_, address_, path_);
+                     return Ok::<i64, anyhow::Error>(total);
+                 });
+                if is_expired {
+                    cache_map.remove(&key);
+                    info!("Cache expired and deleted for chain_id: {}, address: {}, path: {}", chain_id_, address_, path_);
+                }
+         }
         let conn = &mut self.conn.get().await?;
         let result = bridge_record
             .filter(chain_id.eq(chain_id_))
             .filter(address.eq(eth_address))
             .filter(path.eq(path_))
             .filter(timestamp_ms.ge(since_ms))
-            // .select(sum(amount))
-            .select(sql::<BigInt>("SUM(amount)::BIGINT"))
+            .select(sql::<BigInt>("COALESCE(SUM(amount), 0)::BIGINT"))
             .first::<i64>(conn)
             .await?;
          Ok(result)
-        // match result {
-        //     Ok(amount) => Ok(amount),
-        //     Err(_) => {
-        //         error!("No records found for chain_id: {:?}, address: {:?}, path: {:?}", chain_id_, eth_address, path_);
-        //         Ok(0)
-        //     }, // If no record found, return 0
-        // }
     }
 
     async fn get_limit_config(
@@ -147,6 +206,36 @@ impl UserLimitHandle {
             Ok(limit) => Ok(limit),
             Err(_) => Err(anyhow::anyhow!("Limit config not found for chain_id: {:?}, path: {:?}", chain_id_, path_)),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::str::FromStr;
+    use crate::fast_path::FastPathSelector;
+
+    #[tokio::test]
+    async fn test_user_limit() {
+        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:tesssx877@localhost:5432/user_limit".to_string()).await;
+
+        let chain_id = BridgeChainId::BtcTestnet;
+        let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44c").unwrap();
+        let path = FastPathSelector::Latest;
+        let amount = 99;
+
+        // Check not exist user limit
+        let is_within_limit = user_limit_handle.check_user_limit(chain_id, eth_address, path, amount).await;
+        assert!(!is_within_limit, "User limit check should ok");
+
+        // Record user limit
+        let tx_hash = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address, path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit");
+
+        // Check again after recording
+        let is_within_limit_after_recording = user_limit_handle.check_user_limit(chain_id, eth_address, path, amount).await;
+        assert!(is_within_limit_after_recording, "User limit check failed after recording");
     }
 }
 
