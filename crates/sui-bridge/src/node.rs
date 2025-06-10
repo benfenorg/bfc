@@ -745,6 +745,7 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            user_limit_db_url: None,
         };
         // Spawn bridge node in memory
         let _handle = run_bridge_node(
@@ -830,6 +831,7 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            user_limit_db_url: None,
         };
 
         let prometheus_registry = Registry::new();
@@ -944,6 +946,7 @@ mod tests {
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            user_limit_db_url: None,
         };
         let prometheus_registry = Registry::new();
         let metrics = Arc::new(BridgeMetrics::new(&prometheus_registry));

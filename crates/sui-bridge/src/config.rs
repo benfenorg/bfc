@@ -135,6 +135,8 @@ pub struct BridgeNodeConfig {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub watchdog_config: Option<WatchdogConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_limit_db_url: Option<String>,
 }
 
 pub fn default_ed25519_key_pair() -> NetworkKeyPair {
@@ -300,6 +302,7 @@ impl BridgeNodeConfig {
             evm_clients,
             evm_client_configs,
             run_client: self.run_client,
+            user_limit_db_url: self.user_limit_db_url.clone(),
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -582,6 +585,7 @@ pub struct BridgeClientConfig {
     // The following fields are used for AML checking authorization key
     pub aml_key: String,
     pub run_client: bool,
+    pub user_limit_db_url: Option<String>,
 }
 
 #[derive(Debug)]

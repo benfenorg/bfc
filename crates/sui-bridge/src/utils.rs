@@ -242,6 +242,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
                     .to_string(),
             )]),
         }),
+        user_limit_db_url: Some("pgpath".to_string()),
     };
     if run_client {
         config.sui.bridge_client_key_path = Some(PathBuf::from("/path/to/your/bridge_client_key"));
