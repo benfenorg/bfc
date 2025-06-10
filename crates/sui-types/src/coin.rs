@@ -20,6 +20,10 @@ use serde::{Deserialize, Serialize};
 
 pub const COIN_MODULE_NAME: &IdentStr = ident_str!("coin");
 pub const COIN_STRUCT_NAME: &IdentStr = ident_str!("Coin");
+
+pub const ANONYMOUS_COIN_STRUCT_NAME: &IdentStr = ident_str!("Anonymous_Coin");
+pub const ANONYMOUS_COIN_MODULE_NAME: &IdentStr = ident_str!("anonymous_coin");
+
 pub const COIN_METADATA_STRUCT_NAME: &IdentStr = ident_str!("CoinMetadata");
 pub const COIN_TREASURE_CAP_NAME: &IdentStr = ident_str!("TreasuryCap");
 
@@ -48,6 +52,15 @@ impl Coin {
             address: SUI_FRAMEWORK_ADDRESS,
             name: COIN_STRUCT_NAME.to_owned(),
             module: COIN_MODULE_NAME.to_owned(),
+            type_params: vec![type_param],
+        }
+    }
+
+    pub fn anonymous_type_(type_param: TypeTag) -> StructTag {
+        StructTag {
+            address: SUI_FRAMEWORK_ADDRESS,
+            name: ANONYMOUS_COIN_STRUCT_NAME.to_owned(),
+            module: ANONYMOUS_COIN_MODULE_NAME.to_owned(),
             type_params: vec![type_param],
         }
     }
@@ -208,9 +221,12 @@ pub struct CoinMetadata {
 impl CoinMetadata {
     /// Is this other StructTag representing a CoinMetadata?
     pub fn is_coin_metadata(other: &StructTag) -> bool {
-        other.address == SUI_FRAMEWORK_ADDRESS
+        (other.address == SUI_FRAMEWORK_ADDRESS
             && other.module.as_ident_str() == COIN_MODULE_NAME
-            && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME
+            && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME) ||
+            (other.address == SUI_FRAMEWORK_ADDRESS
+                && other.module.as_ident_str() == ANONYMOUS_COIN_MODULE_NAME
+                && other.name.as_ident_str() == COIN_METADATA_STRUCT_NAME)
     }
 
     /// Create a coin from BCS bytes
@@ -225,6 +241,15 @@ impl CoinMetadata {
             address: SUI_FRAMEWORK_ADDRESS,
             name: COIN_METADATA_STRUCT_NAME.to_owned(),
             module: COIN_MODULE_NAME.to_owned(),
+            type_params: vec![TypeTag::Struct(Box::new(type_param))],
+        }
+    }
+
+    pub fn anonyment_type_(type_param: StructTag) -> StructTag {
+        StructTag {
+            address: SUI_FRAMEWORK_ADDRESS,
+            name: COIN_METADATA_STRUCT_NAME.to_owned(),
+            module: ANONYMOUS_COIN_MODULE_NAME.to_owned(),
             type_params: vec![TypeTag::Struct(Box::new(type_param))],
         }
     }
