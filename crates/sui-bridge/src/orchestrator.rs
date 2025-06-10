@@ -19,6 +19,7 @@ use crate::metrics::BridgeMetrics;
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, ETHLogWrapper};
+use crate::user_limit::UserLimitHandle;
 use mysten_metrics::spawn_logged_monitored_task;
 // use sui_types::bridge::TOKEN_ID_BUSD;
 // use sui_types::bridge::FastPathSelector;
@@ -36,6 +37,7 @@ pub struct BridgeOrchestrator<C> {
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
     metrics: Arc<BridgeMetrics>,
+    user_limit_handle: Option<UserLimitHandle>,
 }
 
 impl<C> BridgeOrchestrator<C>
@@ -50,15 +52,17 @@ where
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
+        user_limit_handle: Option<UserLimitHandle>,
     ) -> Self {
         Self {
-            _sui_client: sui_client,
+            _sui_client: sui_client,    
             sui_events_rx,
             eth_events_rx,
             store,
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            user_limit_handle,
         }
     }
 
@@ -123,6 +127,7 @@ where
             self.eth_monitor_tx,
             metrics_clone,
             fast_path_config,
+            self.user_limit_handle,
         )));
 
         task_handles
@@ -230,6 +235,7 @@ where
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
         fast_path_config: FastPathConfig,
+        user_limit_handle: Option<UserLimitHandle>,
     ) {
         info!("Starting eth watcher task");
         while let Some((key, end_block, log_wrapper)) = eth_events_rx.recv().await {
@@ -282,6 +288,7 @@ where
                     }
                 }
             }
+            // fast path selector logic
             let mut fast_path_actions=vec![];
             if !log_wrapper.fast_path_selector.is_finalized() && !&actions.is_empty() {
                 for action in &actions {
@@ -290,7 +297,20 @@ where
                             // fast path selector                            
                             let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
                             let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
+
                             if fast_path_selector == log_wrapper.fast_path_selector {
+                                // address limit check
+                                //check user limit
+                                let chain_id = action_inner.eth_bridge_event.eth_chain_id;
+                                let user_address = action_inner.eth_bridge_event.eth_address;
+                                let amount = action_inner.eth_bridge_event.sui_adjusted_amount;
+                                if let Some(user_limit_handle) = &user_limit_handle {
+                                    let is_user_limit_exceeded = user_limit_handle.check_user_limit(chain_id, user_address, fast_path_selector, amount).await;
+                                    if is_user_limit_exceeded {
+                                        info!("user limit exceeded,action: {:?} fast path selector: {:?}",action_inner,fast_path_selector);
+                                        continue;
+                                    }
+                                }
                                 info!("fast path selector match,expect {:?} actual {:?},action: {:?}",log_wrapper.fast_path_selector,fast_path_selector,action_inner);
                                 fast_path_actions.push(action.clone());
                             }else{
@@ -305,11 +325,11 @@ where
             }
             if!fast_path_actions.is_empty() {
                 info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
-                process_normal_actions(&store, &aml_checker_tx, &metrics, fast_path_actions).await;
+                process_actions(&store, &aml_checker_tx, &metrics, fast_path_actions,log_wrapper.fast_path_selector,&user_limit_handle).await;
             };
             if log_wrapper.fast_path_selector.is_finalized() {
                 info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
-                process_normal_actions(&store, &aml_checker_tx, &metrics, actions).await;
+                process_actions(&store, &aml_checker_tx, &metrics, actions,log_wrapper.fast_path_selector,&user_limit_handle).await;
             }
             store
                 .update_eth_event_cursor(key, end_block)
@@ -320,7 +340,7 @@ where
 
 }
 
-async fn process_normal_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>) {
+async fn process_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>,fast_path_selector:FastPathSelector,user_limit_handle: &Option<UserLimitHandle>) {
     if !actions.is_empty() {
         metrics
             .eth_watcher_received_actions
@@ -329,7 +349,25 @@ async fn process_normal_actions(store: &Arc<BridgeOrchestratorTables>, aml_check
         store
             .insert_pending_aml_checked_actions(&actions)
             .expect("Store operation should not fail");
+        //record user limit
         // Execution will remove the pending actions from DB when the action is completed.
+        if let Some(user_limit_handle) = user_limit_handle {
+            for action in actions.clone() {
+                match action {
+                    BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                        let chain_id = action_inner.eth_bridge_event.eth_chain_id;
+                        let user_address = action_inner.eth_bridge_event.eth_address;
+                        let amount = action_inner.eth_bridge_event.sui_adjusted_amount;
+                        let tx_hash = action_inner.eth_bridge_event.tx_hash;
+                        user_limit_handle.record_user_limit(chain_id, user_address, fast_path_selector, tx_hash, amount).await.expect("record user limit should not fail");
+                    }
+                    _ => {
+                        continue;
+                    }
+                }
+            }
+        }
+        
         for action in actions {
             submit_to_aml_checker(aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
         }
@@ -382,6 +420,7 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
             .run(executor,aml_checker,fast_path_config)
             .await;
@@ -486,6 +525,7 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
             .run(executor,aml_checker,fast_path_config)
             .await;
@@ -588,6 +628,7 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
             .run(executor,aml_checker,fast_path_config)
             .await;
@@ -678,6 +719,7 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
             .run(executor,aml_checker,fast_path_config)
             .await;

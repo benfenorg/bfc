@@ -13,6 +13,7 @@ use crate::sui_bridge_watchdog::total_supplies::TotalSupplies;
 use crate::sui_bridge_watchdog::{BridgeWatchDog, Observable};
 use crate::sui_client::SuiBridgeClient;
 use crate::types::BridgeCommittee;
+use crate::user_limit::UserLimitHandle;
 use crate::utils::{
     get_committee_voting_power_by_name, get_eth_contract_addresses, get_validator_names_by_pub_keys,
 };
@@ -431,6 +432,7 @@ async fn start_client_components(
     );
     all_handles.push(spawn_logged_monitored_task!(monitor.run()));
 
+    let user_limit_handle = UserLimitHandle::new("postgresql://postgres:postgres@localhost:5432/user_limit".to_string()).await;
     let orchestrator = BridgeOrchestrator::new(
         sui_client,
         sui_events_rx,
@@ -439,6 +441,7 @@ async fn start_client_components(
         sui_monitor_tx,
         eth_monitor_tx,
         metrics,
+        Some(user_limit_handle),
     );
 
     all_handles.extend(orchestrator.run(bridge_action_executor, aml_checker,fast_path_config).await);
