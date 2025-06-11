@@ -297,5 +297,42 @@ mod tests {
         let key = format!("{}_{}", BridgeChainId::BtcTestnet as i32, FastPathSelector::Latest as i32);
         assert!(cache_map.contains_key(&key), "Cache should contain key: {}", key);
     }
+
+    #[tokio::test]
+    async fn test_limit_by_cached() {
+        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
+
+        let chain_id = BridgeChainId::BtcTestnet;
+        let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee45f").unwrap();
+        let path = FastPathSelector::Latest;
+        let amount = 10;
+
+        // Check not exist user limit
+        let is_within_limit = user_limit_handle.check_user_limit(chain_id, eth_address, path, amount).await;
+        assert!(!is_within_limit, "User limit check should ok");
+
+        // Record user limit
+        let tx_hash = vec![11, 22, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address.clone(), path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit 1");
+
+        let tx_hash = vec![12, 22, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address.clone(), path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit 2");
+
+        let tx_hash = vec![13, 22, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address.clone(), path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit 3");
+
+        // Check cached record
+        let bridge_amount = user_limit_handle.get_bridge_amounts(chain_id as i32, eth_address.as_bytes(), path as i32).await;
+        assert!(bridge_amount.is_ok(), "Failed to get bridge amounts");
+        assert_eq!(bridge_amount.unwrap(), (amount *3 ) as i64);
+
+        // Check again after recording
+        let is_within_limit_after_recording = user_limit_handle.check_user_limit(chain_id, eth_address.clone(), path, amount).await;
+        assert!(!is_within_limit_after_recording, "User limit check failed after recording");
+
+    }
 }
 

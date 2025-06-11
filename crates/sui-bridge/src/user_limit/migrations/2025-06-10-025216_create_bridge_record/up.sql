@@ -6,8 +6,8 @@ CREATE TABLE bridge_record (
        amount        BIGINT     NOT NULL,
        tx_hash       BYTEA      NOT NULL,
        timestamp_ms  BIGINT     NOT NULL,
-       PRIMARY KEY (chain_id, address, path)
+       PRIMARY KEY (tx_hash)
 );
 
-CREATE UNIQUE INDEX bridge_record_txn_hash_idx
-    ON bridge_record (tx_hash);
+CREATE INDEX bridge_record_txn_hash_idx
+    ON bridge_record (chain_id, address, path);
