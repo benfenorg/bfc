@@ -12,7 +12,7 @@
       "name": "Apache-2.0",
       "url": "https://www.benfen.org/"
     },
-    "version": "1.23.0"
+    "version": "1.24.0"
   },
   "methods": [
     {
@@ -1325,7 +1325,7 @@
             "name": "Result",
             "value": {
               "minSupportedProtocolVersion": "1",
-              "maxSupportedProtocolVersion": "71",
+              "maxSupportedProtocolVersion": "73",
               "protocolVersion": "6",
               "featureFlags": {
                 "accept_zklogin_in_multisig": false,
@@ -1338,10 +1338,13 @@
                 "bridge": false,
                 "commit_root_state_digest": false,
                 "consensus_distributed_vote_scoring_strategy": false,
+                "consensus_linearize_subdag_v2": false,
                 "consensus_order_end_of_epoch_last": true,
                 "consensus_round_prober": false,
                 "consensus_round_prober_probe_accepted_rounds": false,
                 "consensus_smart_ancestor_selection": false,
+                "consensus_zstd_compression": false,
+                "convert_type_argument_error": false,
                 "disable_invariant_violation_check_in_swap_loc": false,
                 "disallow_adding_abilities_on_upgrade": false,
                 "disallow_change_struct_type_params_on_upgrade": false,
@@ -1378,6 +1381,7 @@
                 "receive_objects": false,
                 "recompute_has_public_transfer_in_execution": false,
                 "record_consensus_determined_version_assignments_in_prologue": false,
+                "record_consensus_determined_version_assignments_in_prologue_v2": false,
                 "reject_mutable_random_on_entry_functions": false,
                 "relocate_event_module": false,
                 "reshare_at_same_initial_version": false,
@@ -1393,6 +1397,7 @@
                 "uncompressed_g1_group_elements": false,
                 "upgraded_multisig_supported": false,
                 "validate_identifier_inputs": false,
+                "variant_nodes": false,
                 "verify_legacy_zklogin_address": false,
                 "zklogin_auth": false
               },
@@ -1406,6 +1411,7 @@
                 "address_to_u256_cost_base": {
                   "u64": "52"
                 },
+                "allowed_txn_cost_overage_burst_per_object_in_commit": null,
                 "base_tx_cost_fixed": {
                   "u64": "2000"
                 },
@@ -1941,6 +1947,7 @@
                 "reward_slashing_rate": {
                   "u64": "10000"
                 },
+                "sip_45_consensus_amplification_threshold": null,
                 "storage_fund_reinvest_rate": {
                   "u64": "500"
                 },
@@ -1982,6 +1989,7 @@
                 "types_is_one_time_witness_type_tag_cost_per_byte": {
                   "u64": "2"
                 },
+                "use_object_per_epoch_marker_table_v2": null,
                 "validator_validate_metadata_cost_base": {
                   "u64": "52"
                 },
@@ -5798,6 +5806,54 @@
                         "items": [
                           {
                             "$ref": "#/components/schemas/ObjectID"
+                          },
+                          {
+                            "$ref": "#/components/schemas/SequenceNumber2"
+                          }
+                        ],
+                        "maxItems": 2,
+                        "minItems": 2
+                      }
+                    }
+                  ],
+                  "maxItems": 2,
+                  "minItems": 2
+                }
+              }
+            },
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "required": [
+              "CancelledTransactionsV2"
+            ],
+            "properties": {
+              "CancelledTransactionsV2": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "$ref": "#/components/schemas/TransactionDigest"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "type": "array",
+                        "items": [
+                          {
+                            "type": "array",
+                            "items": [
+                              {
+                                "$ref": "#/components/schemas/ObjectID"
+                              },
+                              {
+                                "$ref": "#/components/schemas/SequenceNumber2"
+                              }
+                            ],
+                            "maxItems": 2,
+                            "minItems": 2
                           },
                           {
                             "$ref": "#/components/schemas/SequenceNumber2"
