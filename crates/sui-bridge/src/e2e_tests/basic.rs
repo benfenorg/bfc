@@ -243,7 +243,7 @@ async fn test_bridge_from_bsc_to_sui() {
         timer.elapsed()
     );
     let timer = std::time::Instant::now();
-    let (eth_signer, _) = bridge_test_cluster
+    let (_eth_signer, _) = bridge_test_cluster
         .get_eth_signer_and_address()
         .await
         .unwrap();

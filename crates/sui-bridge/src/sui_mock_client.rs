@@ -301,10 +301,10 @@ impl SuiClientInner for SuiMockClient {
 
     async fn get_eth_to_sui_limit(
         &self,
-        bridge_object_arg: ObjectArg,
-        source_chain_id: u8,
-        token_type:u64,
-        token_type_map:HashMap<u64,TypeTag>
+        _bridge_object_arg: ObjectArg,
+        _source_chain_id: u8,
+        _token_type:u64,
+        _token_type_map:HashMap<u64,TypeTag>
     ) -> Result<u128, BridgeError> {
         Ok(1000)
     }
@@ -382,7 +382,7 @@ impl SuiClientInner for SuiMockClient {
 
     async fn get_cap_object_ref(
         &self,
-        cap_id: ObjectID,
+        _cap_id: ObjectID,
     ) -> anyhow::Result<ObjectRef> {
         //todo: @suoyuan
         Err(anyhow::anyhow!("Not implemented"))

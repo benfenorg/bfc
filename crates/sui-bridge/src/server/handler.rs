@@ -211,15 +211,15 @@ where
                     }
                 }
                 BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
-                    // check tron txn
-                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, amount).await;
+                    // check tron txn: only support TRC20
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, amount, false).await;
                     if ok {
                         return Ok(action_rs);
                     }
                 }
                 BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
-                    // check solana txn
-                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, amount).await;
+                    // check solana txn: only support USDC/USDT
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, amount, false).await;
                     if ok {
                         return Ok(action_rs);
                     }
