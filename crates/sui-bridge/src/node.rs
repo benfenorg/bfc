@@ -432,7 +432,7 @@ async fn start_client_components(
     );
     all_handles.push(spawn_logged_monitored_task!(monitor.run()));
 
-    let user_limit_handle = UserLimitHandle::new("postgresql://postgres:postgres@localhost:5432/user_limit".to_string()).await;
+    let user_limit_handle = UserLimitHandle::new(client_config.user_limit_db_url.clone().unwrap()).await;
     let orchestrator = BridgeOrchestrator::new(
         sui_client,
         sui_events_rx,
