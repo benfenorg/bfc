@@ -431,8 +431,13 @@ async fn start_client_components(
         metrics.clone(),
     );
     all_handles.push(spawn_logged_monitored_task!(monitor.run()));
-
-    let user_limit_handle = UserLimitHandle::new(client_config.user_limit_db_url.clone().unwrap()).await;
+    let user_limit_handle = if let Some(user_limit_db_url) = client_config.user_limit_db_url {
+        info!("user_limit_db_url: {}", user_limit_db_url);
+        Some(UserLimitHandle::new(user_limit_db_url).await)
+    } else {
+        info!("user_limit_db_url is not set");
+        None
+    };
     let orchestrator = BridgeOrchestrator::new(
         sui_client,
         sui_events_rx,
@@ -441,7 +446,7 @@ async fn start_client_components(
         sui_monitor_tx,
         eth_monitor_tx,
         metrics,
-        Some(user_limit_handle),
+        user_limit_handle,
     );
 
     all_handles.extend(orchestrator.run(bridge_action_executor, aml_checker,fast_path_config).await);
