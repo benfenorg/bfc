@@ -3,13 +3,13 @@ processed 6 tasks
 task 1, lines 6-31:
 //# publish
 Error: error[E03002]: unbound module
-  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpqxEvCk:9:9
+  ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpbz2WHV:9:9
   │
 9 │     use sui::sui::SUI;
   │         ^^^^^^^^ Invalid 'use'. Unbound module: 'sui::sui'
 
 error[E03004]: unbound type
-   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpqxEvCk:13:29
+   ┌─ /var/folders/9l/kfqd6hv17d1_8yxpd6zwys8m0000gn/T/.tmpbz2WHV:13:29
    │
 13 │     public fun bar(c: &Coin<SUI>): u64 {
    │                             ^^^ Unbound type 'SUI' in current scope

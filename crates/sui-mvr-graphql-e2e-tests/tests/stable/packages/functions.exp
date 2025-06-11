@@ -71,13 +71,13 @@ task 4, lines 48-76:
 Response: {
   "data": {
     "object": {
-      "address": "0xa60d3d5e16b680d164c0f44a32b5aa657845943744a6e1da4ac835d8d0e3c8a7",
+      "address": "0x56b55e3d62017e7a1b65d7095ee2e4d2ffaa11e254e42719ffc29ea69e8ad159",
       "asMovePackage": {
         "module": {
           "function": {
             "module": {
               "package": {
-                "address": "0xa60d3d5e16b680d164c0f44a32b5aa657845943744a6e1da4ac835d8d0e3c8a7"
+                "address": "0x56b55e3d62017e7a1b65d7095ee2e4d2ffaa11e254e42719ffc29ea69e8ad159"
               }
             },
             "name": "f",
@@ -125,13 +125,13 @@ task 7, lines 88-117:
 Response: {
   "data": {
     "object": {
-      "address": "0xadc1bc2a2b3d157d79ccd95154f1209a5ea7cb19a48541e9790cfd5efefcfa4d",
+      "address": "0xc93db5311ecabec883de8d74d7e3bf5efeadd89b1b42a8a813547b2173e406e8",
       "asMovePackage": {
         "module": {
           "f": {
             "module": {
               "package": {
-                "address": "0xadc1bc2a2b3d157d79ccd95154f1209a5ea7cb19a48541e9790cfd5efefcfa4d"
+                "address": "0xc93db5311ecabec883de8d74d7e3bf5efeadd89b1b42a8a813547b2173e406e8"
               }
             },
             "name": "f",
@@ -161,7 +161,7 @@ Response: {
           "g": {
             "module": {
               "package": {
-                "address": "0xadc1bc2a2b3d157d79ccd95154f1209a5ea7cb19a48541e9790cfd5efefcfa4d"
+                "address": "0xc93db5311ecabec883de8d74d7e3bf5efeadd89b1b42a8a813547b2173e406e8"
               }
             },
             "name": "g",
