@@ -182,12 +182,10 @@ pub async fn check_tron_txn(
 }
 
 pub fn tron_to_eth_address(tron_address: &str) -> Option<String> {
-    // 检查是否是Tron地址格式（以T开头）
     if !tron_address.starts_with('T') {
         return None;
     }
 
-    // 解码Base58
     let decoded = match bs58::decode(tron_address).into_vec() {
         Ok(bytes) => bytes,
         Err(e) => {
@@ -196,19 +194,16 @@ pub fn tron_to_eth_address(tron_address: &str) -> Option<String> {
         }
     };
 
-    // Tron地址是 21+4 字节: 1字节前缀(0x41) + 20字节地址 + 4字节校验和
     if decoded.len() != 25 {
         error!("Invalid Tron address length: {}", decoded.len());
         return None;
     }
 
-    // 检查前缀是否为 0x41
     if decoded[0] != 0x41 {
         error!("Invalid Tron address prefix: {:x}", decoded[0]);
         return None;
     }
 
-    // 验证校验和
     let mut hasher = Sha256::new();
     hasher.update(&decoded[0..21]);
     let hash1 = hasher.finalize();
@@ -224,18 +219,15 @@ pub fn tron_to_eth_address(tron_address: &str) -> Option<String> {
         }
     }
 
-    // 提取20字节的地址部分并转为16进制
     let eth_address = format!("0x{}", hex::encode(&decoded[1..21]));
     Some(eth_address)
 }
 
 pub fn eth_to_tron_address(eth_address: &str) -> Option<String> {
-    // 检查是否是以太坊地址格式（以0x开头）
     if !eth_address.starts_with("0x") {
         return None;
     }
 
-    // 移除0x前缀并解码16进制
     let hex_str = &eth_address[2..];
     let eth_bytes = match hex::decode(hex_str) {
         Ok(bytes) => bytes,
@@ -250,11 +242,9 @@ pub fn eth_to_tron_address(eth_address: &str) -> Option<String> {
         return None;
     }
 
-    // 添加Tron前缀 0x41
     let mut tron_bytes = vec![0x41];
     tron_bytes.extend_from_slice(&eth_bytes);
 
-    // 计算校验和: 两次SHA256哈希的前4字节
     let mut hasher = Sha256::new();
     hasher.update(&tron_bytes);
     let hash1 = hasher.finalize();
@@ -263,11 +253,9 @@ pub fn eth_to_tron_address(eth_address: &str) -> Option<String> {
     hasher.update(&hash1);
     let hash2 = hasher.finalize();
 
-    // 添加校验和
     let mut address_with_checksum = tron_bytes.clone();
     address_with_checksum.extend_from_slice(&hash2[0..4]);
 
-    // Base58编码
     let tron_address = bs58::encode(address_with_checksum).into_string();
     Some(tron_address)
 }
