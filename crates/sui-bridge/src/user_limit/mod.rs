@@ -13,7 +13,6 @@ use diesel::dsl::sql;
 use diesel::sql_types::BigInt;
 use diesel::{ExpressionMethods, QueryDsl};
 use diesel_async::RunQueryDsl;
-
 use crate::user_limit::postgres_manager::{get_connection_pool, PgPool};
 use crate::user_limit::schema::{bridge_record, limit_config};
 use chrono::{Duration, Utc};
@@ -47,7 +46,10 @@ struct RecordCache {
 }
 
 #[allow(unused)]
+// Cache for user limit records
 static RECORD_CACHE: Lazy<Mutex<HashMap<String, RecordCache>>> = Lazy::new(|| Mutex::new(HashMap::new()));
+// Cache for limit configuration
+static LIMIT_CONF_CACHE: Lazy<Mutex<HashMap<String, i64>>> = Lazy::new(|| Mutex::new(HashMap::new()));
 #[allow(unused)]
 const RECORD_VALIDITY: std::time::Duration = std::time::Duration::from_secs(24 * 60 * 60);
 
@@ -58,7 +60,9 @@ pub struct UserLimitHandle {
 
 impl UserLimitHandle {
     pub async fn new(database_url: String) -> Self {
-        UserLimitHandle { conn : get_connection_pool(database_url).await }
+        UserLimitHandle {
+            conn : get_connection_pool(database_url).await
+        }
     }
 
     pub async fn check_user_limit(
@@ -68,6 +72,11 @@ impl UserLimitHandle {
         path: FastPathSelector,
         amount: u64,
     ) -> bool {
+        // Check if the limit configuration is loaded
+        if let Err(e) = self.load_limit_config().await {
+            error!("Failed to load limit config: {:?}", e);
+            return false; // If there's an error, we assume the limit is not exceeded
+        }
         let bridge_amount = self.get_bridge_amounts(chain_id as i32, eth_address.as_bytes(), path as i32).await;
         if let Err(e) = bridge_amount {
             error!("Failed to get user limit amounts: {:?}", e);
@@ -194,6 +203,15 @@ impl UserLimitHandle {
         path_: i32,
     ) -> Result<i64, anyhow::Error> {
         use crate::user_limit::schema::limit_config::dsl::*;
+        {
+            let cache_map = LIMIT_CONF_CACHE.lock().unwrap();
+            let key = format!("{}_{}", chain_id_, path_);
+            if let Some(&limit) = cache_map.get(&key) {
+                info!("Using cached limit config for chain_id: {}, path: {}", chain_id_, path_);
+                return Ok(limit);
+            }
+        }
+
         let conn = &mut self.conn.get().await?;
         let result = limit_config
             .filter(chain_id.eq(chain_id_))
@@ -207,6 +225,31 @@ impl UserLimitHandle {
             Err(_) => Err(anyhow::anyhow!("Limit config not found for chain_id: {:?}, path: {:?}", chain_id_, path_)),
         }
     }
+
+    async fn load_limit_config(&self) -> Result<(), anyhow::Error> {
+        use crate::user_limit::schema::limit_config::dsl::*;
+        {
+            let cache_map = LIMIT_CONF_CACHE.lock().unwrap();
+            if !cache_map.is_empty() {
+                info!("Limit config cache is already loaded, skipping database query");
+                return Ok(()); // Cache already loaded
+            }
+        }
+        let conn = &mut self.conn.get().await?;
+        let limit_configs = limit_config
+            .load::<LimitConfig>(conn)
+            .await?;
+        {
+            let mut cache_map = LIMIT_CONF_CACHE.lock().unwrap();
+            for config in limit_configs {
+                let key = format!("{}_{}", config.chain_id, config.path);
+                cache_map.insert(key, config.limits);
+                info!("Loaded limit config: chain_id: {}, path: {}, limits: {}", config.chain_id, config.path, config.limits);
+            }
+        }
+
+        Ok(())
+    }
 }
 
 #[cfg(test)]
@@ -217,10 +260,10 @@ mod tests {
 
     #[tokio::test]
     async fn test_user_limit() {
-        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:tesssx877@localhost:5432/user_limit".to_string()).await;
+        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
 
         let chain_id = BridgeChainId::BtcTestnet;
-        let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44c").unwrap();
+        let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44e").unwrap();
         let path = FastPathSelector::Latest;
         let amount = 99;
 
@@ -229,13 +272,30 @@ mod tests {
         assert!(!is_within_limit, "User limit check should ok");
 
         // Record user limit
-        let tx_hash = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12];
+        let tx_hash = vec![1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
         let record_result = user_limit_handle.record_user_limit(chain_id, eth_address, path, tx_hash.clone(), amount).await;
         assert!(record_result.is_ok(), "Failed to record user limit");
 
         // Check again after recording
         let is_within_limit_after_recording = user_limit_handle.check_user_limit(chain_id, eth_address, path, amount).await;
         assert!(is_within_limit_after_recording, "User limit check failed after recording");
+    }
+
+    #[tokio::test]
+    async fn test_load_limit_config() {
+        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
+
+        // Load limit config
+        let load_result = user_limit_handle.load_limit_config().await;
+        assert!(load_result.is_ok(), "Failed to load limit config");
+
+        // Check if the cache is populated
+        let cache_map = LIMIT_CONF_CACHE.lock().unwrap();
+        assert!(!cache_map.is_empty(), "Limit config cache should not be empty");
+
+        // Check a specific chain_id and path
+        let key = format!("{}_{}", BridgeChainId::BtcTestnet as i32, FastPathSelector::Latest as i32);
+        assert!(cache_map.contains_key(&key), "Cache should contain key: {}", key);
     }
 }
 
