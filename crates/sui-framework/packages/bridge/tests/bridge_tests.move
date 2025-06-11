@@ -1567,17 +1567,33 @@ expected_failure(
     abort_code = bridge::tokenlist::EBridgeTokenListRegistryAlreadyExists,
 ),
 ]
-fun test_twice_call_migrate() {
+fun test_twice_call_init_token_list() {
+    let chain_id = chain_ids::sui_testnet();
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    let mut bridge = env.bridge(@0x0);
+    let bridge_inner = bridge.bridge_ref_mut();
+    bridge_inner.init_token_list(env.scenario().ctx());
+    bridge.return_bridge();
+    env.destroy_env();
+}
+
+#[test]
+#[
+expected_failure(
+    abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
+)]
+fun test_twice_call_add_center_token_list(){
     let chain_id = chain_ids::sui_testnet();
     let mut env = create_env(chain_id);
     env.create_bridge_default();
     let mut bridge = env.bridge(@0x0);
     let bridge_inner = bridge.bridge_ref_mut();
     bridge_inner.migrate(env.scenario().ctx());
+    //bridge_inner.migrate(env.scenario().ctx());
     bridge.return_bridge();
     env.destroy_env();
 }
-
 
 #[test]
 fun test_get_available_claim_amount_for_router_limit() {
@@ -1671,73 +1687,73 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_tron_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_custom(), chain_ids::tron_testnet());
+    test_external_busd_withdraw_external_busd_coin(4u64,  chain_ids::tron_testnet(),chain_ids::sui_custom());
 }
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
 fun test_external_busd_withdraw_external_busd_coin_tron_main() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_custom(), chain_ids::tron_mainnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_custom())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sol_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_custom(), chain_ids::solana_testnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_custom())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sui_testnet_tron_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_testnet(), chain_ids::tron_testnet());
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_testnet(),chain_ids::sui_testnet());
 }
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
 fun test_external_busd_withdraw_external_busd_coin_sui_testnet_tron_main() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_testnet(), chain_ids::tron_mainnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_testnet())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sui_testnet_sol_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_testnet(), chain_ids::solana_testnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_testnet())
 }
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
 fun test_external_busd_withdraw_external_busd_coin_sui_testnet_sol_main() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_testnet(), chain_ids::solana_mainnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_mainnet(),chain_ids::sui_testnet())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_tron_main() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_mainnet(), chain_ids::tron_mainnet());
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_mainnet(),chain_ids::sui_mainnet());
 }
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_tron_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_mainnet(), chain_ids::tron_testnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::tron_testnet(),chain_ids::sui_mainnet())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_mainnet(), chain_ids::solana_mainnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_mainnet(),chain_ids::sui_mainnet())
 }
 
 #[test]
 #[expected_failure(abort_code = bridge::bridge::EInvalidBridgeRoute)]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_test() {
-    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::sui_mainnet(), chain_ids::solana_testnet())
+    test_external_busd_withdraw_external_busd_coin(4u64, chain_ids::solana_testnet(),chain_ids::sui_mainnet())
 }
 
 #[test]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet_except_id() {
-    test_external_busd_withdraw_external_busd_coin(3u64, chain_ids::sui_mainnet(), chain_ids::solana_mainnet())
+    test_external_busd_withdraw_external_busd_coin(3u64, chain_ids::solana_mainnet(),chain_ids::sui_mainnet())
 }
 
 #[test]
-#[expected_failure(abort_code = bridge::bridge::EInvalidTokenIdExpect)]
+#[expected_failure(abort_code = bridge::bridge::EInvalidChainIDAndTokenIDExpect)]
 fun test_external_busd_withdraw_external_busd_coin_sui_mainnet_sol_mainnet_unexcept_id() {
-    test_external_busd_withdraw_external_busd_coin(1u64, chain_ids::sui_mainnet(), chain_ids::solana_mainnet())
+    test_external_busd_withdraw_external_busd_coin(1u64,chain_ids::solana_mainnet(), chain_ids::sui_mainnet())
 }
 
 #[test]

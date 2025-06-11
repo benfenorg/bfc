@@ -11,7 +11,7 @@ use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
-use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction};
+use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,build_add_center_tokenlist_transaction};
 use crate::sui_transaction_builder::build_committee_register_transaction;
 use crate::types::BridgeCommitteeValiditySignInfo;
 use crate::types::CertifiedBridgeAction;
@@ -1081,6 +1081,26 @@ impl TestClusterWrapperBuilder {
         );
         info!("add tokenlist took {:?} secs", timer.elapsed().as_secs());
 
+        let timer = Instant::now();
+        let tx = build_add_center_tokenlist_transaction(
+            sender_address,
+            &test_cluster
+                .wallet
+                .get_one_gas_object_owned_by_address(sender_address)
+                .await
+                .unwrap()
+                .unwrap(),
+            bridge_arg,
+            ref_gas_price,
+        )
+            .unwrap();
+
+        let response = test_cluster.sign_and_execute_transaction(&tx).await;
+        assert_eq!(
+            response.effects.unwrap().status(),
+            &SuiExecutionStatus::Success
+        );
+        info!("add  center tokenlist took {:?} secs", timer.elapsed().as_secs());
         if self.deploy_tokens {
             let token_paths = vec![
                 Path::new("../../bridge/move/tokens/btc").into(),
@@ -1474,7 +1494,7 @@ pub async fn initiate_bridge_sui_to_eth(
     );
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
-    
+
     if expect_token_id == TOKEN_ID_ETH  {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(
@@ -1487,7 +1507,7 @@ pub async fn initiate_bridge_sui_to_eth(
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount/1000
-            );    
+            );
         } else {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,

@@ -27,6 +27,7 @@ title: Module `0xb::bridge`
 -  [Function `create`](#0xb_bridge_create)
 -  [Function `init_bridge_committee`](#0xb_bridge_init_bridge_committee)
 -  [Function `migrate`](#0xb_bridge_migrate)
+-  [Function `init_token_list`](#0xb_bridge_init_token_list)
 -  [Function `committee_registration`](#0xb_bridge_committee_registration)
 -  [Function `update_node_url`](#0xb_bridge_update_node_url)
 -  [Function `register_foreign_token`](#0xb_bridge_register_foreign_token)
@@ -1584,6 +1585,33 @@ title: Module `0xb::bridge`
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
+    <a href="tokenlist.md#0xb_tokenlist_add_center_token_list">tokenlist::add_center_token_list</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_init_token_list"></a>
+
+## Function `init_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_init_token_list">init_token_list</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_init_token_list">init_token_list</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    ctx: &<b>mut</b> TxContext
+){
     <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
     <a href="limiter.md#0xb_limiter_update_transfer_limits">limiter::update_transfer_limits</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>).<a href="limiter.md#0xb_limiter">limiter</a>);
 }
@@ -2753,12 +2781,10 @@ title: Module `0xb::bridge`
     bfc_system_state: &<b>mut</b> BfcSystemState,
     ctx: &<b>mut</b> TxContext
 ) {
-    // <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
-    //     &<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id_expect),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        &<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id_expect),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
     <b>assert</b>!(token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a> || token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, <a href="bridge.md#0xb_bridge_EInvalidTokenIdExpect">EInvalidTokenIdExpect</a>);
-
-    // <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
-
+    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     <b>let</b> coin_type = <b>if</b> (token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a>) {
                                 <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"USDC")
                             } <b>else</b> {
@@ -2814,7 +2840,11 @@ title: Module `0xb::bridge`
     token: Coin&lt;T&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> (inner,parent_id) = <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> token_id=treasury::token_id&lt;T&gt;(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        parent_id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
 

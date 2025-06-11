@@ -7,6 +7,7 @@ use std::{collections::HashMap, str::FromStr};
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,BRIDGE_ADD_TOKENLIST_FUNCTION_NAME,
+    BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME,
 };
 use sui_types::transaction::CallArg;
 use sui_types::{
@@ -1286,6 +1287,36 @@ pub fn build_add_tokens_on_sui_transaction(
         100_000_000,
         rgp,
     ))
+}
+
+pub fn build_add_center_tokenlist_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)-> BridgeResult<TransactionData> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let bridge_arg = builder.obj(bridge_object_arg).unwrap();
+
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.into(),
+        BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME.into(),
+        vec![],
+        vec![bridge_arg],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        1_000_000_000,
+        rgp,
+    ))
+
 }
 
 pub fn build_add_tokenlist_transaction(

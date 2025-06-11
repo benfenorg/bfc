@@ -309,6 +309,13 @@ module bridge::bridge {
         bridge: &mut Bridge,
         ctx: &mut TxContext
     ){
+        tokenlist::add_center_token_list(&mut bridge.id, ctx);
+    }
+
+    public fun init_token_list(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ){
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
         limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
     }
@@ -1096,8 +1103,8 @@ module bridge::bridge {
         bfc_system_state: &mut BfcSystemState,
         ctx: &mut TxContext
     ) {
-        // assert!(tokenlist::is_supported_from_benfen(
-        //     &bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+        assert!(tokenlist::is_supported_from_benfen(
+            &bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(token_id_expect == TOKEN_ID_USDC || token_id_expect == TOKEN_ID_USDT, EInvalidTokenIdExpect);
         assert!(type_name::get<T>() == type_name::get<BUSD>(), EOnlySupportBusd);
         let coin_type = if (token_id_expect == TOKEN_ID_USDC) {
@@ -1135,7 +1142,11 @@ module bridge::bridge {
         token: Coin<T>,
         ctx: &mut TxContext
     ) {
-        let inner = load_inner_mut(bridge);
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        let token_id=treasury::token_id<T>(&inner.treasury);
+        assert!(tokenlist::is_supported_from_benfen(
+            parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
+
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
 
