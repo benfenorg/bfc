@@ -34,7 +34,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xdfbf71cecee4589ce6ae3c207a7a4887be6357b1df0af197356d0fe917d0519b::M1::EventA"
+              "repr": "0xf817490584c1711d96502dace9ba94e0df8a2db08160674802a364a0e774e9fe::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {
@@ -62,7 +62,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xdfbf71cecee4589ce6ae3c207a7a4887be6357b1df0af197356d0fe917d0519b::M1::EventA"
+              "repr": "0xf817490584c1711d96502dace9ba94e0df8a2db08160674802a364a0e774e9fe::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {
@@ -110,7 +110,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xdfbf71cecee4589ce6ae3c207a7a4887be6357b1df0af197356d0fe917d0519b::M1::EventA"
+              "repr": "0xf817490584c1711d96502dace9ba94e0df8a2db08160674802a364a0e774e9fe::M1::EventA"
             },
             "bcs": "AgAAAAAAAAA=",
             "json": {
