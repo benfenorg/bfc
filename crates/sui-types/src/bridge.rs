@@ -98,6 +98,8 @@ pub const TOKEN_ID_POL: u64 = 8;
     JsonSchema,
     Hash,
     Display,
+    PartialOrd,
+    Ord,
 )]
 #[repr(u8)]
 pub enum BridgeChainId {

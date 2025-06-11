@@ -700,6 +700,8 @@ pub async fn submit_to_aml_checker(
     tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>,
     action: BridgeAction,
 ) -> Result<(), BridgeError> {
+    info!("[DEBUG] submit_to_aml_checker action: {:#?}", action);
+
     tx.send(AMLCheckerWrapper(action, 0))
         .await
         .map_err(|e| BridgeError::Generic(e.to_string()))

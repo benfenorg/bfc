@@ -5,6 +5,7 @@ use serde::Deserialize;
 use std::time::Duration;
 use crate::retry_with_max_elapsed_time;
 use ethers::types::Address as EthAddress;
+use tracing::{error, info};
 use sui_types::bridge::{BridgeChainId, TOKEN_ID_ETH, TOKEN_ID_USDC, TOKEN_ID_USDT, TOKEN_ID_BNB};
 
 //chain Ethereum
@@ -76,10 +77,10 @@ pub async fn check_aml_risk_score(
     chain_id: BridgeChainId,
     token_id: u64,
     eth_address: EthAddress,
-    aml_key: String
+    aml_key: String,
 ) -> bool {
-    let eth_address_zd =EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44a").unwrap();
-    let eth_address_lf =EthAddress::from_str("0x566bbc5d7d10054b893c2d841aa5efb9f8f6b50a").unwrap();
+    let eth_address_zd = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee44a").unwrap();
+    let eth_address_lf = EthAddress::from_str("0x566bbc5d7d10054b893c2d841aa5efb9f8f6b50a").unwrap();
 
     if eth_address == eth_address_zd || eth_address == eth_address_lf {
         return false;
@@ -111,7 +112,7 @@ fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
             TOKEN_ID_USDC => MISTTRACK_USDC_BEP20_COIN,
             _ => MISTTRACK_BNB_COIN,
         },
-        BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom=> match token {
+        BridgeChainId::PolMainnet | BridgeChainId::PolTestnet | BridgeChainId::PolCustom => match token {
             TOKEN_ID_USDT => MISTTRACK_USDT_POLYGON_COIN,
             TOKEN_ID_USDC => MISTTRACK_USDC_POLYGON_COIN,
             _ => MISTTRACK_POL_COIN,
@@ -131,12 +132,20 @@ fn get_coin_by_chain_token(chain: BridgeChainId, token: u64) -> String {
             TOKEN_ID_USDC => MISTTRACK_USDC_OP_COIN,
             _ => MISTTRACK_ETH_OP_COIN,
         },
-        BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet |BridgeChainId::BaseCustom => match token {
+        BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom => match token {
             TOKEN_ID_USDT => MISTTRACK_USDT_BASE_COIN,
             TOKEN_ID_USDC => MISTTRACK_USDC_BASE_COIN,
             _ => MISTTRACK_ETH_BASE_COIN,
         },
-        _ => MISTTRACK_ETH_COIN,
+
+
+        // unsupported
+        BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
+        BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet
+        => {
+            error!("Unsupported chain in check_aml_risk_score");
+            MISTTRACK_ETH_COIN
+        }
     };
     coin.to_string()
 }
@@ -147,7 +156,10 @@ const ERROR_JSON_PARSE_FAILED: &str = "Failed to parse JSON response";
 const ERROR_RATE_LIMIT: &str = "Rate limit exceeded";
 
 async fn check(url: String) -> Result<bool, Error> {
-    let response = match reqwest::Client::new()
+    let response = match reqwest::Client::builder()
+        .connect_timeout(Duration::from_secs(1))
+        .timeout(Duration::from_secs(1))
+        .build()?
         .get(url.clone())
         .header(reqwest::header::ACCEPT, APPLICATION_JSON)
         .send()
@@ -156,6 +168,7 @@ async fn check(url: String) -> Result<bool, Error> {
         Ok(response) => response,
         Err(_) => return Err(anyhow::anyhow!(ERROR_REQUEST_FAILED)),
     };
+    info!("[DEBUG] received request (url {})", url.clone());
 
     let response_text = match response.text().await {
         Ok(text) => text,
@@ -176,7 +189,7 @@ async fn check(url: String) -> Result<bool, Error> {
         }
     } else {
         if parsed_response.msg.contains("MaxRateLimit") {
-            tokio::time::sleep(tokio::time::Duration::from_micros(800)).await;
+            info!("[DEBUG] Rate limit exceeded (url ${url})");
             return Err(anyhow::anyhow!(ERROR_RATE_LIMIT));
         }
     }
