@@ -130,7 +130,10 @@ impl UserLimitHandle {
             .execute(conn)
             .await?;
         if result == 0 {
-            return Err(anyhow::anyhow!("Failed to insert user limit record, no rows affected"));
+            error!("Failed to insert user limit record, no rows affected, chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}",
+                chain_id, eth_address, path, amount
+            );
+            return Ok(());
         }
         // Update the cache
         {
