@@ -124,19 +124,25 @@ impl UserLimitHandle {
             tx_hash,
             timestamp_ms: now_ms,
         };
+        let mut effect_count = 0;
         let conn = &mut self.conn.get().await?;
-        let result = insert_into(bridge_record::table)
+        match insert_into(bridge_record::table)
             .values(&new_record)
             .execute(conn)
-            .await?;
-        if result == 0 {
-            error!("Failed to insert user limit record, no rows affected, chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}",
-                chain_id, eth_address, path, amount
-            );
-            return Ok(());
+            .await {
+            Ok(count) => {
+                info!("插入成功，影响行数：{}", count);
+                effect_count = count;
+            },
+            Err(err) => {
+                error!("Failed to insert user limit record, no rows affected, \
+                    chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}, err: {:?}",
+                    chain_id, eth_address, path, amount, err
+                );
+            }
         }
         // Update the cache
-        {
+        if effect_count > 0 {
             let mut cache = RECORD_CACHE.lock().unwrap();
             let key = format!("{}_{:x}_{}", chain_id as i32, eth_address, path as i32);
             let entry = cache.entry(key).or_insert(RecordCache {
@@ -144,7 +150,6 @@ impl UserLimitHandle {
                 created_at: Instant::now(),
             });
             entry.total += amount as i64;
-            // entry.created_at = Instant::now();
             info!("Cache updated for chain_id: {}, address: {:x}, path: {}, new total: {}",
                 chain_id as i32, eth_address, path as i32, entry.total
             );
@@ -335,6 +340,24 @@ mod tests {
         // Check again after recording
         let is_within_limit_after_recording = user_limit_handle.check_user_limit(chain_id, eth_address.clone(), path, amount).await;
         assert!(!is_within_limit_after_recording, "User limit check failed after recording");
+    }
+
+    #[tokio::test]
+    async fn test_limit_record_duplicate() {
+        let user_limit_handle = UserLimitHandle::new("postgres://user_limit:limit@localhost:5432/user_limit".to_string()).await;
+
+        let chain_id = BridgeChainId::BtcTestnet;
+        let eth_address = EthAddress::from_str("0x2e6547f8a54d261a4a3e508c4b321b84c0aee45f").unwrap();
+        let path = FastPathSelector::Latest;
+        let amount = 10;
+
+        // Record user limit
+        let tx_hash = vec![11, 22, 33, 44, 57, 6, 7, 8, 9, 10, 12, 13, 14, 15, 16, 17, 18, 19, 20];
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address.clone(), path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit");
+
+        let record_result = user_limit_handle.record_user_limit(chain_id, eth_address.clone(), path, tx_hash.clone(), amount).await;
+        assert!(record_result.is_ok(), "Failed to record user limit of duplicate key but should not panic");
 
     }
 }
