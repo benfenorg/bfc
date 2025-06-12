@@ -7,7 +7,7 @@ import { FromAssets } from '_pages/swap/FromAssets';
 import { setNavVisibility } from '_redux/slices/app';
 import { persistableStorage } from '_src/shared/analytics/amplitude';
 import { useEffect } from 'react';
-import { Navigate, Outlet, Route, Routes, useLocation } from 'react-router-dom';
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { throttle } from 'throttle-debounce';
 
 import { useAccounts } from './hooks/useAccounts';
@@ -42,12 +42,13 @@ import HomePage, {
 	TransactionBlocksPage,
 	TransferCoinPage,
 } from './pages/home';
+import { SwapAnonymous } from './pages/home/swap-anonymous';
 import TokenDetailsPage from './pages/home/tokens/TokenDetailsPage';
+import { TransferAnonymous } from './pages/home/transfer-anonymous';
 import { RestrictedPage } from './pages/restricted';
 import SiteConnectPage from './pages/site-connect';
 import { StorageMigrationPage } from './pages/StorageMigrationPage';
 import { AppType } from './redux/slices/app/AppType';
-import { PageMainLayout } from './shared/page-main-layout/PageMainLayout';
 import { Staking } from './staking/home';
 
 const HIDDEN_MENU_PATHS = [
@@ -126,6 +127,8 @@ const App = () => {
 				<Route path="receipt" element={<ReceiptPage />} />
 				<Route path="send" element={<TransferCoinPage />} />
 				<Route path="send/select" element={<CoinsSelectorPage />} />
+				<Route path="swap-anonymous" element={<SwapAnonymous />} />
+				<Route path="transfer-anonymous" element={<TransferAnonymous />} />
 				<Route path="stake/*" element={<Staking />} />
 				<Route path="swap/*" element={<SwapPage />} />
 				<Route path="swap/from-assets" element={<FromAssets />} />

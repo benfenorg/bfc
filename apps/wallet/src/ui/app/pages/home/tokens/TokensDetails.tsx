@@ -30,8 +30,10 @@ import {
 	useBalanceInUSD,
 	useCoinMetadata,
 	useFormatCoin,
+	useGetAllAnonymousCoins,
 	useGetDelegatedStake,
 	useResolveSuiNSName,
+	type AnonymousCoinFields,
 } from '@mysten/core';
 import { Info12, Pin16, Unpin16 } from '@mysten/icons';
 import { useQuery } from '@tanstack/react-query';
@@ -39,6 +41,7 @@ import clsx from 'clsx';
 import { type ReactNode } from 'react';
 
 import { useOnrampProviders } from '../onramp/useOnrampProviders';
+import { AnonymousTokenLink } from './AnonymousTokenLink';
 import { CoinBalance } from './coin-balance';
 import { PortfolioName } from './PortfolioName';
 import { TokenIconLink } from './TokenIconLink';
@@ -200,8 +203,10 @@ export function MyTokens({
 	coinBalances,
 	isLoading,
 	isFetched,
+	anonymousCoins,
 }: {
 	coinBalances: CoinBalanceType[];
+	anonymousCoins: AnonymousCoinFields[];
 	isLoading: boolean;
 	isFetched: boolean;
 }) {
@@ -226,6 +231,14 @@ export function MyTokens({
 							<TokenLink key={coinBalance.coinType} coinBalance={coinBalance} />
 						),
 					)}
+				</TokenList>
+			)}
+
+			{anonymousCoins.length > 0 && (
+				<TokenList title="Anonymous Coins" defaultOpen>
+					{anonymousCoins.map((row) => (
+						<AnonymousTokenLink key={row.id.id} token={row} />
+					))}
 				</TokenList>
 			)}
 
@@ -349,6 +362,9 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 		staleTime: DELEGATED_STAKES_QUERY_STALE_TIME,
 		refetchInterval: DELEGATED_STAKES_QUERY_REFETCH_INTERVAL,
 	});
+
+	const { data: anonymousCoins, isPending: isAnonymouseCoinsPending } =
+		useGetAllAnonymousCoins(activeAccountAddress);
 
 	const { providers } = useOnrampProviders();
 
@@ -481,11 +497,6 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 										>
 											Swap
 										</LargeButton>
-										{!accountHasSui && (
-											<LargeButton disabled to="/stake" center>
-												Stake
-											</LargeButton>
-										)}
 									</div>
 
 									<div className="w-full">
@@ -496,6 +507,12 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 											/>
 										) : null}
 									</div>
+
+									<div className={'w-full'}>
+										<LargeButton to={'/swap-anonymous'} onClick={() => {}} center={true}>
+											Swap Anonymous Coins
+										</LargeButton>
+									</div>
 								</div>
 							</>
 						)}
@@ -505,7 +522,8 @@ function TokenDetails({ coinType }: TokenDetailsProps) {
 					) : (
 						<MyTokens
 							coinBalances={coinBalances ?? []}
-							isLoading={coinBalancesLoading}
+							anonymousCoins={anonymousCoins || []}
+							isLoading={coinBalancesLoading || isAnonymouseCoinsPending}
 							isFetched={coinBalancesFetched}
 						/>
 					)}

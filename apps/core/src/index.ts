@@ -1,7 +1,8 @@
-// Copyright (c) Mysten Labs, Inc.
+// Copyright (c) Benfen
 // SPDX-License-Identifier: Apache-2.0
 
 export * from './hooks/useFormatCoin';
+export * from './hooks/useGetAllAnonymousCoins';
 export * from './hooks/useTimeAgo';
 export * from './hooks/useGetValidatorsEvents';
 export * from './hooks/useGetValidatorsApy';

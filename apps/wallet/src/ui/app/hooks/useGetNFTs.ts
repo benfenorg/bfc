@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type SuiObjectData } from '@benfen/bfc.js/client';
-import { hasDisplayData, useGetOwnedObjects } from '@mysten/core';
+import { ANONYMOUS_COIN_TYPE, hasDisplayData, useGetOwnedObjects } from '@mysten/core';
 import { useMemo } from 'react';
 
 import { useHiddenAssets } from '../pages/home/hidden-assets/HiddenAssetsProvider';
@@ -31,7 +31,7 @@ export function useGetNFTs(address?: string | null) {
 	} = useGetOwnedObjects(
 		address,
 		{
-			MatchNone: [{ StructType: '0x2::coin::Coin' }],
+			MatchNone: [{ StructType: '0x2::coin::Coin' }, { StructType: ANONYMOUS_COIN_TYPE }],
 		},
 		50,
 	);
