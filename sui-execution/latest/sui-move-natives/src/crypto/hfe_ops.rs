@@ -274,8 +274,10 @@ pub fn hfe_ops_compare(
         smallvec![Value::u8(result)],
     ))
 }
+pub fn hfe_ops_restore_value(){
 
-pub fn split_value(context: &mut NativeContext,
+}
+pub fn hfe_ops_split_value(context: &mut NativeContext,
                   ty_args: Vec<Type>,
                   mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 

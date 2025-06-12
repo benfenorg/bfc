@@ -1136,8 +1136,8 @@ pub fn all_natives(silent: bool, protocol_config: &ProtocolConfig) -> NativeFunc
 
         (
             "hfe_ops",
-            "split_value",
-            make_native!(hfe_ops::split_value),
+            "hfe_ops_split_value",
+            make_native!(hfe_ops::hfe_ops_split_value),
         ),
     ];
     let sui_framework_natives_iter =

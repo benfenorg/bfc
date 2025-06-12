@@ -156,6 +156,11 @@ module sui::anonymous_coin {
 
     // === Balance <-> Coin accessors and type morphing ===
 
+
+    public fun get_anonymous_value<T>(self: &Anonymous_Coin<T>): u64 {
+        self.balance.get_anonymous_value()
+    }
+
     /// Public getter for the coin's value
     public fun value<T>(self: &Anonymous_Coin<T>): u64 {
         self.balance.value()
