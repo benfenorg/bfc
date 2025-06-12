@@ -77,12 +77,12 @@ struct AnonymousCompareParams {
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct AnonymousSplitValueeParams {
+struct AnonymousSplitValueParams {
     value: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
-struct AnonymousRestoreValueeParams {
+struct AnonymousRestoreValueParams {
     value1: u64,
     value2: u64,
 
@@ -377,9 +377,23 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
 async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => {
-            match serde_json::from_value::<AnonymousRestoreValueeParams>(params) {
+            match serde_json::from_value::<AnonymousRestoreValueParams>(params) {
                 Ok(restore_value_params) => {
-                    let value = restore_value_params.value1 + restore_value_params.value2;
+                    let data1 = restore_value_params.value1;
+                    let data2 = restore_value_params.value2;
+                    if data1.checked_add(data2) == None {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32602,
+                                message: "Arithmetic overflow".to_string(),
+                                data: Some(serde_json::json!({"error": "arithmetic overflow"})),
+                            }),
+                        };
+                    }
+                    let value = data1 + data2;
 
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
@@ -427,7 +441,7 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
 async fn handle_anonymous_split_value(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => {
-            match serde_json::from_value::<AnonymousSplitValueeParams>(params) {
+            match serde_json::from_value::<AnonymousSplitValueParams>(params) {
                 Ok(split_value_params) => {
                     let value = split_value_params.value;
                     let value1 = value/2;

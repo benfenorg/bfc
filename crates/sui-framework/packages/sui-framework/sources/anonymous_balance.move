@@ -50,8 +50,7 @@ public struct Anonymos_Balance<phantom T> has store {
 
 public fun get_anonymous_value<T>(self: &Anonymos_Balance<T>): u64 {
     //todo : use hfe_ops to get the value from value1 and value2
-    hfe_ops_restore_value(self.value1, self.value2);
-    self.value
+    hfe_ops_restore_value(self.value1, self.value2)
 }
 
  public fun convert_to_string(mut value: u64): vector<u8> {

@@ -214,8 +214,7 @@ For when an overflow is happening on Supply operations.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     //todo : <b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">hfe_ops</a> <b>to</b> get the value from value1 and value2
-    hfe_ops_restore_value(self.value1, self.value2);
-    self.value
+    hfe_ops_restore_value(self.value1, self.value2)
 }
 </code></pre>
 

@@ -367,6 +367,13 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
             smallvec![Value::u64(result.value1)],
         ))
     } else {
+        if value1.checked_add(value2) == None {
+            return Ok(NativeResult::err(
+                cost,
+                ARITHMETIC_OVERFLOW_ERROR,
+            ));
+        }
+
         let value = value1 + value2;
         Ok(NativeResult::ok(
             cost,
