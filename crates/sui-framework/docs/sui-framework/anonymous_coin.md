@@ -23,6 +23,7 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Function `treasury_into_supply`](#0x2_anonymous_coin_treasury_into_supply)
 -  [Function `supply_immut`](#0x2_anonymous_coin_supply_immut)
 -  [Function `supply_mut`](#0x2_anonymous_coin_supply_mut)
+-  [Function `get_anonymous_value`](#0x2_anonymous_coin_get_anonymous_value)
 -  [Function `value`](#0x2_anonymous_coin_value)
 -  [Function `balance`](#0x2_anonymous_coin_balance)
 -  [Function `balance_mut`](#0x2_anonymous_coin_balance_mut)
@@ -628,6 +629,30 @@ Get mutable reference to the treasury's <code>Supply</code>.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_supply_mut">supply_mut</a>&lt;T&gt;(<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;): &<b>mut</b> Supply&lt;T&gt; {
     &<b>mut</b> <a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>.total_supply
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x2_anonymous_coin_get_anonymous_value"></a>
+
+## Function `get_anonymous_value`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>()
 }
 </code></pre>
 

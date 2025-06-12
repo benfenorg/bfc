@@ -6,7 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use std::string::{Self, String};
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_split_value};
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_split_value, hfe_ops_restore_value};
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymos_Balance.into_coin;
@@ -50,7 +50,7 @@ public struct Anonymos_Balance<phantom T> has store {
 
 public fun get_anonymous_value<T>(self: &Anonymos_Balance<T>): u64 {
     //todo : use hfe_ops to get the value from value1 and value2
-    //hfe_ops_restore_value(self.value1, self.value2);
+    hfe_ops_restore_value(self.value1, self.value2);
     self.value
 }
 

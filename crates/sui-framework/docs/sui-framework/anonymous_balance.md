@@ -11,6 +11,7 @@ custom coins with <code><a href="../sui-framework/anonymous_balance.md#0x2_anony
 -  [Struct `Anonymos_Balance`](#0x2_anonymous_balance_Anonymos_Balance)
 -  [Enum `Anonymous_Balance_Type`](#0x2_anonymous_balance_Anonymous_Balance_Type)
 -  [Constants](#@Constants_0)
+-  [Function `get_anonymous_value`](#0x2_anonymous_balance_get_anonymous_value)
 -  [Function `convert_to_string`](#0x2_anonymous_balance_convert_to_string)
 -  [Function `create_by_value`](#0x2_anonymous_balance_create_by_value)
 -  [Function `value`](#0x2_anonymous_balance_value)
@@ -196,6 +197,32 @@ For when an overflow is happening on Supply operations.
 
 
 
+<a name="0x2_anonymous_balance_get_anonymous_value"></a>
+
+## Function `get_anonymous_value`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    //todo : <b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">hfe_ops</a> <b>to</b> get the value from value1 and value2
+    hfe_ops_restore_value(self.value1, self.value2);
+    self.value
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0x2_anonymous_balance_convert_to_string"></a>
 
 ## Function `convert_to_string`
@@ -253,7 +280,7 @@ For when an overflow is happening on Supply operations.
     // <b>let</b> value1 = value/2;
     // <b>let</b> value2 = value - value1;
 
-    <b>let</b> result =  split_value(value);
+    <b>let</b> result =  hfe_ops_split_value(value);
     <b>let</b> value1 = result[0];
     <b>let</b> value2 = result[1];
 

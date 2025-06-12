@@ -36,3 +36,8 @@ public native fun split_data(
 public native fun hfe_ops_split_value(
     value: u64,
 ): vector<u64>;
+
+public native fun hfe_ops_restore_value(
+    value1: u64,
+    value2: u64,
+): u64;

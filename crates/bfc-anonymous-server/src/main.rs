@@ -76,9 +76,17 @@ struct AnonymousCompareParams {
     value2: u64,
 }
 
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousSplitValueeParams {
+    value: u64,
+}
 
+#[derive(Debug, Deserialize, Serialize)]
+struct AnonymousRestoreValueeParams {
+    value1: u64,
+    value2: u64,
 
-
+}
 
 
 #[tokio::main]
@@ -148,6 +156,9 @@ async fn handle_rpc_request(request: JsonRpcRequest) -> Result<impl warp::Reply,
         "bfcx_getAnonymousMinus" => handle_anonymous_minus(request).await,
         "bfcx_getAnonymousMultiply" => handle_anonymous_multiply(request).await,
         "bfcx_getAnonymousCompare" => handle_anonymous_compare(request).await,
+        "bfcx_getAnonymousSplitValue"  => handle_anonymous_split_value(request).await,
+        "bfcx_getAnonymousRestoreValue"  => handle_anonymous_restore_value(request).await,
+
         "bfcx_ping" => handle_ping(request).await,
         _ => JsonRpcResponse {
             jsonrpc: "2.0".to_string(),
@@ -335,6 +346,108 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
                 }
                 Err(e) => {
                     warn!("Invalid parameters for bfcx_getAnonymousMultiply: {}", e);
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: None,
+                        error: Some(JsonRpcError {
+                            code: -32602,
+                            message: "Invalid params".to_string(),
+                            data: Some(serde_json::json!({"error": e.to_string()})),
+                        }),
+                    }
+                }
+            }
+        }
+        None => {
+            JsonRpcResponse {
+                jsonrpc: "2.0".to_string(),
+                id: request.id,
+                result: None,
+                error: Some(JsonRpcError {
+                    code: -32602,
+                    message: "Missing params".to_string(),
+                    data: None,
+                }),
+            }
+        }
+    }
+}
+
+async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            match serde_json::from_value::<AnonymousRestoreValueeParams>(params) {
+                Ok(restore_value_params) => {
+                    let value = restore_value_params.value1 + restore_value_params.value2;
+
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: Some(serde_json::json!({
+                            "result1": value,
+                            "result2": 0,
+                            "operation": "anonymous_restore_value",
+                            "timestamp": chrono::Utc::now().timestamp()
+                        })),
+                        error: None,
+                    }
+
+                }
+                Err(e) => {
+                    warn!("Invalid parameters for bfcx_getAnonymousRestoreValue: {}", e);
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: None,
+                        error: Some(JsonRpcError {
+                            code: -32602,
+                            message: "Invalid params".to_string(),
+                            data: Some(serde_json::json!({"error": e.to_string()})),
+                        }),
+                    }
+                }
+            }
+        }
+        None => {
+            JsonRpcResponse {
+                jsonrpc: "2.0".to_string(),
+                id: request.id,
+                result: None,
+                error: Some(JsonRpcError {
+                    code: -32602,
+                    message: "Missing params".to_string(),
+                    data: None,
+                }),
+            }
+        }
+    }
+}
+
+async fn handle_anonymous_split_value(request: JsonRpcRequest) -> JsonRpcResponse {
+    match request.params {
+        Some(params) => {
+            match serde_json::from_value::<AnonymousSplitValueeParams>(params) {
+                Ok(split_value_params) => {
+                    let value = split_value_params.value;
+                    let value1 = value/2;
+                    let value2 = value - value1;
+
+                    JsonRpcResponse {
+                        jsonrpc: "2.0".to_string(),
+                        id: request.id,
+                        result: Some(serde_json::json!({
+                            "result1": value1,
+                            "result2": value2,
+                            "operation": "anonymous_split_value",
+                            "timestamp": chrono::Utc::now().timestamp()
+                        })),
+                        error: None,
+                    }
+
+                }
+                Err(e) => {
+                    warn!("Invalid parameters for bfcx_getAnonymousSplitValue: {}", e);
                     JsonRpcResponse {
                         jsonrpc: "2.0".to_string(),
                         id: request.id,

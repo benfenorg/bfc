@@ -236,6 +236,56 @@ pub fn hfe_ops_multiplied(
 
 }
 
+pub fn hfe_ops_split_value(context: &mut NativeContext,
+                           ty_args: Vec<Type>,
+                           mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
+
+    let anonymous_compute_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_compute_cost_params
+        .clone();
+
+
+
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        anonymous_compute_cost_params.anonymous_compute_cost_base
+    );
+
+    let value = pop_arg!(args, u64);
+    let cost = context.gas_used();
+
+
+    let anonymous_privatekey = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_privatekey
+        .clone();
+    let enable_anonymous_rpc = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .enable_anonymous_rpc
+        .clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    if *enable_anonymous_rpc == Some(true) {
+        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let result = client.split_value(value);
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::vector_u64(vec![result.value1, result.value2])]
+        ))
+    } else {
+        let value1 = value/2;
+        let value2 = value - value1;
+
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::vector_u64(vec![value1, value2])],
+        ))
+    }
+}
 
 pub fn hfe_ops_compare(
     context: &mut NativeContext,
@@ -274,39 +324,57 @@ pub fn hfe_ops_compare(
         smallvec![Value::u8(result)],
     ))
 }
-pub fn hfe_ops_restore_value(){
-
-}
-pub fn hfe_ops_split_value(context: &mut NativeContext,
-                  ty_args: Vec<Type>,
-                  mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
-
-
-    //todo: add result overflow defense.
-
+pub fn hfe_ops_restore_value(context: &mut NativeContext,
+                              ty_args: Vec<Type>,
+                              mut args: VecDeque<Value>) -> PartialVMResult<NativeResult> {
 
     let anonymous_compute_cost_params = &context
         .extensions()
         .get::<NativesCostTable>()
         .anonymous_compute_cost_params
         .clone();
+
+
+
     // Charge the base cost for this oper
     native_charge_gas_early_exit!(
         context,
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
 
-    let value = pop_arg!(args, u64);
+    let value2 = pop_arg!(args, u64);
+    let value1 = pop_arg!(args, u64);
 
-    let value1 = value/2;
-    let value2 = value - value1;
     let cost = context.gas_used();
 
-    Ok(NativeResult::ok(
-        cost,
-        smallvec![Value::vector_u64(vec![value1, value2])],
-    ))
+
+    let anonymous_privatekey = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_privatekey
+        .clone();
+    let enable_anonymous_rpc = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .enable_anonymous_rpc
+        .clone();
+    let anonymous_rpc = context.extensions().get::<NativesCostTable>().anonymous_rpc.clone();
+    if *enable_anonymous_rpc == Some(true) {
+        let client = AnonymousClient::new(anonymous_rpc.unwrap().pop().unwrap().as_str());
+        let result = client.restore_value(value1, value2);
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::u64(result.value1)],
+        ))
+    } else {
+        let value = value1 + value2;
+        Ok(NativeResult::ok(
+            cost,
+            smallvec![Value::u64(value)],
+        ))
+    }
 }
+
 
 pub fn split_data(context: &mut NativeContext,
                   ty_args: Vec<Type>,
@@ -451,6 +519,58 @@ impl AnonymousClient {
                     error: None,
                     value1: result1,
                     value2: result2,
+                }
+            },
+            Err(e) => AnonymousResult {
+                success: false,
+                error: Some(e.to_string()),
+                value1: 0,
+                value2: 0,
+            },
+        }
+    }
+
+    pub fn restore_value(&self, value1: u64, value2: u64) -> AnonymousResult  {
+        let params = json!({
+            "value1": value1,
+            "value2": value2,
+        });
+
+        match self.send_rpc_request("bfcx_getAnonymousRestoreValue", params, 3) {
+            Ok(response) => {
+
+                let result1 = response["result"]["result1"].as_u64().unwrap();
+                AnonymousResult {
+                    success: true,
+                    error: None,
+                    value1: result1,
+                    value2: 0,
+                }
+            },
+            Err(e) => AnonymousResult {
+                success: false,
+                error: Some(e.to_string()),
+                value1: 0,
+                value2: 0,
+            },
+        }
+    }
+
+    pub fn split_value(&self, value1: u64) -> AnonymousResult  {
+        let params = json!({
+            "value": value1,
+        });
+
+        match self.send_rpc_request("bfcx_getAnonymousSplitValue", params, 3) {
+            Ok(response) => {
+
+                let result1 = response["result"]["result1"].as_u64().unwrap();
+                let result2 = response["result"]["result2"].as_u64().unwrap();
+                AnonymousResult {
+                    success: true,
+                    error: None,
+                    value1: result1,
+                    value2: result2
                 }
             },
             Err(e) => AnonymousResult {

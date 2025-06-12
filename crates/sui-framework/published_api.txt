@@ -2071,7 +2071,10 @@ hfe_ops_compare
 split_data
 	public fun
 	0x2::hfe_ops
-split_value
+hfe_ops_split_value
+	public fun
+	0x2::hfe_ops
+hfe_ops_restore_value
 	public fun
 	0x2::hfe_ops
 Supply
@@ -2082,6 +2085,9 @@ Anonymos_Balance
 	0x2::anonymous_balance
 Anonymous_Balance_Type
 	public enum
+	0x2::anonymous_balance
+get_anonymous_value
+	public fun
 	0x2::anonymous_balance
 convert_to_string
 	public fun
@@ -2177,6 +2183,9 @@ supply_immut
 	public fun
 	0x2::anonymous_coin
 supply_mut
+	public fun
+	0x2::anonymous_coin
+get_anonymous_value
 	public fun
 	0x2::anonymous_coin
 value
