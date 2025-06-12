@@ -6,7 +6,7 @@ use sha2::{Sha256, Digest};
 use hex;
 
 const MAINNET_URL: &str = "https://go.getblock.io/8703fc5554244851be7ee8d84c338177";
-const TESTNET_URL: &str = "https://go.getblock.io/f3a87b8e8e944566aae781d9edd0b2d8";
+const TESTNET_URL: &str = "https://api.shasta.trongrid.io";
 
 #[derive(Debug, Serialize)]
 struct JsonRpcRequest<T> {
@@ -293,6 +293,25 @@ mod tests {
     use super::*;
     use tokio;
     use tracing_test::traced_test;
+
+    #[traced_test]
+    #[tokio::test]
+    async fn test_check_tron_trx_txn_testnet() {
+        let tx_hash = "8e38c6374a6cd2840218e3f68d42ce63dea83f62c919eb603b286e931325e2b5";
+        let to_address = "TBuPPYvuanuSdCSMafrWAfRhyTr4NWe8KU".to_string();
+        let whitelist = vec![to_address];
+        let amount: u64 = 1_000000;
+
+        let result = check_tron_txn(
+            BridgeChainId::TronTestnet,
+            tx_hash,
+            whitelist,
+            amount,
+            false,
+        ).await;
+
+        assert!(result, "TRX transaction verification failed");
+    }
 
     #[traced_test]
     #[tokio::test]
