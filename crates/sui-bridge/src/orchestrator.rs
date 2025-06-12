@@ -329,7 +329,7 @@ where
             };
             if log_wrapper.fast_path_selector.is_finalized() {
                 info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
-                process_actions(&store, &aml_checker_tx, &metrics, actions,log_wrapper.fast_path_selector,&user_limit_handle).await;
+                process_actions(&store, &aml_checker_tx, &metrics, actions,log_wrapper.fast_path_selector,&None).await;
             }
             store
                 .update_eth_event_cursor(key, end_block)
