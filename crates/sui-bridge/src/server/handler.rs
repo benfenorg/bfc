@@ -219,7 +219,10 @@ where
                 }
                 BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
                     // check solana txn: only support USDC/USDT
-                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, amount, false).await;
+
+                    // readme: amount is benfen amount, not solana amount, so we need to convert it
+                    let sol_amount = amount / 1_000;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
                     if ok {
                         return Ok(action_rs);
                     }
