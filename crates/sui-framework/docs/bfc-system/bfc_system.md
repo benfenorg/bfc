@@ -243,7 +243,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(abfc_balance: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;, admin: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(abfc_balance: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;, admin: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -253,7 +253,7 @@ title: Module `0xc8::bfc_system`
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(
-    abfc_balance: Anonymos_Balance&lt;ABFC&gt;,
+    abfc_balance: Anonymous_Balance&lt;ABFC&gt;,
     admin: <b>address</b>,
     ctx: &<b>mut</b> TxContext
 ){

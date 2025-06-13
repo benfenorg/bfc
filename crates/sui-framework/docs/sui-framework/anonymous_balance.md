@@ -8,7 +8,7 @@ custom coins with <code><a href="../sui-framework/anonymous_balance.md#0x2_anony
 
 
 -  [Struct `Supply`](#0x2_anonymous_balance_Supply)
--  [Struct `Anonymos_Balance`](#0x2_anonymous_balance_Anonymos_Balance)
+-  [Struct `Anonymous_Balance`](#0x2_anonymous_balance_Anonymous_Balance)
 -  [Enum `Anonymous_Balance_Type`](#0x2_anonymous_balance_Anonymous_Balance_Type)
 -  [Constants](#@Constants_0)
 -  [Function `get_anonymous_value`](#0x2_anonymous_balance_get_anonymous_value)
@@ -69,16 +69,16 @@ Wrapped into a <code>TreasuryCap</code> in the <code>Coin</code> module.
 
 </details>
 
-<a name="0x2_anonymous_balance_Anonymos_Balance"></a>
+<a name="0x2_anonymous_balance_Anonymous_Balance"></a>
 
-## Struct `Anonymos_Balance`
+## Struct `Anonymous_Balance`
 
 Storable balance - an inner struct of a Coin type.
 Can be use
 d to store coins which don't need the key ability.
 
 
-<pre><code><b>struct</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; <b>has</b> store
+<pre><code><b>struct</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; <b>has</b> store
 </code></pre>
 
 
@@ -203,7 +203,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -212,9 +212,9 @@ For when an overflow is happening on Supply operations.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     //todo : <b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">hfe_ops</a> <b>to</b> get the value from value1 and value2
-    hfe_ops_restore_value(self.value1, self.value2)
+    hfe_ops_restore_value(self.value1, self.value2, signatures, id)
 }
 </code></pre>
 
@@ -261,7 +261,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -270,7 +270,7 @@ For when an overflow is happening on Supply operations.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) : <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) : <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> <b>mut</b> encode_data = <a href="../move-stdlib/string.md#0x1_string_utf8">string::utf8</a>(b"");
     <b>let</b> balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
     <b>let</b> version = 0;
@@ -289,7 +289,7 @@ For when an overflow is happening on Supply operations.
 
 
 
-    <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a> {
+    <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         value: value,
         value1: value1,
         value2: value2,
@@ -310,7 +310,7 @@ For when an overflow is happening on Supply operations.
 Get the amount stored in a <code>Balance</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -319,7 +319,7 @@ Get the amount stored in a <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     self.value
 }
 </code></pre>
@@ -334,7 +334,7 @@ Get the amount stored in a <code>Balance</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value1">value1</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value1">value1</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -343,7 +343,7 @@ Get the amount stored in a <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value1">value1</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value1">value1</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     self.value1
 }
 </code></pre>
@@ -358,7 +358,7 @@ Get the amount stored in a <code>Balance</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value2">value2</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value2">value2</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -367,7 +367,7 @@ Get the amount stored in a <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value2">value2</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value2">value2</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     self.value2
 }
 </code></pre>
@@ -382,7 +382,7 @@ Get the amount stored in a <code>Balance</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_encode_data">get_encode_data</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/string.md#0x1_string_String">string::String</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_encode_data">get_encode_data</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/string.md#0x1_string_String">string::String</a>
 </code></pre>
 
 
@@ -391,7 +391,7 @@ Get the amount stored in a <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_encode_data">get_encode_data</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): String {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_get_encode_data">get_encode_data</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): String {
     self.encode_data
 }
 </code></pre>
@@ -457,7 +457,7 @@ Create a new supply for type T.
 Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</code> with this value.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">anonymous_balance::Supply</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">anonymous_balance::Supply</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -466,7 +466,7 @@ Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</c
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">Supply</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_increase_supply">increase_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">Supply</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>assert</b>!(<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_value">value</a> &lt; (18446744073709551615u64 - self.value), <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_EOverflow">EOverflow</a>);
     self.value = self.value + value;
     <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>(value)
@@ -484,7 +484,7 @@ Increase supply by <code>value</code> and create a new <code>Balance&lt;T&gt;</c
 Burn a Balance<T> and decrease Supply<T>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">anonymous_balance::Supply</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">anonymous_balance::Supply</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -493,8 +493,8 @@ Burn a Balance<T> and decrease Supply<T>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">Supply</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
-    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_decrease_supply">decrease_supply</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Supply">Supply</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,
         balance_type: _,
@@ -518,7 +518,7 @@ Burn a Balance<T> and decrease Supply<T>.
 Create a zero <code>Balance</code> for type <code>T</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -527,7 +527,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_zero">zero</a>&lt;T&gt;(): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>(0)
 }
 </code></pre>
@@ -542,7 +542,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 
 
 
-<pre><code><b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;)
+<pre><code><b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -551,7 +551,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;) {
+<pre><code><b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_update_encode_data">update_encode_data</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;) {
     // Update the encode data based on the current value1 and value2
     <b>let</b> <b>mut</b> encode_data = <a href="../move-stdlib/string.md#0x1_string_utf8">string::utf8</a>(b"");
     <a href="../move-stdlib/string.md#0x1_string_append_utf8">string::append_utf8</a>(&<b>mut</b> encode_data, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_convert_to_string">convert_to_string</a>(self.value1));
@@ -572,7 +572,7 @@ Create a zero <code>Balance</code> for type <code>T</code>.
 Join two balances together.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -581,8 +581,8 @@ Join two balances together.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
-    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a> {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_join">join</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, <a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,
         balance_type: _,
@@ -612,7 +612,7 @@ Join two balances together.
 Split a <code>Balance</code> and take a sub balance from it.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -621,7 +621,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>assert</b>!(self.value &gt;= value, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
     self.value = self.value - value;
     <b>let</b> value3 = value/2;
@@ -647,7 +647,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 Withdraw all balance. After this the remaining balance must be 0.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_withdraw_all">withdraw_all</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_withdraw_all">withdraw_all</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -656,7 +656,7 @@ Withdraw all balance. After this the remaining balance must be 0.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_withdraw_all">withdraw_all</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_withdraw_all">withdraw_all</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> value = self.value;
     <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>(self, value)
 }
@@ -673,7 +673,7 @@ Withdraw all balance. After this the remaining balance must be 0.
 Destroy a zero <code>Balance</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -682,9 +682,9 @@ Destroy a zero <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a>&lt;T&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;) {
     <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance">balance</a>.value == 0, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENonZero">ENonZero</a>);
-    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">Anonymos_Balance</a> {
+    <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,
         balance_type: _,

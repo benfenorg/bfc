@@ -85,6 +85,8 @@ struct AnonymousSplitValueParams {
 struct AnonymousRestoreValueParams {
     value1: u64,
     value2: u64,
+    signature: Vec<u8>,
+    Objectid : Vec<u8>,
 
 }
 
@@ -379,6 +381,11 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
         Some(params) => {
             match serde_json::from_value::<AnonymousRestoreValueParams>(params) {
                 Ok(restore_value_params) => {
+                    let signature = restore_value_params.signature;
+                    let objectid = restore_value_params.Objectid;
+                    info!("handle_anonymous_restore_value get signature{:?} object id{:?}", signature, objectid);
+                    info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
+
                     let data1 = restore_value_params.value1;
                     let data2 = restore_value_params.value2;
                     if data1.checked_add(data2) == None {

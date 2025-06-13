@@ -107,7 +107,7 @@ A coin of type <code>T</code> worth <code>value</code>. Transferable and storabl
 
 </dd>
 <dt>
-<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;</code>
+<code><a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;</code>
 </dt>
 <dd>
 
@@ -642,7 +642,7 @@ Get mutable reference to the treasury's <code>Supply</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -651,8 +651,8 @@ Get mutable reference to the treasury's <code>Supply</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
-    self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>()
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>(signatures, id)
 }
 </code></pre>
 
@@ -692,7 +692,7 @@ Public getter for the coin's value
 Get immutable reference to the balance of a coin.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): &<a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -701,7 +701,7 @@ Get immutable reference to the balance of a coin.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): &Anonymos_Balance&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/balance.md#0x2_balance">balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): &Anonymous_Balance&lt;T&gt; {
     &<a href="../sui-framework/coin.md#0x2_coin">coin</a>.<a href="../sui-framework/balance.md#0x2_balance">balance</a>
 }
 </code></pre>
@@ -717,7 +717,7 @@ Get immutable reference to the balance of a coin.
 Get a mutable reference to the balance of a coin.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_balance_mut">balance_mut</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_balance_mut">balance_mut</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -726,7 +726,7 @@ Get a mutable reference to the balance of a coin.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_balance_mut">balance_mut</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): &<b>mut</b> Anonymos_Balance&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_balance_mut">balance_mut</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): &<b>mut</b> Anonymous_Balance&lt;T&gt; {
     &<b>mut</b> <a href="../sui-framework/coin.md#0x2_coin">coin</a>.<a href="../sui-framework/balance.md#0x2_balance">balance</a>
 }
 </code></pre>
@@ -742,7 +742,7 @@ Get a mutable reference to the balance of a coin.
 Wrap a balance into a Coin to make it transferable.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_from_balance">from_balance</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_from_balance">from_balance</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
 </code></pre>
 
 
@@ -751,7 +751,7 @@ Wrap a balance into a Coin to make it transferable.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_from_balance">from_balance</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: Anonymos_Balance&lt;T&gt;, ctx: &<b>mut</b> TxContext): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_from_balance">from_balance</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: Anonymous_Balance&lt;T&gt;, ctx: &<b>mut</b> TxContext): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx), <a href="../sui-framework/balance.md#0x2_balance">balance</a> }
 }
 </code></pre>
@@ -767,7 +767,7 @@ Wrap a balance into a Coin to make it transferable.
 Destruct a Coin wrapper and keep the balance.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_into_balance">into_balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_into_balance">into_balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -776,7 +776,7 @@ Destruct a Coin wrapper and keep the balance.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_into_balance">into_balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): Anonymos_Balance&lt;T&gt; {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_into_balance">into_balance</a>&lt;T&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): Anonymous_Balance&lt;T&gt; {
     <b>let</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui-framework/balance.md#0x2_balance">balance</a> } = <a href="../sui-framework/coin.md#0x2_coin">coin</a>;
     id.delete();
     <a href="../sui-framework/balance.md#0x2_balance">balance</a>
@@ -795,7 +795,7 @@ Take a <code>Coin</code> worth of <code>value</code> from <code>Balance</code>.
 Aborts if <code>value &gt; <a href="../sui-framework/balance.md#0x2_balance">balance</a>.value</code>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_take">take</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_take">take</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;
 </code></pre>
 
 
@@ -805,7 +805,7 @@ Aborts if <code>value &gt; <a href="../sui-framework/balance.md#0x2_balance">bal
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_take">take</a>&lt;T&gt;(
-    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> Anonymos_Balance&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> TxContext,
+    <a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> Anonymous_Balance&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> TxContext,
 ): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
@@ -825,7 +825,7 @@ Aborts if <code>value &gt; <a href="../sui-framework/balance.md#0x2_balance">bal
 Put a <code>Coin&lt;T&gt;</code> to the <code>Balance&lt;T&gt;</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;)
 </code></pre>
 
 
@@ -834,7 +834,7 @@ Put a <code>Coin&lt;T&gt;</code> to the <code>Balance&lt;T&gt;</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> Anonymos_Balance&lt;T&gt;, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;) {
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_put">put</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: &<b>mut</b> Anonymous_Balance&lt;T&gt;, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;) {
     <a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_join">join</a>(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_into_balance">into_balance</a>(<a href="../sui-framework/coin.md#0x2_coin">coin</a>));
 }
 </code></pre>
@@ -1180,7 +1180,7 @@ supply in <code>cap</code> accordingly.
 Aborts if <code>value</code> + <code>cap.total_supply</code> >= U64_MAX
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">anonymous_coin::TreasuryCap</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;T&gt;
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">anonymous_coin::TreasuryCap</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;
 </code></pre>
 
 
@@ -1191,7 +1191,7 @@ Aborts if <code>value</code> + <code>cap.total_supply</code> >= U64_MAX
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_mint_balance">mint_balance</a>&lt;T&gt;(
     cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
-): Anonymos_Balance&lt;T&gt; {
+): Anonymous_Balance&lt;T&gt; {
     cap.total_supply.increase_supply(value)
 }
 </code></pre>
