@@ -56,12 +56,13 @@ module sui::anonymous_coin {
     }
 
     public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
+        let value = coin.value();
         transfer::share_object(SwapPool {
             id: object::new(ctx),
             anonymous_coin,
             normal_coin: coin,
             swap_rate: 1,
-            max_availalbe_normal_coin: coin.value(),
+            max_availalbe_normal_coin: value,
         })
     }
 
@@ -75,7 +76,7 @@ module sui::anonymous_coin {
         transfer::public_transfer(normal_coin, tx_context::sender(ctx));
     }
 
-    entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,
+    entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: &mut Anonymous_Coin<T1>,
                                                   swap_out_amount: u64,
                                                   swap_pool :&mut SwapPool<T1, T2>,
                                                   ctx: &mut TxContext) {

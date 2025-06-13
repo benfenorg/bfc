@@ -18,6 +18,7 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Constants](#@Constants_0)
 -  [Function `bind_swap_pool`](#0x2_anonymous_coin_bind_swap_pool)
 -  [Function `swap_out`](#0x2_anonymous_coin_swap_out)
+-  [Function `swap_out_with_amount`](#0x2_anonymous_coin_swap_out_with_amount)
 -  [Function `swap_in`](#0x2_anonymous_coin_swap_in)
 -  [Function `total_supply`](#0x2_anonymous_coin_total_supply)
 -  [Function `treasury_into_supply`](#0x2_anonymous_coin_treasury_into_supply)
@@ -158,7 +159,7 @@ A coin of type <code>T</code> worth <code>value</code>. Transferable and storabl
 
 </dd>
 <dt>
-<code>max_availalbe: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+<code>max_availalbe_normal_coin: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
 </dt>
 <dd>
 
@@ -461,12 +462,13 @@ Invalid arguments are passed to a function.
 
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_bind_swap_pool">bind_swap_pool</a>&lt;T1, T2&gt; (<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T1&gt;, <a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;T2&gt;, ctx: &<b>mut</b> TxContext){
+    <b>let</b> value = <a href="../sui-framework/coin.md#0x2_coin">coin</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>();
     <a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a> {
         id: <a href="../sui-framework/object.md#0x2_object_new">object::new</a>(ctx),
         <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>,
         normal_coin: <a href="../sui-framework/coin.md#0x2_coin">coin</a>,
         swap_rate: 1,
-        max_availalbe: 10000,
+        max_availalbe_normal_coin: value,
     })
 }
 </code></pre>
@@ -493,9 +495,45 @@ Invalid arguments are passed to a function.
 <pre><code>entry <b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out">swap_out</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T1&gt;,  swap_pool :&<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> TxContext) {
     <b>let</b> value = <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>();
     <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_join">join</a>(&<b>mut</b> swap_pool.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>);
-    <b>let</b> new_coin =<a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> swap_pool.normal_coin, value , ctx);
-    //<a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(swap_pool);
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(new_coin, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+
+    <b>assert</b>!(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a> &lt;= swap_pool.max_availalbe_normal_coin, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_ENotEnough">ENotEnough</a>);
+    <b>let</b> normal_coin =<a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> swap_pool.normal_coin, value , ctx);
+    swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - value;
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(normal_coin, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0x2_anonymous_coin_swap_out_with_amount"></a>
+
+## Function `swap_out_with_amount`
+
+
+
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out_with_amount">swap_out_with_amount</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T1&gt;, swap_out_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, swap_pool: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">anonymous_coin::SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code>entry <b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out_with_amount">swap_out_with_amount</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T1&gt;,
+                                              swap_out_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+                                              swap_pool :&<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;,
+                                              ctx: &<b>mut</b> TxContext) {
+    <b>assert</b>!(swap_out_amount &lt;= swap_pool.max_availalbe_normal_coin, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_ENotEnough">ENotEnough</a>);
+
+    <b>let</b> swap_out_acoin = <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_split">split</a>(swap_out_amount, ctx);
+    <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_join">join</a>(&<b>mut</b> swap_pool.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, swap_out_acoin);
+
+    <b>let</b> normal_coin =<a href="../sui-framework/coin.md#0x2_coin_split">coin::split</a>(&<b>mut</b> swap_pool.normal_coin, swap_out_amount , ctx);
+    swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - swap_out_amount;
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(normal_coin, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>
 
@@ -521,9 +559,11 @@ Invalid arguments are passed to a function.
 <pre><code>entry <b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_in">swap_in</a>&lt;T1, T2&gt;(<a href="../sui-framework/coin.md#0x2_coin">coin</a>: Coin&lt;T2&gt;,  swap_pool : & <b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> TxContext){
     <b>let</b> value = <a href="../sui-framework/coin.md#0x2_coin_balance">coin::balance</a>(&<a href="../sui-framework/coin.md#0x2_coin">coin</a>).<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>();
     <a href="../sui-framework/coin.md#0x2_coin_join">coin::join</a>(&<b>mut</b> swap_pool.normal_coin, <a href="../sui-framework/coin.md#0x2_coin">coin</a>);
-    <b>let</b> new_coin =<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_split">split</a>(&<b>mut</b> swap_pool.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, value , ctx);
-    //<a href="../sui-framework/transfer.md#0x2_transfer_share_object">transfer::share_object</a>(swap_pool);
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(new_coin, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
+
+    swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
+
+    <b>let</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a> =<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_split">split</a>(&<b>mut</b> swap_pool.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, value , ctx);
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, <a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx));
 }
 </code></pre>
 
