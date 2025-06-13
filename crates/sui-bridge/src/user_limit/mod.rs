@@ -69,21 +69,22 @@ impl UserLimitHandle {
         &self,
         chain_id: BridgeChainId,
         eth_address: EthAddress,
-        path: FastPathSelector,
+        _path: FastPathSelector,
         amount: u64,
     ) -> bool {
+        let path_default = FastPathSelector::Latest;
         // Check if the limit configuration is loaded
         if let Err(e) = self.load_limit_config().await {
             error!("Failed to load limit config: {:?}", e);
             return false; // If there's an error, we assume the limit is not exceeded
         }
-        let bridge_amount = self.get_bridge_amounts(chain_id as i32, eth_address.as_bytes(), path as i32).await;
+        let bridge_amount = self.get_bridge_amounts(chain_id as i32, eth_address.as_bytes(), path_default as i32).await;
         if let Err(e) = bridge_amount {
             error!("Failed to get user limit amounts: {:?}", e);
             return false; // If there's an error, we assume the limit is not exceeded
         }
         let bridge_amount = bridge_amount.unwrap_or(0);
-        let limit_config = self.get_limit_config(chain_id as i32, path as i32).await;
+        let limit_config = self.get_limit_config(chain_id as i32, path_default as i32).await;
         if let Err(e) = limit_config {
             error!("Failed to get limit config: {:?}", e);
             return false; // If there's an error, we assume the limit is not exceeded
@@ -91,13 +92,13 @@ impl UserLimitHandle {
         let limit_config = limit_config.unwrap_or(0);
         info!(
             "Checking user limit: chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}, bridge_amount: {}, limit_config: {}",
-            chain_id, eth_address, path, amount, bridge_amount, limit_config
+            chain_id, eth_address, path_default, amount, bridge_amount, limit_config
         );
         // Check if the total amount (bridge_amount + amount) exceeds the limit
         if bridge_amount + amount as i64 > limit_config {
             info!(
                 "User limit exceeded: chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}, bridge_amount: {}, limit_config: {}",
-                chain_id, eth_address, path, amount, bridge_amount, limit_config
+                chain_id, eth_address, path_default, amount, bridge_amount, limit_config
             );
             return true; // Limit exceeded
         }
@@ -108,10 +109,11 @@ impl UserLimitHandle {
         &self,
         chain_id: BridgeChainId,
         eth_address: EthAddress,
-        path: FastPathSelector,
+        _path: FastPathSelector,
         tx_hash: Vec<u8>,
         amount: u64,
     ) -> Result<(), anyhow::Error> {
+        let path_default = FastPathSelector::Latest;
         use crate::user_limit::schema::bridge_record;
         use diesel::insert_into;
         let now_ms = Utc::now().timestamp_millis();
@@ -119,7 +121,7 @@ impl UserLimitHandle {
         let new_record = BridgeRecord {
             chain_id: chain_id as i32,
             address: eth_address.as_bytes().to_vec(),
-            path: path as i32,
+            path: path_default as i32,
             amount: amount as i64,
             tx_hash,
             timestamp_ms: now_ms,
@@ -137,25 +139,25 @@ impl UserLimitHandle {
             Err(err) => {
                 error!("Failed to insert user limit record, no rows affected, \
                     chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}, err: {:?}",
-                    chain_id, eth_address, path, amount, err
+                    chain_id, eth_address, path_default, amount, err
                 );
             }
         }
         // Update the cache
         if effect_count > 0 {
             let mut cache = RECORD_CACHE.lock().unwrap();
-            let key = format!("{}_{:x}_{}", chain_id as i32, eth_address, path as i32);
+            let key = format!("{}_{:x}_{}", chain_id as i32, eth_address, path_default as i32);
             let entry = cache.entry(key).or_insert(RecordCache {
                 total: 0,
                 created_at: Instant::now(),
             });
             entry.total += amount as i64;
             info!("Cache updated for chain_id: {}, address: {:x}, path: {}, new total: {}",
-                chain_id as i32, eth_address, path as i32, entry.total
+                chain_id as i32, eth_address, path_default as i32, entry.total
             );
         }
         info!("User limit record inserted: chain_id: {:?}, eth_address: {:?}, path: {:?}, amount: {}",
-            chain_id, eth_address, path, amount
+            chain_id, eth_address, path_default, amount
         );
         Ok(())
     }
