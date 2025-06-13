@@ -103,7 +103,7 @@ Register the <code>SUI</code> Coin to acquire its <code>Supply</code>.
 This should be called only once during genesis creation.
 
 
-<pre><code><b>fun</b> <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_new">new</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymos_Balance">anonymous_balance::Anonymos_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;
+<pre><code><b>fun</b> <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_new">new</a>(ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;
 </code></pre>
 
 
@@ -112,7 +112,7 @@ This should be called only once during genesis creation.
 <summary>Implementation</summary>
 
 
-<pre><code><b>fun</b> <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_new">new</a>(ctx: &<b>mut</b> TxContext): Anonymos_Balance&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">ABFC</a>&gt; {
+<pre><code><b>fun</b> <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_new">new</a>(ctx: &<b>mut</b> TxContext): Anonymous_Balance&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">ABFC</a>&gt; {
     <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_sender">tx_context::sender</a>(ctx) == @0x0, <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ENotSystemAddress">ENotSystemAddress</a>);
     <b>assert</b>!(<a href="../sui-framework/tx_context.md#0x2_tx_context_epoch">tx_context::epoch</a>(ctx) == 0, <a href="../sui-framework/anonymous_bfc.md#0x2_abfc_EAlreadyMinted">EAlreadyMinted</a>);
 

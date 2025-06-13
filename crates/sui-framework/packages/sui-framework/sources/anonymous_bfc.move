@@ -3,7 +3,7 @@
 
 module sui::abfc;
 
-use sui::anonymous_balance::Anonymos_Balance;
+use sui::anonymous_balance::Anonymous_Balance;
 use sui::anonymous_coin;
 
     const EAlreadyMinted: u64 = 0;
@@ -30,7 +30,7 @@ use sui::anonymous_coin;
     #[allow(unused_function)]
     /// Register the `SUI` Coin to acquire its `Supply`.
     /// This should be called only once during genesis creation.
-    fun new(ctx: &mut TxContext): Anonymos_Balance<ABFC> {
+    fun new(ctx: &mut TxContext): Anonymous_Balance<ABFC> {
         assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
         assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
 
