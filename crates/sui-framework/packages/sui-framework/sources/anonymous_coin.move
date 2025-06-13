@@ -7,7 +7,7 @@
 module sui::anonymous_coin {
     use std::string;
     use std::ascii;
-    use sui::anonymous_balance::{Self, Anonymos_Balance, Supply};
+    use sui::anonymous_balance::{Self, Anonymous_Balance, Supply};
     use sui::url::{Self, Url};
     use sui::deny_list::DenyList;
     use std::type_name;
@@ -42,7 +42,7 @@ module sui::anonymous_coin {
     /// A coin of type `T` worth `value`. Transferable and storable
     public struct Anonymous_Coin<phantom T> has key, store{
         id: UID,
-        balance: Anonymos_Balance<T>
+        balance: Anonymous_Balance<T>
 
     }
 
@@ -167,22 +167,22 @@ module sui::anonymous_coin {
     }
 
     /// Get immutable reference to the balance of a coin.
-    public fun balance<T>(coin: &Anonymous_Coin<T>): &Anonymos_Balance<T> {
+    public fun balance<T>(coin: &Anonymous_Coin<T>): &Anonymous_Balance<T> {
         &coin.balance
     }
 
     /// Get a mutable reference to the balance of a coin.
-    public fun balance_mut<T>(coin: &mut Anonymous_Coin<T>): &mut Anonymos_Balance<T> {
+    public fun balance_mut<T>(coin: &mut Anonymous_Coin<T>): &mut Anonymous_Balance<T> {
         &mut coin.balance
     }
 
     /// Wrap a balance into a Coin to make it transferable.
-    public fun from_balance<T>(balance: Anonymos_Balance<T>, ctx: &mut TxContext): Anonymous_Coin<T> {
+    public fun from_balance<T>(balance: Anonymous_Balance<T>, ctx: &mut TxContext): Anonymous_Coin<T> {
         Anonymous_Coin { id: object::new(ctx), balance }
     }
 
     /// Destruct a Coin wrapper and keep the balance.
-    public fun into_balance<T>(coin: Anonymous_Coin<T>): Anonymos_Balance<T> {
+    public fun into_balance<T>(coin: Anonymous_Coin<T>): Anonymous_Balance<T> {
         let Anonymous_Coin { id, balance } = coin;
         id.delete();
         balance
@@ -191,7 +191,7 @@ module sui::anonymous_coin {
     /// Take a `Coin` worth of `value` from `Balance`.
     /// Aborts if `value > balance.value`
     public fun take<T>(
-        balance: &mut Anonymos_Balance<T>, value: u64, ctx: &mut TxContext,
+        balance: &mut Anonymous_Balance<T>, value: u64, ctx: &mut TxContext,
     ): Anonymous_Coin<T> {
         Anonymous_Coin {
             id: object::new(ctx),
@@ -200,7 +200,7 @@ module sui::anonymous_coin {
     }
 
     /// Put a `Coin<T>` to the `Balance<T>`.
-    public fun put<T>(balance: &mut Anonymos_Balance<T>, coin: Anonymous_Coin<T>) {
+    public fun put<T>(balance: &mut Anonymous_Balance<T>, coin: Anonymous_Coin<T>) {
         balance.join(into_balance(coin));
     }
 
@@ -365,7 +365,7 @@ module sui::anonymous_coin {
     /// Aborts if `value` + `cap.total_supply` >= U64_MAX
     public fun mint_balance<T>(
         cap: &mut TreasuryCap<T>, value: u64
-    ): Anonymos_Balance<T> {
+    ): Anonymous_Balance<T> {
         cap.total_supply.increase_supply(value)
     }
 

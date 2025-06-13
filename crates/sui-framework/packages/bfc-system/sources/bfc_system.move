@@ -1,7 +1,7 @@
 module bfc_system::bfc_system {
     use std::ascii;
     use sui::abfc::ABFC;
-    use sui::anonymous_balance::Anonymos_Balance;
+    use sui::anonymous_balance::Anonymous_Balance;
     use bfc_system::position::Position;
     use bfc_system::tick::Tick;
     use bfc_system::bfc_dao;
@@ -69,7 +69,7 @@ module bfc_system::bfc_system {
     //spec module { pragma verify = false; }
 
     public(package) fun allocate_abfc(
-        abfc_balance: Anonymos_Balance<ABFC>,
+        abfc_balance: Anonymous_Balance<ABFC>,
         admin: address,
         ctx: &mut TxContext
     ){
