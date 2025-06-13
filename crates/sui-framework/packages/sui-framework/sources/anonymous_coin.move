@@ -52,7 +52,7 @@ module sui::anonymous_coin {
         anonymous_coin: Anonymous_Coin<T1>,
         normal_coin: Coin<T2>,
         swap_rate: u64,
-        max_availalbe:u64, //current max convert  T2 normal amount...
+        max_availalbe_normal_coin:u64, //current max convert  T2 normal amount...
     }
 
     public entry fun bind_swap_pool<T1, T2> (anonymous_coin: Anonymous_Coin<T1>, coin: Coin<T2>, ctx: &mut TxContext){
@@ -61,24 +61,42 @@ module sui::anonymous_coin {
             anonymous_coin,
             normal_coin: coin,
             swap_rate: 1,
-            max_availalbe: 10000,
+            max_availalbe_normal_coin: coin.value(),
         })
     }
 
     entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, ctx: &mut TxContext) {
         let value = anonymous_coin.balance.value();
         join(&mut swap_pool.anonymous_coin, anonymous_coin);
-        let new_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
-        //transfer::share_object(swap_pool);
-        transfer::public_transfer(new_coin, tx_context::sender(ctx));
+
+        assert!(value <= swap_pool.max_availalbe_normal_coin, ENotEnough);
+        let normal_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
+        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - value;
+        transfer::public_transfer(normal_coin, tx_context::sender(ctx));
+    }
+
+    entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,
+                                                  swap_out_amount: u64,
+                                                  swap_pool :&mut SwapPool<T1, T2>,
+                                                  ctx: &mut TxContext) {
+        assert!(swap_out_amount <= swap_pool.max_availalbe_normal_coin, ENotEnough);
+
+        let swap_out_acoin = anonymous_coin.split(swap_out_amount, ctx);
+        join(&mut swap_pool.anonymous_coin, swap_out_acoin);
+
+        let normal_coin =coin::split(&mut swap_pool.normal_coin, swap_out_amount , ctx);
+        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - swap_out_amount;
+        transfer::public_transfer(normal_coin, tx_context::sender(ctx));
     }
 
     entry public fun swap_in<T1, T2>(coin: Coin<T2>,  swap_pool : & mut SwapPool<T1, T2>, ctx: &mut TxContext){
         let value = coin::balance(&coin).value();
         coin::join(&mut swap_pool.normal_coin, coin);
-        let new_coin =split(&mut swap_pool.anonymous_coin, value , ctx);
-        //transfer::share_object(swap_pool);
-        transfer::public_transfer(new_coin, tx_context::sender(ctx));
+
+        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin + value;
+
+        let anonymous_coin =split(&mut swap_pool.anonymous_coin, value , ctx);
+        transfer::public_transfer(anonymous_coin, tx_context::sender(ctx));
     }
 
 
