@@ -215,7 +215,9 @@ where
                 }
                 BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
                     // check tron txn: only support TRC20
-                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, amount, false).await;
+                    // readme: amount is benfen amount, not tron amount, so we need to convert it
+                    let tron_amount = amount / 1_000;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
                     if ok {
                         return Ok(action_rs);
                     }
