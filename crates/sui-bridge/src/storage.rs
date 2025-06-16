@@ -4,7 +4,7 @@
 use std::collections::HashMap;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::{debug, info};
+use tracing::info;
 use sui_types::Identifier;
 
 use sui_types::event::EventID;
@@ -15,10 +15,12 @@ use typed_store::DBMapUtils;
 use typed_store::Map;
 
 use crate::error::{BridgeError, BridgeResult};
+use crate::fast_path::FastPathSelector;
 use crate::types::{BridgeAction, BridgeActionDigest};
 
-
-pub type EthSyncerCursorsKey = (ethers::types::Address, u64);
+//(address,chain_id,fast_path_enabled)
+//chain_id is the chain id of the evm chain,not the bridge chain id
+pub type EthSyncerCursorsKey = (ethers::types::Address, u64,FastPathSelector);
 
 #[derive(DBMapUtils)]
 pub struct BridgeOrchestratorTables {
@@ -43,7 +45,7 @@ impl BridgeOrchestratorTables {
     }
 
     pub(crate) fn insert_pending_actions(&self, actions: &[BridgeAction]) -> BridgeResult<()> {
-        for action in actions.clone() {
+        for action in actions {
             match action {
                 BridgeAction::EthSendBackBridgeAction(a) => {
                     info!("[DEBUG] insert_pending_actions EthSendBackBridgeAction: {:#?}", a);
@@ -149,7 +151,7 @@ impl BridgeOrchestratorTables {
         key: EthSyncerCursorsKey,
         cursor: u64,
     ) -> BridgeResult<()> {
-        let (_, chain_id) = key.clone();
+        // let (_, chain_id) = key.clone();
         // if (chain_id == 11155420) {
         //     info!("[DEBUG]  update_eth_event_cursor: key: {:?}, cursor: {}, current:{:?}", key, cursor, &self.get_eth_event_cursors(&[key.clone()]));
         // }
@@ -307,15 +309,15 @@ mod tests {
         let eth_contract_address = ethers::types::Address::random();
         let eth_block_num = 199999u64;
         assert!(store
-            .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64)])
+            .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized)])
             .unwrap()[0]
             .is_none());
         store
-            .update_eth_event_cursor((eth_contract_address, BridgeChainId::EthCustom as u64), eth_block_num)
+            .update_eth_event_cursor((eth_contract_address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized), eth_block_num)
             .unwrap();
         assert_eq!(
             store
-                .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64)])
+                .get_eth_event_cursors(&[(eth_contract_address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized)])
                 .unwrap()[0]
                 .unwrap(),
             eth_block_num

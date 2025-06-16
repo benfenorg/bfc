@@ -243,7 +243,7 @@ async fn test_bridge_from_bsc_to_sui() {
         timer.elapsed()
     );
     let timer = std::time::Instant::now();
-    let (eth_signer, _) = bridge_test_cluster
+    let (_eth_signer, _) = bridge_test_cluster
         .get_eth_signer_and_address()
         .await
         .unwrap();
@@ -990,7 +990,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
     let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
 
     // Register tokens on Sui
-    let token_id = 6;
+    let token_id = 7;
     let token_sui_decimal = 9; // this needs to match ka.move
     let token_price = 10000;
     let sender = bridge_test_cluster.sui_user_address();
@@ -1081,7 +1081,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         .await
         .unwrap();
     dbg!(&treasury_summary.id_token_type_map);
-    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 5 + 1 new token
+    assert_eq!(treasury_summary.id_token_type_map.len(), 7); // 5 + 1 new token
     let (id, _type) = treasury_summary
         .id_token_type_map
         .iter()

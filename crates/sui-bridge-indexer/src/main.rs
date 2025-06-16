@@ -5,6 +5,7 @@ use anyhow::Result;
 use clap::*;
 use ethers::types::{Address as EthAddress, U256};
 use prometheus::Registry;
+use sui_types::bridge::BridgeChainId;
 use std::collections::HashSet;
 use std::env;
 use std::net::IpAddr;
@@ -90,6 +91,7 @@ async fn main() -> Result<()> {
             HashSet::from_iter(vec![]), // dummy
             bridge_metrics.clone(),
             U256::from(0),
+            BridgeChainId::EthMainnet,
         )
         .await?,
     );
