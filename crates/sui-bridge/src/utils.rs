@@ -208,6 +208,10 @@ pub fn generate_bridge_node_config_and_write_to_file(
             eth_bridge_chain_id: BridgeChainId::EthSepolia as u8,
             eth_contracts_start_block_fallback: Some(0),
             eth_contracts_start_block_override: None,
+            latest_fast_path_threshold: None,
+            safe_fast_path_threshold: None,
+            enable_fast_path_latest: false,
+            enable_fast_path_safe: false,
         },
         evm: vec![
             EthConfig {
@@ -216,6 +220,10 @@ pub fn generate_bridge_node_config_and_write_to_file(
                 eth_bridge_chain_id: BridgeChainId::BscTestnet as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                latest_fast_path_threshold: None,
+                safe_fast_path_threshold: None,
+                enable_fast_path_latest: false,
+                enable_fast_path_safe: false,
             },
         ],
         aml_key: "your_aml_key".to_string(),
@@ -234,6 +242,7 @@ pub fn generate_bridge_node_config_and_write_to_file(
                     .to_string(),
             )]),
         }),
+        user_limit_db_url: Some("pgpath".to_string()),
     };
     if run_client {
         config.sui.bridge_client_key_path = Some(PathBuf::from("/path/to/your/bridge_client_key"));
@@ -307,7 +316,6 @@ pub async fn publish_and_register_coins_return_add_coins_on_sui_action(
     let mut token_type_names = vec![];
     let mut register_tasks = vec![];
     for (response, sender) in publish_coin_responses.into_iter().zip(senders.clone()) {
-        dbg!(&response);
         let response = response.unwrap().unwrap();
         assert_eq!(
             response.effects.unwrap().status(),

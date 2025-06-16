@@ -86,6 +86,11 @@ pub const TOKEN_ID_BNB: u64 = 6;
 pub const TOKEN_ID_OP: u64 = 7;
 pub const TOKEN_ID_POL: u64 = 8;
 
+// const for fast path
+pub const FAST_PATH_THREASHOLD_LATEST_BUSD: u64 = 100_000_000_000;
+pub const FAST_PATH_THREASHOLD_SAFE_BUSD: u64 = 10000_000_000_000;
+
+
 #[derive(
     Debug,
     Serialize,
@@ -226,6 +231,17 @@ impl BridgeChainId {
         let base_testnet = BridgeChainId::BaseTestnet as u8;
         let base_custom = BridgeChainId::BaseCustom as u8;
         id == base_mainnet || id == base_testnet || id == base_custom
+    }
+
+    pub fn is_custom_chain_by_id(id: u8) -> bool {
+        id == BridgeChainId::BscCustom as u8
+            || id == BridgeChainId::SuiCustom as u8
+            || id == BridgeChainId::EthCustom as u8
+            || id == BridgeChainId::OPCustom as u8
+            || id == BridgeChainId::ArbCustom as u8
+            || id == BridgeChainId::PolCustom as u8
+            || id == BridgeChainId::BaseCustom as u8
+            || id == BridgeChainId::AvaxCustom as u8
     }
 }
 
