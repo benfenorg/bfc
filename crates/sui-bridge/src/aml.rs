@@ -92,7 +92,7 @@ pub async fn check_aml_risk_score(
         coin,
         eth_address
     );
-    match retry_with_max_elapsed_time!(check(url.clone()), std::time::Duration::from_secs(5)) {
+    match retry_with_max_elapsed_time!(check(url.clone()), std::time::Duration::from_secs(2)) {
         Ok(result) => result.unwrap_or_else(|_| true),
         Err(_) => true,
     }
@@ -160,6 +160,7 @@ const ERROR_JSON_PARSE_FAILED: &str = "Failed to parse JSON response";
 const ERROR_RATE_LIMIT: &str = "Rate limit exceeded";
 
 async fn check(url: String) -> Result<bool, Error> {
+    info!("[DEBUG] received request BEFORE (url {})", url.clone());
     let response = match reqwest::Client::builder()
         .connect_timeout(Duration::from_secs(1))
         .timeout(Duration::from_secs(1))
@@ -172,7 +173,7 @@ async fn check(url: String) -> Result<bool, Error> {
         Ok(response) => response,
         Err(_) => return Err(anyhow::anyhow!(ERROR_REQUEST_FAILED)),
     };
-    info!("[DEBUG] received request (url {})", url.clone());
+    info!("[DEBUG] received request AFTER (url {})", url.clone());
 
     let response_text = match response.text().await {
         Ok(text) => text,

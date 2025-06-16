@@ -3,6 +3,7 @@
 
 pub mod abi;
 pub mod aml;
+pub mod user_limit;
 pub mod action_executor;
 pub mod btc_query;
 pub mod client;
@@ -29,6 +30,8 @@ pub mod types;
 pub mod utils;
 pub mod tron_query;
 pub mod solana_query;
+
+pub mod fast_path; // Add this line
 
 #[cfg(any(feature = "test-utils", test))]
 pub(crate) mod eth_mock_provider;
@@ -68,7 +71,7 @@ macro_rules! retry_with_max_elapsed_time {
                     }
                     Err(e) => {
                         // For simplicity we treat every error as transient so we can retry until max_elapsed_time
-                        tracing::debug!("Retrying due to error: {:?}", e);
+                        tracing::info!("Retrying due to error: {:?}", e);
                         return Err(backoff::Error::transient(e));
                     }
                 }

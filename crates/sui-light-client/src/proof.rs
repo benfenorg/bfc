@@ -138,9 +138,6 @@ pub fn verify_proof(committee: &Committee, proof: &Proof) -> anyhow::Result<()> 
         }
     }
 
-    // MILESTONE 2: committee if requested is correct
-    println!("liqiong verify_proof 3");
-
     // Non empty object or event targets require the optional contents proof
     // If it is not present return an error
 

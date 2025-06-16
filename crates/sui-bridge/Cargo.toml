@@ -8,6 +8,9 @@ edition = "2021"
 
 [dependencies]
 ethers = "2.0"
+diesel = { workspace = true, features = ["serde_json"] }
+diesel-async = { workspace = true, features = ["bb8", "postgres"] }
+chrono.workspace = true
 tokio = { workspace = true, features = ["full"] }
 sui-types.workspace = true
 sui-authority-aggregation.workspace = true

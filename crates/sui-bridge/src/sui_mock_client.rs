@@ -146,7 +146,7 @@ impl SuiMockClient {
     ) -> tokio::sync::broadcast::Receiver<TransactionDigest> {
         self.requested_transactions_tx.subscribe()
     }
-
+    #[allow(unused)]
     async fn get_cap_object_ref(
         &self,
         _cap_id: ObjectID,
@@ -304,7 +304,7 @@ impl SuiClientInner for SuiMockClient {
         _bridge_object_arg: ObjectArg,
         _source_chain_id: u8,
         _token_type:u64,
-        _token_type_map:HashMap<u64,TypeTag>
+        _ca_token_type_map:HashMap<u64,TypeTag>
     ) -> Result<u128, BridgeError> {
         Ok(1000)
     }

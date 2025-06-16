@@ -11,28 +11,33 @@ use crate::action_executor::{
     submit_to_aml_checker, submit_to_executor, BridgeActionExecutionWrapper, BridgeActionExecutorTrait,
 };
 use crate::aml_checker::{AMLCheckerTrait, AMLCheckerWrapper};
+// use crate::config::BridgeClientConfig;
 use crate::error::BridgeError;
 use crate::events::SuiBridgeEvent;
+use crate::fast_path::{FastPathConfig, FastPathSelector};
 use crate::metrics::BridgeMetrics;
 use crate::storage::{BridgeOrchestratorTables, EthSyncerCursorsKey};
 use crate::sui_client::{SuiClient, SuiClientInner};
-use crate::types::{EthLog};
+use crate::types::{BridgeAction, ETHLogWrapper};
+use crate::user_limit::UserLimitHandle;
 use mysten_metrics::spawn_logged_monitored_task;
+// use sui_types::bridge::TOKEN_ID_BUSD;
+// use sui_types::bridge::FastPathSelector;
 use std::sync::Arc;
 use sui_json_rpc_types::SuiEvent;
 use sui_types::Identifier;
 use tokio::task::JoinHandle;
 use tracing::{error, info};
-use sui_types::bridge::BridgeChainId;
 
 pub struct BridgeOrchestrator<C> {
     _sui_client: Arc<SuiClient<C>>,
     sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+    eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
     store: Arc<BridgeOrchestratorTables>,
     sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
     eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
     metrics: Arc<BridgeMetrics>,
+    user_limit_handle: Option<UserLimitHandle>,
 }
 
 impl<C> BridgeOrchestrator<C>
@@ -42,20 +47,22 @@ where
     pub fn new(
         sui_client: Arc<SuiClient<C>>,
         sui_events_rx: mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        eth_events_rx: mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         store: Arc<BridgeOrchestratorTables>,
         sui_monitor_tx: mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
+        user_limit_handle: Option<UserLimitHandle>,
     ) -> Self {
         Self {
-            _sui_client: sui_client,
+            _sui_client: sui_client,    
             sui_events_rx,
             eth_events_rx,
             store,
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            user_limit_handle,
         }
     }
 
@@ -63,6 +70,7 @@ where
         self,
         bridge_action_executor: impl BridgeActionExecutorTrait,
         aml_checker: impl AMLCheckerTrait,
+        fast_path_config:FastPathConfig,
     ) -> Vec<JoinHandle<()>> {
         tracing::info!("Starting BridgeOrchestrator");
         let mut task_handles = vec![];
@@ -104,8 +112,6 @@ where
             .into_values()
             .collect::<Vec<_>>();
         for action in actions4aml {
-            info!("[DEBUG] for aml checker action: {:#?}", action);
-
             let aml_checker_sender_clone = aml_checker_sender.clone();
             submit_to_aml_checker(&aml_checker_sender_clone,action)
                 .await
@@ -120,6 +126,8 @@ where
             self.eth_events_rx,
             self.eth_monitor_tx,
             metrics_clone,
+            fast_path_config,
+            self.user_limit_handle,
         )));
 
         task_handles
@@ -222,32 +230,34 @@ where
         mut eth_events_rx: mysten_metrics::metered_channel::Receiver<(
             EthSyncerCursorsKey,
             u64,
-            Vec<EthLog>,
+            ETHLogWrapper,
         )>,
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_config: FastPathConfig,
+        user_limit_handle: Option<UserLimitHandle>,
     ) {
         info!("Starting eth watcher task");
-        while let Some((key, end_block, logs)) = eth_events_rx.recv().await {
-            if logs.is_empty() {
+        while let Some((key, end_block, log_wrapper)) = eth_events_rx.recv().await {
+            if log_wrapper.logs.is_empty() {
                 store
                     .update_eth_event_cursor( key, end_block)
                     .expect("Store operation should not fail");
                 continue;
             }
 
-            info!("Received {} Eth events", logs.len());
+            info!("Received {} Eth events,fast path selector:{}", log_wrapper.logs.len(),log_wrapper.fast_path_selector);
             metrics
                 .eth_watcher_received_events
-                .inc_by(logs.len() as u64);
+                .inc_by(log_wrapper.logs.len() as u64);
 
-            let bridge_events = logs
+            let bridge_events = log_wrapper.logs
                 .iter()
                 .map(EthBridgeEvent::try_from_eth_log)
                 .collect::<Vec<_>>();
 
             let mut actions = vec![];
-            for (log, opt_bridge_event) in logs.iter().zip(bridge_events) {
+            for (log, opt_bridge_event) in log_wrapper.logs.iter().zip(bridge_events) {
                 if opt_bridge_event.is_none() {
                     // TODO: we probably should not miss any events, log for now.
                     metrics.eth_watcher_unrecognized_events.inc();
@@ -256,7 +266,7 @@ where
                 }
                 // Unwrap safe: checked above
                 let bridge_event = opt_bridge_event.unwrap();
-                info!("Observed Eth bridge event: {:?}", bridge_event);
+                info!("Observed Eth bridge event: {:?} fast path selector:{:?}", bridge_event,log_wrapper.fast_path_selector);
 
                 // Send event to monitor
                 eth_monitor_tx
@@ -278,21 +288,49 @@ where
                     }
                 }
             }
-            if !actions.is_empty() {
-                info!("Received {} actions from Eth: {:?}", actions.len(), actions);
-                metrics
-                    .eth_watcher_received_actions
-                    .inc_by(actions.len() as u64);
-                // Write action to pending WAL
-                store
-                    .insert_pending_aml_checked_actions(&actions)
-                    .expect("Store operation should not fail");
-                // Execution will remove the pending actions from DB when the action is completed.
-                for action in actions {
-                    submit_to_aml_checker(&aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
+            // fast path selector logic
+            let mut fast_path_actions=vec![];
+            if !log_wrapper.fast_path_selector.is_finalized() && !&actions.is_empty() {
+                for action in &actions {
+                    match &action {
+                        BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                            // fast path selector                            
+                            let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
+                            let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
+
+                            if fast_path_selector == log_wrapper.fast_path_selector {
+                                // address limit check
+                                //check user limit
+                                let chain_id = action_inner.eth_bridge_event.eth_chain_id;
+                                let user_address = action_inner.eth_bridge_event.eth_address;
+                                let amount = action_inner.eth_bridge_event.sui_adjusted_amount;
+                                if let Some(user_limit_handle) = &user_limit_handle {
+                                    let is_user_limit_exceeded = user_limit_handle.check_user_limit(chain_id, user_address, fast_path_selector, amount).await;
+                                    if is_user_limit_exceeded {
+                                        info!("user limit exceeded,action: {:?} fast path selector: {:?}",action_inner,fast_path_selector);
+                                        continue;
+                                    }
+                                }
+                                info!("fast path selector match,expect {:?} actual {:?},action: {:?}",log_wrapper.fast_path_selector,fast_path_selector,action_inner);
+                                fast_path_actions.push(action.clone());
+                            }else{
+                                info!("fast path selector not match,expect {:?} actual {:?},action: {:?}",log_wrapper.fast_path_selector,fast_path_selector,action_inner);
+                            }
+                        }
+                        _ => {
+                            continue;
+                        }
+                    }
                 }
             }
-
+            if!fast_path_actions.is_empty() {
+                info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
+                process_actions(&store, &aml_checker_tx, &metrics, fast_path_actions,log_wrapper.fast_path_selector,&user_limit_handle).await;
+            };
+            if log_wrapper.fast_path_selector.is_finalized() {
+                info!("Received actions from Eth: {:?} len: {:?} fast path selector:{:?}", actions,actions.len(),log_wrapper.fast_path_selector);
+                process_actions(&store, &aml_checker_tx, &metrics, actions,log_wrapper.fast_path_selector,&None).await;
+            }
             store
                 .update_eth_event_cursor(key, end_block)
                 .expect("Store operation should not fail");
@@ -302,13 +340,48 @@ where
 
 }
 
+async fn process_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>,fast_path_selector:FastPathSelector,user_limit_handle: &Option<UserLimitHandle>) {
+    if !actions.is_empty() {
+        metrics
+            .eth_watcher_received_actions
+            .inc_by(actions.len() as u64);
+        // Write action to pending WAL
+        store
+            .insert_pending_aml_checked_actions(&actions)
+            .expect("Store operation should not fail");
+        //record user limit
+        // Execution will remove the pending actions from DB when the action is completed.
+        if let Some(user_limit_handle) = user_limit_handle {
+            for action in actions.clone() {
+                match action {
+                    BridgeAction::EthToSuiBridgeAction(action_inner) => {
+                        let chain_id = action_inner.eth_bridge_event.eth_chain_id;
+                        let user_address = action_inner.eth_bridge_event.eth_address;
+                        let amount = action_inner.eth_bridge_event.sui_adjusted_amount;
+                        let tx_hash = action_inner.eth_bridge_event.tx_hash;
+                        user_limit_handle.record_user_limit(chain_id, user_address, fast_path_selector, tx_hash, amount).await.expect("record user limit should not fail");
+                    }
+                    _ => {
+                        continue;
+                    }
+                }
+            }
+        }
+        
+        for action in actions {
+            submit_to_aml_checker(aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use crate::{
-        events::tests::get_test_external_coin_event_and_action, test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action}, types::BridgeActionDigest,
+        events::tests::get_test_external_coin_event_and_action, test_utils::{get_test_eth_to_sui_bridge_action, get_test_log_and_action}, types::{BridgeActionDigest, EthLog},
     };
     use ethers::types::{Address as EthAddress, TxHash};
     use prometheus::Registry;
+    use sui_types::bridge::BridgeChainId;
     use std::str::FromStr;
 
     use super::*;
@@ -332,6 +405,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -346,8 +420,9 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
@@ -396,6 +471,7 @@ mod tests {
             _eth_monitor_rx,
             _sui_client,
             store,
+            _fast_path_config,
         ) = setup();
 
         let (_, bridge_action) = get_test_external_coin_event_and_action(
@@ -434,6 +510,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -448,8 +525,9 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         // external action
@@ -535,6 +613,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -549,8 +628,9 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
         let address = EthAddress::random();
         let (log, bridge_action) = get_test_log_and_action(address, TxHash::random(), 10);
@@ -565,7 +645,7 @@ mod tests {
         let end_block_num = log_block_num + 15;
 
         eth_events_tx
-            .send(((address, BridgeChainId::EthCustom as u64), end_block_num, vec![eth_log.clone()]))
+            .send(((address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized), end_block_num, ETHLogWrapper{ fast_path_selector: FastPathSelector::Finalized, logs: vec![eth_log.clone()] }))
             .await
             .unwrap();
 
@@ -588,7 +668,7 @@ mod tests {
             let action = actions.get(&bridge_action.digest()).unwrap();
             assert_eq!(action, &bridge_action);
             assert_eq!(
-                store.get_eth_event_cursors(&[(address, BridgeChainId::EthCustom as u64)]).unwrap()[0].unwrap(),
+                store.get_eth_event_cursors(&[(address, BridgeChainId::EthCustom as u64,FastPathSelector::Finalized)]).unwrap()[0].unwrap(),
                 end_block_num,
             );
             break;
@@ -609,6 +689,7 @@ mod tests {
             _eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         ) = setup();
         let (executor, mut executor_requested_action_rx) = MockExecutor::new();
         let aml_checker = MockAMLChecker::new();
@@ -638,8 +719,9 @@ mod tests {
             sui_monitor_tx,
             eth_monitor_tx,
             metrics,
+            None,
         )
-            .run(executor,aml_checker)
+            .run(executor,aml_checker,fast_path_config)
             .await;
 
         // Executor should have received the action
@@ -655,14 +737,15 @@ mod tests {
     fn setup() -> (
         mysten_metrics::metered_channel::Sender<(Identifier, Vec<SuiEvent>)>,
         mysten_metrics::metered_channel::Receiver<(Identifier, Vec<SuiEvent>)>,
-        mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
-        mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, Vec<EthLog>)>,
+        mysten_metrics::metered_channel::Sender<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
+        mysten_metrics::metered_channel::Receiver<(EthSyncerCursorsKey, u64, ETHLogWrapper)>,
         mysten_metrics::metered_channel::Sender<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<SuiBridgeEvent>,
         mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         mysten_metrics::metered_channel::Receiver<EthBridgeEvent>,
         SuiClient<SuiMockClient>,
         Arc<BridgeOrchestratorTables>,
+        FastPathConfig,
     ) {
         telemetry_subscribers::init_for_testing();
         let registry = Registry::new();
@@ -705,6 +788,7 @@ mod tests {
                 .channel_inflight
                 .with_label_values(&["eth_monitor_queue"]),
         );
+        let fast_path_config = FastPathConfig::init_for_testing();
         (
             sui_events_tx,
             sui_events_rx,
@@ -716,6 +800,7 @@ mod tests {
             eth_monitor_rx,
             sui_client,
             store,
+            fast_path_config,
         )
     }
 
