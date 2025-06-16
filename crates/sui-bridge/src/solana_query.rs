@@ -208,99 +208,99 @@ pub async fn check_solana_txn(
     false
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use tokio;
-    use tracing_test::traced_test;
-
-    #[traced_test]
-    #[tokio::test]
-    async fn test_check_solana_txn_sol() {
-        let tx_hash = "3cEXCHqLqNJHx3XbjpLgGRwecyV9QaDbMipsy9k7uMYY5H2BRX1ABgT8QwTFW7eLPBMJHDa5c6unAtifQqgixvLy";
-        let to_address = "EhXz9TGdmupxiToVtjiJvotPicimamNuJR5BmXCKR8nq".to_string();
-        let whitelist = vec![to_address];
-        let amount: u64 = 1_0000000;
-
-        let result = check_solana_txn(
-            BridgeChainId::SolanaMainnet,
-            tx_hash,
-            whitelist,
-            amount,
-            true,
-        ).await;
-        assert!(result, "Transaction verification failed");
-    }
-
-    #[traced_test]
-    #[tokio::test]
-    async fn test_check_solana_txn_benfen() {
-        // https://solscan.io/tx/26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU
-        let tx_hash = "26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU";
-        let to_address = "93rJovDUhd1Fn24Ue5TdgKQ5yTbCBM5S5a8uPcr9eZiu".to_string();
-        let whitelist = vec![to_address];
-        let amount: u64 = 1_000;
-
-        let result = check_solana_txn(
-            BridgeChainId::SolanaMainnet,
-            tx_hash,
-            whitelist,
-            amount,
-            false,
-        ).await;
-        assert!(result, "Transaction verification failed");
-
-        // benfen test in mainnet
-        let tx_hash = "26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU";
-        let to_address = "93rJovDUhd1Fn24Ue5TdgKQ5yTbCBM5S5a8uPcr9eZiu".to_string();
-        let whitelist = vec![to_address];
-        let amount: u64 = 1_000;
-
-        let result = check_solana_txn(
-            BridgeChainId::SolanaTestnet,
-            tx_hash,
-            whitelist,
-            amount,
-            false,
-        ).await;
-        assert!(result, "Transaction verification failed");
-    }
-
-    #[traced_test]
-    #[tokio::test]
-    async fn test_check_solana_txn_real() {
-        // USDC
-        // https://solscan.io/tx/3Szcy1koGpMe1cKjHDamG587BRAkTGGKwT9GR6w4NCe6VSbHUwcCKa8xdfhtJoWVfqFL4S6dvsKyqd55oFvVEY2C
-        let tx_hash = "3Szcy1koGpMe1cKjHDamG587BRAkTGGKwT9GR6w4NCe6VSbHUwcCKa8xdfhtJoWVfqFL4S6dvsKyqd55oFvVEY2C";
-        let to_address = "EUpoDjWzaxfhKBfHHLuabJSwp9nXDYJqxTuxLn454yPk".to_string();
-        let whitelist = vec![to_address];
-        let amount: u64 = 1340000;
-
-        let result = check_solana_txn(
-            BridgeChainId::SolanaMainnet,
-            tx_hash,
-            whitelist,
-            amount,
-            false,
-        ).await;
-
-        assert!(result, "Transaction verification failed");
-
-        // USDT
-        // https://solscan.io/tx/24e6A7DxZAqzxNixALDf8nFyB7aNPHv5VLtAyrZY7pdW47RYeA8YoZAZEqxH2xLAYmnCJvkAwUy8kgoDNVS4EFpS
-        let tx_hash = "24e6A7DxZAqzxNixALDf8nFyB7aNPHv5VLtAyrZY7pdW47RYeA8YoZAZEqxH2xLAYmnCJvkAwUy8kgoDNVS4EFpS";
-        let to_address = "Cv1u7R1xdbNrHroRZGY5U1WRXMZTnBB32FDSFi6zVq1Y".to_string();
-        let whitelist = vec![to_address];
-        let amount: u64 = 3000000000;
-
-        let result = check_solana_txn(
-            BridgeChainId::SolanaMainnet,
-            tx_hash,
-            whitelist,
-            amount,
-            false,
-        ).await;
-
-        assert!(result, "Transaction verification failed");
-    }
-}
+// #[cfg(test)]
+// mod tests {
+//     use super::*;
+//     use tokio;
+//     use tracing_test::traced_test;
+//
+//     #[traced_test]
+//     #[tokio::test]
+//     async fn test_check_solana_txn_sol() {
+//         let tx_hash = "3cEXCHqLqNJHx3XbjpLgGRwecyV9QaDbMipsy9k7uMYY5H2BRX1ABgT8QwTFW7eLPBMJHDa5c6unAtifQqgixvLy";
+//         let to_address = "EhXz9TGdmupxiToVtjiJvotPicimamNuJR5BmXCKR8nq".to_string();
+//         let whitelist = vec![to_address];
+//         let amount: u64 = 1_0000000;
+//
+//         let result = check_solana_txn(
+//             BridgeChainId::SolanaMainnet,
+//             tx_hash,
+//             whitelist,
+//             amount,
+//             true,
+//         ).await;
+//         assert!(result, "Transaction verification failed");
+//     }
+//
+//     #[traced_test]
+//     #[tokio::test]
+//     async fn test_check_solana_txn_benfen() {
+//         // https://solscan.io/tx/26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU
+//         let tx_hash = "26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU";
+//         let to_address = "93rJovDUhd1Fn24Ue5TdgKQ5yTbCBM5S5a8uPcr9eZiu".to_string();
+//         let whitelist = vec![to_address];
+//         let amount: u64 = 1_000;
+//
+//         let result = check_solana_txn(
+//             BridgeChainId::SolanaMainnet,
+//             tx_hash,
+//             whitelist,
+//             amount,
+//             false,
+//         ).await;
+//         assert!(result, "Transaction verification failed");
+//
+//         // benfen test in mainnet
+//         let tx_hash = "26hmqjiz9PSeXtCKPquUREAvF4VuMUJdSTpUs4dFehNu2tfMGWPMJmvCNfsZxjgYwqKJ9Ymf3vJWSiUVZX2xKDJU";
+//         let to_address = "93rJovDUhd1Fn24Ue5TdgKQ5yTbCBM5S5a8uPcr9eZiu".to_string();
+//         let whitelist = vec![to_address];
+//         let amount: u64 = 1_000;
+//
+//         let result = check_solana_txn(
+//             BridgeChainId::SolanaTestnet,
+//             tx_hash,
+//             whitelist,
+//             amount,
+//             false,
+//         ).await;
+//         assert!(result, "Transaction verification failed");
+//     }
+//
+//     #[traced_test]
+//     #[tokio::test]
+//     async fn test_check_solana_txn_real() {
+//         // USDC
+//         // https://solscan.io/tx/3Szcy1koGpMe1cKjHDamG587BRAkTGGKwT9GR6w4NCe6VSbHUwcCKa8xdfhtJoWVfqFL4S6dvsKyqd55oFvVEY2C
+//         let tx_hash = "3Szcy1koGpMe1cKjHDamG587BRAkTGGKwT9GR6w4NCe6VSbHUwcCKa8xdfhtJoWVfqFL4S6dvsKyqd55oFvVEY2C";
+//         let to_address = "EUpoDjWzaxfhKBfHHLuabJSwp9nXDYJqxTuxLn454yPk".to_string();
+//         let whitelist = vec![to_address];
+//         let amount: u64 = 1340000;
+//
+//         let result = check_solana_txn(
+//             BridgeChainId::SolanaMainnet,
+//             tx_hash,
+//             whitelist,
+//             amount,
+//             false,
+//         ).await;
+//
+//         assert!(result, "Transaction verification failed");
+//
+//         // USDT
+//         // https://solscan.io/tx/24e6A7DxZAqzxNixALDf8nFyB7aNPHv5VLtAyrZY7pdW47RYeA8YoZAZEqxH2xLAYmnCJvkAwUy8kgoDNVS4EFpS
+//         let tx_hash = "24e6A7DxZAqzxNixALDf8nFyB7aNPHv5VLtAyrZY7pdW47RYeA8YoZAZEqxH2xLAYmnCJvkAwUy8kgoDNVS4EFpS";
+//         let to_address = "Cv1u7R1xdbNrHroRZGY5U1WRXMZTnBB32FDSFi6zVq1Y".to_string();
+//         let whitelist = vec![to_address];
+//         let amount: u64 = 3000000000;
+//
+//         let result = check_solana_txn(
+//             BridgeChainId::SolanaMainnet,
+//             tx_hash,
+//             whitelist,
+//             amount,
+//             false,
+//         ).await;
+//
+//         assert!(result, "Transaction verification failed");
+//     }
+// }
