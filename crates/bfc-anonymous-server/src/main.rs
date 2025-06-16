@@ -1,5 +1,6 @@
 mod client_test;
 mod database;
+mod utils;
 
 use std::convert::Infallible;
 use std::net::SocketAddr;
@@ -383,6 +384,15 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                 Ok(restore_value_params) => {
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.Objectid;
+
+                    //todo,
+                    // get object ownership of the object id,
+                    // rpc -> sui_getObject
+
+                    //todo,signature check,address.
+                    // edd25519 signature check
+
+
                     info!("handle_anonymous_restore_value get signature{:?} object id{:?}", signature, objectid);
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
 
