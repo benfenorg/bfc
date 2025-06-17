@@ -13,7 +13,8 @@ export const useChainData = () => {
 			const url = new URL(activeRpcUrl as string);
 			if (url.origin === 'https://devrpc4.openblock.vip') {
 				return {
-					ANONYMOUS_SWAP_POOL: '0x340d599ffa3137e87b26c30117632dd95298840e9ab3f1c60bd271db19c39c8b',
+					ANONYMOUS_SWAP_POOL:
+						'BFCf9a2b3794a667d5949f714b10c4c26967f9f74f01a0c5491445e1d4f7f2dbfb78aa1',
 				};
 			}
 			return {

@@ -70,16 +70,10 @@ export const SwapAnonymous = () => {
 					});
 				}
 
-				// const coin = tx.moveCall({
-				// 	target: `0x2::anonymous_pay::split`,
-				// 	typeArguments: ['0x2::abfc::ABFC'],
-				// 	arguments: [tx.object(primary.id.id), tx.pure.u64(bn)],
-				// });
-
 				tx.moveCall({
-					target: `0x2::anonymous_coin::swap_out`,
+					target: `0x2::anonymous_coin::swap_out_with_amount`,
 					typeArguments: ['0x2::abfc::ABFC', BFC_TYPE_ARG],
-					arguments: [tx.object(primary.id.id), tx.object(ANONYMOUS_SWAP_POOL)],
+					arguments: [tx.object(primary.id.id), tx.pure.u64(bn), tx.object(ANONYMOUS_SWAP_POOL)],
 				});
 			} else {
 				tx.moveCall({
