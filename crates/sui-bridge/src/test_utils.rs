@@ -4,6 +4,7 @@
 use crate::abi::EthToSuiTokenBridgeV1;
 use crate::eth_mock_provider::EthMockProvider;
 use crate::events::{EmittedExternalDepositStartBridgeV1, SuiBridgeEvent};
+use crate::fast_path::FastPathSelector;
 use crate::server::mock_handler::run_mock_server;
 use crate::sui_transaction_builder::build_sui_transaction;
 use crate::types::{
@@ -144,6 +145,7 @@ pub fn get_test_eth_to_sui_bridge_action(
             eth_address: EthAddress::random(),
             tx_hash: tx_hash.as_bytes().to_vec(),
             event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
         },
     })
 }
@@ -307,6 +309,7 @@ pub fn get_test_log_and_action(
             eth_address: source_address,
             tx_hash: tx_hash.as_bytes().to_vec(),
             event_idx: event_index as u8,
+            fast_path_selector: FastPathSelector::Finalized,
         },
     });
     (log, bridge_action)

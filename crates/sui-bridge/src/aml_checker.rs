@@ -6,7 +6,7 @@ use sui_json_rpc_types::{SuiExecutionStatus, SuiTransactionBlockEffectsAPI, SuiT
 use sui_types::{base_types::{ObjectID, ObjectRef, SuiAddress}, crypto::{Signature, SuiKeyPair}, digests::TransactionDigest, gas_coin::GasCoin, object::Owner, transaction::{ObjectArg, Transaction}};
 use tracing::{error, info};
 
-use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
+use crate::{action_executor::{submit_to_executor, BridgeActionExecutionWrapper, CHANNEL_SIZE}, aml::check_aml_risk_score, fast_path::FastPathSelector, metrics::BridgeMetrics, storage::BridgeOrchestratorTables, sui_client::SuiClientInner, sui_transaction_builder::build_token_send_back_transaction, types::{BridgeAction, BridgeActionStatus}};
 use crate::sui_client::SuiClient;
 
 #[derive(Debug)]
@@ -121,7 +121,15 @@ where
                         });
                         sui_client.notify_something_done().await;
                     }else{
-                        Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        // only finalized fast path selector will be sent back
+                        if action_inner.eth_bridge_event.fast_path_selector == FastPathSelector::Finalized {
+                            Self::send_back(bridge_action.clone(), store, key, metrics,sui_client,sui_address,gas_object_id,bridge_object_arg).await;
+                        }else{
+                            store.remove_pending_aml_checked_actions(&[bridge_action.digest()]).unwrap_or_else(|e| {
+                                panic!("remove from DB should not fail: {:?}", e);
+                            });
+                            info!("fast path selector is not finalized, skipping send back address:{:?} tx_hash:{:?}", &eth_address, &action_inner.eth_tx_hash);
+                        }
                     }
                 },
                 _ => {

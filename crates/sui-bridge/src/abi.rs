@@ -10,6 +10,7 @@ use crate::encoding::{
     TOKEN_TRANSFER_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
+use crate::fast_path::FastPathSelector;
 use crate::types::ParsedTokenTransferMessage;
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
@@ -186,6 +187,7 @@ pub struct EthToSuiTokenBridgeV1 {
     pub sui_adjusted_amount: u64,
     pub tx_hash: Vec<u8>,
     pub event_idx: u8,
+    pub fast_path_selector: FastPathSelector,
 }
 
 impl EthToSuiTokenBridgeV1 {
@@ -195,6 +197,10 @@ impl EthToSuiTokenBridgeV1 {
 
     pub fn set_event_idx(&mut self, event_idx: u8) {
         self.event_idx = event_idx;
+    }
+
+    pub fn set_fast_path_selector(&mut self, fast_path_selector: FastPathSelector) {
+        self.fast_path_selector = fast_path_selector;
     }
 }
 
@@ -211,6 +217,7 @@ impl TryFrom<&TokensDepositedFilter> for EthToSuiTokenBridgeV1 {
             sui_adjusted_amount: event.sui_adjusted_amount,
             tx_hash: vec![],
             event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized,
         })
     }
 }
@@ -238,6 +245,7 @@ impl TryFrom<&EthToSuiTokenBridgeV1> for EthToSuiTokenBridgeV1 {
             },
             tx_hash: msg.tx_hash.clone(),
             event_idx: msg.event_idx,
+            fast_path_selector: msg.fast_path_selector,
         })
     }
 }

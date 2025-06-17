@@ -46,8 +46,8 @@ pub const PING_PATH: &str = "/ping";
 pub const METRICS_KEY_PATH: &str = "/metrics_pub_key";
 
 // Important: for BridgeActions, the paths need to match the ones in bridge_client.rs
-pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index";
-pub const EVM_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index";
+pub const ETH_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/eth/sui/:tx_hash/:event_index/:fast_path_selector";
+pub const EVM_TO_SUI_TX_PATH: &str = "/sign/bridge_tx/evm/:chain_id/sui/:tx_hash/:event_index/:fast_path_selector";
 pub const SUI_TO_ETH_TX_PATH: &str = "/sign/bridge_tx/sui/eth/:tx_digest/:event_index";
 pub const SUI_TO_EVM_TX_PATH: &str = "/sign/bridge_tx/sui/evm/:tx_digest/:event_index";
 pub const SUI_TO_ETH_SEND_BACK_TX_PATH: &str = "/sign/bridge_tx/sui/eth/send/back/:tx_digest/:event_index";
@@ -219,7 +219,7 @@ async fn metrics_key_fetch(
 
 #[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
 async fn handle_eth_tx_hash(
-    Path((tx_hash_hex, event_idx)): Path<(String, u16)>,
+    Path((tx_hash_hex, event_idx, fast_path_selector)): Path<(String, u16, u8)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -227,7 +227,7 @@ async fn handle_eth_tx_hash(
     )>,
 ) -> Result<Json<SignedBridgeAction>, BridgeError> {
     let future = async {
-        let sig = handler.handle_eth_tx_hash(BridgeChainId::EthMainnet as u8, tx_hash_hex, event_idx).await?;
+        let sig = handler.handle_eth_tx_hash(BridgeChainId::EthMainnet as u8, tx_hash_hex, event_idx, fast_path_selector).await?;
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
@@ -235,7 +235,7 @@ async fn handle_eth_tx_hash(
 
 #[instrument(level = "error", skip_all, fields(tx_hash_hex=tx_hash_hex, event_idx=event_idx))]
 async fn handle_evm_tx_hash(
-    Path((chain_id, tx_hash_hex, event_idx)): Path<(u8, String, u16)>,
+    Path((chain_id, tx_hash_hex, event_idx, fast_path_selector)): Path<(u8, String, u16, u8)>,
     State((handler, metrics, _metadata)): State<(
         Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
         Arc<BridgeMetrics>,
@@ -243,7 +243,7 @@ async fn handle_evm_tx_hash(
     )>,
 ) -> Result<Json<SignedBridgeAction>, BridgeError> {
     let future = async {
-        let sig = handler.handle_eth_tx_hash(chain_id, tx_hash_hex, event_idx).await?;
+        let sig = handler.handle_eth_tx_hash(chain_id, tx_hash_hex, event_idx, fast_path_selector).await?;
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_eth_tx_hash", future).await
