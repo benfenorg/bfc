@@ -43,7 +43,6 @@ pub fn build_sui_transaction(
             sui_token_type_tags,
             rgp,
         ),
-        // TODO: mofei
         BridgeAction::EthSendBackBridgeAction(_) => build_token_bridge_approve_transaction(
             client_address,
             gas_object_ref,

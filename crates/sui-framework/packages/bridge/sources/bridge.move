@@ -559,8 +559,8 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let token_payload = message.extract_token_bridge_payload();
-        let target_chain = token_payload.token_target_chain();
+        let token_payload = message.extract_token_bridge_payload_v2();
+        let target_chain = token_payload.token_target_chain_v2();
         assert!(
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
@@ -592,10 +592,13 @@ module bridge::bridge {
                 return
             };
             //idempotency for SendBack and ETHToSui
-            let tx_hash = token_payload.token_tx_hash();
+            let tx_hash = token_payload.token_tx_hash_v2();
             if (inner.refund_records.contains(message::key_refund(tx_hash))) {
                 emit(TokenTransferAlreadyApproved { message_key });
                 return
+            };
+            if (token_payload.fast_path_selector_v2() != 2) {
+                //todo @lifei fast path limit check
             };
             // Store message and approval
             inner.token_transfer_records.push_back(
