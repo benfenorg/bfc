@@ -25,7 +25,7 @@ Response: {
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 1st command, from '0x10988f8abf6f865b3e1a87020df39f2c61e6b2042ee8c7be2ddc84cbdb32001f::m::boom' (instruction 1), abort code: 42"
+            "errors": "Error in 1st command, from '0xc9fe39e9bcf3ef00f535555235ddcfb54e13d04f176f96e58ce1a9600851fdb0::m::boom' (instruction 1), abort code: 42"
           }
         }
       ]
@@ -54,7 +54,7 @@ Response: {
         {
           "effects": {
             "status": "FAILURE",
-            "errors": "Error in 3rd command, from '0x10988f8abf6f865b3e1a87020df39f2c61e6b2042ee8c7be2ddc84cbdb32001f::m::boom' (instruction 1), abort code: 42"
+            "errors": "Error in 3rd command, from '0xc9fe39e9bcf3ef00f535555235ddcfb54e13d04f176f96e58ce1a9600851fdb0::m::boom' (instruction 1), abort code: 42"
           }
         }
       ]
