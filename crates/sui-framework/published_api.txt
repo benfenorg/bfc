@@ -2189,7 +2189,7 @@ supply_mut
 	public fun
 	0x2::anonymous_coin
 get_anonymous_value
-	public fun
+	public entry fun
 	0x2::anonymous_coin
 value
 	public fun

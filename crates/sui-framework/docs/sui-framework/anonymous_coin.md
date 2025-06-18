@@ -682,7 +682,7 @@ Get mutable reference to the treasury's <code>Supply</code>.
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -691,7 +691,7 @@ Get mutable reference to the treasury's <code>Supply</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_get_anonymous_value">get_anonymous_value</a>(signatures, id)
 }
 </code></pre>
