@@ -379,4 +379,21 @@ module bridge::limiter_fast_path {
     public fun test_get_user_count(self: &UserLimiter): u64 {
         get_user_count(self)
     }
+
+    #[test_only]
+    public(package) fun default_limit(self: &UserLimiter): u64 {
+        self.default_limit
+    }
+
+    #[test_only]
+    public(package) fun default_time_window(self: &UserLimiter): u64 {
+        self.default_time_window
+    }
+
+    #[test_only]
+    public(package) fun enabled(self: &UserLimiter): bool {
+        self.enabled
+    }
+
+
 }
