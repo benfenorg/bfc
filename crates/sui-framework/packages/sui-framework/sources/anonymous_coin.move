@@ -176,7 +176,7 @@ module sui::anonymous_coin {
     // === Balance <-> Coin accessors and type morphing ===
 
 
-    public fun get_anonymous_value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: vector<u8>): u64 {
+    public fun get_anonymous_value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address): u64 {
         self.balance.get_anonymous_value(signatures, id)
     }
 

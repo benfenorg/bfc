@@ -20,6 +20,7 @@ use move_vm_types::{
 use move_vm_types::{
     loaded_data::runtime_types::Type, natives::function::NativeResult, pop_arg,values::Value
 };
+use move_core_types::account_address::AccountAddress;
 
 use std::collections::VecDeque;
 use std::error::Error;
@@ -341,7 +342,7 @@ pub fn hfe_ops_restore_value(context: &mut NativeContext,
         context,
         anonymous_compute_cost_params.anonymous_compute_cost_base
     );
-    let id = pop_arg!(args, Vec<u8>);
+    let id = pop_arg!(args, AccountAddress);
     let signature= pop_arg!(args, Vec<u8>);
     let value2 = pop_arg!(args, u64);
     let value1 = pop_arg!(args, u64);
@@ -538,12 +539,12 @@ impl AnonymousClient {
         }
     }
 
-    pub fn restore_value(&self, value1: u64, value2: u64, signature : Vec<u8>, id: Vec<u8>) -> AnonymousResult  {
+    pub fn restore_value(&self, value1: u64, value2: u64, signature : Vec<u8>, id: AccountAddress) -> AnonymousResult  {
         let params = json!({
             "value1": value1,
             "value2": value2,
             "signature": signature,
-            "Objectid" : id,
+            "Objectid" : id.to_hex_literal(),
         });
 
         match self.send_rpc_request("bfcx_getAnonymousRestoreValue", params, 3) {

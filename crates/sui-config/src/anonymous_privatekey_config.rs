@@ -19,6 +19,10 @@ pub struct AnonymousPrivateKeyConfig {
     #[serde(skip_serializing_if = "Option::is_none")]
     #[arg(long)]
     pub enable_anonymous_rpc: Option<bool>,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[arg(long)]
+    pub fullnode_rpc_path: Option<String>,
 }
 
 
@@ -33,6 +37,10 @@ impl AnonymousPrivateKeyConfig {
 
     pub fn set_private_key(&mut self, key: String) {
         self.anonymous_privatekey = Some(key);
+    }
+
+    pub fn set_fullnode_rpc_path(&mut self, key: String) {
+        self.fullnode_rpc_path = Some(key);
     }
 
     pub fn enable_anonymous_rpc(&mut self, key: bool) {
@@ -77,11 +85,17 @@ impl AnonymousPrivateKeyConfig {
                     .map(|s| s.to_string())
                     .collect::<Vec<String>>()
             });
+
+        let fullnode_rpc_path = yaml_value
+            .get("fullnode-rpc-path")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
             
         Ok(AnonymousPrivateKeyConfig { 
             anonymous_privatekey: private_key,
             anonymous_rpc,
             enable_anonymous_rpc,
+            fullnode_rpc_path,
         })
     }
 

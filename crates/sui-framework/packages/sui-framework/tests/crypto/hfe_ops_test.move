@@ -29,8 +29,7 @@ module sui::hfe_ops_test {
 
     #[test]
     fun test_hfe_ops_restore_value() {
-        let object_id : vector<u8> =
-            x"00000000000000000000000000000000000000000000000000000011111111";
+        let object_id : address = @0x000240a58759dbc1f8cec47b5e0d8c1bd88930d9bc30207e3fc423249bd81c30;
         let signature = x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
         let result = hfe_ops::hfe_ops_restore_value(4, 5, signature, object_id);
         let data1 = result;

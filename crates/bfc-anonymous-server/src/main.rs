@@ -2,6 +2,9 @@ mod client_test;
 mod database;
 mod utils;
 
+mod signature;
+mod bfc_object;
+
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
@@ -10,7 +13,11 @@ use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 use warp::Filter;
 use tracing_subscriber::fmt;
-
+use serde_json::json;
+use crate::bfc_object::parse_response;
+use anyhow::anyhow;
+use crate::signature::verify_signature;
+use crate::utils::get_object_owneraddress;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -87,7 +94,7 @@ struct AnonymousRestoreValueParams {
     value1: u64,
     value2: u64,
     signature: Vec<u8>,
-    Objectid : Vec<u8>,
+    Objectid : String,
 
 }
 
@@ -377,6 +384,7 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
     }
 }
 
+
 async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => {
@@ -385,9 +393,32 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.Objectid;
 
-                    //todo,
-                    // get object ownership of the object id,
-                    // rpc -> sui_getObject
+                    let owner_address = get_object_owneraddress(objectid.clone()).await;
+                    let mut pass_verify_signature = true;
+                    match owner_address {
+                        Ok(value) => {
+                            info!("get owner address: {}", value);
+                            let result = verify_signature(value.as_bytes(), &*signature, objectid.as_bytes());
+                            pass_verify_signature = result.is_ok();
+                        },
+                        Err(error) => {
+                            info!("failed get owner address: {}", error);
+                            pass_verify_signature = false;
+                        }
+                    }
+
+                    if pass_verify_signature == false {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Verify signature false".to_string(),
+                                data: Some(serde_json::json!({"error": "verify signature false"})),
+                            }),
+                        };
+                    }
 
                     //todo,signature check,address.
                     // edd25519 signature check
