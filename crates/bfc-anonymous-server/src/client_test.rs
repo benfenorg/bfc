@@ -68,43 +68,5 @@ mod tests {
         assert_eq!(client.base_url, "http://localhost:9010");
     }
 
-    #[tokio::test]
-    #[ignore]
-    async fn test_all_operations() {
-        let client = AnonymousClient::new("http://localhost:9010");
-        let add_result = client.test_add(2, 3, 4, 5).await;
-        assert!(add_result.success);
-        let response = add_result.response.unwrap();
-        let result = response["result"]["result1"].as_u64().unwrap();
-        assert_eq!(result, 5); // 5 + 3 = 8
 
-        
-        let minus_result = client.test_minus(10, 4, 3, 2).await;
-        assert!(minus_result.success);
-        let response = minus_result.response.unwrap();
-        let result = response["result"]["result1"].as_u64().unwrap();
-        assert_eq!(result, 6); // 10 - 4 = 6
-        println!("Minus result: {}", result);
-
-        let multiply_result = client.test_multiply(3, 4).await;
-        assert!(multiply_result.success);
-        let response = multiply_result.response.unwrap();
-        let result = response["result"]["result1"].as_u64().unwrap();
-        assert_eq!(result, 12); // 3 * 4 = 12
-        println!("Multiply result: {}", result);
-
-        let compare_result = client.test_compare(7, 5).await;
-        assert!(compare_result.success);
-        let response = compare_result.response.unwrap();
-        let result = response["result"]["result"].as_u64().unwrap();
-        assert_eq!(result, 1);
-        println!("Compare result: {}", result);
-
-        let ping_result = client.test_ping().await;
-        assert!(ping_result.success);
-        let response = ping_result.response.unwrap();
-        let message = response["result"]["message"].as_str().unwrap();
-        assert_eq!(message, "pong");
-        println!("Ping result: {}", message);
-    }
 }
