@@ -114,10 +114,9 @@ module bridge::limiter_fast_path {
             return false
         };
 
-        // 记录本小时的使用量
-        let idx = (record.per_hour_amounts.length() as u64) - 1;
-        let old = *vector::borrow_mut(&mut record.per_hour_amounts, idx as u64);
-        *vector::borrow_mut(&mut record.per_hour_amounts, idx as u64) = old + amount;
+        // record the amount of this hour
+        let new_amount = record.per_hour_amounts.pop_back() + amount;
+        record.per_hour_amounts.push_back(new_amount);
         record.total_amount = record.total_amount + amount;
 
         emit(UserLimitUsedEvent {
@@ -126,7 +125,6 @@ module bridge::limiter_fast_path {
             remaining_limit: USER_LIMIT_AMOUNT - record.total_amount,
             window_start_hour: record.hour_tail,
         });
-
         true
     }
 
@@ -139,34 +137,17 @@ module bridge::limiter_fast_path {
         if (!table::contains(&self.user_records, user_address)) {
             return option::none()
         };
-        // let record = table::borrow(&self.user_records, user_address);
         let record = table::borrow_mut(&mut self.user_records, user_address);
         adjust_user_limit_records(record, current_hour_since_epoch(clock));
-        
-        let current_hour = current_hour_since_epoch(clock);
-        
-        // 计算当前窗口的使用量
-        let window = USER_TIME_WINDOW_HOURS;
-        let head = if (record.hour_head < current_hour) { current_hour } else { record.hour_head };
-        let per_hour_amounts = &record.per_hour_amounts;
-        let len = per_hour_amounts.length();
-        let skip = if ((len as u64) > window) { (len as u64) - window } else { 0u64 };
-        debug::print(&skip);
-        // 计算总使用量
-        let total = calculate_total_usage(per_hour_amounts, skip, len);
-        debug::print(&total);
-        
-        // 计算窗口开始时间
-        let window_start_hour = if (head >= window - 1) { head - window + 1 } else { 0u64 };
         
         option::some(UserLimitInfo {
             user_address,
             limit_amount: USER_LIMIT_AMOUNT,
-            used_amount: total,
-            remaining_limit: USER_LIMIT_AMOUNT - total,
+            used_amount: record.total_amount,
+            remaining_limit: USER_LIMIT_AMOUNT - record.total_amount,
             time_window_hours: USER_TIME_WINDOW_HOURS,
-            window_start_hour,
-            window_end_hour: window_start_hour + USER_TIME_WINDOW_HOURS,
+            window_start_hour: record.hour_tail,
+            window_end_hour: record.hour_head,
         })
     }
 
@@ -275,44 +256,34 @@ module bridge::limiter_fast_path {
 
     /// 滑动窗口，移除过期小时
     fun adjust_user_limit_records(record: &mut UserLimitRecord, current_hour: u64) {
-        if (record.hour_head == current_hour) {
-            // Early exit - do nothing
-        } else {
-            // 先补全到当前小时
-            let head = record.hour_head;
-            let tail = record.hour_tail;
-            let window = USER_TIME_WINDOW_HOURS;
-            
-            // 补全缺失的小时
-            let new_head = fill_missing_hours(record, current_hour, head);
-            
-            // 移除过期小时
-            remove_expired_hours(record, new_head, tail, window);
+        if(record.hour_head==current_hour) {
+            return // nothing to backfill
+        };
+        
+        let target_tail = current_hour - 23;
+        // if `hour_head` is even older than 24 hours ago, it means all items in
+        // `per_hour_amounts` are to be evicted.
+        if (record.hour_head < target_tail) {
+            record.per_hour_amounts = vector[];
+            record.total_amount = 0;
+            record.hour_tail = target_tail;
+            record.hour_head = target_tail;
+            record.per_hour_amounts.push_back(0);
+        }else{
+            // `hour_head` is within 24 hour range.
+            // some items in `per_hour_amounts` are still valid, we remove stale hours.
+            while(record.hour_tail < target_tail) {
+                record.total_amount = record.total_amount - record.per_hour_amounts.remove(0);
+                record.hour_tail = record.hour_tail + 1;
+            }
+        };
+        
+        // Backfill from hour_head to current hour
+        while(record.hour_head < current_hour) {
+            record.per_hour_amounts.push_back(0);
+            record.hour_head = record.hour_head + 1;
         }
     }
-
-    /// 补全缺失的小时
-    fun fill_missing_hours(record: &mut UserLimitRecord, current_hour: u64, head: u64): u64 {
-        if (head >= current_hour) {
-            head
-        } else {
-            vector::push_back(&mut record.per_hour_amounts, 0);
-            fill_missing_hours(record, current_hour, head + 1)
-        }
-    }
-
-    /// 移除过期小时
-    fun remove_expired_hours(record: &mut UserLimitRecord, head: u64, tail: u64, window: u64) {
-        if (head - tail + 1 <= window) {
-            record.hour_head = head;
-            record.hour_tail = tail;
-        } else {
-            let removed = vector::remove(&mut record.per_hour_amounts, 0);
-            record.total_amount = record.total_amount - removed;
-            remove_expired_hours(record, head, tail + 1, window)
-        }
-    }
-
     //////////////////////////////////////////////////////
     // Types for public interface
     //
