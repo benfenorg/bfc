@@ -711,7 +711,7 @@ pub struct MoveTypeTokenTransferPayload {
     pub token_type: u64,
     pub amount: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 /// Rust version of the Move message::ParsedTokenTransferMessage type.

@@ -54,7 +54,7 @@ module bridge::message_tests {
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8,
+            0u16, // event_idx
         );
         let payload = token_bridge_message.extract_token_bridge_payload();
         assert!(payload.token_target_chain() == token_payload.token_target_chain());
@@ -67,7 +67,7 @@ module bridge::message_tests {
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c8000000000000000300000000000030390000",
+            b"0001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c800000000000000030000000000003039000000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -94,7 +94,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
@@ -105,7 +105,7 @@ module bridge::message_tests {
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         assert!(token_bridge_message.extract_token_bridge_payload() == token_payload);
 
@@ -113,7 +113,7 @@ module bridge::message_tests {
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a0b1400000000000000000000000000000000000000c801200000000000000000000000000000000000000000000000000000000000000064000000000000000300000000000030390000",
+            b"0001000000000000000a0b1400000000000000000000000000000000000000c80120000000000000000000000000000000000000000000000000000000000000006400000000000000030000000000003039000000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -140,7 +140,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
@@ -151,7 +151,7 @@ module bridge::message_tests {
             2u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         // std::debug::print(&token_bridge_message.get_payload());
         assert!(token_bridge_message.extract_token_bridge_payload() != token_payload);
@@ -178,7 +178,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // Test payload extraction
@@ -189,7 +189,7 @@ module bridge::message_tests {
             3u64,
             balance::value(coin::balance(&coin)),
             hex::decode(b"ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa40"), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
         assert!(token_bridge_message.extract_token_bridge_payload() == token_payload);
 
@@ -197,7 +197,7 @@ module bridge::message_tests {
         // Test message serialization
         let message = serialize_message(token_bridge_message);
         let expected_msg = hex::decode(
-            b"0001000000000000000a0b1400000000000000000000000000000000000000c8012000000000000000000000000000000000000000000000000000000000000000640000000000000003000000000000303920ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa4000",
+            b"0001000000000000000a0b1400000000000000000000000000000000000000c8012000000000000000000000000000000000000000000000000000000000000000640000000000000003000000000000303920ce0d649ee5b72f62a11787ebd48adbac3c05b94de68e7bb7f0c79154cfffaa400000",
         );
         assert_eq(message, expected_msg);
         assert!(token_bridge_message == deserialize_message_test_only(message));
@@ -606,7 +606,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value(coin::balance(&coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         );
         let mut payload = token_bridge_message.payload();
         payload.push_back(0u8);
@@ -740,7 +740,7 @@ module bridge::message_tests {
     //         3u64, // token_type
     //         balance::value(coin::balance(&coin)), // amount: u64
     //         hex::decode(b""), // tx_hash
-    //         0u8, // event_idx
+    //         0u16, // event_idx
     //     );
 
     //     abort 0
@@ -851,7 +851,7 @@ module bridge::message_tests {
             3u64, // token_type
             balance::value<T>(coin::balance(coin)), // amount: u64
             hex::decode(b""), // tx_hash
-            0u8, // event_idx
+            0u16, // event_idx
         )
     }
 

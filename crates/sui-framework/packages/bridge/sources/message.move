@@ -64,7 +64,7 @@ module bridge::message {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
     }
 
     public struct EmergencyOp has drop {
@@ -158,7 +158,7 @@ module bridge::message {
         let token_type = peel_u64_be(&mut bcs);
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
-        let event_idx = bcs.peel_u8();
+        let event_idx = bcs.peel_u16();
         chain_ids::assert_valid_chain_id(target_chain);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
 
@@ -446,7 +446,7 @@ module bridge::message {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
         chain_ids::assert_valid_chain_id(target_chain);
@@ -468,7 +468,7 @@ module bridge::message {
         // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
-        payload.push_back(event_idx);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         BridgeMessage {
             message_type: message_types::token(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -827,7 +827,7 @@ module bridge::message {
         self.tx_hash
     }
 
-    public fun token_event_idx(self: &TokenTransferPayload): u8 {
+    public fun token_event_idx(self: &TokenTransferPayload): u16 {
         self.event_idx
     }
 
@@ -1063,7 +1063,7 @@ module bridge::message {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
     ): TokenTransferPayload {
         TokenTransferPayload {
             sender_address,

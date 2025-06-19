@@ -1680,7 +1680,7 @@ title: Module `bridge::bridge`
         token_id,
         token_amount,
         hex::decode(b""),
-        0u8, // event_idx
+        0u16, // event_idx
     );
     // burn / escrow token, unsupported coins will fail in this step
     inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.burn(token);
@@ -1764,7 +1764,7 @@ title: Module `bridge::bridge`
         token_id,
         token_amount,
         hex::decode(b""),
-        0u8, // event_idx
+        0u16, // event_idx
     );
     // burn / escrow token, unsupported coins will fail in this step
     bfc_system_state.burn_stable(token, ctx);

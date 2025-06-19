@@ -40,7 +40,7 @@ library BridgeUtils {
         uint64 tokenID;
         uint64 amount;
         bytes txHash;
-        uint8 eventIdx;
+        uint16 eventIdx;
     }
 
     /* ========== CONSTANTS ========== */
@@ -288,7 +288,7 @@ library BridgeUtils {
         offset = offset + uint8(txHash.length);
 
         // event idx is a single byte
-        uint8 eventIdx = uint8(_payload[offset]);
+        uint16 eventIdx = uint16(uint8(_payload[offset])) | (uint16(uint8(_payload[offset + 1])) << 8);
 
         return TokenTransferPayload(
             senderAddressLength,

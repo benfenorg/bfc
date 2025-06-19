@@ -255,7 +255,7 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         bytes
     }

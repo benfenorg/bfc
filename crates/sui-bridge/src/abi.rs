@@ -113,7 +113,7 @@ impl EthBridgeEvent {
                                     )));
                                 }
                                 bridge_event.set_tx_hash(eth_tx_hash.as_bytes().to_vec());
-                                bridge_event.set_event_idx(eth_event_index as u8);
+                                bridge_event.set_event_idx(eth_event_index);
                                 bridge_event
                             }
                             // This only happens when solidity code does not align with rust code.
@@ -185,7 +185,7 @@ pub struct EthToSuiTokenBridgeV1 {
     pub token_id: u64,
     pub sui_adjusted_amount: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 impl EthToSuiTokenBridgeV1 {
@@ -193,7 +193,7 @@ impl EthToSuiTokenBridgeV1 {
         self.tx_hash = tx_hash;
     }
 
-    pub fn set_event_idx(&mut self, event_idx: u8) {
+    pub fn set_event_idx(&mut self, event_idx: u16) {
         self.event_idx = event_idx;
     }
 }

@@ -1267,7 +1267,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         coin.balance().value(),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
 
     let key = message.key();
@@ -1299,7 +1299,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         balance::value(coin::balance(&coin)),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
     let key = message.key();
     bridge
@@ -1340,7 +1340,7 @@ fun test_get_token_transfer_action_data() {
         1u64, // token_type
         balance::value(coin::balance(&coin)),
         hex::decode(b""), // tx_hash
-        0u8, // event_idx
+        0u16, // event_idx
     );
     let key = message.key();
     bridge

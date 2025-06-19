@@ -96,7 +96,7 @@ module bridge::bridge {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
     }
 
     public struct EmergencyOpEvent has copy, drop {
@@ -371,7 +371,7 @@ module bridge::bridge {
             token_id,
             token_amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // burn / escrow token, unsupported coins will fail in this step
@@ -443,7 +443,7 @@ module bridge::bridge {
             token_id,
             token_amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // burn / escrow token, unsupported coins will fail in this step
@@ -482,7 +482,7 @@ module bridge::bridge {
         token_type: u64,
         token_amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
         ctx: &mut TxContext
     ) {
         let inner = load_inner_mut(bridge);

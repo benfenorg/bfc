@@ -767,7 +767,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         test_scenario::return_shared(bridge);
         message
@@ -796,7 +796,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         test_scenario::return_shared(bridge);
         message
@@ -824,7 +824,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         let signatures = env.sign_message(message);
         (message, signatures)
@@ -856,7 +856,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
         let signatures = env.sign_message(message);
 
@@ -910,7 +910,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             *tx_hash.as_bytes(),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         let signatures = env.sign_message(message);
@@ -1274,7 +1274,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             *tx_hash.as_bytes(),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         let node_signatures = env.sign_message(message);
@@ -1478,7 +1478,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let seq_num = bridge.get_seq_num_for(message_types::token());
         // run send
-        bridge.send_back_token(target_chain_id, eth_address,token_type, amount, tx_hash, 0u8, scenario.ctx());
+        bridge.send_back_token(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
         // verify send events
         let send_back_events = event::events_by_type<TokenSendBackEvent>();
         assert!(send_back_events.length() == 1);

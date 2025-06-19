@@ -69,7 +69,7 @@ pub struct MoveTokenSendBackEvent {
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 macro_rules! new_move_event {
@@ -248,7 +248,7 @@ pub struct EmittedSuiToEthTokenBridgeV1 {
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone, Hash)]
@@ -274,7 +274,7 @@ pub struct EmittedEthTokenSendBackBridgeV1 {
     // The amount of tokens deposited with decimal points on Sui side
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
-    pub event_idx: u8,
+    pub event_idx: u16,
 }
 
 // Sanitized version of MoveCommitteeUpdateEvent

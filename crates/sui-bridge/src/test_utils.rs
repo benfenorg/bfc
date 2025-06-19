@@ -306,7 +306,7 @@ pub fn get_test_log_and_action(
             sui_address,
             eth_address: source_address,
             tx_hash: tx_hash.as_bytes().to_vec(),
-            event_idx: event_index as u8,
+            event_idx: event_index,
         },
     });
     (log, bridge_action)
