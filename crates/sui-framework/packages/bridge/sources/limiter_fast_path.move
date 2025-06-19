@@ -7,6 +7,7 @@ module bridge::limiter_fast_path {
     use sui::table::{Self, Table};
     use sui::address;
     use sui::vec_map::{Self, VecMap};
+    use std::debug;
 
     use bridge::chain_ids::{Self, BridgeRoute};
 
@@ -131,14 +132,17 @@ module bridge::limiter_fast_path {
 
     /// 获取用户当前限额信息
     public fun get_user_limit_info(
-        self: &UserLimiter,
+        self: &mut UserLimiter,
         user_address: address,
         clock: &Clock,
     ): Option<UserLimitInfo> {
         if (!table::contains(&self.user_records, user_address)) {
             return option::none()
         };
-        let record = table::borrow(&self.user_records, user_address);
+        // let record = table::borrow(&self.user_records, user_address);
+        let record = table::borrow_mut(&mut self.user_records, user_address);
+        adjust_user_limit_records(record, current_hour_since_epoch(clock));
+        
         let current_hour = current_hour_since_epoch(clock);
         
         // 计算当前窗口的使用量
@@ -147,9 +151,10 @@ module bridge::limiter_fast_path {
         let per_hour_amounts = &record.per_hour_amounts;
         let len = per_hour_amounts.length();
         let skip = if ((len as u64) > window) { (len as u64) - window } else { 0u64 };
-        
+        debug::print(&skip);
         // 计算总使用量
         let total = calculate_total_usage(per_hour_amounts, skip, len);
+        debug::print(&total);
         
         // 计算窗口开始时间
         let window_start_hour = if (head >= window - 1) { head - window + 1 } else { 0u64 };
@@ -167,7 +172,7 @@ module bridge::limiter_fast_path {
 
     /// 获取用户剩余限额
     public fun get_user_remaining_limit(
-        self: &UserLimiter,
+        self: &mut UserLimiter,
         user_address: address,
         clock: &Clock,
     ): u64 {
@@ -345,7 +350,7 @@ module bridge::limiter_fast_path {
 
     #[test_only]
     public fun test_get_user_remaining_limit(
-        self: &UserLimiter,
+        self: &mut UserLimiter,
         user_address: address,
         clock: &Clock,
     ): u64 {

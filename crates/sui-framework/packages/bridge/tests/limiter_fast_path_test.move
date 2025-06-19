@@ -7,7 +7,7 @@ module bridge::limiter_fast_path_tests {
     use sui::clock;
     use sui::test_utils::{assert_eq, destroy};
 
-    use bridge::limiter_fast_path::{Self, UserLimiter};
+    use bridge::limiter_fast_path::{Self};
 
     #[test]
     fun test_basic_user_limit() {
@@ -39,7 +39,7 @@ module bridge::limiter_fast_path_tests {
         ), 0);
 
         // Check remaining limit
-        let remaining = limiter_fast_path::get_user_remaining_limit(&limiter, user, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, &clock);
         assert_eq(remaining, 9_000_000_000); // 10B - 1B = 9B
 
         // Try exceeding limit
@@ -71,19 +71,19 @@ module bridge::limiter_fast_path_tests {
         let amount = 5_000_000_000; // 5B
 
         // First transfer
-        assert!(limiter_fast_path::check_and_record_user_limit(
+        let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
             amount,
             &clock,
             ctx
-        ), 0);
-
+        );
+        assert_eq(result, true);
         // Advance clock 25 hours
         clock.increment_for_testing(25 * 60 * 60 * 1000);
 
         // First amount should be cleared from window
-        let remaining = limiter_fast_path::get_user_remaining_limit(&limiter, user, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, &clock);
         assert_eq(remaining, 10_000_000_000); // Back to full limit
 
         // Cleanup
@@ -93,7 +93,6 @@ module bridge::limiter_fast_path_tests {
     }
 
     #[test]
-    #[expected_failure(abort_code = limiter_fast_path::EUserLimitExceeded)]
     fun test_limit_exceeded() {
         let mut scenario = test_scenario::begin(@0x1);
         let ctx = test_scenario::ctx(&mut scenario);
@@ -102,15 +101,37 @@ module bridge::limiter_fast_path_tests {
         let clock = clock::create_for_testing(ctx);
         
         let user = @0x42;
-        let amount = 15_000_000_000; // 15B > 10B limit
-
-        limiter_fast_path::check_and_record_user_limit(
+        let amount = 8_000_000_000; // 15B > 10B limit
+        let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
             amount,
             &clock,
             ctx
         );
+        assert_eq(result, true);
+
+        let amount = 2_000_000_000; // 15B > 10B limit
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut limiter,
+            user,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq(result, true);
+
+        let amount = 1_000_000_000; // 15B > 10B limit
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut limiter,
+            user,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq(result, false);
+
+        
 
         clock::destroy_for_testing(clock);
         destroy(limiter);
