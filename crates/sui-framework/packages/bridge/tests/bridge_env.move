@@ -15,7 +15,7 @@ module bridge::bridge_env {
         Bridge,
         EmergencyOpEvent,
         TokenDepositedEvent,
-        TokenSendBackEvent,
+        TokenSendBackEventV2,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
         TokenTransferApproved,
@@ -758,7 +758,7 @@ module bridge::bridge_env {
         scenario.next_tx(@0x0);
         let mut bridge = scenario.take_shared<Bridge>();
 
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             bridge.get_seq_num_inc_for(message_types::token()),
             source_address,
@@ -787,7 +787,7 @@ module bridge::bridge_env {
         scenario.next_tx(@0x0);
         let bridge = scenario.take_shared<Bridge>();
 
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             env.chain_id,
             transfer_id,
             address::to_bytes(source_address),
@@ -815,7 +815,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let seq_num = bridge.get_seq_num_inc_for(message_types::token());
         test_scenario::return_shared(bridge);
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             seq_num,
             source_address,
@@ -847,7 +847,7 @@ module bridge::bridge_env {
 
         // sign message
         let seq_num = bridge.get_seq_num_inc_for(message_types::token());
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             seq_num,
             source_address,
@@ -901,7 +901,7 @@ module bridge::bridge_env {
         let mut bridge = env.scenario.take_shared<Bridge>();
         let total_supply_before = get_total_supply<T>(&bridge);
 
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             0,
             source_address,
@@ -1265,7 +1265,7 @@ module bridge::bridge_env {
     ) {
         // set up
         let token_type = env.token_type<T>();
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             source_chain,
             0,
             source_address,
@@ -1478,9 +1478,9 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
         let seq_num = bridge.get_seq_num_for(message_types::token());
         // run send
-        bridge.send_back_token(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
+        bridge.send_back_token_v2(target_chain_id, eth_address,token_type, amount, tx_hash, 0u16, scenario.ctx());
         // verify send events
-        let send_back_events = event::events_by_type<TokenSendBackEvent>();
+        let send_back_events = event::events_by_type<TokenSendBackEventV2>();
         assert!(send_back_events.length() == 1);
         let (
             event_seq_num,
@@ -1491,7 +1491,7 @@ module bridge::bridge_env {
             _event_token_type,
             event_amount,
             event_tx_hash,
-        ) = send_back_events[0].unwrap_send_back_event();
+        ) = send_back_events[0].unwrap_send_back_event_v2();
         assert!(event_seq_num == seq_num);
         assert!(event_amount == 100);
         assert!(event_tx_hash == tx_hash);

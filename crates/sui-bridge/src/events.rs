@@ -69,8 +69,22 @@ pub struct MoveTokenSendBackEvent {
     pub token_type: u64,
     pub amount_sui_adjusted: u64,
     pub tx_hash: Vec<u8>,
+    pub event_idx: u8,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct MoveTokenSendBackEventV2 {
+    pub seq_num: u64,
+    pub source_chain: u8,
+    pub sender_address: Vec<u8>,
+    pub target_chain: u8,
+    pub target_address: Vec<u8>,
+    pub token_type: u64,
+    pub amount_sui_adjusted: u64,
+    pub tx_hash: Vec<u8>,
     pub event_idx: u16,
 }
+
 
 macro_rules! new_move_event {
     ($struct_name:ident, $move_struct_name:ident) => {
@@ -455,6 +469,61 @@ impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
     }
 }
 
+impl TryFrom<MoveTokenSendBackEventV2> for EmittedEthTokenSendBackBridgeV1 {
+    type Error = BridgeError;
+
+    fn try_from(event: MoveTokenSendBackEventV2) -> BridgeResult<Self> {
+        if event.amount_sui_adjusted == 0 {
+            return Err(BridgeError::ZeroValueBridgeTransfer(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Manual intervention is required. 0 value transfer should not be allowed in Move: {:?}",
+                event,
+            )));
+        }
+
+        let token_id = event.token_type;
+        let sui_chain_id = BridgeChainId::try_from(event.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert source chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        let eth_chain_id = BridgeChainId::try_from(event.target_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert target chain {} to BridgeChainId",
+                event.token_type,
+            ))
+        })?;
+        if !sui_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Invalid source chain {}",
+                event.source_chain
+            )));
+        }
+        if eth_chain_id.is_sui_chain() {
+            return Err(BridgeError::Generic(format!(
+                "Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Invalid target chain {}",
+                event.target_chain
+            )));
+        }
+
+        let sui_address = SuiAddress::from_bytes(event.sender_address)
+            .map_err(|e| BridgeError::Generic(format!("Failed to convert MoveTokenSendBackEventV2 to EmittedEthTokenSendBackBridgeV1. Failed to convert sender_address to SuiAddress: {:?}", e)))?;
+        let eth_address = EthAddress::from_str(&Hex::encode(&event.target_address))?;
+
+        Ok(Self {
+            nonce: event.seq_num,
+            sui_chain_id,
+            eth_chain_id,
+            sui_address,
+            eth_address,
+            token_id,
+            amount_sui_adjusted: event.amount_sui_adjusted,
+            tx_hash: event.tx_hash,
+            event_idx: event.event_idx,
+        })
+    }
+}
+
 impl TryFrom<MoveExternalDepositStartEvent> for EmittedExternalDepositStartBridgeV1 {
     type Error = BridgeError;
 
@@ -502,6 +571,7 @@ crate::declare_events!(
     SuiToEthTokenBridgeV1(EmittedSuiToEthTokenBridgeV1) => ("bridge::TokenDepositedEvent", MoveTokenDepositedEvent),
     ExternalDepositStartBridgeV1(EmittedExternalDepositStartBridgeV1) => ("bridge::ExternalDepositStartEvent", MoveExternalDepositStartEvent),
     TokenSendBackEvent(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEvent", MoveTokenSendBackEvent),
+    TokenSendBackEventV2(EmittedEthTokenSendBackBridgeV1) => ("bridge::TokenSendBackEventV2", MoveTokenSendBackEventV2),
     TokenTransferApproved(TokenTransferApproved) => ("bridge::TokenTransferApproved", MoveTokenTransferApproved),
     TokenTransferClaimed(TokenTransferClaimed) => ("bridge::TokenTransferClaimed", MoveTokenTransferClaimed),
     TokenTransferAlreadyApproved(TokenTransferAlreadyApproved) => ("bridge::TokenTransferAlreadyApproved", MoveTokenTransferAlreadyApproved),

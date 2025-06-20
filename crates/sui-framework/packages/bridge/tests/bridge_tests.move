@@ -41,7 +41,7 @@ use bridge::bridge_env::{
 use bridge::btc::BTC;
 use bridge::chain_ids;
 use bridge::eth::ETH;
-use bridge::message::{Self, to_parsed_token_transfer_message};
+use bridge::message::{Self, to_parsed_token_transfer_message_v2};
 use bridge::message_types;
 use bridge::test_token::{TEST_TOKEN, create_bridge_token as create_test_token};
 use bridge::usdc::USDC;
@@ -1256,7 +1256,7 @@ fun test_get_token_transfer_action_data() {
     let coin = coin::mint_for_testing<ETH>(12345, ctx);
 
     // Test when pending
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         10, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1288,7 +1288,7 @@ fun test_get_token_transfer_action_data() {
     );
 
     // Test when ready for claim
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         11, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1322,14 +1322,14 @@ fun test_get_token_transfer_action_data() {
         option::some(vector[]),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 11) ==
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 11) ==
         option::some(
-            to_parsed_token_transfer_message(&message),
+            to_parsed_token_transfer_message_v2(&message),
         ),
     );
 
     // Test when already claimed
-    let message = message::create_token_bridge_message(
+    let message = message::create_token_bridge_message_v2(
         chain_ids::sui_testnet(), // source chain
         12, // seq_num
         address::to_bytes(ctx.sender()), // sender address
@@ -1363,9 +1363,9 @@ fun test_get_token_transfer_action_data() {
         option::some(vector[b"1234"]),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 12) ==
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 12) ==
         option::some(
-            to_parsed_token_transfer_message(&message),
+            to_parsed_token_transfer_message_v2(&message),
         ),
     );
 
@@ -1379,7 +1379,7 @@ fun test_get_token_transfer_action_data() {
         option::none(),
     );
     assert!(
-        bridge.test_get_parsed_token_transfer_message(chain_id, 13) ==
+        bridge.test_get_parsed_token_transfer_message_v2(chain_id, 13) ==
         option::none(),
     );
 
