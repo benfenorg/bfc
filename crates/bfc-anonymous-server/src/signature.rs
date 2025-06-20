@@ -13,12 +13,6 @@ pub enum Ed25519Error {
 
     #[error("Invalid public key: {0}")]
     InvalidPublicKey(#[from] SignatureError),
-
-    // #[error("Verification failed: {0}")]
-    // VerificationFailed(#[from] SignatureError),
-
-    #[error("Signature format error")]
-    SignatureFormat,
 }
 
 /// Generates a new Ed25519 keypair
@@ -61,10 +55,8 @@ pub fn verify_signature(
 
     // Create verifying key
     let verifying_key = VerifyingKey::from_bytes(&public_key_arr)?;
-
     // Create signature object
     let sig = Signature::from_bytes(&signature_arr);
-
     // Verify signature
     verifying_key.verify(message, &sig)?;
 
@@ -106,16 +98,6 @@ pub fn verify_signature_strict(
     verifying_key.verify_strict(message, &sig)?;
 
     Ok(())
-}
-
-/// Converts a hex string to bytes
-pub fn hex_to_bytes(hex: &str) -> Result<Vec<u8>, hex::FromHexError> {
-    hex::decode(hex.trim_start_matches("0x"))
-}
-
-/// Converts bytes to a hex string
-pub fn bytes_to_hex(bytes: &[u8]) -> String {
-    format!("0x{}", hex::encode(bytes))
 }
 
 #[cfg(test)]

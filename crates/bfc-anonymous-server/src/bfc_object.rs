@@ -28,8 +28,6 @@ struct SuiObjectData {
     object_type: String,
     #[serde(rename = "owner")]
     owner: Owner,
-    #[serde(skip)]
-    previous_transaction: String,
     content: Content,
     display: Option<Value>, // Dynamic display metadata
     storage_rebate: Option<String>,

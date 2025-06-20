@@ -24,7 +24,9 @@ ed25519-dalek = { version = "2.1.1", features = ["rand_core", "std"] }
 rand = "0.8.5"
 thiserror = "1.0"
 hex = "0.4.3"
-
+move-core-types.workspace = true
+fastcrypto.workspace = true
+sui-types.workspace = true
 [dev-dependencies]
 tokio-test = "0.4"
 rand = "0.8.5"
