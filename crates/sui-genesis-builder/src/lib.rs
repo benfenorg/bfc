@@ -12,7 +12,7 @@ use std::collections::{BTreeMap, HashMap, HashSet};
 use std::fs;
 use std::path::Path;
 use std::sync::Arc;
-use tracing::trace;
+use tracing::{info, trace};
 use sui_config::genesis::{Genesis, GenesisCeremonyParameters,
                           GenesisChainParameters, TokenDistributionSchedule,
                           UnsignedGenesis, BfcSystemParameters,
@@ -1163,7 +1163,7 @@ fn create_genesis_objects(
         bfc_system_parameters,
         token_distribution_schedule,
         metrics,
-        bfc_skip_init_vault
+        bfc_skip_init_vault,
     ).unwrap();
 
     store.into_inner().into_values().collect()
@@ -1683,10 +1683,16 @@ pub fn generate_genesis_system_object(
                 vec![],
             );
 
-            let address = builder
-                .input(CallArg::Pure(UID::new(ObjectID::from(SUI_FRAMEWORK_ADDRESS)).to_bcs_bytes()))
+
+
+            let address1 = token_distribution_schedule.allocations.get(4).unwrap().recipient_address;
+            info!("address1: {}", address1);
+            let address1_arg = builder
+                .input(CallArg::Pure(UID::new(ObjectID::from(address1)).to_bcs_bytes()))
                 .unwrap();
-            let arguments = vec![abfc_supply, address];
+
+
+            let arguments = vec![abfc_supply, address1_arg];
             builder.programmable_move_call(
                 BFC_SYSTEM_ADDRESS.into(),
                 ident_str!("bfc_system").to_owned(),
