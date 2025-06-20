@@ -35,6 +35,7 @@ module bridge::bridge {
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
+    use bridge::limiter_fast_path::UserLimiter;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -75,6 +76,28 @@ module bridge::bridge {
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
         refund_admins: VecSet<String>,
         // bfc_system_id: UID,
+    }
+
+    public struct BridgeInnerV2 has store {
+        bridge_version: u64,
+        message_version: u8,
+        chain_id: u8,
+        // nonce for replay protection
+        // key: message type, value: next sequence number
+        sequence_nums: VecMap<u8, u64>,
+        // committee
+        committee: BridgeCommittee,
+        // Bridge treasury for mint/burn bridged tokens
+        treasury: BridgeTreasury,
+        token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
+        external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
+        // tx hash : [signature addresses]
+        pre_deposit_multi_signature_records: LinkedTable<ExternalBridgeMessageKey, VecSet<String>>,
+        limiter: TransferLimiter,
+        paused: bool,
+        refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
+        refund_admins: VecSet<String>,
+        limiter_fast_path: UserLimiter,
     }
 
     public struct TokenDepositedEvent has copy, drop {

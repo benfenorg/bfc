@@ -45,16 +45,22 @@ module bridge::limiter_fast_path {
     }
 
     /// 用户限额管理器
-    public struct UserLimiter has key {
+    public struct UserLimiter has key, store {
         id: UID,
         /// 用户限额记录表
-        user_records: Table<address, UserLimitRecord>,
+        user_records: Table<UserLimiterKey, UserLimitRecord>,
         /// 全局默认限额
         default_limit: u64,
         /// 全局默认时间窗口
         default_time_window: u64,
         /// 是否启用用户限额
         enabled: bool,
+    }
+
+    public struct UserLimiterKey has copy, drop ,store{
+        user_address: address,
+        chain_id: u8,
+        token_id: u64,
     }
 
     /// 用户限额使用事件
@@ -84,6 +90,8 @@ module bridge::limiter_fast_path {
     public fun check_and_record_user_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         amount: u64,
         clock: &Clock,
         ctx: &mut TxContext,
@@ -95,7 +103,7 @@ module bridge::limiter_fast_path {
         let current_hour = current_hour_since_epoch(clock);
         
         // 如果用户没有限额记录，初始化
-        if (!table::contains(&self.user_records, user_address)) {
+        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
             let record = UserLimitRecord {
                 user_address,
                 hour_head: current_hour,
@@ -103,10 +111,10 @@ module bridge::limiter_fast_path {
                 per_hour_amounts: vector[0],
                 total_amount: 0,
             };
-            table::add(&mut self.user_records, user_address, record);
+            table::add(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id }, record);
         };
 
-        let record = table::borrow_mut(&mut self.user_records, user_address);
+        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour);
 
         // 检查限额是否足够
@@ -132,12 +140,14 @@ module bridge::limiter_fast_path {
     public fun get_user_limit_info(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         clock: &Clock,
     ): Option<UserLimitInfo> {
-        if (!table::contains(&self.user_records, user_address)) {
+        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
             return option::none()
         };
-        let record = table::borrow_mut(&mut self.user_records, user_address);
+        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour_since_epoch(clock));
         
         option::some(UserLimitInfo {
@@ -155,9 +165,11 @@ module bridge::limiter_fast_path {
     public fun get_user_remaining_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         clock: &Clock,
     ): u64 {
-        let limit_info_opt = get_user_limit_info(self, user_address, clock);
+        let limit_info_opt = get_user_limit_info(self, user_address, chain_id, token_id, clock);
         if (option::is_none(&limit_info_opt)) {
             USER_LIMIT_AMOUNT
         } else {
@@ -170,13 +182,15 @@ module bridge::limiter_fast_path {
     public fun reset_user_limit_usage(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        if (!table::contains(&self.user_records, user_address)) {
+        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
             return
         };
-        let record = table::borrow_mut(&mut self.user_records, user_address);
+        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
         let current_hour = current_hour_since_epoch(clock);
         record.hour_head = current_hour;
         record.hour_tail = current_hour;
@@ -188,9 +202,11 @@ module bridge::limiter_fast_path {
     public fun remove_user_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
     ) {
-        if (table::contains(&self.user_records, user_address)) {
-            let record = table::remove(&mut self.user_records, user_address);
+        if (table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
+            let record = table::remove(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
             // Drop the record since we don't need it
             let UserLimitRecord { user_address: _, hour_head: _, hour_tail: _, per_hour_amounts: _, total_amount: _ } = record;
         }
@@ -312,38 +328,46 @@ module bridge::limiter_fast_path {
     public fun test_check_and_record_user_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         amount: u64,
         clock: &Clock,
         ctx: &mut TxContext,
     ): bool {
-        check_and_record_user_limit(self, user_address, amount, clock, ctx)
+        check_and_record_user_limit(self, user_address, chain_id, token_id, amount, clock, ctx)
     }
 
     #[test_only]
     public fun test_get_user_remaining_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         clock: &Clock,
     ): u64 {
-        get_user_remaining_limit(self, user_address, clock)
+        get_user_remaining_limit(self, user_address, chain_id, token_id, clock)
     }
 
     #[test_only]
     public fun test_reset_user_limit_usage(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
         clock: &Clock,
         ctx: &mut TxContext,
     ) {
-        reset_user_limit_usage(self, user_address, clock, ctx)
+        reset_user_limit_usage(self, user_address, chain_id, token_id, clock, ctx)
     }
 
     #[test_only]
     public fun test_remove_user_limit(
         self: &mut UserLimiter,
         user_address: address,
+        chain_id: u8,
+        token_id: u64,
     ) {
-        remove_user_limit(self, user_address)
+        remove_user_limit(self, user_address, chain_id, token_id)
     }
 
     #[test_only]

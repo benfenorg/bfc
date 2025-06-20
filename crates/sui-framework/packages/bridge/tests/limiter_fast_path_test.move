@@ -9,6 +9,9 @@ module bridge::limiter_fast_path_tests {
 
     use bridge::limiter_fast_path::{Self};
 
+    const ETH_MAINNET: u8 = 1;
+    const BUSD_ID: u64 = 5;
+
     #[test]
     fun test_basic_user_limit() {
         let mut scenario = test_scenario::begin(@0x1);
@@ -33,13 +36,15 @@ module bridge::limiter_fast_path_tests {
         assert!(limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             amount,
             &clock,
             ctx
         ), 0);
 
         // Check remaining limit
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq(remaining, 9_000_000_000); // 10B - 1B = 9B
 
         // Try exceeding limit
@@ -47,6 +52,8 @@ module bridge::limiter_fast_path_tests {
         assert!(!limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             exceed_amount,
             &clock,
             ctx
@@ -74,6 +81,8 @@ module bridge::limiter_fast_path_tests {
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             amount,
             &clock,
             ctx
@@ -83,7 +92,7 @@ module bridge::limiter_fast_path_tests {
         clock.increment_for_testing(25 * 60 * 60 * 1000);
 
         // First amount should be cleared from window
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq(remaining, 10_000_000_000); // Back to full limit
 
         // Cleanup
@@ -105,6 +114,8 @@ module bridge::limiter_fast_path_tests {
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             amount,
             &clock,
             ctx
@@ -115,6 +126,8 @@ module bridge::limiter_fast_path_tests {
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             amount,
             &clock,
             ctx
@@ -125,6 +138,8 @@ module bridge::limiter_fast_path_tests {
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut limiter,
             user,
+            ETH_MAINNET,
+            BUSD_ID,
             amount,
             &clock,
             ctx
