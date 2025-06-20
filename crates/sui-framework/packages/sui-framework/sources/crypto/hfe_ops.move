@@ -41,5 +41,6 @@ public native fun hfe_ops_restore_value(
     value1: u64,
     value2: u64,
     signature: vector<u8>,
-    id: vector<u8>,
+    id: address,
+    publickey: vector<u8>,
 ): u64;

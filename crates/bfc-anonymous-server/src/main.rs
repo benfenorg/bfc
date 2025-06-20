@@ -2,6 +2,9 @@ mod client_test;
 mod database;
 mod utils;
 
+mod signature;
+mod bfc_object;
+
 use std::convert::Infallible;
 use std::net::SocketAddr;
 
@@ -10,7 +13,12 @@ use serde::{Deserialize, Serialize};
 use tracing::{info, warn};
 use warp::Filter;
 use tracing_subscriber::fmt;
-
+use crate::bfc_object::parse_response;
+use move_core_types::account_address::AccountAddress;
+use crate::signature::verify_signature;
+use crate::utils::get_object_owneraddress;
+use sui_types::base_types_bfc::bfc_address_util::convert_to_evm_address;
+use crate::utils::public_key_bytes_to_sui_address;
 
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
@@ -87,8 +95,8 @@ struct AnonymousRestoreValueParams {
     value1: u64,
     value2: u64,
     signature: Vec<u8>,
-    Objectid : Vec<u8>,
-
+    objectid : String,
+    publickey: Vec<u8>,
 }
 
 
@@ -377,23 +385,48 @@ async fn handle_anonymous_multiply(request: JsonRpcRequest) -> JsonRpcResponse {
     }
 }
 
+#[warn(unused_assignments)]
 async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcResponse {
     match request.params {
         Some(params) => {
             match serde_json::from_value::<AnonymousRestoreValueParams>(params) {
                 Ok(restore_value_params) => {
                     let signature = restore_value_params.signature;
-                    let objectid = restore_value_params.Objectid;
+                    let objectid = restore_value_params.objectid;
+                    let owner_address = get_object_owneraddress(objectid.clone()).await;
+                    let mut pass_verify_signature = verify_signature(&restore_value_params.publickey, &*signature, objectid.as_bytes()).is_ok();
+                    if pass_verify_signature == true {
+                        match owner_address {
+                            Ok(value) => {
+                                let sui_address = public_key_bytes_to_sui_address(restore_value_params.publickey.clone());
+                                let owner = AccountAddress::from(sui_address);
+                                let evm_add = convert_to_evm_address(value.clone());
+                                pass_verify_signature = pass_verify_signature && evm_add == owner.to_hex_with_hex_head();
+                            },
+                            Err(error) => {
+                                info!("failed get owner address: {}", error);
+                                pass_verify_signature = false;
+                            }
+                        }
+                    }
 
-                    //todo,
-                    // get object ownership of the object id,
-                    // rpc -> sui_getObject
+                    if pass_verify_signature == false {
+                        return JsonRpcResponse {
+                            jsonrpc: "2.0".to_string(),
+                            id: request.id,
+                            result: None,
+                            error: Some(JsonRpcError {
+                                code: -32603,
+                                message: "Verify signature false".to_string(),
+                                data: Some(serde_json::json!({"error": "verify signature false"})),
+                            }),
+                        };
+                    }
 
                     //todo,signature check,address.
                     // edd25519 signature check
 
 
-                    info!("handle_anonymous_restore_value get signature{:?} object id{:?}", signature, objectid);
                     info!("temporary skip check, important todo need object ownership check to continue restore value!!!!!");
 
                     let data1 = restore_value_params.value1;

@@ -181,7 +181,7 @@ title: Module `0x2::hfe_ops`
 
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(value1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, value2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, signature: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_restore_value">hfe_ops_restore_value</a>(value1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, value2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, signature: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -194,7 +194,8 @@ title: Module `0x2::hfe_ops`
     value1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     value2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     signature: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
-    id: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    id: <b>address</b>,
+    publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
 ): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
 </code></pre>
 

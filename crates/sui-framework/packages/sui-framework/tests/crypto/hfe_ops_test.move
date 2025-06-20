@@ -29,10 +29,10 @@ module sui::hfe_ops_test {
 
     #[test]
     fun test_hfe_ops_restore_value() {
-        let object_id : vector<u8> =
-            x"00000000000000000000000000000000000000000000000000000011111111";
-        let signature = x"4f0adab8fe9f36875f6b7f28d9679c37ab2c96224e50224b5bda5add5b1ee7bb";
-        let result = hfe_ops::hfe_ops_restore_value(4, 5, signature, object_id);
+        let object_id : address = @0x33a2598b7c5e22d03967b42671926c5c18e82f0be9973c077041e9912696f910;
+        let signature = x"cd5f94646b13eaa370a55fe9c084d6b266e1c3856c16e43fbc8b2e9a28076ffe7b73fec594974a0ff7a7ebac2cf9ad2196ff89fdd97c14c0883159ec0181730c";
+        let publickey = x"8496d3d932986b43bb64b5d5c7548d5c97a73aebf4301447f3746680b2114ae1";
+        let result = hfe_ops::hfe_ops_restore_value(4, 5, signature, object_id, publickey);
         let data1 = result;
         debug::print(&data1);
         assert!(&data1 == 9);
