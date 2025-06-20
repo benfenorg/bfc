@@ -49,12 +49,19 @@ module bridge::limiter_fast_path {
         id: UID,
         /// 用户限额记录表
         user_records: Table<UserLimiterKey, UserLimitRecord>,
+        /// 限额配置
+        limit_configs: Table<LimitConfigKey, u64>,
         /// 全局默认限额
         default_limit: u64,
         /// 全局默认时间窗口
         default_time_window: u64,
         /// 是否启用用户限额
         enabled: bool,
+    }
+
+    public struct LimitConfigKey has copy, drop ,store{
+        chain_id: u8,
+        token_id: u64,
     }
 
     public struct UserLimiterKey has copy, drop ,store{
@@ -80,6 +87,7 @@ module bridge::limiter_fast_path {
         UserLimiter {
             id: object::new(ctx),
             user_records: table::new(ctx),
+            limit_configs: table::new(ctx),
             default_limit: DEFAULT_USER_LIMIT,
             default_time_window: DEFAULT_TIME_WINDOW_HOURS,
             enabled: true,
@@ -149,12 +157,21 @@ module bridge::limiter_fast_path {
         };
         let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour_since_epoch(clock));
+
+        let limit_config_key = LimitConfigKey { chain_id, token_id };
+        let limit = if (!table::contains(&self.limit_configs, limit_config_key)) {
+            self.default_limit
+        }else{
+            let limit_config = table::borrow(&self.limit_configs, limit_config_key);
+            *limit_config
+        };
+        
         
         option::some(UserLimitInfo {
             user_address,
-            limit_amount: USER_LIMIT_AMOUNT,
+            limit_amount: limit,
             used_amount: record.total_amount,
-            remaining_limit: USER_LIMIT_AMOUNT - record.total_amount,
+            remaining_limit: limit - record.total_amount,
             time_window_hours: USER_TIME_WINDOW_HOURS,
             window_start_hour: record.hour_tail,
             window_end_hour: record.hour_head,
