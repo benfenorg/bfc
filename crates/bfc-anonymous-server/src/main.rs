@@ -394,22 +394,19 @@ async fn handle_anonymous_restore_value(request: JsonRpcRequest) -> JsonRpcRespo
                     let signature = restore_value_params.signature;
                     let objectid = restore_value_params.objectid;
                     let owner_address = get_object_owneraddress(objectid.clone()).await;
-                    let mut pass_verify_signature = true;
-                    match owner_address {
-                        Ok(value) => {
-                            let sui_address = public_key_bytes_to_sui_address(restore_value_params.publickey.clone());
-                            let owner = AccountAddress::from(sui_address);
-                            let evm_add = convert_to_evm_address(value.clone());
-                            info!("owner{:?} evm{:?} {:?}",  owner.to_hex_with_hex_head(), evm_add, evm_add == owner.to_hex_with_hex_head());
-
-                            let result = verify_signature(&restore_value_params.publickey, &*signature, objectid.as_bytes());
-                            info!("verify signature {:?}", result.is_ok());
-                            pass_verify_signature = result.is_ok() && evm_add == owner.to_hex_with_hex_head();
-
-                        },
-                        Err(error) => {
-                            info!("failed get owner address: {}", error);
-                            pass_verify_signature = false;
+                    let mut pass_verify_signature = verify_signature(&restore_value_params.publickey, &*signature, objectid.as_bytes()).is_ok();
+                    if pass_verify_signature == true {
+                        match owner_address {
+                            Ok(value) => {
+                                let sui_address = public_key_bytes_to_sui_address(restore_value_params.publickey.clone());
+                                let owner = AccountAddress::from(sui_address);
+                                let evm_add = convert_to_evm_address(value.clone());
+                                pass_verify_signature = pass_verify_signature && evm_add == owner.to_hex_with_hex_head();
+                            },
+                            Err(error) => {
+                                info!("failed get owner address: {}", error);
+                                pass_verify_signature = false;
+                            }
                         }
                     }
 

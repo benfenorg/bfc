@@ -27,6 +27,8 @@ hex = "0.4.3"
 move-core-types.workspace = true
 fastcrypto.workspace = true
 sui-types.workspace = true
+sui-config.workspace = true
+dirs.workspace = true
 [dev-dependencies]
 tokio-test = "0.4"
 rand = "0.8.5"
