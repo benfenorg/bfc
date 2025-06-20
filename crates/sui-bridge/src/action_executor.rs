@@ -613,19 +613,20 @@ where
         let status = effects.status();
         match status {
             SuiExecutionStatus::Success => {
-                let events = response.events.expect("We requested events but got None.");
-                // If the transaction is successful, there must be either
-                // TokenTransferAlreadyClaimed or TokenTransferClaimed event.
-                assert!(events
-                    .data
-                    .iter()
-                    .any(|e| e.type_ == *TokenTransferAlreadyClaimed.get().unwrap()
-                        || e.type_ == *TokenTransferClaimed.get().unwrap()
-                        || e.type_ == *TokenTransferApproved.get().unwrap()
-                        || e.type_ == *TokenTransferAlreadyApproved.get().unwrap()),
-                    "Expected TokenTransferAlreadyClaimed, TokenTransferClaimed, TokenTransferApproved or TokenTransferAlreadyApproved event but got: {:?}",
-                    events,
-                    );
+                // TODO: handle the events, add external approved events
+                // let events = response.events.expect("We requested events but got None.");
+                // // If the transaction is successful, there must be either
+                // // TokenTransferAlreadyClaimed or TokenTransferClaimed event.
+                // assert!(events
+                //     .data
+                //     .iter()
+                //     .any(|e| e.type_ == *TokenTransferAlreadyClaimed.get().unwrap()
+                //         || e.type_ == *TokenTransferClaimed.get().unwrap()
+                //         || e.type_ == *TokenTransferApproved.get().unwrap()
+                //         || e.type_ == *TokenTransferAlreadyApproved.get().unwrap()),
+                //     "Expected TokenTransferAlreadyClaimed, TokenTransferClaimed, TokenTransferApproved or TokenTransferAlreadyApproved event but got: {:?}",
+                //     events,
+                //     );
                 info!(?tx_digest, "Sui transaction executed successfully");
                 store
                     .remove_pending_actions(&[action.digest()])
