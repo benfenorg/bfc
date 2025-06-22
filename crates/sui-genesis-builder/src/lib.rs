@@ -1674,6 +1674,8 @@ pub fn generate_genesis_system_object(
             arguments,
         );
 
+
+        //todo : move the new feature logic to advanced epoch 
         if protocol_config.enable_anonymous_coin_open() {
             let abfc_supply = builder.programmable_move_call(
                 SUI_FRAMEWORK_ADDRESS.into(),
@@ -1682,9 +1684,6 @@ pub fn generate_genesis_system_object(
                 vec![],
                 vec![],
             );
-
-
-
             let address1 = token_distribution_schedule.allocations.get(4).unwrap().recipient_address;
             info!("address1: {}", address1);
             let address1_arg = builder

@@ -243,7 +243,7 @@ title: Module `0xc8::bfc_system`
 
 
 
-<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(abfc_balance: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;, admin1: <b>address</b>, admin2: <b>address</b>, admin3: <b>address</b>, admin4: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b>(<b>friend</b>) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(abfc_balance: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;<a href="../sui-framework/anonymous_bfc.md#0x2_abfc_ABFC">abfc::ABFC</a>&gt;, admin: <b>address</b>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -253,24 +253,11 @@ title: Module `0xc8::bfc_system`
 
 
 <pre><code><b>public</b>(package) <b>fun</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_allocate_abfc">allocate_abfc</a>(
-    abfc_balance: &<b>mut</b> Anonymous_Balance&lt;ABFC&gt;,
-    admin1: <b>address</b>,
-    admin2: <b>address</b>,
-    admin3: <b>address</b>,
-    admin4: <b>address</b>,
+    abfc_balance: Anonymous_Balance&lt;ABFC&gt;,
+    admin: <b>address</b>,
     ctx: &<b>mut</b> TxContext
 ){
-    <b>let</b> b1 = abfc_balance.split(100*10000*1000000000);
-    <b>let</b> b2 = abfc_balance.split(100*10000*1000000000);
-    <b>let</b> b3 = abfc_balance.split(100*10000*1000000000);
-    <b>let</b> b4 = abfc_balance.split(100*10000*1000000000);
-
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(b4.into_coin(ctx), admin1);
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(b1.into_coin(ctx), admin2);
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(b2.into_coin(ctx), admin3);
-    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(b3.into_coin(ctx), admin4);
-
-
+    <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(abfc_balance.into_coin(ctx), admin);
 }
 </code></pre>
 

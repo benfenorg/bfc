@@ -5078,6 +5078,28 @@ impl AuthorityState {
         Some(tx)
     }
 
+    #[instrument(level = "debug", skip_all)]
+    fn create_anonymous_token_status_tx(
+        &self,
+        epoch_store: &Arc<AuthorityPerEpochStore>,
+    ) -> Option<EndOfEpochTransactionKind> {
+        if !epoch_store.protocol_config().enable_anonymous_coin_open() {
+            info!("anonymous token status transactions not enabled");
+            return None;
+        }
+
+        if epoch_store.epoch_start_config().anonymous_token_initiated() {
+            info!("anonymous token status already exists");
+            return None;
+        }
+
+        let tx = EndOfEpochTransactionKind::new_anonymous_state_create();
+        info!("Creating AnonymousStatusCreate tx");
+        Some(tx)
+    }
+
+
+
     /// Creates and execute the advance epoch transaction to effects without committing it to the database.
     /// The effects of the change epoch tx are only written to the database after a certified checkpoint has been
     /// formed and executed by CheckpointExecutor.

@@ -1438,6 +1438,9 @@ authenticator_state
 randomness_state
 	public(package) fun
 	0x2::object
+anonymous_state_id
+	public(package) fun
+	0x2::object
 sui_deny_list_object_id
 	public(package) fun
 	0x2::object
@@ -2323,6 +2326,51 @@ new
 transfer
 	public entry fun
 	0x2::abfc
+Versioned
+	public struct
+	0x2::versioned
+VersionChangeCap
+	public struct
+	0x2::versioned
+create
+	public fun
+	0x2::versioned
+version
+	public fun
+	0x2::versioned
+load_value
+	public fun
+	0x2::versioned
+load_value_mut
+	public fun
+	0x2::versioned
+remove_value_for_upgrade
+	public fun
+	0x2::versioned
+upgrade
+	public fun
+	0x2::versioned
+destroy
+	public fun
+	0x2::versioned
+Anonymous
+	public struct
+	0x2::anonymous
+AnonymousInner
+	public struct
+	0x2::anonymous
+create
+	fun
+	0x2::anonymous
+load_inner_mut
+	fun
+	0x2::anonymous
+load_inner
+	fun
+	0x2::anonymous
+update_annoymous_state
+	fun
+	0x2::anonymous
 keep
 	public fun
 	0x2::anonymous_pay
@@ -3463,33 +3511,6 @@ max_heapify_recursive
 priorities
 	public fun
 	0x2::priority_queue
-Versioned
-	public struct
-	0x2::versioned
-VersionChangeCap
-	public struct
-	0x2::versioned
-create
-	public fun
-	0x2::versioned
-version
-	public fun
-	0x2::versioned
-load_value
-	public fun
-	0x2::versioned
-load_value_mut
-	public fun
-	0x2::versioned
-remove_value_for_upgrade
-	public fun
-	0x2::versioned
-upgrade
-	public fun
-	0x2::versioned
-destroy
-	public fun
-	0x2::versioned
 hmac_sha3_256
 	public fun
 	0x2::hmac
