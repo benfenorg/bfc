@@ -55,11 +55,15 @@ jsonrpsee.workspace = true
 sui-test-transaction-builder.workspace = true
 hex-literal = { version = "0.3.4", optional = true }
 test-cluster = { workspace = true, optional = true }
+bs58 = "0.4.0"
+hex = "0.4.3"
+sha2 = "0.10.2"
 
 [dev-dependencies]
 sui-config.workspace = true
 sui-test-transaction-builder.workspace = true
 maplit = "1.0.2"
+tracing-test = "0.2"
 
 
 [features]

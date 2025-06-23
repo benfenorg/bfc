@@ -52,8 +52,8 @@ pub const BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("create_add_tokens_on_sui_message");
 pub const BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("execute_system_message");
-pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr =
-    ident_str!("migrate");
+pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr = ident_str!("init_token_list");
+pub const BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME: &IdentStr = ident_str!("migrate");
 
 pub const BRIDGE_SUPPORTED_ASSET: &[&str] = &["btc", "eth", "usdc", "usdt"];
 
@@ -143,6 +143,18 @@ pub enum BridgeChainId {
     AvaxMainnet = 45,
     AvaxTestnet = 46,
     AvaxCustom = 47,
+
+    TronMainnet = 48,
+    TronTestnet = 49,
+
+    SolanaMainnet = 50,
+    SolanaTestnet = 51,
+
+    LTCMainnet = 52,
+    LTCTestnet = 53,
+
+    DogeMainnet = 54,
+    DogeTestnet = 55,
 }
 
 impl BridgeChainId {
@@ -192,7 +204,6 @@ impl BridgeChainId {
             BridgeChainId::BaseMainnet | BridgeChainId::BaseTestnet | BridgeChainId::BaseCustom
         )
     }
-
 
     pub fn is_optimism_chain(&self) -> bool {
         matches!(
@@ -446,12 +457,12 @@ impl BridgeTrait for BridgeInnerV1 {
             .collect::<SuiResult<Vec<_>>>()?;
 
         let external_coin_target_address = self
-          .treasury
-          .external_coin_target_address
-          .contents
-          .into_iter()
-          .map(|e| (e.key, e.value.contents))
-          .collect::<Vec<_>>();
+            .treasury
+            .external_coin_target_address
+            .contents
+            .into_iter()
+            .map(|e| (e.key, e.value.contents))
+            .collect::<Vec<_>>();
 
         let supported_tokens = self
             .treasury
@@ -490,7 +501,7 @@ impl BridgeTrait for BridgeInnerV1 {
         let limiter = BridgeLimiterSummary {
             transfer_limit,
             transfer_records,
-            max_mint_busd_limit
+            max_mint_busd_limit,
         };
         Ok(BridgeSummary {
             bridge_version: self.bridge_version,
@@ -674,7 +685,6 @@ impl MoveTypeBridgeTransferRecord {
         self.total_amount
     }
 }
-
 
 /// Rust version of the Move message::BridgeMessage type.
 #[derive(Debug, Serialize, Deserialize)]

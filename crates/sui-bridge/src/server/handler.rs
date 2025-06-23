@@ -13,6 +13,8 @@ use crate::fast_path::FastPathConfig;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
+use crate::tron_query::check_tron_txn;
+use crate::solana_query::check_solana_txn;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -128,6 +130,10 @@ where
         let (chain_id, tx_hash, event_idx) = key;
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
         match bridge_chain_id {
+            BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+            BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+            BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+            BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
             BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                 unreachable!()
@@ -185,7 +191,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
-            let btc_chain_id = external_action.sui_bridge_event.source_chain;
+            let chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -198,15 +204,43 @@ where
             }
             info!("whitelist: {:#?}", &whitelist);
 
-            // check btc txn
-            let ok =
-                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
-            if ok {
-                return Ok(action_rs);
+
+            match chain_id {
+                BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                    // check btc txn
+                    let ok = check_btc_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
+                    // check tron txn: only support TRC20
+                    // readme: amount is benfen amount, not tron amount, so we need to convert it
+                    let tron_amount = amount / 1_000;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
+                    // check solana txn: only support USDC/USDT
+
+                    // readme: amount is benfen amount, not solana amount, so we need to convert it
+                    let sol_amount = amount / 1_000;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                _ => {
+                    return Err(BridgeError::Generic(
+                        format!("Unsupported External Coin chain ID({})", chain_id)
+                    ));
+                }
             }
 
             return Err(BridgeError::Generic(
-                format!("BTC txn({:#?}) is not valid", tx_hash)
+                format!("External Coin txn({:#?}) is not valid for chain {}", tx_hash, chain_id)
             ));
         }
 
@@ -241,6 +275,10 @@ where
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
 
             let result = match send_back_action.sui_bridge_event.eth_chain_id {
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+                BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+                BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
                 BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
                 BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                     unreachable!()

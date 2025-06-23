@@ -5770,6 +5770,42 @@ avax_testnet
 avax_custom
 	public fun
 	0xb::chain_ids
+tron_mainnet
+	public fun
+	0xb::chain_ids
+tron_testnet
+	public fun
+	0xb::chain_ids
+solana_mainnet
+	public fun
+	0xb::chain_ids
+solana_testnet
+	public fun
+	0xb::chain_ids
+ltc_mainnet
+	public fun
+	0xb::chain_ids
+ltc_testnet
+	public fun
+	0xb::chain_ids
+doge_mainnet
+	public fun
+	0xb::chain_ids
+doge_testnet
+	public fun
+	0xb::chain_ids
+sui_official_mainnet
+	public fun
+	0xb::chain_ids
+sui_official_testnet
+	public fun
+	0xb::chain_ids
+aptos_mainnet
+	public fun
+	0xb::chain_ids
+aptos_testnet
+	public fun
+	0xb::chain_ids
 route_source
 	public fun
 	0xb::chain_ids
@@ -6190,6 +6226,9 @@ new
 initial_token_list
 	public(package) fun
 	0xb::tokenlist
+add_center_token_list
+	public(package) fun
+	0xb::tokenlist
 borrow
 	public(package) fun
 	0xb::tokenlist
@@ -6415,6 +6454,9 @@ init_bridge_committee
 migrate
 	public entry fun
 	0xb::bridge
+init_token_list
+	public fun
+	0xb::bridge
 committee_registration
 	public fun
 	0xb::bridge
@@ -6467,6 +6509,12 @@ deposit_external_coin
 	public fun
 	0xb::bridge
 approval_and_claimed_external_coin
+	public fun
+	0xb::bridge
+approval_and_claimed_external_busd_coin
+	public fun
+	0xb::bridge
+withdraw_external_busd_coin
 	public fun
 	0xb::bridge
 withdraw_external_coin
