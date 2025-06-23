@@ -10,7 +10,7 @@ module bridge::limiter_fast_path_tests {
 
     use bridge::limiter_fast_path::{Self};
 
-    const ETH_MAINNET: u8 = 1;
+    const ETH_MAINNET: u8 = 10;
     const BUSD_ID: u64 = 5;
 
     public struct LimiterFastPathObject has key,store {
@@ -165,6 +165,68 @@ module bridge::limiter_fast_path_tests {
         assert_eq!(result, false);
 
         let amount = 1_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, true);
+
+        
+
+        clock::destroy_for_testing(clock);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
+
+    #[test]
+    fun test_product_config() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
+        
+        let mut obj=new(ctx);
+        let user = @0x42;
+        // Create new limiter
+        limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
+        limiter_fast_path::registry_for_testing(&mut obj.id, ctx);
+        let clock = clock::create_for_testing(ctx);
+        
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 5000_000_000_000); // Back to full limit
+
+        
+        let amount = 5001_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, false);
+
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 5000_000_000_000); // Back to full limit
+
+        let amount = 2000_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, true);
+
+        let amount = 3000_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
             user,

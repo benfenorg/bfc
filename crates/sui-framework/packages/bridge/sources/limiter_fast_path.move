@@ -105,8 +105,6 @@ module bridge::limiter_fast_path {
     }
 
     public(package) fun initial_limiter_fast_path(parent_id: &mut UID,ctx: &mut TxContext) {
-        let limiter = new(ctx);
-        dynamic_field::add(parent_id, KEY, limiter);
         //eth
         add_limiter(parent_id, chain_ids::eth_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
         add_limiter(parent_id, chain_ids::eth_sepolia(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
@@ -270,7 +268,11 @@ module bridge::limiter_fast_path {
         let limit_info_opt = get_user_limit_info(self, user_address, chain_id, token_id, clock);
         if (option::is_none(&limit_info_opt)) {
             let self=borrow_mut(self);
-            self.default_limit
+            if(!table::contains(&self.limit_configs, LimitConfigKey { chain_id, token_id })){
+                return self.default_limit
+            };
+            let limit_config = table::borrow(&self.limit_configs, LimitConfigKey { chain_id, token_id });
+            *limit_config
         } else {
             let limit_info = option::destroy_some(limit_info_opt);
             limit_info.remaining_limit
@@ -449,6 +451,12 @@ module bridge::limiter_fast_path {
             new(ctx),
         );
     }
+
+    #[test_only]
+    public(package) fun registry_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {
+        initial_limiter_fast_path(parent_id,ctx);
+    }
+
 
 
 }
