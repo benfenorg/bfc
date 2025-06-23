@@ -104,7 +104,7 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         bytes
     }
@@ -155,7 +155,7 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         bytes
     }
@@ -748,7 +748,7 @@ mod tests {
         let token_id = TOKEN_ID_USDC;
         let amount_sui_adjusted = 1_000_000;
         let tx_hash = vec![];
-        let event_idx = 1u8;
+        let event_idx = 1u16;
 
         let sui_bridge_event = EmittedSuiToEthTokenBridgeV1 {
             nonce,
@@ -759,7 +759,7 @@ mod tests {
             token_id,
             amount_sui_adjusted,
             tx_hash: tx_hash.clone(),
-            event_idx: event_idx,
+            event_idx,
         };
 
         let encoded_bytes = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {

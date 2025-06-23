@@ -464,7 +464,7 @@ impl TryFrom<MoveTokenSendBackEvent> for EmittedEthTokenSendBackBridgeV1 {
             token_id,
             amount_sui_adjusted: event.amount_sui_adjusted,
             tx_hash: event.tx_hash,
-            event_idx: event.event_idx,
+            event_idx: event.event_idx as u16,
         })
     }
 }
@@ -643,6 +643,13 @@ impl SuiBridgeEvent {
                 }))
             }
             SuiBridgeEvent::TokenSendBackEvent(event) => Some(
+                BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
+                    sui_tx_digest,
+                    sui_tx_event_index,
+                    sui_bridge_event: event.clone(),
+                }),
+            ),
+            SuiBridgeEvent::TokenSendBackEventV2(event) => Some(
                 BridgeAction::EthSendBackBridgeAction(EthSendBackBridgeAction {
                     sui_tx_digest,
                     sui_tx_event_index,
@@ -910,7 +917,7 @@ pub mod tests {
 
     #[test]
     fn test_1_token_send_back_event() {
-        let emitted_event = MoveTokenSendBackEvent {
+        let emitted_event = MoveTokenSendBackEventV2 {
             seq_num: 1,
             source_chain: BridgeChainId::SuiTestnet as u8,
             sender_address: SuiAddress::random_for_testing_only().to_vec(),
