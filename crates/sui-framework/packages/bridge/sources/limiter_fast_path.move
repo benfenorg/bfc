@@ -10,20 +10,22 @@ module bridge::limiter_fast_path {
     use std::debug;
 
     use bridge::chain_ids::{Self, BridgeRoute};
-
+    use sui::dynamic_field;
+    const KEY: vector<u8> = b"limiter_fast_path";
     // Error codes
-    const EUserLimitExceeded: u64 = 0;
-    const EUserLimitNotFound: u64 = 1;
-    const EInvalidLimitAmount: u64 = 2;
-    const EInvalidTimeWindow: u64 = 3;
+    const ELimiterFastPathRegistryAlreadyExists: u64 = 0;
+    const EUserLimitExceeded: u64 = 1;
+    const EUserLimitNotFound: u64 = 2;
+    const EInvalidLimitAmount: u64 = 3;
+    const EInvalidTimeWindow: u64 = 4;
 
     // Constants
-    const DEFAULT_USER_LIMIT: u64 = 10_000_000_000; // 10B in smallest unit
+    const USER_LIMIT_5K_IN_BUSD: u64 = 5000_000_000_000; // 10B in smallest unit
+    const USER_LIMIT_1K_IN_BUSD: u64 = 1000_000_000_000; // 10B in smallest unit
     const DEFAULT_TIME_WINDOW_HOURS: u64 = 24;
-    const USD_VALUE_MULTIPLIER: u64 = 100000000; // 8 DP accuracy
+    const TOKEN_ID_BUSD: u64 = 5;
 
     // 用户限额相关常量
-    const USER_LIMIT_AMOUNT: u64 = 10_000_000_000; // 10B in smallest unit
     const USER_TIME_WINDOW_HOURS: u64 = 24;
 
     //////////////////////////////////////////////////////
@@ -45,8 +47,7 @@ module bridge::limiter_fast_path {
     }
 
     /// 用户限额管理器
-    public struct UserLimiter has key, store {
-        id: UID,
+    public struct UserLimiter has store {
         /// 用户限额记录表
         user_records: Table<UserLimiterKey, UserLimitRecord>,
         /// 限额配置
@@ -78,17 +79,87 @@ module bridge::limiter_fast_path {
         window_start_hour: u64,
     }
 
+    public(package) fun borrow(parent_id: &UID): &UserLimiter{
+        dynamic_field::borrow<vector<u8>,UserLimiter>(parent_id, KEY)
+    }
+
+    public(package) fun borrow_mut(parent_id: &mut UID): &mut UserLimiter{
+        dynamic_field::borrow_mut<vector<u8>,UserLimiter>(parent_id, KEY)
+    }
+
     //////////////////////////////////////////////////////
     // Public functions
     //
 
+    public(package) fun registry(parent_id: &mut UID,ctx: &mut TxContext) {
+        assert!(
+            !dynamic_field::exists_(parent_id, KEY),
+            ELimiterFastPathRegistryAlreadyExists
+        );
+        dynamic_field::add(
+            parent_id,
+            KEY,
+            new(ctx),
+        );
+        initial_limiter_fast_path(parent_id,ctx);
+    }
+
+    public(package) fun initial_limiter_fast_path(parent_id: &mut UID,ctx: &mut TxContext) {
+        let limiter = new(ctx);
+        dynamic_field::add(parent_id, KEY, limiter);
+        //eth
+        add_limiter(parent_id, chain_ids::eth_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::eth_sepolia(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::eth_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
+        //base
+        add_limiter(parent_id, chain_ids::base_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::base_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::base_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        //arb
+        add_limiter(parent_id, chain_ids::arb_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::arb_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::arb_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        //op
+        add_limiter(parent_id, chain_ids::op_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::op_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::op_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        //pol
+        add_limiter(parent_id, chain_ids::pol_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::pol_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::pol_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        //avax
+        add_limiter(parent_id, chain_ids::avax_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::avax_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::avax_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        //bsc
+        add_limiter(parent_id, chain_ids::bsc_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::bsc_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::bsc_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+    }
+
+    public(package) fun add_limiter(
+        parent_id: &mut UID,
+        chain_id: u8,
+        token_id: u64,
+        amount:u64,
+        ctx: &mut TxContext
+    ) {
+        let self=borrow_mut(parent_id);
+        let limit_config_key = LimitConfigKey { chain_id, token_id };
+        if (!self.limit_configs.contains(limit_config_key)) {
+            self.limit_configs.add(limit_config_key, amount);
+        };
+        *self.limit_configs.borrow_mut(limit_config_key) = amount;
+    }
+
+
+
     /// 创建新的用户限额管理器
     public fun new(ctx: &mut TxContext): UserLimiter {
         UserLimiter {
-            id: object::new(ctx),
             user_records: table::new(ctx),
             limit_configs: table::new(ctx),
-            default_limit: DEFAULT_USER_LIMIT,
+            default_limit: USER_LIMIT_1K_IN_BUSD,
             default_time_window: DEFAULT_TIME_WINDOW_HOURS,
             enabled: true,
         }
@@ -96,7 +167,7 @@ module bridge::limiter_fast_path {
 
     /// 检查并记录用户限额使用
     public fun check_and_record_user_limit(
-        self: &mut UserLimiter,
+        parent_id: &mut UID,
         user_address: address,
         chain_id: u8,
         token_id: u64,
@@ -104,6 +175,7 @@ module bridge::limiter_fast_path {
         clock: &Clock,
         ctx: &mut TxContext,
     ): bool {
+        let self=borrow_mut(parent_id);
         if (!self.enabled) {
             return true
         };
@@ -125,8 +197,16 @@ module bridge::limiter_fast_path {
         let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour);
 
+        let limit_config_key = LimitConfigKey { chain_id, token_id };
+        let limit_amount = if (!table::contains(&self.limit_configs, limit_config_key)) {
+            self.default_limit
+        }else{
+            let limit_config = table::borrow(&self.limit_configs, limit_config_key);
+            *limit_config
+        };
+
         // 检查限额是否足够
-        if (record.total_amount + amount > USER_LIMIT_AMOUNT) {
+        if (record.total_amount + amount > limit_amount) {
             return false
         };
 
@@ -138,7 +218,7 @@ module bridge::limiter_fast_path {
         emit(UserLimitUsedEvent {
             user_address,
             used_amount: amount,
-            remaining_limit: USER_LIMIT_AMOUNT - record.total_amount,
+            remaining_limit: limit_amount - record.total_amount,
             window_start_hour: record.hour_tail,
         });
         true
@@ -146,12 +226,13 @@ module bridge::limiter_fast_path {
 
     /// 获取用户当前限额信息
     public fun get_user_limit_info(
-        self: &mut UserLimiter,
+        parent_id: &mut UID,
         user_address: address,
         chain_id: u8,
         token_id: u64,
         clock: &Clock,
     ): Option<UserLimitInfo> {
+        let self=borrow_mut(parent_id);
         if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
             return option::none()
         };
@@ -180,7 +261,7 @@ module bridge::limiter_fast_path {
 
     /// 获取用户剩余限额
     public fun get_user_remaining_limit(
-        self: &mut UserLimiter,
+        self: &mut UID,
         user_address: address,
         chain_id: u8,
         token_id: u64,
@@ -188,66 +269,86 @@ module bridge::limiter_fast_path {
     ): u64 {
         let limit_info_opt = get_user_limit_info(self, user_address, chain_id, token_id, clock);
         if (option::is_none(&limit_info_opt)) {
-            USER_LIMIT_AMOUNT
+            let self=borrow_mut(self);
+            self.default_limit
         } else {
             let limit_info = option::destroy_some(limit_info_opt);
             limit_info.remaining_limit
         }
     }
 
-    /// 重置用户限额使用记录
-    public fun reset_user_limit_usage(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-        clock: &Clock,
-        ctx: &mut TxContext,
-    ) {
-        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
-            return
-        };
-        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
-        let current_hour = current_hour_since_epoch(clock);
-        record.hour_head = current_hour;
-        record.hour_tail = current_hour;
-        record.per_hour_amounts = vector[0];
-        record.total_amount = 0;
-    }
+    // /// 重置用户限额使用记录
+    // public fun reset_user_limit_usage(
+    //     self: &mut UserLimiter,
+    //     user_address: address,
+    //     chain_id: u8,
+    //     token_id: u64,
+    //     clock: &Clock,
+    //     ctx: &mut TxContext,
+    // ) {
+    //     if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
+    //         return
+    //     };
+    //     let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
+    //     let current_hour = current_hour_since_epoch(clock);
+    //     record.hour_head = current_hour;
+    //     record.hour_tail = current_hour;
+    //     record.per_hour_amounts = vector[0];
+    //     record.total_amount = 0;
+    // }
 
-    /// 删除用户限额记录
-    public fun remove_user_limit(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-    ) {
-        if (table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
-            let record = table::remove(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
-            // Drop the record since we don't need it
-            let UserLimitRecord { user_address: _, hour_head: _, hour_tail: _, per_hour_amounts: _, total_amount: _ } = record;
-        }
-    }
+    // /// 删除用户限额记录
+    // public fun remove_user_limit(
+    //     self: &mut UserLimiter,
+    //     user_address: address,
+    //     chain_id: u8,
+    //     token_id: u64,
+    // ) {
+    //     if (table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
+    //         let record = table::remove(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
+    //         // Drop the record since we don't need it
+    //         let UserLimitRecord { user_address: _, hour_head: _, hour_tail: _, per_hour_amounts: _, total_amount: _ } = record;
+    //     }
+    // }
 
     /// 设置全局默认限额
-    public fun set_default_limit(self: &mut UserLimiter, new_limit: u64) {
+    public fun set_default_limit(self: &mut UID, new_limit: u64) {
+        let self=borrow_mut(self);
         assert!(new_limit > 0, EInvalidLimitAmount);
         self.default_limit = new_limit;
     }
 
+    public fun get_default_limit(self: &UID): u64 {
+        let self=borrow(self);
+        self.default_limit
+    }
+
     /// 设置全局默认时间窗口
-    public fun set_default_time_window(self: &mut UserLimiter, new_time_window: u64) {
+    public fun set_default_time_window(self: &mut UID, new_time_window: u64) {
+        let self=borrow_mut(self);
         assert!(new_time_window > 0, EInvalidTimeWindow);
         self.default_time_window = new_time_window;
     }
 
+    public fun get_default_time_window(self: &UID): u64 {
+        let self=borrow(self);
+        self.default_time_window
+    }
+
     /// 启用或禁用用户限额
-    public fun set_enabled(self: &mut UserLimiter, enabled: bool) {
+    public fun set_enabled(self: &mut UID, enabled: bool) {
+        let self=borrow_mut(self);
         self.enabled = enabled;
     }
 
+    public fun get_enabled(self: &UID): bool {
+        let self=borrow(self);
+        self.enabled
+    }
+
     /// 获取用户限额记录数量
-    public fun get_user_count(self: &UserLimiter): u64 {
+    public fun get_user_count(self: &UID): u64 {
+        let self=borrow(self);
         table::length(&self.user_records)
     }
 
@@ -337,79 +438,16 @@ module bridge::limiter_fast_path {
     //
 
     #[test_only]
-    public fun create_for_testing(ctx: &mut TxContext): UserLimiter {
-        new(ctx)
-    }
-
-    #[test_only]
-    public fun test_check_and_record_user_limit(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-        amount: u64,
-        clock: &Clock,
-        ctx: &mut TxContext,
-    ): bool {
-        check_and_record_user_limit(self, user_address, chain_id, token_id, amount, clock, ctx)
-    }
-
-    #[test_only]
-    public fun test_get_user_remaining_limit(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-        clock: &Clock,
-    ): u64 {
-        get_user_remaining_limit(self, user_address, chain_id, token_id, clock)
-    }
-
-    #[test_only]
-    public fun test_reset_user_limit_usage(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-        clock: &Clock,
-        ctx: &mut TxContext,
-    ) {
-        reset_user_limit_usage(self, user_address, chain_id, token_id, clock, ctx)
-    }
-
-    #[test_only]
-    public fun test_remove_user_limit(
-        self: &mut UserLimiter,
-        user_address: address,
-        chain_id: u8,
-        token_id: u64,
-    ) {
-        remove_user_limit(self, user_address, chain_id, token_id)
-    }
-
-    #[test_only]
-    public fun test_set_enabled(self: &mut UserLimiter, enabled: bool) {
-        set_enabled(self, enabled)
-    }
-
-    #[test_only]
-    public fun test_get_user_count(self: &UserLimiter): u64 {
-        get_user_count(self)
-    }
-
-    #[test_only]
-    public(package) fun default_limit(self: &UserLimiter): u64 {
-        self.default_limit
-    }
-
-    #[test_only]
-    public(package) fun default_time_window(self: &UserLimiter): u64 {
-        self.default_time_window
-    }
-
-    #[test_only]
-    public(package) fun enabled(self: &UserLimiter): bool {
-        self.enabled
+    public(package) fun new_limiter_fast_path_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {
+        assert!(
+            !dynamic_field::exists_(parent_id, KEY),
+            ELimiterFastPathRegistryAlreadyExists
+        );
+        dynamic_field::add(
+            parent_id,
+            KEY,
+            new(ctx),
+        );
     }
 
 
