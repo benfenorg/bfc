@@ -31,7 +31,6 @@ module bridge::limiter_fast_path_tests {
         let mut obj=new(ctx);
         // Create new limiter
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
-        let limiter = limiter_fast_path::borrow_mut(&mut obj.id);
         
         // Create test clock
         let mut clock = clock::create_for_testing(ctx);
@@ -49,7 +48,7 @@ module bridge::limiter_fast_path_tests {
         assert_eq!(limiter_fast_path::get_enabled(&obj.id), true); 
         // Test user limit check for new user
         let user = @0x42;
-        let amount = 1_000_000_000; // 1B
+        let amount = 1_000_000_000;
         assert!(limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
             user,
@@ -66,7 +65,7 @@ module bridge::limiter_fast_path_tests {
 
         // Try exceeding limit
         let exceed_amount = 2000_000_000_000; // 11B
-        assert!(!limiter_fast_path::check_and_record_user_limit(
+        assert_eq!(limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
             user,
             ETH_MAINNET,
@@ -74,7 +73,7 @@ module bridge::limiter_fast_path_tests {
             exceed_amount,
             &clock,
             ctx
-        ), 0);
+        ), false);
 
         // Cleanup
         clock::destroy_for_testing(clock);
@@ -82,91 +81,105 @@ module bridge::limiter_fast_path_tests {
         test_scenario::end(scenario);
     }
 
-    // #[test]
-    // fun test_time_window() {
-    //     let mut scenario = test_scenario::begin(@0x1);
-    //     let ctx = test_scenario::ctx(&mut scenario);
+    #[test]
+    fun test_time_window() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
         
-    //     let mut limiter = limiter_fast_path::new(ctx);
-    //     let mut clock = clock::create_for_testing(ctx);
-    //     clock.set_for_testing(1706288001377);
+        let mut obj=new(ctx);
+        // Create new limiter
+        limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
+        let mut clock = clock::create_for_testing(ctx);
+        clock.set_for_testing(1706288001377);
 
-    //     let user = @0x42;
-    //     let amount = 5_000_000_000; // 5B
+        let user = @0x42;
+        let amount = 500_000_000_000; // 5B
 
-    //     // First transfer
-    //     let result = limiter_fast_path::check_and_record_user_limit(
-    //         &mut limiter,
-    //         user,
-    //         ETH_MAINNET,
-    //         BUSD_ID,
-    //         amount,
-    //         &clock,
-    //         ctx
-    //     );
-    //     assert_eq(result, true);
-    //     // Advance clock 25 hours
-    //     clock.increment_for_testing(25 * 60 * 60 * 1000);
+        // First transfer
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, true);
+        // Advance clock 25 hours
+        clock.increment_for_testing(23 * 60 * 60 * 1000);
 
-    //     // First amount should be cleared from window
-    //     let remaining = limiter_fast_path::get_user_remaining_limit(&mut limiter, user, ETH_MAINNET, BUSD_ID, &clock);
-    //     assert_eq(remaining, 10_000_000_000); // Back to full limit
+        // First amount should be cleared from window
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 500_000_000_000); // Back to full limit
+        clock.increment_for_testing(1 * 60 * 60 * 1000);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 1000_000_000_000); // Back to full limit
 
-    //     // Cleanup
-    //     clock::destroy_for_testing(clock);
-    //     destroy(limiter);
-    //     test_scenario::end(scenario);
-    // }
+        // Cleanup
+        clock::destroy_for_testing(clock);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
 
-    // #[test]
-    // fun test_limit_exceeded() {
-    //     let mut scenario = test_scenario::begin(@0x1);
-    //     let ctx = test_scenario::ctx(&mut scenario);
+    #[test]
+    fun test_limit_exceeded() {
+        let mut scenario = test_scenario::begin(@0x1);
+        let ctx = test_scenario::ctx(&mut scenario);
         
-    //     let mut limiter = limiter_fast_path::new(ctx);
-    //     let clock = clock::create_for_testing(ctx);
+        let mut obj=new(ctx);
+        let user = @0x42;
+        // Create new limiter
+        limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
+        let clock = clock::create_for_testing(ctx);
         
-    //     let user = @0x42;
-    //     let amount = 8_000_000_000; // 15B > 10B limit
-    //     let result = limiter_fast_path::check_and_record_user_limit(
-    //         &mut limiter,
-    //         user,
-    //         ETH_MAINNET,
-    //         BUSD_ID,
-    //         amount,
-    //         &clock,
-    //         ctx
-    //     );
-    //     assert_eq(result, true);
-
-    //     let amount = 2_000_000_000; // 15B > 10B limit
-    //     let result = limiter_fast_path::check_and_record_user_limit(
-    //         &mut limiter,
-    //         user,
-    //         ETH_MAINNET,
-    //         BUSD_ID,
-    //         amount,
-    //         &clock,
-    //         ctx
-    //     );
-    //     assert_eq(result, true);
-
-    //     let amount = 1_000_000_000; // 15B > 10B limit
-    //     let result = limiter_fast_path::check_and_record_user_limit(
-    //         &mut limiter,
-    //         user,
-    //         ETH_MAINNET,
-    //         BUSD_ID,
-    //         amount,
-    //         &clock,
-    //         ctx
-    //     );
-    //     assert_eq(result, false);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 1000_000_000_000); // Back to full limit
 
         
+        let amount = 1001_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, false);
 
-    //     clock::destroy_for_testing(clock);
-    //     destroy(limiter);
-    //     test_scenario::end(scenario);
-    // }
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        assert_eq!(remaining, 1000_000_000_000); // Back to full limit
+
+        let amount = 2000_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, false);
+
+        let amount = 1_000_000_000; 
+        let result = limiter_fast_path::check_and_record_user_limit(
+            &mut obj.id,
+            user,
+            ETH_MAINNET,
+            BUSD_ID,
+            amount,
+            &clock,
+            ctx
+        );
+        assert_eq!(result, true);
+
+        
+
+        clock::destroy_for_testing(clock);
+        test_utils::destroy(obj);
+        test_scenario::end(scenario);
+    }
 }
