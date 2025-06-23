@@ -48,8 +48,8 @@ fun create(ctx: &mut TxContext) {
     };
 
     let self = Anonymous {
-        //id: object::anonymous_state_id(),
-        id: object::new(ctx),
+        id: object::anonymous_state_id(),
+        //id: object::new(ctx),
         inner: versioned::create(version, inner, ctx),
     };
     transfer::share_object(self);

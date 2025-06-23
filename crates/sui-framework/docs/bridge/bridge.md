@@ -1094,20 +1094,20 @@ title: Module `0xb::bridge`
 
 
 
-<a name="0xb_bridge_EWrongInnerVersion"></a>
-
-
-
-<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 7;
-</code></pre>
-
-
-
 <a name="0xb_bridge_CURRENT_VERSION"></a>
 
 
 
 <pre><code><b>const</b> <a href="bridge.md#0xb_bridge_CURRENT_VERSION">CURRENT_VERSION</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
+<a name="0xb_bridge_EWrongInnerVersion"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 7;
 </code></pre>
 
 
