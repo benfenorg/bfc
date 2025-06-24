@@ -35,7 +35,8 @@ module bridge::bridge {
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
-    use bridge::limiter_fast_path::UserLimiter;
+    use bridge::limiter_fast_path;
+    use bridge::message::TokenTransferPayloadV2;
 
     const MESSAGE_VERSION: u8 = 1;
 
@@ -76,28 +77,6 @@ module bridge::bridge {
         refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
         refund_admins: VecSet<String>,
         // bfc_system_id: UID,
-    }
-
-    public struct BridgeInnerV2 has store {
-        bridge_version: u64,
-        message_version: u8,
-        chain_id: u8,
-        // nonce for replay protection
-        // key: message type, value: next sequence number
-        sequence_nums: VecMap<u8, u64>,
-        // committee
-        committee: BridgeCommittee,
-        // Bridge treasury for mint/burn bridged tokens
-        treasury: BridgeTreasury,
-        token_transfer_records: LinkedTable<BridgeMessageKey, BridgeRecord>,
-        external_bridge_records: LinkedTable<ExternalBridgeMessageKey, ExternalBridgeRecord>,
-        // tx hash : [signature addresses]
-        pre_deposit_multi_signature_records: LinkedTable<ExternalBridgeMessageKey, VecSet<String>>,
-        limiter: TransferLimiter,
-        paused: bool,
-        refund_records: LinkedTable<RefundMessageKey, BridgeRecord>,
-        refund_admins: VecSet<String>,
-        limiter_fast_path: UserLimiter,
     }
 
     public struct TokenDepositedEvent has copy, drop {
@@ -170,6 +149,7 @@ module bridge::bridge {
     const EInvalidMintAmount: u64 = 41;
 
     const EInvalidMinStakeParticipationPercentage: u64 = 50;
+    const EFastPathLimitError: u64 = 51;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -329,6 +309,13 @@ module bridge::bridge {
     ){
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
         limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
+    }
+
+    public entry fun migrate_fast_path_limiter(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ){
+        limiter_fast_path::registry(&mut bridge.id, ctx);
     }
 
     //////////////////////////////////////////////////////
@@ -582,6 +569,72 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        let token_payload = message.extract_token_bridge_payload();
+        let target_chain = token_payload.token_target_chain();
+        assert!(
+            message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+            EUnexpectedChainID,
+        );
+
+        let message_key = message.key();
+        // retrieve pending message if source chain is Sui, the initial message
+        // must exist on chain
+        if (message.source_chain() == inner.chain_id) {
+            let record = &mut inner.token_transfer_records[message_key];
+
+            assert!(record.message == message, EMalformedMessageError);
+            assert!(!record.claimed, EInvariantSuiInitializedTokenTransferShouldNotBeClaimed);
+
+            // If record already has verified signatures, it means the message has been approved
+            // Then we exit early.
+            if (record.verified_signatures.is_some()) {
+                emit(TokenTransferAlreadyApproved { message_key });
+                return
+            };
+            // Store approval
+            record.verified_signatures = option::some(signatures)
+        } else {
+            // At this point, if this message is in token_transfer_records, we know
+            // it's already approved because we only add a message to token_transfer_records
+            // after verifying the signatures
+            if (inner.token_transfer_records.contains(message_key)) {
+                emit(TokenTransferAlreadyApproved { message_key });
+                return
+            };
+            //idempotency for SendBack and ETHToSui
+            let tx_hash = token_payload.token_tx_hash();
+            if (inner.refund_records.contains(message::key_refund(tx_hash))) {
+                emit(TokenTransferAlreadyApproved { message_key });
+                return
+            };
+            // Store message and approval
+            inner.token_transfer_records.push_back(
+                message_key,
+                BridgeRecord {
+                    message,
+                    verified_signatures: option::some(signatures),
+                    claimed: false
+                },
+            );
+        };
+
+        emit(TokenTransferApproved { message_key });
+    }
+
+    // Record bridge message approvals in Sui, called by the bridge client
+    // If already approved, return early instead of aborting.
+    public fun approve_token_transfer_v2(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
         let token_payload = message.extract_token_bridge_payload_v2();
         let target_chain = token_payload.token_target_chain_v2();
         assert!(
@@ -619,9 +672,6 @@ module bridge::bridge {
             if (inner.refund_records.contains(message::key_refund(tx_hash))) {
                 emit(TokenTransferAlreadyApproved { message_key });
                 return
-            };
-            if (token_payload.fast_path_selector_v2() != 2) {
-                //todo @lifei fast path limit check
             };
             // Store message and approval
             inner.token_transfer_records.push_back(
@@ -1246,9 +1296,9 @@ module bridge::bridge {
         assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
 
         // extract token message
-        let token_payload = record.message.extract_token_bridge_payload();
+        let token_payload = record.message.extract_token_bridge_payload_v2();
         // get owner address
-        let owner = address::from_bytes(token_payload.token_target_address());
+        let owner = address::from_bytes(token_payload.token_target_address_v2());
 
         // If already claimed, exit early
         if (record.claimed) {
@@ -1256,7 +1306,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        let target_chain = token_payload.token_target_chain();
+        let target_chain = token_payload.token_target_chain_v2();
         // ensure target chain matches bridge.chain_id
         assert!(target_chain == inner.chain_id, EUnexpectedChainID);
 
@@ -1267,11 +1317,11 @@ module bridge::bridge {
         let route = chain_ids::get_route(source_chain, target_chain);
         // check token type
         assert!(
-            treasury::token_id<T>(&inner.treasury) == token_payload.token_type(),
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_v2(),
             EUnexpectedTokenType,
         );
 
-        let amount = token_payload.token_amount();
+        let amount = token_payload.token_amount_v2();
         // Make sure transfer is within limit.
         if (!inner
             .limiter
@@ -1295,6 +1345,23 @@ module bridge::bridge {
         (option::some(token), owner)
     }
 
+    fun check_fast_path_limit(
+        bridge_id: &mut UID,
+        clock: &Clock,
+        token_payload: TokenTransferPayloadV2,
+        ctx: &mut TxContext,
+    ) {
+        //fast path checker
+        if (token_payload.fast_path_selector_v2() != 2) { // 2 is finalized,0 and 1 is fast path
+            let amount = token_payload.token_amount_v2();
+            let chain_id = token_payload.token_target_chain_v2();
+            let token_id = token_payload.token_type_v2();
+            let sender_address = token_payload.token_sender_address_v2();
+            let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock, ctx);
+            assert!(remaining_limit, EFastPathLimitError);
+        };
+    }
+
     fun claim_stable_token_internal<T>(
         bridge: &mut Bridge,
         bfc_system_state: &mut BfcSystemState,
@@ -1304,7 +1371,7 @@ module bridge::bridge {
         cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): (Option<Coin<T>>, address) {
-        let inner = load_inner_mut(bridge);
+        let (inner,bridge_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
 
         let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
@@ -1321,11 +1388,11 @@ module bridge::bridge {
         assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
 
         // extract token message
-        let token_payload = record.message.extract_token_bridge_payload();
+        let token_payload = record.message.extract_token_bridge_payload_v2();
         // get owner address
-        let owner = address::from_bytes(token_payload.token_target_address());
+        let owner = address::from_bytes(token_payload.token_target_address_v2());
         // get token type
-        let token_id = token_payload.token_type();
+        let token_id = token_payload.token_type_v2();
         assert!(token_id == 5, EOnlySupportBusd);
 
         // If already claimed, exit early
@@ -1334,7 +1401,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        let target_chain = token_payload.token_target_chain();
+        let target_chain = token_payload.token_target_chain_v2();
         // ensure target chain matches bridge.chain_id
         assert!(target_chain == inner.chain_id, EUnexpectedChainID);
 
@@ -1342,11 +1409,11 @@ module bridge::bridge {
         let route = chain_ids::get_route(source_chain, target_chain);
         // check token type
         assert!(
-            treasury::token_id<T>(&inner.treasury) == token_payload.token_type(),
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_v2(),
             EUnexpectedTokenType,
         );
 
-        let amount = token_payload.token_amount();
+        let amount = token_payload.token_amount_v2();
         assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
@@ -1361,7 +1428,7 @@ module bridge::bridge {
             emit(TokenTransferLimitExceed { message_key: key });
             return (option::none(), owner)
         };
-
+        check_fast_path_limit(bridge_id, clock, token_payload, ctx);
         // claim from treasury
         //transfer busd to owner
         bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);

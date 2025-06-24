@@ -281,7 +281,7 @@ fn build_token_bridge_approve_transaction(
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
     let mut builder = ProgrammableTransactionBuilder::new();
 
-    let (source_chain, seq_num, sender, target_chain, target, token_type, amount,tx_hash,event_idx) =
+    let (source_chain, seq_num, sender, target_chain, target, token_type, amount,tx_hash,event_idx,func_name) =
         match bridge_action {
             BridgeAction::SuiToEthBridgeAction(a) => {
                 let bridge_event = a.sui_bridge_event;
@@ -294,7 +294,8 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.token_id,
                     bridge_event.amount_sui_adjusted,
                     vec![],
-                    0
+                    0,
+                    "create_token_bridge_message"
                 )
             }
             BridgeAction::EthSendBackBridgeAction(a) => {
@@ -309,6 +310,7 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.amount_sui_adjusted,
                     bridge_event.tx_hash,
                     bridge_event.event_idx,
+                    "create_token_bridge_message"
                 )
             }
             BridgeAction::EthToSuiBridgeAction(a) => {
@@ -322,7 +324,8 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.token_id,
                     bridge_event.sui_adjusted_amount,
                     a.eth_tx_hash.as_bytes().to_vec(),
-                    a.eth_event_index as u8
+                    a.eth_event_index as u8,
+                    "create_token_bridge_message_v2"
                 )
             }
             _ => unreachable!(),
@@ -350,7 +353,7 @@ fn build_token_bridge_approve_transaction(
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         ident_str!("message").to_owned(),
-        ident_str!("create_token_bridge_message").to_owned(),
+        ident_str!(func_name).to_owned(),
         vec![],
         vec![
             source_chain,
