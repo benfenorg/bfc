@@ -253,7 +253,7 @@ mod tests {
 
         info!("Compare Result: {:?}", compare_result);
         let result = compare_result["result"]["result"].as_u64().unwrap();
-        info!("Compare Result Values: result{}", result);
+        info!("Compare Result Values: result = {}", result);
 
 
         info!("Split Result: {:?}", split_result);

@@ -83,6 +83,8 @@ struct AnonymousMultiplyParams {
 struct AnonymousCompareParams {
     value1: u64,
     value2: u64,
+    value3: u64,
+    value4: u64,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -565,9 +567,12 @@ async fn handle_anonymous_compare(request: JsonRpcRequest) -> JsonRpcResponse {
         Some(params) => {
             match serde_json::from_value::<AnonymousCompareParams>(params) {
                 Ok(compare_params) => {
-                    let comparison = if compare_params.value1 > compare_params.value2 {
+                    let value_a = compare_params.value1 + compare_params.value2;
+                    let value_b = compare_params.value3 + compare_params.value4;
+
+                    let comparison = if value_a > value_b {
                         1
-                    } else if compare_params.value1 < compare_params.value2 {
+                    } else if value_a < value_b {
                         2
                     } else {
                         0
