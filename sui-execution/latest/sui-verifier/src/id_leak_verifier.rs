@@ -39,6 +39,7 @@ use sui_types::{
     randomness_state::RANDOMNESS_MODULE_NAME,
     BRIDGE_ADDRESS,
 };
+use sui_types::anonymous_status::{ANONYMOUS_MODULE_NAME, ANONYMOUS_STATE_CREATE_FUNCTION_NAME};
 
 use crate::{
     check_for_verifier_timeout, to_verification_timeout_error, verification_failure,
@@ -103,6 +104,13 @@ const SUI_DENY_LIST_CREATE: FunctionIdent = (
     DENY_LIST_CREATE_FUNC,
 );
 
+
+const SUI_ANONYMOUS_CREATE: FunctionIdent = (
+    &SUI_FRAMEWORK_ADDRESS,
+    ANONYMOUS_MODULE_NAME,
+    ANONYMOUS_STATE_CREATE_FUNCTION_NAME,
+);
+
 const SUI_BRIDGE_CREATE: FunctionIdent =
     (&BRIDGE_ADDRESS, BRIDGE_MODULE_NAME, ident_str!("create"));
 const FRESH_ID_FUNCTIONS: &[FunctionIdent] = &[OBJECT_NEW, OBJECT_NEW_UID_FROM_HASH, TS_NEW_OBJECT];
@@ -114,6 +122,7 @@ const FUNCTIONS_TO_SKIP: &[FunctionIdent] = &[
     SUI_RANDOMNESS_STATE_CREATE,
     SUI_DENY_LIST_CREATE,
     SUI_BRIDGE_CREATE,
+    SUI_ANONYMOUS_CREATE,
 ];
 
 impl AbstractValue {

@@ -180,20 +180,20 @@ Unique randomness generator, derived from the global randomness.
 
 
 
-<a name="0x2_random_EWrongInnerVersion"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui-framework/random.md#0x2_random_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
-</code></pre>
-
-
-
 <a name="0x2_random_CURRENT_VERSION"></a>
 
 
 
 <pre><code><b>const</b> <a href="../sui-framework/random.md#0x2_random_CURRENT_VERSION">CURRENT_VERSION</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
+<a name="0x2_random_EWrongInnerVersion"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui-framework/random.md#0x2_random_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 

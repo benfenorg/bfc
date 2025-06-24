@@ -239,6 +239,15 @@ Sender is not @0x0 the system address.
 
 
 
+<a name="0x2_authenticator_state_EWrongInnerVersion"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui-framework/authenticator_state.md#0x2_authenticator_state_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
 <a name="0x2_authenticator_state_CurrentVersion"></a>
 
 
@@ -253,15 +262,6 @@ Sender is not @0x0 the system address.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/authenticator_state.md#0x2_authenticator_state_EJwksNotSorted">EJwksNotSorted</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 2;
-</code></pre>
-
-
-
-<a name="0x2_authenticator_state_EWrongInnerVersion"></a>
-
-
-
-<pre><code><b>const</b> <a href="../sui-framework/authenticator_state.md#0x2_authenticator_state_EWrongInnerVersion">EWrongInnerVersion</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 

@@ -112,6 +112,8 @@ static_symbols!(
     "BAUD",
     "authenticator_state",
     "AuthenticatorState",
+    "anonymous",
+    "Anonymous",
     "random",
     "Random",
     "bridge",
