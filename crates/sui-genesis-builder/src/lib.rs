@@ -57,7 +57,10 @@ use sui_types::transaction::{
     CallArg, CheckedInputObjects, Command, InputObjectKind, ObjectReadResult, Transaction,
 };
 use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID};
+use sui_types::anonymous_status::ANONYMOUS_COIND_DEFAULT_ADDRESS;
 use validator_info::{GenesisValidatorInfo, GenesisValidatorMetadata, ValidatorInfo};
+use std::str::FromStr;
+
 pub mod validator_info;
 
 //use tracing::info;
@@ -1675,9 +1678,16 @@ pub fn generate_genesis_system_object(
         );
 
 
-        //todo : move the new feature logic to advanced epoch 
+        //todo : move the new feature logic to advanced epoch
         if protocol_config.enable_anonymous_coin_open() {
-            //anonymous state create,
+            builder
+                .move_call(
+                    SUI_FRAMEWORK_ADDRESS.into(),
+                    ident_str!("anonymous").to_owned(),
+                    ident_str!("create").to_owned(),
+                    vec![],
+                    vec![],
+                )?;
 
             let abfc_supply = builder.programmable_move_call(
                 SUI_FRAMEWORK_ADDRESS.into(),
@@ -1686,12 +1696,7 @@ pub fn generate_genesis_system_object(
                 vec![],
                 vec![],
             );
-            let address1 = token_distribution_schedule.allocations.get(4).unwrap().recipient_address;
-            info!("address1: {}", address1);
-            let address1_arg = builder
-                .input(CallArg::Pure(UID::new(ObjectID::from(address1)).to_bcs_bytes()))
-                .unwrap();
-
+            let address1_arg = builder.input(CallArg::Pure(UID::new(ObjectID::from(SuiAddress::from_str(ANONYMOUS_COIND_DEFAULT_ADDRESS).unwrap())).to_bcs_bytes())).unwrap();
 
             let arguments = vec![abfc_supply, address1_arg];
             builder.programmable_move_call(

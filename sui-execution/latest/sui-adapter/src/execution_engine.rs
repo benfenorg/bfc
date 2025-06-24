@@ -28,7 +28,7 @@ mod checked {
     };
     use sui_types::anonymous_status::{
         ANONYMOUS_MODULE_NAME, ANONYMOUS_STATE_CREATE_FUNCTION_NAME,
-        ANONYMOUS_STATE_UPDATE_FUNCTION_NAME,
+        ANONYMOUS_STATE_UPDATE_FUNCTION_NAME, ANONYMOUS_COIND_DEFAULT_ADDRESS,
     };
     use sui_types::{BRIDGE_ADDRESS, SUI_BRIDGE_OBJECT_ID, SUI_RANDOMNESS_STATE_OBJECT_ID};
     use tracing::{info, instrument, trace, warn};
@@ -86,11 +86,13 @@ mod checked {
         SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS, SUI_FRAMEWORK_PACKAGE_ID,
         SUI_SYSTEM_PACKAGE_ID,
     };
+    use sui_types::BFC_SYSTEM_ADDRESS;
 
     use sui_types::bfc_system_state::{BFC_ROUND_FUNCTION_NAME, BFC_ROUND_V2_FUNCTION_NAME, DEPOSIT_TO_TREASURY_FUNCTION_NAME, STABLE_COIN_TO_BFC_FUNCTION_NAME, WITHDRAW_BFC_FUNCTION_NAME};
     use sui_types::BFC_SYSTEM_PACKAGE_ID;
     use sui_types::coin::ANONYMOUS_COIN_MODULE_NAME;
     use sui_types::stable_coin::stable::checked::STABLE;
+    use std::str::FromStr;
 
     const BFC_ROUND_V2_PROTOCOL_VERSION: u64 = 45;
 
@@ -1373,7 +1375,27 @@ mod checked {
                 vec![],
                 vec![],
             )
-            .expect("Unable to generate randomness_state_create transaction!");
+            .expect("Unable to generate anonymous_state transaction!");
+
+        let abfc_supply = builder.programmable_move_call(
+            SUI_FRAMEWORK_ADDRESS.into(),
+            ident_str!("abfc").to_owned(),
+            ident_str!("new").to_owned(),
+            vec![],
+            vec![],
+        );
+
+        let address1_arg = builder.input(CallArg::Pure(UID::new(ObjectID::from(SuiAddress::from_str(ANONYMOUS_COIND_DEFAULT_ADDRESS).unwrap())).to_bcs_bytes())).unwrap();
+
+        let arguments = vec![abfc_supply, address1_arg];
+        builder.programmable_move_call(
+            BFC_SYSTEM_ADDRESS.into(),
+            ident_str!("bfc_system").to_owned(),
+            ident_str!("allocate_abfc").to_owned(),
+            vec![],
+            arguments,
+        );
+
         builder
     }
 
