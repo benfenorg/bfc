@@ -9,6 +9,27 @@ use sui_types::base_types::{ObjectID, SuiAddress};
 use sui_types::{parse_sui_struct_tag, BFC_SYSTEM_PACKAGE_ID, SUI_FRAMEWORK_PACKAGE_ID};
 use sui_types::quorum_driver_types::ExecuteTransactionRequestType;
 use test_cluster::{TestCluster, TestClusterBuilder};
+mod publish_coin;
+
+
+#[sim_test]
+async fn sim_test_do_publish_anonymous_test_coin(){
+    telemetry_subscribers::init_for_testing();
+
+    println!("=====start to publish anonymous coin");
+    let mut test_cluster = TestClusterBuilder::new()
+        .with_epoch_duration_ms(6000)
+        .with_num_validators(5)
+        .build()
+        .await;
+    let mut http_client = test_cluster.rpc_client().clone();
+    let address = test_cluster.get_address_0();
+    let (package, change_objs)
+        = publish_coin::do_publish(&mut test_cluster,"tests/test_anonymous_coin").await.unwrap();
+
+    println!("=====the package id is {:?}", package);
+
+}
 
 #[sim_test]
 async fn sim_test_binding_anonymous_coin() {
