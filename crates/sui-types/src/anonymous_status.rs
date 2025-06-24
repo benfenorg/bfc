@@ -11,6 +11,8 @@ pub const ANONYMOUS_MODULE_NAME: &IdentStr = ident_str!("anonymous");
 pub const ANONYMOUS_STATE_STRUCT_NAME: &IdentStr = ident_str!("Anonymous");
 pub const ANONYMOUS_STATE_UPDATE_FUNCTION_NAME: &IdentStr = ident_str!("update_anonymous_state");
 pub const ANONYMOUS_STATE_CREATE_FUNCTION_NAME: &IdentStr = ident_str!("create");
+
+pub const ANONYMOUS_COIND_DEFAULT_ADDRESS: &str = "BFCfc171f86c07b0311a347d7e71b261c684848becbececec78802f1bf8a599f729d85a";
 pub const RESOLVED_BFC_ANONYMOUS_STATE: (&AccountAddress, &IdentStr, &IdentStr) = (
     &SUI_FRAMEWORK_ADDRESS,
     crate::anonymous_status::ANONYMOUS_MODULE_NAME,
