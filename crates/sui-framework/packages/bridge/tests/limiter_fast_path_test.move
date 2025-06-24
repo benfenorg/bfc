@@ -12,6 +12,7 @@ module bridge::limiter_fast_path_tests {
 
     const ETH_MAINNET: u8 = 10;
     const BUSD_ID: u64 = 5;
+    const USER_ADDRESS: vector<u8> = x"4DbAD3fFb2e932AC1d085d4fdFC46596e0cf5676";
 
     public struct LimiterFastPathObject has key,store {
         id: UID
@@ -47,7 +48,8 @@ module bridge::limiter_fast_path_tests {
         limiter_fast_path::set_enabled(&mut obj.id, true);
         assert_eq!(limiter_fast_path::get_enabled(&obj.id), true); 
         // Test user limit check for new user
-        let user = @0x42;
+        let user = vector::empty();
+        
         let amount = 1_000_000_000;
         assert!(limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
@@ -98,7 +100,7 @@ module bridge::limiter_fast_path_tests {
         // First transfer
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -110,10 +112,10 @@ module bridge::limiter_fast_path_tests {
         clock.increment_for_testing(23 * 60 * 60 * 1000);
 
         // First amount should be cleared from window
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 500_000_000_000); // Back to full limit
         clock.increment_for_testing(1 * 60 * 60 * 1000);
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 1000_000_000_000); // Back to full limit
 
         // Cleanup
@@ -133,14 +135,14 @@ module bridge::limiter_fast_path_tests {
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
         let clock = clock::create_for_testing(ctx);
         
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 1000_000_000_000); // Back to full limit
 
         
         let amount = 1001_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -149,13 +151,13 @@ module bridge::limiter_fast_path_tests {
         );
         assert_eq!(result, false);
 
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 1000_000_000_000); // Back to full limit
 
         let amount = 2000_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -167,7 +169,7 @@ module bridge::limiter_fast_path_tests {
         let amount = 1_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -195,14 +197,14 @@ module bridge::limiter_fast_path_tests {
         limiter_fast_path::registry_for_testing(&mut obj.id, ctx);
         let clock = clock::create_for_testing(ctx);
         
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 5000_000_000_000); // Back to full limit
 
         
         let amount = 5001_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -211,13 +213,13 @@ module bridge::limiter_fast_path_tests {
         );
         assert_eq!(result, false);
 
-        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, user, ETH_MAINNET, BUSD_ID, &clock);
+        let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
         assert_eq!(remaining, 5000_000_000_000); // Back to full limit
 
         let amount = 2000_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,
@@ -229,7 +231,7 @@ module bridge::limiter_fast_path_tests {
         let amount = 3000_000_000_000; 
         let result = limiter_fast_path::check_and_record_user_limit(
             &mut obj.id,
-            user,
+            USER_ADDRESS,
             ETH_MAINNET,
             BUSD_ID,
             amount,

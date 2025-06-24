@@ -35,7 +35,7 @@ module bridge::limiter_fast_path {
     /// 用户限额记录，存储每个用户的限额信息
     public struct UserLimitRecord has store {
         /// 用户地址
-        user_address: address,
+        sender_address: vector<u8>,
         /// 当前滑动窗口的头（最新小时）
         hour_head: u64,
         /// 当前滑动窗口的尾（最早小时）
@@ -66,14 +66,14 @@ module bridge::limiter_fast_path {
     }
 
     public struct UserLimiterKey has copy, drop ,store{
-        user_address: address,
+        sender_address: vector<u8>,
         chain_id: u8,
         token_id: u64,
     }
 
     /// 用户限额使用事件
     public struct UserLimitUsedEvent has copy, drop {
-        user_address: address,
+        sender_address: vector<u8>,
         used_amount: u64,
         remaining_limit: u64,
         window_start_hour: u64,
@@ -166,7 +166,7 @@ module bridge::limiter_fast_path {
     /// 检查并记录用户限额使用
     public fun check_and_record_user_limit(
         parent_id: &mut UID,
-        user_address: address,
+        sender_address: vector<u8>,
         chain_id: u8,
         token_id: u64,
         amount: u64,
@@ -181,18 +181,18 @@ module bridge::limiter_fast_path {
         let current_hour = current_hour_since_epoch(clock);
         
         // 如果用户没有限额记录，初始化
-        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
+        if (!table::contains(&self.user_records, UserLimiterKey { sender_address, chain_id, token_id })) {
             let record = UserLimitRecord {
-                user_address,
+                sender_address,
                 hour_head: current_hour,
                 hour_tail: current_hour,
                 per_hour_amounts: vector[0],
                 total_amount: 0,
             };
-            table::add(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id }, record);
+            table::add(&mut self.user_records, UserLimiterKey { sender_address, chain_id, token_id }, record);
         };
 
-        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
+        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { sender_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour);
 
         let limit_config_key = LimitConfigKey { chain_id, token_id };
@@ -214,7 +214,7 @@ module bridge::limiter_fast_path {
         record.total_amount = record.total_amount + amount;
 
         emit(UserLimitUsedEvent {
-            user_address,
+            sender_address,
             used_amount: amount,
             remaining_limit: limit_amount - record.total_amount,
             window_start_hour: record.hour_tail,
@@ -225,16 +225,16 @@ module bridge::limiter_fast_path {
     /// 获取用户当前限额信息
     public fun get_user_limit_info(
         parent_id: &mut UID,
-        user_address: address,
+        sender_address: vector<u8>,
         chain_id: u8,
         token_id: u64,
         clock: &Clock,
     ): Option<UserLimitInfo> {
         let self=borrow_mut(parent_id);
-        if (!table::contains(&self.user_records, UserLimiterKey { user_address, chain_id, token_id })) {
+        if (!table::contains(&self.user_records, UserLimiterKey { sender_address, chain_id, token_id })) {
             return option::none()
         };
-        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { user_address, chain_id, token_id });
+        let record = table::borrow_mut(&mut self.user_records, UserLimiterKey { sender_address, chain_id, token_id });
         adjust_user_limit_records(record, current_hour_since_epoch(clock));
 
         let limit_config_key = LimitConfigKey { chain_id, token_id };
@@ -247,7 +247,7 @@ module bridge::limiter_fast_path {
         
         
         option::some(UserLimitInfo {
-            user_address,
+            sender_address,
             limit_amount: limit,
             used_amount: record.total_amount,
             remaining_limit: limit - record.total_amount,
@@ -260,12 +260,12 @@ module bridge::limiter_fast_path {
     /// 获取用户剩余限额
     public fun get_user_remaining_limit(
         self: &mut UID,
-        user_address: address,
+        sender_address: vector<u8>,
         chain_id: u8,
         token_id: u64,
         clock: &Clock,
     ): u64 {
-        let limit_info_opt = get_user_limit_info(self, user_address, chain_id, token_id, clock);
+        let limit_info_opt = get_user_limit_info(self, sender_address, chain_id, token_id, clock);
         if (option::is_none(&limit_info_opt)) {
             let self=borrow_mut(self);
             if(!table::contains(&self.limit_configs, LimitConfigKey { chain_id, token_id })){
@@ -426,7 +426,7 @@ module bridge::limiter_fast_path {
 
     /// 用户限额信息
     public struct UserLimitInfo has copy, drop {
-        user_address: address,
+        sender_address: vector<u8>,
         limit_amount: u64,
         used_amount: u64,
         remaining_limit: u64,
