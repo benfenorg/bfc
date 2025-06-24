@@ -5,17 +5,12 @@ module bridge::limiter_fast_path {
     use sui::clock::{Self, Clock};
     use sui::event::emit;
     use sui::table::{Self, Table};
-    use sui::address;
-    use sui::vec_map::{Self, VecMap};
-    use std::debug;
 
-    use bridge::chain_ids::{Self, BridgeRoute};
+    use bridge::chain_ids::Self;
     use sui::dynamic_field;
     const KEY: vector<u8> = b"limiter_fast_path";
     // Error codes
     const ELimiterFastPathRegistryAlreadyExists: u64 = 0;
-    const EUserLimitExceeded: u64 = 1;
-    const EUserLimitNotFound: u64 = 2;
     const EInvalidLimitAmount: u64 = 3;
     const EInvalidTimeWindow: u64 = 4;
 
@@ -101,38 +96,38 @@ module bridge::limiter_fast_path {
             KEY,
             new(ctx),
         );
-        initial_limiter_fast_path(parent_id,ctx);
+        initial_limiter_fast_path(parent_id);
     }
 
-    public(package) fun initial_limiter_fast_path(parent_id: &mut UID,ctx: &mut TxContext) {
+    public(package) fun initial_limiter_fast_path(parent_id: &mut UID) {
         //eth
-        add_limiter(parent_id, chain_ids::eth_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::eth_sepolia(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::eth_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::eth_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::eth_sepolia(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::eth_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
         //base
-        add_limiter(parent_id, chain_ids::base_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::base_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::base_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::base_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::base_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::base_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         //arb
-        add_limiter(parent_id, chain_ids::arb_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::arb_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::arb_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::arb_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::arb_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::arb_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         //op
-        add_limiter(parent_id, chain_ids::op_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::op_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::op_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::op_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::op_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::op_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         //pol
-        add_limiter(parent_id, chain_ids::pol_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::pol_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::pol_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::pol_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::pol_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::pol_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         //avax
-        add_limiter(parent_id, chain_ids::avax_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::avax_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::avax_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::avax_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::avax_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::avax_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         //bsc
-        add_limiter(parent_id, chain_ids::bsc_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::bsc_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
-        add_limiter(parent_id, chain_ids::bsc_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD, ctx);
+        add_limiter(parent_id, chain_ids::bsc_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::bsc_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::bsc_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
     }
 
     public(package) fun add_limiter(
@@ -140,7 +135,6 @@ module bridge::limiter_fast_path {
         chain_id: u8,
         token_id: u64,
         amount:u64,
-        ctx: &mut TxContext
     ) {
         let self=borrow_mut(parent_id);
         let limit_config_key = LimitConfigKey { chain_id, token_id };
@@ -171,7 +165,6 @@ module bridge::limiter_fast_path {
         token_id: u64,
         amount: u64,
         clock: &Clock,
-        ctx: &mut TxContext,
     ): bool {
         let self=borrow_mut(parent_id);
         if (!self.enabled) {
@@ -363,32 +356,32 @@ module bridge::limiter_fast_path {
         clock::timestamp_ms(clock) / 3600000
     }
 
-    /// 计算总使用量
-    fun calculate_total_usage(per_hour_amounts: &vector<u64>, skip: u64, len: u64): u64 {
-        let total = 0u64;
-        let i = 0u64;
-        calculate_total_usage_loop(per_hour_amounts, skip, len, total, i)
-    }
+    // /// 计算总使用量
+    // fun calculate_total_usage(per_hour_amounts: &vector<u64>, skip: u64, len: u64): u64 {
+    //     let total = 0u64;
+    //     let i = 0u64;
+    //     calculate_total_usage_loop(per_hour_amounts, skip, len, total, i)
+    // }
 
-    /// 计算总使用量的循环
-    fun calculate_total_usage_loop(
-        per_hour_amounts: &vector<u64>, 
-        skip: u64, 
-        len: u64, 
-        total: u64, 
-        i: u64
-    ): u64 {
-        if (i >= len as u64) {
-            total
-        } else {
-            let new_total = if (i >= skip) { 
-                total + *vector::borrow(per_hour_amounts, i) 
-            } else { 
-                total 
-            };
-            calculate_total_usage_loop(per_hour_amounts, skip, len, new_total, i + 1)
-        }
-    }
+    // /// 计算总使用量的循环
+    // fun calculate_total_usage_loop(
+    //     per_hour_amounts: &vector<u64>, 
+    //     skip: u64, 
+    //     len: u64, 
+    //     total: u64, 
+    //     i: u64
+    // ): u64 {
+    //     if (i >= len as u64) {
+    //         total
+    //     } else {
+    //         let new_total = if (i >= skip) { 
+    //             total + *vector::borrow(per_hour_amounts, i) 
+    //         } else { 
+    //             total 
+    //         };
+    //         calculate_total_usage_loop(per_hour_amounts, skip, len, new_total, i + 1)
+    //     }
+    // }
 
     /// 滑动窗口，移除过期小时
     fun adjust_user_limit_records(record: &mut UserLimitRecord, current_hour: u64) {
@@ -453,8 +446,8 @@ module bridge::limiter_fast_path {
     }
 
     #[test_only]
-    public(package) fun registry_for_testing(parent_id: &mut UID,ctx: &mut TxContext) {
-        initial_limiter_fast_path(parent_id,ctx);
+    public(package) fun registry_for_testing(parent_id: &mut UID) {
+        initial_limiter_fast_path(parent_id);
     }
 
 

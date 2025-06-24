@@ -713,6 +713,7 @@ mod tests {
     use crate::crypto::BridgeAuthorityPublicKeyBytes;
     use crate::crypto::BridgeAuthoritySignInfo;
     use crate::events::EmittedSuiToEthTokenBridgeV1;
+    use crate::fast_path::FastPathSelector;
     use crate::types::BlocklistType;
     use crate::types::EmergencyActionType;
     use crate::types::USD_MULTIPLIER;
@@ -1224,6 +1225,7 @@ mod tests {
             sui_adjusted_amount,
             tx_hash: vec![],
             event_idx: 0,
+            fast_path_selector: FastPathSelector::Finalized
         };
         let encoded_bytes = BridgeAction::EthToSuiBridgeAction(EthToSuiBridgeAction {
             eth_tx_hash,

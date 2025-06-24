@@ -5803,6 +5803,9 @@ RefundMessageKey
 TokenTransferPayload
 	public struct
 	0xb::message
+TokenTransferPayloadV2
+	public struct
+	0xb::message
 EmergencyOp
 	public struct
 	0xb::message
@@ -5843,6 +5846,9 @@ ParsedTokenTransferMessage
 	public struct
 	0xb::message
 extract_token_bridge_payload
+	public fun
+	0xb::message
+extract_token_bridge_payload_v2
 	public fun
 	0xb::message
 extract_add_witness_poyload
@@ -5891,6 +5897,9 @@ create_bitcoin_message
 	public fun
 	0xb::message
 create_token_bridge_message
+	public fun
+	0xb::message
+create_token_bridge_message_v2
 	public fun
 	0xb::message
 create_emergency_op_message
@@ -5972,6 +5981,30 @@ token_tx_hash
 	public fun
 	0xb::message
 token_event_idx
+	public fun
+	0xb::message
+token_sender_address_v2
+	public fun
+	0xb::message
+token_target_chain_v2
+	public fun
+	0xb::message
+token_target_address_v2
+	public fun
+	0xb::message
+token_type_v2
+	public fun
+	0xb::message
+token_amount_v2
+	public fun
+	0xb::message
+token_tx_hash_v2
+	public fun
+	0xb::message
+token_event_idx_v2
+	public fun
+	0xb::message
+fast_path_selector_v2
 	public fun
 	0xb::message
 emergency_op_type
@@ -6265,6 +6298,78 @@ get_op_token_id
 get_pol_token_id
 	public fun
 	0xb::tokenlist
+UserLimitRecord
+	public struct
+	0xb::limiter_fast_path
+UserLimiter
+	public struct
+	0xb::limiter_fast_path
+LimitConfigKey
+	public struct
+	0xb::limiter_fast_path
+UserLimiterKey
+	public struct
+	0xb::limiter_fast_path
+UserLimitUsedEvent
+	public struct
+	0xb::limiter_fast_path
+UserLimitInfo
+	public struct
+	0xb::limiter_fast_path
+borrow
+	public(package) fun
+	0xb::limiter_fast_path
+borrow_mut
+	public(package) fun
+	0xb::limiter_fast_path
+registry
+	public(package) fun
+	0xb::limiter_fast_path
+initial_limiter_fast_path
+	public(package) fun
+	0xb::limiter_fast_path
+add_limiter
+	public(package) fun
+	0xb::limiter_fast_path
+new
+	public fun
+	0xb::limiter_fast_path
+check_and_record_user_limit
+	public fun
+	0xb::limiter_fast_path
+get_user_limit_info
+	public fun
+	0xb::limiter_fast_path
+get_user_remaining_limit
+	public fun
+	0xb::limiter_fast_path
+set_default_limit
+	public fun
+	0xb::limiter_fast_path
+get_default_limit
+	public fun
+	0xb::limiter_fast_path
+set_default_time_window
+	public fun
+	0xb::limiter_fast_path
+get_default_time_window
+	public fun
+	0xb::limiter_fast_path
+set_enabled
+	public fun
+	0xb::limiter_fast_path
+get_enabled
+	public fun
+	0xb::limiter_fast_path
+get_user_count
+	public fun
+	0xb::limiter_fast_path
+current_hour_since_epoch
+	fun
+	0xb::limiter_fast_path
+adjust_user_limit_records
+	fun
+	0xb::limiter_fast_path
 TransferLimiter
 	public struct
 	0xb::limiter
@@ -6415,6 +6520,9 @@ init_bridge_committee
 migrate
 	public entry fun
 	0xb::bridge
+migrate_fast_path_limiter
+	public entry fun
+	0xb::bridge
 committee_registration
 	public fun
 	0xb::bridge
@@ -6437,6 +6545,9 @@ is_refund_admin
 	fun
 	0xb::bridge
 approve_token_transfer
+	public fun
+	0xb::bridge
+approve_token_transfer_v2
 	public fun
 	0xb::bridge
 get_max_mint_busd_amount
@@ -6497,6 +6608,9 @@ load_inner_mut_and_uid
 	fun
 	0xb::bridge
 claim_token_internal
+	fun
+	0xb::bridge
+check_fast_path_limit
 	fun
 	0xb::bridge
 claim_stable_token_internal

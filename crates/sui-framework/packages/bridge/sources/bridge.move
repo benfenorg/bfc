@@ -1349,7 +1349,6 @@ module bridge::bridge {
         bridge_id: &mut UID,
         clock: &Clock,
         token_payload: TokenTransferPayloadV2,
-        ctx: &mut TxContext,
     ) {
         //fast path checker
         if (token_payload.fast_path_selector_v2() != 2) { // 2 is finalized,0 and 1 is fast path
@@ -1357,7 +1356,7 @@ module bridge::bridge {
             let chain_id = token_payload.token_target_chain_v2();
             let token_id = token_payload.token_type_v2();
             let sender_address = token_payload.token_sender_address_v2();
-            let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock, ctx);
+            let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock);
             assert!(remaining_limit, EFastPathLimitError);
         };
     }
@@ -1428,7 +1427,7 @@ module bridge::bridge {
             emit(TokenTransferLimitExceed { message_key: key });
             return (option::none(), owner)
         };
-        check_fast_path_limit(bridge_id, clock, token_payload, ctx);
+        check_fast_path_limit(bridge_id, clock, token_payload);
         // claim from treasury
         //transfer busd to owner
         bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);

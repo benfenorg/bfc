@@ -27,6 +27,7 @@ title: Module `bridge::bridge`
 -  [Function `create`](#bridge_bridge_create)
 -  [Function `init_bridge_committee`](#bridge_bridge_init_bridge_committee)
 -  [Function `migrate`](#bridge_bridge_migrate)
+-  [Function `migrate_fast_path_limiter`](#bridge_bridge_migrate_fast_path_limiter)
 -  [Function `committee_registration`](#bridge_bridge_committee_registration)
 -  [Function `update_node_url`](#bridge_bridge_update_node_url)
 -  [Function `register_foreign_token`](#bridge_bridge_register_foreign_token)
@@ -35,6 +36,7 @@ title: Module `bridge::bridge`
 -  [Function `send_back_token`](#bridge_bridge_send_back_token)
 -  [Function `is_refund_admin`](#bridge_bridge_is_refund_admin)
 -  [Function `approve_token_transfer`](#bridge_bridge_approve_token_transfer)
+-  [Function `approve_token_transfer_v2`](#bridge_bridge_approve_token_transfer_v2)
 -  [Function `get_max_mint_busd_amount`](#bridge_bridge_get_max_mint_busd_amount)
 -  [Function `set_max_mint_busd_amount`](#bridge_bridge_set_max_mint_busd_amount)
 -  [Function `claim_token`](#bridge_bridge_claim_token)
@@ -55,6 +57,7 @@ title: Module `bridge::bridge`
 -  [Function `load_inner_mut`](#bridge_bridge_load_inner_mut)
 -  [Function `load_inner_mut_and_uid`](#bridge_bridge_load_inner_mut_and_uid)
 -  [Function `claim_token_internal`](#bridge_bridge_claim_token_internal)
+-  [Function `check_fast_path_limit`](#bridge_bridge_check_fast_path_limit)
 -  [Function `claim_stable_token_internal`](#bridge_bridge_claim_stable_token_internal)
 -  [Function `execute_emergency_op`](#bridge_bridge_execute_emergency_op)
 -  [Function `execute_refund_admin_operate`](#bridge_bridge_execute_refund_admin_operate)
@@ -121,6 +124,7 @@ title: Module `bridge::bridge`
 <b>use</b> <a href="../bridge/committee.md#bridge_committee">bridge::committee</a>;
 <b>use</b> <a href="../bridge/crypto.md#bridge_crypto">bridge::crypto</a>;
 <b>use</b> <a href="../bridge/limiter.md#bridge_limiter">bridge::limiter</a>;
+<b>use</b> <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path">bridge::limiter_fast_path</a>;
 <b>use</b> <a href="../bridge/message.md#bridge_message">bridge::message</a>;
 <b>use</b> <a href="../bridge/message_types.md#bridge_message_types">bridge::message_types</a>;
 <b>use</b> <a href="../bridge/tokenlist.md#bridge_tokenlist">bridge::tokenlist</a>;
@@ -1117,6 +1121,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EFastPathLimitError"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EFastPathLimitError">EFastPathLimitError</a>: u64 = 51;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EInvalidBridgeRoute"></a>
 
 
@@ -1551,6 +1564,33 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_migrate_fast_path_limiter"></a>
+
+## Function `migrate_fast_path_limiter`
+
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_migrate_fast_path_limiter">migrate_fast_path_limiter</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_migrate_fast_path_limiter">migrate_fast_path_limiter</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    ctx: &<b>mut</b> TxContext
+){
+    <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_registry">limiter_fast_path::registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_committee_registration"></a>
 
 ## Function `committee_registration`
@@ -1962,6 +2002,85 @@ title: Module `bridge::bridge`
         };
         //idempotency <b>for</b> SendBack and ETHToSui
         <b>let</b> tx_hash = token_payload.token_tx_hash();
+        <b>if</b> (inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash))) {
+            emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+            <b>return</b>
+        };
+        // Store <a href="../bridge/message.md#bridge_message">message</a> and approval
+        inner.token_transfer_records.push_back(
+            message_key,
+            <a href="../bridge/bridge.md#bridge_bridge_BridgeRecord">BridgeRecord</a> {
+                <a href="../bridge/message.md#bridge_message">message</a>,
+                verified_signatures: option::some(signatures),
+                claimed: <b>false</b>
+            },
+        );
+    };
+    emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferApproved">TokenTransferApproved</a> { message_key });
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_approve_token_transfer_v2"></a>
+
+## Function `approve_token_transfer_v2`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_approve_token_transfer_v2">approve_token_transfer_v2</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, <a href="../bridge/message.md#bridge_message">message</a>: <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>, signatures: vector&lt;vector&lt;u8&gt;&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_approve_token_transfer_v2">approve_token_transfer_v2</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    <a href="../bridge/message.md#bridge_message">message</a>: BridgeMessage,
+    signatures: vector&lt;vector&lt;u8&gt;&gt;,
+) {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    // verify signatures
+    inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
+    <b>let</b> target_chain = token_payload.token_target_chain_v2();
+    <b>assert</b>!(
+        <a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+        <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
+    );
+    <b>let</b> message_key = <a href="../bridge/message.md#bridge_message">message</a>.key();
+    // retrieve pending <a href="../bridge/message.md#bridge_message">message</a> <b>if</b> source chain is Sui, the initial <a href="../bridge/message.md#bridge_message">message</a>
+    // must exist on chain
+    <b>if</b> (<a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id) {
+        <b>let</b> record = &<b>mut</b> inner.token_transfer_records[message_key];
+        <b>assert</b>!(record.<a href="../bridge/message.md#bridge_message">message</a> == <a href="../bridge/message.md#bridge_message">message</a>, <a href="../bridge/bridge.md#bridge_bridge_EMalformedMessageError">EMalformedMessageError</a>);
+        <b>assert</b>!(!record.claimed, <a href="../bridge/bridge.md#bridge_bridge_EInvariantSuiInitializedTokenTransferShouldNotBeClaimed">EInvariantSuiInitializedTokenTransferShouldNotBeClaimed</a>);
+        // If record already <b>has</b> verified signatures, it means the <a href="../bridge/message.md#bridge_message">message</a> <b>has</b> been approved
+        // Then we exit early.
+        <b>if</b> (record.verified_signatures.is_some()) {
+            emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+            <b>return</b>
+        };
+        // Store approval
+        record.verified_signatures = option::some(signatures)
+    } <b>else</b> {
+        // At this point, <b>if</b> this <a href="../bridge/message.md#bridge_message">message</a> is in token_transfer_records, we know
+        // it's already approved because we only add a <a href="../bridge/message.md#bridge_message">message</a> to token_transfer_records
+        // after verifying the signatures
+        <b>if</b> (inner.token_transfer_records.contains(message_key)) {
+            emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+            <b>return</b>
+        };
+        //idempotency <b>for</b> SendBack and ETHToSui
+        <b>let</b> tx_hash = token_payload.token_tx_hash_v2();
         <b>if</b> (inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash))) {
             emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
             <b>return</b>
@@ -2917,15 +3036,15 @@ title: Module `bridge::bridge`
     // Ensure it's signed
     <b>assert</b>!(record.verified_signatures.is_some(), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedClaim">EUnauthorisedClaim</a>);
     // extract token <a href="../bridge/message.md#bridge_message">message</a>
-    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload();
+    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
     // get owner <b>address</b>
-    <b>let</b> owner = address::from_bytes(token_payload.token_target_address());
+    <b>let</b> owner = address::from_bytes(token_payload.token_target_address_v2());
     // If already claimed, exit early
     <b>if</b> (record.claimed) {
         emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyClaimed">TokenTransferAlreadyClaimed</a> { message_key: key });
         <b>return</b> (option::none(), owner)
     };
-    <b>let</b> target_chain = token_payload.token_target_chain();
+    <b>let</b> target_chain = token_payload.token_target_chain_v2();
     // ensure target chain matches <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.chain_id
     <b>assert</b>!(target_chain == inner.chain_id, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>);
     // TODO: why do we check validity of the route here? what <b>if</b> inconsistency?
@@ -2935,10 +3054,10 @@ title: Module `bridge::bridge`
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
     // check token type
     <b>assert</b>!(
-        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type(),
+        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type_v2(),
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
-    <b>let</b> amount = token_payload.token_amount();
+    <b>let</b> amount = token_payload.token_amount_v2();
     // Make sure transfer is within limit.
     <b>if</b> (!inner
         .<a href="../bridge/limiter.md#bridge_limiter">limiter</a>
@@ -2957,6 +3076,42 @@ title: Module `bridge::bridge`
     record.claimed = <b>true</b>;
     emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferClaimed">TokenTransferClaimed</a> { message_key: key });
     (option::some(token), owner)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_check_fast_path_limit"></a>
+
+## Function `check_fast_path_limit`
+
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(bridge_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, clock: &<a href="../sui/clock.md#sui_clock_Clock">sui::clock::Clock</a>, token_payload: <a href="../bridge/message.md#bridge_message_TokenTransferPayloadV2">bridge::message::TokenTransferPayloadV2</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(
+    bridge_id: &<b>mut</b> UID,
+    clock: &Clock,
+    token_payload: TokenTransferPayloadV2,
+) {
+    //fast path checker
+    <b>if</b> (token_payload.fast_path_selector_v2() != 2) { // 2 is finalized,0 and 1 is fast path
+        <b>let</b> amount = token_payload.token_amount_v2();
+        <b>let</b> chain_id = token_payload.token_target_chain_v2();
+        <b>let</b> token_id = token_payload.token_type_v2();
+        <b>let</b> sender_address = token_payload.token_sender_address_v2();
+        <b>let</b> remaining_limit = <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_check_and_record_user_limit">limiter_fast_path::check_and_record_user_limit</a>(bridge_id, sender_address, chain_id, token_id, amount, clock);
+        <b>assert</b>!(remaining_limit, <a href="../bridge/bridge.md#bridge_bridge_EFastPathLimitError">EFastPathLimitError</a>);
+    };
 }
 </code></pre>
 
@@ -2988,7 +3143,7 @@ title: Module `bridge::bridge`
     cap: &BfcSystemModifyCap,
     ctx: &<b>mut</b> TxContext,
 ): (Option&lt;Coin&lt;T&gt;&gt;, <b>address</b>) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner,bridge_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>let</b> key = <a href="../bridge/message.md#bridge_message_create_key">message::create_key</a>(source_chain, <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), bridge_seq_num);
     <b>assert</b>!(inner.token_transfer_records.contains(key), <a href="../bridge/bridge.md#bridge_bridge_EMessageNotFoundInRecords">EMessageNotFoundInRecords</a>);
@@ -3002,28 +3157,28 @@ title: Module `bridge::bridge`
     // Ensure it's signed
     <b>assert</b>!(record.verified_signatures.is_some(), <a href="../bridge/bridge.md#bridge_bridge_EUnauthorisedClaim">EUnauthorisedClaim</a>);
     // extract token <a href="../bridge/message.md#bridge_message">message</a>
-    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload();
+    <b>let</b> token_payload = record.<a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
     // get owner <b>address</b>
-    <b>let</b> owner = address::from_bytes(token_payload.token_target_address());
+    <b>let</b> owner = address::from_bytes(token_payload.token_target_address_v2());
     // get token type
-    <b>let</b> token_id = token_payload.token_type();
+    <b>let</b> token_id = token_payload.token_type_v2();
     <b>assert</b>!(token_id == 5, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
     // If already claimed, exit early
     <b>if</b> (record.claimed) {
         emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyClaimed">TokenTransferAlreadyClaimed</a> { message_key: key });
         <b>return</b> (option::none(), owner)
     };
-    <b>let</b> target_chain = token_payload.token_target_chain();
+    <b>let</b> target_chain = token_payload.token_target_chain_v2();
     // ensure target chain matches <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.chain_id
     <b>assert</b>!(target_chain == inner.chain_id, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>);
     // `get_route` <b>abort</b> <b>if</b> route is invalid
     <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
     // check token type
     <b>assert</b>!(
-        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type(),
+        <a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>) == token_payload.token_type_v2(),
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
-    <b>let</b> amount = token_payload.token_amount();
+    <b>let</b> amount = token_payload.token_amount_v2();
     <b>assert</b>!(amount &lt; inner.<a href="../bridge/limiter.md#bridge_limiter">limiter</a>.get_mint_busd_max_limit(), <a href="../bridge/bridge.md#bridge_bridge_EInvalidMintAmount">EInvalidMintAmount</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner
@@ -3038,6 +3193,7 @@ title: Module `bridge::bridge`
         emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferLimitExceed">TokenTransferLimitExceed</a> { message_key: key });
         <b>return</b> (option::none(), owner)
     };
+    <a href="../bridge/bridge.md#bridge_bridge_check_fast_path_limit">check_fast_path_limit</a>(bridge_id, clock, token_payload);
     // claim from <a href="../bridge/treasury.md#bridge_treasury">treasury</a>
     //transfer busd to owner
     bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, owner, ctx);

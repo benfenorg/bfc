@@ -330,6 +330,7 @@ impl BridgeClient {
 mod tests {
     //use std::ops::Add;
     use super::*;
+    use crate::fast_path::FastPathSelector;
     use crate::test_utils::run_mock_bridge_server;
     use crate::{
         abi::EthToSuiTokenBridgeV1,
@@ -570,6 +571,7 @@ mod tests {
                 sui_adjusted_amount: 1,
                 tx_hash: vec![],
                 event_idx: 0,
+                fast_path_selector: FastPathSelector::Finalized
             },
         });
 

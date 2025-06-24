@@ -58,7 +58,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         ), 0);
 
         // Check remaining limit
@@ -74,7 +73,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             exceed_amount,
             &clock,
-            ctx
         ), false);
 
         // Cleanup
@@ -105,7 +103,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, true);
         // Advance clock 25 hours
@@ -147,7 +144,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, false);
 
@@ -162,7 +158,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, false);
 
@@ -174,7 +169,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, true);
 
@@ -194,7 +188,7 @@ module bridge::limiter_fast_path_tests {
         let user = @0x42;
         // Create new limiter
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
-        limiter_fast_path::registry_for_testing(&mut obj.id, ctx);
+        limiter_fast_path::registry_for_testing(&mut obj.id);
         let clock = clock::create_for_testing(ctx);
         
         let remaining = limiter_fast_path::get_user_remaining_limit(&mut obj.id, USER_ADDRESS, ETH_MAINNET, BUSD_ID, &clock);
@@ -209,7 +203,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, false);
 
@@ -224,7 +217,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, true);
 
@@ -236,7 +228,6 @@ module bridge::limiter_fast_path_tests {
             BUSD_ID,
             amount,
             &clock,
-            ctx
         );
         assert_eq!(result, true);
 

@@ -55,6 +55,9 @@ pub const BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME: &IdentStr =
 pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr =
     ident_str!("migrate");
 
+pub const BRIDGE_MIGRATE_FAST_PATH_LIMITER_FUNCTION_NAME: &IdentStr =
+    ident_str!("migrate_fast_path_limiter");
+
 pub const BRIDGE_SUPPORTED_ASSET: &[&str] = &["btc", "eth", "usdc", "usdt"];
 
 pub const BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER: u64 = 7500; // out of 10000 (75%)

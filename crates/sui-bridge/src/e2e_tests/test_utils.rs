@@ -11,7 +11,7 @@ use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
-use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction};
+use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction, build_limiter_fast_path_migrate_transaction};
 use crate::sui_transaction_builder::build_committee_register_transaction;
 use crate::types::BridgeCommitteeValiditySignInfo;
 use crate::types::CertifiedBridgeAction;
@@ -1117,14 +1117,33 @@ impl TestClusterWrapperBuilder {
             ref_gas_price,
         )
             .unwrap();
-
         let response = test_cluster.sign_and_execute_transaction(&tx).await;
         assert_eq!(
             response.effects.unwrap().status(),
             &SuiExecutionStatus::Success
         );
         info!("add tokenlist took {:?} secs", timer.elapsed().as_secs());
-
+         //limiter fast path migrate
+         let sender_address = test_cluster.get_address_0();
+         let timer = Instant::now();
+         let tx = build_limiter_fast_path_migrate_transaction(
+            sender_address,
+            &test_cluster
+                .wallet
+                .get_one_gas_object_owned_by_address(sender_address)
+                .await
+                .unwrap()
+                .unwrap(),
+            bridge_arg,
+            ref_gas_price,
+        )
+            .unwrap();
+        let response = test_cluster.sign_and_execute_transaction(&tx).await;
+        assert_eq!(
+            response.effects.unwrap().status(),
+            &SuiExecutionStatus::Success
+        );
+        info!("limiter fast path migrate took {:?} secs", timer.elapsed().as_secs());
         if self.deploy_tokens {
             let token_paths = vec![
                 Path::new("../../bridge/move/tokens/btc").into(),
