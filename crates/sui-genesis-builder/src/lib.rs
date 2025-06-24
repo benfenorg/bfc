@@ -1677,6 +1677,8 @@ pub fn generate_genesis_system_object(
 
         //todo : move the new feature logic to advanced epoch 
         if protocol_config.enable_anonymous_coin_open() {
+            //anonymous state create,
+
             let abfc_supply = builder.programmable_move_call(
                 SUI_FRAMEWORK_ADDRESS.into(),
                 ident_str!("abfc").to_owned(),

@@ -4,7 +4,7 @@ use move_core_types::identifier::IdentStr;
 use crate::base_types::SequenceNumber;
 use crate::error::SuiResult;
 use crate::storage::ObjectStore;
-use crate::{BFC_ANONYMOUS_STATE_OBJECT_ID, SUI_AUTHENTICATOR_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS};
+use crate::{BFC_ANONYMOUS_STATE_OBJECT_ID, SUI_FRAMEWORK_ADDRESS};
 use crate::object::Owner;
 
 pub const ANONYMOUS_MODULE_NAME: &IdentStr = ident_str!("anonymous");

@@ -29,6 +29,7 @@ fastcrypto.workspace = true
 sui-types.workspace = true
 sui-config.workspace = true
 dirs.workspace = true
+log = "0.4.22"
 [dev-dependencies]
 tokio-test = "0.4"
 rand = "0.8.5"

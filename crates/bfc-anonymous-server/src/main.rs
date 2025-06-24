@@ -100,6 +100,30 @@ struct AnonymousRestoreValueParams {
 }
 
 
+#[derive(Debug, Deserialize, Serialize)]
+pub struct AnonymousServer {
+
+
+}
+impl AnonymousServer{
+    pub fn new() -> Self {
+        // Initialize any necessary resources here
+        AnonymousServer {}
+    }
+    pub async fn start(&self, addr: SocketAddr) -> anyhow::Result<()> {
+        info!("Starting BFC Anonymous Server on {}", addr);
+
+        let routes = create_routes();
+
+        warp::serve(routes)
+            .run(addr)
+            .await;
+
+
+        Ok(())
+    }
+}
+
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     //todo: 1. import annoymous private key ,
@@ -112,17 +136,13 @@ async fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
     let addr: SocketAddr = format!("{}:{}", args.host, args.port).parse()?;
-
-    info!("Starting BFC Anonymous Server on {}", addr);
-
-    let routes = create_routes();
-
-    warp::serve(routes)
-        .run(addr)
-        .await;
+    let server= AnonymousServer::new();
+    server.start(addr).await?;
 
     Ok(())
 }
+
+
 
 fn create_routes() -> impl Filter<Extract = impl warp::Reply, Error = warp::Rejection> + Clone {
     let cors = warp::cors()
@@ -609,3 +629,5 @@ async fn handle_ping(request: JsonRpcRequest) -> JsonRpcResponse {
         error: None,
     }
 }
+
+
