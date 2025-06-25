@@ -210,12 +210,12 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     let arg_token_type = builder.pure(token_type).unwrap();
     let amount = builder.pure(amount).unwrap();
     let tx_hash = builder.pure(tx_hash).unwrap();
-    let event_idx = builder.pure(0 as u8).unwrap();
+    let event_idx = builder.pure(0 as u16).unwrap();
 
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         ident_str!("message").to_owned(),
-        ident_str!("create_token_bridge_message").to_owned(),
+        ident_str!("create_token_bridge_message_v2").to_owned(),
         vec![],
         vec![
             source_chain,
@@ -351,7 +351,7 @@ fn build_token_bridge_approve_transaction(
     let arg_msg = builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         ident_str!("message").to_owned(),
-        ident_str!("create_token_bridge_message").to_owned(),
+        ident_str!("create_token_bridge_message_v2").to_owned(),
         vec![],
         vec![
             source_chain,
@@ -453,7 +453,7 @@ pub fn build_token_send_back_transaction(
                     bridge_event.token_id,
                     bridge_event.sui_adjusted_amount,
                     a.eth_tx_hash.as_bytes().to_vec(),
-                    a.eth_event_index as u8
+                    a.eth_event_index
                 )
             }
             _ => unreachable!(),
@@ -477,7 +477,7 @@ pub fn build_token_send_back_transaction(
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("send_back_token").to_owned(),
+        ident_str!("send_back_token_v2").to_owned(),
         vec![],
         vec![arg_bridge, source_chain, source_address,arg_token_type,amount,tx_hash,event_idx],
     );

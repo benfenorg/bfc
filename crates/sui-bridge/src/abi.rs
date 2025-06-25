@@ -10,7 +10,7 @@ use crate::encoding::{
     TOKEN_TRANSFER_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
-use crate::types::ParsedTokenTransferMessage;
+use crate::types::{ParsedTokenTransferMessage, ParsedTokenTransferMessageV2};
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
     BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
@@ -259,6 +259,18 @@ impl From<SuiToEthBridgeAction> for eth_sui_bridge::Message {
 
 impl From<ParsedTokenTransferMessage> for eth_sui_bridge::Message {
     fn from(parsed_message: ParsedTokenTransferMessage) -> Self {
+        eth_sui_bridge::Message {
+            message_type: BridgeActionType::TokenTransfer as u8,
+            version: parsed_message.message_version,
+            nonce: parsed_message.seq_num,
+            chain_id: parsed_message.source_chain as u8,
+            payload: parsed_message.payload.into(),
+        }
+    }
+}
+
+impl From<ParsedTokenTransferMessageV2> for eth_sui_bridge::Message {
+    fn from(parsed_message: ParsedTokenTransferMessageV2) -> Self {
         eth_sui_bridge::Message {
             message_type: BridgeActionType::TokenTransfer as u8,
             version: parsed_message.message_version,

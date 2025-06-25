@@ -26,9 +26,7 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::Debug;
 use strum_macros::Display;
 use sui_types::base_types::SuiAddress;
-use sui_types::bridge::{
-    BridgeChainId, MoveTypeTokenTransferPayload, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT
-};
+use sui_types::bridge::{BridgeChainId, MoveTypeParsedTokenTransferMessageV2, MoveTypeTokenTransferPayload, MoveTypeTokenTransferPayloadV2, APPROVAL_THRESHOLD_ADD_TOKENS_ON_EVM, APPROVAL_THRESHOLD_ADD_TOKENS_ON_SUI, APPROVAL_THRESHOLD_REFUND_ADMIN, BRIDGE_COMMITTEE_MAXIMAL_VOTING_POWER, BRIDGE_COMMITTEE_MINIMAL_VOTING_POWER, TOKEN_ID_USDC, TOKEN_ID_USDT};
 use sui_types::bridge::{
     MoveTypeParsedTokenTransferMessage, APPROVAL_THRESHOLD_ASSET_PRICE_UPDATE,
     APPROVAL_THRESHOLD_COMMITTEE_BLOCKLIST, APPROVAL_THRESHOLD_EMERGENCY_PAUSE,
@@ -747,6 +745,15 @@ pub struct ParsedTokenTransferMessage {
     pub parsed_payload: MoveTypeTokenTransferPayload,
 }
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct ParsedTokenTransferMessageV2 {
+    pub message_version: u8,
+    pub seq_num: u64,
+    pub source_chain: BridgeChainId,
+    pub payload: Vec<u8>,
+    pub parsed_payload: MoveTypeTokenTransferPayloadV2,
+}
+
 impl TryFrom<MoveTypeParsedTokenTransferMessage> for ParsedTokenTransferMessage {
     type Error = BridgeError;
 
@@ -754,6 +761,26 @@ impl TryFrom<MoveTypeParsedTokenTransferMessage> for ParsedTokenTransferMessage 
         let source_chain = BridgeChainId::try_from(message.source_chain).map_err(|_e| {
             BridgeError::Generic(format!(
                 "Failed to convert MoveTypeParsedTokenTransferMessage to ParsedTokenTransferMessage. Failed to convert source chain {} to BridgeChainId",
+                message.source_chain,
+            ))
+        })?;
+        Ok(Self {
+            message_version: message.message_version,
+            seq_num: message.seq_num,
+            source_chain,
+            payload: message.payload,
+            parsed_payload: message.parsed_payload,
+        })
+    }
+}
+
+impl TryFrom<MoveTypeParsedTokenTransferMessageV2> for ParsedTokenTransferMessageV2 {
+    type Error = BridgeError;
+
+    fn try_from(message: MoveTypeParsedTokenTransferMessageV2) -> BridgeResult<Self> {
+        let source_chain = BridgeChainId::try_from(message.source_chain).map_err(|_e| {
+            BridgeError::Generic(format!(
+                "Failed to convert MoveTypeParsedTokenTransferMessageV2 to ParsedTokenTransferMessageV2. Failed to convert source chain {} to BridgeChainId",
                 message.source_chain,
             ))
         })?;

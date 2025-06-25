@@ -24,7 +24,7 @@ use sui_types::base_types::SequenceNumber;
 use sui_types::bridge::BridgeSummary;
 use sui_types::bridge::BridgeTreasurySummary;
 use sui_types::bridge::MoveTypeCommitteeMember;
-use sui_types::bridge::MoveTypeParsedTokenTransferMessage;
+use sui_types::bridge::MoveTypeParsedTokenTransferMessageV2;
 use sui_types::gas_coin::GasCoin;
 use sui_types::object::Owner;
 use sui_types::{parse_sui_struct_tag, parse_sui_type_tag};
@@ -54,7 +54,7 @@ use crate::events::SuiBridgeEvent;
 use crate::metrics::BridgeMetrics;
 use crate::retry_with_max_elapsed_time;
 use crate::types::BridgeActionStatus;
-use crate::types::ParsedTokenTransferMessage;
+use crate::types::ParsedTokenTransferMessageV2;
 use crate::types::{BridgeAction, BridgeAuthority, BridgeCommittee};
 
 pub struct SuiClient<P> {
@@ -439,14 +439,14 @@ where
         &self,
         source_chain_id: u8,
         seq_number: u64,
-    ) -> BridgeResult<Option<ParsedTokenTransferMessage>> {
+    ) -> BridgeResult<Option<ParsedTokenTransferMessageV2>> {
         let bridge_object_arg = self.get_mutable_bridge_object_arg_must_succeed().await;
         let message = self
             .inner
             .get_parsed_token_transfer_message(bridge_object_arg, source_chain_id, seq_number)
             .await?;
         Ok(match message {
-            Some(payload) => Some(ParsedTokenTransferMessage::try_from(payload)?),
+            Some(payload) => Some(ParsedTokenTransferMessageV2::try_from(payload)?),
             None => None,
         })
     }
@@ -538,7 +538,7 @@ pub trait SuiClientInner: Send + Sync {
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
-    ) -> Result<Option<MoveTypeParsedTokenTransferMessage>, BridgeError>;
+    ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError>;
 
     async fn get_gas_data_panic_if_not_gas(
         &self,
@@ -725,13 +725,13 @@ impl SuiClientInner for SuiSdkClient {
         bridge_object_arg: ObjectArg,
         source_chain_id: u8,
         seq_number: u64,
-    ) -> Result<Option<MoveTypeParsedTokenTransferMessage>, BridgeError> {
-        dev_inspect_bridge::<Option<MoveTypeParsedTokenTransferMessage>>(
+    ) -> Result<Option<MoveTypeParsedTokenTransferMessageV2>, BridgeError> {
+        dev_inspect_bridge::<Option<MoveTypeParsedTokenTransferMessageV2>>(
             self,
             bridge_object_arg,
             source_chain_id,
             seq_number,
-            "get_parsed_token_transfer_message",
+            "get_parsed_token_transfer_message_v2",
         )
         .await
     }

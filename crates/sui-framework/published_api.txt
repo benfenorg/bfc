@@ -5803,6 +5803,9 @@ RefundMessageKey
 TokenTransferPayload
 	public struct
 	0xb::message
+TokenTransferPayloadV2
+	public struct
+	0xb::message
 EmergencyOp
 	public struct
 	0xb::message
@@ -5842,7 +5845,13 @@ AddTokenOnSui
 ParsedTokenTransferMessage
 	public struct
 	0xb::message
+ParsedTokenTransferMessageV2
+	public struct
+	0xb::message
 extract_token_bridge_payload
+	public fun
+	0xb::message
+extract_token_bridge_payload_v2
 	public fun
 	0xb::message
 extract_add_witness_poyload
@@ -5891,6 +5900,9 @@ create_bitcoin_message
 	public fun
 	0xb::message
 create_token_bridge_message
+	public fun
+	0xb::message
+create_token_bridge_message_v2
 	public fun
 	0xb::message
 create_emergency_op_message
@@ -5956,22 +5968,43 @@ payload
 token_sender_address
 	public fun
 	0xb::message
+token_sender_address_v2
+	public fun
+	0xb::message
 token_target_chain
+	public fun
+	0xb::message
+token_target_chain_v2
 	public fun
 	0xb::message
 token_target_address
 	public fun
 	0xb::message
+token_target_address_v2
+	public fun
+	0xb::message
 token_type
+	public fun
+	0xb::message
+token_type_v2
 	public fun
 	0xb::message
 token_amount
 	public fun
 	0xb::message
+token_amount_v2
+	public fun
+	0xb::message
 token_tx_hash
 	public fun
 	0xb::message
+token_tx_hash_v2
+	public fun
+	0xb::message
 token_event_idx
+	public fun
+	0xb::message
+token_event_idx_v2
 	public fun
 	0xb::message
 emergency_op_type
@@ -6068,6 +6101,9 @@ required_voting_power
 	public fun
 	0xb::message
 to_parsed_token_transfer_message
+	public fun
+	0xb::message
+to_parsed_token_transfer_message_v2
 	public fun
 	0xb::message
 reverse_bytes
@@ -6361,6 +6397,9 @@ TokenDepositedEvent
 TokenSendBackEvent
 	public struct
 	0xb::bridge
+TokenSendBackEventV2
+	public struct
+	0xb::bridge
 EmergencyOpEvent
 	public struct
 	0xb::bridge
@@ -6431,6 +6470,9 @@ send_busd
 	public fun
 	0xb::bridge
 send_back_token
+	public fun
+	0xb::bridge
+send_back_token_v2
 	public fun
 	0xb::bridge
 is_refund_admin
@@ -6545,6 +6587,9 @@ get_current_seq_num_and_increment
 	fun
 	0xb::bridge
 get_parsed_token_transfer_message
+	fun
+	0xb::bridge
+get_parsed_token_transfer_message_v2
 	fun
 	0xb::bridge
 to_bytes
