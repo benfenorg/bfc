@@ -49,10 +49,10 @@ Response: {
                     "asMoveObject": {
                       "contents": {
                         "type": {
-                          "repr": "0x9432905f01d89b0860046251581b6454e34b655600f9e312eae07f7888ae220f::m::Foo"
+                          "repr": "0xddcd93aabfd75f73f605dd982fce0d67c1f6fb5e59fdb7e772b3e74e70fff928::m::Bar"
                         }
                       },
-                      "hasPublicTransfer": true
+                      "hasPublicTransfer": false
                     }
                   }
                 },
@@ -61,10 +61,10 @@ Response: {
                     "asMoveObject": {
                       "contents": {
                         "type": {
-                          "repr": "0x9432905f01d89b0860046251581b6454e34b655600f9e312eae07f7888ae220f::m::Bar"
+                          "repr": "0xddcd93aabfd75f73f605dd982fce0d67c1f6fb5e59fdb7e772b3e74e70fff928::m::Foo"
                         }
                       },
-                      "hasPublicTransfer": false
+                      "hasPublicTransfer": true
                     }
                   }
                 }

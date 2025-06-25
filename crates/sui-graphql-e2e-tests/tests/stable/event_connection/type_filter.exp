@@ -34,7 +34,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M1::EventA"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M1::EventA"
             },
             "bcs": "FAAAAAAAAAA=",
             "json": {
@@ -78,7 +78,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M1::EventA"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M1::EventA"
             },
             "bcs": "FAAAAAAAAAA=",
             "json": {
@@ -106,7 +106,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M2::EventB"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M2::EventB"
             },
             "bcs": "KgAAAAAAAAA=",
             "json": {
@@ -134,7 +134,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M1::EventA"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M1::EventA"
             },
             "bcs": "FAAAAAAAAAA=",
             "json": {
@@ -151,7 +151,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M2::EventB"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M2::EventB"
             },
             "bcs": "KgAAAAAAAAA=",
             "json": {
@@ -179,7 +179,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M1::EventA"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M1::EventA"
             },
             "bcs": "FAAAAAAAAAA=",
             "json": {
@@ -196,7 +196,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M2::EventB"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M2::EventB"
             },
             "bcs": "KgAAAAAAAAA=",
             "json": {
@@ -213,7 +213,7 @@ Response: {
           },
           "contents": {
             "type": {
-              "repr": "0xfd806eefcb89b4fa589ed997eded72b91b4d980c9fc6d12b2b6b70074e8f8a03::M2::EventB"
+              "repr": "0xd8dfaff156cd86764065b34ad29a657771d6b0e322254f8f8cab89badc3f48aa::M2::EventB"
             },
             "bcs": "KwAAAAAAAAA=",
             "json": {
