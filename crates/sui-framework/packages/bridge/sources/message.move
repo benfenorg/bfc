@@ -142,6 +142,18 @@ module bridge::message {
         parsed_payload: TokenTransferPayload,
     }
 
+    public struct  AddTokenOnTokenList has drop {
+        from_chain_id :u8,
+        to_chain_id: u8,
+        token_id: u64,
+    }
+
+    public struct  RemoveTokenOnTokenList has drop {
+        from_chain_id :u8,
+        to_chain_id: u8,
+        token_id: u64,
+    }
+
     //////////////////////////////////////////////////////
     // Public functions
     //
@@ -239,6 +251,33 @@ module bridge::message {
             coin_type,
             target_address
         }
+    }
+
+
+    public fun extract_add_token_on_token_list_poyload(message: &BridgeMessage): AddTokenOnTokenList{
+           let mut bcs = bcs::new(message.payload);
+           let from_chain_id=bcs.peel_u8();
+           let to_chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+
+           AddTokenOnTokenList{
+            from_chain_id,
+            to_chain_id,
+            token_id
+           }
+    }
+
+    public fun extract_remove_token_on_token_list_poyload(message: &BridgeMessage): RemoveTokenOnTokenList{
+           let mut bcs = bcs::new(message.payload);
+           let from_chain_id=bcs.peel_u8();
+           let to_chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+
+           RemoveTokenOnTokenList{
+            from_chain_id,
+            to_chain_id,
+            token_id
+           }
     }
 
     /// Emergency op payload is just a single byte
@@ -739,6 +778,54 @@ module bridge::message {
         }
     }
 
+
+    public fun create_add_token_on_token_list(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        target_chain: u8,
+        token_id: u64
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(from_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&target_chain)));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+
+        BridgeMessage {
+            message_type: message_types::add_token_on_token_list(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+
+    public fun create_remove_token_on_token_list(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        target_chain: u8,
+        token_id: u64
+    ): BridgeMessage{
+        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(from_chain);
+        chain_ids::assert_valid_chain_id(target_chain);
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&target_chain)));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        BridgeMessage {
+            message_type: message_types::remove_token_on_token_list(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+
+    }
+
     /// Update Sui token message
     /// [message_type:u8]
     /// [version:u8]
@@ -929,6 +1016,31 @@ module bridge::message {
         self.admin_address
     }
 
+
+    public fun add_token_on_token_list_payload_from_chain_id(self: &AddTokenOnTokenList): u8 {
+        self.from_chain_id
+    }
+
+    public fun add_token_on_token_list_payload_to_chain_id(self: &AddTokenOnTokenList): u8 {
+        self.to_chain_id
+    }
+
+    public fun add_token_on_token_list_payload_token_id(self: &AddTokenOnTokenList): u64 {
+        self.token_id
+    }
+
+    public fun remove_token_on_token_list_payload_from_chain_id(self: &RemoveTokenOnTokenList): u8 {
+       self.from_chain_id
+    }
+
+    public fun remove_token_on_token_list_payload_to_chain_id(self: &RemoveTokenOnTokenList): u8 {
+        self.to_chain_id
+    }
+
+    public fun remove_token_on_token_list_payload_token_id(self: &RemoveTokenOnTokenList): u64 {
+        self.token_id
+    }
+
     public fun is_native(self: &AddTokenOnSui): bool {
         self.native_token
     }
@@ -990,7 +1102,11 @@ module bridge::message {
             5001
         }else if (message_type == message_types::remove_external_coin_target()) {
             5001
-        } else {
+        } else if (message_type == message_types::add_token_on_token_list()) {
+            5001
+        }else if (message_type == message_types::remove_token_on_token_list()) {
+            5001
+        }else {
             abort EInvalidMessageType
         }
     }

@@ -23,6 +23,7 @@ module bridge::bridge {
         AddExternalCoinWitness,RemoveExternalCoinWitness,
         AddExternalCoinTarget,RemoveExternalCoinTarget,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
+        AddTokenOnTokenList, RemoveTokenOnTokenList,
         to_parsed_token_transfer_message,
     };
     use bridge::tokenlist;
@@ -147,6 +148,8 @@ module bridge::bridge {
     const EUnpassedMultiSignature: u64 = 32;
     const EUnpassedWitnessSignature: u64=33;
     const EInvalidChainIDAndTokenIDExpect: u64 = 34;
+    const EInvalidChainIDOnTokenList : u64=35;
+
 
     const EUnauthorisedUpdateLimit: u64 = 40;
     const EInvalidMintAmount: u64 = 41;
@@ -306,10 +309,10 @@ module bridge::bridge {
     }
 
     public entry fun migrate(
-        bridge: &mut Bridge,
-        ctx: &mut TxContext
+        _bridge: &mut Bridge,
+        _ctx: &mut TxContext
     ){
-        tokenlist::add_center_token_list(&mut bridge.id, ctx);
+
     }
 
     public fun init_token_list(
@@ -317,6 +320,7 @@ module bridge::bridge {
         ctx: &mut TxContext
     ){
         tokenlist::new_tokenlist_registry(&mut bridge.id, ctx);
+        tokenlist::add_center_token_list(&mut bridge.id, ctx);
         limiter::update_transfer_limits(&mut load_inner_mut(bridge).limiter);
     }
 
@@ -695,6 +699,37 @@ module bridge::bridge {
             transfer::public_transfer(token.destroy_some(), owner)
         } else {
             token.destroy_none();
+        };
+    }
+
+    public fun execute_system_message_with_ctx(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+        ctx: &mut TxContext,
+    ){
+         let message_type = message.message_type();
+
+        // TODO: test version mismatch
+        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
+        let (inner,bridge_id) = load_inner_mut_and_uid(bridge);
+
+        assert!(message.source_chain() == inner.chain_id, EUnexpectedChainID);
+
+        // check system ops seq number and increment it
+        let expected_seq_num = inner.get_current_seq_num_and_increment(message_type);
+        assert!(message.seq_num() == expected_seq_num, EUnexpectedSeqNum);
+
+        inner.committee.verify_signatures(message, signatures);
+        if (message_type == message_types::add_token_on_token_list()){
+            let payload = message.extract_add_token_on_token_list_poyload();
+            execute_add_token_on_token_list(bridge_id,payload,ctx);
+
+        }else if (message_type == message_types::remove_token_on_token_list()){
+             let payload = message.extract_remove_token_on_token_list_poyload();
+            execute_remove_token_on_token_list(bridge_id,payload);
+        }else {
+            abort EUnexpectedMessageType
         };
     }
 
@@ -1584,6 +1619,40 @@ module bridge::bridge {
         )
     }
 
+
+    fun execute_add_token_on_token_list(parent_id: &mut UID,payload: AddTokenOnTokenList,ctx: &mut TxContext){
+        let source_chain=payload.add_token_on_token_list_payload_from_chain_id();
+        let target_chain=payload.add_token_on_token_list_payload_to_chain_id();
+        let token_id=payload.add_token_on_token_list_payload_token_id();
+        std::debug::print(&99);
+        std::debug::print(&token_id);
+
+        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
+            tokenlist::add_token_to_benfen(parent_id,source_chain as u64,token_id,ctx);
+        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
+            tokenlist::add_token_from_benfen(parent_id,target_chain as u64,token_id,ctx);
+        }else{
+            abort EInvalidChainIDOnTokenList
+        }
+
+    }
+
+    fun execute_remove_token_on_token_list(parent_id: &mut UID,payload: RemoveTokenOnTokenList){
+        let source_chain=payload.remove_token_on_token_list_payload_from_chain_id();
+        let target_chain=payload.remove_token_on_token_list_payload_to_chain_id();
+        let token_id=payload.remove_token_on_token_list_payload_token_id();
+
+        if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
+            tokenlist::remove_token_to_benfen(parent_id,source_chain as u64,token_id);
+        }else if (source_chain==chain_ids::sui_mainnet() || source_chain==chain_ids::sui_testnet() || source_chain==chain_ids::sui_custom())  {
+            tokenlist::remove_token_from_benfen(parent_id,target_chain as u64,token_id);
+        }else{
+            abort EInvalidChainIDOnTokenList
+        }
+
+    }
+
+
     fun execute_add_tokens_on_sui(inner: &mut BridgeInner, payload: AddTokenOnSui) {
         // FIXME: assert native_token to be false and add test
         let native_token = payload.is_native();
@@ -1776,6 +1845,11 @@ module bridge::bridge {
     #[test_only]
     public fun test_load_limiter(bridge: &Bridge): &TransferLimiter {
         &bridge.load_inner().limiter
+    }
+
+    #[test_only]
+    public fun test_load_mut_uid(bridge: &mut Bridge): &mut UID {
+       &mut bridge.id
     }
 
     #[test_only]

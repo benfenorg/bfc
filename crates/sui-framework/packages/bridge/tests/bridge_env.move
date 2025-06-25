@@ -12,6 +12,7 @@ module bridge::bridge_env {
         test_get_external_token_transfer_action_status,
         get_available_claim_amount,
         test_load_inner_mut,
+        test_load_mut_uid,
         Bridge,
         EmergencyOpEvent,
         TokenDepositedEvent,
@@ -44,6 +45,8 @@ module bridge::bridge_env {
         create_add_external_coin_target_message,
         create_remove_external_coin_target_message,
         create_blocklist_message,
+        create_add_token_on_token_list,
+        create_remove_token_on_token_list,
         emergency_op_pause,
         emergency_op_unpause
     };
@@ -60,6 +63,7 @@ module bridge::bridge_env {
     use std::type_name;
     use bridge::bnb::{Self, BNB};
     use bridge::op::{ OP};
+    use bridge::tokenlist;
     use sui::address;
     use sui::clock::Clock;
     use sui::coin::{Self, Coin, CoinMetadata, TreasuryCap};
@@ -602,6 +606,64 @@ module bridge::bridge_env {
         test_scenario::return_shared(bridge);
     }
 
+    public fun add_token_on_token_list(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        target_chain: u8,
+        token_id: u64,
+    ){
+       //let scenario = &mut env.scenario;
+        env.scenario.next_tx(@0x0);
+        let mut bridge = env.scenario.take_shared<Bridge>();
+        let add_message = create_add_token_on_token_list(env.chain_id, bridge.get_seq_num_for(message_types::add_token_on_token_list()),source_chain,target_chain , token_id);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        //check
+        env.scenario.next_tx(@0x1);
+        let uid=test_load_mut_uid(&mut bridge);
+        let exist= if (env.chain_id==source_chain){
+            tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+        }else{
+            tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+        };
+        assert!(exist,0);
+        test_scenario::return_shared(bridge);
+    }
+
+
+    public fun remove_token_on_token_list(
+        env: &mut BridgeEnv,
+        source_chain: u8,
+        target_chain: u8,
+        token_id: u64,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        {
+            let uid=test_load_mut_uid(&mut bridge);
+            let exist= if (env.chain_id==source_chain){
+                tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+            }else{
+                tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+            };
+            assert!(exist,0);
+        };
+        let remove_message = create_remove_token_on_token_list(env.chain_id, bridge.get_seq_num_for(message_types::remove_token_on_token_list()),source_chain,target_chain , token_id);
+        let signatures = env.sign_message(remove_message);
+        bridge.execute_system_message_with_ctx(remove_message, signatures,env.scenario.ctx());
+        //check
+        {
+            let uid=test_load_mut_uid(&mut bridge);
+            let exist= if (env.chain_id==source_chain){
+                tokenlist::is_supported_from_benfen(uid,target_chain as u64,token_id)
+            }else{
+                tokenlist::is_supported_to_benfen(uid,source_chain as u64,token_id)
+            };
+            assert!(!exist,0);
+        };
+        test_scenario::return_shared(bridge);
+    }
 
     public fun remove_external_coin_admin(
         env: &mut BridgeEnv,

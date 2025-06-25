@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::abi::{eth_sui_bridge, EthSuiBridge};
+use crate::abi::{eth_sui_bridge, EthSuiBridge, WillAmountExceedLimitCall};
 use crate::client::bridge_authority_aggregator::BridgeAuthorityAggregator;
 use crate::crypto::BridgeAuthorityKeyPair;
 use crate::e2e_tests::test_utils::TestClusterWrapperBuilder;
@@ -23,6 +23,8 @@ use crate::sui_transaction_builder::build_remove_external_coin_target_transactio
 use crate::sui_transaction_builder::build_remove_external_coin_witness_transaction;
 use crate::sui_transaction_builder::{
     build_add_tokens_on_sui_transaction, build_refund_admin_operate_transaction,
+    build_add_token_on_token_list_transaction,
+    build_remove_token_on_token_list_transaction
 };
 // use ethers::types::Address;
 use ethers::types::Address as EthAddress;
@@ -31,6 +33,8 @@ use crate::types::{
     AddExternalCoinAdminAction, AddExternalCoinTargetAction, AddExternalCoinWitnessAction,
     AddTokensOnEvmAction, BridgeAction, RefundAdminAction, RemoveExternalCoinAdminAction,
     RemoveExternalCoinTargetAction, RemoveExternalCoinWitnessAction,
+    AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
+    SingleTransferLimitUpdateAction
 };
 use crate::utils::publish_and_register_coins_return_add_coins_on_sui_action;
 use crate::BRIDGE_ENABLE_PROTOCOL_VERSION;
@@ -973,6 +977,233 @@ async fn test_remove_external_target() {
     let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
     let effects = response.effects.unwrap();
     assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_add_token_on_token_list(){
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let add_action =
+        BridgeAction::AddTokenOnTokenListAction(AddTokenOnTokenListAction{
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            from_chain_id: BridgeChainId::SuiCustom,
+            to_chain_id: BridgeChainId::ArbCustom,
+            token_id: 11,
+        });
+
+    let remove_action =
+        BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            from_chain_id: BridgeChainId::SuiCustom,
+            to_chain_id: BridgeChainId::ArbCustom,
+            token_id: 11,
+        });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_action.clone(), remove_action.clone()],
+        vec![add_action.clone()],
+        vec![remove_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action1 = agg
+        .request_committee_signatures(add_action)
+        .await
+        .expect("Failed to request committee signatures for AddTokenOnTokenListAction");
+
+    let tx = build_add_token_on_token_list_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+        certified_action1,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+
+}
+
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_remove_token_on_token_list() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+
+    let sender = bridge_test_cluster.sui_user_address();
+    let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let add_action =
+        BridgeAction::AddTokenOnTokenListAction(AddTokenOnTokenListAction{
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            from_chain_id: BridgeChainId::SuiCustom,
+            to_chain_id: BridgeChainId::ArbCustom,
+            token_id: 11,
+        });
+
+    let remove_action =
+        BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            from_chain_id: BridgeChainId::SuiCustom,
+            to_chain_id: BridgeChainId::ArbCustom,
+            token_id: 11,
+        });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![add_action.clone(), remove_action.clone()],
+        vec![add_action.clone()],
+        vec![remove_action.clone()],
+    ]);
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_action1 = agg
+        .request_committee_signatures(remove_action)
+        .await
+        .expect("Failed to request committee signatures for RemoveTokenOnTokenListAction");
+
+    let tx = build_remove_token_on_token_list_transaction(
+        sender,
+        &bridge_test_cluster
+            .wallet()
+            .get_one_gas_object_owned_by_address(sender)
+            .await
+            .unwrap()
+            .unwrap(),
+        certified_action1,
+        bridge_arg,
+        1000,
+    )
+    .unwrap();
+
+    let response = bridge_test_cluster.sign_and_execute_transaction(&tx).await;
+    let effects = response.effects.unwrap();
+    assert_eq!(effects.status(), &SuiExecutionStatus::Success);
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 4)]
+async fn test_set_single_transfer_limit_on_eth() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(false)
+        .with_num_validators(3)
+        .build()
+        .await;
+    let limit=70_000_000_000;
+
+    let eth_action =
+        BridgeAction::SingleTransferLimitUpdateAction(SingleTransferLimitUpdateAction{
+            nonce: 0,
+            chain_id: BridgeChainId::EthCustom,
+            sending_chain_id: BridgeChainId::SuiCustom,
+            new_usd_limit: limit,
+        });
+
+    let remove_action =
+        BridgeAction::RemoveTokenOnTokenListAction(RemoveTokenOnTokenListAction {
+            nonce: 0,
+            chain_id: BridgeChainId::SuiCustom,
+            from_chain_id: BridgeChainId::SuiCustom,
+            to_chain_id: BridgeChainId::ArbCustom,
+            token_id: 11,
+        });
+
+    info!("Starting bridge cluster");
+
+    bridge_test_cluster.set_approved_governance_actions_for_next_start(vec![
+        vec![eth_action.clone(), remove_action.clone()],
+        vec![eth_action.clone()],
+        vec![remove_action.clone()],
+    ]);
+
+    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster
+        .wait_for_bridge_cluster_to_be_up(10)
+        .await;
+    info!("Bridge cluster is up");
+
+    let bridge_committee = Arc::new(
+        bridge_test_cluster
+            .bridge_client()
+            .get_bridge_committee()
+            .await
+            .expect("Failed to get bridge committee SingleTransferLimitUpdateAction"),
+    );
+    let agg = BridgeAuthorityAggregator::new_for_testing(bridge_committee);
+    let certified_eth_action = agg
+        .request_committee_signatures(eth_action)
+        .await
+        .expect("Failed to request committee signatures for SingleTransferLimitUpdateAction");
+
+    let config_address = bridge_test_cluster.contracts().bridge_limiter;
+    let eth_signer = bridge_test_cluster.get_eth_signer().await;
+    let eth_call = build_eth_transaction(config_address, eth_signer, certified_eth_action)
+        .await
+        .unwrap();
+    let eth_receipt = send_eth_tx_and_get_tx_receipt(eth_call).await;
+    assert_eq!(eth_receipt.status.unwrap().as_u64(), 1);
+
+    //Verify
+    let amount = bridge_test_cluster
+    .eth_env()
+    .get_single_transfer_limit()
+    .await;
+
+    assert_eq!(amount, limit);
 }
 
 // Test add new coins on both Sui and Eth

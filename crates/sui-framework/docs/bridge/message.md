@@ -22,12 +22,16 @@ title: Module `0xb::message`
 -  [Struct `RemoveExternalCoinTarget`](#0xb_message_RemoveExternalCoinTarget)
 -  [Struct `AddTokenOnSui`](#0xb_message_AddTokenOnSui)
 -  [Struct `ParsedTokenTransferMessage`](#0xb_message_ParsedTokenTransferMessage)
+-  [Struct `AddTokenOnTokenList`](#0xb_message_AddTokenOnTokenList)
+-  [Struct `RemoveTokenOnTokenList`](#0xb_message_RemoveTokenOnTokenList)
 -  [Constants](#@Constants_0)
 -  [Function `extract_token_bridge_payload`](#0xb_message_extract_token_bridge_payload)
 -  [Function `extract_add_witness_poyload`](#0xb_message_extract_add_witness_poyload)
 -  [Function `extract_remove_witness_poyload`](#0xb_message_extract_remove_witness_poyload)
 -  [Function `extract_add_external_target_address_poyload`](#0xb_message_extract_add_external_target_address_poyload)
 -  [Function `extract_remove_external_target_address_poyload`](#0xb_message_extract_remove_external_target_address_poyload)
+-  [Function `extract_add_token_on_token_list_poyload`](#0xb_message_extract_add_token_on_token_list_poyload)
+-  [Function `extract_remove_token_on_token_list_poyload`](#0xb_message_extract_remove_token_on_token_list_poyload)
 -  [Function `extract_emergency_op_payload`](#0xb_message_extract_emergency_op_payload)
 -  [Function `extract_blocklist_payload`](#0xb_message_extract_blocklist_payload)
 -  [Function `extract_refund_admin_payload`](#0xb_message_extract_refund_admin_payload)
@@ -51,6 +55,8 @@ title: Module `0xb::message`
 -  [Function `create_add_external_coin_target_message`](#0xb_message_create_add_external_coin_target_message)
 -  [Function `create_remove_external_coin_target_message`](#0xb_message_create_remove_external_coin_target_message)
 -  [Function `create_remove_external_coin_admin_message`](#0xb_message_create_remove_external_coin_admin_message)
+-  [Function `create_add_token_on_token_list`](#0xb_message_create_add_token_on_token_list)
+-  [Function `create_remove_token_on_token_list`](#0xb_message_create_remove_token_on_token_list)
 -  [Function `create_add_tokens_on_sui_message`](#0xb_message_create_add_tokens_on_sui_message)
 -  [Function `create_key`](#0xb_message_create_key)
 -  [Function `key`](#0xb_message_key)
@@ -91,6 +97,12 @@ title: Module `0xb::message`
 -  [Function `add_external_coin_admin_payload_admin_address`](#0xb_message_add_external_coin_admin_payload_admin_address)
 -  [Function `remove_external_coin_admin_payload_coin_type`](#0xb_message_remove_external_coin_admin_payload_coin_type)
 -  [Function `remove_external_coin_admin_payload_admin_address`](#0xb_message_remove_external_coin_admin_payload_admin_address)
+-  [Function `add_token_on_token_list_payload_from_chain_id`](#0xb_message_add_token_on_token_list_payload_from_chain_id)
+-  [Function `add_token_on_token_list_payload_to_chain_id`](#0xb_message_add_token_on_token_list_payload_to_chain_id)
+-  [Function `add_token_on_token_list_payload_token_id`](#0xb_message_add_token_on_token_list_payload_token_id)
+-  [Function `remove_token_on_token_list_payload_from_chain_id`](#0xb_message_remove_token_on_token_list_payload_from_chain_id)
+-  [Function `remove_token_on_token_list_payload_to_chain_id`](#0xb_message_remove_token_on_token_list_payload_to_chain_id)
+-  [Function `remove_token_on_token_list_payload_token_id`](#0xb_message_remove_token_on_token_list_payload_token_id)
 -  [Function `is_native`](#0xb_message_is_native)
 -  [Function `token_ids`](#0xb_message_token_ids)
 -  [Function `token_type_names`](#0xb_message_token_type_names)
@@ -808,6 +820,84 @@ title: Module `0xb::message`
 
 </details>
 
+<a name="0xb_message_AddTokenOnTokenList"></a>
+
+## Struct `AddTokenOnTokenList`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>from_chain_id: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>to_chain_id: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
+<a name="0xb_message_RemoveTokenOnTokenList"></a>
+
+## Struct `RemoveTokenOnTokenList`
+
+
+
+<pre><code><b>struct</b> <a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a> <b>has</b> drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>from_chain_id: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>to_chain_id: u8</code>
+</dt>
+<dd>
+
+</dd>
+<dt>
+<code>token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a></code>
+</dt>
+<dd>
+
+</dd>
+</dl>
+
+
+</details>
+
 <a name="@Constants_0"></a>
 
 ## Constants
@@ -1114,6 +1204,72 @@ title: Module `0xb::message`
         coin_type,
         target_address
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_add_token_on_token_list_poyload"></a>
+
+## Function `extract_add_token_on_token_list_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_token_on_token_list_poyload">extract_add_token_on_token_list_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_AddTokenOnTokenList">message::AddTokenOnTokenList</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_add_token_on_token_list_poyload">extract_add_token_on_token_list_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a>{
+       <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+       <b>let</b> from_chain_id=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+       <b>let</b> to_chain_id=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+       <b>let</b> token_id=<a href="message.md#0xb_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>);
+
+       <a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a>{
+        from_chain_id,
+        to_chain_id,
+        token_id
+       }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_extract_remove_token_on_token_list_poyload"></a>
+
+## Function `extract_remove_token_on_token_list_poyload`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_token_on_token_list_poyload">extract_remove_token_on_token_list_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>): <a href="message.md#0xb_message_RemoveTokenOnTokenList">message::RemoveTokenOnTokenList</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_extract_remove_token_on_token_list_poyload">extract_remove_token_on_token_list_poyload</a>(<a href="message.md#0xb_message">message</a>: &<a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>): <a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>{
+       <b>let</b> <b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a> = bcs::new(<a href="message.md#0xb_message">message</a>.payload);
+       <b>let</b> from_chain_id=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+       <b>let</b> to_chain_id=<a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>.peel_u8();
+       <b>let</b> token_id=<a href="message.md#0xb_message_peel_u64_be">peel_u64_be</a>(&<b>mut</b> <a href="../move-stdlib/bcs.md#0x1_bcs">bcs</a>);
+
+       <a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>{
+        from_chain_id,
+        to_chain_id,
+        token_id
+       }
 }
 </code></pre>
 
@@ -2072,6 +2228,92 @@ Update asset price message
         source_chain,
         payload,
     }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_add_token_on_token_list"></a>
+
+## Function `create_add_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_token_on_token_list">create_add_token_on_token_list</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, from_chain: u8, target_chain: u8, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_add_token_on_token_list">create_add_token_on_token_list</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    from_chain: u8,
+    target_chain: u8,
+    token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+): <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(from_chain);
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> payload = <a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&from_chain));
+    payload.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&target_chain)));
+    payload.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&token_id)));
+
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_add_token_on_token_list">message_types::add_token_on_token_list</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_create_remove_token_on_token_list"></a>
+
+## Function `create_remove_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_token_on_token_list">create_remove_token_on_token_list</a>(source_chain: u8, seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, from_chain: u8, target_chain: u8, token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_create_remove_token_on_token_list">create_remove_token_on_token_list</a>(
+    source_chain: u8,
+    seq_num: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    from_chain: u8,
+    target_chain: u8,
+    token_id: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+): <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a>{
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(source_chain);
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(from_chain);
+    <a href="chain_ids.md#0xb_chain_ids_assert_valid_chain_id">chain_ids::assert_valid_chain_id</a>(target_chain);
+    <b>let</b> <b>mut</b> payload = <a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&from_chain));
+    payload.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&target_chain)));
+    payload.append(<a href="message.md#0xb_message_reverse_bytes">reverse_bytes</a>(<a href="../move-stdlib/bcs.md#0x1_bcs_to_bytes">bcs::to_bytes</a>(&token_id)));
+    <a href="message.md#0xb_message_BridgeMessage">BridgeMessage</a> {
+        message_type: <a href="message_types.md#0xb_message_types_remove_token_on_token_list">message_types::remove_token_on_token_list</a>(),
+        message_version: <a href="message.md#0xb_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
+        seq_num,
+        source_chain,
+        payload,
+    }
+
 }
 </code></pre>
 
@@ -3066,6 +3308,150 @@ Update Sui token message
 
 </details>
 
+<a name="0xb_message_add_token_on_token_list_payload_from_chain_id"></a>
+
+## Function `add_token_on_token_list_payload_from_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_from_chain_id">add_token_on_token_list_payload_from_chain_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">message::AddTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_from_chain_id">add_token_on_token_list_payload_from_chain_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): u8 {
+    self.from_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_token_on_token_list_payload_to_chain_id"></a>
+
+## Function `add_token_on_token_list_payload_to_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_to_chain_id">add_token_on_token_list_payload_to_chain_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">message::AddTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_to_chain_id">add_token_on_token_list_payload_to_chain_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): u8 {
+    self.to_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_add_token_on_token_list_payload_token_id"></a>
+
+## Function `add_token_on_token_list_payload_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_token_id">add_token_on_token_list_payload_token_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">message::AddTokenOnTokenList</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_add_token_on_token_list_payload_token_id">add_token_on_token_list_payload_token_id</a>(self: &<a href="message.md#0xb_message_AddTokenOnTokenList">AddTokenOnTokenList</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.token_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_token_on_token_list_payload_from_chain_id"></a>
+
+## Function `remove_token_on_token_list_payload_from_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_from_chain_id">remove_token_on_token_list_payload_from_chain_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">message::RemoveTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_from_chain_id">remove_token_on_token_list_payload_from_chain_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): u8 {
+   self.from_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_token_on_token_list_payload_to_chain_id"></a>
+
+## Function `remove_token_on_token_list_payload_to_chain_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_to_chain_id">remove_token_on_token_list_payload_to_chain_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">message::RemoveTokenOnTokenList</a>): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_to_chain_id">remove_token_on_token_list_payload_to_chain_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): u8 {
+    self.to_chain_id
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_remove_token_on_token_list_payload_token_id"></a>
+
+## Function `remove_token_on_token_list_payload_token_id`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_token_id">remove_token_on_token_list_payload_token_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">message::RemoveTokenOnTokenList</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message.md#0xb_message_remove_token_on_token_list_payload_token_id">remove_token_on_token_list_payload_token_id</a>(self: &<a href="message.md#0xb_message_RemoveTokenOnTokenList">RemoveTokenOnTokenList</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.token_id
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_message_is_native"></a>
 
 ## Function `is_native`
@@ -3262,7 +3648,11 @@ Return the required signature threshold for the message, values are voting power
         5001
     }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()) {
         5001
-    } <b>else</b> {
+    } <b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_token_on_token_list">message_types::add_token_on_token_list</a>()) {
+        5001
+    }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_token_on_token_list">message_types::remove_token_on_token_list</a>()) {
+        5001
+    }<b>else</b> {
         <b>abort</b> <a href="message.md#0xb_message_EInvalidMessageType">EInvalidMessageType</a>
     }
 }

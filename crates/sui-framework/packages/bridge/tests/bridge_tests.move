@@ -1579,21 +1579,69 @@ fun test_twice_call_init_token_list() {
 }
 
 #[test]
-#[
-expected_failure(
-    abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
-)]
-fun test_twice_call_add_center_token_list(){
+fun test_add_token_on_benfen(){
     let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
     let mut env = create_env(chain_id);
     env.create_bridge_default();
-    let mut bridge = env.bridge(@0x0);
-    let bridge_inner = bridge.bridge_ref_mut();
-    bridge_inner.migrate(env.scenario().ctx());
-    //bridge_inner.migrate(env.scenario().ctx());
-    bridge.return_bridge();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
     env.destroy_env();
 }
+
+#[test]
+fun test_add_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.destroy_env();
+}
+
+
+#[test]
+fun test_remove_token_on_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let target_id=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(chain_id,target_id, token_id);
+    env.remove_token_on_token_list(chain_id, target_id, token_id);
+    env.destroy_env();
+}
+
+#[test]
+fun test_remove_token_from_benfen(){
+    let chain_id = chain_ids::sui_testnet();
+    let source_chain=chain_ids::aptos_testnet();
+    let token_id=11; //aptos coin
+    let mut env = create_env(chain_id);
+    env.create_bridge_default();
+    env.add_token_on_token_list(source_chain,chain_id, token_id);
+    env.remove_token_on_token_list(source_chain, chain_id, token_id);
+    env.destroy_env();
+}
+
+
+// #[test]
+// #[
+// expected_failure(
+//     abort_code = bridge::tokenlist::EBridgeCenterTokenLisAlreadyExists,
+// )]
+// fun test_twice_call_add_center_token_list(){
+//     let chain_id = chain_ids::sui_testnet();
+//     let mut env = create_env(chain_id);
+//     env.create_bridge_default();
+//     let mut bridge = env.bridge(@0x0);
+//     let bridge_inner = bridge.bridge_ref_mut();
+//     bridge_inner.migrate(env.scenario().ctx());
+//     //bridge_inner.migrate(env.scenario().ctx());
+//     bridge.return_bridge();
+//     env.destroy_env();
+// }
 
 #[test]
 fun test_get_available_claim_amount_for_router_limit() {

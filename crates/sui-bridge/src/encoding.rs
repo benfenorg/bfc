@@ -3,6 +3,8 @@
 
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
+use crate::types::AddTokenOnTokenListAction;
+use crate::types::RemoveTokenOnTokenListAction;
 use crate::types::AddExternalCoinAdminAction;
 use crate::types::RemoveExternalCoinAdminAction;
 use crate::types::AddExternalCoinWitnessAction;
@@ -19,6 +21,7 @@ use crate::types::ExternalDepositStartBridgeAction;
 use crate::types::EthToSuiBridgeAction;
 use crate::types::EvmContractUpgradeAction;
 use crate::types::LimitUpdateAction;
+use crate::types::SingleTransferLimitUpdateAction;
 use crate::types::RefundAdminAction;
 use crate::types::SuiToEthBridgeAction;
 use enum_dispatch::enum_dispatch;
@@ -42,6 +45,10 @@ pub const ASSET_PRICE_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const EVM_CONTRACT_UPGRADE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_SUI_MESSAGE_VERSION: u8 = 1;
 pub const ADD_TOKENS_ON_EVM_MESSAGE_VERSION: u8 = 1;
+pub const ADD_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
+pub const REMOVE_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION: u8 = 1;
+pub const SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
+
 
 pub const BRIDGE_MESSAGE_PREFIX: &[u8] = b"SUI_BRIDGE_MESSAGE";
 
@@ -382,6 +389,34 @@ impl BridgeMessageEncoding for LimitUpdateAction {
     }
 }
 
+impl BridgeMessageEncoding for SingleTransferLimitUpdateAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::SingleTransferLimitUpdate as u8);
+        // Add message version
+        bytes.push(SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add sending chain id
+        bytes.push(self.sending_chain_id as u8);
+        // Add new usd limit
+        bytes.extend_from_slice(&self.new_usd_limit.to_be_bytes());
+        bytes
+    }
+}
+
 impl BridgeMessageEncoding for AssetPriceUpdateAction {
     fn as_bytes(&self) -> Vec<u8> {
         let mut bytes = Vec::new();
@@ -591,6 +626,61 @@ impl BridgeMessageEncoding for RemoveExternalCoinTargetAction {
 
         bytes
     }
+}
+
+impl BridgeMessageEncoding for AddTokenOnTokenListAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::AddTokenOnTokenList as u8);
+        // Add message version
+        bytes.push(ADD_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(self.from_chain_id as u8);
+        bytes.push(self.to_chain_id as u8);
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        bytes
+    }
+
+}
+
+
+impl BridgeMessageEncoding for RemoveTokenOnTokenListAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::RemoveTokenOnTokenList as u8);
+        // Add message version
+        bytes.push(REMOVE_TOKEN_ON_TOKEN_LIST_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        bytes.push(self.from_chain_id as u8);
+        bytes.push(self.to_chain_id as u8);
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        bytes
+    }
+
 }
 
 

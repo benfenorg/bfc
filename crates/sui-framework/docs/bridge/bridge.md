@@ -41,6 +41,7 @@ title: Module `0xb::bridge`
 -  [Function `claim_token`](#0xb_bridge_claim_token)
 -  [Function `claim_and_transfer_token`](#0xb_bridge_claim_and_transfer_token)
 -  [Function `claim_and_transfer_busd`](#0xb_bridge_claim_and_transfer_busd)
+-  [Function `execute_system_message_with_ctx`](#0xb_bridge_execute_system_message_with_ctx)
 -  [Function `execute_system_message`](#0xb_bridge_execute_system_message)
 -  [Function `get_available_claim_amount`](#0xb_bridge_get_available_claim_amount)
 -  [Function `pre_deposit_external_coin`](#0xb_bridge_pre_deposit_external_coin)
@@ -71,12 +72,15 @@ title: Module `0xb::bridge`
 -  [Function `execute_remove_external_coin_target_payload`](#0xb_bridge_execute_remove_external_coin_target_payload)
 -  [Function `execute_add_external_coin_witness`](#0xb_bridge_execute_add_external_coin_witness)
 -  [Function `execute_remove_external_coin_witness`](#0xb_bridge_execute_remove_external_coin_witness)
+-  [Function `execute_add_token_on_token_list`](#0xb_bridge_execute_add_token_on_token_list)
+-  [Function `execute_remove_token_on_token_list`](#0xb_bridge_execute_remove_token_on_token_list)
 -  [Function `execute_add_tokens_on_sui`](#0xb_bridge_execute_add_tokens_on_sui)
 -  [Function `get_current_seq_num_and_increment`](#0xb_bridge_get_current_seq_num_and_increment)
 -  [Function `get_parsed_token_transfer_message`](#0xb_bridge_get_parsed_token_transfer_message)
 
 
 <pre><code><b>use</b> <a href="../move-stdlib/ascii.md#0x1_ascii">0x1::ascii</a>;
+<b>use</b> <a href="../move-stdlib/debug.md#0x1_debug">0x1::debug</a>;
 <b>use</b> <a href="../move-stdlib/option.md#0x1_option">0x1::option</a>;
 <b>use</b> <a href="../move-stdlib/type_name.md#0x1_type_name">0x1::type_name</a>;
 <b>use</b> <a href="../sui-framework/address.md#0x2_address">0x2::address</a>;
@@ -1205,6 +1209,15 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_EInvalidChainIDOnTokenList"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_EInvalidChainIDOnTokenList">EInvalidChainIDOnTokenList</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 35;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EInvalidEvmAddress"></a>
 
 
@@ -1572,7 +1585,7 @@ title: Module `0xb::bridge`
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(_bridge: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, _ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -1582,10 +1595,10 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
-    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
-    ctx: &<b>mut</b> TxContext
+    _bridge: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    _ctx: &<b>mut</b> TxContext
 ){
-    <a href="tokenlist.md#0xb_tokenlist_add_center_token_list">tokenlist::add_center_token_list</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
+
 }
 </code></pre>
 
@@ -1613,6 +1626,7 @@ title: Module `0xb::bridge`
     ctx: &<b>mut</b> TxContext
 ){
     <a href="tokenlist.md#0xb_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
+    <a href="tokenlist.md#0xb_tokenlist_add_center_token_list">tokenlist::add_center_token_list</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
     <a href="limiter.md#0xb_limiter_update_transfer_limits">limiter::update_transfer_limits</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>).<a href="limiter.md#0xb_limiter">limiter</a>);
 }
 </code></pre>
@@ -2234,6 +2248,57 @@ title: Module `0xb::bridge`
         <a href="../sui-framework/transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(token.destroy_some(), owner)
     } <b>else</b> {
         token.destroy_none();
+    };
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_system_message_with_ctx"></a>
+
+## Function `execute_system_message_with_ctx`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_execute_system_message_with_ctx">execute_system_message_with_ctx</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, <a href="message.md#0xb_message">message</a>: <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_execute_system_message_with_ctx">execute_system_message_with_ctx</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    <a href="message.md#0xb_message">message</a>: BridgeMessage,
+    signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt;,
+    ctx: &<b>mut</b> TxContext,
+){
+     <b>let</b> message_type = <a href="message.md#0xb_message">message</a>.message_type();
+
+    // TODO: test version mismatch
+    <b>assert</b>!(<a href="message.md#0xb_message">message</a>.message_version() == <a href="bridge.md#0xb_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="bridge.md#0xb_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>let</b> (inner,bridge_id) = <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+
+    <b>assert</b>!(<a href="message.md#0xb_message">message</a>.source_chain() == inner.chain_id, <a href="bridge.md#0xb_bridge_EUnexpectedChainID">EUnexpectedChainID</a>);
+
+    // check system ops seq number and increment it
+    <b>let</b> expected_seq_num = inner.<a href="bridge.md#0xb_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(message_type);
+    <b>assert</b>!(<a href="message.md#0xb_message">message</a>.seq_num() == expected_seq_num, <a href="bridge.md#0xb_bridge_EUnexpectedSeqNum">EUnexpectedSeqNum</a>);
+
+    inner.<a href="committee.md#0xb_committee">committee</a>.verify_signatures(<a href="message.md#0xb_message">message</a>, signatures);
+    <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_add_token_on_token_list">message_types::add_token_on_token_list</a>()){
+        <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_add_token_on_token_list_poyload();
+        <a href="bridge.md#0xb_bridge_execute_add_token_on_token_list">execute_add_token_on_token_list</a>(bridge_id,payload,ctx);
+
+    }<b>else</b> <b>if</b> (message_type == <a href="message_types.md#0xb_message_types_remove_token_on_token_list">message_types::remove_token_on_token_list</a>()){
+         <b>let</b> payload = <a href="message.md#0xb_message">message</a>.extract_remove_token_on_token_list_poyload();
+        <a href="bridge.md#0xb_bridge_execute_remove_token_on_token_list">execute_remove_token_on_token_list</a>(bridge_id,payload);
+    }<b>else</b> {
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EUnexpectedMessageType">EUnexpectedMessageType</a>
     };
 }
 </code></pre>
@@ -3706,6 +3771,78 @@ title: Module `0xb::bridge`
         payload.remove_external_coin_witness_payload_coin_type(),
         payload.remove_external_coin_witness_payload_witness_address(),
     )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_add_token_on_token_list"></a>
+
+## Function `execute_add_token_on_token_list`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_token_on_token_list">execute_add_token_on_token_list</a>(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, payload: <a href="message.md#0xb_message_AddTokenOnTokenList">message::AddTokenOnTokenList</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_add_token_on_token_list">execute_add_token_on_token_list</a>(parent_id: &<b>mut</b> UID,payload: AddTokenOnTokenList,ctx: &<b>mut</b> TxContext){
+    <b>let</b> source_chain=payload.add_token_on_token_list_payload_from_chain_id();
+    <b>let</b> target_chain=payload.add_token_on_token_list_payload_to_chain_id();
+    <b>let</b> token_id=payload.add_token_on_token_list_payload_token_id();
+    std::debug::print(&99);
+    std::debug::print(&token_id);
+
+    <b>if</b> (target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()) {
+        <a href="tokenlist.md#0xb_tokenlist_add_token_to_benfen">tokenlist::add_token_to_benfen</a>(parent_id,source_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,token_id,ctx);
+    }<b>else</b> <b>if</b> (source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>() || source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>() || source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>())  {
+        <a href="tokenlist.md#0xb_tokenlist_add_token_from_benfen">tokenlist::add_token_from_benfen</a>(parent_id,target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,token_id,ctx);
+    }<b>else</b>{
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EInvalidChainIDOnTokenList">EInvalidChainIDOnTokenList</a>
+    }
+
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_execute_remove_token_on_token_list"></a>
+
+## Function `execute_remove_token_on_token_list`
+
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_token_on_token_list">execute_remove_token_on_token_list</a>(parent_id: &<b>mut</b> <a href="../sui-framework/object.md#0x2_object_UID">object::UID</a>, payload: <a href="message.md#0xb_message_RemoveTokenOnTokenList">message::RemoveTokenOnTokenList</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>fun</b> <a href="bridge.md#0xb_bridge_execute_remove_token_on_token_list">execute_remove_token_on_token_list</a>(parent_id: &<b>mut</b> UID,payload: RemoveTokenOnTokenList){
+    <b>let</b> source_chain=payload.remove_token_on_token_list_payload_from_chain_id();
+    <b>let</b> target_chain=payload.remove_token_on_token_list_payload_to_chain_id();
+    <b>let</b> token_id=payload.remove_token_on_token_list_payload_token_id();
+
+    <b>if</b> (target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>() || target_chain==<a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>()) {
+        <a href="tokenlist.md#0xb_tokenlist_remove_token_to_benfen">tokenlist::remove_token_to_benfen</a>(parent_id,source_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,token_id);
+    }<b>else</b> <b>if</b> (source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_mainnet">chain_ids::sui_mainnet</a>() || source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_testnet">chain_ids::sui_testnet</a>() || source_chain==<a href="chain_ids.md#0xb_chain_ids_sui_custom">chain_ids::sui_custom</a>())  {
+        <a href="tokenlist.md#0xb_tokenlist_remove_token_from_benfen">tokenlist::remove_token_from_benfen</a>(parent_id,target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,token_id);
+    }<b>else</b>{
+        <b>abort</b> <a href="bridge.md#0xb_bridge_EInvalidChainIDOnTokenList">EInvalidChainIDOnTokenList</a>
+    }
+
 }
 </code></pre>
 

@@ -18,6 +18,8 @@ module bridge::message_types {
     const REMOVE_EXTERNAL_COIN_WITNESS: u8 =14;
     const ADD_EXTERNAL_COIN_TARGET: u8 =15;
     const REMOVE_EXTERNAL_COIN_TARGET: u8 =16;
+    const ADD_TOKEN_ON_TOKEN_LIST: u8 =17;
+    const REMOVE_TOKEN_ON_TOKEN_LIST: u8 =18;
 
     public fun token(): u8 { TOKEN }
 
@@ -48,5 +50,14 @@ module bridge::message_types {
     }
     public fun remove_external_coin_target(): u8{
         REMOVE_EXTERNAL_COIN_TARGET
+    }
+
+
+    public fun add_token_on_token_list(): u8{
+        ADD_TOKEN_ON_TOKEN_LIST
+    }
+
+    public fun remove_token_on_token_list(): u8{
+        REMOVE_TOKEN_ON_TOKEN_LIST
     }
 }

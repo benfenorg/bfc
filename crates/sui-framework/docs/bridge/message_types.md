@@ -18,6 +18,8 @@ title: Module `0xb::message_types`
 -  [Function `remove_external_coin_witness`](#0xb_message_types_remove_external_coin_witness)
 -  [Function `add_external_coin_target`](#0xb_message_types_add_external_coin_target)
 -  [Function `remove_external_coin_target`](#0xb_message_types_remove_external_coin_target)
+-  [Function `add_token_on_token_list`](#0xb_message_types_add_token_on_token_list)
+-  [Function `remove_token_on_token_list`](#0xb_message_types_remove_token_on_token_list)
 
 
 <pre><code></code></pre>
@@ -61,6 +63,15 @@ title: Module `0xb::message_types`
 
 
 <pre><code><b>const</b> <a href="message_types.md#0xb_message_types_ADD_TOKENS_ON_SUI">ADD_TOKENS_ON_SUI</a>: u8 = 6;
+</code></pre>
+
+
+
+<a name="0xb_message_types_ADD_TOKEN_ON_TOKEN_LIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="message_types.md#0xb_message_types_ADD_TOKEN_ON_TOKEN_LIST">ADD_TOKEN_ON_TOKEN_LIST</a>: u8 = 17;
 </code></pre>
 
 
@@ -115,6 +126,15 @@ title: Module `0xb::message_types`
 
 
 <pre><code><b>const</b> <a href="message_types.md#0xb_message_types_REMOVE_EXTERNAL_COIN_WITNESS">REMOVE_EXTERNAL_COIN_WITNESS</a>: u8 = 14;
+</code></pre>
+
+
+
+<a name="0xb_message_types_REMOVE_TOKEN_ON_TOKEN_LIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="message_types.md#0xb_message_types_REMOVE_TOKEN_ON_TOKEN_LIST">REMOVE_TOKEN_ON_TOKEN_LIST</a>: u8 = 18;
 </code></pre>
 
 
@@ -429,6 +449,54 @@ title: Module `0xb::message_types`
 
 <pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_remove_external_coin_target">remove_external_coin_target</a>(): u8{
     <a href="message_types.md#0xb_message_types_REMOVE_EXTERNAL_COIN_TARGET">REMOVE_EXTERNAL_COIN_TARGET</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_types_add_token_on_token_list"></a>
+
+## Function `add_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_add_token_on_token_list">add_token_on_token_list</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_add_token_on_token_list">add_token_on_token_list</a>(): u8{
+    <a href="message_types.md#0xb_message_types_ADD_TOKEN_ON_TOKEN_LIST">ADD_TOKEN_ON_TOKEN_LIST</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_message_types_remove_token_on_token_list"></a>
+
+## Function `remove_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_remove_token_on_token_list">remove_token_on_token_list</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="message_types.md#0xb_message_types_remove_token_on_token_list">remove_token_on_token_list</a>(): u8{
+    <a href="message_types.md#0xb_message_types_REMOVE_TOKEN_ON_TOKEN_LIST">REMOVE_TOKEN_ON_TOKEN_LIST</a>
 }
 </code></pre>
 

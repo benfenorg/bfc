@@ -5689,6 +5689,12 @@ add_external_coin_target
 remove_external_coin_target
 	public fun
 	0xb::message_types
+add_token_on_token_list
+	public fun
+	0xb::message_types
+remove_token_on_token_list
+	public fun
+	0xb::message_types
 BridgeRoute
 	public struct
 	0xb::chain_ids
@@ -5878,6 +5884,12 @@ AddTokenOnSui
 ParsedTokenTransferMessage
 	public struct
 	0xb::message
+AddTokenOnTokenList
+	public struct
+	0xb::message
+RemoveTokenOnTokenList
+	public struct
+	0xb::message
 extract_token_bridge_payload
 	public fun
 	0xb::message
@@ -5891,6 +5903,12 @@ extract_add_external_target_address_poyload
 	public fun
 	0xb::message
 extract_remove_external_target_address_poyload
+	public fun
+	0xb::message
+extract_add_token_on_token_list_poyload
+	public fun
+	0xb::message
+extract_remove_token_on_token_list_poyload
 	public fun
 	0xb::message
 extract_emergency_op_payload
@@ -5960,6 +5978,12 @@ create_remove_external_coin_target_message
 	public fun
 	0xb::message
 create_remove_external_coin_admin_message
+	public fun
+	0xb::message
+create_add_token_on_token_list
+	public fun
+	0xb::message
+create_remove_token_on_token_list
 	public fun
 	0xb::message
 create_add_tokens_on_sui_message
@@ -6080,6 +6104,24 @@ remove_external_coin_admin_payload_coin_type
 	public fun
 	0xb::message
 remove_external_coin_admin_payload_admin_address
+	public fun
+	0xb::message
+add_token_on_token_list_payload_from_chain_id
+	public fun
+	0xb::message
+add_token_on_token_list_payload_to_chain_id
+	public fun
+	0xb::message
+add_token_on_token_list_payload_token_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_from_chain_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_to_chain_id
+	public fun
+	0xb::message
+remove_token_on_token_list_payload_token_id
 	public fun
 	0xb::message
 is_native
@@ -6496,6 +6538,9 @@ claim_and_transfer_token
 claim_and_transfer_busd
 	public fun
 	0xb::bridge
+execute_system_message_with_ctx
+	public fun
+	0xb::bridge
 execute_system_message
 	public fun
 	0xb::bridge
@@ -6584,6 +6629,12 @@ execute_add_external_coin_witness
 	fun
 	0xb::bridge
 execute_remove_external_coin_witness
+	fun
+	0xb::bridge
+execute_add_token_on_token_list
+	fun
+	0xb::bridge
+execute_remove_token_on_token_list
 	fun
 	0xb::bridge
 execute_add_tokens_on_sui
