@@ -1257,7 +1257,7 @@ async fn sim_test_bfc_dao_create_propose() -> Result<(), anyhow::Error> {
 
 #[sim_test]
 async fn test_bfc_dao_create_votingbfc() -> Result<(), anyhow::Error> {
-    //telemetry_subscribers::init_for_testing();
+    telemetry_subscribers::init_for_testing();
 
     let cluster = TestClusterBuilder::new().build().await;
     let http_client = cluster.rpc_client();

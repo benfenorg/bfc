@@ -1,6 +1,7 @@
-module test_anonymous_coin::test_anonymous_coin {
+module test_anonymous_coin::testabfc {
     use sui::anonymous_balance::Anonymous_Balance;
     use sui::anonymous_coin;
+    use sui::anonymous_coin::{Anonymous_Coin, TreasuryCap};
 
     const EAlreadyMinted: u64 = 0;
     /// Sender is not @0x0 the system address.
@@ -23,33 +24,30 @@ module test_anonymous_coin::test_anonymous_coin {
     public struct TESTABFC has drop {}
 
 
-    #[allow(unused_function)]
-    /// Register the `SUI` Coin to acquire its `Supply`.
-    /// This should be called only once during genesis creation.
-    fun new(ctx: &mut TxContext): Anonymous_Balance<TESTABFC> {
-        assert!(tx_context::sender(ctx) == @0x0, ENotSystemAddress);
-        assert!(tx_context::epoch(ctx) == 0, EAlreadyMinted);
-
-
-        let (treasury, metadata) = anonymous_coin::create_currency(
-            TESTABFC {},
-            9,
+    fun init(witness: TESTABFC, ctx: &mut TxContext) {
+        let (treasury_cap, metadata) = anonymous_coin::create_currency<TESTABFC>(
+            witness,
+            8, // decimals
             b"TESTABFC",
             b"TESTABFC",
-            // TODO: add appropriate description and logo url
-            b"",
+            b"TESTABFC for testing",
             option::none(),
             ctx
         );
         transfer::public_freeze_object(metadata);
-
-        let mut supply = treasury.treasury_into_supply();
-        let total_sui = supply.increase_supply(TOTAL_SUPPLY_MIST);
-        //supply.destroy_supply();
-        total_sui
+        transfer::public_transfer(treasury_cap, tx_context::sender(ctx));
     }
 
-    public entry fun transfer(c: anonymous_coin::Anonymous_Coin<TESTABFC>, recipient: address) {
-        transfer::public_transfer(c, recipient)
+    public fun mint(
+        treasury_cap: &mut TreasuryCap<TESTABFC>,
+        amount: u64,
+        recipient: address,
+        ctx: &mut TxContext
+    ) {
+        anonymous_coin::mint_and_transfer(treasury_cap, amount, recipient, ctx);
+    }
+
+    public fun burn(treasury_cap: &mut TreasuryCap<TESTABFC>, coin: Anonymous_Coin<TESTABFC>) {
+        anonymous_coin::burn(treasury_cap, coin);
     }
 }
