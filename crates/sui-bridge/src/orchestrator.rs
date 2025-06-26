@@ -101,7 +101,7 @@ where
             .into_values()
             .collect::<Vec<_>>();
         for action in actions {
-            submit_to_executor(&executor_sender_clone3, action)
+            submit_to_executor(&executor_sender_clone3, action,true)
                 .await
                 .expect("Submit to executor should not fail");
         }
@@ -208,7 +208,7 @@ where
                     .insert_pending_actions(&actions)
                     .expect("Store operation should not fail");
                 for action in actions {
-                    submit_to_executor(&executor_tx, action)
+                    submit_to_executor(&executor_tx, action,true)
                         .await
                         .expect("Submit to executor should not fail");
                 }
@@ -235,7 +235,7 @@ where
         eth_monitor_tx: mysten_metrics::metered_channel::Sender<EthBridgeEvent>,
         metrics: Arc<BridgeMetrics>,
         fast_path_config: FastPathConfig,
-        user_limit_handle: Option<UserLimitHandle>,
+        _user_limit_handle: Option<UserLimitHandle>,
     ) {
         info!("Starting eth watcher task");
         while let Some((key, end_block, log_wrapper)) = eth_events_rx.recv().await {
@@ -332,7 +332,7 @@ where
 
 }
 
-async fn process_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>,fast_path_selector:FastPathSelector) {
+async fn process_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: &mysten_metrics::metered_channel::Sender<AMLCheckerWrapper>, metrics: &Arc<BridgeMetrics>, actions: Vec<BridgeAction>,_fast_path_selector:FastPathSelector) {
     if !actions.is_empty() {
         metrics
             .eth_watcher_received_actions
@@ -847,7 +847,7 @@ mod tests {
 
             let handles = tokio::spawn(async move {
                 while let Some(action) = rx.recv().await {
-                    submit_to_executor(&executor_sender, action.0)
+                    submit_to_executor(&executor_sender, action.0,true)
                         .await
                         .unwrap();
                 }

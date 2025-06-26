@@ -550,6 +550,12 @@ where
         .await
         {
             info!("Action already processed, skipping");
+            // remove the action from the pending actions
+            store
+            .remove_pending_actions(&[action.digest()])
+            .unwrap_or_else(|e| {
+                panic!("Write to DB should not fail: {:?}", e);
+            });
             return;
         }
 
@@ -672,7 +678,10 @@ where
 pub async fn submit_to_executor(
     tx: &mysten_metrics::metered_channel::Sender<BridgeActionExecutionWrapper>,
     action: BridgeAction,
+    retry:bool,
 ) -> Result<(), BridgeError> {
+    //retry_times_count == MAX_EXECUTION_ATTEMPTS means no retry
+    let retry_times_count = if retry {0} else {MAX_EXECUTION_ATTEMPTS};
     if action.is_stable_coin() {
         match action {
             BridgeAction::EthToSuiBridgeAction(action_inner) => {
@@ -681,7 +690,7 @@ pub async fn submit_to_executor(
                     eth_event_index: action_inner.eth_event_index,
                     eth_bridge_event: EthToSuiTokenBridgeV1::try_from(&action_inner.eth_bridge_event).unwrap(),
                 };
-                tx.send(BridgeActionExecutionWrapper(BridgeAction::EthToSuiBridgeAction(action), 0))
+                tx.send(BridgeActionExecutionWrapper(BridgeAction::EthToSuiBridgeAction(action), retry_times_count))
                 .await
                 .map_err(|e| BridgeError::Generic(e.to_string()))
             },
@@ -690,7 +699,7 @@ pub async fn submit_to_executor(
             }
         }
     }else{
-        tx.send(BridgeActionExecutionWrapper(action, 0))
+        tx.send(BridgeActionExecutionWrapper(action, retry_times_count))
         .await
         .map_err(|e| BridgeError::Generic(e.to_string()))
     }
@@ -809,7 +818,7 @@ mod tests {
         );
 
         // Kick it
-        submit_to_executor(&signing_tx, action.clone())
+        submit_to_executor(&signing_tx, action.clone(),true)
             .await
             .unwrap();
 
@@ -860,7 +869,7 @@ mod tests {
         );
 
         // Kick it
-        submit_to_executor(&signing_tx, action.clone())
+        submit_to_executor(&signing_tx, action.clone(),true)
             .await
             .unwrap();
 
@@ -910,7 +919,7 @@ mod tests {
         );
 
         // Kick it
-        submit_to_executor(&signing_tx, action.clone())
+        submit_to_executor(&signing_tx, action.clone(),true)
             .await
             .unwrap();
 
@@ -1076,7 +1085,7 @@ mod tests {
         );
 
         // Kick it
-        submit_to_executor(&signing_tx, action.clone())
+        submit_to_executor(&signing_tx, action.clone(),true)
             .await
             .unwrap();
 
@@ -1190,7 +1199,7 @@ mod tests {
         );
 
         // Kick it
-        submit_to_executor(&signing_tx, action.clone())
+        submit_to_executor(&signing_tx, action.clone(),true)
             .await
             .unwrap();
         let action_digest = action.digest();
