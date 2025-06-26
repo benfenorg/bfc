@@ -37,9 +37,7 @@ const BALANCE_TYPE_SHARING:u32 = 1;
 /// Can be use
 /// d to store coins which don't need the key ability.
 public struct Anonymous_Balance<phantom T> has store {
-    balance_type: Anonymous_Balance_Type,
     balance_type: u32,
-    value: u64,
     value1: u64,
     value2: u64,
     encode_data: String,
