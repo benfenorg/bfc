@@ -279,8 +279,8 @@ library BridgeUtils {
         offset = offset + amountLength;
 
         // extract tx hash from payload
-        bytes memory txHash = new bytes(_payload.length - offset - 1); // -1 for eventIdx
-        for (uint256 i; i < _payload.length - offset - 1; i++) {
+        bytes memory txHash = new bytes(_payload.length - offset - 2); // -1 for eventIdx
+        for (uint256 i; i < _payload.length - offset - 2; i++) {
             txHash[i] = _payload[i + offset];
         }
 
