@@ -623,25 +623,29 @@ pub struct ChangeEpoch {
     pub protocol_version: ::core::option::Option<u64>,
     /// The total amount of gas charged for storage during the epoch.
     #[prost(uint64, optional, tag = "3")]
-    pub storage_charge: ::core::option::Option<u64>,
+    pub bfc_storage_charge: ::core::option::Option<u64>,
     /// The total amount of gas charged for computation during the epoch.
     #[prost(uint64, optional, tag = "4")]
-    pub computation_charge: ::core::option::Option<u64>,
+    pub bfc_computation_charge: ::core::option::Option<u64>,
     /// The amount of storage rebate refunded to the txn senders.
     #[prost(uint64, optional, tag = "5")]
-    pub storage_rebate: ::core::option::Option<u64>,
+    pub bfc_storage_rebate: ::core::option::Option<u64>,
     /// The non-refundable storage fee.
     #[prost(uint64, optional, tag = "6")]
-    pub non_refundable_storage_fee: ::core::option::Option<u64>,
+    pub bfc_non_refundable_storage_fee: ::core::option::Option<u64>,
+    #[prost(message, repeated, tag = "7")]
+    pub stable_gas_summarys: ::prost::alloc::vec::Vec<TaggedGasCostSummary>,
     /// Unix timestamp when epoch started
-    #[prost(uint64, optional, tag = "7")]
+    #[prost(uint64, optional, tag = "8")]
     pub epoch_start_timestamp_ms: ::core::option::Option<u64>,
+    #[prost(uint64, optional, tag = "9")]
+    pub epoch_duration_ms: ::core::option::Option<u64>,
     /// System packages (specifically framework and move stdlib) that are written before the new
     /// epoch starts. This tracks framework upgrades on chain. When executing the ChangeEpoch txn,
     /// the validator must write out the modules below.  Modules are provided with the version they
     /// will be upgraded to, their modules in serialized form (which include their package ID), and
     /// a list of their transitive dependencies.
-    #[prost(message, repeated, tag = "8")]
+    #[prost(message, repeated, tag = "10")]
     pub system_packages: ::prost::alloc::vec::Vec<SystemPackage>,
 }
 #[derive(Clone, PartialEq, ::prost::Message)]
@@ -653,6 +657,22 @@ pub struct SystemPackage {
     #[prost(message, repeated, tag = "3")]
     pub dependencies: ::prost::alloc::vec::Vec<ObjectId>,
 }
+
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct TaggedGasCostSummary {
+    #[prost(message, optional, tag = "1")]
+    pub tag: ::core::option::Option<TypeTag>,
+    #[prost(message, optional, tag = "2")]
+    pub summary:  ::core::option::Option<GasCostSummaryAdjusted>,
+}
+#[derive(Clone, PartialEq, ::prost::Message)]
+pub struct GasCostSummaryAdjusted {
+    #[prost(message, optional, tag = "1")]
+    pub gas_by_bfc: ::core::option::Option<GasCostSummary>,
+    #[prost(message, optional, tag = "2")]
+    pub gas_by_stable: ::core::option::Option<GasCostSummary>,
+}
+
 #[derive(Clone, PartialEq, ::prost::Message)]
 pub struct GenesisTransaction {
     #[prost(message, repeated, tag = "1")]
