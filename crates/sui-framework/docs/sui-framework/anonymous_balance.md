@@ -9,7 +9,6 @@ custom coins with <code><a href="../sui-framework/anonymous_balance.md#0x2_anony
 
 -  [Struct `Supply`](#0x2_anonymous_balance_Supply)
 -  [Struct `Anonymous_Balance`](#0x2_anonymous_balance_Anonymous_Balance)
--  [Enum `Anonymous_Balance_Type`](#0x2_anonymous_balance_Anonymous_Balance_Type)
 -  [Constants](#@Constants_0)
 -  [Function `get_anonymous_value`](#0x2_anonymous_balance_get_anonymous_value)
 -  [Function `convert_to_string`](#0x2_anonymous_balance_convert_to_string)
@@ -89,7 +88,7 @@ d to store coins which don't need the key ability.
 
 <dl>
 <dt>
-<code>balance_type: anonymous_balance::Anonymous_Balance_Type</code>
+<code>balance_type: u32</code>
 </dt>
 <dd>
 
@@ -120,39 +119,6 @@ d to store coins which don't need the key ability.
 </dd>
 <dt>
 <code>version: u8</code>
-</dt>
-<dd>
-
-</dd>
-</dl>
-
-
-</details>
-
-<a name="0x2_anonymous_balance_Anonymous_Balance_Type"></a>
-
-## Enum `Anonymous_Balance_Type`
-
-
-
-<pre><code><b>public</b> enum Anonymous_Balance_Type <b>has</b> drop, store
-</code></pre>
-
-
-
-<details>
-<summary>Variants</summary>
-
-
-<dl>
-<dt>
-Variant <code>BALANCE_TYPE_FHE</code>
-</dt>
-<dd>
-
-</dd>
-<dt>
-Variant <code>BALANCE_TYPE_SHARING</code>
 </dt>
 <dd>
 
@@ -193,6 +159,15 @@ For when an overflow is happening on Supply operations.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_EOverflow">EOverflow</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
+</code></pre>
+
+
+
+<a name="0x2_anonymous_balance_BALANCE_TYPE_SHARING"></a>
+
+
+
+<pre><code><b>const</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>: u32 = 1;
 </code></pre>
 
 
@@ -272,7 +247,7 @@ For when an overflow is happening on Supply operations.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_create_by_value">create_by_value</a>&lt;T&gt;(value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>) : <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> <b>mut</b> encode_data = <a href="../move-stdlib/string.md#0x1_string_utf8">string::utf8</a>(b"");
-    <b>let</b> balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
+    <b>let</b> balance_type = <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>;
     <b>let</b> version = 0;
 
     //todo: <b>use</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops">hfe_ops</a> <b>to</b> split the value into two parts

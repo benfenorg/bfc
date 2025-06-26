@@ -2293,6 +2293,7 @@ impl ProtocolConfig {
             gas_budget_based_txn_cost_cap_factor: None,
 
             gas_budget_based_txn_cost_absolute_cap_commit_count: None,
+
             // When adding a new constant, set it to None in the earliest version, like this:
             // new_constant: None,
         };
@@ -2301,6 +2302,7 @@ impl ProtocolConfig {
                 1 => unreachable!(),
                 2 => {
                     cfg.feature_flags.advance_epoch_start_time_in_safe_mode = true;
+                    cfg.feature_flags.anonymous_coin_open = false;
                 }
                 3 => {
                     // changes for gas model

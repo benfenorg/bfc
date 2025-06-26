@@ -2086,9 +2086,6 @@ Supply
 Anonymous_Balance
 	public struct
 	0x2::anonymous_balance
-Anonymous_Balance_Type
-	public enum
-	0x2::anonymous_balance
 get_anonymous_value
 	public fun
 	0x2::anonymous_balance
