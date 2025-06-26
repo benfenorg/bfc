@@ -613,7 +613,7 @@ Split a <code>Balance</code> and take a sub balance from it.
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
     <b>let</b> compare_result = hfe_ops_compare_value(self.value1, self.value2, value);
-    <b>assert</b>!(compare_result &gt;= 0, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
+    <b>assert</b>!(compare_result != 2, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
     <b>let</b> value3 = value/2;
     <b>let</b> value4 = value - value3;
     <b>let</b> result = hfe_ops_minus(self.value1, self.value2, value3, value4);
@@ -638,7 +638,7 @@ Withdraw all balance. After this the remaining balance must be 0.
 Destroy a zero <code>Balance</code>.
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;)
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">anonymous_balance::Anonymous_Balance</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;)
 </code></pre>
 
 
@@ -647,9 +647,10 @@ Destroy a zero <code>Balance</code>.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;) {
-    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance">balance</a>.value1 == 0, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENonZero">ENonZero</a>);
-    <b>assert</b>!(<a href="../sui-framework/balance.md#0x2_balance">balance</a>.value2 == 0, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENonZero">ENonZero</a>);
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_destroy_zero">destroy_zero</a>&lt;T&gt;(<a href="../sui-framework/balance.md#0x2_balance">balance</a>: <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;) {
+
+    <b>let</b> value = hfe_ops_restore_value(<a href="../sui-framework/balance.md#0x2_balance">balance</a>.value1, <a href="../sui-framework/balance.md#0x2_balance">balance</a>.value2, signatures, id, publickey);
+    <b>assert</b>!(value == 0, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENonZero">ENonZero</a>);
     <b>let</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a> {
         encode_data: _,
         version: _,

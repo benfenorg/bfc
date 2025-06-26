@@ -247,10 +247,11 @@ module sui::anonymous_coin {
     }
 
     /// Destroy a coin with value zero
-    public fun destroy_zero<T>(c: Anonymous_Coin<T>) {
+    public fun destroy_zero<T>(c: Anonymous_Coin<T>, signatures: vector<u8>, publickey: vector<u8>) {
         let Anonymous_Coin { id, balance } = c;
+        let address = object::uid_to_address(&id);
         id.delete();
-        balance.destroy_zero()
+        balance.destroy_zero(signatures, address, publickey)
     }
 
     // === Registering new coin types and managing the coin supply ===
