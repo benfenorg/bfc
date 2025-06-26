@@ -10,7 +10,6 @@ This module provides handy functionality for wallets and <code>sui::Coin</code> 
 -  [Function `split`](#0x2_anonymous_pay_split)
 -  [Function `split_vec`](#0x2_anonymous_pay_split_vec)
 -  [Function `split_and_transfer`](#0x2_anonymous_pay_split_and_transfer)
--  [Function `divide_and_keep`](#0x2_anonymous_pay_divide_and_keep)
 -  [Function `join`](#0x2_anonymous_pay_join)
 -  [Function `join_vec`](#0x2_anonymous_pay_join_vec)
 -  [Function `join_vec_and_transfer`](#0x2_anonymous_pay_join_vec_and_transfer)
@@ -143,38 +142,6 @@ Aborts with <code>EVALUE</code> if <code>amount</code> is greater than or equal 
     ctx: &<b>mut</b> TxContext,
 ) {
     <a href="transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(c.<a href="anonymous_pay.md#0x2_anonymous_pay_split">split</a>(amount, ctx), recipient)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_anonymous_pay_divide_and_keep"></a>
-
-## Function `divide_and_keep`
-
-Divide coin <code>self</code> into <code>n - 1</code> coins with equal balances. If the balance is
-not evenly divisible by <code>n</code>, the remainder is left in <code>self</code>.
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="anonymous_pay.md#0x2_anonymous_pay_divide_and_keep">divide_and_keep</a>&lt;T&gt;(self: &<b>mut</b> <a href="anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, n: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> entry <b>fun</b> <a href="anonymous_pay.md#0x2_anonymous_pay_divide_and_keep">divide_and_keep</a>&lt;T&gt;(self: &<b>mut</b> Anonymous_Coin&lt;T&gt;, n: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> TxContext) {
-    <b>let</b> <b>mut</b> vec: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;Anonymous_Coin&lt;T&gt;&gt; = self.divide_into_n(n, ctx);
-    <b>let</b> (<b>mut</b> i, len) = (0, vec.length());
-    <b>while</b> (i &lt; len) {
-        <a href="transfer.md#0x2_transfer_public_transfer">transfer::public_transfer</a>(vec.pop_back(), ctx.sender());
-        i = i + 1;
-    };
-    vec.destroy_empty();
 }
 </code></pre>
 

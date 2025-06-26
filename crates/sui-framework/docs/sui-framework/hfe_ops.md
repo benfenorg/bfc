@@ -8,6 +8,7 @@ title: Module `0x2::hfe_ops`
 -  [Function `hfe_ops_minus`](#0x2_hfe_ops_hfe_ops_minus)
 -  [Function `hfe_ops_multiplied`](#0x2_hfe_ops_hfe_ops_multiplied)
 -  [Function `hfe_ops_compare`](#0x2_hfe_ops_hfe_ops_compare)
+-  [Function `hfe_ops_compare_value`](#0x2_hfe_ops_hfe_ops_compare_value)
 -  [Function `split_data`](#0x2_hfe_ops_split_data)
 -  [Function `hfe_ops_split_value`](#0x2_hfe_ops_hfe_ops_split_value)
 -  [Function `hfe_ops_restore_value`](#0x2_hfe_ops_hfe_ops_restore_value)
@@ -118,6 +119,32 @@ title: Module `0x2::hfe_ops`
     input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
     input_4: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
+</code></pre>
+
+
+
+</details>
+
+<a name="0x2_hfe_ops_hfe_ops_compare_value"></a>
+
+## Function `hfe_ops_compare_value`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_compare_value">hfe_ops_compare_value</a>(input_1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>native</b> <b>fun</b> <a href="../sui-framework/hfe_ops.md#0x2_hfe_ops_hfe_ops_compare_value">hfe_ops_compare_value</a>(
+    input_1: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    input_2: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    input_3: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
 ): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>;
 </code></pre>
 

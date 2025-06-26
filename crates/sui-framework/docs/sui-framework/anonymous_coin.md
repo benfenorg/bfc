@@ -34,7 +34,6 @@ tokens and coins. <code>Coin</code> can be described as a secure wrapper around
 -  [Function `put`](#0x2_anonymous_coin_put)
 -  [Function `join`](#0x2_anonymous_coin_join)
 -  [Function `split`](#0x2_anonymous_coin_split)
--  [Function `divide_into_n`](#0x2_anonymous_coin_divide_into_n)
 -  [Function `zero`](#0x2_anonymous_coin_zero)
 -  [Function `destroy_zero`](#0x2_anonymous_coin_destroy_zero)
 -  [Function `create_currency`](#0x2_anonymous_coin_create_currency)
@@ -408,6 +407,8 @@ interacting with the coin as an input to a transaction.
 
 <a name="0x2_anonymous_coin_ENotEnough"></a>
 
+A type passed to create_supply is not a one-time witness.
+Invalid arguments are passed to a function.
 Trying to split a coin more times than its balance allows.
 
 
@@ -431,17 +432,6 @@ The index into the deny list vector for the <code>sui::coin::Coin</code> type.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_EGlobalPauseNotAllowed">EGlobalPauseNotAllowed</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 3;
-</code></pre>
-
-
-
-<a name="0x2_anonymous_coin_EInvalidArg"></a>
-
-A type passed to create_supply is not a one-time witness.
-Invalid arguments are passed to a function.
-
-
-<pre><code><b>const</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_EInvalidArg">EInvalidArg</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 1;
 </code></pre>
 
 
@@ -483,7 +473,7 @@ Invalid arguments are passed to a function.
 
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out">swap_out</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T1&gt;, swap_pool: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">anonymous_coin::SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out">swap_out</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T1&gt;, swap_pool: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">anonymous_coin::SwapPool</a>&lt;T1, T2&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
 </code></pre>
 
 
@@ -492,8 +482,8 @@ Invalid arguments are passed to a function.
 <summary>Implementation</summary>
 
 
-<pre><code>entry <b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out">swap_out</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T1&gt;,  swap_pool :&<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;, ctx: &<b>mut</b> TxContext) {
-    <b>let</b> value = <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>();
+<pre><code>entry <b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_swap_out">swap_out</a>&lt;T1, T2&gt;(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T1&gt;,  swap_pool :&<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_SwapPool">SwapPool</a>&lt;T1, T2&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,  ctx: &<b>mut</b> TxContext) {
+    <b>let</b> value = <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>(signatures, id, publickey);
     <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_join">join</a>(&<b>mut</b> swap_pool.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin">anonymous_coin</a>);
 
     <b>assert</b>!(<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a> &lt;= swap_pool.max_availalbe_normal_coin, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_ENotEnough">ENotEnough</a>);
@@ -707,7 +697,7 @@ Get mutable reference to the treasury's <code>Supply</code>.
 Public getter for the coin's value
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -716,8 +706,8 @@ Public getter for the coin's value
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
-    self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>()
+<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>&lt;T&gt;(self: &<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; ): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+    self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>(signatures, id, publickey)
 }
 </code></pre>
 
@@ -932,44 +922,6 @@ and the remaining balance is left is <code>self</code>.
     self: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, split_amount: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> TxContext
 ): <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt; {
     <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_take">take</a>(&<b>mut</b> self.<a href="../sui-framework/balance.md#0x2_balance">balance</a>, split_amount, ctx)
-}
-</code></pre>
-
-
-
-</details>
-
-<a name="0x2_anonymous_coin_divide_into_n"></a>
-
-## Function `divide_into_n`
-
-Split coin <code>self</code> into <code>n - 1</code> coins with equal balances. The remainder is left in
-<code>self</code>. Return newly created coins.
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_divide_into_n">divide_into_n</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, n: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;&gt;
-</code></pre>
-
-
-
-<details>
-<summary>Implementation</summary>
-
-
-<pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_divide_into_n">divide_into_n</a>&lt;T&gt;(
-    self: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, n: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, ctx: &<b>mut</b> TxContext
-): <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;&gt; {
-    <b>assert</b>!(n &gt; 0, <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_EInvalidArg">EInvalidArg</a>);
-    <b>assert</b>!(n &lt;= <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>(self), <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_ENotEnough">ENotEnough</a>);
-
-    <b>let</b> <b>mut</b> vec = <a href="../move-stdlib/vector.md#0x1_vector">vector</a>[];
-    <b>let</b> <b>mut</b> i = 0;
-    <b>let</b> split_amount = <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_value">value</a>(self) / n;
-    <b>while</b> (i &lt; n - 1) {
-    vec.push_back(self.<a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_split">split</a>(split_amount, ctx));
-    i = i + 1;
-    };
-    vec
 }
 </code></pre>
 
@@ -1248,7 +1200,7 @@ Destroy the coin <code>c</code> and decrease the total supply in <code>cap</code
 accordingly.
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">anonymous_coin::TreasuryCap</a>&lt;T&gt;, c: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">anonymous_coin::TreasuryCap</a>&lt;T&gt;, c: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">anonymous_coin::Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, anonymous_coin_id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a>
 </code></pre>
 
 
@@ -1257,10 +1209,10 @@ accordingly.
 <summary>Implementation</summary>
 
 
-<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, c: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
+<pre><code><b>public</b> entry <b>fun</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_burn">burn</a>&lt;T&gt;(cap: &<b>mut</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_TreasuryCap">TreasuryCap</a>&lt;T&gt;, c: <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a>&lt;T&gt;, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, anonymous_coin_id: <b>address</b>, publickey: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt; ): <a href="../move-stdlib/u64.md#0x1_u64">u64</a> {
     <b>let</b> <a href="../sui-framework/anonymous_coin.md#0x2_anonymous_coin_Anonymous_Coin">Anonymous_Coin</a> { id, <a href="../sui-framework/balance.md#0x2_balance">balance</a> } = c;
     id.delete();
-    cap.total_supply.decrease_supply(<a href="../sui-framework/balance.md#0x2_balance">balance</a>)
+    cap.total_supply.decrease_supply(<a href="../sui-framework/balance.md#0x2_balance">balance</a>, signatures, anonymous_coin_id, publickey)
 }
 </code></pre>
 

@@ -6,7 +6,7 @@
 /// custom coins with `Supply` and `Balance`s.
 module sui::anonymous_balance;
 use std::string::{Self, String};
-use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_split_value, hfe_ops_restore_value};
+use sui::hfe_ops::{hfe_ops_add, hfe_ops_minus, hfe_ops_split_value, hfe_ops_restore_value, hfe_ops_compare_value};
 
 /// Allows calling `.into_coin()` on a `Balance` to turn it into a coin.
 public use fun sui::anonymous_coin::from_balance as Anonymous_Balance.into_coin;
@@ -40,7 +40,6 @@ public enum Anonymous_Balance_Type has store, drop {
 /// d to store coins which don't need the key ability.
 public struct Anonymous_Balance<phantom T> has store {
     balance_type: Anonymous_Balance_Type,
-    value: u64,
     value1: u64,
     value2: u64,
     encode_data: String,
@@ -88,7 +87,6 @@ public fun create_by_value<T>(value: u64) : Anonymous_Balance<T> {
 
 
     Anonymous_Balance {
-        value: value,
         value1: value1,
         value2: value2,
         encode_data,
@@ -96,9 +94,10 @@ public fun create_by_value<T>(value: u64) : Anonymous_Balance<T> {
         version:version }
 }
 /// Get the amount stored in a `Balance`.
-public fun value<T>(self: &Anonymous_Balance<T>): u64 {
-    self.value
+public fun value<T>(self: &Anonymous_Balance<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {
+    self.get_anonymous_value(signatures, id, publickey)
 }
+
 public fun value1<T>(self: &Anonymous_Balance<T>): u64 {
     self.value1
 }
@@ -129,14 +128,14 @@ public fun increase_supply<T>(self: &mut Supply<T>, value: u64): Anonymous_Balan
 }
 
 /// Burn a Balance<T> and decrease Supply<T>.
-public fun decrease_supply<T>(self: &mut Supply<T>, balance: Anonymous_Balance<T>): u64 {
+public fun decrease_supply<T>(self: &mut Supply<T>, balance: Anonymous_Balance<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {
     let Anonymous_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
-        value1: _,
-        value2: _,
-        value } = balance;
+        value1: value1,
+        value2: value2} = balance;
+    let value = hfe_ops_restore_value(value1, value2, signatures, id, publickey);
     assert!(self.value >= value, EOverflow);
     self.value = self.value - value;
     value
@@ -156,29 +155,28 @@ fun update_encode_data<T>(self: &mut Anonymous_Balance<T>) {
     self.encode_data = encode_data;
 }
 /// Join two balances together.
-public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T>): u64 {
+public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T>): (u64, u64) {
     let Anonymous_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
         value1: value1,
-        value2: value2,
-        value } = balance;
+        value2: value2} = balance;
 
-    self.value = self.value + value;
     let result =  hfe_ops_add(self.value1, self.value2, value1, value2);
     self.value1 = result[0];
     self.value2 = result[1];
 
 
     self.update_encode_data();
-    self.value
+    (self.value1,self.value2)
 }
 
 /// Split a `Balance` and take a sub balance from it.
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
-    assert!(self.value >= value, ENotEnough);
-    self.value = self.value - value;
+    // todo add compare_value
+    let compare_result = hfe_ops_compare_value(self.value1, self.value2, value);
+    assert!(compare_result >= 0, ENotEnough);
     let value3 = value/2;
     let value4 = value - value3;
     let result = hfe_ops_minus(self.value1, self.value2, value3, value4);
@@ -191,21 +189,22 @@ public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Bala
 }
 
 /// Withdraw all balance. After this the remaining balance must be 0.
-public fun withdraw_all<T>(self: &mut Anonymous_Balance<T>): Anonymous_Balance<T> {
-    let value = self.value;
-    split(self, value)
-}
+// public fun withdraw_all<T>(self: &mut Anonymous_Balance<T>): Anonymous_Balance<T> {
+//     let value = self.value;
+//     split(self, value)
+// }
 
 /// Destroy a zero `Balance`.
 public fun destroy_zero<T>(balance: Anonymous_Balance<T>) {
-    assert!(balance.value == 0, ENonZero);
+    assert!(balance.value1 == 0, ENonZero);
+    assert!(balance.value2 == 0, ENonZero);
     let Anonymous_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
         value1: _,
         value2: _,
-        value: _ } = balance;
+        } = balance;
 }
 
 
