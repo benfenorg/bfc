@@ -174,7 +174,6 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
 
 /// Split a `Balance` and take a sub balance from it.
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
-    // todo add compare_value
     let compare_result = hfe_ops_compare_value(self.value1, self.value2, value);
     assert!(compare_result >= 0, ENotEnough);
     let value3 = value/2;
