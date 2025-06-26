@@ -29,17 +29,17 @@ public struct Supply<phantom T> has store, drop {
     value: u64,
 }
 
-public enum Anonymous_Balance_Type has store, drop {
+const BALANCE_TYPE_SHARING:u32 = 1;
+//const BALANCE_TYPE_FHE:u32 = 2;
 
-    BALANCE_TYPE_FHE,
-    BALANCE_TYPE_SHARING,
-}
 
 /// Storable balance - an inner struct of a Coin type.
 /// Can be use
 /// d to store coins which don't need the key ability.
 public struct Anonymous_Balance<phantom T> has store {
     balance_type: Anonymous_Balance_Type,
+    balance_type: u32,
+    value: u64,
     value1: u64,
     value2: u64,
     encode_data: String,
@@ -69,7 +69,7 @@ public fun get_anonymous_value<T>(self: &Anonymous_Balance<T>, signatures: vecto
 
 public fun create_by_value<T>(value: u64) : Anonymous_Balance<T> {
     let mut encode_data = string::utf8(b"");
-    let balance_type = Anonymous_Balance_Type::BALANCE_TYPE_FHE;
+    let balance_type = BALANCE_TYPE_SHARING;
     let version = 0;
 
     //todo: use hfe_ops to split the value into two parts
