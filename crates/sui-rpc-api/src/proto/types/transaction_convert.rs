@@ -720,11 +720,15 @@ impl From<sui_sdk_types::ChangeEpoch> for super::ChangeEpoch {
         Self {
             epoch: Some(value.epoch),
             protocol_version: Some(value.protocol_version),
-            storage_charge: Some(value.storage_charge),
-            computation_charge: Some(value.computation_charge),
-            storage_rebate: Some(value.storage_rebate),
-            non_refundable_storage_fee: Some(value.non_refundable_storage_fee),
+            bfc_storage_charge: Some(value.bfc_storage_charge),
+            bfc_computation_charge: Some(value.bfc_computation_charge),
+            bfc_storage_rebate: Some(value.bfc_storage_rebate),
+            bfc_non_refundable_storage_fee: Some(value.bfc_non_refundable_storage_fee),
+            stable_gas_summarys: value
+                .stable_gas_summarys
+                .into_iter().map(Into::into).collect(),
             epoch_start_timestamp_ms: Some(value.epoch_start_timestamp_ms),
+            epoch_duration_ms: Some(value.epoch_duration_ms),
             system_packages: value.system_packages.into_iter().map(Into::into).collect(),
         }
     }
@@ -737,36 +741,44 @@ impl TryFrom<&super::ChangeEpoch> for sui_sdk_types::ChangeEpoch {
         super::ChangeEpoch {
             epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge,
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            stable_gas_summarys,
             epoch_start_timestamp_ms,
+            epoch_duration_ms,
             system_packages,
         }: &super::ChangeEpoch,
     ) -> Result<Self, Self::Error> {
         let epoch = epoch.ok_or_else(|| TryFromProtoError::missing("epoch"))?;
         let protocol_version =
             protocol_version.ok_or_else(|| TryFromProtoError::missing("protocol_version"))?;
-        let storage_charge =
-            storage_charge.ok_or_else(|| TryFromProtoError::missing("storage_charge"))?;
-        let computation_charge =
-            computation_charge.ok_or_else(|| TryFromProtoError::missing("computation_charge"))?;
-        let storage_rebate =
-            storage_rebate.ok_or_else(|| TryFromProtoError::missing("storage_rebate"))?;
-        let non_refundable_storage_fee = non_refundable_storage_fee
-            .ok_or_else(|| TryFromProtoError::missing("non_refundable_storage_fee"))?;
+        let bfc_storage_charge =
+            bfc_storage_charge.ok_or_else(|| TryFromProtoError::missing("bfc_storage_charge"))?;
+        let bfc_computation_charge =
+            bfc_computation_charge.ok_or_else(|| TryFromProtoError::missing("bfc_computation_charge"))?;
+        let bfc_storage_rebate =
+            bfc_storage_rebate.ok_or_else(|| TryFromProtoError::missing("bfc_storage_rebate"))?;
+        let bfc_non_refundable_storage_fee = bfc_non_refundable_storage_fee
+            .ok_or_else(|| TryFromProtoError::missing("bfc_non_refundable_storage_fee"))?;
+        let epoch_duration_ms = epoch_duration_ms.ok_or_else(|| TryFromProtoError::missing("epoch_duration_ms"))?;
         let epoch_start_timestamp_ms = epoch_start_timestamp_ms
             .ok_or_else(|| TryFromProtoError::missing("epoch_start_timestamp_ms"))?;
 
         Ok(Self {
             epoch,
             protocol_version,
-            storage_charge,
-            computation_charge,
-            storage_rebate,
-            non_refundable_storage_fee,
+            bfc_storage_charge,
+            bfc_computation_charge,
+            bfc_storage_rebate,
+            bfc_non_refundable_storage_fee,
+            stable_gas_summarys: stable_gas_summarys
+                .iter()
+                .map(TryInto::try_into)
+                .collect::<Result<_, _>>()?,
             epoch_start_timestamp_ms,
+            epoch_duration_ms,
             system_packages: system_packages
                 .iter()
                 .map(TryInto::try_into)
@@ -788,6 +800,22 @@ impl From<sui_sdk_types::SystemPackage> for super::SystemPackage {
         }
     }
 }
+impl From<sui_sdk_types::TaggedGasCostSummary> for super::TaggedGasCostSummary {
+    fn from(value: sui_sdk_types::TaggedGasCostSummary) -> Self {
+        Self {
+            tag: Some(value.tag.into()),
+            summary: Some(value.gas_cost_summary.into()),
+        }
+    }
+}
+impl From<sui_sdk_types::GasCostSummaryAdjusted> for super::GasCostSummaryAdjusted {
+    fn from(value: sui_sdk_types::GasCostSummaryAdjusted) -> Self {
+        Self {
+            gas_by_bfc: Some(value.gas_by_bfc.into()),
+            gas_by_stable: Some(value.gas_by_stable.into()),
+        }
+    }
+}
 
 impl TryFrom<&super::SystemPackage> for sui_sdk_types::SystemPackage {
     type Error = TryFromProtoError;
@@ -803,6 +831,42 @@ impl TryFrom<&super::SystemPackage> for sui_sdk_types::SystemPackage {
                 .iter()
                 .map(TryInto::try_into)
                 .collect::<Result<_, _>>()?,
+        })
+    }
+}
+
+impl TryFrom<&super::TaggedGasCostSummary> for sui_sdk_types::TaggedGasCostSummary {
+    type Error = TryFromProtoError;
+    fn try_from(value: &super::TaggedGasCostSummary) -> Result<Self, Self::Error> {
+        Ok(Self {
+            tag: value
+                .tag
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("tag"))?
+                .try_into()?,
+            gas_cost_summary: value
+                .summary
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("summary"))?
+                .try_into()?,
+        })
+    }
+}
+
+impl TryFrom<&super::GasCostSummaryAdjusted> for sui_sdk_types::GasCostSummaryAdjusted {
+    type Error = TryFromProtoError;
+    fn try_from(value: &super::GasCostSummaryAdjusted) -> Result<Self, Self::Error> {
+        Ok(Self {
+            gas_by_bfc:  value
+                .gas_by_bfc
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("gas_by_bfc"))?
+                .try_into()?,
+            gas_by_stable: value
+                .gas_by_stable
+                .as_ref()
+                .ok_or_else(|| TryFromProtoError::missing("gas_by_stable"))?
+                .try_into()?,
         })
     }
 }
