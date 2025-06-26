@@ -288,6 +288,44 @@ pub fn hfe_ops_split_value(context: &mut NativeContext,
     }
 }
 
+pub fn hfe_ops_compare_value(
+    context: &mut NativeContext,
+    ty_args: Vec<Type>,
+    mut args: VecDeque<Value>,
+) -> PartialVMResult<NativeResult>{
+    let anonymous_compute_cost_params = &context
+        .extensions()
+        .get::<NativesCostTable>()
+        .anonymous_compute_cost_params
+        .clone();
+    // Charge the base cost for this oper
+    native_charge_gas_early_exit!(
+        context,
+        anonymous_compute_cost_params.anonymous_compute_cost_base
+    );
+
+    let number3 = pop_arg!(args, u64);
+    let number2 = pop_arg!(args, u64);
+    let number1 = pop_arg!(args, u64);
+
+
+    let data1 = number1 + number2;
+    let data2 = number3;
+    let mut result = 0;
+    if data1 > data2 {
+        result = 1;
+    }
+    if data1 < data2 {
+        result = 2;
+    }
+
+    let cost = context.gas_used();
+    Ok(NativeResult::ok(
+        cost,
+        smallvec![Value::u8(result)],
+    ))
+}
+
 pub fn hfe_ops_compare(
     context: &mut NativeContext,
     ty_args: Vec<Type>,

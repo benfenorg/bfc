@@ -2071,6 +2071,9 @@ hfe_ops_multiplied
 hfe_ops_compare
 	public fun
 	0x2::hfe_ops
+hfe_ops_compare_value
+	public fun
+	0x2::hfe_ops
 split_data
 	public fun
 	0x2::hfe_ops
@@ -2129,9 +2132,6 @@ join
 	public fun
 	0x2::anonymous_balance
 split
-	public fun
-	0x2::anonymous_balance
-withdraw_all
 	public fun
 	0x2::anonymous_balance
 destroy_zero
@@ -2216,9 +2216,6 @@ join
 	public entry fun
 	0x2::anonymous_coin
 split
-	public fun
-	0x2::anonymous_coin
-divide_into_n
 	public fun
 	0x2::anonymous_coin
 zero
@@ -2378,9 +2375,6 @@ split_vec
 	public entry fun
 	0x2::anonymous_pay
 split_and_transfer
-	public entry fun
-	0x2::anonymous_pay
-divide_and_keep
 	public entry fun
 	0x2::anonymous_pay
 join

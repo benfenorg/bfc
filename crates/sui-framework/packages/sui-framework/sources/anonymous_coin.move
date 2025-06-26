@@ -31,7 +31,7 @@ module sui::anonymous_coin {
     /// A type passed to create_supply is not a one-time witness.
     //const EBadWitness: u64 = 0;
     /// Invalid arguments are passed to a function.
-    const EInvalidArg: u64 = 1;
+    //const EInvalidArg: u64 = 1;
     /// Trying to split a coin more times than its balance allows.
     const ENotEnough: u64 = 2;
     // #[error]
@@ -66,8 +66,8 @@ module sui::anonymous_coin {
         })
     }
 
-    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, ctx: &mut TxContext) {
-        let value = anonymous_coin.balance.value();
+    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, signatures: vector<u8>, id: address, publickey: vector<u8>,  ctx: &mut TxContext) {
+        let value = anonymous_coin.balance.value(signatures, id, publickey);
         join(&mut swap_pool.anonymous_coin, anonymous_coin);
 
         assert!(value <= swap_pool.max_availalbe_normal_coin, ENotEnough);
@@ -180,8 +180,8 @@ module sui::anonymous_coin {
     }
 
     /// Public getter for the coin's value
-    public fun value<T>(self: &Anonymous_Coin<T>): u64 {
-        self.balance.value()
+    public fun value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8> ): u64 {
+        self.balance.value(signatures, id, publickey)
     }
 
     /// Get immutable reference to the balance of a coin.
@@ -240,24 +240,6 @@ module sui::anonymous_coin {
         take(&mut self.balance, split_amount, ctx)
     }
 
-    /// Split coin `self` into `n - 1` coins with equal balances. The remainder is left in
-    /// `self`. Return newly created coins.
-    public fun divide_into_n<T>(
-        self: &mut Anonymous_Coin<T>, n: u64, ctx: &mut TxContext
-    ): vector<Anonymous_Coin<T>> {
-        assert!(n > 0, EInvalidArg);
-        assert!(n <= value(self), ENotEnough);
-
-        let mut vec = vector[];
-        let mut i = 0;
-        let split_amount = value(self) / n;
-        while (i < n - 1) {
-        vec.push_back(self.split(split_amount, ctx));
-        i = i + 1;
-        };
-        vec
-    }
-
     /// Make any Coin with a zero value. Useful for placeholding
     /// bids/payments or preemptively making empty balances.
     public fun zero<T>(ctx: &mut TxContext): Anonymous_Coin<T> {
@@ -265,10 +247,11 @@ module sui::anonymous_coin {
     }
 
     /// Destroy a coin with value zero
-    public fun destroy_zero<T>(c: Anonymous_Coin<T>) {
+    public fun destroy_zero<T>(c: Anonymous_Coin<T>, signatures: vector<u8>, publickey: vector<u8>) {
         let Anonymous_Coin { id, balance } = c;
+        let address = object::uid_to_address(&id);
         id.delete();
-        balance.destroy_zero()
+        balance.destroy_zero(signatures, address, publickey)
     }
 
     // === Registering new coin types and managing the coin supply ===
@@ -389,10 +372,10 @@ module sui::anonymous_coin {
 
     /// Destroy the coin `c` and decrease the total supply in `cap`
     /// accordingly.
-    public entry fun burn<T>(cap: &mut TreasuryCap<T>, c: Anonymous_Coin<T>): u64 {
+    public entry fun burn<T>(cap: &mut TreasuryCap<T>, c: Anonymous_Coin<T>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8> ): u64 {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
-        cap.total_supply.decrease_supply(balance)
+        cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey)
     }
 
     /// Adds the given address to the deny list, preventing it from interacting with the specified
