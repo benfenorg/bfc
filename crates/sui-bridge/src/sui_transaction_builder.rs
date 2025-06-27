@@ -280,7 +280,7 @@ fn build_token_bridge_approve_transaction(
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
     let mut builder = ProgrammableTransactionBuilder::new();
 
-    let (source_chain, seq_num, sender, target_chain, target, token_type, amount,tx_hash,event_idx,func_name) =
+    let (source_chain, seq_num, sender, target_chain, target, token_type, amount,tx_hash,event_idx,func_name_message,func_name_approve,fast_path_selector) =
         match bridge_action {
             BridgeAction::SuiToEthBridgeAction(a) => {
                 let bridge_event = a.sui_bridge_event;
@@ -294,7 +294,9 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.amount_sui_adjusted,
                     vec![],
                     0,
-                    "create_token_bridge_message"
+                    "create_token_bridge_message",
+                    "approve_token_transfer",
+                    None
                 )
             }
             BridgeAction::EthSendBackBridgeAction(a) => {
@@ -309,7 +311,9 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.amount_sui_adjusted,
                     bridge_event.tx_hash,
                     bridge_event.event_idx,
-                    "create_token_bridge_message"
+                    "create_token_bridge_message",
+                    "approve_token_transfer",
+                    None
                 )
             }
             BridgeAction::EthToSuiBridgeAction(a) => {
@@ -324,7 +328,9 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.sui_adjusted_amount,
                     a.eth_tx_hash.as_bytes().to_vec(),
                     a.eth_event_index as u8,
-                    "create_token_bridge_message_v2"
+                    "create_token_bridge_message_v2",
+                    "approve_token_transfer_v2",
+                    Some(bridge_event.fast_path_selector)
                 )
             }
             _ => unreachable!(),
@@ -349,23 +355,49 @@ fn build_token_bridge_approve_transaction(
     let tx_hash = builder.pure(tx_hash).unwrap();
     let event_idx = builder.pure(event_idx).unwrap();
 
-    let arg_msg = builder.programmable_move_call(
-        BRIDGE_PACKAGE_ID,
-        ident_str!("message").to_owned(),
-        ident_str!(func_name).to_owned(),
-        vec![],
-        vec![
-            source_chain,
-            seq_num,
-            sender,
-            target_chain,
-            target,
-            arg_token_type,
-            amount,
-            tx_hash,
-            event_idx,
-        ],
-    );
+    let arg_msg = match func_name_message {
+        "create_token_bridge_message" => {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                ident_str!("message").to_owned(),
+                ident_str!(func_name_message).to_owned(),   
+                vec![],
+                vec![
+                    source_chain,
+                    seq_num,
+                    sender,
+                    target_chain,
+                    target,
+                    arg_token_type,
+                    amount,
+                    tx_hash,
+                    event_idx,
+                ],
+            )
+    }
+    "create_token_bridge_message_v2" => {
+        let fast_path_selector = builder.pure(fast_path_selector.unwrap() as u8).unwrap();
+        builder.programmable_move_call(
+            BRIDGE_PACKAGE_ID,
+            ident_str!("message").to_owned(),
+            ident_str!(func_name_message).to_owned(),
+            vec![],
+            vec![
+                source_chain,
+                seq_num,
+                sender,
+                target_chain,
+                target,
+                arg_token_type,
+                amount,
+                tx_hash,
+                event_idx,
+                fast_path_selector,
+            ],
+        )
+    }
+    _ => unreachable!(),
+    };
 
     // Unwrap: these should not fail
     let arg_bridge = builder.obj(bridge_object_arg).unwrap();
@@ -382,11 +414,10 @@ fn build_token_bridge_approve_transaction(
             sig_bytes, e
         ))
     })?;
-
     builder.programmable_move_call(
         BRIDGE_PACKAGE_ID,
         sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("approve_token_transfer").to_owned(),
+        ident_str!(func_name_approve).to_owned(),
         vec![],
         vec![arg_bridge, arg_msg, arg_signatures],
     );

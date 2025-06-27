@@ -1418,6 +1418,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_MESSAGE_VERSION_V2"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V2">MESSAGE_VERSION_V2</a>: u8 = 2;
+</code></pre>
+
+
+
 <a name="bridge_bridge_TRANSFER_STATUS_APPROVED"></a>
 
 
@@ -2049,7 +2058,7 @@ title: Module `bridge::bridge`
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
-    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V2">MESSAGE_VERSION_V2</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
     <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
     <b>let</b> target_chain = token_payload.token_target_chain_v2();
     <b>assert</b>!(

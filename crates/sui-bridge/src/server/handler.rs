@@ -419,6 +419,7 @@ where
 
                 let sig = BridgeAuthoritySignInfo::new(&bridge_action, &signer);
                 let result = SignedBridgeAction::new_from_data_and_sig(bridge_action, sig);
+                info!("bbking SignedBridgeAction: {:?}", result);
                 // Cache result if Ok
                 *guard = Some(Ok(result.clone()));
                 Ok(result)

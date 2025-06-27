@@ -28,6 +28,7 @@ use sui_types::base_types::SUI_ADDRESS_LENGTH;
 // use sui_types::crypto::ToFromBytes;
 
 pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
+pub const TOKEN_TRANSFER_MESSAGE_VERSION_V2: u8 = 2;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const ADD_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
@@ -217,7 +218,7 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         // Add message type
         bytes.push(BridgeActionType::TokenTransfer as u8);
         // Add message version
-        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION);
+        bytes.push(TOKEN_TRANSFER_MESSAGE_VERSION_V2);
         // Add nonce
         bytes.extend_from_slice(&e.nonce.to_be_bytes());
         // Add source chain id
@@ -256,6 +257,9 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
 
         // Add event idx
         bytes.push(e.event_idx);
+
+        //add fast path selector
+        bytes.push(e.fast_path_selector as u8);
 
         bytes
     }
