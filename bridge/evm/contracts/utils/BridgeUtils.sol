@@ -287,8 +287,10 @@ library BridgeUtils {
         // move offset past the tx hash
         offset = offset + uint8(txHash.length);
 
-        // event idx is a single byte
-        uint16 eventIdx = uint16(uint8(_payload[offset])) | (uint16(uint8(_payload[offset + 1])) << 8);
+       uint16 eventIdx;
+        assembly {
+            eventIdx := shr(240, mload(add(_payload, add(0x20, offset))))
+        }
 
         return TokenTransferPayload(
             senderAddressLength,
