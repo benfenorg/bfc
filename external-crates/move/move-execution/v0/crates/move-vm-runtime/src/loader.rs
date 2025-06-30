@@ -782,7 +782,7 @@ impl Loader {
                        "read_setting_impl", "internal_convert",
                        "internal_sum",
                        "hfe_ops_add", "hfe_ops_minus","hfe_ops_multiplied","split_data",
-                       "hfe_ops_split_value","hfe_ops_compare","hfe_ops_restore_value"];
+                       "hfe_ops_split_value","hfe_ops_compare","hfe_ops_restore_value", "hfe_ops_compare_value"];
 
             if !cfg!(feature = "lazy_natives") {
                 for (idx, native_function) in module
