@@ -40,7 +40,7 @@ library BridgeUtils {
         uint64 tokenID;
         uint64 amount;
         bytes txHash;
-        uint8 eventIdx;
+        uint16 eventIdx;
     }
 
     /* ========== CONSTANTS ========== */
@@ -279,16 +279,18 @@ library BridgeUtils {
         offset = offset + amountLength;
 
         // extract tx hash from payload
-        bytes memory txHash = new bytes(_payload.length - offset - 1); // -1 for eventIdx
-        for (uint256 i; i < _payload.length - offset - 1; i++) {
+        bytes memory txHash = new bytes(_payload.length - offset - 2); // -1 for eventIdx
+        for (uint256 i; i < _payload.length - offset - 2; i++) {
             txHash[i] = _payload[i + offset];
         }
 
         // move offset past the tx hash
         offset = offset + uint8(txHash.length);
 
-        // event idx is a single byte
-        uint8 eventIdx = uint8(_payload[offset]);
+       uint16 eventIdx;
+        assembly {
+            eventIdx := shr(240, mload(add(_payload, add(0x20, offset))))
+        }
 
         return TokenTransferPayload(
             senderAddressLength,

@@ -75,7 +75,7 @@ module bridge::message {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
         fast_path_selector: u8,
     }
 
@@ -197,7 +197,7 @@ module bridge::message {
         let token_type = peel_u64_be(&mut bcs);
         let amount = peel_u64_be(&mut bcs);
         let tx_hash = bcs.peel_vec_u8();
-        let event_idx = bcs.peel_u8();
+        let event_idx = bcs.peel_u16();
         let fast_path_selector = bcs.peel_u8();
         chain_ids::assert_valid_chain_id(target_chain);
         assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
@@ -509,7 +509,10 @@ module bridge::message {
         // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
-        payload.push_back(event_idx);
+        //todo: @linhaixueyuan
+        //之前的方式不行么？payload.push_back(event_idx);
+        //改这里会影响 btc 跨入？
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         BridgeMessage {
             message_type: message_types::token(),
             message_version: CURRENT_MESSAGE_VERSION,
@@ -551,7 +554,7 @@ module bridge::message {
         // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
-        payload.push_back(event_idx);
+        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         payload.push_back(fast_path_selector);
         BridgeMessage {
             message_type: message_types::token(),
@@ -946,7 +949,7 @@ module bridge::message {
     public fun fast_path_selector_v2(self: &TokenTransferPayloadV2): u8 {
         self.fast_path_selector
     }
-    
+
 
     // EmergencyOpPayload getters
     public fun emergency_op_type(self: &EmergencyOp): u8 {
@@ -1127,6 +1130,19 @@ module bridge::message {
         }
     }
 
+    public fun to_parsed_token_transfer_message_v2(
+        message: &BridgeMessage,
+    ): ParsedTokenTransferMessageV2 {
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        let payload = message.extract_token_bridge_payload_v2();
+        ParsedTokenTransferMessageV2 {
+            message_version: message.message_version(),
+            seq_num: message.seq_num(),
+            source_chain: message.source_chain(),
+            payload: message.payload(),
+            parsed_payload: payload,
+        }
+    }
     //////////////////////////////////////////////////////
     // Internal functions
     //
@@ -1183,6 +1199,26 @@ module bridge::message {
         event_idx: u8,
     ): TokenTransferPayload {
         TokenTransferPayload {
+            sender_address,
+            target_chain,
+            target_address,
+            token_type,
+            amount,
+            tx_hash,
+            event_idx,
+        }
+    }
+    #[test_only]
+    public(package) fun make_payload_v2(
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+    ): TokenTransferPayloadV2 {
+        TokenTransferPayloadV2 {
             sender_address,
             target_chain,
             target_address,

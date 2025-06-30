@@ -23,7 +23,9 @@ module bridge::bridge {
         AddExternalCoinWitness,RemoveExternalCoinWitness,
         AddExternalCoinTarget,RemoveExternalCoinTarget,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
+        ParsedTokenTransferMessageV2,
         to_parsed_token_transfer_message,
+        to_parsed_token_transfer_message_v2,
     };
     use bridge::tokenlist;
     use bridge::message_types;
@@ -100,6 +102,18 @@ module bridge::bridge {
         amount: u64,
         tx_hash: vector<u8>,
         event_idx: u8,
+    }
+
+    public struct TokenSendBackEventV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
     }
 
     public struct EmergencyOpEvent has copy, drop {
@@ -373,7 +387,7 @@ module bridge::bridge {
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
 
         // create bridge message
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             inner.chain_id,
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
@@ -382,7 +396,7 @@ module bridge::bridge {
             token_id,
             token_amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // burn / escrow token, unsupported coins will fail in this step
@@ -445,7 +459,7 @@ module bridge::bridge {
         assert!(token_amount > 0, ETokenValueIsZero);
 
         // create bridge message
-        let message = message::create_token_bridge_message(
+        let message = message::create_token_bridge_message_v2(
             inner.chain_id,
             bridge_seq_num,
             address::to_bytes(ctx.sender()),
@@ -454,7 +468,7 @@ module bridge::bridge {
             token_id,
             token_amount,
             hex::decode(b""),
-            0u8, // event_idx
+            0u16, // event_idx
         );
 
         // burn / escrow token, unsupported coins will fail in this step
@@ -551,6 +565,71 @@ module bridge::bridge {
             },
         );
     }
+    public fun send_back_token_v2(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        token_amount: u64,
+        tx_hash: vector<u8>,
+        event_idx: u16,
+        ctx: &mut TxContext
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
+        assert!(!inner.refund_records.contains(message::key_refund(tx_hash)), EDuplicateRefund);
+        assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
+        assert!(token_amount > 0, ETokenValueIsZero);
+        assert!(tx_hash.length() >= 1, EInvalidTxHash);
+        assert!(inner.is_refund_admin(ctx.sender().to_ascii_string()), EInvalidSender);
+        let bridge_seq_num = inner.get_current_seq_num_and_increment(message_types::token());
+        // create bridge message
+        let message = message::create_token_bridge_message_v2(
+            inner.chain_id,
+            bridge_seq_num,
+            address::to_bytes(ctx.sender()),
+            target_chain,
+            target_address,
+            token_type,
+            token_amount,
+            tx_hash,
+            event_idx,
+        );
+        // Store pending bridge request
+        inner.token_transfer_records.push_back(
+            message.key(),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+        //store for idempotency
+        inner.refund_records.push_back(
+            message::key_refund(tx_hash),
+            BridgeRecord {
+                message,
+                verified_signatures: option::none(),
+                claimed: false,
+            },
+        );
+
+        // emit event
+        emit(
+            TokenSendBackEventV2 {
+                seq_num: bridge_seq_num,
+                source_chain: inner.chain_id,
+                sender_address: address::to_bytes(ctx.sender()),
+                target_chain,
+                target_address,
+                token_type: token_type,
+                amount: token_amount,
+                tx_hash,
+                event_idx,
+            },
+        );
+    }
 
     fun is_refund_admin(inner: &BridgeInner, address: String): bool {
         inner.refund_admins.contains(&address)
@@ -570,8 +649,8 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let token_payload = message.extract_token_bridge_payload();
-        let target_chain = token_payload.token_target_chain();
+        let token_payload = message.extract_token_bridge_payload_v2();
+        let target_chain = token_payload.token_target_chain_v2();
         assert!(
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
@@ -603,7 +682,7 @@ module bridge::bridge {
                 return
             };
             //idempotency for SendBack and ETHToSui
-            let tx_hash = token_payload.token_tx_hash();
+            let tx_hash = token_payload.token_tx_hash_v2();
             if (inner.refund_records.contains(message::key_refund(tx_hash))) {
                 emit(TokenTransferAlreadyApproved { message_key });
                 return
@@ -1014,8 +1093,8 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let token_payload = message.extract_token_bridge_payload();
-        let target_chain = token_payload.token_target_chain();
+        let token_payload = message.extract_token_bridge_payload_v2();
+        let target_chain = token_payload.token_target_chain_v2();
         assert!(
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
@@ -1023,12 +1102,12 @@ module bridge::bridge {
 
         let coin_type = type_name::into_string(type_name::get<T>());
         // check records
-        let tx_hash = ascii::string(token_payload.token_tx_hash());
+        let tx_hash = ascii::string(token_payload.token_tx_hash_v2());
         let source_chain = message.source_chain();
-        let target_chain = token_payload.token_target_chain();
-        let source_address = token_payload.token_sender_address();
-        let target_address = token_payload.token_target_address();
-        let amount = token_payload.token_amount();
+        let target_chain = token_payload.token_target_chain_v2();
+        let source_address = token_payload.token_sender_address_v2();
+        let target_address = token_payload.token_target_address_v2();
+        let amount = token_payload.token_amount_v2();
         let key = ExternalBridgeMessageKey{
             source_chain,
             source_address,
@@ -1044,7 +1123,7 @@ module bridge::bridge {
                 target_chain: target_chain,
                 source_address: source_address,
                 target_address: target_address,
-                amount: token_payload.token_amount(),
+                amount: token_payload.token_amount_v2(),
                });
 
             return
@@ -1595,6 +1674,28 @@ module bridge::bridge {
         option::some(to_parsed_token_transfer_message(message))
     }
 
+    #[allow(unused_function)]
+    fun get_parsed_token_transfer_message_v2(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedTokenTransferMessageV2> {
+        let inner = load_inner(bridge);
+        let key = message::create_key(
+            source_chain,
+            message_types::token(),
+            bridge_seq_num
+        );
+
+        if (!inner.token_transfer_records.contains(key)) {
+            return option::none()
+        };
+
+        let record = &inner.token_transfer_records[key];
+        let message = &record.message;
+        option::some(to_parsed_token_transfer_message_v2(message))
+    }
+
     //////////////////////////////////////////////////////
     // Test functions
     //
@@ -1773,6 +1874,15 @@ module bridge::bridge {
         bridge_seq_num: u64,
     ): Option<ParsedTokenTransferMessage> {
         bridge.get_parsed_token_transfer_message(source_chain, bridge_seq_num)
+    }
+
+    #[test_only]
+    public fun test_get_parsed_token_transfer_message_v2(
+        bridge: &Bridge,
+        source_chain: u8,
+        bridge_seq_num: u64,
+    ): Option<ParsedTokenTransferMessageV2> {
+        bridge.get_parsed_token_transfer_message_v2(source_chain, bridge_seq_num)
     }
 
     #[test_only]
@@ -2001,6 +2111,19 @@ module bridge::bridge {
         )
     }
 
+    #[test_only]
+    public fun unwrap_send_back_event_v2(event: TokenSendBackEventV2): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64, vector<u8>) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount,
+            event.tx_hash,
+        )
+    }
     #[test_only]
     public fun unwrap_emergency_op_event(event: EmergencyOpEvent): bool {
         event.frozen

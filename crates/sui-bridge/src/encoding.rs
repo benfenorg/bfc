@@ -105,7 +105,7 @@ impl BridgeMessageEncoding for SuiToEthBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         bytes
     }
@@ -156,7 +156,7 @@ impl BridgeMessageEncoding for EthSendBackBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         bytes
     }
@@ -256,7 +256,7 @@ impl BridgeMessageEncoding for EthToSuiBridgeAction {
         bytes.extend_from_slice(&e.tx_hash.to_vec());
 
         // Add event idx
-        bytes.push(e.event_idx);
+        bytes.extend_from_slice(&e.event_idx.to_be_bytes());
 
         //add fast path selector
         bytes.push(e.fast_path_selector as u8);
@@ -753,7 +753,7 @@ mod tests {
         let token_id = TOKEN_ID_USDC;
         let amount_sui_adjusted = 1_000_000;
         let tx_hash = vec![];
-        let event_idx = 1u8;
+        let event_idx = 1u16;
 
         let sui_bridge_event = EmittedSuiToEthTokenBridgeV1 {
             nonce,
@@ -764,7 +764,7 @@ mod tests {
             token_id,
             amount_sui_adjusted,
             tx_hash: tx_hash.clone(),
-            event_idx: event_idx,
+            event_idx,
         };
 
         let encoded_bytes = BridgeAction::SuiToEthBridgeAction(SuiToEthBridgeAction {
@@ -791,7 +791,7 @@ mod tests {
         let token_amount_bytes = amount_sui_adjusted.to_be_bytes().to_vec(); // len: 8
         let tx_hash_length_bytes = vec![tx_hash.len() as u8]; // len: 1
         let tx_hash_bytes = tx_hash.clone(); // len: 32
-        let event_idx_bytes = vec![event_idx]; // len: 1
+        let event_idx_bytes = event_idx.to_be_bytes().to_vec(); // len: 2
 
         let mut combined_bytes = Vec::new();
         combined_bytes.extend_from_slice(&prefix_bytes);
@@ -815,7 +815,7 @@ mod tests {
         // TODO: for each action type add a test to assert the length
         assert_eq!(
             combined_bytes.len(),
-            18 + 1 + 1 + 8 + 1 + 1 + 32 + 1 + 20 + 1 + 8 + 8 + 1 + 1
+            18 + 1 + 1 + 8 + 1 + 1 + 32 + 1 + 20 + 1 + 8 + 8 + 1 + 2
         );
         Ok(())
     }
@@ -860,16 +860,16 @@ mod tests {
         .to_bytes();
         assert_eq!(
             encoded_bytes,
-            Hex::decode("5355495f4252494447455f4d4553534147450001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c8000000000000000300000000000030390000").unwrap(),
+            Hex::decode("5355495f4252494447455f4d4553534147450001000000000000000a012000000000000000000000000000000000000000000000000000000000000000640b1400000000000000000000000000000000000000c800000000000000030000000000003039000000").unwrap(),
         );
 
         let hash = Keccak256::digest(encoded_bytes).digest;
 
-        assert_eq!(Hex::encode(hash), "de57299813fd1280ce7bfa60d5c359657b1ad78f09d4dac6372b25e57aea366a");
+        assert_eq!(Hex::encode(hash), "fbcf54f066ec2a22369e72efee9f4ddf4af17e0521d522d814ba15e7187d8890");
 
         assert_eq!(
             hash.to_vec(),
-            Hex::decode("de57299813fd1280ce7bfa60d5c359657b1ad78f09d4dac6372b25e57aea366a")
+            Hex::decode("fbcf54f066ec2a22369e72efee9f4ddf4af17e0521d522d814ba15e7187d8890")
                 .unwrap(),
         );
         Ok(())
@@ -1239,14 +1239,14 @@ mod tests {
         .to_bytes();
         assert_eq!(
             encoded_bytes,
-            Hex::decode("5355495f4252494447455f4d4553534147450001000000000000000a0b1400000000000000000000000000000000000000c801200000000000000000000000000000000000000000000000000000000000000064000000000000000300000000000030390000").unwrap(),
+            Hex::decode("5355495f4252494447455f4d4553534147450001000000000000000a0b1400000000000000000000000000000000000000c80120000000000000000000000000000000000000000000000000000000000000006400000000000000030000000000003039000000").unwrap(),
         );
 
         let hash = Keccak256::digest(encoded_bytes).digest;
-        assert_eq!(Hex::encode(hash), "bbbeae3b572891a14e3bddf7baff14580e1e2a9d5992ea5c757c5d99d038a4b4");
+        assert_eq!(Hex::encode(hash), "c9f33a82c71c2ad87fade6b7621ff7b1b9e1ad8b4f9efa75054735c17688b845");
         assert_eq!(
             hash.to_vec(),
-            Hex::decode("bbbeae3b572891a14e3bddf7baff14580e1e2a9d5992ea5c757c5d99d038a4b4")
+            Hex::decode("c9f33a82c71c2ad87fade6b7621ff7b1b9e1ad8b4f9efa75054735c17688b845")
                 .unwrap(),
         );
         Ok(())

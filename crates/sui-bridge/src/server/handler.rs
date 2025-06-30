@@ -240,7 +240,7 @@ where
         if let BridgeAction::EthSendBackBridgeAction(ref send_back_action) = action_rs {
             let tx_hash_bytes = send_back_action.sui_bridge_event.tx_hash.to_vec();
             let tx_hash = U256::from_big_endian(&tx_hash_bytes);
-            let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
+            let event_idx = send_back_action.sui_bridge_event.event_idx;
 
             let result = match send_back_action.sui_bridge_event.eth_chain_id {
                 BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |

@@ -123,6 +123,7 @@ where
         match event {
             SuiBridgeEvent::SuiToEthTokenBridgeV1(_) => (),
             SuiBridgeEvent::TokenSendBackEvent(_) => (),
+            SuiBridgeEvent::TokenSendBackEventV2(_) => (),
             SuiBridgeEvent::ExternalDepositStartBridgeV1(_) => (),
             SuiBridgeEvent::TokenTransferApproved(_) => (),
             SuiBridgeEvent::TokenTransferClaimed(_) => (),
