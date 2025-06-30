@@ -33,7 +33,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(5,0)
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0)
 deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 27534800,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
+gas summary: computation_cost: 1000000, storage_cost: 17214000,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 6, line 20:
 //# create-checkpoint
@@ -91,7 +91,7 @@ Response: {
       "transactionBlocks": {
         "nodes": [
           {
-            "digest": "AanijfgNuq7wY7ZPqjh4vrqShUWwvTaDKrYDEYxURc6o"
+            "digest": "6ZP9B6ZLNia9JWUgg91BtZ4LMu1oWN6Lw9UErRrN49kf"
           }
         ]
       },
@@ -136,8 +136,8 @@ Response: {
       "totalStakeRewards": "3000000",
       "totalStakeSubsidies": "0",
       "fundSize": "0",
-      "netInflow": "28881216",
-      "fundInflow": "32763600",
+      "netInflow": "18560416",
+      "fundInflow": "22442800",
       "fundOutflow": "3882384",
       "storageFund": {
         "totalObjectStorageRebates": "0",
@@ -164,7 +164,7 @@ Response: {
       "transactionBlocks": {
         "nodes": [
           {
-            "digest": "9D3muHR2gUrrZ674HR4uUCwhLHEBfM8qkWw67CGLHMNW"
+            "digest": "EDskZcQCmyBiP4x6TprPEzsajHbvgxGcVRnABfEq1VD9"
           }
         ]
       },
@@ -196,12 +196,12 @@ Response: {
       "totalGasFees": null,
       "totalStakeRewards": null,
       "totalStakeSubsidies": null,
-      "fundSize": "28881216",
+      "fundSize": "18560416",
       "netInflow": null,
       "fundInflow": null,
       "fundOutflow": null,
       "storageFund": {
-        "totalObjectStorageRebates": "28842000",
+        "totalObjectStorageRebates": "18521200",
         "nonRefundableBalance": "39216"
       },
       "safeMode": {

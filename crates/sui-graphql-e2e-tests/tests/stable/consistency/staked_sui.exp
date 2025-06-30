@@ -53,7 +53,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(7,0)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(3,0)
 deleted: object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 27534800,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
+gas summary: computation_cost: 1000000, storage_cost: 17214000,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
 
 task 8, line 36:
 //# create-checkpoint
@@ -109,13 +109,13 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IEXs11v9cy+IBOyRviMEH4CpCaDrPQhK8gRbAdCRFO8bBAAAAAAAAAA=",
+            "cursor": "IKd0rf6S3cmn7wpCXP4h1v1t1VqkLiRT8n8zxdlCKZQWBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           },
           {
-            "cursor": "IPelLbo5rgPGJEI3oUfR+YoKR6ARmprDrgWwo862iRW2BAAAAAAAAAA=",
+            "cursor": "ILIwTvQuJYlVXZF4FQGgYT1D2PFJNxPuG6G/j5TyHGXsBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -161,7 +161,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IPelLbo5rgPGJEI3oUfR+YoKR6ARmprDrgWwo862iRW2AwAAAAAAAAA=",
+            "cursor": "ILIwTvQuJYlVXZF4FQGgYT1D2PFJNxPuG6G/j5TyHGXsAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -183,7 +183,7 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IEXs11v9cy+IBOyRviMEH4CpCaDrPQhK8gRbAdCRFO8bAwAAAAAAAAA=",
+            "cursor": "IKd0rf6S3cmn7wpCXP4h1v1t1VqkLiRT8n8zxdlCKZQWAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }

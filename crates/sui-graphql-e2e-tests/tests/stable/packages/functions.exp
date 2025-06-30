@@ -78,19 +78,25 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
+                    "address": "0x71a4f26f410760dc81f13ae190963794e94d9f4a6a98334fb777d03467d4d7ee",
+                    "asMovePackage": null
+                  }
+                },
+                {
+                  "outputState": {
                     "address": "0x9f239c7c62033824d92c6d17a96c308e66833c98b4292161ebea96d151ebb8f6",
                     "asMovePackage": null
                   }
                 },
                 {
                   "outputState": {
-                    "address": "0xcea7cdc68cc95fc7377e272686e7e22156e42f016c93488425b65934a7f3ca86",
+                    "address": "0xad9315b684818ca629fda9cde1fda5801599451af30b080bf38dfba4ca68f0c0",
                     "asMovePackage": {
                       "module": {
                         "function": {
                           "module": {
                             "package": {
-                              "address": "0xcea7cdc68cc95fc7377e272686e7e22156e42f016c93488425b65934a7f3ca86"
+                              "address": "0xad9315b684818ca629fda9cde1fda5801599451af30b080bf38dfba4ca68f0c0"
                             }
                           },
                           "name": "f",
@@ -119,12 +125,6 @@ Response: {
                         }
                       }
                     }
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0xd0e6dfee1cc3e415a62019b497bca9929ed9b0a462a8b9afad7f38e4309ab7f8",
-                    "asMovePackage": null
                   }
                 }
               ]
@@ -158,25 +158,13 @@ Response: {
               "nodes": [
                 {
                   "outputState": {
-                    "address": "0x9f239c7c62033824d92c6d17a96c308e66833c98b4292161ebea96d151ebb8f6",
-                    "asMovePackage": null
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0xd0e6dfee1cc3e415a62019b497bca9929ed9b0a462a8b9afad7f38e4309ab7f8",
-                    "asMovePackage": null
-                  }
-                },
-                {
-                  "outputState": {
-                    "address": "0xd77b0a6a749107687d9a762ffc1b25dbdb34e04606c3f68fd3e3cb7ac6fed347",
+                    "address": "0x3031211aa34639177b6a718ae84225838868def3663b7e65b035822b31be8b73",
                     "asMovePackage": {
                       "module": {
                         "f": {
                           "module": {
                             "package": {
-                              "address": "0xd77b0a6a749107687d9a762ffc1b25dbdb34e04606c3f68fd3e3cb7ac6fed347"
+                              "address": "0x3031211aa34639177b6a718ae84225838868def3663b7e65b035822b31be8b73"
                             }
                           },
                           "name": "f",
@@ -206,7 +194,7 @@ Response: {
                         "g": {
                           "module": {
                             "package": {
-                              "address": "0xd77b0a6a749107687d9a762ffc1b25dbdb34e04606c3f68fd3e3cb7ac6fed347"
+                              "address": "0x3031211aa34639177b6a718ae84225838868def3663b7e65b035822b31be8b73"
                             }
                           },
                           "name": "g",
@@ -222,6 +210,18 @@ Response: {
                         }
                       }
                     }
+                  }
+                },
+                {
+                  "outputState": {
+                    "address": "0x71a4f26f410760dc81f13ae190963794e94d9f4a6a98334fb777d03467d4d7ee",
+                    "asMovePackage": null
+                  }
+                },
+                {
+                  "outputState": {
+                    "address": "0x9f239c7c62033824d92c6d17a96c308e66833c98b4292161ebea96d151ebb8f6",
+                    "asMovePackage": null
                   }
                 }
               ]

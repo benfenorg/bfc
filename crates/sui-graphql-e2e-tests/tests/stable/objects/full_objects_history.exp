@@ -34,7 +34,7 @@ task 7, lines 35-40:
 Response: {
   "data": {
     "object": {
-      "digest": "BvELYdqT3bGXF4zHsh5gSiEiAAuRN7dMAmFCACv6RhaK"
+      "digest": "EwQomrWfrVtKmZfqMUrYfnCrgKrkW51uRFNkNwuSF1N5"
     }
   }
 }
@@ -44,7 +44,7 @@ task 8, lines 42-47:
 Response: {
   "data": {
     "object": {
-      "digest": "FVVwG4yUuosLS83qMAov8DFeBPCcMzhwWR3rgbkeVZqN"
+      "digest": "5Ke2YCZGWTBKZaUcZ31Wdy7pUTt61nCx7pWxGnw8q7oN"
     }
   }
 }
@@ -62,7 +62,7 @@ task 11, lines 54-59:
 Response: {
   "data": {
     "object": {
-      "digest": "BvELYdqT3bGXF4zHsh5gSiEiAAuRN7dMAmFCACv6RhaK"
+      "digest": "EwQomrWfrVtKmZfqMUrYfnCrgKrkW51uRFNkNwuSF1N5"
     }
   }
 }

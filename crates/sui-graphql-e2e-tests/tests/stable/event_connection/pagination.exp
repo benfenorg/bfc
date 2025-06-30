@@ -46,7 +46,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -66,7 +66,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "1"
@@ -86,7 +86,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -121,7 +121,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "1"
@@ -141,7 +141,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -176,7 +176,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -196,7 +196,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "1"
@@ -231,7 +231,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "1"
@@ -251,7 +251,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0xccc31c3c3c7ca3ea600f4e02e00c43b3a0b14ac48fe1bf022c18bccb88871400::M1::EventA"
+                "repr": "0x839b6f070d9e1f1c5108dfd836924b21a57142ab75a37219cd41501f01fd2bda::M1::EventA"
               },
               "json": {
                 "new_value": "2"

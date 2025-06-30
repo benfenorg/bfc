@@ -110,7 +110,6 @@ const SUI_DENY_LIST_OBJECT_CREATE: FunctionIdent = (
     ident_str!("create_deny_list_object"),
 );
 
-#[cfg(msim)]
 const SUI_ANONYMOUS_CREATE: FunctionIdent = (
     &SUI_FRAMEWORK_ADDRESS,
     ANONYMOUS_MODULE_NAME,
