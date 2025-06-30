@@ -165,6 +165,7 @@ module bridge::bridge {
 
     const EInvalidMinStakeParticipationPercentage: u64 = 50;
     const EFastPathLimitError: u64 = 51;
+    const EOnlySupportTokenTransferIn: u64 = 52;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -763,6 +764,56 @@ module bridge::bridge {
                 },
             );
         };
+
+        emit(TokenTransferApproved { message_key });
+    }
+
+    public fun approve_token_transfer_in(
+        bridge: &mut Bridge,
+        message: BridgeMessage,
+        signatures: vector<vector<u8>>,
+    ) {
+        let inner = load_inner_mut(bridge);
+        assert!(!inner.paused, EBridgeUnavailable);
+        // verify signatures
+        inner.committee.verify_signatures(message, signatures);
+
+        assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
+        assert!(message.message_version() == MESSAGE_VERSION_V2, EUnexpectedMessageVersion);
+        let token_payload = message.extract_token_bridge_in_payload();
+        let target_chain = token_payload.token_target_chain_in();
+        assert!(
+            message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+            EUnexpectedChainID,
+        );
+
+        let message_key = message.key();
+        // retrieve pending message if source chain is Sui, the initial message
+        // must exist on chain
+        //only support token transfer in
+        assert!(message.source_chain() != inner.chain_id, EOnlySupportTokenTransferIn);
+        // At this point, if this message is in token_transfer_records, we know
+        // it's already approved because we only add a message to token_transfer_records
+        // after verifying the signatures
+        if (inner.token_transfer_records.contains(message_key)) {
+            emit(TokenTransferAlreadyApproved { message_key });
+            return
+        };
+        //idempotency for SendBack and ETHToSui
+        let tx_hash = token_payload.token_tx_hash_in();
+        if (inner.refund_records.contains(message::key_refund(tx_hash))) {
+                emit(TokenTransferAlreadyApproved { message_key });
+                return
+        };
+        // Store message and approval
+        inner.token_transfer_records.push_back(
+            message_key,
+            BridgeRecord {
+                message,
+                verified_signatures: option::some(signatures),
+                claimed: false
+            },
+        );
 
         emit(TokenTransferApproved { message_key });
     }
