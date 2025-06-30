@@ -66,7 +66,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -86,7 +86,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -106,7 +106,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -126,7 +126,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::Object>"
               },
               "json": {
                 "new_value": "3"
@@ -157,7 +157,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -177,7 +177,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -197,7 +197,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::EventA"
               },
               "json": {
                 "new_value": "2"
@@ -217,7 +217,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M2::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M2::Object>"
               },
               "json": {
                 "new_value": "3"
@@ -248,7 +248,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -268,7 +268,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::Object>"
               },
               "json": {
                 "new_value": "1"
@@ -299,7 +299,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventA"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventA"
               },
               "json": {
                 "new_value": "0"
@@ -330,7 +330,7 @@ Response: {
             },
             "contents": {
               "type": {
-                "repr": "0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::EventB<0x5001d5a700ab1a453623d0c28ab21124743a028fd3ea22061c163de929909f9c::M1::Object>"
+                "repr": "0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::EventB<0x56ec5a3c0b16e2c929a36d1e2260642eb51238b2e9b6f975bff3b21bdb515432::M1::Object>"
               },
               "json": {
                 "new_value": "1"
