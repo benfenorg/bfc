@@ -294,8 +294,8 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.amount_sui_adjusted,
                     vec![],
                     0,
-                    "create_token_bridge_message",
-                    "approve_token_transfer",
+                    "create_token_bridge_message_v2",
+                    "approve_token_transfer_v2",
                     None
                 )
             }
@@ -312,7 +312,7 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.tx_hash,
                     bridge_event.event_idx,
                     "create_token_bridge_message",
-                    "approve_token_transfer",
+                    "approve_token_transfer_v2",
                     None
                 )
             }
@@ -328,8 +328,8 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.sui_adjusted_amount,
                     a.eth_tx_hash.as_bytes().to_vec(),
                     a.eth_event_index,
-                    "create_token_bridge_message_v2",
-                    "approve_token_transfer_v2",
+                    "create_token_bridge_in_message",
+                    "approve_token_transfer_in",
                     Some(bridge_event.fast_path_selector)
                 )
             }
@@ -375,7 +375,7 @@ fn build_token_bridge_approve_transaction(
                 ],
             )
     }
-    "create_token_bridge_message_v2" => {
+    "create_token_bridge_in_message" => {
         let fast_path_selector = builder.pure(fast_path_selector.unwrap() as u8).unwrap();
         builder.programmable_move_call(
             BRIDGE_PACKAGE_ID,

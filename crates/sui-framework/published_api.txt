@@ -5806,6 +5806,9 @@ TokenTransferPayload
 TokenTransferPayloadV2
 	public struct
 	0xb::message
+TokenTransferInPayload
+	public struct
+	0xb::message
 EmergencyOp
 	public struct
 	0xb::message
@@ -5848,10 +5851,16 @@ ParsedTokenTransferMessage
 ParsedTokenTransferMessageV2
 	public struct
 	0xb::message
+ParsedTokenTransferInMessage
+	public struct
+	0xb::message
 extract_token_bridge_payload
 	public fun
 	0xb::message
 extract_token_bridge_payload_v2
+	public fun
+	0xb::message
+extract_token_bridge_in_payload
 	public fun
 	0xb::message
 extract_add_witness_poyload
@@ -5900,6 +5909,9 @@ create_bitcoin_message
 	public fun
 	0xb::message
 create_token_bridge_message
+	public fun
+	0xb::message
+create_token_bridge_in_message
 	public fun
 	0xb::message
 create_token_bridge_message_v2
@@ -5968,40 +5980,67 @@ payload
 token_sender_address
 	public fun
 	0xb::message
-token_sender_address_v2
-	public fun
-	0xb::message
 token_target_chain
-	public fun
-	0xb::message
-token_target_chain_v2
 	public fun
 	0xb::message
 token_target_address
 	public fun
 	0xb::message
-token_target_address_v2
-	public fun
-	0xb::message
 token_type
-	public fun
-	0xb::message
-token_type_v2
 	public fun
 	0xb::message
 token_amount
 	public fun
 	0xb::message
-token_amount_v2
+token_tx_hash
 	public fun
 	0xb::message
-token_tx_hash
+token_event_idx
+	public fun
+	0xb::message
+token_sender_address_v2
+	public fun
+	0xb::message
+token_target_chain_v2
+	public fun
+	0xb::message
+token_target_address_v2
+	public fun
+	0xb::message
+token_type_v2
+	public fun
+	0xb::message
+token_amount_v2
 	public fun
 	0xb::message
 token_tx_hash_v2
 	public fun
 	0xb::message
-token_event_idx
+token_event_idx_v2
+	public fun
+	0xb::message
+token_sender_address_in
+	public fun
+	0xb::message
+token_target_chain_in
+	public fun
+	0xb::message
+token_target_address_in
+	public fun
+	0xb::message
+token_type_in
+	public fun
+	0xb::message
+token_amount_in
+	public fun
+	0xb::message
+token_tx_hash_in
+	public fun
+	0xb::message
+token_event_idx_in
+	public fun
+	0xb::message
+token_fast_path_selector_in
 	public fun
 	0xb::message
 emergency_op_type
@@ -6101,6 +6140,9 @@ to_parsed_token_transfer_message
 	public fun
 	0xb::message
 to_parsed_token_transfer_message_v2
+	public fun
+	0xb::message
+to_parsed_token_transfer_in_message
 	public fun
 	0xb::message
 reverse_bytes

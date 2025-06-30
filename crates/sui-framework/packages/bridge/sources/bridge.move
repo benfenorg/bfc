@@ -38,7 +38,7 @@ module bridge::bridge {
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
     use bridge::limiter_fast_path;
-    use bridge::message::TokenTransferPayloadV2;
+    use bridge::message::TokenTransferInPayload;
 
     const MESSAGE_VERSION: u8 = 1;
     const MESSAGE_VERSION_V2: u8 = 2;
@@ -1428,14 +1428,14 @@ module bridge::bridge {
     fun check_fast_path_limit(
         bridge_id: &mut UID,
         clock: &Clock,
-        token_payload: TokenTransferPayloadV2,
+        token_payload: TokenTransferInPayload,
     ) {
         //fast path checker
-        if (token_payload.fast_path_selector_v2() != 2) { // 2 is finalized,0 and 1 is fast path
-            let amount = token_payload.token_amount_v2();
-            let chain_id = token_payload.token_target_chain_v2();
-            let token_id = token_payload.token_type_v2();
-            let sender_address = token_payload.token_sender_address_v2();
+        if (token_payload.token_fast_path_selector_in() != 2) { // 2 is finalized,0 and 1 is fast path
+            let amount = token_payload.token_amount_in();
+            let chain_id = token_payload.token_target_chain_in();
+            let token_id = token_payload.token_type_in();
+            let sender_address = token_payload.token_sender_address_in();
             let remaining_limit = limiter_fast_path::check_and_record_user_limit(bridge_id, sender_address, chain_id, token_id, amount, clock);
             assert!(remaining_limit, EFastPathLimitError);
         };
@@ -1467,11 +1467,11 @@ module bridge::bridge {
         assert!(record.verified_signatures.is_some(), EUnauthorisedClaim);
 
         // extract token message
-        let token_payload = record.message.extract_token_bridge_payload_v2();
+        let token_payload = record.message.extract_token_bridge_in_payload();
         // get owner address
-        let owner = address::from_bytes(token_payload.token_target_address_v2());
+        let owner = address::from_bytes(token_payload.token_target_address_in());
         // get token type
-        let token_id = token_payload.token_type_v2();
+        let token_id = token_payload.token_type_in();
         assert!(token_id == 5, EOnlySupportBusd);
 
         // If already claimed, exit early
@@ -1480,7 +1480,7 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        let target_chain = token_payload.token_target_chain_v2();
+        let target_chain = token_payload.token_target_chain_in();
         // ensure target chain matches bridge.chain_id
         assert!(target_chain == inner.chain_id, EUnexpectedChainID);
 
@@ -1488,11 +1488,11 @@ module bridge::bridge {
         let route = chain_ids::get_route(source_chain, target_chain);
         // check token type
         assert!(
-            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_v2(),
+            treasury::token_id<T>(&inner.treasury) == token_payload.token_type_in(),
             EUnexpectedTokenType,
         );
 
-        let amount = token_payload.token_amount_v2();
+        let amount = token_payload.token_amount_in();
         assert!(amount < inner.limiter.get_mint_busd_max_limit(), EInvalidMintAmount);
         // Make sure transfer is within limit.
         if (!inner
