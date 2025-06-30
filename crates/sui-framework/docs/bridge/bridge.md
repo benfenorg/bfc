@@ -39,6 +39,7 @@ title: Module `bridge::bridge`
 -  [Function `is_refund_admin`](#bridge_bridge_is_refund_admin)
 -  [Function `approve_token_transfer`](#bridge_bridge_approve_token_transfer)
 -  [Function `approve_token_transfer_v2`](#bridge_bridge_approve_token_transfer_v2)
+-  [Function `approve_token_transfer_in`](#bridge_bridge_approve_token_transfer_in)
 -  [Function `get_max_mint_busd_amount`](#bridge_bridge_get_max_mint_busd_amount)
 -  [Function `set_max_mint_busd_amount`](#bridge_bridge_set_max_mint_busd_amount)
 -  [Function `claim_token`](#bridge_bridge_claim_token)
@@ -1325,6 +1326,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_EOnlySupportTokenTransferIn"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportTokenTransferIn">EOnlySupportTokenTransferIn</a>: u64 = 52;
+</code></pre>
+
+
+
 <a name="bridge_bridge_ETokenAlreadyClaimedOrHitLimit"></a>
 
 
@@ -2134,8 +2144,8 @@ title: Module `bridge::bridge`
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
-    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
-    <b>let</b> target_chain = token_payload.token_target_chain_v2();
+    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload();
+    <b>let</b> target_chain = token_payload.token_target_chain();
     <b>assert</b>!(
         <a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id || target_chain == inner.chain_id,
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
@@ -2164,7 +2174,7 @@ title: Module `bridge::bridge`
             <b>return</b>
         };
         //idempotency <b>for</b> SendBack and ETHToSui
-        <b>let</b> tx_hash = token_payload.token_tx_hash_v2();
+        <b>let</b> tx_hash = token_payload.token_tx_hash();
         <b>if</b> (inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash))) {
             emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
             <b>return</b>
@@ -2258,6 +2268,73 @@ title: Module `bridge::bridge`
             },
         );
     };
+    emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferApproved">TokenTransferApproved</a> { message_key });
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_approve_token_transfer_in"></a>
+
+## Function `approve_token_transfer_in`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_approve_token_transfer_in">approve_token_transfer_in</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, <a href="../bridge/message.md#bridge_message">message</a>: <a href="../bridge/message.md#bridge_message_BridgeMessage">bridge::message::BridgeMessage</a>, signatures: vector&lt;vector&lt;u8&gt;&gt;)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_approve_token_transfer_in">approve_token_transfer_in</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    <a href="../bridge/message.md#bridge_message">message</a>: BridgeMessage,
+    signatures: vector&lt;vector&lt;u8&gt;&gt;,
+) {
+    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    // verify signatures
+    inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V2">MESSAGE_VERSION_V2</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_in_payload();
+    <b>let</b> target_chain = token_payload.token_target_chain_in();
+    <b>assert</b>!(
+        <a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+        <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
+    );
+    <b>let</b> message_key = <a href="../bridge/message.md#bridge_message">message</a>.key();
+    // retrieve pending <a href="../bridge/message.md#bridge_message">message</a> <b>if</b> source chain is Sui, the initial <a href="../bridge/message.md#bridge_message">message</a>
+    // must exist on chain
+    //only support token transfer in
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.source_chain() != inner.chain_id, <a href="../bridge/bridge.md#bridge_bridge_EOnlySupportTokenTransferIn">EOnlySupportTokenTransferIn</a>);
+    // At this point, <b>if</b> this <a href="../bridge/message.md#bridge_message">message</a> is in token_transfer_records, we know
+    // it's already approved because we only add a <a href="../bridge/message.md#bridge_message">message</a> to token_transfer_records
+    // after verifying the signatures
+    <b>if</b> (inner.token_transfer_records.contains(message_key)) {
+        emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+        <b>return</b>
+    };
+    //idempotency <b>for</b> SendBack and ETHToSui
+    <b>let</b> tx_hash = token_payload.token_tx_hash_in();
+    <b>if</b> (inner.refund_records.contains(<a href="../bridge/message.md#bridge_message_key_refund">message::key_refund</a>(tx_hash))) {
+            emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferAlreadyApproved">TokenTransferAlreadyApproved</a> { message_key });
+            <b>return</b>
+    };
+    // Store <a href="../bridge/message.md#bridge_message">message</a> and approval
+    inner.token_transfer_records.push_back(
+        message_key,
+        <a href="../bridge/bridge.md#bridge_bridge_BridgeRecord">BridgeRecord</a> {
+            <a href="../bridge/message.md#bridge_message">message</a>,
+            verified_signatures: option::some(signatures),
+            claimed: <b>false</b>
+        },
+    );
     emit(<a href="../bridge/bridge.md#bridge_bridge_TokenTransferApproved">TokenTransferApproved</a> { message_key });
 }
 </code></pre>
@@ -2755,20 +2832,20 @@ title: Module `bridge::bridge`
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
-    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
-    <b>let</b> target_chain = token_payload.token_target_chain_v2();
+    <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload();
+    <b>let</b> target_chain = token_payload.token_target_chain();
     <b>assert</b>!(
         <a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id || target_chain == inner.chain_id,
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
     );
     <b>let</b> coin_type = type_name::into_string(type_name::get&lt;T&gt;());
     // check records
-    <b>let</b> tx_hash = ascii::string(token_payload.token_tx_hash_v2());
+    <b>let</b> tx_hash = ascii::string(token_payload.token_tx_hash());
     <b>let</b> source_chain = <a href="../bridge/message.md#bridge_message">message</a>.source_chain();
-    <b>let</b> target_chain = token_payload.token_target_chain_v2();
-    <b>let</b> source_address = token_payload.token_sender_address_v2();
-    <b>let</b> target_address = token_payload.token_target_address_v2();
-    <b>let</b> amount = token_payload.token_amount_v2();
+    <b>let</b> target_chain = token_payload.token_target_chain();
+    <b>let</b> source_address = token_payload.token_sender_address();
+    <b>let</b> target_address = token_payload.token_target_address();
+    <b>let</b> amount = token_payload.token_amount();
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
         source_chain,
         source_address,
@@ -2784,7 +2861,7 @@ title: Module `bridge::bridge`
             target_chain: target_chain,
             source_address: source_address,
             target_address: target_address,
-            amount: token_payload.token_amount_v2(),
+            amount: token_payload.token_amount(),
            });
         <b>return</b>
     };

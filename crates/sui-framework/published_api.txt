@@ -6598,6 +6598,9 @@ approve_token_transfer
 approve_token_transfer_v2
 	public fun
 	0xb::bridge
+approve_token_transfer_in
+	public fun
+	0xb::bridge
 get_max_mint_busd_amount
 	public fun
 	0xb::bridge

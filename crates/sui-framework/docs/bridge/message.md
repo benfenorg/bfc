@@ -1840,10 +1840,7 @@ Token Transfer Message Format:
     // <b>assert</b>!(vector::length(&<a href="../bridge/message.md#bridge_message_payload">payload</a>) == 71, EInvalidPayloadLength);
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back((vector::length(&tx_hash) <b>as</b> u8));
     <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(tx_hash);
-    //todo: @linhaixueyuan
-    //之前的方式不行么？<a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(event_idx);
-    //改这里会影响 btc 跨入？
-    <a href="../bridge/message.md#bridge_message_payload">payload</a>.append(<a href="../bridge/message.md#bridge_message_reverse_bytes">reverse_bytes</a>(bcs::to_bytes(&event_idx)));
+    <a href="../bridge/message.md#bridge_message_payload">payload</a>.push_back(event_idx);
     <a href="../bridge/message.md#bridge_message_BridgeMessage">BridgeMessage</a> {
         <a href="../bridge/message.md#bridge_message_message_type">message_type</a>: <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(),
         <a href="../bridge/message.md#bridge_message_message_version">message_version</a>: <a href="../bridge/message.md#bridge_message_CURRENT_MESSAGE_VERSION">CURRENT_MESSAGE_VERSION</a>,
