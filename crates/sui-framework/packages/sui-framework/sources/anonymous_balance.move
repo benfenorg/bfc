@@ -220,15 +220,15 @@ public fun create_for_testing<T>(value: u64): Anonymous_Balance<T> {
 
 #[test_only]
 /// Destroy a `Balance` of any coin for testing purposes.
-public fun destroy_for_testing<T>(self: Anonymous_Balance<T>): u64 {
+public fun destroy_for_testing<T>(self: Anonymous_Balance<T>) {
     let Anonymous_Balance {
         encode_data: _,
         version: _,
         balance_type: _,
         value1: _,
         value2: _,
-        value } = self;
-    value
+         } = self;
+
 }
 
 #[test_only]

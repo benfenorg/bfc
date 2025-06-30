@@ -542,7 +542,7 @@ module sui::anonymous_coin {
 
     #[test_only]
     /// Burn coins of any type for testing purposes only
-    public fun burn_for_testing<T>(coin: Anonymous_Coin<T>): u64 {
+    public fun burn_for_testing<T>(coin: Anonymous_Coin<T>) {
         let Anonymous_Coin { id, balance } = coin;
         id.delete();
         balance.destroy_for_testing()
