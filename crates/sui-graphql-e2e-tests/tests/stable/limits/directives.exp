@@ -72,17 +72,47 @@ Response: {
 task 5, lines 58-62:
 //# run-graphql
 Response: {
-  "data": {
-    "chainIdentifier": "b3134edd"
-  }
+  "data": null,
+  "errors": [
+    {
+      "message": "Internal error occurred while processing request: Chain identifier not initialized.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "chainIdentifier"
+      ],
+      "extensions": {
+        "code": "INTERNAL_SERVER_ERROR"
+      }
+    }
+  ]
 }
 
 task 6, lines 64-68:
 //# run-graphql
 Response: {
-  "data": {
-    "chainIdentifier": "b3134edd"
-  }
+  "data": null,
+  "errors": [
+    {
+      "message": "Internal error occurred while processing request: Chain identifier not initialized.",
+      "locations": [
+        {
+          "line": 2,
+          "column": 3
+        }
+      ],
+      "path": [
+        "chainIdentifier"
+      ],
+      "extensions": {
+        "code": "INTERNAL_SERVER_ERROR"
+      }
+    }
+  ]
 }
 
 task 7, lines 70-74:
