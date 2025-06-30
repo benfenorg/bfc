@@ -861,7 +861,7 @@ module bridge::bridge_env {
         let signatures = env.sign_message(message);
 
         // run approval
-        bridge.approve_token_transfer(message, signatures);
+        bridge.approve_token_transfer_v2(message, signatures);
 
         // verify approval events
         let approved_events = event::events_by_type<TokenTransferApproved>();
@@ -901,7 +901,7 @@ module bridge::bridge_env {
         let mut bridge = env.scenario.take_shared<Bridge>();
         let total_supply_before = get_total_supply<T>(&bridge);
 
-        let message = message::create_token_bridge_message_v2(
+        let message = message::create_token_bridge_message(
             source_chain,
             0,
             source_address,
@@ -910,7 +910,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             *tx_hash.as_bytes(),
-            0u16, // event_idx
+            0u8, // event_idx
         );
 
         let signatures = env.sign_message(message);
@@ -1031,7 +1031,7 @@ module bridge::bridge_env {
         let mut bridge = scenario.take_shared<Bridge>();
 
         // run approval
-        bridge.approve_token_transfer(message, signatures);
+        bridge.approve_token_transfer_v2(message, signatures);
 
         // verify approval events
         let approved = event::events_by_type<TokenTransferApproved>();
@@ -1265,7 +1265,7 @@ module bridge::bridge_env {
     ) {
         // set up
         let token_type = env.token_type<T>();
-        let message = message::create_token_bridge_message_v2(
+        let message = message::create_token_bridge_message(
             source_chain,
             0,
             source_address,
@@ -1274,7 +1274,7 @@ module bridge::bridge_env {
             token_type,
             amount,
             *tx_hash.as_bytes(),
-            0u16, // event_idx
+            0u8, // event_idx
         );
 
         let node_signatures = env.sign_message(message);

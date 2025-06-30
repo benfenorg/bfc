@@ -557,10 +557,7 @@ module bridge::message {
         // assert!(vector::length(&payload) == 71, EInvalidPayloadLength);
         payload.push_back((vector::length(&tx_hash) as u8));
         payload.append(tx_hash);
-        //todo: @linhaixueyuan
-        //之前的方式不行么？payload.push_back(event_idx);
-        //改这里会影响 btc 跨入？
-        payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
+        payload.push_back(event_idx);
         BridgeMessage {
             message_type: message_types::token(),
             message_version: CURRENT_MESSAGE_VERSION,

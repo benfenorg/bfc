@@ -649,8 +649,8 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let token_payload = message.extract_token_bridge_payload_v2();
-        let target_chain = token_payload.token_target_chain_v2();
+        let token_payload = message.extract_token_bridge_payload();
+        let target_chain = token_payload.token_target_chain();
         assert!(
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
@@ -682,7 +682,7 @@ module bridge::bridge {
                 return
             };
             //idempotency for SendBack and ETHToSui
-            let tx_hash = token_payload.token_tx_hash_v2();
+            let tx_hash = token_payload.token_tx_hash();
             if (inner.refund_records.contains(message::key_refund(tx_hash))) {
                 emit(TokenTransferAlreadyApproved { message_key });
                 return
@@ -1093,8 +1093,8 @@ module bridge::bridge {
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let token_payload = message.extract_token_bridge_payload_v2();
-        let target_chain = token_payload.token_target_chain_v2();
+        let token_payload = message.extract_token_bridge_payload();
+        let target_chain = token_payload.token_target_chain();
         assert!(
             message.source_chain() == inner.chain_id || target_chain == inner.chain_id,
             EUnexpectedChainID,
@@ -1102,12 +1102,12 @@ module bridge::bridge {
 
         let coin_type = type_name::into_string(type_name::get<T>());
         // check records
-        let tx_hash = ascii::string(token_payload.token_tx_hash_v2());
+        let tx_hash = ascii::string(token_payload.token_tx_hash());
         let source_chain = message.source_chain();
-        let target_chain = token_payload.token_target_chain_v2();
-        let source_address = token_payload.token_sender_address_v2();
-        let target_address = token_payload.token_target_address_v2();
-        let amount = token_payload.token_amount_v2();
+        let target_chain = token_payload.token_target_chain();
+        let source_address = token_payload.token_sender_address();
+        let target_address = token_payload.token_target_address();
+        let amount = token_payload.token_amount();
         let key = ExternalBridgeMessageKey{
             source_chain,
             source_address,
@@ -1123,7 +1123,7 @@ module bridge::bridge {
                 target_chain: target_chain,
                 source_address: source_address,
                 target_address: target_address,
-                amount: token_payload.token_amount_v2(),
+                amount: token_payload.token_amount(),
                });
 
             return
