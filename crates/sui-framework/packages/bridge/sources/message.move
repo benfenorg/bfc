@@ -531,7 +531,7 @@ module bridge::message {
         token_type: u64,
         amount: u64,
         tx_hash: vector<u8>,
-        event_idx: u8,
+        event_idx: u16,
         fast_path_selector: u8,
     ): BridgeMessage {
         chain_ids::assert_valid_chain_id(source_chain);
@@ -942,7 +942,7 @@ module bridge::message {
         self.tx_hash
     }
 
-    public fun token_event_idx_v2(self: &TokenTransferPayloadV2): u8 {
+    public fun token_event_idx_v2(self: &TokenTransferPayloadV2): u16 {
         self.event_idx
     }
 
