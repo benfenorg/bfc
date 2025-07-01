@@ -4,6 +4,8 @@
 module bridge::message {
     use std::ascii::{Self, String};
     use sui::bcs::{Self, BCS};
+    use sui::address;
+
 
     use bridge::chain_ids;
     use bridge::message_types;
@@ -154,6 +156,27 @@ module bridge::message {
         token_id: u64,
     }
 
+    public struct SetCrossOutBridgeFee has drop {
+        chain_id: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64
+    }
+
+    public struct SetCrossInBridgeFee has drop {
+        chain_id: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64
+    }
+
+    public struct WithdrawBridgeFee has drop{
+        recipient :address,
+        coin_type: String,
+        amount: u64
+    }
+
+
     //////////////////////////////////////////////////////
     // Public functions
     //
@@ -278,6 +301,50 @@ module bridge::message {
             to_chain_id,
             token_id
            }
+    }
+    //SetCrossOutBridgeFee
+    public fun extract_set_cross_out_bridge_fee_poyload(message: &BridgeMessage): SetCrossOutBridgeFee{
+           let mut bcs = bcs::new(message.payload);
+           let chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+           let mode=peel_u64_be(&mut bcs);
+           let amount=peel_u64_be(&mut bcs);
+
+
+           SetCrossOutBridgeFee{
+            chain_id,
+            token_id,
+            mode,
+            amount
+           }
+    }
+
+    public fun extract_set_cross_in_bridge_fee_poyload(message: &BridgeMessage): SetCrossInBridgeFee{
+           let mut bcs = bcs::new(message.payload);
+           let chain_id=bcs.peel_u8();
+           let token_id=peel_u64_be(&mut bcs);
+           let mode=peel_u64_be(&mut bcs);
+           let amount=peel_u64_be(&mut bcs);
+
+           SetCrossInBridgeFee{
+            chain_id,
+            token_id,
+            mode,
+            amount
+           }
+    }
+
+    public fun extract_withdraw_bridge_fee(message: &BridgeMessage) :WithdrawBridgeFee{
+        let mut bcs = bcs::new(message.payload);
+        let recipient=bcs.peel_address();
+        let coin_type = ascii::string(bcs.peel_vec_u8());
+        let amount=peel_u64_be(&mut bcs);
+
+        WithdrawBridgeFee{
+            recipient,
+            coin_type,
+            amount,
+        }
     }
 
     /// Emergency op payload is just a single byte
@@ -826,6 +893,69 @@ module bridge::message {
 
     }
 
+    public fun  create_set_cross_in_bridge_fee(
+        source_chain: u8,
+        seq_num: u64,
+        from_chain: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64,
+    ): BridgeMessage{
+        let mut payload = reverse_bytes(bcs::to_bytes(&from_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&mode)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+        BridgeMessage{
+            message_type: message_types::set_cross_in_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
+
+    public fun  create_set_cross_out_bridge_fee(
+        source_chain: u8,
+        seq_num: u64,
+        to_chain: u8,
+        token_id: u64,
+        mode: u64,
+        amount: u64,
+    ): BridgeMessage{
+        let mut payload = reverse_bytes(bcs::to_bytes(&to_chain));
+        payload.append(reverse_bytes(bcs::to_bytes(&token_id)));
+        payload.append(reverse_bytes(bcs::to_bytes(&mode)));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+        BridgeMessage{
+            message_type: message_types::set_cross_out_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
+    public fun create_withdraw_fee_cap(
+        source_chain: u8,
+        seq_num: u64,
+        addr: address,
+        coin_type: String,
+        amount: u64
+    ): BridgeMessage{
+        let mut payload =bcs::to_bytes(&addr);
+        payload.append(bcs::to_bytes(&coin_type));
+        payload.append(reverse_bytes(bcs::to_bytes(&amount)));
+
+        BridgeMessage{
+            message_type: message_types::withdraw_bridge_fee(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload
+        }
+    }
+
     /// Update Sui token message
     /// [message_type:u8]
     /// [version:u8]
@@ -1016,6 +1146,17 @@ module bridge::message {
         self.admin_address
     }
 
+    public fun  set_cross_in_bridge_fee_poyload(self: &SetCrossInBridgeFee):(u8,u64,u64,u64){
+        (self.chain_id,self.token_id,self.mode,self.amount)
+    }
+
+    public fun  set_cross_out_bridge_fee_poyload(self: &SetCrossOutBridgeFee):(u8,u64,u64,u64){
+        (self.chain_id,self.token_id,self.mode,self.amount)
+    }
+
+    public fun withdraw_bridge_fee_polyload(self: &WithdrawBridgeFee):(address,String,u64){
+        (self.recipient,self.coin_type,self.amount)
+    }
 
     public fun add_token_on_token_list_payload_from_chain_id(self: &AddTokenOnTokenList): u8 {
         self.from_chain_id
@@ -1106,7 +1247,14 @@ module bridge::message {
             5001
         }else if (message_type == message_types::remove_token_on_token_list()) {
             5001
-        }else {
+        }else if (message_type == message_types::set_cross_in_bridge_fee()) {
+            5001
+        }else if (message_type == message_types::set_cross_out_bridge_fee()) {
+            5001
+        }else if (message_type == message_types::withdraw_bridge_fee()) {
+            5001
+        }
+        else {
             abort EInvalidMessageType
         }
     }

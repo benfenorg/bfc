@@ -13,9 +13,11 @@ module bridge::bridge_env {
         get_available_claim_amount,
         test_load_inner_mut,
         test_load_mut_uid,
+        get_cross_out_fee_amount,
+        get_cross_in_fee_amount,
         Bridge,
         EmergencyOpEvent,
-        TokenDepositedEvent,
+        TokenDepositedEventV2,
         TokenSendBackEvent,
         TokenTransferAlreadyApproved,
         TokenTransferAlreadyClaimed,
@@ -23,7 +25,7 @@ module bridge::bridge_env {
         TokenTransferClaimed,
         TokenTransferLimitExceed,
         ExternalDepositedEvent,
-        ExternalWithdrawEvent,
+        ExternalWithdrawEventV2,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,
     };
@@ -47,6 +49,9 @@ module bridge::bridge_env {
         create_blocklist_message,
         create_add_token_on_token_list,
         create_remove_token_on_token_list,
+        create_set_cross_in_bridge_fee,
+        create_set_cross_out_bridge_fee,
+        create_withdraw_fee_cap,
         emergency_op_pause,
         emergency_op_unpause
     };
@@ -57,6 +62,7 @@ module bridge::bridge_env {
         NewTokenEvent,
         UpdateTokenPriceEvent
     };
+    use bridge::bridge_fee::{Self,WithdrawBridgeFeeCap};
     use bridge::usdc::{Self, USDC};
     use bridge::usdt::{Self, USDT};
     use std::ascii::String;
@@ -629,6 +635,91 @@ module bridge::bridge_env {
         assert!(exist,0);
         test_scenario::return_shared(bridge);
     }
+    public fun set_cross_in_bridge_fee<T>(
+          env: &mut BridgeEnv,
+          from_chain: u8,
+          mode :u64,
+          fee: u64,
+          amount: u64,
+    ){
+        let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let token_id=1; //btc
+
+        let add_message = create_set_cross_in_bridge_fee(env.chain_id, bridge.get_seq_num_for(message_types::set_cross_in_bridge_fee()),from_chain,token_id,mode ,fee);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        env.scenario.next_tx(@0x1);
+        //check
+        if(mode==0){
+            assert!(amount>fee);
+            assert!(get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount)==fee,1);
+            //after_fee=amount-get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount);
+        }else if(mode==1){
+            std::debug::print(&get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount));
+            assert!(get_cross_in_fee_amount<T>(&bridge, from_chain as u64, amount)== (amount * fee) / 1_000_000);
+        }else{
+            abort 0
+        };
+
+        test_scenario::return_shared(bridge);
+    }
+
+    public fun set_cross_out_bridge_fee<T>(
+          env: &mut BridgeEnv,
+          to_chain: u8,
+          mode :u64,
+          fee: u64,
+          amount: u64,
+    ){
+         let scenario = &mut env.scenario;
+        scenario.next_tx(@0x0);
+        let mut bridge = scenario.take_shared<Bridge>();
+        let token_id=1; //btc
+
+        let add_message = create_set_cross_out_bridge_fee(env.chain_id, bridge.get_seq_num_for(message_types::set_cross_out_bridge_fee()),to_chain,token_id,mode ,fee);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+        env.scenario.next_tx(@0x1);
+        //check
+        if(mode==0){
+            assert!(amount>fee);
+            assert!(get_cross_out_fee_amount<T>(&bridge, to_chain as u64, amount)==fee,1);
+        }else if(mode==1){
+            assert!(get_cross_out_fee_amount<T>(&bridge, to_chain as u64, amount)== (amount * fee) / 1_000_000);
+        }else{
+            abort 0
+        };
+        test_scenario::return_shared(bridge);
+    }
+
+
+    public fun withdraw_bridge_fee_cap<T>(
+        env: &mut BridgeEnv,
+        amount: u64
+    ){
+        // let scenario = &mut env.scenario;
+        let coin_type=type_name::get<T>().into_string();
+        env.scenario.next_tx(@0x0);
+        let mut bridge =  env.scenario.take_shared<Bridge>();
+        let sender=@0x5;
+
+        let add_message = create_withdraw_fee_cap(env.chain_id, bridge.get_seq_num_for(message_types::withdraw_bridge_fee()),sender,coin_type ,amount);
+        let signatures = env.sign_message(add_message);
+        bridge.execute_system_message_with_ctx(add_message, signatures,env.scenario.ctx());
+
+        env.scenario.next_tx(@0x5);
+        //check
+        {
+            let cap =  env.scenario.take_from_sender<WithdrawBridgeFeeCap>();
+            std::debug::print(&cap);
+            assert!(bridge_fee::get_withdraw_cap_coin_type(&cap)==coin_type,1);
+            assert!(bridge_fee::get_withdraw_cap_amount(&cap)==amount,1);
+            env.scenario.return_to_sender(cap);
+        };
+        test_scenario::return_shared(bridge);
+    }
 
 
     public fun remove_token_on_token_list(
@@ -1023,26 +1114,31 @@ module bridge::bridge_env {
             env.scenario.ctx(),
         );
 
-        let withdraw = event::events_by_type<ExternalWithdrawEvent>();
+        let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
+        assert!(amount>fee,1);
+        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
         assert!(withdraw.length() == 1);
         {
             debug::print(&withdraw);
             let (
-                event_coin_type,
+                event_token_type,
                 event_source_chain,
                 event_target_chain,
                 event_source_address,
                 event_target_address,
-                event_amount,
-            ) = withdraw[0].unwrap_external_withdrawn_event();
-            assert!(event_coin_type == type_name::get<T>().into_string());
+                event_amount_before_fee,
+                event_amount_after_fee,
+            ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+            assert!(event_token_type == token_type);
             assert!(event_source_chain == env.chain_id );
             assert!(event_target_chain == source_chain);
             assert!(event_source_address == target_address);
             assert!(event_target_address == source_address);
-            assert!(event_amount == amount);
+            assert!(event_amount_before_fee == amount);
+            std::debug::print(&fee);
+            assert!(event_amount_after_fee == amount-fee);
             assert!(
-                total_supply_before == get_total_supply<T>(&bridge),
+                total_supply_before+fee == get_total_supply<T>(&bridge),
             );
         };
 
@@ -1074,7 +1170,7 @@ module bridge::bridge_env {
 
         env.scenario.next_tx(@0x0);
         assert!(
-            total_supply_before == get_total_supply<T>(&bridge),
+            total_supply_before + fee == get_total_supply<T>(&bridge),
         );
 
         // tear down
@@ -1412,7 +1508,7 @@ module bridge::bridge_env {
         let token_value = token.value();
         assert!(token.balance().value() == amount);
         assert!(
-            total_supply_before + token_value == get_total_supply<T>(&bridge),
+            total_supply_before + token_value  == get_total_supply<T>(&bridge),
         );
 
         // withdraw coin
@@ -1424,25 +1520,30 @@ module bridge::bridge_env {
             scenario.ctx(),
         );
 
-        let withdraw = event::events_by_type<ExternalWithdrawEvent>();
+        let fee=get_cross_out_fee_amount<T>(&bridge,source_chain as u64,amount);
+        assert!(amount>fee,1);
+
+        let withdraw = event::events_by_type<ExternalWithdrawEventV2>();
         assert!(withdraw.length() == 1);
         debug::print(&withdraw);
         let (
-            event_coin_type,
+            event_token_type,
             event_source_chain,
             event_target_chain,
             event_source_address,
             event_target_address,
-            event_amount,
-        ) = withdraw[0].unwrap_external_withdrawn_event();
-        assert!(event_coin_type == coin_type);
+            event_amount_before_fee,
+            event_amount_after_fee,
+        ) = withdraw[0].unwrap_external_withdrawn_v2_event();
+        assert!(event_token_type == token_type);
         assert!(event_source_chain == target_chain );
         assert!(event_target_chain == source_chain);
         assert!(event_source_address == sender.to_bytes());
         assert!(event_target_address == source_address);
-        assert!(event_amount == amount);
+        assert!(event_amount == event_amount_before_fee);
+        assert!(event_amount_after_fee==amount-fee);
         assert!(
-            total_supply_before == get_total_supply<T>(&bridge),
+            total_supply_before + fee == get_total_supply<T>(&bridge),
         );
 
         // tear down
@@ -1505,7 +1606,7 @@ module bridge::bridge_env {
         assert!(
             total_supply_before - coin_value == get_total_supply<T>(&bridge),
         );
-        let deposited_events = event::events_by_type<TokenDepositedEvent>();
+        let deposited_events = event::events_by_type<TokenDepositedEventV2>();
         assert!(deposited_events.length() == 1);
         let (
             event_seq_num,
@@ -1514,10 +1615,11 @@ module bridge::bridge_env {
             _event_target_chain,
             _event_target_address,
             _event_token_type,
-            event_amount,
-        ) = deposited_events[0].unwrap_deposited_event();
+            event_amount_before_fee,
+            _event_amount_after_fee
+        ) = deposited_events[0].unwrap_deposited_event_v2();
         assert!(event_seq_num == seq_num);
-        assert!(event_amount == coin_value);
+        assert!(event_amount_before_fee == coin_value);
         assert_key(chain_id, &bridge);
 
         // tear down
@@ -2000,7 +2102,7 @@ module bridge::bridge_env {
     // Mint some coins
     fun mint_some<T>(bridge: &mut Bridge, ctx: &mut TxContext): Coin<T> {
         let treasury = bridge.test_load_inner_mut().inner_treasury_mut();
-        let coin = treasury.mint<T>(1_000_000, ctx);
+        let coin = treasury.mint<T>(1_000_000_000, ctx);
         coin
     }
 

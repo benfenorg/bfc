@@ -24,9 +24,12 @@ module bridge::bridge {
         AddExternalCoinTarget,RemoveExternalCoinTarget,
         UpdateBridgeLimit, AddTokenOnSui, ParsedTokenTransferMessage,
         AddTokenOnTokenList, RemoveTokenOnTokenList,
+        SetCrossInBridgeFee, SetCrossOutBridgeFee,
+        WithdrawBridgeFee,
         to_parsed_token_transfer_message,
     };
     use bridge::tokenlist;
+    use bridge::bridge_fee;
     use bridge::message_types;
     use bridge::treasury::{Self, BridgeTreasury};
     use sui::hex;
@@ -36,6 +39,7 @@ module bridge::bridge {
     use bfc_system::bfc_system::BfcSystemState;
     use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
     use bfc_system::busd::BUSD;
+    use sui::coin::split;
 
 
     //  stable coin id
@@ -91,6 +95,17 @@ module bridge::bridge {
         target_address: vector<u8>,
         token_type: u64,
         amount: u64,
+    }
+
+     public struct TokenDepositedEventV2 has copy, drop {
+        seq_num: u64,
+        source_chain: u8,
+        sender_address: vector<u8>,
+        target_chain: u8,
+        target_address: vector<u8>,
+        token_type: u64,
+        amount_before_fee: u64,
+        amount_after_fee: u64
     }
 
     public struct TokenSendBackEvent has copy, drop {
@@ -149,6 +164,7 @@ module bridge::bridge {
     const EUnpassedWitnessSignature: u64=33;
     const EInvalidChainIDAndTokenIDExpect: u64 = 34;
     const EInvalidChainIDOnTokenList : u64=35;
+    const EInputAmountLteBridgeFee: u64=35;
 
 
     const EUnauthorisedUpdateLimit: u64 = 40;
@@ -240,6 +256,16 @@ module bridge::bridge {
         amount: u64,
     }
 
+    public struct ExternalWithdrawEventV2 has copy, drop {
+        token_type: u64,
+        source_chain: u8,
+        target_chain: u8,
+        source_address: vector<u8>,
+        target_address: vector<u8>,
+        amount_before_fee: u64,
+        amount_after_fee: u64
+    }
+
     public struct ExternalBridgeMessageKey has copy, drop, store {
         source_chain: u8,
         source_address: vector<u8>,
@@ -309,10 +335,10 @@ module bridge::bridge {
     }
 
     public entry fun migrate(
-        _bridge: &mut Bridge,
-        _ctx: &mut TxContext
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
     ){
-
+        bridge_fee::new_bridge_fee_registry(&mut bridge.id, ctx);
     }
 
     public fun init_token_list(
@@ -361,7 +387,7 @@ module bridge::bridge {
         bridge: &mut Bridge,
         target_chain: u8,
         target_address: vector<u8>,
-        token: Coin<T>,
+        mut token: Coin<T>,
         ctx: &mut TxContext
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -377,6 +403,11 @@ module bridge::bridge {
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
 
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,token_amount);
+        assert!(token_amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=token_amount-fee;
         // create bridge message
         let message = message::create_token_bridge_message(
             inner.chain_id,
@@ -385,7 +416,7 @@ module bridge::bridge {
             target_chain,
             target_address,
             token_id,
-            token_amount,
+            amount_after_fee,
             hex::decode(b""),
             0u8, // event_idx
         );
@@ -405,14 +436,15 @@ module bridge::bridge {
 
         // emit event
         emit(
-            TokenDepositedEvent {
+            TokenDepositedEventV2 {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
-                amount: token_amount,
+                amount_before_fee: token_amount,
+                amount_after_fee,
             },
         );
     }
@@ -422,13 +454,13 @@ module bridge::bridge {
         bfc_system_state: &mut BfcSystemState,
         target_chain: u8,
         target_address: vector<u8>,
-        token: Coin<T>,
+        mut token: Coin<T>,
         token_id_expect: u64,
         ctx: &mut TxContext
     ) {
-        assert!(tokenlist::is_supported_from_benfen(&bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
 
-        let inner = load_inner_mut(bridge);
+        let (inner,bridge_id) = load_inner_mut_and_uid(bridge);
+        assert!(tokenlist::is_supported_from_benfen(bridge_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
         assert!(target_address.length() == EVM_ADDRESS_LENGTH, EInvalidEvmAddress);
@@ -445,10 +477,12 @@ module bridge::bridge {
         }else{
              token.balance().value()
         };
-
-
         assert!(token_amount > 0, ETokenValueIsZero);
-
+        let fee=bridge_fee::calculate_cross_out_fee_amount(bridge_id,target_chain as u64,token_id,token_amount);
+        assert!(token_amount>fee,EInputAmountLteBridgeFee);
+        let amount_after_fee=token_amount-fee;
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(bridge_id, fee_coin);
         // create bridge message
         let message = message::create_token_bridge_message(
             inner.chain_id,
@@ -457,7 +491,7 @@ module bridge::bridge {
             target_chain,
             target_address,
             token_id,
-            token_amount,
+            amount_after_fee,
             hex::decode(b""),
             0u8, // event_idx
         );
@@ -477,14 +511,15 @@ module bridge::bridge {
 
         // emit event
         emit(
-            TokenDepositedEvent {
+            TokenDepositedEventV2 {
                 seq_num: bridge_seq_num,
                 source_chain: inner.chain_id,
                 sender_address: address::to_bytes(ctx.sender()),
                 target_chain,
                 target_address,
                 token_type: token_id,
-                amount: token_amount,
+                amount_before_fee: token_amount,
+                amount_after_fee,
             },
         );
     }
@@ -724,11 +759,19 @@ module bridge::bridge {
         if (message_type == message_types::add_token_on_token_list()){
             let payload = message.extract_add_token_on_token_list_poyload();
             execute_add_token_on_token_list(bridge_id,payload,ctx);
-
         }else if (message_type == message_types::remove_token_on_token_list()){
-             let payload = message.extract_remove_token_on_token_list_poyload();
+            let payload = message.extract_remove_token_on_token_list_poyload();
             execute_remove_token_on_token_list(bridge_id,payload);
-        }else {
+        }else if (message_type == message_types::set_cross_out_bridge_fee()){
+            let payload = message.extract_set_cross_out_bridge_fee_poyload();
+            execute_set_cross_out(bridge_id, payload, ctx)
+        }else if (message_type == message_types::set_cross_in_bridge_fee()){
+            let payload = message.extract_set_cross_in_bridge_fee_poyload();
+            execute_set_cross_in(bridge_id, payload, ctx)
+        }else if (message_type == message_types::withdraw_bridge_fee()){
+            let payload = message.extract_withdraw_bridge_fee();
+            execute_withdraw_bridge_fee(payload, ctx)
+        }else{
             abort EUnexpectedMessageType
         };
     }
@@ -1133,39 +1176,40 @@ module bridge::bridge {
         bridge: &mut Bridge,
         target_chain: u8,
         target_address: vector<u8>,
-        token: Coin<T>,
+        mut token: Coin<T>,
         token_id_expect: u64,
         bfc_system_state: &mut BfcSystemState,
         ctx: &mut TxContext
     ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+
         assert!(tokenlist::is_supported_from_benfen(
-            &bridge.id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
+            parent_id, target_chain as u64, token_id_expect),EInvalidChainIDAndTokenIDExpect);
         assert!(token_id_expect == TOKEN_ID_USDC || token_id_expect == TOKEN_ID_USDT, EInvalidTokenIdExpect);
         assert!(type_name::get<T>() == type_name::get<BUSD>(), EOnlySupportBusd);
-        let coin_type = if (token_id_expect == TOKEN_ID_USDC) {
-                                    ascii::string(b"USDC")
-                                } else {
-                                    ascii::string(b"USDT")
-                                };
-
-        let inner = load_inner_mut(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
 
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id_expect,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
 
         bfc_system_state.burn_stable(token, ctx);
 
         // emit event
-        emit(
-            ExternalWithdrawEvent {
-                coin_type,
+       emit(
+            ExternalWithdrawEventV2 {
+                token_type: token_id_expect,
                 source_chain: inner.chain_id,
                 target_chain,
                 source_address: address::to_bytes(ctx.sender()),
                 target_address,
-                amount,
+                amount_before_fee: amount,
+                amount_after_fee,
             },
         );
     }
@@ -1174,7 +1218,7 @@ module bridge::bridge {
         bridge: &mut Bridge,
         target_chain: u8,
         target_address: vector<u8>,
-        token: Coin<T>,
+        mut token: Coin<T>,
         ctx: &mut TxContext
     ) {
         let (inner,parent_id) = load_inner_mut_and_uid(bridge);
@@ -1185,21 +1229,26 @@ module bridge::bridge {
         assert!(!inner.paused, EBridgeUnavailable);
         assert!(chain_ids::is_valid_route(inner.chain_id, target_chain), EInvalidBridgeRoute);
 
-        let coin_type = type_name::into_string(type_name::get<T>());
         let amount = token.balance().value();
         assert!(amount > 0, ETokenValueIsZero);
+        let fee=bridge_fee::calculate_cross_out_fee_amount(parent_id,target_chain as u64,token_id,amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let fee_coin=token.split<T>(fee, ctx);
+        bridge_fee::deposit_fee(parent_id, fee_coin);
+        let amount_after_fee=amount-fee;
 
         inner.treasury.burn(token);
 
         // emit event
         emit(
-            ExternalWithdrawEvent {
-                coin_type,
+            ExternalWithdrawEventV2 {
+                token_type: token_id,
                 source_chain: inner.chain_id,
                 target_chain,
                 source_address: address::to_bytes(ctx.sender()),
                 target_address,
-                amount,
+                amount_before_fee: amount,
+                amount_after_fee,
             },
         );
     }
@@ -1207,6 +1256,34 @@ module bridge::bridge {
     //////////////////////////////////////////////////////
     // DevInspect Functions for Read
     //
+
+
+    public fun get_unclaimed_bridge_fee<T>(
+         bridge: &Bridge,
+    ):u64{
+        bridge_fee::get_unclaimed_bridge_fee<T>(&bridge.id)
+    }
+
+
+    public fun get_cross_out_fee_amount<T>(
+         bridge: &Bridge,
+         chain_id: u64,
+         amount: u64,
+    ):u64{
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        bridge_fee::calculate_cross_out_fee_amount(parent_id,chain_id,token_id,amount)
+    }
+
+    public fun get_cross_in_fee_amount<T>(
+         bridge: &Bridge,
+         chain_id: u64,
+         amount: u64,
+    ):u64{
+        let (inner,parent_id) = load_inner_and_uid(bridge);
+        let token_id = inner.treasury.token_id<T>();
+        bridge_fee::calculate_cross_in_fee_amount(parent_id,chain_id,token_id,amount)
+    }
 
     #[allow(unused_function)]
     fun get_token_transfer_action_status(
@@ -1365,6 +1442,15 @@ module bridge::bridge {
         (inner,&mut bridge.id)
     }
 
+    fun load_inner_and_uid(bridge: &Bridge): (&BridgeInner ,&UID){
+        let version = bridge.inner.version();
+        // TODO: Replace this with a lazy update function when we add a new version of the inner object.
+        assert!(version == CURRENT_VERSION, EWrongInnerVersion);
+        let inner = bridge.inner.load_value<BridgeInner>();
+        assert!(inner.bridge_version == version, EWrongInnerVersion);
+        (inner,&bridge.id)
+    }
+
     // Claim token from approved bridge message
     // Returns Some(Coin) if coin can be claimed. If already claimed, return None
     fun claim_token_internal<T>(
@@ -1374,7 +1460,7 @@ module bridge::bridge {
         bridge_seq_num: u64,
         ctx: &mut TxContext,
     ): (Option<Coin<T>>, address) {
-        let inner = load_inner_mut(bridge);
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(!is_busd, EUseClaimBusd);
@@ -1418,6 +1504,9 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount();
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_payload.token_type(),amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+
         // Make sure transfer is within limit.
         if (!inner
             .limiter
@@ -1432,8 +1521,11 @@ module bridge::bridge {
             return (option::none(), owner)
         };
 
-        let token = inner.treasury.mint<T>(amount, ctx);
-
+        let mut token = inner.treasury.mint<T>(amount, ctx);
+        if (fee!=0){
+              let fee_coin=token.split<T>(fee, ctx);
+              bridge_fee::deposit_fee(parent_id, fee_coin);
+        };
         // Record changes
         record.claimed = true;
         emit(TokenTransferClaimed { message_key: key });
@@ -1450,7 +1542,7 @@ module bridge::bridge {
         cap: &BfcSystemModifyCap,
         ctx: &mut TxContext,
     ): (Option<Coin<T>>, address) {
-        let inner = load_inner_mut(bridge);
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
 
         let key = message::create_key(source_chain, message_types::token(), bridge_seq_num);
@@ -1507,10 +1599,16 @@ module bridge::bridge {
             emit(TokenTransferLimitExceed { message_key: key });
             return (option::none(), owner)
         };
-
+        let fee=bridge_fee::calculate_cross_in_fee_amount(parent_id,target_chain as u64,token_payload.token_type(),amount);
+        assert!(amount>fee,EInputAmountLteBridgeFee);
+        let amount_after_fee=amount-fee;
         // claim from treasury
         //transfer busd to owner
-        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount, cap, owner, ctx);
+        bfc_system_state.mint_stable_entry_to_address<BUSD>(amount_after_fee, cap, owner, ctx);
+        if (fee != 0){
+            let fee_coin=bfc_system_state.mint_stable<BUSD>(fee,cap, ctx);
+            bridge_fee::deposit_fee(parent_id, fee_coin);
+        };
         record.claimed = true;
         emit(TokenTransferClaimed { message_key: key });
         (option::none(), owner)
@@ -1619,13 +1717,26 @@ module bridge::bridge {
         )
     }
 
+    fun execute_set_cross_in(parent_id: &mut UID,payload:SetCrossInBridgeFee,ctx: &mut TxContext){
+        let (chain_id,token_id,mode,amount)=payload.set_cross_in_bridge_fee_poyload();
+        bridge_fee::set_fee_in_cross_in(parent_id,chain_id as u64,token_id,mode,amount,ctx);
+    }
+    fun execute_set_cross_out(parent_id: &mut UID,payload:SetCrossOutBridgeFee,ctx: &mut TxContext){
+        let (chain_id,token_id,mode,amount)=payload.set_cross_out_bridge_fee_poyload();
+        bridge_fee::set_fee_in_cross_out(parent_id,chain_id as u64,token_id,mode,amount,ctx);
+    }
+
+    fun execute_withdraw_bridge_fee(payload: WithdrawBridgeFee,ctx: &mut TxContext){
+       let(recipient,coin_type,amount)=payload.withdraw_bridge_fee_polyload();
+       let cap=bridge_fee::create_withdraw_fee_cap(coin_type, amount, ctx);
+       transfer::public_transfer(cap,recipient);
+    }
+
 
     fun execute_add_token_on_token_list(parent_id: &mut UID,payload: AddTokenOnTokenList,ctx: &mut TxContext){
         let source_chain=payload.add_token_on_token_list_payload_from_chain_id();
         let target_chain=payload.add_token_on_token_list_payload_to_chain_id();
         let token_id=payload.add_token_on_token_list_payload_token_id();
-        std::debug::print(&99);
-        std::debug::print(&token_id);
 
         if (target_chain==chain_ids::sui_mainnet() || target_chain==chain_ids::sui_testnet() || target_chain==chain_ids::sui_custom()) {
             tokenlist::add_token_to_benfen(parent_id,source_chain as u64,token_id,ctx);
@@ -2082,6 +2193,19 @@ module bridge::bridge {
     }
 
     #[test_only]
+    public fun unwrap_external_withdrawn_v2_event(event: ExternalWithdrawEventV2): (u64, u8,u8,vector<u8>,vector<u8>, u64,u64){
+        (
+            event.token_type,
+            event.source_chain,
+            event.target_chain,
+            event.source_address,
+            event.target_address,
+            event.amount_before_fee,
+            event.amount_after_fee,
+        )
+    }
+
+    #[test_only]
     public fun unwrap_external_bridge_record(record: ExternalBridgeRecord): (u8, u8, vector<u8>, vector<u8>, u64) {
         (
             record.source_chain,
@@ -2102,6 +2226,20 @@ module bridge::bridge {
             event.target_address,
             event.token_type,
             event.amount,
+        )
+    }
+
+    #[test_only]
+    public fun unwrap_deposited_event_v2(event: TokenDepositedEventV2): (u64, u8, vector<u8>, u8, vector<u8>, u64, u64,u64) {
+        (
+            event.seq_num,
+            event.source_chain,
+            event.sender_address,
+            event.target_chain,
+            event.target_address,
+            event.token_type,
+            event.amount_before_fee,
+            event.amount_after_fee,
         )
     }
 
