@@ -1,7 +1,7 @@
 // Copyright (c) Mysten Labs, Inc.
 // SPDX-License-Identifier: Apache-2.0
 
-use crate::abi::EthBridgeConfig;
+use crate::abi::{EthBridgeConfig,EthBridgeLimiter};
 use crate::abi::{EthBridgeCommittee, EthBridgeEvent, EthERC20, EthSuiBridge, EthSuiBridgeEvents};
 use crate::config::default_ed25519_key_pair;
 use crate::crypto::BridgeAuthorityKeyPair;
@@ -89,6 +89,8 @@ use tap::TapFallible;
 use tempfile::tempdir;
 use test_cluster::TestCluster;
 use test_cluster::TestClusterBuilder;
+use ethers::types::U256;
+
 
 const BRIDGE_COMMITTEE_NAME: &str = "BridgeCommittee";
 const SUI_BRIDGE_NAME: &str = "SuiBridge";
@@ -792,12 +794,30 @@ impl EthBridgeEnvironment {
         EthBridgeConfig::new(self.contracts().bridge_config, provider.clone())
     }
 
+    pub fn get_bridge_limit(
+        &self,
+    )-> EthBridgeLimiter<ethers::prelude::Provider<ethers::providers::Http>> {
+        let provider = Arc::new(
+            ethers::prelude::Provider::<ethers::providers::Http>::try_from(&self.rpc_url)
+                .unwrap()
+                .interval(std::time::Duration::from_millis(2000)),
+        );
+        EthBridgeLimiter::new(self.contracts().bridge_limiter, provider.clone())
+    }
+
     pub async fn get_supported_token(&self, token_id: u64) -> (EthAddress, u8, u64) {
         let config = self.get_bridge_config();
         let token_address = config.token_address_of(token_id).call().await.unwrap();
         let token_sui_decimal = config.token_sui_decimal_of(token_id).call().await.unwrap();
         let token_price = config.token_price_of(token_id).call().await.unwrap();
         (token_address, token_sui_decimal, token_price)
+    }
+
+    pub async fn get_single_transfer_limit(&self)-> u64{
+        let limit = self.get_bridge_limit();
+        //getUsdMaxLimit
+        let amount:U256=limit.get_usd_max_limit().call().await.unwrap();
+        amount.as_u64()
     }
 }
 

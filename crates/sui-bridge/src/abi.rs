@@ -3,14 +3,14 @@
 
 use crate::encoding::{
     BridgeMessageEncoding, ADD_TOKENS_ON_EVM_MESSAGE_VERSION, ASSET_PRICE_UPDATE_MESSAGE_VERSION,
-    EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION,
+    EVM_CONTRACT_UPGRADE_MESSAGE_VERSION, LIMIT_UPDATE_MESSAGE_VERSION,SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
 };
 use crate::encoding::{
     COMMITTEE_BLOCKLIST_MESSAGE_VERSION, EMERGENCY_BUTTON_MESSAGE_VERSION,
     TOKEN_TRANSFER_MESSAGE_VERSION,
 };
 use crate::error::{BridgeError, BridgeResult};
-use crate::types::ParsedTokenTransferMessage;
+use crate::types::{ParsedTokenTransferMessage, SingleTransferLimitUpdateAction};
 use crate::types::{
     AddTokensOnEvmAction, AssetPriceUpdateAction, BlocklistCommitteeAction, BridgeAction,
     BridgeActionType, EmergencyAction, EthLog, EthToSuiBridgeAction, EvmContractUpgradeAction,
@@ -149,6 +149,7 @@ impl EthBridgeEvent {
             },
             EthBridgeEvent::EthBridgeLimiterEvents(event) => match event {
                 EthBridgeLimiterEvents::LimitUpdatedFilter(_event) => None,
+                EthBridgeLimiterEvents::SingleTransferLimitUpdateFilter(_event)=> None,
                 EthBridgeLimiterEvents::InitializedFilter(_event) => None,
                 EthBridgeLimiterEvents::UpgradedFilter(_event) => None,
                 EthBridgeLimiterEvents::HourlyTransferAmountUpdatedFilter(_event) => None,
@@ -298,6 +299,18 @@ impl From<LimitUpdateAction> for eth_bridge_limiter::Message {
         eth_bridge_limiter::Message {
             message_type: BridgeActionType::LimitUpdate as u8,
             version: LIMIT_UPDATE_MESSAGE_VERSION,
+            nonce: action.nonce,
+            chain_id: action.chain_id as u8,
+            payload: action.as_payload_bytes().into(),
+        }
+    }
+}
+
+impl From<SingleTransferLimitUpdateAction> for eth_bridge_limiter::Message {
+    fn from(action: SingleTransferLimitUpdateAction) -> Self {
+        eth_bridge_limiter::Message {
+            message_type: BridgeActionType::SingleTransferLimitUpdate as u8,
+            version: SINGLE_TRANSFER_LIMIT_UPDATE_MESSAGE_VERSION,
             nonce: action.nonce,
             chain_id: action.chain_id as u8,
             payload: action.as_payload_bytes().into(),

@@ -10,6 +10,7 @@ title: Module `bridge::tokenlist`
 -  [Function `new_tokenlist_registry`](#bridge_tokenlist_new_tokenlist_registry)
 -  [Function `new`](#bridge_tokenlist_new)
 -  [Function `initial_token_list`](#bridge_tokenlist_initial_token_list)
+-  [Function `add_center_token_list`](#bridge_tokenlist_add_center_token_list)
 -  [Function `borrow`](#bridge_tokenlist_borrow)
 -  [Function `borrow_mut`](#bridge_tokenlist_borrow_mut)
 -  [Function `empty`](#bridge_tokenlist_empty)
@@ -141,6 +142,15 @@ including those that can be transferred from or to the Benfen chain.
 ## Constants
 
 
+<a name="bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists">EBridgeCenterTokenLisAlreadyExists</a>: u64 = 2;
+</code></pre>
+
+
+
 <a name="bridge_tokenlist_EBridgeTokenListRegistryAlreadyExists"></a>
 
 
@@ -164,6 +174,15 @@ including those that can be transferred from or to the Benfen chain.
 
 
 <pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_KEY">KEY</a>: vector&lt;u8&gt; = vector[98, 114, 105, 100, 103, 101, 95, 116, 111, 107, 101, 110, 95, 108, 105, 115, 116];
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_TOKEN_ID_APTOS"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_APTOS">TOKEN_ID_APTOS</a>: u64 = 11;
 </code></pre>
 
 
@@ -195,11 +214,29 @@ including those that can be transferred from or to the Benfen chain.
 
 
 
+<a name="bridge_tokenlist_TOKEN_ID_DOGE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>: u64 = 9;
+</code></pre>
+
+
+
 <a name="bridge_tokenlist_TOKEN_ID_ETH"></a>
 
 
 
 <pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>: u64 = 2;
+</code></pre>
+
+
+
+<a name="bridge_tokenlist_TOKEN_ID_LTC"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>: u64 = 10;
 </code></pre>
 
 
@@ -518,6 +555,70 @@ Initializes an empty <code><a href="../bridge/tokenlist.md#bridge_tokenlist_Brid
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_mainnet">chain_ids::avax_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_testnet">chain_ids::avax_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_avax_custom">chain_ids::avax_custom</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_ETH">TOKEN_ID_ETH</a>, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_tokenlist_add_center_token_list"></a>
+
+## Function `add_center_token_list`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_add_center_token_list">add_center_token_list</a>(parent_id: &<b>mut</b> <a href="../sui/object.md#sui_object_UID">sui::object::UID</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_add_center_token_list">add_center_token_list</a>(parent_id: &<b>mut</b> UID,ctx: &<b>mut</b> TxContext){
+    <b>let</b> self=<a href="../bridge/tokenlist.md#bridge_tokenlist_borrow_mut">borrow_mut</a>(parent_id);
+    <b>if</b> (!self.<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_to_benfen_internal">is_supported_to_benfen_internal</a>(<a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>)){
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">chain_ids::doge_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">chain_ids::ltc_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_to_benfen">add_token_to_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_mainnet">chain_ids::tron_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_tron_testnet">chain_ids::tron_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_mainnet">chain_ids::solana_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_solana_testnet">chain_ids::solana_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_mainnet">chain_ids::doge_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_doge_testnet">chain_ids::doge_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_DOGE">TOKEN_ID_DOGE</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_mainnet">chain_ids::ltc_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_ltc_testnet">chain_ids::ltc_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_LTC">TOKEN_ID_LTC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_mainnet">chain_ids::sui_official_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_sui_official_testnet">chain_ids::sui_official_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDC">TOKEN_ID_USDC</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_mainnet">chain_ids::aptos_mainnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+        <a href="../bridge/tokenlist.md#bridge_tokenlist_add_token_from_benfen">add_token_from_benfen</a>(parent_id, <a href="../bridge/chain_ids.md#bridge_chain_ids_aptos_testnet">chain_ids::aptos_testnet</a>() <b>as</b> u64, <a href="../bridge/tokenlist.md#bridge_tokenlist_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, ctx);
+    }<b>else</b>{
+        <b>abort</b> <a href="../bridge/tokenlist.md#bridge_tokenlist_EBridgeCenterTokenLisAlreadyExists">EBridgeCenterTokenLisAlreadyExists</a>
+    }
 }
 </code></pre>
 

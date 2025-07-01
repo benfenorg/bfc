@@ -95,6 +95,10 @@ pub fn build_sui_transaction(
             bridge_object_arg,
             rgp,
         ),
+        BridgeAction::SingleTransferLimitUpdateAction(_)=> {
+             // It does not need a Sui tranaction to add tokens on EVM
+             unreachable!()
+        }
         BridgeAction::AssetPriceUpdateAction(_) => build_asset_price_update_approve_transaction(
             client_address,
             gas_object_ref,
@@ -142,6 +146,20 @@ pub fn build_sui_transaction(
             rgp,
         ),
         BridgeAction::RemoveExternalCoinTargetAction(_) => build_remove_external_coin_target_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::AddTokenOnTokenListAction(_) => build_add_token_on_token_list_transaction(
+            client_address,
+            gas_object_ref,
+            action,
+            bridge_object_arg,
+            rgp,
+        ),
+        BridgeAction::RemoveTokenOnTokenListAction(_) => build_remove_token_on_token_list_transaction(
             client_address,
             gas_object_ref,
             action,
@@ -832,6 +850,137 @@ fn build_asset_price_update_approve_transaction(
         100_000_000,
         rgp,
     ))
+}
+
+pub fn build_add_token_on_token_list_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData>{
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let (source_chain, seq_num, from_chain_id, to_chain_id,token_id) = match bridge_action {
+        BridgeAction::AddTokenOnTokenListAction(a) => {
+            (a.chain_id, a.nonce, a.from_chain_id, a.to_chain_id,a.token_id)
+        }
+        _ => unreachable!(),
+    };
+
+        // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let from_chain_id = builder.pure(from_chain_id as u8).unwrap();
+    let to_chain_id = builder.pure(to_chain_id as u8).unwrap();
+
+    let token_id = builder.pure(token_id).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+            BRIDGE_PACKAGE_ID,
+            ident_str!("message").to_owned(),
+            ident_str!("create_add_token_on_token_list").to_owned(),
+            vec![],
+            vec![source_chain, seq_num, from_chain_id, to_chain_id,token_id],
+        );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message_with_ctx").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+
+
+}
+
+
+pub fn build_remove_token_on_token_list_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+) -> BridgeResult<TransactionData>{
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let (source_chain, seq_num, from_chain_id, to_chain_id,token_id) = match bridge_action {
+        BridgeAction::RemoveTokenOnTokenListAction(a) => {
+            (a.chain_id, a.nonce, a.from_chain_id, a.to_chain_id,a.token_id)
+        }
+        _ => unreachable!(),
+    };
+
+        // Unwrap: these should not fail
+    let source_chain = builder.pure(source_chain as u8).unwrap();
+    let seq_num = builder.pure(seq_num).unwrap();
+    let from_chain_id = builder.pure(from_chain_id as u8).unwrap();
+    let to_chain_id = builder.pure(to_chain_id as u8).unwrap();
+
+    let token_id = builder.pure(token_id).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+            BRIDGE_PACKAGE_ID,
+            ident_str!("message").to_owned(),
+            ident_str!("create_remove_token_on_token_list").to_owned(),
+            vec![],
+            vec![source_chain, seq_num, from_chain_id, to_chain_id,token_id],
+        );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message_with_ctx").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+
+
 }
 
 pub fn build_add_external_coin_admin_transaction(

@@ -18,6 +18,11 @@ title: Module `bridge::message_types`
 -  [Function `remove_external_coin_witness`](#bridge_message_types_remove_external_coin_witness)
 -  [Function `add_external_coin_target`](#bridge_message_types_add_external_coin_target)
 -  [Function `remove_external_coin_target`](#bridge_message_types_remove_external_coin_target)
+-  [Function `add_token_on_token_list`](#bridge_message_types_add_token_on_token_list)
+-  [Function `remove_token_on_token_list`](#bridge_message_types_remove_token_on_token_list)
+-  [Function `set_cross_out_bridge_fee`](#bridge_message_types_set_cross_out_bridge_fee)
+-  [Function `set_cross_in_bridge_fee`](#bridge_message_types_set_cross_in_bridge_fee)
+-  [Function `withdraw_bridge_fee`](#bridge_message_types_withdraw_bridge_fee)
 
 
 <pre><code></code></pre>
@@ -61,6 +66,15 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_TOKENS_ON_SUI">ADD_TOKENS_ON_SUI</a>: u8 = 6;
+</code></pre>
+
+
+
+<a name="bridge_message_types_ADD_TOKEN_ON_TOKEN_LIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_ADD_TOKEN_ON_TOKEN_LIST">ADD_TOKEN_ON_TOKEN_LIST</a>: u8 = 17;
 </code></pre>
 
 
@@ -119,6 +133,33 @@ title: Module `bridge::message_types`
 
 
 
+<a name="bridge_message_types_REMOVE_TOKEN_ON_TOKEN_LIST"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_REMOVE_TOKEN_ON_TOKEN_LIST">REMOVE_TOKEN_ON_TOKEN_LIST</a>: u8 = 18;
+</code></pre>
+
+
+
+<a name="bridge_message_types_SET_CROSS_IN_BRIDGE_FEE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_SET_CROSS_IN_BRIDGE_FEE">SET_CROSS_IN_BRIDGE_FEE</a>: u8 = 21;
+</code></pre>
+
+
+
+<a name="bridge_message_types_SET_CROSS_OUT_BRIDGE_FEE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_SET_CROSS_OUT_BRIDGE_FEE">SET_CROSS_OUT_BRIDGE_FEE</a>: u8 = 20;
+</code></pre>
+
+
+
 <a name="bridge_message_types_TOKEN"></a>
 
 
@@ -142,6 +183,15 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_UPDATE_BRIDGE_LIMIT">UPDATE_BRIDGE_LIMIT</a>: u8 = 3;
+</code></pre>
+
+
+
+<a name="bridge_message_types_WITHDRAW_BRIDGE_FEE"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_WITHDRAW_BRIDGE_FEE">WITHDRAW_BRIDGE_FEE</a>: u8 = 22;
 </code></pre>
 
 
@@ -429,6 +479,126 @@ title: Module `bridge::message_types`
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">remove_external_coin_target</a>(): u8{
     <a href="../bridge/message_types.md#bridge_message_types_REMOVE_EXTERNAL_COIN_TARGET">REMOVE_EXTERNAL_COIN_TARGET</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_add_token_on_token_list"></a>
+
+## Function `add_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_token_on_token_list">add_token_on_token_list</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_token_on_token_list">add_token_on_token_list</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_ADD_TOKEN_ON_TOKEN_LIST">ADD_TOKEN_ON_TOKEN_LIST</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_remove_token_on_token_list"></a>
+
+## Function `remove_token_on_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_token_on_token_list">remove_token_on_token_list</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_remove_token_on_token_list">remove_token_on_token_list</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_REMOVE_TOKEN_ON_TOKEN_LIST">REMOVE_TOKEN_ON_TOKEN_LIST</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_set_cross_out_bridge_fee"></a>
+
+## Function `set_cross_out_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_set_cross_out_bridge_fee">set_cross_out_bridge_fee</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_set_cross_out_bridge_fee">set_cross_out_bridge_fee</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_SET_CROSS_OUT_BRIDGE_FEE">SET_CROSS_OUT_BRIDGE_FEE</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_set_cross_in_bridge_fee"></a>
+
+## Function `set_cross_in_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_set_cross_in_bridge_fee">set_cross_in_bridge_fee</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_set_cross_in_bridge_fee">set_cross_in_bridge_fee</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_SET_CROSS_IN_BRIDGE_FEE">SET_CROSS_IN_BRIDGE_FEE</a>
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_withdraw_bridge_fee"></a>
+
+## Function `withdraw_bridge_fee`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">withdraw_bridge_fee</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_withdraw_bridge_fee">withdraw_bridge_fee</a>(): u8{
+    <a href="../bridge/message_types.md#bridge_message_types_WITHDRAW_BRIDGE_FEE">WITHDRAW_BRIDGE_FEE</a>
 }
 </code></pre>
 
