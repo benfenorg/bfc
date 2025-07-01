@@ -10,6 +10,7 @@ module bridge::message_types {
     const UPDATE_ASSET_PRICE: u8 = 4;
     const ADD_TOKENS_ON_SUI: u8 = 6;
     const REFUND_ADMIN_OPERATE: u8 = 8;
+    const UPDATE_BRIDGE_LIMIT_FAST_PATH: u8 = 9;
 
     // for external coins
     const ADD_EXTERNAL_COIN_ADMIN: u8 = 11;
@@ -31,6 +32,7 @@ module bridge::message_types {
 
     public fun add_tokens_on_sui(): u8 { ADD_TOKENS_ON_SUI }
 
+    public fun update_bridge_limit_fast_path(): u8 { UPDATE_BRIDGE_LIMIT_FAST_PATH }
 
     // for external coins
     public fun add_external_coin_admin(): u8 { ADD_EXTERNAL_COIN_ADMIN }

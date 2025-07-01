@@ -58,6 +58,23 @@ module bridge::message {
         tx_hash: vector<u8>,
     }
 
+    public struct FastPathLimitPayload has drop{
+        chain_id: u8,
+        token_id: u64,
+        amount: u64,
+    }
+
+    public fun chain_id(self: &FastPathLimitPayload): u8 {
+        self.chain_id
+    }
+
+    public fun token_id(self: &FastPathLimitPayload): u64 {
+        self.token_id
+    }
+
+    public fun amount(self: &FastPathLimitPayload): u64 {
+        self.amount
+    }
     public struct TokenTransferPayload has drop {
         sender_address: vector<u8>,
         target_chain: u8,
@@ -207,6 +224,21 @@ module bridge::message {
             amount,
             tx_hash,
             event_idx
+        }
+    }
+
+    public fun extract_fast_path_limit_payload(message: &BridgeMessage): FastPathLimitPayload {
+        let mut bcs = bcs::new(message.payload);
+        let chain_id = bcs.peel_u8();
+        let token_id = peel_u64_be(&mut bcs);
+        let amount = peel_u64_be(&mut bcs);
+        chain_ids::assert_valid_chain_id(chain_id);
+        assert!(bcs.into_remainder_bytes().is_empty(), ETrailingBytes);
+
+        FastPathLimitPayload {
+            chain_id,
+            token_id,
+            amount,
         }
     }
 
@@ -732,6 +764,34 @@ module bridge::message {
 
         BridgeMessage {
             message_type: message_types::refund_admin_operate(),
+            message_version: CURRENT_MESSAGE_VERSION,
+            seq_num,
+            source_chain,
+            payload,
+        }
+    }
+
+    /// Blocklist Message Format:
+    /// [message_type: u8]
+    /// [version:u8]
+    /// [nonce:u64]
+    /// [chain_id: u8]
+    /// [token_id: u64]
+    /// [amount: u64]
+    public fun create_fast_path_limit_message(
+        source_chain: u8,
+        seq_num: u64,
+        chain_id: u8,
+        token_id: u64,
+        amount: u64,
+    ): BridgeMessage {
+        chain_ids::assert_valid_chain_id(source_chain);
+        let mut payload = bcs::to_bytes(&chain_id);
+        payload.append(bcs::to_bytes(&token_id));
+        payload.append(bcs::to_bytes(&amount));
+
+        BridgeMessage {
+            message_type: message_types::update_bridge_limit_fast_path(),
             message_version: CURRENT_MESSAGE_VERSION,
             seq_num,
             source_chain,

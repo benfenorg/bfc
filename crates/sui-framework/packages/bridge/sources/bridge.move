@@ -902,7 +902,7 @@ module bridge::bridge {
 
         // TODO: test version mismatch
         assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
-        let inner = load_inner_mut(bridge);
+        let (inner, uid) = load_inner_mut_and_uid(bridge);
 
         assert!(message.source_chain() == inner.chain_id, EUnexpectedChainID);
 
@@ -950,7 +950,9 @@ module bridge::bridge {
         }else if  (message_type == message_types::remove_external_coin_target()){
             let payload = message.extract_remove_external_target_address_poyload();
             inner.execute_remove_external_coin_target_payload(payload);
-
+        }else if  (message_type == message_types::update_bridge_limit_fast_path()){
+            let payload = message.extract_fast_path_limit_payload();
+            limiter_fast_path::add_limiter(uid, payload.chain_id(),payload.token_id(),payload.amount());            
         }else {
             abort EUnexpectedMessageType
         };
