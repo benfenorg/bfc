@@ -40,8 +40,6 @@ custom coins with <code><a href="../sui-framework/anonymous_balance.md#0x2_anony
 
 ## Struct `Supply`
 
-Sender is not @0x0 the system address.
-System operation performed for a coin other than SUI
 A Supply of T. Used for minting and burning.
 Wrapped into a <code>TreasuryCap</code> in the <code>Coin</code> module.
 
@@ -161,6 +159,17 @@ For when an overflow is happening on Supply operations.
 
 
 <pre><code><b>const</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_BALANCE_TYPE_SHARING">BALANCE_TYPE_SHARING</a>: u32 = 1;
+</code></pre>
+
+
+
+<a name="0x2_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE"></a>
+
+Sender is not @0x0 the system address.
+System operation performed for a coin other than SUI
+
+
+<pre><code><b>const</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE">DEFAULT_EQUIVALENT_RESULT_VALUE</a>: u8 = 2;
 </code></pre>
 
 
@@ -587,8 +596,8 @@ Split a <code>Balance</code> and take a sub balance from it.
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_split">split</a>&lt;T&gt;(self: &<b>mut</b> <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt;, value: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>): <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_Anonymous_Balance">Anonymous_Balance</a>&lt;T&gt; {
-    <b>let</b> compare_result = hfe_ops_compare_value(self.value1, self.value2, value);
-    <b>assert</b>!(compare_result != 2, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
+    <b>let</b> compare_result: u8 = hfe_ops_compare_value(self.value1, self.value2, value);
+    <b>assert</b>!(compare_result != <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_DEFAULT_EQUIVALENT_RESULT_VALUE">DEFAULT_EQUIVALENT_RESULT_VALUE</a>, <a href="../sui-framework/anonymous_balance.md#0x2_anonymous_balance_ENotEnough">ENotEnough</a>);
     <b>let</b> value3 = value/2;
     <b>let</b> value4 = value - value3;
     <b>let</b> result = hfe_ops_minus(self.value1, self.value2, value3, value4);

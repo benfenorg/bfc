@@ -22,6 +22,7 @@ const ENotEnough: u64 = 2;
 /// System operation performed for a coin other than SUI
 //const ENotSUI: u64 = 4;
 
+const DEFAULT_EQUIVALENT_RESULT_VALUE: u8 = 2;
 
 /// A Supply of T. Used for minting and burning.
 /// Wrapped into a `TreasuryCap` in the `Coin` module.
@@ -172,8 +173,8 @@ public fun join<T>(self: &mut Anonymous_Balance<T>, balance: Anonymous_Balance<T
 
 /// Split a `Balance` and take a sub balance from it.
 public fun split<T>(self: &mut Anonymous_Balance<T>, value: u64): Anonymous_Balance<T> {
-    let compare_result = hfe_ops_compare_value(self.value1, self.value2, value);
-    assert!(compare_result != 2, ENotEnough);
+    let compare_result: u8 = hfe_ops_compare_value(self.value1, self.value2, value);
+    assert!(compare_result != DEFAULT_EQUIVALENT_RESULT_VALUE, ENotEnough);
     let value3 = value/2;
     let value4 = value - value3;
     let result = hfe_ops_minus(self.value1, self.value2, value3, value4);

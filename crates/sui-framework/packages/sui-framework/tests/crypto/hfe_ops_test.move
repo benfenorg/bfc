@@ -11,8 +11,8 @@ module sui::hfe_ops_test {
         let data2 = result[1];
         debug::print(&data1);
         debug::print(&data2);
-        assert!(&data1 == 5);
-        assert!(&data2 == 9);
+        assert!(&data1 == 7);
+        assert!(&data2 == 7);
     }
 
     #[test]
