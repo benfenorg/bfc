@@ -645,7 +645,7 @@ module bridge::message {
         payload.append(reverse_bytes(bcs::to_bytes(&event_idx)));
         BridgeMessage {
             message_type: message_types::token(),
-            message_version: CURRENT_MESSAGE_VERSION_V2,
+            message_version: CURRENT_MESSAGE_VERSION,
             seq_num,
             source_chain,
             payload,

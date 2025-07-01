@@ -293,7 +293,7 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.token_id,
                     bridge_event.amount_sui_adjusted,
                     vec![],
-                    0,
+                    0u16,
                     "create_token_bridge_message_v2",
                     "approve_token_transfer_v2",
                     None
@@ -311,7 +311,7 @@ fn build_token_bridge_approve_transaction(
                     bridge_event.amount_sui_adjusted,
                     bridge_event.tx_hash,
                     bridge_event.event_idx,
-                    "create_token_bridge_message",
+                    "create_token_bridge_message_v2",
                     "approve_token_transfer_v2",
                     None
                 )
@@ -356,7 +356,7 @@ fn build_token_bridge_approve_transaction(
     let event_idx = builder.pure(event_idx).unwrap();
 
     let arg_msg = match func_name_message {
-        "create_token_bridge_message" => {
+        "create_token_bridge_message_v2" => {
             builder.programmable_move_call(
                 BRIDGE_PACKAGE_ID,
                 ident_str!("message").to_owned(),

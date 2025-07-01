@@ -541,6 +541,7 @@ where
             &IntentMessage::new(Intent::sui_transaction(), &tx_data),
             sui_key,
         );
+        info!("bbking tx_data: {:?},certificate: {:?}", tx_data, certificate.clone());
         let signed_tx = Transaction::from_data(tx_data, vec![sig]);
         let tx_digest = *signed_tx.digest();
         // Check twice: If the action is already processed, skip it.
@@ -558,7 +559,6 @@ where
             });
             return;
         }
-
         info!(?tx_digest, ?gas_object_ref, "Sending transaction to Sui");
         match sui_client
             .execute_transaction_block_with_effects(signed_tx)
