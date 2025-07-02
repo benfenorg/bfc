@@ -268,7 +268,6 @@ impl BridgeClient {
                 let nonce = a.nonce.to_string();
                 let token_id = a.token_id.to_string();
                 let amount = a.amount.to_string();
-                //todo: @lifei
                 format!(
                     "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}"
                 )

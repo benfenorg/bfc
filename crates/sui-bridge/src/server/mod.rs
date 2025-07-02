@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::inconsistent_digit_grouping)]
-use crate::types::RefundAdminAction;
+use crate::types::{FastPathLimitUpdateAction, RefundAdminAction};
 use crate::with_metrics;
 use crate::{
     crypto::BridgeAuthorityPublicKeyBytes,
@@ -86,6 +86,8 @@ pub const ADD_TOKENS_ON_EVM_PATH: &str =
 
 pub const UPDATE_REFUND_ADMIN_PATH: &str =
     "/sign/update_refund_admin/:chain_id/:nonce/:op_type/:sui_address";
+pub const UPDATE_FAST_PATH_LIMIT_PATH: &str =
+    "/sign/update_fast_path_limit/:chain_id/:nonce/:token_id/:amount";
 
 // BridgeNode's public metadata that is accessible via the `/ping` endpoint.
 // Be careful with what to put here, as it is public.
@@ -162,6 +164,7 @@ pub(crate) fn make_router(
             get(handle_evm_contract_upgrade_with_calldata),
         )
         .route(UPDATE_REFUND_ADMIN_PATH, get(handle_update_refund_admin))
+        .route(UPDATE_FAST_PATH_LIMIT_PATH, get(handle_update_fast_path_limit))
         .route(ADD_EXTERNAL_COIN_ADMIN, get(handle_add_external_coin_admin))
         .route(REMOVE_EXTERNAL_COIN_ADMIN, get(handle_remove_external_coin_admin))
         .route(ADD_EXTERNAL_COIN_WITNESS, get(handle_add_external_coin_witness))
@@ -943,6 +946,43 @@ async fn handle_update_refund_admin(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_update_refund_admin", future).await
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, token_id=token_id, amount=amount))]
+async fn handle_update_fast_path_limit(
+    Path((chain_id, nonce, token_id, amount)): Path<(
+        u8,
+        u64,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+) -> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        if chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_update_fast_path_limit only expects EVM chain id".to_string(),
+            ));
+        }
+
+        let action = BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
+            nonce,
+            chain_id,
+            token_id,
+            amount,
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_update_fast_path_limit", future).await
 }
 
 #[macro_export]
