@@ -23,12 +23,6 @@ module bridge::bridge_fee{
     /// e.g. 1% = 10000; 0.01% = 100; 0.0001% = 1
     const FEE_RATE_PRECISION: u64 = 1_000_000;
 
-    public enum BridgeFeeType has copy, drop, store {
-        Fixed,
-        Percentage,
-        Undefined
-    }
-
     public struct WithdrawBridgeFeeCap has key,store {
         id: UID,
         coin_type: String,
@@ -54,11 +48,11 @@ module bridge::bridge_fee{
     /// Fee information struct supports fixed and percentage fee modes.
     public struct FeeInfo has copy, drop, store {
         /// Fee mode, either Fixed or Percentage.
-        mode: BridgeFeeType,
+        mode: u64,
 
         /// Fee value:
-        /// - If mode == Fixed, this is the fixed fee amount (same unit as token amount).
-        /// - If mode == Percentage, this is the fee rate in parts per million (ppm).
+        /// - If mode == Fixed(0), this is the fixed fee amount (same unit as token amount).
+        /// - If mode == Percentage(1), this is the fee rate in parts per million (ppm).
         value: u64,
     }
 
@@ -202,7 +196,7 @@ module bridge::bridge_fee{
             self.to_benfen.add(chain_id, table::new(ctx));
         };
         let new_fee_info=new_fee_info(mode,value);
-        assert!(new_fee_info.mode!=BridgeFeeType::Undefined,EBridgeFeeTypeNotSupport);
+        assert!(new_fee_info.mode < 2,EBridgeFeeTypeNotSupport);
         if (!self.to_benfen.borrow(chain_id).contains(token_id)){
             self.to_benfen.borrow_mut(chain_id).add(token_id, new_fee_info);
         }else{
@@ -225,7 +219,7 @@ module bridge::bridge_fee{
             self.from_benfen.add(chain_id, table::new(ctx));
         };
         let new_fee_info=new_fee_info(mode,value);
-        assert!(new_fee_info.mode != BridgeFeeType::Undefined,EBridgeFeeTypeNotSupport);
+        assert!(new_fee_info.mode < 2,EBridgeFeeTypeNotSupport);
         if (!self.from_benfen.borrow(chain_id).contains(token_id)){
             self.from_benfen.borrow_mut(chain_id).add(token_id, new_fee_info);
         }else{
@@ -280,12 +274,12 @@ module bridge::bridge_fee{
         let fee_info = get_fee_info_from_benfen(self, chain_id, token_id);
 
         // Fixed fee mode
-        if (fee_info.mode == BridgeFeeType::Fixed) {
+        if (fee_info.mode == 0) {
             return fee_info.value
         };
 
         // Percentage-based fee mode
-        if (fee_info.mode == BridgeFeeType::Percentage) {
+        if (fee_info.mode == 1) {
             return calculate_fee(amount, fee_info.value)
         };
         0
@@ -302,13 +296,13 @@ module bridge::bridge_fee{
         let fee_info = get_fee_info_to_benfen(self, chain_id, token_id);
 
         // Fixed fee mode
-        if (fee_info.mode == BridgeFeeType::Fixed) {
+        if (fee_info.mode == 0) {
             return fee_info.value
 
         };
 
         // Percentage-based fee mode
-        if (fee_info.mode == BridgeFeeType::Percentage) {
+        if (fee_info.mode == 1) {
             return calculate_fee(amount, fee_info.value)
         };
         0
@@ -418,88 +412,18 @@ module bridge::bridge_fee{
         *inner.borrow(token_id)
     }
     fun default_fee_info():FeeInfo{
-        FeeInfo { mode:BridgeFeeType::Undefined, value:0 }
+        FeeInfo { mode:2, value:0 }
     }
 
     fun new_fee_info(
         mode: u64,
         value: u64
     ): FeeInfo{
-        if (mode==0){
-             FeeInfo { mode:BridgeFeeType::Fixed, value}
-        }else if (mode==1){
-             FeeInfo { mode:BridgeFeeType::Percentage, value }
-        }else{
-             FeeInfo { mode:BridgeFeeType::Undefined, value}
-        }
+         FeeInfo { mode, value}
     }
 
     fun calculate_fee(amount: u64,fee_rate: u64) : u64 {
         (amount * fee_rate) / FEE_RATE_PRECISION
     }
 
-
-    // public fun get_fee_in_cross_in(
-    //     parent_id: &UID,
-    //     chain_id: u64,
-    //     token_id: u64,
-    //     mut amount: u64,
-    // ):u64{
-    //     let self=borrow(parent_id);
-    //     if (!is_token_id_supported_in_cross_in_internal(self,chain_id,token_id)) {
-    //         abort EBridgeFeeChainIDAndTokenIDNotExpect
-    //     };
-    //     let fee_info=get_fee_info_to_benfen(self,chain_id,token_id);
-    //     if (fee_info.mode==BridgeFeeType::Fixed){
-    //          if (amount > fee_info.value) {
-    //             amount = amount - fee_info.value
-    //         } else {
-    //             amount = 0
-    //         }
-    //     };
-    //     if (fee_info.mode==BridgeFeeType::Percentage){
-    //            let fee = calculate_fee(amount, fee_info.value);
-    //             if (amount > fee) {
-    //                 amount = amount - fee
-    //             } else {
-    //                 amount = 0
-    //             }
-    //     };
-    //     amount
-    // }
-
-
-
-
-
-
-
-    // public fun get_fee_in_cross_out(
-    //     parent_id: &UID,
-    //     chain_id: u64,
-    //     token_id: u64,
-    //     mut amount: u64,
-    // ):u64{
-    //     let self=borrow(parent_id);
-    //     if (!is_token_id_supported_in_cross_out_internal(self,chain_id,token_id)) {
-    //         abort EBridgeFeeChainIDAndTokenIDNotExpect
-    //     };
-    //     let fee_info=get_fee_info_from_benfen(self,chain_id,token_id);
-    //     if (fee_info.mode==BridgeFeeType::Fixed){
-    //          if (amount > fee_info.value) {
-    //             amount = amount - fee_info.value
-    //         } else {
-    //             amount = 0
-    //         }
-    //     };
-    //     if (fee_info.mode==BridgeFeeType::Percentage){
-    //            let fee = calculate_fee(amount, fee_info.value);
-    //             if (amount > fee) {
-    //                 amount = amount - fee
-    //             } else {
-    //                 amount = 0
-    //             }
-    //     };
-    //     amount
-    // }
 }

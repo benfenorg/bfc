@@ -7,7 +7,6 @@ title: Module `bridge::bridge_fee`
 -  [Struct `WithdrawBridgeFeeCap`](#bridge_bridge_fee_WithdrawBridgeFeeCap)
 -  [Struct `BridgeFee`](#bridge_bridge_fee_BridgeFee)
 -  [Struct `FeeInfo`](#bridge_bridge_fee_FeeInfo)
--  [Enum `BridgeFeeType`](#bridge_bridge_fee_BridgeFeeType)
 -  [Constants](#@Constants_0)
 -  [Function `new_bridge_fee_registry`](#bridge_bridge_fee_new_bridge_fee_registry)
 -  [Function `new`](#bridge_bridge_fee_new)
@@ -165,7 +164,7 @@ Fee information struct supports fixed and percentage fee modes.
 
 <dl>
 <dt>
-<code>mode: <a href="../bridge/bridge_fee.md#bridge_bridge_fee_BridgeFeeType">bridge::bridge_fee::BridgeFeeType</a></code>
+<code>mode: u64</code>
 </dt>
 <dd>
  Fee mode, either Fixed or Percentage.
@@ -177,42 +176,6 @@ Fee information struct supports fixed and percentage fee modes.
  Fee value:
  - If mode == Fixed, this is the fixed fee amount (same unit as token amount).
  - If mode == Percentage, this is the fee rate in parts per million (ppm).
-</dd>
-</dl>
-
-
-</details>
-
-<a name="bridge_bridge_fee_BridgeFeeType"></a>
-
-## Enum `BridgeFeeType`
-
-
-
-<pre><code><b>public</b> <b>enum</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_BridgeFeeType">BridgeFeeType</a> <b>has</b> <b>copy</b>, drop, store
-</code></pre>
-
-
-
-<details>
-<summary>Variants</summary>
-
-
-<dl>
-<dt>
-Variant <code>Fixed</code>
-</dt>
-<dd>
-</dd>
-<dt>
-Variant <code>Percentage</code>
-</dt>
-<dd>
-</dd>
-<dt>
-Variant <code>Undefined</code>
-</dt>
-<dd>
 </dd>
 </dl>
 
@@ -543,7 +506,7 @@ e.g. 1% = 10000; 0.01% = 100; 0.0001% = 1
         self.to_benfen.add(chain_id, table::new(ctx));
     };
     <b>let</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>(mode,value);
-    <b>assert</b>!(<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>.mode!=BridgeFeeType::Undefined,<a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeTypeNotSupport">EBridgeFeeTypeNotSupport</a>);
+    <b>assert</b>!(<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>.mode &lt; 2,<a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeTypeNotSupport">EBridgeFeeTypeNotSupport</a>);
     <b>if</b> (!self.to_benfen.<a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(chain_id).contains(token_id)){
         self.to_benfen.<a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow_mut">borrow_mut</a>(chain_id).add(token_id, <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>);
     }<b>else</b>{
@@ -585,7 +548,7 @@ e.g. 1% = 10000; 0.01% = 100; 0.0001% = 1
         self.from_benfen.add(chain_id, table::new(ctx));
     };
     <b>let</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>(mode,value);
-    <b>assert</b>!(<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>.mode != BridgeFeeType::Undefined,<a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeTypeNotSupport">EBridgeFeeTypeNotSupport</a>);
+    <b>assert</b>!(<a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>.mode &lt; 2,<a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeTypeNotSupport">EBridgeFeeTypeNotSupport</a>);
     <b>if</b> (!self.from_benfen.<a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(chain_id).contains(token_id)){
         self.from_benfen.<a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow_mut">borrow_mut</a>(chain_id).add(token_id, <a href="../bridge/bridge_fee.md#bridge_bridge_fee_new_fee_info">new_fee_info</a>);
     }<b>else</b>{
@@ -697,11 +660,11 @@ Compute the net amount after applying the fee
     <b>let</b> self = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(parent_id);
     <b>let</b> fee_info = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_from_benfen">get_fee_info_from_benfen</a>(self, chain_id, token_id);
     // Fixed fee mode
-    <b>if</b> (fee_info.mode == BridgeFeeType::Fixed) {
+    <b>if</b> (fee_info.mode == 0) {
         <b>return</b> fee_info.value
     };
     // Percentage-based fee mode
-    <b>if</b> (fee_info.mode == BridgeFeeType::Percentage) {
+    <b>if</b> (fee_info.mode == 1) {
         <b>return</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_fee">calculate_fee</a>(amount, fee_info.value)
     };
     0
@@ -736,11 +699,11 @@ Compute the net amount after applying the fee
    <b>let</b> self = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_borrow">borrow</a>(parent_id);
    <b>let</b> fee_info = <a href="../bridge/bridge_fee.md#bridge_bridge_fee_get_fee_info_to_benfen">get_fee_info_to_benfen</a>(self, chain_id, token_id);
    // Fixed fee mode
-   <b>if</b> (fee_info.mode == BridgeFeeType::Fixed) {
+   <b>if</b> (fee_info.mode == 0) {
        <b>return</b> fee_info.value
    };
    // Percentage-based fee mode
-   <b>if</b> (fee_info.mode == BridgeFeeType::Percentage) {
+   <b>if</b> (fee_info.mode == 1) {
        <b>return</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_fee">calculate_fee</a>(amount, fee_info.value)
    };
    0
@@ -1089,7 +1052,7 @@ Compute the net amount after applying the fee
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_default_fee_info">default_fee_info</a>():<a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a>{
-    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode:BridgeFeeType::Undefined, value:0 }
+    <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode:2, value:0 }
 }
 </code></pre>
 
@@ -1116,13 +1079,7 @@ Compute the net amount after applying the fee
     mode: u64,
     value: u64
 ): <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a>{
-    <b>if</b> (mode==0){
-         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode:BridgeFeeType::Fixed, value}
-    }<b>else</b> <b>if</b> (mode==1){
-         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode:BridgeFeeType::Percentage, value }
-    }<b>else</b>{
-         <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode:BridgeFeeType::Undefined, value}
-    }
+     <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FeeInfo">FeeInfo</a> { mode, value}
 }
 </code></pre>
 

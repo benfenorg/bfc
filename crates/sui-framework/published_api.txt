@@ -6484,9 +6484,6 @@ BridgeFee
 FeeInfo
 	public struct
 	0xb::bridge_fee
-BridgeFeeType
-	public enum
-	0xb::bridge_fee
 new_bridge_fee_registry
 	public(package) fun
 	0xb::bridge_fee
