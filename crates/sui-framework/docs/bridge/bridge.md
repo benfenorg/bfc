@@ -21,6 +21,7 @@ title: Module `bridge::bridge`
 -  [Struct `ExternalDepositedApprovedEvent`](#bridge_bridge_ExternalDepositedApprovedEvent)
 -  [Struct `ExternalDepositStartEvent`](#bridge_bridge_ExternalDepositStartEvent)
 -  [Struct `ExternalDepositedEvent`](#bridge_bridge_ExternalDepositedEvent)
+-  [Struct `ExternalDepositedEventV2`](#bridge_bridge_ExternalDepositedEventV2)
 -  [Struct `ExternalWithdrawEvent`](#bridge_bridge_ExternalWithdrawEvent)
 -  [Struct `ExternalWithdrawEventV2`](#bridge_bridge_ExternalWithdrawEventV2)
 -  [Struct `ExternalBridgeMessageKey`](#bridge_bridge_ExternalBridgeMessageKey)
@@ -974,6 +975,67 @@ title: Module `bridge::bridge`
 </dd>
 <dt>
 <code>amount: u64</code>
+</dt>
+<dd>
+</dd>
+</dl>
+
+
+</details>
+
+<a name="bridge_bridge_ExternalDepositedEventV2"></a>
+
+## Struct `ExternalDepositedEventV2`
+
+
+
+<pre><code><b>public</b> <b>struct</b> <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEventV2">ExternalDepositedEventV2</a> <b>has</b> <b>copy</b>, drop
+</code></pre>
+
+
+
+<details>
+<summary>Fields</summary>
+
+
+<dl>
+<dt>
+<code>tx_hash: <a href="../std/ascii.md#std_ascii_String">std::ascii::String</a></code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>token_type: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_chain: u8</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>source_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>target_address: vector&lt;u8&gt;</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_before_fee: u64</code>
+</dt>
+<dd>
+</dd>
+<dt>
+<code>amount_after_fee: u64</code>
 </dt>
 <dd>
 </dd>
@@ -2731,7 +2793,7 @@ title: Module `bridge::bridge`
     signatures: vector&lt;vector&lt;u8&gt;&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
@@ -2744,6 +2806,7 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
     );
     <b>let</b> coin_type = type_name::into_string(type_name::get&lt;T&gt;());
+    <b>let</b> token_id=<a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>);
     // check records
     <b>let</b> tx_hash = ascii::string(token_payload.token_tx_hash());
     <b>let</b> source_chain = <a href="../bridge/message.md#bridge_message">message</a>.source_chain();
@@ -2770,7 +2833,14 @@ title: Module `bridge::bridge`
            });
         <b>return</b>
     };
-    <b>let</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
+    <b>assert</b>!(token_payload.token_amount() &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>let</b> <b>mut</b> token = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.mint&lt;T&gt;(amount, ctx);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
+    <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>if</b> (fee != 0){
+          <b>let</b> fee_coin=token.split&lt;T&gt;(fee, ctx);
+          <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+    };
     transfer::public_transfer(token, address::from_bytes(target_address));
     inner.external_bridge_records.push_back(
         key,
@@ -2785,14 +2855,15 @@ title: Module `bridge::bridge`
         },
     );
     emit(
-        <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEventV2">ExternalDepositedEventV2</a> {
             tx_hash,
-            coin_type,
+            token_type: token_id,
             source_chain,
             target_chain: inner.chain_id,
             source_address,
             target_address,
-            amount,
+            amount_before_fee: amount,
+            amount_after_fee: amount - fee
         },
     )
 }
@@ -2825,7 +2896,7 @@ title: Module `bridge::bridge`
     cap: &BfcSystemModifyCap,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
@@ -2838,6 +2909,7 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
     );
     <b>let</b> coin_type = type_name::into_string(type_name::get&lt;T&gt;());
+    <b>let</b> token_id=<a href="../bridge/treasury.md#bridge_treasury_token_id">treasury::token_id</a>&lt;T&gt;(&inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>);
     // check records
     <b>let</b> tx_hash = ascii::string(token_payload.token_tx_hash());
     <b>let</b> source_chain = <a href="../bridge/message.md#bridge_message">message</a>.source_chain();
@@ -2864,7 +2936,16 @@ title: Module `bridge::bridge`
         });
         <b>return</b>
     };
-    bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, address::from_bytes(target_address), ctx);
+    <b>assert</b>!(token_payload.token_amount() &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+    <b>let</b> <b>mut</b> token =bfc_system_state.mint_stable&lt;BUSD&gt;(amount, cap,  ctx);
+    //address::from_bytes(target_address),
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_id,amount);
+    <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
+    <b>if</b> (fee != 0){
+          <b>let</b> fee_coin=token.split&lt;BUSD&gt;(fee, ctx);
+          <a href="../bridge/bridge_fee.md#bridge_bridge_fee_deposit_fee">bridge_fee::deposit_fee</a>(parent_id, fee_coin);
+    };
+    transfer::public_transfer(token, address::from_bytes(target_address));
     inner.external_bridge_records.push_back(
         key,
         <a href="../bridge/bridge.md#bridge_bridge_ExternalBridgeRecord">ExternalBridgeRecord</a> {
@@ -2878,14 +2959,15 @@ title: Module `bridge::bridge`
         },
     );
     emit(
-        <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
+        <a href="../bridge/bridge.md#bridge_bridge_ExternalDepositedEventV2">ExternalDepositedEventV2</a> {
             tx_hash,
-            coin_type,
+            token_type: token_id,
             source_chain,
             target_chain: inner.chain_id,
             source_address,
             target_address,
-            amount,
+            amount_before_fee: amount,
+            amount_after_fee: amount - fee
         },
     )
 }
@@ -3477,7 +3559,7 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
     <b>let</b> amount = token_payload.token_amount();
-    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,target_chain <b>as</b> u64,token_payload.token_type(),amount);
+    <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_payload.token_type(),amount);
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner

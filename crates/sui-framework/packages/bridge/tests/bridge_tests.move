@@ -64,6 +64,9 @@ use bfc_system::bfc_system::BfcSystemState;
 use bfc_system::bfc_system;
 use bfc_system::bfc_system_tests::public_setup;
 use bfc_system::busd::BUSD;
+use bridge::busd;
+
+
 use bfc_system::bfc_system_state_inner::BfcSystemModifyCap;
 use bridge::bridge_env::get_usdc;
 
@@ -1764,33 +1767,34 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
     let mut bfc_system_state = sui::test_scenario::take_shared<BfcSystemState>(&scenario);
     let cap = sui::test_scenario::take_from_sender<BfcSystemModifyCap>(&scenario);
     // 调用 approval_and_claimed_external_busd_coin
-    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<BUSD>(
+    bridge.bridge_ref_mut().approval_and_claimed_external_busd_coin<busd::BUSD>(
         message,
         signatures,
         &mut bfc_system_state,
         &cap,
         ctx,
     );
-    let deposited = sui::event::events_by_type<bridge::bridge::ExternalDepositedEvent>();
+    let deposited = sui::event::events_by_type<bridge::bridge::ExternalDepositedEventV2>();
     assert!(deposited.length() == 1);
     {
         let (
             tx_hash,
-            coin_type,
+            token_type,
             source_chain,
             target_chain,
             source_address,
             target_address,
-            amount,
-        ) = deposited[0].unwrap_external_deposited_event();
+            amount_before_fee,
+            amount_after_fee,
+        ) = deposited[0].unwrap_external_deposited_event_v2();
         assert!(
             tx_hash == tx_hash &&
-                coin_type == type_name::get<BUSD>().into_string() &&
+                token_type == token_type &&
                 source_chain == source_chain &&
                 target_chain == chain_ids::sui_custom() &&
                 source_address == source_address &&
                 target_address == target_address &&
-                amount == amount,
+                amount == amount_before_fee,
         );
     };
 

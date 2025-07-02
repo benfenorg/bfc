@@ -174,8 +174,8 @@ Fee information struct supports fixed and percentage fee modes.
 </dt>
 <dd>
  Fee value:
- - If mode == Fixed, this is the fixed fee amount (same unit as token amount).
- - If mode == Percentage, this is the fee rate in parts per million (ppm).
+ - If mode == Fixed(0), this is the fixed fee amount (same unit as token amount).
+ - If mode == Percentage(1), this is the fee rate in parts per million (ppm).
 </dd>
 </dl>
 

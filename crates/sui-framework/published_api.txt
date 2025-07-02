@@ -6613,6 +6613,9 @@ ExternalDepositStartEvent
 ExternalDepositedEvent
 	public struct
 	0xb::bridge
+ExternalDepositedEventV2
+	public struct
+	0xb::bridge
 ExternalWithdrawEvent
 	public struct
 	0xb::bridge
