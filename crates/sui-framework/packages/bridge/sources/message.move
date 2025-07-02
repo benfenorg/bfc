@@ -779,13 +779,12 @@ module bridge::message {
     /// [token_id: u64]
     /// [amount: u64]
     public fun create_fast_path_limit_message(
-        source_chain: u8,
         seq_num: u64,
         chain_id: u8,
         token_id: u64,
         amount: u64,
     ): BridgeMessage {
-        chain_ids::assert_valid_chain_id(source_chain);
+        chain_ids::assert_valid_chain_id(chain_id);
         let mut payload = bcs::to_bytes(&chain_id);
         payload.append(bcs::to_bytes(&token_id));
         payload.append(bcs::to_bytes(&amount));
@@ -794,7 +793,7 @@ module bridge::message {
             message_type: message_types::update_bridge_limit_fast_path(),
             message_version: CURRENT_MESSAGE_VERSION,
             seq_num,
-            source_chain,
+            source_chain: chain_id,
             payload,
         }
     }

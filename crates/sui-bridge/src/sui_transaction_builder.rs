@@ -159,9 +159,13 @@ pub fn build_sui_transaction(
             build_refund_admin_operate_transaction(client_address, gas_object_ref, action, bridge_object_arg, rgp)
         }
         BridgeAction::FastPathLimitUpdateAction(_) => {
-            //todo: @lifei
-            unreachable!()
-            // build_fast_path_limit_update_transaction(client_address, gas_object_ref, action, bridge_object_arg, rgp)
+            build_fast_path_limit_update_approve_transaction(
+                client_address,
+                gas_object_ref,
+                action,
+                bridge_object_arg,
+                rgp,
+            )
         }
     }
 }
@@ -688,6 +692,70 @@ pub fn build_refund_admin_operate_transaction(
         ident_str!("create_refund_admin_message").to_owned(),
         vec![],
         vec![source_chain, seq_num, op_type, admin_address],
+    );
+
+    let mut sig_bytes = vec![];
+    for (_, sig) in sigs.signatures {
+        sig_bytes.push(sig.as_bytes().to_vec());
+    }
+    let arg_signatures = builder.pure(sig_bytes.clone()).map_err(|e| {
+        BridgeError::BridgeSerializationError(format!(
+            "Failed to serialize signatures: {:?}. Err: {:?}",
+            sig_bytes, e
+        ))
+    })?;
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("bridge").to_owned(),
+        ident_str!("execute_system_message").to_owned(),
+        vec![],
+        vec![arg_bridge, arg_msg, arg_signatures],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        100_000_000,
+        rgp,
+    ))
+}
+
+pub fn build_fast_path_limit_update_approve_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    action: VerifiedCertifiedBridgeAction,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)   -> BridgeResult<TransactionData> {
+    let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
+
+    let mut builder = ProgrammableTransactionBuilder::new();
+
+    let (chain_id, seq_num, token_id, amount) = match bridge_action {
+        BridgeAction::FastPathLimitUpdateAction(a) => {
+            (a.chain_id, a.nonce, a.token_id, a.amount)
+        }
+        _ => unreachable!(),
+    };
+
+    // Unwrap: these should not fail
+    
+    let seq_num = builder.pure(seq_num).unwrap();
+    let chain_id = builder.pure(chain_id as u8).unwrap();
+    let token_id = builder.pure(token_id).unwrap();
+    let amount = builder.pure(amount).unwrap();
+    let arg_bridge = builder.obj(bridge_object_arg).unwrap();
+
+    let arg_msg = builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        ident_str!("message").to_owned(),
+        ident_str!("create_fast_path_limit_message").to_owned(),
+        vec![],
+        vec![seq_num, chain_id, token_id, amount],
     );
 
     let mut sig_bytes = vec![];
