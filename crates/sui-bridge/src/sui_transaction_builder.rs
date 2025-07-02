@@ -158,6 +158,11 @@ pub fn build_sui_transaction(
         BridgeAction::RefundAdminAction(_) => {
             build_refund_admin_operate_transaction(client_address, gas_object_ref, action, bridge_object_arg, rgp)
         }
+        BridgeAction::FastPathLimitUpdateAction(_) => {
+            //todo: @lifei
+            unreachable!()
+            // build_fast_path_limit_update_transaction(client_address, gas_object_ref, action, bridge_object_arg, rgp)
+        }
     }
 }
 

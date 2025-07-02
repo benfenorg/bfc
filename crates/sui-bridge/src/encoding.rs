@@ -4,6 +4,7 @@
 use crate::types::AddTokensOnEvmAction;
 use crate::types::AddTokensOnSuiAction;
 use crate::types::AddExternalCoinAdminAction;
+use crate::types::FastPathLimitUpdateAction;
 use crate::types::RemoveExternalCoinAdminAction;
 use crate::types::AddExternalCoinWitnessAction;
 use crate::types::RemoveExternalCoinWitnessAction;
@@ -31,6 +32,7 @@ pub const TOKEN_TRANSFER_MESSAGE_VERSION: u8 = 1;
 pub const TOKEN_TRANSFER_MESSAGE_VERSION_V2: u8 = 2;
 pub const COMMITTEE_BLOCKLIST_MESSAGE_VERSION: u8 = 1;
 pub const REFUND_ADMIN_MESSAGE_VERSION: u8 = 1;
+pub const FAST_PATH_LIMIT_UPDATE_MESSAGE_VERSION: u8 = 1;
 pub const ADD_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const REMOVE_EXTERNAL_COIN_ADMIN_MESSAGE_VERSION: u8 = 1;
 pub const ADD_EXTERNAL_COIN_WITNESS_MESSAGE_VERSION: u8 = 1;
@@ -330,6 +332,37 @@ impl BridgeMessageEncoding for RefundAdminAction {
 
         bytes.extend_from_slice(&bcs::to_bytes(&self.op_type).unwrap());
         bytes.extend_from_slice(&bcs::to_bytes(&self.sui_address).unwrap());
+
+        bytes
+    }
+}
+
+impl BridgeMessageEncoding for FastPathLimitUpdateAction {
+    fn as_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add message type
+        bytes.push(BridgeActionType::FastPathLimitUpdate as u8);
+        // Add message version
+        bytes.push(FAST_PATH_LIMIT_UPDATE_MESSAGE_VERSION);
+        // Add nonce
+        bytes.extend_from_slice(&self.nonce.to_be_bytes());
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+
+        // Add payload bytes
+        bytes.extend_from_slice(&self.as_payload_bytes());
+
+        bytes
+    }
+
+    fn as_payload_bytes(&self) -> Vec<u8> {
+        let mut bytes = Vec::new();
+        // Add chain id
+        bytes.push(self.chain_id as u8);
+        // Add token id
+        bytes.extend_from_slice(&self.token_id.to_be_bytes());
+        // Add amount
+        bytes.extend_from_slice(&self.amount.to_be_bytes());
 
         bytes
     }

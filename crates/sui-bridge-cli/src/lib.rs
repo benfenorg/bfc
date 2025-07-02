@@ -14,6 +14,7 @@ use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use shared_crypto::intent::Intent;
 use shared_crypto::intent::IntentMessage;
+use sui_bridge::types::FastPathLimitUpdateAction;
 use sui_bridge::types::RefundAdminAction;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -163,6 +164,17 @@ pub enum GovernanceClientCommands {
         #[clap(name = "sui-address", long)]
         sui_address: String,
     },
+    #[clap(name = "update-fast-path-limit")]
+    UpdateFastPathLimit {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "chain-id", long)]
+        chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
     #[clap(name = "update-limit")]
     UpdateLimit {
         #[clap(name = "nonce", long)]
@@ -309,6 +321,20 @@ pub fn make_action(
             op_type: *op_type,
             sui_address: sui_address.clone(),
         }),
+        GovernanceClientCommands::UpdateFastPathLimit {
+            nonce,
+            chain_id,
+            token_id,
+            amount,
+        } => {
+            let chain_id = BridgeChainId::try_from(*chain_id).expect("Invalid chain id");
+            BridgeAction::FastPathLimitUpdateAction(FastPathLimitUpdateAction {
+                nonce: *nonce,
+                chain_id,
+                token_id: *token_id,
+                amount: *amount,
+            })
+        }
         GovernanceClientCommands::UpdateLimit {
             nonce,
             sending_chain,
@@ -520,6 +546,7 @@ pub fn select_contract_address(
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnEvm { .. } => config.eth_bridge_config_proxy_address,
         GovernanceClientCommands::UpdateRefundAdmin { .. } => config.eth_bridge_config_proxy_address,
+        GovernanceClientCommands::UpdateFastPathLimit { .. } => config.eth_bridge_config_proxy_address,
     }
 }
 

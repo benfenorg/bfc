@@ -263,6 +263,16 @@ impl BridgeClient {
                     "sign/add_tokens_on_evm/{chain_id}/{nonce}/{native}/{token_ids}/{token_addresses}/{token_sui_decimals}/{token_prices}"
                 )
             }
+            BridgeAction::FastPathLimitUpdateAction(a) => {
+                let chain_id = (a.chain_id as u8).to_string();
+                let nonce = a.nonce.to_string();
+                let token_id = a.token_id.to_string();
+                let amount = a.amount.to_string();
+                //todo: @lifei
+                format!(
+                    "sign/update_fast_path_limit/{chain_id}/{nonce}/{token_id}/{amount}"
+                )
+            }
         }
     }
 

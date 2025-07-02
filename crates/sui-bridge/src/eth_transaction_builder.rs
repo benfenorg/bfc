@@ -103,6 +103,9 @@ pub async fn build_eth_transaction(
         BridgeAction::RefundAdminAction(_action) => {
             unreachable!();
         }
+        BridgeAction::FastPathLimitUpdateAction(_) => {
+            unreachable!()
+        }
     }
 }
 
