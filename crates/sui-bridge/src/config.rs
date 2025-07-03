@@ -70,6 +70,7 @@ pub struct EthConfig {
     /// 是否开启快速到账
     pub enable_fast_path_latest: bool,
     pub enable_fast_path_safe: bool,
+    pub enable_fast_path_finalized: bool,
 }
 
 #[serde_as]
@@ -272,6 +273,7 @@ impl BridgeNodeConfig {
                     safe_fast_path_threshold: evm_config.safe_fast_path_threshold,
                     enable_fast_path_latest: evm_config.enable_fast_path_latest,
                     enable_fast_path_safe: evm_config.enable_fast_path_safe,
+                    enable_fast_path_finalized: evm_config.enable_fast_path_finalized,
                 },
             );
         }
@@ -298,6 +300,7 @@ impl BridgeNodeConfig {
             eth_safe_fast_path_threshold: self.eth.safe_fast_path_threshold,
             eth_enable_fast_path_latest: self.eth.enable_fast_path_latest,
             eth_enable_fast_path_safe: self.eth.enable_fast_path_safe,
+            eth_enable_fast_path_finalized: self.eth.enable_fast_path_finalized,
             aml_key: self.aml_key.clone(),
             evm_clients,
             evm_client_configs,
@@ -578,6 +581,7 @@ pub struct BridgeClientConfig {
     /// 是否开启快速到账
     pub eth_enable_fast_path_latest: bool,
     pub eth_enable_fast_path_safe: bool,
+    pub eth_enable_fast_path_finalized: bool,
 
     pub evm_client_configs: BTreeMap<BridgeChainId, BridgeClientEvmConfig>,
 
@@ -601,6 +605,7 @@ pub struct BridgeClientEvmConfig {
     /// 是否开启快速到账
     pub enable_fast_path_latest: bool,
     pub enable_fast_path_safe: bool,
+    pub enable_fast_path_finalized: bool,
 }
 
 

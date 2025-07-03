@@ -125,6 +125,9 @@ pub struct BridgeTestClusterBuilder {
     approved_governance_actions: Option<Vec<Vec<BridgeAction>>>,
     eth_chain_id: BridgeChainId,
     sui_chain_id: BridgeChainId,
+    enable_fast_path_latest: bool,
+    enable_fast_path_safe: bool,
+    enable_fast_path_finalized: bool,
 }
 
 impl Default for BridgeTestClusterBuilder {
@@ -142,6 +145,9 @@ impl BridgeTestClusterBuilder {
             approved_governance_actions: None,
             eth_chain_id: BridgeChainId::EthCustom,
             sui_chain_id: BridgeChainId::SuiCustom,
+            enable_fast_path_latest: false,
+            enable_fast_path_safe: false,
+            enable_fast_path_finalized: true,
         }
     }
 
@@ -176,6 +182,21 @@ impl BridgeTestClusterBuilder {
 
     pub fn with_eth_chain_id(mut self, chain_id: BridgeChainId) -> Self {
         self.eth_chain_id = chain_id;
+        self
+    }
+
+    pub fn with_enable_fast_path_latest(mut self, enable_fast_path_latest: bool) -> Self {
+        self.enable_fast_path_latest = enable_fast_path_latest;
+        self
+    }
+
+    pub fn with_enable_fast_path_safe(mut self, enable_fast_path_safe: bool) -> Self {
+        self.enable_fast_path_safe = enable_fast_path_safe;
+        self
+    }
+
+    pub fn with_enable_fast_path_finalized(mut self, enable_fast_path_finalized: bool) -> Self {
+        self.enable_fast_path_finalized = enable_fast_path_finalized;
         self
     }
 
@@ -219,7 +240,7 @@ impl BridgeTestClusterBuilder {
                 .clone()
                 .unwrap_or(vec![vec![]; self.num_validators]);
             bridge_node_handles = Some(
-                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions)
+                start_bridge_cluster(&test_cluster, &eth_environment, approved_governace_actions, self.enable_fast_path_latest, self.enable_fast_path_safe, self.enable_fast_path_finalized)
                     .await,
             );
         }
@@ -389,7 +410,7 @@ impl BridgeTestCluster {
         self.approved_governance_actions_for_next_start = Some(approved_governance_actions);
     }
 
-    pub async fn start_bridge_cluster(&mut self) {
+    pub async fn start_bridge_cluster(&mut self,enable_fast_path_latest: bool, enable_fast_path_safe: bool, enable_fast_path_finalized: bool) {
         assert!(self.bridge_node_handles.is_none());
         let approved_governace_actions = self
             .approved_governance_actions_for_next_start
@@ -400,6 +421,9 @@ impl BridgeTestCluster {
                 &self.test_cluster,
                 &self.eth_environment,
                 approved_governace_actions,
+                enable_fast_path_latest,
+                enable_fast_path_safe,
+                enable_fast_path_finalized,
             )
             .await,
         );
@@ -811,6 +835,9 @@ pub(crate) async fn start_bridge_cluster(
     test_cluster: &TestClusterWrapper,
     eth_environment: &EthBridgeEnvironment,
     approved_governance_actions: Vec<Vec<BridgeAction>>,
+    enable_fast_path_latest: bool,
+    enable_fast_path_safe: bool,
+    enable_fast_path_finalized: bool,
 ) -> Vec<JoinHandle<()>> {
     let bridge_authority_keys = test_cluster
         .bridge_authority_keys
@@ -859,10 +886,11 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
-                latest_fast_path_threshold: None,
-                safe_fast_path_threshold: None,
-                enable_fast_path_latest: false,
-                enable_fast_path_safe: false,
+                latest_fast_path_threshold: Some(50000000000),
+                safe_fast_path_threshold: Some(100000000000),
+                enable_fast_path_latest: enable_fast_path_latest,
+                enable_fast_path_safe: enable_fast_path_safe,
+                enable_fast_path_finalized: enable_fast_path_finalized,
             },
             evm: vec![
                 EthConfig {
@@ -871,10 +899,11 @@ pub(crate) async fn start_bridge_cluster(
                     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
-                    latest_fast_path_threshold: None,
-                    safe_fast_path_threshold: None,
-                    enable_fast_path_latest: false,
-                    enable_fast_path_safe: false,
+                    latest_fast_path_threshold: Some(50000000000),
+                    safe_fast_path_threshold: Some(100000000000),
+                    enable_fast_path_latest: enable_fast_path_latest,
+                    enable_fast_path_safe: enable_fast_path_safe,
+                    enable_fast_path_finalized: enable_fast_path_finalized,
                 },
             ],
             sui: SuiConfig {

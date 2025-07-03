@@ -500,7 +500,7 @@ async fn test_add_external_admin() {
         vec![add_admin_action.clone()],
         vec![remove_admin_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -577,7 +577,7 @@ async fn test_add_external_witness() {
         vec![add_witness_action.clone()],
         vec![remove_witness_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -651,7 +651,7 @@ async fn test_add_external_target() {
         vec![add_target_action.clone()],
         vec![remove_target_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -715,7 +715,7 @@ async fn test_add_refund_admin() {
         vec![add_refund_action.clone()],
         vec![add_refund_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -788,7 +788,7 @@ async fn test_remove_external_admin() {
         vec![add_admin_action.clone()],
         vec![remove_admin_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -863,7 +863,7 @@ async fn test_remove_external_witness() {
         vec![add_witness_action.clone()],
         vec![remove_witness_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -937,7 +937,7 @@ async fn test_remove_external_target() {
         vec![add_target_action.clone()],
         vec![remove_target_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1022,7 +1022,7 @@ async fn test_add_new_coins_on_sui_and_eth() {
         vec![sui_action.clone()],
         vec![eth_action.clone()],
     ]);
-    bridge_test_cluster.start_bridge_cluster().await;
+    bridge_test_cluster.start_bridge_cluster(false,false,true).await;
     bridge_test_cluster
         .wait_for_bridge_cluster_to_be_up(10)
         .await;
@@ -1231,6 +1231,80 @@ async fn test_bridge_usdt_to_sui() {
     assert_eq!(events.len(), 2);
     info!(
         "[Timer] Sui to Eth bridge transfer approved in {:?}",
+        timer.elapsed()
+    );
+}
+
+#[tokio::test(flavor = "multi_thread", worker_threads = 8)]
+async fn test_bridge_usdt_to_sui_fast_path() {
+    telemetry_subscribers::init_for_testing();
+    let mut bridge_test_cluster = BridgeTestClusterBuilder::new()
+        .with_eth_env(true)
+        .with_bridge_cluster(true)
+        .with_num_validators(3)
+        .with_enable_fast_path_latest(true)
+        .with_enable_fast_path_safe(false)
+        .with_enable_fast_path_finalized(false)
+        .build()
+        .await;
+
+    let timer = std::time::Instant::now();
+
+    // let bridge_arg = bridge_test_cluster.get_mut_bridge_arg().await.unwrap();
+
+    let treasury_summary = bridge_test_cluster
+        .bridge_client()
+        .get_treasury_summary()
+        .await
+        .unwrap();
+    assert_eq!(treasury_summary.id_token_type_map.len(), 6); // 4 + 1 new token
+    let (_id, _type) = treasury_summary
+        .id_token_type_map
+        .iter()
+        .find(|(id, _)| id == &TOKEN_ID_USDT)
+        .unwrap();
+    let (_type, _metadata) = treasury_summary
+        .supported_tokens
+        .iter()
+        .find(|(_type_, _)| _type == _type_)
+        .unwrap();
+    let new_token_erc_address = bridge_test_cluster.contracts().usdt;
+    initiate_bridge_erc20_to_sui(
+        &bridge_test_cluster,
+        50,
+        new_token_erc_address,
+        TOKEN_ID_USDT,
+        0,
+    )
+    .await
+    .unwrap();
+    let events = bridge_test_cluster
+        .new_bridge_events(
+            HashSet::from_iter([
+                TokenTransferApproved.get().unwrap().clone(),
+                TokenTransferClaimed.get().unwrap().clone(),
+            ]),
+            true,
+        )
+        .await; // There are exactly 1 approved and 1 claimed event
+    assert_eq!(events.len(), 2);
+    sleep(Duration::from_secs(10));
+    let sui_address = bridge_test_cluster.sui_user_address();
+    let all_coins = bridge_test_cluster
+        .sui_client()
+        .coin_read_api()
+        .get_all_coins(sui_address, None, None)
+        .await
+        .unwrap()
+        .data;
+    let busd_coin = all_coins
+        .iter()
+        .find(|c| c.coin_type.contains("BUSD"))
+        .expect("Recipient should have received BUSD coin now")
+        .clone();
+    assert_eq!(busd_coin.balance, 100_000_000_000);
+    info!(
+        "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()
     );
 }

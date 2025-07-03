@@ -20,6 +20,7 @@ use fastcrypto::{
 };
 use fastcrypto::{hash::Keccak256, traits::KeyPair};
 use serde::{Deserialize, Serialize};
+use tracing::info;
 use std::fmt::Debug;
 use std::fmt::{Display, Formatter};
 use sui_types::{base_types::ConciseableName, message_envelope::VerifiedEnvelope};
@@ -160,6 +161,7 @@ pub fn verify_signed_bridge_action(
     committee: &BridgeCommittee,
 ) -> BridgeResult<VerifiedSignedBridgeAction> {
     if signed_action.data() != expected_action {
+        info!("bbking expected_action: {:?}, signed_action: {:?}", expected_action, signed_action.data());
         return Err(BridgeError::MismatchedAction);
     }
 
