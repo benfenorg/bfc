@@ -103,6 +103,15 @@ pub async fn build_eth_transaction(
         BridgeAction::RemoveTokenOnTokenListAction(_) => {
             unreachable!();
         }
+        BridgeAction::UpdateBridgeFeeOnCrossOutAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::UpdateBridgeFeeOnCrossInAction(_) => {
+            unreachable!();
+        }
+        BridgeAction::WithdrawBridgeFeeAction(_) => {
+            unreachable!();
+        }
         BridgeAction::AddTokensOnSuiAction(_) => {
             unreachable!();
         }

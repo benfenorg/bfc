@@ -31,7 +31,9 @@ use sui_bridge::types::{
     AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
     AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
     AddTokenOnTokenListAction,RemoveTokenOnTokenListAction,
-    SingleTransferLimitUpdateAction
+    SingleTransferLimitUpdateAction,UpdateBridgeFeeOnCrossOutAction,
+    UpdateBridgeFeeOnCrossInAction, WithdrawBridgeFeeAction,
+
 };
 use sui_bridge::utils::{get_eth_signer_client, EthSigner};
 use sui_config::Config;
@@ -268,6 +270,43 @@ pub enum GovernanceClientCommands {
         #[clap(name = "token-id", long)]
         token_id: u64,
     },
+    #[clap(name = "set-bridge-fee-on-cross-out")]
+    SetBridgeFeeOnCrossOut {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "to-chain-id", long)]
+        to_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "mode", long)]
+        mode: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
+    #[clap(name = "set-bridge-fee-on-cross-in")]
+    SetBridgeFeeOnCrossIn {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "from-chain-id", long)]
+        from_chain_id: u8,
+        #[clap(name = "token-id", long)]
+        token_id: u64,
+        #[clap(name = "mode", long)]
+        mode: u64,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
+    #[clap(name = "withdraw-bridge-fee")]
+    WithdrawBridgeFee {
+        #[clap(name = "nonce", long)]
+        nonce: u64,
+        #[clap(name = "recipient", long)]
+        recipient: SuiAddress,
+        #[clap(name = "coin-type", long)]
+        coin_type: String,
+        #[clap(name = "amount", long)]
+        amount: u64,
+    },
     #[clap(name = "add-tokens-on-sui")]
     AddTokensOnSui {
         #[clap(name = "nonce", long)]
@@ -478,6 +517,56 @@ pub fn make_action(
             })
 
         },
+        GovernanceClientCommands::SetBridgeFeeOnCrossOut {
+            nonce,
+            to_chain_id,
+            token_id,
+            mode,
+            amount
+        } =>{
+            let to_chain_id = BridgeChainId::try_from(*to_chain_id).expect("Invalid chain id");
+            BridgeAction::UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction {
+                nonce: *nonce,
+                chain_id,
+                to_chain_id,
+                token_id: *token_id,
+                mode: *mode,
+                amount: *amount,
+            })
+        },
+        GovernanceClientCommands::SetBridgeFeeOnCrossIn {
+            nonce,
+            from_chain_id,
+            token_id,
+            mode,
+            amount
+        } =>{
+            let from_chain_id = BridgeChainId::try_from(*from_chain_id).expect("Invalid chain id");
+            BridgeAction::UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction {
+                nonce: *nonce,
+                chain_id,
+                from_chain_id,
+                token_id: *token_id,
+                mode: *mode,
+                amount: *amount,
+            })
+        },
+
+        GovernanceClientCommands::WithdrawBridgeFee {
+            nonce,
+            recipient,
+            coin_type,
+            amount
+        } =>{
+            BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
+                nonce: *nonce,
+                chain_id,
+                addr: *recipient,
+                coin_type: coin_type.clone(),
+                amount: *amount,
+            })
+        },
+
         GovernanceClientCommands::AddTokensOnSui {
             nonce,
             token_ids,
@@ -599,6 +688,9 @@ pub fn select_contract_address(
         GovernanceClientCommands::RemoveExternalCoinWitness {.. } => unreachable!(),
         GovernanceClientCommands::AddTokenOnTokenList { .. } => unreachable!(),
         GovernanceClientCommands::RemoveTokenOnTokenList { .. } => unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossIn { .. }=> unreachable!(),
+        GovernanceClientCommands::SetBridgeFeeOnCrossOut { .. }=> unreachable!(),
+        GovernanceClientCommands::WithdrawBridgeFee { .. }=> unreachable!(),
         GovernanceClientCommands::AddExternalCoinTarget {.. } => unreachable!(),
         GovernanceClientCommands::RemoveExternalCoinTarget {.. } => unreachable!(),
         GovernanceClientCommands::AddTokensOnSui { .. } => unreachable!(),

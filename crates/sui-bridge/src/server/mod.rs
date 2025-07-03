@@ -2,7 +2,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #![allow(clippy::inconsistent_digit_grouping)]
-use crate::types::{AddTokenOnTokenListAction, RefundAdminAction, RemoveTokenOnTokenListAction};
 use crate::with_metrics;
 use crate::{
     crypto::BridgeAuthorityPublicKeyBytes,
@@ -16,7 +15,10 @@ use crate::{
         AddExternalCoinAdminAction, RemoveExternalCoinAdminAction,
         AddExternalCoinWitnessAction,RemoveExternalCoinWitnessAction,
         AddExternalCoinTargetAction,RemoveExternalCoinTargetAction,
-        SingleTransferLimitUpdateAction,
+        SingleTransferLimitUpdateAction,AddTokenOnTokenListAction,
+        RefundAdminAction,RemoveTokenOnTokenListAction,
+        WithdrawBridgeFeeAction, UpdateBridgeFeeOnCrossInAction,
+        UpdateBridgeFeeOnCrossOutAction
     },
 };
 use axum::{
@@ -30,6 +32,7 @@ use fastcrypto::{
     encoding::{Encoding, Hex},
     traits::ToFromBytes,
 };
+use sui_types::base_types::SuiAddress;
 use std::sync::Arc;
 use std::{net::SocketAddr, str::FromStr};
 use sui_types::{bridge::BridgeChainId, TypeTag};
@@ -87,6 +90,15 @@ pub const ADD_TOKEN_ON_TOKEN_LIST: &str=
 
 pub const REMOVE_TOKEN_ON_TOKEN_LIST: &str=
     "/sign/remove_token_on_token_list/:chain_id/:nonce/:from_chain_id/:to_chain_id/:token_id";
+
+pub const UPDATE_BRIDGE_FEE_ON_CROSS_OUT: &str=
+    "/sign/set_bridge_fee_on_cross_out/:chain_id/:nonce/:to_chain_id/:token_id/:mode/:amount";
+
+pub const UPDATE_BRIDGE_FEE_ON_CROSS_IN: &str=
+    "/sign/set_bridge_fee_on_cross_in/:chain_id/:nonce/:from_chain_id/:token_id/:mode/:amount";
+
+pub const WITHDRAW_BRIDGE_FEE: &str=
+    "/sign/withdraw_bridge_fee/:chain_id/:nonce/:addr/:coin_type/:amount";
 
 pub const ADD_TOKENS_ON_SUI_PATH: &str =
     "/sign/add_tokens_on_sui/:chain_id/:nonce/:native/:token_ids/:token_type_names/:token_prices";
@@ -180,6 +192,9 @@ pub(crate) fn make_router(
         .route(REMOVE_EXTERNAL_COIN_TARGET, get(handle_remove_external_coin_target))
         .route(ADD_TOKEN_ON_TOKEN_LIST,get(handle_add_token_on_token_list))
         .route(REMOVE_TOKEN_ON_TOKEN_LIST,get(handle_remove_token_on_token_list))
+        .route(UPDATE_BRIDGE_FEE_ON_CROSS_OUT,get(handle_set_bridge_fee_on_cross_out))
+        .route(UPDATE_BRIDGE_FEE_ON_CROSS_IN,get(handle_set_bridge_fee_on_cross_in))
+        .route(WITHDRAW_BRIDGE_FEE,get(handle_withdraw_bridge_fee))
         .route(ADD_TOKENS_ON_SUI_PATH, get(handle_add_tokens_on_sui))
         .route(ADD_TOKENS_ON_EVM_PATH, get(handle_add_tokens_on_evm))
         .with_state((handler, metrics, metadata))
@@ -859,6 +874,138 @@ async fn handle_remove_token_on_token_list(
         Ok(sig)
     };
     with_metrics!(metrics.clone(), "handle_remove_token_on_token_list", future).await
+
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, to_chain_id=to_chain_id,token_id=token_id,mode=mode,amount=amount))]
+async fn handle_set_bridge_fee_on_cross_out(
+    Path((chain_id, nonce, to_chain_id, token_id,mode,amount)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+)-> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let to_chain_id = BridgeChainId::try_from(to_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid to_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_out only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::UpdateBridgeFeeOnCrossOutAction(UpdateBridgeFeeOnCrossOutAction {
+             nonce,
+             chain_id,
+             to_chain_id,
+             token_id,
+             mode,
+             amount
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_set_bridge_fee_on_cross_out", future).await
+
+}
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, from_chain_id=from_chain_id,token_id=token_id,mode=mode,amount=amount))]
+async fn handle_set_bridge_fee_on_cross_in(
+    Path((chain_id, nonce, from_chain_id, token_id,mode,amount)): Path<(
+        u8,
+        u64,
+        u8,
+        u64,
+        u64,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+)-> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+        let from_chain_id = BridgeChainId::try_from(from_chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid from_chain_id: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_in only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::UpdateBridgeFeeOnCrossInAction(UpdateBridgeFeeOnCrossInAction {
+            nonce,
+            chain_id,
+            from_chain_id,
+            token_id,
+            mode,
+            amount
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_set_bridge_fee_on_cross_in", future).await
+
+}
+
+
+#[instrument(level = "error", skip_all, fields(chain_id=chain_id, nonce=nonce, addr=addr,coin_type=coin_type,amount=amount))]
+async fn handle_withdraw_bridge_fee(
+    Path((chain_id, nonce, addr, coin_type,amount)): Path<(
+        u8,
+        u64,
+        String,
+        String,
+        u64,
+    )>,
+    State((handler, metrics, _metadata)): State<(
+        Arc<impl BridgeRequestHandlerTrait + Sync + Send>,
+        Arc<BridgeMetrics>,
+        Arc<BridgeNodePublicMetadata>,
+    )>,
+)-> Result<Json<SignedBridgeAction>, BridgeError> {
+    let future = async {
+        let chain_id = BridgeChainId::try_from(chain_id).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid chain id: {:?}", err))
+        })?;
+
+        let sui_address=SuiAddress::from_str(&addr).map_err(|err| {
+            BridgeError::InvalidBridgeClientRequest(format!("Invalid Sui Address: {:?}", err))
+        })?;
+
+        if !chain_id.is_sui_chain() {
+            return Err(BridgeError::InvalidBridgeClientRequest(
+                "handle_set_bridge_fee_on_cross_in only expects Sui chain id".to_string(),
+            ));
+        }
+        let action = BridgeAction::WithdrawBridgeFeeAction(WithdrawBridgeFeeAction {
+            nonce,
+            chain_id,
+            addr: sui_address,
+            coin_type,
+            amount
+        });
+        let sig: Json<SignedBridgeAction> = handler.handle_governance_action(action).await?;
+        Ok(sig)
+    };
+    with_metrics!(metrics.clone(), "handle_withdraw_bridge_fee", future).await
 
 }
 
