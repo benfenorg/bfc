@@ -5668,6 +5668,9 @@ update_asset_price
 add_tokens_on_sui
 	public fun
 	0xb::message_types
+update_bridge_limit_fast_path
+	public fun
+	0xb::message_types
 add_external_coin_admin
 	public fun
 	0xb::message_types
@@ -5800,6 +5803,9 @@ BridgeMessageKey
 RefundMessageKey
 	public struct
 	0xb::message
+FastPathLimitPayload
+	public struct
+	0xb::message
 TokenTransferPayload
 	public struct
 	0xb::message
@@ -5854,7 +5860,19 @@ ParsedTokenTransferMessageV2
 ParsedTokenTransferInMessage
 	public struct
 	0xb::message
+chain_id
+	public fun
+	0xb::message
+token_id
+	public fun
+	0xb::message
+amount
+	public fun
+	0xb::message
 extract_token_bridge_payload
+	public fun
+	0xb::message
+extract_fast_path_limit_payload
 	public fun
 	0xb::message
 extract_token_bridge_payload_v2
@@ -5924,6 +5942,9 @@ create_blocklist_message
 	public fun
 	0xb::message
 create_refund_admin_message
+	public fun
+	0xb::message
+create_fast_path_limit_message
 	public fun
 	0xb::message
 create_update_bridge_limit_message
