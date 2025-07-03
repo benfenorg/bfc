@@ -29,6 +29,7 @@ title: Module `bridge::bridge`
 -  [Function `init_bridge_committee`](#bridge_bridge_init_bridge_committee)
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `migrate_fast_path_limiter`](#bridge_bridge_migrate_fast_path_limiter)
+-  [Function `initial_external_limits`](#bridge_bridge_initial_external_limits)
 -  [Function `committee_registration`](#bridge_bridge_committee_registration)
 -  [Function `update_node_url`](#bridge_bridge_update_node_url)
 -  [Function `register_foreign_token`](#bridge_bridge_register_foreign_token)
@@ -1353,6 +1354,15 @@ title: Module `bridge::bridge`
 
 
 
+<a name="bridge_bridge_ETransferLimit"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>: u64 = 55;
+</code></pre>
+
+
+
 <a name="bridge_bridge_EUnauthorisedClaim"></a>
 
 
@@ -1679,6 +1689,33 @@ title: Module `bridge::bridge`
 
 </details>
 
+<a name="bridge_bridge_initial_external_limits"></a>
+
+## Function `initial_external_limits`
+
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_initial_external_limits">initial_external_limits</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui/tx_context.md#sui_tx_context_TxContext">sui::tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>entry</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_initial_external_limits">initial_external_limits</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    ctx: &<b>mut</b> TxContext
+) {
+    <a href="../bridge/limiter.md#bridge_limiter_new_external_limits">limiter::new_external_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="bridge_bridge_committee_registration"></a>
 
 ## Function `committee_registration`
@@ -1798,6 +1835,9 @@ title: Module `bridge::bridge`
     <b>assert</b>!(token_amount &gt; 0, <a href="../bridge/bridge.md#bridge_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
     <b>assert</b>!(token_id != 5, <a href="../bridge/bridge.md#bridge_bridge_EUseSendBusd">EUseSendBusd</a>);
     <b>assert</b>!(<a href="../bridge/tokenlist.md#bridge_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(parent_id, target_chain <b>as</b> u64, token_id),<a href="../bridge/bridge.md#bridge_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(token_amount);
+    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_out_limit">limiter::get_external_out_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     // <a href="../bridge/bridge.md#bridge_bridge_create">create</a> <a href="../bridge/bridge.md#bridge_bridge">bridge</a> <a href="../bridge/message.md#bridge_message">message</a>
     <b>let</b> <a href="../bridge/message.md#bridge_message">message</a> = <a href="../bridge/message.md#bridge_message_create_token_bridge_message_v2">message::create_token_bridge_message_v2</a>(
         inner.chain_id,
@@ -2829,7 +2869,7 @@ title: Module `bridge::bridge`
     signatures: vector&lt;vector&lt;u8&gt;&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner, parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
@@ -2849,6 +2889,9 @@ title: Module `bridge::bridge`
     <b>let</b> source_address = token_payload.token_sender_address();
     <b>let</b> target_address = token_payload.token_target_address();
     <b>let</b> amount = token_payload.token_amount();
+    //check <b>if</b> amount is limited
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
+    <b>assert</b>!(amount &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_in_limit">limiter::get_external_in_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
         source_chain,
         source_address,
@@ -3263,7 +3306,7 @@ title: Module `bridge::bridge`
     bridge_seq_num: u64,
     ctx: &<b>mut</b> TxContext,
 ): (Option&lt;Coin&lt;T&gt;&gt;, <b>address</b>) {
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner, parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(!inner.paused, <a href="../bridge/bridge.md#bridge_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>let</b> is_busd = type_name::get&lt;T&gt;() == type_name::get&lt;BUSD&gt;();
     <b>assert</b>!(!is_busd, <a href="../bridge/bridge.md#bridge_bridge_EUseClaimBusd">EUseClaimBusd</a>);
@@ -3301,6 +3344,8 @@ title: Module `bridge::bridge`
         <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedTokenType">EUnexpectedTokenType</a>,
     );
     <b>let</b> amount = token_payload.token_amount_v2();
+    <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount);
+    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_in_limit">limiter::get_external_in_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner
         .<a href="../bridge/limiter.md#bridge_limiter">limiter</a>

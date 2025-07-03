@@ -35,6 +35,7 @@ title: Module `bridge::treasury`
 -  [Function `remove_external_coin_target`](#bridge_treasury_remove_external_coin_target)
 -  [Function `burn`](#bridge_treasury_burn)
 -  [Function `mint`](#bridge_treasury_mint)
+-  [Function `calculate_amount_in_usd`](#bridge_treasury_calculate_amount_in_usd)
 -  [Function `update_asset_notional_price`](#bridge_treasury_update_asset_notional_price)
 -  [Function `get_token_metadata`](#bridge_treasury_get_token_metadata)
 
@@ -1201,6 +1202,33 @@ title: Module `bridge::treasury`
 ): Coin&lt;T&gt; {
     <b>let</b> <a href="../bridge/treasury.md#bridge_treasury">treasury</a> = &<b>mut</b> self.treasuries[type_name::get&lt;T&gt;()];
     coin::mint(<a href="../bridge/treasury.md#bridge_treasury">treasury</a>, amount, ctx)
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_treasury_calculate_amount_in_usd"></a>
+
+## Function `calculate_amount_in_usd`
+
+
+
+<pre><code><b>public</b>(package) <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_calculate_amount_in_usd">calculate_amount_in_usd</a>&lt;T&gt;(<a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">bridge::treasury::BridgeTreasury</a>, amount: u64): u64
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b>(package)  <b>fun</b> <a href="../bridge/treasury.md#bridge_treasury_calculate_amount_in_usd">calculate_amount_in_usd</a>&lt;T&gt;(
+    <a href="../bridge/treasury.md#bridge_treasury">treasury</a>: &<a href="../bridge/treasury.md#bridge_treasury_BridgeTreasury">BridgeTreasury</a>,
+    amount: u64): u64 {
+    <b>let</b> metadata = <a href="../bridge/treasury.md#bridge_treasury">treasury</a>.<a href="../bridge/treasury.md#bridge_treasury_get_token_metadata">get_token_metadata</a>&lt;T&gt;();
+    ((amount <b>as</b> u128) * (metadata.<a href="../bridge/treasury.md#bridge_treasury_notional_value">notional_value</a> <b>as</b> u128) / (metadata.<a href="../bridge/treasury.md#bridge_treasury_decimal_multiplier">decimal_multiplier</a> <b>as</b> u128)) <b>as</b> u64
 }
 </code></pre>
 

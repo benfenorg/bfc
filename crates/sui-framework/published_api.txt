@@ -6265,6 +6265,9 @@ burn
 mint
 	public(package) fun
 	0xb::treasury
+calculate_amount_in_usd
+	public(package) fun
+	0xb::treasury
 update_asset_notional_price
 	public(package) fun
 	0xb::treasury
@@ -6436,6 +6439,9 @@ adjust_user_limit_records
 TransferLimiter
 	public struct
 	0xb::limiter
+ExternalLimiter
+	public struct
+	0xb::limiter
 TransferRecord
 	public struct
 	0xb::limiter
@@ -6452,6 +6458,27 @@ set_mint_busd_max_limit
 	public(package) fun
 	0xb::limiter
 new
+	public(package) fun
+	0xb::limiter
+new_external_limits
+	public(package) fun
+	0xb::limiter
+initial_external_limits
+	public(package) fun
+	0xb::limiter
+get_external_limiter
+	public(package) fun
+	0xb::limiter
+add_external_in_limit
+	public(package) fun
+	0xb::limiter
+add_external_out_limit
+	public(package) fun
+	0xb::limiter
+get_external_in_limit
+	public(package) fun
+	0xb::limiter
+get_external_out_limit
 	public(package) fun
 	0xb::limiter
 get_available_claim_amount
@@ -6587,6 +6614,9 @@ migrate
 	public entry fun
 	0xb::bridge
 migrate_fast_path_limiter
+	public entry fun
+	0xb::bridge
+initial_external_limits
 	public entry fun
 	0xb::bridge
 committee_registration
