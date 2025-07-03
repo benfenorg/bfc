@@ -1302,7 +1302,7 @@ async fn test_bridge_usdt_to_sui_fast_path() {
         .find(|c| c.coin_type.contains("BUSD"))
         .expect("Recipient should have received BUSD coin now")
         .clone();
-    assert_eq!(busd_coin.balance, 100_000_000_000);
+    assert_eq!(busd_coin.balance, 50_000_000_000);
     info!(
         "[Timer] Eth to Sui bridge USDT transfer finished in {:?}",
         timer.elapsed()

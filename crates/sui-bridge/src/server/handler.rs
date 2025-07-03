@@ -129,16 +129,27 @@ where
     async fn verify(&self, key: (u8, TxHash, u16, u8)) -> BridgeResult<BridgeAction> {
         let (chain_id, tx_hash, event_idx, fast_path_selector) = key;
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
+        let fast_path_selector = FastPathSelector::try_from_primitive(fast_path_selector).unwrap();
         match bridge_chain_id {
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
             BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                 unreachable!()
             }
             BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
-                self.eth_client
-                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone(), Some(FastPathSelector::try_from_primitive(fast_path_selector).unwrap()))
+                let action = self.eth_client
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone(), Some(fast_path_selector))
                     .await
-                    .tap_ok(|action| info!("Eth action found: {:?}", action))
+                    .tap_ok(|action| info!("Eth action found: {:?}", action));
+                if let Err(e) = action {
+                    return Err(e);
+                }
+                let action = action.unwrap();
+                let mut action_clone = action.clone();
+                if let BridgeAction::EthToSuiBridgeAction(ref mut action_inner) = action_clone {
+                    action_inner.eth_bridge_event.set_fast_path_selector(fast_path_selector);
+                };
+                info!("bbking action_clone mut: {:?}", action_clone);
+                Ok(action_clone)
             }
 
             // Add all other evm chains here
@@ -155,10 +166,20 @@ where
                 }
 
                 let client = client.unwrap();
-                client
-                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone(), Some(FastPathSelector::try_from_primitive(fast_path_selector).unwrap()))
+                let action = client
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone(), Some(fast_path_selector))
                     .await
-                    .tap_ok(|action| info!("ERC20 action found: {:?}", action))
+                    .tap_ok(|action| info!("ERC20 action found: {:?}", action));
+                if let Err(e) = action {
+                    return Err(e);
+                }
+                let action = action.unwrap();
+                let mut action_clone = action.clone();
+                if let BridgeAction::EthToSuiBridgeAction(ref mut action_inner) = action_clone {
+                    action_inner.eth_bridge_event.set_fast_path_selector(fast_path_selector);
+                };
+                info!("bbking action_clone mut: {:?}", action_clone);
+                Ok(action_clone)
             }
         }
     }

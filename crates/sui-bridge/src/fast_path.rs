@@ -40,6 +40,10 @@ impl FastPathSelector {
         }
     }
 
+    pub fn faster(self,other:FastPathSelector) -> bool {
+        (self as u8) < (other as u8)
+    }
+
     pub fn select_by_action(bridge_action:BridgeAction,config:&FastPathConfig) -> FastPathSelector {
         match bridge_action {
             BridgeAction::EthToSuiBridgeAction(action) => {

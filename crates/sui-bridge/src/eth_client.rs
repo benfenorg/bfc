@@ -15,7 +15,7 @@ use ethers::types::{TxHash, U256};
 use ethers::types::{Block, Filter};
 use sui_types::bridge::BridgeChainId;
 use tap::TapFallible;
-use tracing::info;
+use tracing::{error, info};
 
 #[cfg(test)]
 use crate::eth_mock_provider::EthMockProvider;
@@ -185,6 +185,11 @@ where
         if receipt_block_num.as_u64() > last_block_id {
             info!("bbking tx not finalized,expect {:?} actual {:?}", last_block_id, receipt_block_num.as_u64());
             return Err(BridgeError::TxNotFinalized);
+        }
+        let fast_path_selector_by_action = FastPathSelector::select_by_action(bridge_action.clone(), &fast_path_config);
+        if fast_path_selector.faster(fast_path_selector_by_action) {
+            error!("fast path too fast, expect {:?} actual {:?}", fast_path_selector_by_action, fast_path_selector);
+            return Err(BridgeError::FastPathTooFast);
         }
 
         Ok(bridge_action)
