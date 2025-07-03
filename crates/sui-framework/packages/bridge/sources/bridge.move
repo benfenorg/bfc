@@ -166,6 +166,7 @@ module bridge::bridge {
     const EInvalidMinStakeParticipationPercentage: u64 = 50;
     const EFastPathLimitError: u64 = 51;
     const EOnlySupportTokenTransferIn: u64 = 52;
+    const ETransferLimit: u64 = 55;
 
     const CURRENT_VERSION: u64 = 1;
 
@@ -334,6 +335,14 @@ module bridge::bridge {
         limiter_fast_path::registry(&mut bridge.id, ctx);
     }
 
+    public entry fun initial_external_limits(
+        bridge: &mut Bridge,
+        ctx: &mut TxContext
+    ) {
+        limiter::new_external_limits(&mut bridge.id, ctx);
+    }
+
+
     //////////////////////////////////////////////////////
     // Public functions
     //
@@ -387,6 +396,9 @@ module bridge::bridge {
 
         assert!(tokenlist::is_supported_from_benfen(parent_id, target_chain as u64, token_id),EInvalidChainIDAndTokenIDExpect);
 
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(token_amount);
+        assert!(amount_in_usd < limiter::get_external_out_limit(parent_id, &route), ETransferLimit);
         // create bridge message
         let message = message::create_token_bridge_message_v2(
             inner.chain_id,
@@ -952,7 +964,7 @@ module bridge::bridge {
             inner.execute_remove_external_coin_target_payload(payload);
         }else if  (message_type == message_types::update_bridge_limit_fast_path()){
             let payload = message.extract_fast_path_limit_payload();
-            limiter_fast_path::add_limiter(uid, payload.chain_id(),payload.token_id(),payload.amount());            
+            limiter_fast_path::add_limiter(uid, payload.chain_id(),payload.token_id(),payload.amount());
         }else {
             abort EUnexpectedMessageType
         };
@@ -1138,7 +1150,7 @@ module bridge::bridge {
         signatures: vector<vector<u8>>,
         ctx: &mut TxContext
     ) {
-        let inner = load_inner_mut(bridge);
+        let (inner, parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
 
         // verify signatures
@@ -1161,6 +1173,9 @@ module bridge::bridge {
         let source_address = token_payload.token_sender_address();
         let target_address = token_payload.token_target_address();
         let amount = token_payload.token_amount();
+        //check if amount is limited
+        let route = chain_ids::get_route(source_chain, target_chain);
+        assert!(amount < limiter::get_external_in_limit(parent_id, &route), ETransferLimit);
         let key = ExternalBridgeMessageKey{
             source_chain,
             source_address,
@@ -1411,7 +1426,7 @@ module bridge::bridge {
         bridge_seq_num: u64,
         ctx: &mut TxContext,
     ): (Option<Coin<T>>, address) {
-        let inner = load_inner_mut(bridge);
+        let (inner, parent_id) = load_inner_mut_and_uid(bridge);
         assert!(!inner.paused, EBridgeUnavailable);
         let is_busd = type_name::get<T>() == type_name::get<BUSD>();
         assert!(!is_busd, EUseClaimBusd);
@@ -1455,6 +1470,8 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_v2();
+        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount);
+        assert!(amount_in_usd < limiter::get_external_in_limit(parent_id, &route), ETransferLimit);
         // Make sure transfer is within limit.
         if (!inner
             .limiter

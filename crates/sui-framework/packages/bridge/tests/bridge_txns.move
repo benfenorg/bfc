@@ -251,6 +251,7 @@ fun test_blocklist() {
     env.register_committee();
     env.init_committee(sender);
     env.setup_treasury(sender);
+    env.init_external_limiter(sender);
 
     let source_chain = chain_ids::eth_custom();
     let sui_address = @0xABCDEF;
@@ -266,7 +267,7 @@ fun test_blocklist() {
     );
     let signatures = env.sign_message_with(message, vector[0, 2]);
     let transfer_id = message.seq_num();
-    assert!(env.approve_token_transfer(message, signatures) == approved());
+    assert!(env.approve_token_transfer_v2(message, signatures) == approved());
     assert!(
         env.claim_and_transfer_token<ETH>(source_chain, transfer_id) ==
         claimed(),
