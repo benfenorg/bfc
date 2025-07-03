@@ -39,6 +39,9 @@ impl ActionVerifier<BridgeAction> for GovernanceVerifier {
         if !key.is_governace_action() {
             return Err(BridgeError::ActionIsNotGovernanceAction(key));
         }
+        if let BridgeAction::AssetPriceUpdateAction(_) = key {
+            return Ok(key);
+        }
         if let Some(approved_action) = self.approved_goverance_actions.get(&key.digest()) {
             assert_eq!(
                 &key, approved_action,

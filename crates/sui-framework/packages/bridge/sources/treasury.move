@@ -421,6 +421,14 @@ module bridge::treasury {
         coin::mint(treasury, amount, ctx)
     }
 
+    public(package)  fun calculate_amount_in_usd<T>(
+        treasury: &BridgeTreasury,
+        amount: u64): u64 {
+        let metadata = treasury.get_token_metadata<T>();
+        ((amount as u128) * (metadata.notional_value as u128) / (metadata.decimal_multiplier as u128)) as u64
+    }
+
+
     public(package) fun update_asset_notional_price(
         self: &mut BridgeTreasury,
         token_id: u64,

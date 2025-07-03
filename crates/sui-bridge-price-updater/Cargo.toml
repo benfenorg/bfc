@@ -1,0 +1,20 @@
+[package]
+name = "sui-bridge-price-updater"
+edition = "2021"
+version.workspace = true
+
+[dependencies]
+tokio = { workspace = true, features = ["full"] }
+anyhow.workspace = true
+clap.workspace = true
+reqwest.workspace = true
+serde_json.workspace = true
+sui-bridge.workspace = true
+tracing.workspace = true
+
+[lints]
+workspace = true
+
+[[bin]]
+name = "bridge-price-updater"
+path = "src/main.rs"

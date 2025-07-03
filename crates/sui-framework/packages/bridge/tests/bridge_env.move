@@ -338,6 +338,7 @@ module bridge::bridge_env {
         env.init_committee(sender);
         env.add_tokenlist(sender);
         env.setup_treasury(sender);
+        env.init_external_limiter(sender);
         env.add_refund_admin(@0xABCD)
     }
 
@@ -411,6 +412,15 @@ module bridge::bridge_env {
         env.register_default_tokens(sender);
         env.add_default_tokens(sender);
         env.load_vault(sender);
+    }
+
+    //Initialize the external limiter for the Bridge.
+    public fun init_external_limiter(env: &mut BridgeEnv, sender: address) {
+        let scenario = &mut env.scenario;
+        scenario.next_tx(sender);
+        let mut bridge = scenario.take_shared<Bridge>();
+        bridge.initial_external_limits(scenario.ctx());
+        test_scenario::return_shared(bridge);
     }
 
     // Register 4 tokens with the Bridge: ETH, BTC, USDT, USDC, BNB.
