@@ -267,7 +267,7 @@ fun test_blocklist() {
     );
     let signatures = env.sign_message_with(message, vector[0, 2]);
     let transfer_id = message.seq_num();
-    assert!(env.approve_token_transfer_v2(message, signatures) == approved());
+    assert!(env.approve_token_transfer(message, signatures) == approved());
     assert!(
         env.claim_and_transfer_token<ETH>(source_chain, transfer_id) ==
         claimed(),
