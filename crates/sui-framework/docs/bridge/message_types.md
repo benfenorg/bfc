@@ -11,6 +11,7 @@ title: Module `bridge::message_types`
 -  [Function `update_bridge_limit`](#bridge_message_types_update_bridge_limit)
 -  [Function `update_asset_price`](#bridge_message_types_update_asset_price)
 -  [Function `add_tokens_on_sui`](#bridge_message_types_add_tokens_on_sui)
+-  [Function `update_bridge_limit_fast_path`](#bridge_message_types_update_bridge_limit_fast_path)
 -  [Function `add_external_coin_admin`](#bridge_message_types_add_external_coin_admin)
 -  [Function `remove_external_coin_admin`](#bridge_message_types_remove_external_coin_admin)
 -  [Function `refund_admin_operate`](#bridge_message_types_refund_admin_operate)
@@ -146,6 +147,15 @@ title: Module `bridge::message_types`
 
 
 
+<a name="bridge_message_types_UPDATE_BRIDGE_LIMIT_FAST_PATH"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/message_types.md#bridge_message_types_UPDATE_BRIDGE_LIMIT_FAST_PATH">UPDATE_BRIDGE_LIMIT_FAST_PATH</a>: u8 = 9;
+</code></pre>
+
+
+
 <a name="bridge_message_types_token"></a>
 
 ## Function `token`
@@ -272,6 +282,28 @@ title: Module `bridge::message_types`
 
 
 <pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_add_tokens_on_sui">add_tokens_on_sui</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_ADD_TOKENS_ON_SUI">ADD_TOKENS_ON_SUI</a> }
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_message_types_update_bridge_limit_fast_path"></a>
+
+## Function `update_bridge_limit_fast_path`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_update_bridge_limit_fast_path">update_bridge_limit_fast_path</a>(): u8
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/message_types.md#bridge_message_types_update_bridge_limit_fast_path">update_bridge_limit_fast_path</a>(): u8 { <a href="../bridge/message_types.md#bridge_message_types_UPDATE_BRIDGE_LIMIT_FAST_PATH">UPDATE_BRIDGE_LIMIT_FAST_PATH</a> }
 </code></pre>
 
 

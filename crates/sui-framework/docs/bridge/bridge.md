@@ -2222,7 +2222,7 @@ title: Module `bridge::bridge`
     // verify signatures
     inner.<a href="../bridge/committee.md#bridge_committee">committee</a>.verify_signatures(<a href="../bridge/message.md#bridge_message">message</a>, signatures);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_type() == <a href="../bridge/message_types.md#bridge_message_types_token">message_types::token</a>(), <a href="../bridge/bridge.md#bridge_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
-    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION_V2">MESSAGE_VERSION_V2</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
     <b>let</b> token_payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_token_bridge_payload_v2();
     <b>let</b> target_chain = token_payload.token_target_chain_v2();
     <b>assert</b>!(
@@ -2534,7 +2534,7 @@ title: Module `bridge::bridge`
     <b>let</b> message_type = <a href="../bridge/message.md#bridge_message">message</a>.message_type();
     // TODO: test version mismatch
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.message_version() == <a href="../bridge/bridge.md#bridge_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
-    <b>let</b> inner = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> (inner, uid) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
     <b>assert</b>!(<a href="../bridge/message.md#bridge_message">message</a>.source_chain() == inner.chain_id, <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedChainID">EUnexpectedChainID</a>);
     // check system ops seq number and increment it
     <b>let</b> expected_seq_num = inner.<a href="../bridge/bridge.md#bridge_bridge_get_current_seq_num_and_increment">get_current_seq_num_and_increment</a>(message_type);
@@ -2576,6 +2576,9 @@ title: Module `bridge::bridge`
     }<b>else</b> <b>if</b>  (message_type == <a href="../bridge/message_types.md#bridge_message_types_remove_external_coin_target">message_types::remove_external_coin_target</a>()){
         <b>let</b> payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_remove_external_target_address_poyload();
         inner.<a href="../bridge/bridge.md#bridge_bridge_execute_remove_external_coin_target_payload">execute_remove_external_coin_target_payload</a>(payload);
+    }<b>else</b> <b>if</b>  (message_type == <a href="../bridge/message_types.md#bridge_message_types_update_bridge_limit_fast_path">message_types::update_bridge_limit_fast_path</a>()){
+        <b>let</b> payload = <a href="../bridge/message.md#bridge_message">message</a>.extract_fast_path_limit_payload();
+        <a href="../bridge/limiter_fast_path.md#bridge_limiter_fast_path_add_limiter">limiter_fast_path::add_limiter</a>(uid, payload.chain_id(),payload.token_id(),payload.amount());
     }<b>else</b> {
         <b>abort</b> <a href="../bridge/bridge.md#bridge_bridge_EUnexpectedMessageType">EUnexpectedMessageType</a>
     };

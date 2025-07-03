@@ -715,7 +715,7 @@ module bridge::bridge {
         inner.committee.verify_signatures(message, signatures);
 
         assert!(message.message_type() == message_types::token(), EMustBeTokenMessage);
-        assert!(message.message_version() == MESSAGE_VERSION_V2, EUnexpectedMessageVersion);
+        assert!(message.message_version() == MESSAGE_VERSION, EUnexpectedMessageVersion);
         let token_payload = message.extract_token_bridge_payload_v2();
         let target_chain = token_payload.token_target_chain_v2();
         assert!(
