@@ -27,6 +27,7 @@ title: Module `0xb::bridge`
 -  [Function `create`](#0xb_bridge_create)
 -  [Function `init_bridge_committee`](#0xb_bridge_init_bridge_committee)
 -  [Function `migrate`](#0xb_bridge_migrate)
+-  [Function `init_token_list`](#0xb_bridge_init_token_list)
 -  [Function `committee_registration`](#0xb_bridge_committee_registration)
 -  [Function `update_node_url`](#0xb_bridge_update_node_url)
 -  [Function `register_foreign_token`](#0xb_bridge_register_foreign_token)
@@ -45,6 +46,8 @@ title: Module `0xb::bridge`
 -  [Function `pre_deposit_external_coin`](#0xb_bridge_pre_deposit_external_coin)
 -  [Function `deposit_external_coin`](#0xb_bridge_deposit_external_coin)
 -  [Function `approval_and_claimed_external_coin`](#0xb_bridge_approval_and_claimed_external_coin)
+-  [Function `approval_and_claimed_external_busd_coin`](#0xb_bridge_approval_and_claimed_external_busd_coin)
+-  [Function `withdraw_external_busd_coin`](#0xb_bridge_withdraw_external_busd_coin)
 -  [Function `withdraw_external_coin`](#0xb_bridge_withdraw_external_coin)
 -  [Function `get_token_transfer_action_status`](#0xb_bridge_get_token_transfer_action_status)
 -  [Function `get_external_token_transfer_action_status`](#0xb_bridge_get_external_token_transfer_action_status)
@@ -1130,6 +1133,24 @@ title: Module `0xb::bridge`
 
 
 
+<a name="0xb_bridge_TOKEN_ID_USDC"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 3;
+</code></pre>
+
+
+
+<a name="0xb_bridge_TOKEN_ID_USDT"></a>
+
+
+
+<pre><code><b>const</b> <a href="bridge.md#0xb_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>: <a href="../move-stdlib/u64.md#0x1_u64">u64</a> = 4;
+</code></pre>
+
+
+
 <a name="0xb_bridge_EBridgeAlreadyPaused"></a>
 
 
@@ -1561,6 +1582,33 @@ title: Module `0xb::bridge`
 
 
 <pre><code><b>public</b> entry <b>fun</b> <a href="bridge.md#0xb_bridge_migrate">migrate</a>(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    ctx: &<b>mut</b> TxContext
+){
+    <a href="tokenlist.md#0xb_tokenlist_add_center_token_list">tokenlist::add_center_token_list</a>(&<b>mut</b> <a href="bridge.md#0xb_bridge">bridge</a>.id, ctx);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_init_token_list"></a>
+
+## Function `init_token_list`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_init_token_list">init_token_list</a>(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_init_token_list">init_token_list</a>(
     <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
     ctx: &<b>mut</b> TxContext
 ){
@@ -2609,6 +2657,167 @@ title: Module `0xb::bridge`
 
 </details>
 
+<a name="0xb_bridge_approval_and_claimed_external_busd_coin"></a>
+
+## Function `approval_and_claimed_external_busd_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_approval_and_claimed_external_busd_coin">approval_and_claimed_external_busd_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, <a href="message.md#0xb_message">message</a>: <a href="message.md#0xb_message_BridgeMessage">message::BridgeMessage</a>, signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt;, bfc_system_state: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, cap: &<a href="../bfc-system/bfc_system_state_inner.md#0xc8_bfc_system_state_inner_BfcSystemModifyCap">bfc_system_state_inner::BfcSystemModifyCap</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_approval_and_claimed_external_busd_coin">approval_and_claimed_external_busd_coin</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    <a href="message.md#0xb_message">message</a>: BridgeMessage,
+    signatures: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;<a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;&gt;,
+    bfc_system_state: &<b>mut</b> BfcSystemState,
+    cap: &BfcSystemModifyCap,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+
+    // verify signatures
+    inner.<a href="committee.md#0xb_committee">committee</a>.verify_signatures(<a href="message.md#0xb_message">message</a>, signatures);
+
+    <b>assert</b>!(<a href="message.md#0xb_message">message</a>.message_type() == <a href="message_types.md#0xb_message_types_token">message_types::token</a>(), <a href="bridge.md#0xb_bridge_EMustBeTokenMessage">EMustBeTokenMessage</a>);
+    <b>assert</b>!(<a href="message.md#0xb_message">message</a>.message_version() == <a href="bridge.md#0xb_bridge_MESSAGE_VERSION">MESSAGE_VERSION</a>, <a href="bridge.md#0xb_bridge_EUnexpectedMessageVersion">EUnexpectedMessageVersion</a>);
+    <b>let</b> token_payload = <a href="message.md#0xb_message">message</a>.extract_token_bridge_payload();
+    <b>let</b> target_chain = token_payload.token_target_chain();
+    <b>assert</b>!(
+        <a href="message.md#0xb_message">message</a>.source_chain() == inner.chain_id || target_chain == inner.chain_id,
+        <a href="bridge.md#0xb_bridge_EUnexpectedChainID">EUnexpectedChainID</a>,
+    );
+
+    <b>let</b> coin_type = <a href="../move-stdlib/type_name.md#0x1_type_name_into_string">type_name::into_string</a>(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;());
+    // check records
+    <b>let</b> tx_hash = <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(token_payload.token_tx_hash());
+    <b>let</b> source_chain = <a href="message.md#0xb_message">message</a>.source_chain();
+    <b>let</b> target_chain = token_payload.token_target_chain();
+    <b>let</b> source_address = token_payload.token_sender_address();
+    <b>let</b> target_address = token_payload.token_target_address();
+    <b>let</b> amount = token_payload.token_amount();
+    <b>let</b> key = <a href="bridge.md#0xb_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
+        source_chain,
+        source_address,
+        target_address,
+        amount,
+        tx_hash,
+    };
+    <b>if</b> (inner.external_bridge_records.contains(key)) {
+        emit(<a href="bridge.md#0xb_bridge_ExternalDepositedApprovedEvent">ExternalDepositedApprovedEvent</a>{
+            tx_hash,
+            coin_type,
+            source_chain: source_chain,
+            target_chain: target_chain,
+            source_address: source_address,
+            target_address: target_address,
+            amount: token_payload.token_amount(),
+        });
+
+        <b>return</b>
+    };
+
+    bfc_system_state.mint_stable_entry_to_address&lt;BUSD&gt;(amount, cap, address::from_bytes(target_address), ctx);
+
+    inner.external_bridge_records.push_back(
+        key,
+        <a href="bridge.md#0xb_bridge_ExternalBridgeRecord">ExternalBridgeRecord</a> {
+            source_chain,
+            target_chain: inner.chain_id,
+            source_address,
+            target_address,
+            amount,
+            verified_signatures: <a href="../move-stdlib/option.md#0x1_option_some">option::some</a>(signatures),
+            claimed: <b>true</b>,
+        },
+    );
+
+    emit(
+        <a href="bridge.md#0xb_bridge_ExternalDepositedEvent">ExternalDepositedEvent</a> {
+            tx_hash,
+            coin_type,
+            source_chain,
+            target_chain: inner.chain_id,
+            source_address,
+            target_address,
+            amount,
+        },
+    )
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="0xb_bridge_withdraw_external_busd_coin"></a>
+
+## Function `withdraw_external_busd_coin`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_busd_coin">withdraw_external_busd_coin</a>&lt;T&gt;(<a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">bridge::Bridge</a>, target_chain: u8, target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;, token: <a href="../sui-framework/coin.md#0x2_coin_Coin">coin::Coin</a>&lt;T&gt;, token_id_expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, bfc_system_state: &<b>mut</b> <a href="../bfc-system/bfc_system.md#0xc8_bfc_system_BfcSystemState">bfc_system::BfcSystemState</a>, ctx: &<b>mut</b> <a href="../sui-framework/tx_context.md#0x2_tx_context_TxContext">tx_context::TxContext</a>)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="bridge.md#0xb_bridge_withdraw_external_busd_coin">withdraw_external_busd_coin</a>&lt;T&gt;(
+    <a href="bridge.md#0xb_bridge">bridge</a>: &<b>mut</b> <a href="bridge.md#0xb_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    target_address: <a href="../move-stdlib/vector.md#0x1_vector">vector</a>&lt;u8&gt;,
+    token: Coin&lt;T&gt;,
+    token_id_expect: <a href="../move-stdlib/u64.md#0x1_u64">u64</a>,
+    bfc_system_state: &<b>mut</b> BfcSystemState,
+    ctx: &<b>mut</b> TxContext
+) {
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        &<a href="bridge.md#0xb_bridge">bridge</a>.id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id_expect),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+    <b>assert</b>!(token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a> || token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDT">TOKEN_ID_USDT</a>, <a href="bridge.md#0xb_bridge_EInvalidTokenIdExpect">EInvalidTokenIdExpect</a>);
+    <b>assert</b>!(<a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;T&gt;() == <a href="../move-stdlib/type_name.md#0x1_type_name_get">type_name::get</a>&lt;BUSD&gt;(), <a href="bridge.md#0xb_bridge_EOnlySupportBusd">EOnlySupportBusd</a>);
+    <b>let</b> coin_type = <b>if</b> (token_id_expect == <a href="bridge.md#0xb_bridge_TOKEN_ID_USDC">TOKEN_ID_USDC</a>) {
+                                <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"USDC")
+                            } <b>else</b> {
+                                <a href="../move-stdlib/ascii.md#0x1_ascii_string">ascii::string</a>(b"USDT")
+                            };
+
+    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
+    <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
+
+    <b>let</b> amount = token.<a href="../sui-framework/balance.md#0x2_balance">balance</a>().value();
+    <b>assert</b>!(amount &gt; 0, <a href="bridge.md#0xb_bridge_ETokenValueIsZero">ETokenValueIsZero</a>);
+
+    bfc_system_state.burn_stable(token, ctx);
+
+    // emit <a href="../sui-framework/event.md#0x2_event">event</a>
+    emit(
+        <a href="bridge.md#0xb_bridge_ExternalWithdrawEvent">ExternalWithdrawEvent</a> {
+            coin_type,
+            source_chain: inner.chain_id,
+            target_chain,
+            source_address: address::to_bytes(ctx.sender()),
+            target_address,
+            amount,
+        },
+    );
+}
+</code></pre>
+
+
+
+</details>
+
 <a name="0xb_bridge_withdraw_external_coin"></a>
 
 ## Function `withdraw_external_coin`
@@ -2631,7 +2840,11 @@ title: Module `0xb::bridge`
     token: Coin&lt;T&gt;,
     ctx: &<b>mut</b> TxContext
 ) {
-    <b>let</b> inner = <a href="bridge.md#0xb_bridge_load_inner_mut">load_inner_mut</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> (inner,parent_id) = <a href="bridge.md#0xb_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="bridge.md#0xb_bridge">bridge</a>);
+    <b>let</b> token_id=treasury::token_id&lt;T&gt;(&inner.<a href="../bfc-system/treasury.md#0xc8_treasury">treasury</a>);
+    <b>assert</b>!(<a href="tokenlist.md#0xb_tokenlist_is_supported_from_benfen">tokenlist::is_supported_from_benfen</a>(
+        parent_id, target_chain <b>as</b> <a href="../move-stdlib/u64.md#0x1_u64">u64</a>, token_id),<a href="bridge.md#0xb_bridge_EInvalidChainIDAndTokenIDExpect">EInvalidChainIDAndTokenIDExpect</a>);
+
     <b>assert</b>!(!inner.paused, <a href="bridge.md#0xb_bridge_EBridgeUnavailable">EBridgeUnavailable</a>);
     <b>assert</b>!(<a href="chain_ids.md#0xb_chain_ids_is_valid_route">chain_ids::is_valid_route</a>(inner.chain_id, target_chain), <a href="bridge.md#0xb_bridge_EInvalidBridgeRoute">EInvalidBridgeRoute</a>);
 

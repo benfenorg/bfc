@@ -3,7 +3,7 @@ source: crates/sui-swarm-config/tests/snapshot_tests.rs
 expression: genesis.sui_system_object().into_genesis_version_for_tooling()
 ---
 epoch: 0
-protocol_version: 72
+protocol_version: 73
 system_state_version: 1
 validators:
   total_stake: 200000000000000
@@ -240,13 +240,13 @@ validators:
         next_epoch_worker_address: ~
         extra_fields:
           id:
-            id: BFC79e860c316b20b743acaaede7a62ee836e25da95749fe484028b34ad0f5be1a0b6db
+            id: BFCf95ba949eb80a8764fffdb4d4e686211e592c6948aecd4a22b7a45f2d28bb017e326
           size: 0
       voting_power: 10000
-      operation_cap_id: BFC7cd4ee8cea0c947b1061df59641930dabac3cf6a862d1262c49ee9f3c4beaef69c98
+      operation_cap_id: BFCb4bee88efe62d55091a4a65b85caab254cb9d80b4e7c0d60e0e60032a18ed165b707
       gas_price: 100
       staking_pool:
-        id: BFCbda332d7225370e45b06de47a6b749c0a12664c775502f224e73f767f265807a074e
+        id: BFC7f92a1fd95989d3ab40715e60d1f694b187bf1b3f631f54359d71af47ca8473e6449
         activation_epoch: 0
         deactivation_epoch: ~
         sui_balance: 200000000000000
@@ -254,18 +254,18 @@ validators:
           value: 0
         pool_token_balance: 200000000000000
         exchange_rates:
-          id: BFCda2eea88b4e45748939c9446198cd4b7fdb67598ae6863ae8b58ee3f1f5548dff42b
+          id: BFC50812238950956c0b70ef08314f4edc1176c8b4fb3deca1155f1a13bf4eabbff11f7
           size: 1
         pending_stake: 0
         pending_total_sui_withdraw: 0
         pending_pool_token_withdraw: 0
         extra_fields:
           id:
-            id: BFC73ee834153bad6b425ef886c87f870eb3c701a845a6cf23e137d8fc13c9113c1e4e5
+            id: BFCa9d1bd40ee8204cee4ba49f105bc8075d822e2941097545b5ec717eac2677c4a2175
           size: 0
       stable_pools:
         id:
-          id: BFC7e03ef8315813112c2c5132fe830463ef53e3d59ad3c21d54a18e87aa8c2c1a0165f
+          id: BFCe6b46f07661172debde9be792b165430c9ec1921bc1c4fd6c08aee047f98450e1cae
         size: 17
       commission_rate: 200
       next_epoch_stake: 200000000000000
@@ -275,18 +275,18 @@ validators:
       next_epoch_commission_rate: 200
       extra_fields:
         id:
-          id: BFC359d9e4752c346150c224d07210f1a92818c1bea9d5a160a7c40e4825e703c5dba40
+          id: BFC186938f6679721c8c8e834c8387b146fa27f3d93c7f4035a181ed57c8558682a6da8
         size: 0
   pending_active_validators:
     contents:
-      id: BFCb0cd1604a3fdf3ba8bb1d9ce004c234b2a7c0497a9e9e9fa5e383c938ed8a7c140c8
+      id: BFC37a0387f980b1236c43682d7f810e75886b3e3fb43c65ac9b6751cbe6eb92e4c39de
       size: 0
   pending_removals: []
   staking_pool_mappings:
-    id: BFC3ad3d0def3c7b2e88470d08db54fde18983572c83247945b84ace39de2dc4585d991
+    id: BFC036e7697901b7b3f858267094accaeedfeac259ee7506de1a4a92cb0b5715f0ebb03
     size: 1
   stable_pool_mappings:
-    id: BFCaddadc638182f02a032c047f39cb026a45ac663a2c9aa8b8cef55a13c3991d8c374e
+    id: BFCc890279d83bbe6bad6f3a8e544f0eaa901d416cb8aa3efb3d35c7cf3544e74ff5e14
     size: 17
   last_epoch_stable_rate:
     contents:
@@ -325,19 +325,19 @@ validators:
       - key: "00000000000000000000000000000000000000000000000000000000000000c8::mgg::MGG"
         value: 1000000000
   inactive_validators:
-    id: BFC42fe06b563a38cc74f52a5fb91412ca7b5d3bb2a998043c5d32e0115becb2a74b8fe
+    id: BFCb5d5991c9568ee942001512a2ab82eb1f37768b86db4d132d0117010e0cc47075013
     size: 0
   inactive_validators_pool_mappings:
-    id: BFC0aeb760b9083972bf9230c0e66a4ed9457c9d31d57712e8f40cd5809898743048e4c
+    id: BFC5d2956a93c62ae3b77c6af32b146f6a10e28fdd83142286cc897fe596c36c18a314d
     size: 0
   validator_candidates:
-    id: BFC3124518899a3f4341ddc33a67f4e6efb92e79e15e9cb17d249b263baf14b64a61b77
+    id: BFCde498384e2e340a163f82dcc2840b23a5b102108ad1c2ecede5b1e07096000fe3a15
     size: 0
   at_risk_validators:
     contents: []
   extra_fields:
     id:
-      id: BFC214aae0c053ab06ae4e3dd6cc92d88ad0c99cd5378704e2116357c1d2f76a552cdee
+      id: BFC3f537abf8040720182e0d9415b803bc8d6a45802a06d4a751ea0b57bd6bb5f4e08eb
     size: 0
 storage_fund:
   total_object_storage_rebates:
@@ -354,7 +354,7 @@ parameters:
   validator_low_stake_grace_period: 7
   extra_fields:
     id:
-      id: BFC5a1b5ee103e79dc2d65a64f9e170b2abc61138d0e9c53576092a75596b2930ed38aa
+      id: BFC94585a923c6f73111e47405170b52afeaa8936c65b14bac6da377d1464aa6275de09
     size: 0
 reference_gas_price: 100
 validator_report_records:
@@ -368,7 +368,7 @@ stake_subsidy:
   stake_subsidy_decrease_rate: 0
   extra_fields:
     id:
-      id: BFC5be5c234c09336acb677d81110730e50b2334c7840f47d339d2e02dde8227ec1f149
+      id: BFC3bb61bb3209d17908ec0a8dc85e6d1983a6284bf3b419b6b00051e2a858cd2a1138a
     size: 0
 safe_mode: false
 safe_mode_storage_rewards:
@@ -380,5 +380,5 @@ safe_mode_non_refundable_storage_fee: 0
 epoch_start_timestamp_ms: 10
 extra_fields:
   id:
-    id: BFC9a459804b43e4c6713e17a0718e85862781141652df2d359af6fd367e8c8eab5e0bb
+    id: BFC92130e282d26bf250326db5dbb1b001a28d77e0402ed326a8b31cede95a2098aacce
   size: 0

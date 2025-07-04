@@ -7,6 +7,7 @@ use std::{collections::HashMap, str::FromStr};
 use sui_types::bridge::{
     BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME,
     BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME, BRIDGE_MESSAGE_MODULE_NAME, BRIDGE_MODULE_NAME,BRIDGE_ADD_TOKENLIST_FUNCTION_NAME,
+    BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME,
 };
 use sui_types::transaction::CallArg;
 use sui_types::{
@@ -60,6 +61,7 @@ pub fn build_sui_transaction(
             action,
             bridge_object_arg,
             sui_token_type_tags,
+            admin_cap_arg,
             rgp,
         ),
         BridgeAction::SuiToEthBridgeAction(_) => build_token_bridge_approve_transaction(
@@ -169,6 +171,7 @@ fn build_external_token_bridge_approve_and_claim_transaction(
     action: VerifiedCertifiedBridgeAction,
     bridge_object_arg: ObjectArg,
     sui_token_type_tags: &HashMap<u64, TypeTag>,
+    admin_cap_arg: Option<ObjectArg>,
     rgp: u64,
 ) -> BridgeResult<TransactionData> {
     let (bridge_action, sigs) = action.into_inner().into_data_and_sig();
@@ -244,19 +247,41 @@ fn build_external_token_bridge_approve_and_claim_transaction(
         ))
     })?;
 
-    builder.programmable_move_call(
-        BRIDGE_PACKAGE_ID,
-        sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
-        ident_str!("approval_and_claimed_external_coin").to_owned(),
-        vec![
-            sui_token_type_tags
-            .get(&token_type)
-            .ok_or(BridgeError::UnknownTokenId(token_type))?
-            .clone()
-        ],
-        vec![arg_bridge, arg_msg, arg_signatures],
-    );
+    match token_type {
+        sui_types::bridge::TOKEN_ID_BUSD |
+        sui_types::bridge::TOKEN_ID_USDC |
+        sui_types::bridge::TOKEN_ID_USDT  => {
+            let admin_cap = builder.obj(admin_cap_arg.unwrap()).unwrap();
+            let system_obj = builder.input(CallArg::BFC_SYSTEM_MUT).unwrap();
 
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("approval_and_claimed_external_busd_coin").to_owned(),
+                vec![
+                    sui_token_type_tags
+                        .get(&token_type)
+                        .ok_or(BridgeError::UnknownTokenId(token_type))?
+                        .clone()
+                ],
+                vec![arg_bridge, arg_msg, arg_signatures, system_obj, admin_cap],
+            );
+        },
+        _ => {
+            builder.programmable_move_call(
+                BRIDGE_PACKAGE_ID,
+                sui_types::bridge::BRIDGE_MODULE_NAME.to_owned(),
+                ident_str!("approval_and_claimed_external_coin").to_owned(),
+                vec![
+                    sui_token_type_tags
+                        .get(&token_type)
+                        .ok_or(BridgeError::UnknownTokenId(token_type))?
+                        .clone()
+                ],
+                vec![arg_bridge, arg_msg, arg_signatures],
+            );
+        },
+    }
 
     let pt = builder.finish();
 
@@ -1262,6 +1287,36 @@ pub fn build_add_tokens_on_sui_transaction(
         100_000_000,
         rgp,
     ))
+}
+
+pub fn build_add_center_tokenlist_transaction(
+    client_address: SuiAddress,
+    gas_object_ref: &ObjectRef,
+    bridge_object_arg: ObjectArg,
+    rgp: u64,
+)-> BridgeResult<TransactionData> {
+    let mut builder = ProgrammableTransactionBuilder::new();
+    let bridge_arg = builder.obj(bridge_object_arg).unwrap();
+
+
+    builder.programmable_move_call(
+        BRIDGE_PACKAGE_ID,
+        BRIDGE_MODULE_NAME.into(),
+        BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME.into(),
+        vec![],
+        vec![bridge_arg],
+    );
+
+    let pt = builder.finish();
+
+    Ok(TransactionData::new_programmable(
+        client_address,
+        vec![*gas_object_ref],
+        pt,
+        1_000_000_000,
+        rgp,
+    ))
+
 }
 
 pub fn build_add_tokenlist_transaction(

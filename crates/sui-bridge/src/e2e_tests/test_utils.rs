@@ -11,7 +11,7 @@ use crate::e2e_tests::auth;
 use crate::events::*;
 use crate::metrics::BridgeMetrics;
 use crate::server::BridgeNodePublicMetadata;
-use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction};
+use crate::sui_transaction_builder::{build_add_tokenlist_transaction, build_add_tokens_on_sui_transaction,build_add_center_tokenlist_transaction};
 use crate::sui_transaction_builder::build_committee_register_transaction;
 use crate::types::BridgeCommitteeValiditySignInfo;
 use crate::types::CertifiedBridgeAction;
@@ -198,14 +198,18 @@ impl BridgeTestClusterBuilder {
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut bridge_keys = vec![];
         let mut bridge_keys_copy = vec![];
+        let mut bridge_keys_copy2 = vec![];
         for _ in 0..self.num_validators {
             let (_, kp): (_, BridgeAuthorityKeyPair) = get_key_pair();
             bridge_keys.push(kp.copy());
-            bridge_keys_copy.push(kp);
+            bridge_keys_copy.push(kp.copy());
+            bridge_keys_copy2.push(kp);
+
         }
         let start_cluster_task = tokio::task::spawn(Self::start_test_cluster(bridge_keys,self.eth_chain_id));
         let start_eth_env_task = tokio::task::spawn(Self::start_eth_env(bridge_keys_copy,self.eth_chain_id));
-        let (start_cluster_res, start_eth_env_res) = join!(start_cluster_task, start_eth_env_task);
+        let (start_cluster_res, start_eth_env_res)
+            = join!(start_cluster_task, start_eth_env_task);
         let test_cluster = start_cluster_res.unwrap();
         let eth_environment = start_eth_env_res.unwrap();
         let mut bridge_node_handles = None;
@@ -261,7 +265,7 @@ impl BridgeTestClusterBuilder {
     async fn start_eth_env(bridge_keys: Vec<BridgeAuthorityKeyPair>, eth_chain_id: BridgeChainId) -> EthBridgeEnvironment {
         let anvil_port = get_available_port("127.0.0.1");
         let anvil_url = format!("http://127.0.0.1:{anvil_port}");
-        let mut eth_environment = EthBridgeEnvironment::new(&anvil_url, anvil_port)
+        let mut eth_environment = EthBridgeEnvironment::new_with_chain_id(&anvil_url, anvil_port, eth_chain_id as u64)
             .await
             .unwrap();
         // Give anvil a bit of time to start
@@ -280,6 +284,7 @@ impl BridgeTestClusterBuilder {
 
 impl BridgeTestCluster {
     pub async fn get_eth_signer_and_private_key(&self) -> anyhow::Result<(EthSigner, String)> {
+        // if self.
         self.eth_environment.get_signer(TEST_PK).await
     }
 
@@ -616,19 +621,21 @@ pub(crate) async fn deploy_sol_contract(
     };
     info!("chain_id_anvil: {:?}", chain_id_anvil);
     let mut child=Command::new("forge")
-    .current_dir(sol_path)
-    .arg("script")
-    .arg("script/deploy_bridge.s.sol")
-    .arg("--fork-url")
-    .arg(anvil_url)
-    .arg("--broadcast")
-    .arg("--ffi")
-    .arg("--chain")
-    .arg(chain_id_anvil)
-    .stdout(std::process::Stdio::piped()) // Capture stdout
-    .stderr(std::process::Stdio::piped()) // Capture stderr
-    .spawn()
-    .unwrap();
+        .current_dir(sol_path)
+        .arg("script")
+        .arg("script/deploy_bridge.s.sol")
+        .arg("--fork-url")
+        .arg(anvil_url)
+        .arg("--broadcast")
+        .arg("--ffi")
+        .arg("--code-size-limit")
+        .arg("10000000")
+        .arg("--chain")
+        .arg(chain_id_anvil)
+        .stdout(std::process::Stdio::piped()) // Capture stdout
+        .stderr(std::process::Stdio::piped()) // Capture stderr
+        .spawn()
+        .unwrap();
 
     let mut stdout = child.stdout.take().expect("Failed to open stdout");
     let mut stderr = child.stderr.take().expect("Failed to open stderr");
@@ -715,6 +722,7 @@ pub struct EthBridgeEnvironment {
 }
 
 impl EthBridgeEnvironment {
+    #[allow(unused)]
     async fn new(anvil_url: &str, anvil_port: u16) -> anyhow::Result<EthBridgeEnvironment> {
         // Start eth node with anvil
         let eth_environment_process = std::process::Command::new("anvil")
@@ -724,6 +732,30 @@ impl EthBridgeEnvironment {
             .arg("1") // 1 second block time
             .arg("--slots-in-an-epoch")
             .arg("1") // 1 slots in an epoch
+            .spawn()
+            .expect("Failed to start anvil");
+
+        Ok(EthBridgeEnvironment {
+            rpc_url: anvil_url.to_string(),
+            process: eth_environment_process,
+            contracts: None,
+        })
+    }
+
+    async fn new_with_chain_id(
+        anvil_url: &str,
+        anvil_port: u16,
+        chain_id: u64) -> anyhow::Result<EthBridgeEnvironment> {
+        // Start eth node with anvil
+        let eth_environment_process = std::process::Command::new("anvil")
+            .arg("--port")
+            .arg(anvil_port.to_string())
+            .arg("--block-time")
+            .arg("1") // 1 second block time
+            .arg("--slots-in-an-epoch")
+            .arg("1") // 1 slots in an epoch
+            .arg("--chain-id")
+            .arg(chain_id.to_string())
             .spawn()
             .expect("Failed to start anvil");
 
@@ -824,6 +856,10 @@ pub(crate) async fn start_bridge_cluster(
                 eth_bridge_chain_id: BridgeChainId::EthCustom as u8,
                 eth_contracts_start_block_fallback: Some(0),
                 eth_contracts_start_block_override: None,
+                latest_fast_path_threshold: None,
+                safe_fast_path_threshold: None,
+                enable_fast_path_latest: false,
+                enable_fast_path_safe: false,
             },
             evm: vec![
                 EthConfig {
@@ -832,6 +868,10 @@ pub(crate) async fn start_bridge_cluster(
                     eth_bridge_chain_id: BridgeChainId::BscCustom as u8,
                     eth_contracts_start_block_fallback: Some(0),
                     eth_contracts_start_block_override: None,
+                    latest_fast_path_threshold: None,
+                    safe_fast_path_threshold: None,
+                    enable_fast_path_latest: false,
+                    enable_fast_path_safe: false,
                 },
             ],
             sui: SuiConfig {
@@ -845,6 +885,7 @@ pub(crate) async fn start_bridge_cluster(
             metrics_key_pair: default_ed25519_key_pair(),
             metrics: None,
             watchdog_config: None,
+            user_limit_db_url: None,
         };
         let prometheus_registry = Registry::new();
         if i == 0 {
@@ -1081,6 +1122,26 @@ impl TestClusterWrapperBuilder {
         );
         info!("add tokenlist took {:?} secs", timer.elapsed().as_secs());
 
+        let timer = Instant::now();
+        let tx = build_add_center_tokenlist_transaction(
+            sender_address,
+            &test_cluster
+                .wallet
+                .get_one_gas_object_owned_by_address(sender_address)
+                .await
+                .unwrap()
+                .unwrap(),
+            bridge_arg,
+            ref_gas_price,
+        )
+            .unwrap();
+
+        let response = test_cluster.sign_and_execute_transaction(&tx).await;
+        assert_eq!(
+            response.effects.unwrap().status(),
+            &SuiExecutionStatus::Success
+        );
+        info!("add  center tokenlist took {:?} secs", timer.elapsed().as_secs());
         if self.deploy_tokens {
             let token_paths = vec![
                 Path::new("../../bridge/move/tokens/btc").into(),
@@ -1312,6 +1373,7 @@ pub async fn initiate_bridge_eth_to_sui(
     let sui_address = bridge_test_cluster.sui_user_address();
     let sui_chain_id = bridge_test_cluster.sui_chain_id();
     let eth_chain_id = bridge_test_cluster.eth_chain_id();
+    info!("Sui address eth_chain_id: {:?} {:?}, {:?}", sui_address, eth_chain_id, eth_signer);
     let token_id = if eth_chain_id.is_eth_chain() {
         TOKEN_ID_ETH
     } else {
@@ -1349,8 +1411,8 @@ pub async fn initiate_bridge_eth_to_sui(
     assert_eq!(eth_bridge_event.sender_address, eth_address);
     assert_eq!(eth_bridge_event.recipient_address, sui_address.to_vec());
     info!(
-        "Deposited Eth to Solidity contract, block: {:?}",
-        tx_receipt.block_number
+        "Deposited Eth to Solidity contract, block: {:?} {:?} {:?}",
+        tx_receipt.block_number, eth_bridge_event, tx_receipt
     );
 
     if refund {
@@ -1474,7 +1536,7 @@ pub async fn initiate_bridge_sui_to_eth(
     );
     assert_eq!(bridge_event.sui_bridge_event.sui_address, sui_address);
     assert_eq!(bridge_event.sui_bridge_event.eth_address, eth_address);
-    
+
     if expect_token_id == TOKEN_ID_ETH  {
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(
@@ -1487,7 +1549,7 @@ pub async fn initiate_bridge_sui_to_eth(
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
                 sui_amount/1000
-            );    
+            );
         } else {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,

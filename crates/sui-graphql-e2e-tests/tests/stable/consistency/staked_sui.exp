@@ -53,7 +53,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(7,0)
 mutated: 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0), object(3,0)
 deleted: object(6,0)
-gas summary: computation_cost: 1000000, storage_cost: 17214000,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
+gas summary: computation_cost: 1000000, storage_cost: 27534800,  storage_rebate: 27274500, non_refundable_storage_fee: 275500
 
 task 8, line 36:
 //# create-checkpoint
@@ -109,13 +109,13 @@ Response: {
       "stakedSuis": {
         "edges": [
           {
-            "cursor": "IKd0rf6S3cmn7wpCXP4h1v1t1VqkLiRT8n8zxdlCKZQWBAAAAAAAAAA=",
+            "cursor": "IB+q1iPcEWxAVH/niy4qvAwkmNr9EOZJkD8ntDS87XxtBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           },
           {
-            "cursor": "ILIwTvQuJYlVXZF4FQGgYT1D2PFJNxPuG6G/j5TyHGXsBAAAAAAAAAA=",
+            "cursor": "IH5CjG0clwD96NHfAcEdN7d9TC3n29vsgvoHNRQACsiZBAAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
@@ -159,36 +159,36 @@ Response: {
   "data": {
     "coins_after_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": [
-          {
-            "cursor": "ILIwTvQuJYlVXZF4FQGgYT1D2PFJNxPuG6G/j5TyHGXsAwAAAAAAAAA=",
-            "node": {
-              "principal": "10000000000"
-            }
-          }
-        ]
+        "edges": []
       }
     },
     "coins_before_obj_3_1_chkpt_3": {
       "stakedSuis": {
-        "edges": []
-      }
-    },
-    "coins_after_obj_7_0_chkpt_3": {
-      "stakedSuis": {
-        "edges": []
-      }
-    },
-    "coins_before_obj_7_0_chkpt_3": {
-      "stakedSuis": {
         "edges": [
           {
-            "cursor": "IKd0rf6S3cmn7wpCXP4h1v1t1VqkLiRT8n8zxdlCKZQWAwAAAAAAAAA=",
+            "cursor": "IB+q1iPcEWxAVH/niy4qvAwkmNr9EOZJkD8ntDS87XxtAwAAAAAAAAA=",
             "node": {
               "principal": "10000000000"
             }
           }
         ]
+      }
+    },
+    "coins_after_obj_7_0_chkpt_3": {
+      "stakedSuis": {
+        "edges": [
+          {
+            "cursor": "IH5CjG0clwD96NHfAcEdN7d9TC3n29vsgvoHNRQACsiZAwAAAAAAAAA=",
+            "node": {
+              "principal": "10000000000"
+            }
+          }
+        ]
+      }
+    },
+    "coins_before_obj_7_0_chkpt_3": {
+      "stakedSuis": {
+        "edges": []
       }
     }
   }

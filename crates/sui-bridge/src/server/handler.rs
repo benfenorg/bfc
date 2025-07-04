@@ -9,9 +9,12 @@ use crate::abi::EthToSuiTokenBridgeV1;
 use crate::crypto::{BridgeAuthorityKeyPair, BridgeAuthoritySignInfo};
 use crate::error::{BridgeError, BridgeResult};
 use crate::eth_client::EthClient;
+use crate::fast_path::FastPathConfig;
 use crate::metrics::BridgeMetrics;
 use crate::sui_client::{SuiClient, SuiClientInner};
 use crate::types::{BridgeAction, BridgeActionType, EthToSuiBridgeAction, SignedBridgeAction};
+use crate::tron_query::check_tron_txn;
+use crate::solana_query::check_solana_txn;
 use async_trait::async_trait;
 use axum::Json;
 use ethers::providers::JsonRpcClient;
@@ -82,12 +85,14 @@ struct SuiActionVerifier<C> {
 struct EthActionVerifier<P> {
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
+    fast_path_config: FastPathConfig,
 }
 
 struct SendBackActionVerifier<C, P> {
     sui_client: Arc<SuiClient<C>>,
     eth_client: Arc<EthClient<P>>,
     evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<P>>>,
+    fast_path_config: FastPathConfig,
 }
 
 struct ExternalCoinVerifier<C> {
@@ -125,13 +130,17 @@ where
         let (chain_id, tx_hash, event_idx) = key;
         let bridge_chain_id = BridgeChainId::try_from(chain_id)?;
         match bridge_chain_id {
+            BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+            BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+            BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+            BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
             BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
             BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                 unreachable!()
             }
             BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
                 self.eth_client
-                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone())
                     .await
                     .tap_ok(|action| info!("Eth action found: {:?}", action))
             }
@@ -151,7 +160,7 @@ where
 
                 let client = client.unwrap();
                 client
-                    .get_finalized_bridge_action_maybe(tx_hash, event_idx)
+                    .get_bridge_action_maybe(tx_hash, event_idx, self.fast_path_config.clone())
                     .await
                     .tap_ok(|action| info!("ERC20 action found: {:?}", action))
             }
@@ -182,7 +191,7 @@ where
         if let BridgeAction::ExternalDepositStartBridgeAction(ref external_action) = action_rs {
             let tx_hash = &external_action.sui_bridge_event.tx_hash;
             let amount = external_action.sui_bridge_event.amount;
-            let btc_chain_id = external_action.sui_bridge_event.source_chain;
+            let chain_id = external_action.sui_bridge_event.source_chain;
 
             // check target address in whitelist
             let summary = self.sui_client.get_bridge_summary().await;
@@ -195,15 +204,43 @@ where
             }
             info!("whitelist: {:#?}", &whitelist);
 
-            // check btc txn
-            let ok =
-                check_btc_txn(btc_chain_id, tx_hash, whitelist, amount).await;
-            if ok {
-                return Ok(action_rs);
+
+            match chain_id {
+                BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
+                    // check btc txn
+                    let ok = check_btc_txn(chain_id, tx_hash, whitelist, amount).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet => {
+                    // check tron txn: only support TRC20
+                    // readme: amount is benfen amount, not tron amount, so we need to convert it
+                    let tron_amount = amount / 1_000;
+                    let ok = check_tron_txn(chain_id, tx_hash, whitelist, tron_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet => {
+                    // check solana txn: only support USDC/USDT
+
+                    // readme: amount is benfen amount, not solana amount, so we need to convert it
+                    let sol_amount = amount / 1_000;
+                    let ok = check_solana_txn(chain_id, tx_hash, whitelist, sol_amount, false).await;
+                    if ok {
+                        return Ok(action_rs);
+                    }
+                }
+                _ => {
+                    return Err(BridgeError::Generic(
+                        format!("Unsupported External Coin chain ID({})", chain_id)
+                    ));
+                }
             }
 
             return Err(BridgeError::Generic(
-                format!("BTC txn({:#?}) is not valid", tx_hash)
+                format!("External Coin txn({:#?}) is not valid for chain {}", tx_hash, chain_id)
             ));
         }
 
@@ -238,13 +275,17 @@ where
             let event_idx = send_back_action.sui_bridge_event.event_idx as u16;
 
             let result = match send_back_action.sui_bridge_event.eth_chain_id {
+                BridgeChainId::TronMainnet | BridgeChainId::TronTestnet |
+                BridgeChainId::SolanaMainnet | BridgeChainId::SolanaTestnet |
+                BridgeChainId::LTCMainnet | BridgeChainId::LTCTestnet |
+                BridgeChainId::DogeMainnet | BridgeChainId::DogeTestnet |
                 BridgeChainId::SuiMainnet | BridgeChainId::SuiTestnet | BridgeChainId::SuiCustom |
                 BridgeChainId::BtcMainnet | BridgeChainId::BtcTestnet => {
                     unreachable!()
                 }
                 BridgeChainId::EthMainnet | BridgeChainId::EthSepolia | BridgeChainId::EthCustom => {
                     self.eth_client
-                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .get_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx, self.fast_path_config.clone())
                         .await
                 }
 
@@ -263,7 +304,7 @@ where
 
                     let client = client.unwrap();
                     client
-                        .get_finalized_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx)
+                        .get_bridge_action_maybe(TxHash::from_uint(&tx_hash), event_idx, self.fast_path_config.clone())
                         .await
                 }
             };
@@ -480,6 +521,7 @@ impl BridgeRequestHandler {
         evm_clients: BTreeMap<BridgeChainId, Arc<EthClient<EP>>>,
         approved_governance_actions: Vec<BridgeAction>,
         metrics: Arc<BridgeMetrics>,
+        fast_path_config: FastPathConfig,
     ) -> Self {
         let (sui_signer_tx, sui_rx) = mysten_metrics::metered_channel::channel(
             1000,
@@ -543,6 +585,7 @@ impl BridgeRequestHandler {
             EthActionVerifier {
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
+                fast_path_config: fast_path_config.clone(),
             },
             metrics.clone(),
         )
@@ -560,6 +603,7 @@ impl BridgeRequestHandler {
                 sui_client: sui_client.clone(),
                 eth_client: eth_client.clone(),
                 evm_clients: evm_clients.clone(),
+                fast_path_config: fast_path_config.clone(),
             },
             metrics.clone(),
         )
@@ -972,6 +1016,7 @@ mod tests {
         let eth_verifier = EthActionVerifier {
             eth_client: Arc::new(eth_client),
             evm_clients: Default::default(),
+            fast_path_config: Default::default(),
         };
         let metrics = Arc::new(BridgeMetrics::new_for_testing());
         let mut eth_signer_with_cache =

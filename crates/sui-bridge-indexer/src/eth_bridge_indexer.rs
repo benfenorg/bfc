@@ -14,6 +14,7 @@ use prometheus::IntGauge;
 use sui_bridge::error::BridgeError;
 use sui_bridge::eth_client::EthClient;
 use sui_bridge::eth_syncer::EthSyncer;
+use sui_bridge::fast_path::FastPathSelector;
 use sui_bridge::metered_eth_provider::MeteredEthHttpProvier;
 use sui_bridge::retry_with_max_elapsed_time;
 use sui_indexer_builder::Task;
@@ -340,7 +341,7 @@ async fn loop_retrieve_and_process_live_finalized_logs(
             .channel_inflight
             .with_label_values(&["eth_events_queue"]),
     );
-    let (_, _) = EthSyncer::new(client.clone(), eth_contracts_to_watch,eth_evnets_tx)
+    let (_, _) = EthSyncer::new(client.clone(), eth_contracts_to_watch,eth_evnets_tx,FastPathSelector::Finalized)
         .run(bridge_metrics.clone())
         .await
         .expect("Failed to start eth syncer");
@@ -348,7 +349,7 @@ async fn loop_retrieve_and_process_live_finalized_logs(
     // EthSyncer sends items even when there is no matching events.
     // We leverge this to update the progress metric.
     while let Some((_, block, logs)) = eth_events_rx.recv().await {
-        let raw_logs: Vec<RawEthLog> = logs
+        let raw_logs: Vec<RawEthLog> = logs.logs
             .into_iter()
             .map(|log| RawEthLog {
                 block_number: block,

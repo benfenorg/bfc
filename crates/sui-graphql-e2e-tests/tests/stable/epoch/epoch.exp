@@ -25,7 +25,7 @@ events: Event { package_id: sui_system, transaction_module: Identifier("sui_syst
 created: object(4,0)
 mutated: object(_), 0x0000000000000000000000000000000000000000000000000000000000000005, object(0,0)
 deleted: object(3,0)
-gas summary: computation_cost: 1000000, storage_cost: 17214000,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
+gas summary: computation_cost: 1000000, storage_cost: 27534800,  storage_rebate: 2588256, non_refundable_storage_fee: 26144
 
 task 5, line 19:
 //# create-checkpoint
@@ -72,7 +72,7 @@ Response: {
       "totalGasFees": "1000000",
       "totalStakeRewards": "1000000",
       "totalStakeSubsidies": "0",
-      "fundSize": "17240144",
+      "fundSize": "27560944",
       "fundInflow": "2614400",
       "fundOutflow": "1294128",
       "netInflow": "1320272",
@@ -82,7 +82,7 @@ Response: {
             "kind": {
               "__typename": "ProgrammableTransactionBlock"
             },
-            "digest": "5fZTMSUc5yMiPQJyqaNSmCCHsrCv5mrArz4SUoZP5s9L"
+            "digest": "2dwPKg28BPhBmdVRdEukVvXugJPj2cPx7iAJY9CioArQ"
           },
           {
             "kind": {

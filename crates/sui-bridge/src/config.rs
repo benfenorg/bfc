@@ -15,6 +15,7 @@ use anyhow::anyhow;
 use ethers::providers::Middleware;
 use ethers::types::Address as EthAddress;
 use futures::{future, StreamExt};
+use num_enum::TryFromPrimitive;
 use serde::{Deserialize, Serialize};
 use serde_with::serde_as;
 use std::collections::BTreeMap;
@@ -62,6 +63,13 @@ pub struct EthConfig {
     /// reprocess the events from this block number every time it starts.
     #[serde(skip_serializing_if = "Option::is_none")]
     pub eth_contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub latest_fast_path_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub safe_fast_path_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub enable_fast_path_latest: bool,
+    pub enable_fast_path_safe: bool,
 }
 
 #[serde_as]
@@ -127,6 +135,8 @@ pub struct BridgeNodeConfig {
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub watchdog_config: Option<WatchdogConfig>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub user_limit_db_url: Option<String>,
 }
 
 pub fn default_ed25519_key_pair() -> NetworkKeyPair {
@@ -186,7 +196,20 @@ impl BridgeNodeConfig {
         }
 
         let (eth_client, eth_contracts) = self.prepare_for_eth(metrics.clone()).await?;
-        let (evm_clients, evm_contracts) = self.prepare_for_evm(metrics.clone()).await?;
+        let (mut evm_clients, mut evm_contracts) = self.prepare_for_evm(metrics.clone()).await?;
+        if BridgeChainId::is_custom_chain_by_id(self.eth.eth_bridge_chain_id) {
+            // Custom chains use eth config from BridgeNodeConfig
+            // We need to insert the eth client and contracts for custom chain
+            // so that it can be used in the bridge server.
+            evm_clients.insert(
+                BridgeChainId::BscCustom,
+                eth_client.clone(),
+            );
+            evm_contracts.insert(
+                BridgeChainId::BscCustom,
+                eth_contracts.clone(),
+            );
+        }
 
         let bridge_summary = sui_client
             .get_bridge_summary()
@@ -221,9 +244,9 @@ impl BridgeNodeConfig {
             evm_clients: evm_clients.clone(),
             approved_governance_actions,
         };
-        if !self.run_client {
-            return Ok((bridge_server_config, None));
-        }
+        // if !self.run_client {
+        //     return Ok((bridge_server_config, None));
+        // }
 
         // If client is enabled, prepare client config
         let (bridge_client_key, client_sui_address, gas_object_ref) =
@@ -245,6 +268,10 @@ impl BridgeNodeConfig {
                     contracts: evm_contracts.get(&chain_id).unwrap().clone(),
                     contracts_start_block_fallback: evm_config.eth_contracts_start_block_fallback.unwrap(),
                     contracts_start_block_override: evm_config.eth_contracts_start_block_override,
+                    latest_fast_path_threshold: evm_config.latest_fast_path_threshold,
+                    safe_fast_path_threshold: evm_config.safe_fast_path_threshold,
+                    enable_fast_path_latest: evm_config.enable_fast_path_latest,
+                    enable_fast_path_safe: evm_config.enable_fast_path_safe,
                 },
             );
         }
@@ -267,9 +294,15 @@ impl BridgeNodeConfig {
             sui_bridge_module_last_processed_event_id_override: self
                 .sui
                 .sui_bridge_module_last_processed_event_id_override,
+            eth_latest_fast_path_threshold: self.eth.latest_fast_path_threshold,
+            eth_safe_fast_path_threshold: self.eth.safe_fast_path_threshold,
+            eth_enable_fast_path_latest: self.eth.enable_fast_path_latest,
+            eth_enable_fast_path_safe: self.eth.enable_fast_path_safe,
             aml_key: self.aml_key.clone(),
             evm_clients,
             evm_client_configs,
+            run_client: self.run_client,
+            user_limit_db_url: self.user_limit_db_url.clone(),
         };
 
         Ok((bridge_server_config, Some(bridge_client_config)))
@@ -283,6 +316,10 @@ impl BridgeNodeConfig {
         let mut eth_contracts: BTreeMap<BridgeChainId, Vec<EthAddress>> = BTreeMap::new();
 
         for evm_config in &self.evm {
+            if BridgeChainId::is_custom_chain_by_id(evm_config.eth_bridge_chain_id) {
+                // custom chains use eth config from BridgeNodeConfig
+                continue;
+            }
             let bridge_proxy_address =
                 EthAddress::from_str(&evm_config.eth_bridge_proxy_address)?;
 
@@ -310,13 +347,13 @@ impl BridgeNodeConfig {
             }
 
             let bridge_chain_id: u8 = config.chain_id().call().await?;
-            if evm_config.eth_bridge_chain_id != bridge_chain_id {
-                return Err(anyhow!(
-                "Bridge chain id mismatch: expected {}, but connected to {}",
-                evm_config.eth_bridge_chain_id,
-                bridge_chain_id
-            ));
-            }
+            // if evm_config.eth_bridge_chain_id != bridge_chain_id {
+            //     return Err(anyhow!(
+            //     "Bridge chain id mismatch: expected {}, but connected to {}",
+            //     evm_config.eth_bridge_chain_id,
+            //     bridge_chain_id
+            // ));
+            // }
 
             info!("Connected to Eth chain: {}, Bridge chain id: {}", chain_id.as_u64(), bridge_chain_id);
 
@@ -333,6 +370,7 @@ impl BridgeNodeConfig {
                         ]),
                         metrics.clone(),
                         chain_id,
+                        BridgeChainId::try_from_primitive(evm_config.eth_bridge_chain_id).unwrap(),
                     )
                         .await?,
                 )
@@ -422,6 +460,7 @@ impl BridgeNodeConfig {
                 ]),
                 metrics,
                 chain_id,
+                BridgeChainId::try_from_primitive(self.eth.eth_bridge_chain_id).unwrap(),
             )
                 .await?,
         );
@@ -532,12 +571,21 @@ pub struct BridgeClientConfig {
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub eth_contracts_start_block_fallback: u64,
     pub eth_contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub eth_latest_fast_path_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub eth_safe_fast_path_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub eth_enable_fast_path_latest: bool,
+    pub eth_enable_fast_path_safe: bool,
 
     pub evm_client_configs: BTreeMap<BridgeChainId, BridgeClientEvmConfig>,
 
     pub sui_bridge_module_last_processed_event_id_override: Option<EventID>,
     // The following fields are used for AML checking authorization key
     pub aml_key: String,
+    pub run_client: bool,
+    pub user_limit_db_url: Option<String>,
 }
 
 #[derive(Debug)]
@@ -546,6 +594,13 @@ pub struct BridgeClientEvmConfig {
     // See `BridgeNodeConfig` for the explanation of following two fields.
     pub contracts_start_block_fallback: u64,
     pub contracts_start_block_override: Option<u64>,
+    /// latest 快速到账阈值
+    pub latest_fast_path_threshold: Option<u64>,
+    /// safe 快速到账阈值
+    pub safe_fast_path_threshold: Option<u64>,
+    /// 是否开启快速到账
+    pub enable_fast_path_latest: bool,
+    pub enable_fast_path_safe: bool,
 }
 
 

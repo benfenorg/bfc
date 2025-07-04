@@ -52,8 +52,8 @@ pub const BRIDGE_CREATE_ADD_TOKEN_ON_SUI_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("create_add_tokens_on_sui_message");
 pub const BRIDGE_EXECUTE_SYSTEM_MESSAGE_FUNCTION_NAME: &IdentStr =
     ident_str!("execute_system_message");
-pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr =
-    ident_str!("migrate");
+pub const BRIDGE_ADD_TOKENLIST_FUNCTION_NAME: &IdentStr = ident_str!("init_token_list");
+pub const BRIDGE_ADD_CENTER_TOKENLIST_FUNCTION_NAME: &IdentStr = ident_str!("migrate");
 
 pub const BRIDGE_SUPPORTED_ASSET: &[&str] = &["btc", "eth", "usdc", "usdt"];
 
@@ -85,6 +85,11 @@ pub const TOKEN_ID_BUSD: u64 = 5;
 pub const TOKEN_ID_BNB: u64 = 6;
 pub const TOKEN_ID_OP: u64 = 7;
 pub const TOKEN_ID_POL: u64 = 8;
+
+// const for fast path
+pub const FAST_PATH_THREASHOLD_LATEST_BUSD: u64 = 100_000_000_000;
+pub const FAST_PATH_THREASHOLD_SAFE_BUSD: u64 = 10000_000_000_000;
+
 
 #[derive(
     Debug,
@@ -138,6 +143,18 @@ pub enum BridgeChainId {
     AvaxMainnet = 45,
     AvaxTestnet = 46,
     AvaxCustom = 47,
+
+    TronMainnet = 48,
+    TronTestnet = 49,
+
+    SolanaMainnet = 50,
+    SolanaTestnet = 51,
+
+    LTCMainnet = 52,
+    LTCTestnet = 53,
+
+    DogeMainnet = 54,
+    DogeTestnet = 55,
 }
 
 impl BridgeChainId {
@@ -188,7 +205,6 @@ impl BridgeChainId {
         )
     }
 
-
     pub fn is_optimism_chain(&self) -> bool {
         matches!(
             self,
@@ -226,6 +242,17 @@ impl BridgeChainId {
         let base_testnet = BridgeChainId::BaseTestnet as u8;
         let base_custom = BridgeChainId::BaseCustom as u8;
         id == base_mainnet || id == base_testnet || id == base_custom
+    }
+
+    pub fn is_custom_chain_by_id(id: u8) -> bool {
+        id == BridgeChainId::BscCustom as u8
+            || id == BridgeChainId::SuiCustom as u8
+            || id == BridgeChainId::EthCustom as u8
+            || id == BridgeChainId::OPCustom as u8
+            || id == BridgeChainId::ArbCustom as u8
+            || id == BridgeChainId::PolCustom as u8
+            || id == BridgeChainId::BaseCustom as u8
+            || id == BridgeChainId::AvaxCustom as u8
     }
 }
 
@@ -430,12 +457,12 @@ impl BridgeTrait for BridgeInnerV1 {
             .collect::<SuiResult<Vec<_>>>()?;
 
         let external_coin_target_address = self
-          .treasury
-          .external_coin_target_address
-          .contents
-          .into_iter()
-          .map(|e| (e.key, e.value.contents))
-          .collect::<Vec<_>>();
+            .treasury
+            .external_coin_target_address
+            .contents
+            .into_iter()
+            .map(|e| (e.key, e.value.contents))
+            .collect::<Vec<_>>();
 
         let supported_tokens = self
             .treasury
@@ -474,7 +501,7 @@ impl BridgeTrait for BridgeInnerV1 {
         let limiter = BridgeLimiterSummary {
             transfer_limit,
             transfer_records,
-            max_mint_busd_limit
+            max_mint_busd_limit,
         };
         Ok(BridgeSummary {
             bridge_version: self.bridge_version,
@@ -658,7 +685,6 @@ impl MoveTypeBridgeTransferRecord {
         self.total_amount
     }
 }
-
 
 /// Rust version of the Move message::BridgeMessage type.
 #[derive(Debug, Serialize, Deserialize)]
