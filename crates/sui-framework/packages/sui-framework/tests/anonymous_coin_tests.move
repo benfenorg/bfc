@@ -97,7 +97,7 @@ module sui::anonymous_coin_tests {
     }
 
     #[test]
-    fun coin_tests_mint() {
+    fun tests_coin_restore() {
         let mut scenario = test_scenario::begin(TEST_ADDR);
         let witness = COIN_TESTS{};
         let (mut treasury, metadata) = anonymous_coin::create_currency(

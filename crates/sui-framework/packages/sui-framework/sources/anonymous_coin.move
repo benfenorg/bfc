@@ -66,15 +66,15 @@ module sui::anonymous_coin {
         })
     }
 
-    entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, signatures: vector<u8>, id: address, publickey: vector<u8>,  ctx: &mut TxContext) {
-        let value = anonymous_coin.balance.value(signatures, id, publickey);
-        join(&mut swap_pool.anonymous_coin, anonymous_coin);
-
-        assert!(value <= swap_pool.max_availalbe_normal_coin, ENotEnough);
-        let normal_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
-        swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - value;
-        transfer::public_transfer(normal_coin, tx_context::sender(ctx));
-    }
+    // entry public fun swap_out<T1, T2>(anonymous_coin: Anonymous_Coin<T1>,  swap_pool :&mut SwapPool<T1, T2>, signatures: vector<u8>, id: address, publickey: vector<u8>,  ctx: &mut TxContext) {
+    //     let value = anonymous_coin.balance.value(signatures, id, publickey);
+    //     join(&mut swap_pool.anonymous_coin, anonymous_coin);
+    //
+    //     assert!(value <= swap_pool.max_availalbe_normal_coin, ENotEnough);
+    //     let normal_coin =coin::split(&mut swap_pool.normal_coin, value , ctx);
+    //     swap_pool.max_availalbe_normal_coin = swap_pool.max_availalbe_normal_coin - value;
+    //     transfer::public_transfer(normal_coin, tx_context::sender(ctx));
+    // }
 
     entry public fun swap_out_with_amount<T1, T2>(anonymous_coin: &mut Anonymous_Coin<T1>,
                                                   swap_out_amount: u64,
@@ -180,7 +180,7 @@ module sui::anonymous_coin {
     }
 
     /// Public getter for the coin's value
-    public fun value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8> ): u64 {
+    public fun value<T>(self: &Anonymous_Coin<T>, signatures: vector<u8>, id: address, publickey: vector<u8>): u64 {
         self.balance.value(signatures, id, publickey)
     }
 
@@ -372,7 +372,7 @@ module sui::anonymous_coin {
 
     /// Destroy the coin `c` and decrease the total supply in `cap`
     /// accordingly.
-    public entry fun burn<T>(cap: &mut TreasuryCap<T>, c: Anonymous_Coin<T>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8> ): u64 {
+    public entry fun burn<T>(cap: &mut TreasuryCap<T>, c: Anonymous_Coin<T>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8>): u64 {
         let Anonymous_Coin { id, balance } = c;
         id.delete();
         cap.total_supply.decrease_supply(balance, signatures, anonymous_coin_id, publickey)
