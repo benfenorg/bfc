@@ -1785,7 +1785,7 @@ fun test_external_busd_approval_and_claimed_external_busd_coin() {
             source_address,
             target_address,
             amount_before_fee,
-            amount_after_fee,
+            _,
         ) = deposited[0].unwrap_external_deposited_event_v2();
         assert!(
             tx_hash == tx_hash &&

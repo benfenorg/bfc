@@ -26,7 +26,7 @@ module bridge::bridge_env {
         TokenTransferApproved,
         TokenTransferClaimed,
         TokenTransferLimitExceed,
-        ExternalDepositedEvent,
+        // ExternalDepositedEvent,
         ExternalWithdrawEventV2,
         ExternalBridgeRecord,
         ExternalDepositedApprovedEvent,

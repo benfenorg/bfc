@@ -92,7 +92,7 @@ module bridge::limiter_fast_path_tests {
         let mut clock = clock::create_for_testing(ctx);
         clock.set_for_testing(1706288001377);
 
-        let user = @0x42;
+        // let user = @0x42;
         let amount = 500_000_000_000; // 5B
 
         // First transfer
@@ -127,7 +127,7 @@ module bridge::limiter_fast_path_tests {
         let ctx = test_scenario::ctx(&mut scenario);
         
         let mut obj=new(ctx);
-        let user = @0x42;
+        // let user = @0x42;
         // Create new limiter
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
         let clock = clock::create_for_testing(ctx);
@@ -185,7 +185,7 @@ module bridge::limiter_fast_path_tests {
         let ctx = test_scenario::ctx(&mut scenario);
         
         let mut obj=new(ctx);
-        let user = @0x42;
+        // let user = @0x42;
         // Create new limiter
         limiter_fast_path::new_limiter_fast_path_for_testing(&mut obj.id,ctx);
         limiter_fast_path::registry_for_testing(&mut obj.id);

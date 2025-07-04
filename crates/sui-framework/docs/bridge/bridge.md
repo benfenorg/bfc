@@ -32,6 +32,7 @@ title: Module `bridge::bridge`
 -  [Function `init_bridge_committee`](#bridge_bridge_init_bridge_committee)
 -  [Function `migrate`](#bridge_bridge_migrate)
 -  [Function `init_token_list`](#bridge_bridge_init_token_list)
+-  [Function `update_external_out_limit`](#bridge_bridge_update_external_out_limit)
 -  [Function `committee_registration`](#bridge_bridge_committee_registration)
 -  [Function `update_node_url`](#bridge_bridge_update_node_url)
 -  [Function `register_foreign_token`](#bridge_bridge_register_foreign_token)
@@ -1914,6 +1915,40 @@ title: Module `bridge::bridge`
     <a href="../bridge/tokenlist.md#bridge_tokenlist_new_tokenlist_registry">tokenlist::new_tokenlist_registry</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/tokenlist.md#bridge_tokenlist_add_center_token_list">tokenlist::add_center_token_list</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge">bridge</a>.id, ctx);
     <a href="../bridge/limiter.md#bridge_limiter_update_transfer_limits">limiter::update_transfer_limits</a>(&<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut">load_inner_mut</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>).<a href="../bridge/limiter.md#bridge_limiter">limiter</a>);
+}
+</code></pre>
+
+
+
+</details>
+
+<a name="bridge_bridge_update_external_out_limit"></a>
+
+## Function `update_external_out_limit`
+
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_out_limit">update_external_out_limit</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">bridge::bridge::Bridge</a>, target_chain: u8, limit: u64)
+</code></pre>
+
+
+
+<details>
+<summary>Implementation</summary>
+
+
+<pre><code><b>public</b> <b>fun</b> <a href="../bridge/bridge.md#bridge_bridge_update_external_out_limit">update_external_out_limit</a>(
+    <a href="../bridge/bridge.md#bridge_bridge">bridge</a>: &<b>mut</b> <a href="../bridge/bridge.md#bridge_bridge_Bridge">Bridge</a>,
+    target_chain: u8,
+    limit: u64,
+) {
+    <b>let</b> (inner,parent_id) = <a href="../bridge/bridge.md#bridge_bridge_load_inner_mut_and_uid">load_inner_mut_and_uid</a>(<a href="../bridge/bridge.md#bridge_bridge">bridge</a>);
+    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(inner.chain_id, target_chain);
+    <a href="../bridge/limiter.md#bridge_limiter_update_external_out_limit">limiter::update_external_out_limit</a>(
+        parent_id,
+        &route,
+        limit
+    );
 }
 </code></pre>
 
@@ -3909,8 +3944,6 @@ title: Module `bridge::bridge`
     <b>let</b> amount = token_payload.token_amount_v2();
     <b>let</b> fee=<a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_cross_in_fee_amount">bridge_fee::calculate_cross_in_fee_amount</a>(parent_id,source_chain <b>as</b> u64,token_payload.token_type_v2(),amount);
     <b>assert</b>!(amount&gt;fee,<a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>);
-    <b>let</b> amount_in_usd = inner.<a href="../bridge/treasury.md#bridge_treasury">treasury</a>.calculate_amount_in_usd&lt;T&gt;(amount);
-    <b>assert</b>!(amount_in_usd &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_in_limit">limiter::get_external_in_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     // Make sure transfer is within limit.
     <b>if</b> (!inner
         .<a href="../bridge/limiter.md#bridge_limiter">limiter</a>
