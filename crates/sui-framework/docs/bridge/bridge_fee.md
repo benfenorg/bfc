@@ -205,6 +205,15 @@ Fee information struct supports fixed and percentage fee modes.
 
 
 
+<a name="bridge_bridge_fee_EBridgeFeeSettingWrong"></a>
+
+
+
+<pre><code><b>const</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeSettingWrong">EBridgeFeeSettingWrong</a>: u64 = 4;
+</code></pre>
+
+
+
 <a name="bridge_bridge_fee_EBridgeFeeTypeNotSupport"></a>
 
 
@@ -1103,6 +1112,7 @@ Compute the net amount after applying the fee
 
 
 <pre><code><b>fun</b> <a href="../bridge/bridge_fee.md#bridge_bridge_fee_calculate_fee">calculate_fee</a>(amount: u64,fee_rate: u64) : u64 {
+    <b>assert</b>!(fee_rate &lt; <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a>, <a href="../bridge/bridge_fee.md#bridge_bridge_fee_EBridgeFeeSettingWrong">EBridgeFeeSettingWrong</a>);
     (amount * fee_rate) / <a href="../bridge/bridge_fee.md#bridge_bridge_fee_FEE_RATE_PRECISION">FEE_RATE_PRECISION</a>
 }
 </code></pre>

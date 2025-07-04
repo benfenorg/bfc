@@ -1398,7 +1398,7 @@ title: Module `bridge::bridge`
 
 
 
-<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>: u64 = 35;
+<pre><code><b>const</b> <a href="../bridge/bridge.md#bridge_bridge_EInputAmountLteBridgeFee">EInputAmountLteBridgeFee</a>: u64 = 36;
 </code></pre>
 
 
@@ -3162,9 +3162,6 @@ title: Module `bridge::bridge`
     <b>let</b> source_address = token_payload.token_sender_address();
     <b>let</b> target_address = token_payload.token_target_address();
     <b>let</b> amount = token_payload.token_amount();
-    //check <b>if</b> amount is limited
-    <b>let</b> route = <a href="../bridge/chain_ids.md#bridge_chain_ids_get_route">chain_ids::get_route</a>(source_chain, target_chain);
-    <b>assert</b>!(amount &lt; <a href="../bridge/limiter.md#bridge_limiter_get_external_in_limit">limiter::get_external_in_limit</a>(parent_id, &route), <a href="../bridge/bridge.md#bridge_bridge_ETransferLimit">ETransferLimit</a>);
     <b>let</b> key = <a href="../bridge/bridge.md#bridge_bridge_ExternalBridgeMessageKey">ExternalBridgeMessageKey</a>{
         source_chain,
         source_address,
