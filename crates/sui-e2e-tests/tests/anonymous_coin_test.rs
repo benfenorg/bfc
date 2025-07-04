@@ -31,8 +31,6 @@ async fn sim_test_do_publish_anonymous_test_coin(){
     let (package, change_objs)
         = publish_coin::do_publish(&mut test_cluster,"tests/test_anonymous_coin").await.unwrap();
 
-    println!("=====wubin do_publish {:?}", change_objs);
-
 
     //mint
     publish_coin::do_mint_anonymous(&mut test_cluster,package).await;
