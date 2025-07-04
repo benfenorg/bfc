@@ -17,6 +17,7 @@ module bridge::limiter_fast_path {
     // Constants
     const USER_LIMIT_5K_IN_BUSD: u64 = 5000_000_000_000; // 10B in smallest unit
     const USER_LIMIT_1K_IN_BUSD: u64 = 1000_000_000_000; // 10B in smallest unit
+    const USER_LIMIT_100_IN_BUSD: u64 = 100_000_000_000; 
     const DEFAULT_TIME_WINDOW_HOURS: u64 = 24;
     const TOKEN_ID_BUSD: u64 = 5;
 
@@ -103,31 +104,31 @@ module bridge::limiter_fast_path {
         //eth
         add_limiter(parent_id, chain_ids::eth_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
         add_limiter(parent_id, chain_ids::eth_sepolia(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::eth_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_5K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::eth_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //base
         add_limiter(parent_id, chain_ids::base_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::base_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::base_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::base_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //arb
         add_limiter(parent_id, chain_ids::arb_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::arb_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::arb_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::arb_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //op
         add_limiter(parent_id, chain_ids::op_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::op_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::op_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::op_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //pol
         add_limiter(parent_id, chain_ids::pol_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::pol_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::pol_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::pol_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //avax
         add_limiter(parent_id, chain_ids::avax_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::avax_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::avax_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::avax_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
         //bsc
         add_limiter(parent_id, chain_ids::bsc_mainnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
         add_limiter(parent_id, chain_ids::bsc_testnet(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
-        add_limiter(parent_id, chain_ids::bsc_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_1K_IN_BUSD);
+        add_limiter(parent_id, chain_ids::bsc_custom(), TOKEN_ID_BUSD as u64, USER_LIMIT_100_IN_BUSD);
     }
 
     public(package) fun add_limiter(
