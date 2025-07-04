@@ -342,6 +342,19 @@ module bridge::bridge {
         limiter::new_external_limits(&mut bridge.id, ctx);
     }
 
+    public fun update_external_out_limit(
+        bridge: &mut Bridge,
+        target_chain: u8,
+        limit: u64,
+    ) {
+        let (inner,parent_id) = load_inner_mut_and_uid(bridge);
+        let route = chain_ids::get_route(inner.chain_id, target_chain);
+        limiter::update_external_out_limit(
+            parent_id,
+            &route,
+            limit
+        );
+    }
 
     //////////////////////////////////////////////////////
     // Public functions
@@ -1173,9 +1186,6 @@ module bridge::bridge {
         let source_address = token_payload.token_sender_address();
         let target_address = token_payload.token_target_address();
         let amount = token_payload.token_amount();
-        //check if amount is limited
-        let route = chain_ids::get_route(source_chain, target_chain);
-        assert!(amount < limiter::get_external_in_limit(parent_id, &route), ETransferLimit);
         let key = ExternalBridgeMessageKey{
             source_chain,
             source_address,
@@ -1470,8 +1480,6 @@ module bridge::bridge {
         );
 
         let amount = token_payload.token_amount_v2();
-        let amount_in_usd = inner.treasury.calculate_amount_in_usd<T>(amount);
-        assert!(amount_in_usd < limiter::get_external_in_limit(parent_id, &route), ETransferLimit);
         // Make sure transfer is within limit.
         if (!inner
             .limiter

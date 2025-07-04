@@ -11,7 +11,7 @@ reqwest.workspace = true
 serde_json.workspace = true
 sui-bridge.workspace = true
 tracing.workspace = true
-
+sui-types.workspace = true
 [lints]
 workspace = true
 

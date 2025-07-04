@@ -37,7 +37,6 @@ module bridge::limiter {
         max_mint_busd_limit: u64,
     }
     public struct ExternalLimiter has store {
-        transfer_in_limits: VecMap<BridgeRoute, u64>,
         transfer_out_limits: VecMap<BridgeRoute, u64>,
         external: Bag,
     }
@@ -96,7 +95,6 @@ module bridge::limiter {
             parent_id,
             EXTERNAL_LIMITS_KEY,
             ExternalLimiter {
-                transfer_in_limits: vec_map::empty(),
                 transfer_out_limits: vec_map::empty(),
                 external: bag::new(ctx),
             },
@@ -110,46 +108,6 @@ module bridge::limiter {
         // assert!(dynamic_field::exists_(parent_id, EXTERNAL_LIMITS_KEY), 9999);
         let external_limiter = dynamic_field::borrow_mut<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY);
         // Initialize the external limits with the default values
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::btc_mainnet(), chain_ids::sui_mainnet()),
-            10,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::eth_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::bsc_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::base_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::op_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::arb_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::pol_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::avax_mainnet(), chain_ids::sui_mainnet()),
-            10_000_000,
-        );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route(chain_ids::sui_mainnet(), chain_ids::btc_mainnet()),
@@ -192,81 +150,6 @@ module bridge::limiter {
         );
 
         // Testnet and custom chains
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::eth_sepolia(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::eth_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::btc_testnet(), chain_ids::sui_testnet()),
-            10001,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_testnet()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_testnet()),
-            100,
-        );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_testnet(), chain_ids::eth_sepolia()),
@@ -343,81 +226,6 @@ module bridge::limiter {
             100,
         );
         //custom chains
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::eth_sepolia(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::eth_custom(), chain_ids::sui_custom()),
-            5000,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::btc_testnet(), chain_ids::sui_custom()),
-            10001,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::bsc_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::bsc_custom(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::base_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::base_custom(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::op_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::op_custom(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::arb_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::arb_custom(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::pol_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::pol_custom(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::avax_testnet(), chain_ids::sui_custom()),
-            100,
-        );
-        add_external_in_limit(
-            external_limiter,
-            &chain_ids::get_route(chain_ids::avax_custom(), chain_ids::sui_custom()),
-            100,
-        );
         add_external_out_limit(
             external_limiter,
             &chain_ids::get_route( chain_ids::sui_custom(), chain_ids::eth_sepolia()),
@@ -501,17 +309,15 @@ module bridge::limiter {
         dynamic_field::borrow<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY)
     }
 
-    public(package) fun add_external_in_limit(
-        external_limits: &mut ExternalLimiter,
+    public(package) fun update_external_out_limit(
+        parent_id: &mut UID,
         route: &BridgeRoute,
         limit: u64,
     ) {
-        if (!external_limits.transfer_in_limits.contains(route)) {
-            external_limits.transfer_in_limits.insert(*route, limit);
-        } else {
-            *&mut external_limits.transfer_in_limits[route] = limit;
-        };
+        let external_limiter = dynamic_field::borrow_mut<vector<u8>, ExternalLimiter>(parent_id, EXTERNAL_LIMITS_KEY);
+        external_limiter.add_external_out_limit(route, limit);
     }
+
     public(package) fun add_external_out_limit(
         external_limits: &mut ExternalLimiter,
         route: &BridgeRoute,
@@ -522,16 +328,6 @@ module bridge::limiter {
         } else {
             *&mut external_limits.transfer_out_limits[route] = limit;
         };
-    }
-
-    public(package) fun get_external_in_limit(
-        parent_id: &UID,
-        route: &BridgeRoute
-    ): u64 {
-        let external_limiter = get_external_limiter(parent_id);
-        let limit = external_limiter.transfer_in_limits.try_get(route);
-        assert!(limit.is_some(), EExternalLimitNotFoundForRoute);
-        limit.destroy_some()
     }
 
     public(package) fun get_external_out_limit(
