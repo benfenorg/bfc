@@ -2167,9 +2167,6 @@ DenyCap
 bind_swap_pool
 	public entry fun
 	0x2::anonymous_coin
-swap_out
-	public entry fun
-	0x2::anonymous_coin
 swap_out_with_amount
 	public entry fun
 	0x2::anonymous_coin

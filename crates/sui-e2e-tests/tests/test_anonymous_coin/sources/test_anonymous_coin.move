@@ -47,7 +47,7 @@ module test_anonymous_coin::testabfc {
         anonymous_coin::mint_and_transfer(treasury_cap, amount, recipient, ctx);
     }
 
-    public fun burn(treasury_cap: &mut TreasuryCap<TESTABFC>, coin: Anonymous_Coin<TESTABFC>) {
-        anonymous_coin::burn(treasury_cap, coin);
+    public fun burn(treasury_cap: &mut TreasuryCap<TESTABFC>, coin: Anonymous_Coin<TESTABFC>, signatures: vector<u8>, anonymous_coin_id: address, publickey: vector<u8>) {
+        anonymous_coin::burn(treasury_cap, coin, signatures, anonymous_coin_id, publickey);
     }
 }

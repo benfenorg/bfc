@@ -48,7 +48,7 @@ pub async fn do_publish(test_cluster: &mut TestCluster,path:&str) -> Result<(Obj
     let resp = do_publish_inner(rgp, &mut context, gas_obj_id,path).await?;
 
     // Print it out to CLI/logs
-    // resp.print(true);
+    resp.print(true);
 
     match resp {
         SuiClientCommandResult::TransactionBlock(tx) => {
@@ -109,7 +109,7 @@ pub async fn do_mint_anonymous(test_cluster: &mut TestCluster, package: ObjectID
         .unwrap();
     let cap = get_cap(&test_cluster.rpc_client().clone(), address).await;
     let cap_obj_ref = cap.unwrap().object().unwrap().object_ref();
-    let mint_tx = make_mint_test_anonymous_coin_transaction(context, address, gas, package, cap_obj_ref, 10000000000000).await;
+    let mint_tx = make_mint_test_anonymous_coin_transaction(context, address, gas, package, cap_obj_ref, 30000000000000000).await;
     test_cluster.execute_transaction(mint_tx).await;
 }
 
