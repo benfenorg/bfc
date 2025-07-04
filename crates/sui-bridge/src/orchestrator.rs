@@ -55,7 +55,7 @@ where
         user_limit_handle: Option<UserLimitHandle>,
     ) -> Self {
         Self {
-            _sui_client: sui_client,    
+            _sui_client: sui_client,
             sui_events_rx,
             eth_events_rx,
             store,
@@ -294,7 +294,7 @@ where
                 for action in &actions {
                     match &action {
                         BridgeAction::EthToSuiBridgeAction(action_inner) => {
-                            // fast path selector                            
+                            // fast path selector
                             let config = fast_path_config.items.get(&action_inner.eth_bridge_event.eth_chain_id).unwrap_or_default();
                             let fast_path_selector = FastPathSelector::select(action_inner.eth_bridge_event.token_id, action_inner.eth_bridge_event.sui_adjusted_amount,config);
 
@@ -367,7 +367,7 @@ async fn process_actions(store: &Arc<BridgeOrchestratorTables>, aml_checker_tx: 
                 }
             }
         }
-        
+
         for action in actions {
             submit_to_aml_checker(aml_checker_tx, action).await.expect("Submit to aml checker should not fail");
         }
@@ -387,7 +387,7 @@ mod tests {
     use super::*;
     use crate::events::init_all_struct_tags;
     use crate::test_utils::get_test_sui_to_eth_bridge_action;
-    use crate::{events::tests::get_test_sui_event_and_action, sui_mock_client::SuiMockClient};
+    use crate::{events::tests::{get_test_sui_event_and_action,get_test_sui_event_v2_and_action}, sui_mock_client::SuiMockClient};
 
     #[tokio::test]
     async fn test_sui_watcher_task() {
@@ -427,6 +427,74 @@ mod tests {
 
         let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
         let (sui_event, bridge_action) = get_test_sui_event_and_action(identifier.clone());
+        sui_events_tx
+            .send((identifier.clone(), vec![sui_event.clone()]))
+            .await
+            .unwrap();
+
+        let start = std::time::Instant::now();
+        // Executor should have received the action
+        assert_eq!(
+            executor_requested_action_rx.recv().await.unwrap(),
+            bridge_action.digest()
+        );
+        loop {
+            let actions = store.get_all_pending_actions();
+            if actions.is_empty() {
+                if start.elapsed().as_secs() > 5 {
+                    panic!("Timed out waiting for action to be written to WAL");
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
+                continue;
+            }
+            assert_eq!(actions.len(), 1);
+            let action = actions.get(&bridge_action.digest()).unwrap();
+            assert_eq!(action, &bridge_action);
+            assert_eq!(
+                store.get_sui_event_cursors(&[identifier]).unwrap()[0].unwrap(),
+                sui_event.id,
+            );
+            break;
+        }
+    }
+    #[tokio::test]
+    async fn test_sui_watcher_task_v2() {
+        // Note: this test may fail because of the following reasons:
+        // the SuiEvent's struct tag does not match the ones in events.rs
+
+        let (
+            sui_events_tx,
+            sui_events_rx,
+            _eth_events_tx,
+            eth_events_rx,
+            sui_monitor_tx,
+            _sui_monitor_rx,
+            eth_monitor_tx,
+            _eth_monitor_rx,
+            sui_client,
+            store,
+            fast_path_config
+        ) = setup();
+        let (executor, mut executor_requested_action_rx) = MockExecutor::new();
+        let aml_checker = MockAMLChecker::new();
+        // start orchestrator
+        let registry = Registry::new();
+        let metrics = Arc::new(BridgeMetrics::new(&registry));
+        let _handles = BridgeOrchestrator::new(
+            Arc::new(sui_client),
+            sui_events_rx,
+            eth_events_rx,
+            store.clone(),
+            sui_monitor_tx,
+            eth_monitor_tx,
+            metrics,
+            None,
+        )
+            .run(executor,aml_checker,fast_path_config)
+            .await;
+
+        let identifier = Identifier::from_str("test_sui_watcher_task").unwrap();
+        let (sui_event, bridge_action) = get_test_sui_event_v2_and_action(identifier.clone());
         sui_events_tx
             .send((identifier.clone(), vec![sui_event.clone()]))
             .await

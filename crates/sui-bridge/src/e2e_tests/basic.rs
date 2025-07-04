@@ -11,7 +11,7 @@ use crate::e2e_tests::test_utils::{
 };
 use crate::eth_transaction_builder::build_eth_transaction;
 use crate::events::{
-    SuiBridgeEvent, SuiToEthTokenBridgeV1, TokenSendBackEvent, TokenTransferApproved,
+    SuiBridgeEvent, SuiToEthTokenBridgeV1, SuiToEthTokenBridgeV2,TokenSendBackEvent, TokenTransferApproved,
     TokenTransferClaimed,
 };
 use crate::sui_client::SuiClientInner;
@@ -171,7 +171,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV1.get().unwrap().clone(),
+                SuiToEthTokenBridgeV2.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),
@@ -205,6 +205,7 @@ async fn test_bridge_from_eth_to_sui_to_eth() {
     );
     assert_eq!(parsed_msg.parsed_payload.target_chain, eth_chain_id);
     assert_eq!(parsed_msg.parsed_payload.token_type, TOKEN_ID_ETH);
+    //eth no fee
     assert_eq!(parsed_msg.parsed_payload.amount, sui_amount);
 
     let message = eth_sui_bridge::Message::from(sui_to_eth_bridge_action);
@@ -1700,7 +1701,7 @@ async fn test_bridge_usdt_to_sui() {
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV1.get().unwrap().clone(),
+                SuiToEthTokenBridgeV2.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),
@@ -1805,7 +1806,7 @@ async fn test_bridge_usdt_to_sui_from_bsc() {
     let events = bridge_test_cluster
         .new_bridge_events(
             HashSet::from_iter([
-                SuiToEthTokenBridgeV1.get().unwrap().clone(),
+                SuiToEthTokenBridgeV2.get().unwrap().clone(),
                 TokenTransferApproved.get().unwrap().clone(),
                 TokenTransferClaimed.get().unwrap().clone(),
             ]),

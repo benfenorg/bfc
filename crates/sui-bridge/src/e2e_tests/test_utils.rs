@@ -67,6 +67,8 @@ use sui_types::{BRIDGE_PACKAGE_ID, SUI_BRIDGE_OBJECT_ID};
 use tokio::join;
 use tokio::task::JoinHandle;
 use tokio::time::{sleep, Instant};
+use crate::sui_client::SuiClientInner;
+
 
 use tracing::error;
 use tracing::info;
@@ -1530,6 +1532,33 @@ pub async fn initiate_bridge_sui_to_eth(
             Err(e) => return Err(e),
         }
     };
+    let treasury_summary = bridge_test_cluster
+    .bridge_client()
+    .get_treasury_summary()
+    .await
+    .unwrap();
+
+    let token_type = expect_token_id;
+    let mut token_type_map = HashMap::new();
+    for (id, type_) in treasury_summary.id_token_type_map.iter() {
+        println!("id: {}, type_: {}", id, type_);
+        token_type_map.insert(*id, TypeTag::from_str(&format!("0x{}", type_)).unwrap());
+    }
+    info!("debbug");
+
+    let fee = bridge_test_cluster
+        .bridge_client()
+        .sui_client()
+        .get_cross_out_fee_amount(
+            bridge_object_arg,
+            bridge_test_cluster.eth_chain_id() as u64,
+            sui_amount,
+            token_type,
+            token_type_map,
+        )
+        .await
+        .unwrap();
+
 
     let sui_events = resp.events.unwrap().data;
     let bridge_event = sui_events
@@ -1564,19 +1593,19 @@ pub async fn initiate_bridge_sui_to_eth(
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_ETH);
         assert_eq!(
             bridge_event.sui_bridge_event.amount_sui_adjusted,
-            sui_amount
+            sui_amount-fee
         );
     }else{
         assert_eq!(bridge_event.sui_bridge_event.token_id, TOKEN_ID_USDT);
         if bridge_event.sui_bridge_event.eth_chain_id.is_eth_chain() {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
-                sui_amount/1000
+                sui_amount/1000 -fee/1000
             );
         } else {
             assert_eq!(
                 bridge_event.sui_bridge_event.amount_sui_adjusted,
-                sui_amount
+                sui_amount-fee
             );
         }
     };
